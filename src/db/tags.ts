@@ -62,3 +62,64 @@ export function clearAutoTagsForItem(itemId: string): void {
     )
     .run(itemId);
 }
+
+export function detachTagFromItem(itemId: string, tagId: string): void {
+  getDb()
+    .prepare("DELETE FROM item_tags WHERE item_id = ? AND tag_id = ?")
+    .run(itemId, tagId);
+}
+
+/**
+ * Promote an auto-tag to manual (keeps the name + usages, just flips `kind`)
+ * so re-enrichment doesn't sweep it. Matches the design decision from
+ * RUNNING_LOG 21:53: single tag namespace, `kind` flag distinguishes.
+ */
+export function promoteTagToManual(tagId: string): void {
+  getDb().prepare("UPDATE tags SET kind = 'manual' WHERE id = ?").run(tagId);
+}
+
+export function listAllTags(kind?: "manual" | "auto"): TagRow[] {
+  const db = getDb();
+  if (kind) {
+    return db
+      .prepare("SELECT * FROM tags WHERE kind = ? ORDER BY name COLLATE NOCASE")
+      .all(kind) as TagRow[];
+  }
+  return db
+    .prepare("SELECT * FROM tags ORDER BY kind DESC, name COLLATE NOCASE")
+    .all() as TagRow[];
+}
+
+export function countItemsForTag(tagId: string): number {
+  const row = getDb()
+    .prepare("SELECT COUNT(*) as n FROM item_tags WHERE tag_id = ?")
+    .get(tagId) as { n: number };
+  return row.n;
+}
+
+export function renameTag(tagId: string, newName: string): void {
+  const canonical = newName.trim().toLowerCase().replace(/\s+/g, "-");
+  if (canonical.length === 0) throw new Error("Tag name cannot be empty");
+  // If the canonical form clashes with another tag, merge items into that tag instead.
+  const existing = getDb()
+    .prepare("SELECT id FROM tags WHERE name = ? AND id != ?")
+    .get(canonical, tagId) as { id: string } | undefined;
+  const db = getDb();
+  if (existing) {
+    const tx = db.transaction(() => {
+      db.prepare(
+        `UPDATE OR IGNORE item_tags SET tag_id = ? WHERE tag_id = ?`,
+      ).run(existing.id, tagId);
+      // Any item_tag rows that would have duplicated get silently dropped.
+      db.prepare("DELETE FROM item_tags WHERE tag_id = ?").run(tagId);
+      db.prepare("DELETE FROM tags WHERE id = ?").run(tagId);
+    });
+    tx();
+    return;
+  }
+  db.prepare("UPDATE tags SET name = ? WHERE id = ?").run(canonical, tagId);
+}
+
+export function deleteTag(tagId: string): void {
+  getDb().prepare("DELETE FROM tags WHERE id = ?").run(tagId);
+}

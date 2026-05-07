@@ -1,6 +1,6 @@
 {
   "name": "ai-brain",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Local-first personal knowledge app combining Recall.it + Knowly features. Next.js + SQLite + Ollama + Capacitor. Pre-hosting until v1.0.0.",
   "private": true,
   "repository": {
@@ -26,6 +26,7 @@
     "clsx": "^2.1.1",
     "cmdk": "^1.1.1",
     "jsdom": "^29.1.1",
+    "jszip": "^3.10.1",
     "lucide-react": "^0.460.0",
     "next": "16.2.5",
     "react": "19.2.4",
