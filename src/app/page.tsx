@@ -1,4 +1,4 @@
-import { FileText, Plus, StickyNote } from "lucide-react";
+import { FileText, Globe, Plus, Search, StickyNote } from "lucide-react";
 import Link from "next/link";
 import { listItems } from "@/db/items";
 
@@ -16,6 +16,7 @@ function formatRelative(ts: number): string {
 
 function SourceIcon({ type }: { type: string }) {
   if (type === "pdf") return <FileText className="h-4 w-4" strokeWidth={2} />;
+  if (type === "url") return <Globe className="h-4 w-4" strokeWidth={2} />;
   return <StickyNote className="h-4 w-4" strokeWidth={2} />;
 }
 
@@ -24,7 +25,7 @@ export default function LibraryPage() {
 
   return (
     <div className="mx-auto max-w-[960px] px-8 py-10">
-      <header className="mb-8 flex items-center justify-between">
+      <header className="mb-6 flex items-center justify-between">
         <div>
           <h1 className="text-[30px] font-semibold leading-[1.2] tracking-[-0.01em] text-[var(--text-primary)]">
             Library
@@ -34,13 +35,28 @@ export default function LibraryPage() {
           </p>
         </div>
         <Link
-          href="/items/new"
+          href="/capture"
           className="inline-flex h-9 items-center gap-2 rounded-md bg-[var(--accent-9)] px-4 text-sm font-medium text-[var(--on-accent)] transition-colors duration-[var(--duration-fast)] hover:bg-[var(--accent-10)]"
         >
           <Plus className="h-4 w-4" strokeWidth={2} />
-          New note
+          Capture
         </Link>
       </header>
+
+      <form action="/search" method="get" className="mb-6">
+        <div className="relative">
+          <Search
+            className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--text-muted)]"
+            strokeWidth={2}
+          />
+          <input
+            name="q"
+            type="search"
+            placeholder="Search your library..."
+            className="h-9 w-full rounded-md border border-[var(--border)] bg-[var(--surface-raised)] py-2 pl-9 pr-3 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)]"
+          />
+        </div>
+      </form>
 
       {items.length === 0 ? (
         <EmptyState />
@@ -69,6 +85,14 @@ export default function LibraryPage() {
                         <span>{it.total_chars.toLocaleString()} chars</span>
                       </>
                     )}
+                    {it.extraction_warning && (
+                      <>
+                        <span className="text-[var(--text-muted)]">·</span>
+                        <span className="text-[var(--warning)]" title={it.extraction_warning}>
+                          ⚠ warning
+                        </span>
+                      </>
+                    )}
                   </div>
                 </div>
               </Link>
@@ -88,14 +112,14 @@ function EmptyState() {
         Your library is empty
       </h2>
       <p className="mt-1 text-sm text-[var(--text-secondary)]">
-        Capture your first note to see it here.
+        Capture a URL, drop a PDF, or write a note.
       </p>
       <Link
-        href="/items/new"
+        href="/capture"
         className="mt-6 inline-flex h-9 items-center gap-2 rounded-md bg-[var(--accent-9)] px-4 text-sm font-medium text-[var(--on-accent)] transition-colors duration-[var(--duration-fast)] hover:bg-[var(--accent-10)]"
       >
         <Plus className="h-4 w-4" strokeWidth={2} />
-        New note
+        Capture
       </Link>
     </div>
   );

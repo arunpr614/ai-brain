@@ -1,7 +1,7 @@
 "use client";
 
 import { Command } from "cmdk";
-import { Library, Plus, Settings } from "lucide-react";
+import { FileText, Globe, Library, Search, Settings, StickyNote } from "lucide-react";
 import { useRouter } from "next/navigation";
 import {
   createContext,
@@ -88,8 +88,20 @@ export function CommandPaletteProvider({ children }: { children: React.ReactNode
               </Command.Group>
 
               <Command.Group heading="Capture">
-                <PaletteItem icon={Plus} onSelect={() => go("/items/new")}>
+                <PaletteItem icon={Globe} onSelect={() => go("/capture?tab=url")}>
+                  Capture URL
+                </PaletteItem>
+                <PaletteItem icon={FileText} onSelect={() => go("/capture?tab=pdf")}>
+                  Capture PDF
+                </PaletteItem>
+                <PaletteItem icon={StickyNote} onSelect={() => go("/capture?tab=note")}>
                   New note
+                </PaletteItem>
+              </Command.Group>
+
+              <Command.Group heading="Find">
+                <PaletteItem icon={Search} onSelect={() => go("/search")}>
+                  Search library
                 </PaletteItem>
               </Command.Group>
             </Command.List>
@@ -105,7 +117,7 @@ function PaletteItem({
   children,
   onSelect,
 }: {
-  icon: typeof Library;
+  icon: React.ComponentType<{ className?: string; strokeWidth?: number }>;
   children: React.ReactNode;
   onSelect: () => void;
 }) {

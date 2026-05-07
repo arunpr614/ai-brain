@@ -1,23 +1,7 @@
-import Link from "next/link";
-import { ArrowLeft } from "lucide-react";
-import { NewNoteForm } from "./form";
+import { redirect } from "next/navigation";
 
-export default function NewNotePage() {
-  return (
-    <div className="mx-auto max-w-[680px] px-8 py-10">
-      <Link
-        href="/"
-        className="mb-6 inline-flex items-center gap-1.5 text-sm text-[var(--text-secondary)] transition-colors hover:text-[var(--text-primary)]"
-      >
-        <ArrowLeft className="h-3.5 w-3.5" strokeWidth={2} />
-        Back to Library
-      </Link>
-
-      <h1 className="mb-6 text-[24px] font-semibold leading-[1.33] tracking-[-0.01em] text-[var(--text-primary)]">
-        New note
-      </h1>
-
-      <NewNoteForm />
-    </div>
-  );
+// Legacy route — v0.2.0 unified under /capture. Keep a 307 for any
+// bookmark that survived v0.1.0.
+export default function LegacyNewNote(): never {
+  redirect("/capture?tab=note");
 }

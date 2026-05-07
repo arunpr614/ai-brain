@@ -1,4 +1,4 @@
-import { ArrowLeft, Trash2 } from "lucide-react";
+import { ArrowLeft, Download, ExternalLink, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { deleteItemAction } from "@/app/actions";
@@ -32,8 +32,20 @@ export default async function ItemDetailPage({
           </h1>
           <p className="mt-2 font-sans text-xs text-[var(--text-secondary)]">
             <span className="uppercase tracking-wide">{item.source_type}</span>
+            {item.author && (
+              <>
+                <span className="mx-2 text-[var(--text-muted)]">·</span>
+                <span>{item.author}</span>
+              </>
+            )}
             <span className="mx-2 text-[var(--text-muted)]">·</span>
             <span>captured {captured}</span>
+            {item.total_pages && (
+              <>
+                <span className="mx-2 text-[var(--text-muted)]">·</span>
+                <span>{item.total_pages} pages</span>
+              </>
+            )}
             {item.total_chars && (
               <>
                 <span className="mx-2 text-[var(--text-muted)]">·</span>
@@ -41,17 +53,45 @@ export default async function ItemDetailPage({
               </>
             )}
           </p>
+
+          {item.source_url && (
+            <p className="mt-2">
+              <a
+                href={item.source_url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1.5 font-sans text-xs text-[var(--accent-11)] hover:underline"
+              >
+                <ExternalLink className="h-3 w-3" strokeWidth={2} />
+                {new URL(item.source_url).hostname}
+              </a>
+            </p>
+          )}
+
+          {item.extraction_warning && (
+            <p className="mt-3 inline-flex items-center gap-1.5 rounded-md border border-[var(--warning)] bg-[var(--surface)] px-2 py-1 font-sans text-xs text-[var(--warning)]">
+              ⚠ {item.extraction_warning}
+            </p>
+          )}
         </header>
 
         <div className="whitespace-pre-wrap">{item.body}</div>
       </article>
 
-      <footer className="mt-12 border-t border-[var(--border)] pt-6">
+      <footer className="mt-12 flex items-center gap-3 border-t border-[var(--border)] pt-6">
+        <a
+          href={`/api/items/${item.id}/export.md`}
+          className="inline-flex h-8 items-center gap-2 rounded-md border border-[var(--border)] bg-transparent px-3 text-sm font-medium text-[var(--text-secondary)] transition-colors hover:border-[var(--border-strong)] hover:text-[var(--text-primary)]"
+        >
+          <Download className="h-3.5 w-3.5" strokeWidth={2} />
+          Export as .md
+        </a>
         <form
           action={async () => {
             "use server";
             await deleteItemAction(item.id);
           }}
+          className="ml-auto"
         >
           <button
             type="submit"

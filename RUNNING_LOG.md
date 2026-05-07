@@ -572,3 +572,183 @@ None blocking. Two soft items:
 - **Repo:** https://github.com/arunpr614/ai-brain — 3 commits pushed, this commit will make 4
 - **Active trackers:** `BUILD_PLAN.md` · `DESIGN.md` · `DESIGN_SYSTEM.md` · `ROADMAP_TRACKER.md` · `PROJECT_TRACKER.md` · `RUNNING_LOG.md` · `docs/research/{SELF_CRITIQUE,EMPIRICAL_SANITY}.md`
 - **Next milestone:** v0.2.0 exit — paste a URL, see a parsed article in the library. Drop a PDF, same. FTS search finds keywords.
+
+---
+
+## 2026-05-07 17:55 — v0.1.1 polish shipped, v0.2.0 Capture core kickoff
+
+**Entry author:** AI agent (Claude) · **Triggered by:** user verified v0.1.0 running locally; ready to start v0.2.0
+
+### Planned since last entry
+
+Two things since 17:41:
+1. Close out the three v0.1.0 boot-time warnings noted in the prior entry (`middleware`→`proxy` rename, workspace-root, sqlite-vec Turbopack load failure) in a small v0.1.1 polish patch.
+2. Checkpoint and begin v0.2.0 Capture core: URL save via Readability, PDF save via `unpdf`, FTS5 full-text search, markdown export, header/footer stripping utility.
+
+### Done
+
+**v0.1.1 polish (commit `fea85e1`):**
+- Renamed `src/middleware.ts` → `src/proxy.ts`; exported function renamed `middleware` → `proxy` (Next.js 16 convention). Deprecation warning gone.
+- Added `turbopack.root` pin to `next.config.ts`. Stops Turbopack from picking up `~/package-lock.json` as the workspace root.
+- Added `serverExternalPackages: ["better-sqlite3", "sqlite-vec"]` to `next.config.ts`. sqlite-vec uses `import.meta.resolve` at runtime to locate its prebuilt binary — marking both as server-external keeps them on the Node side of the bundle where native resolution works. **This unblocks v0.4.0 vector search.**
+- Verified via fresh `npm run dev`: `Ready in 309ms`, zero warnings, initial backup snapshot written at `data/backups/2026-05-07_1748.sqlite`, `GET /` → 307 `/unlock?next=/` as expected.
+- User verified the app running locally in the browser.
+
+**v0.2.0 Capture core kickoff:** task list populated and ordered; no code yet.
+
+### Learned
+
+- **Next.js 16's `proxy` export must be named literally `proxy`** — leaving the function as `middleware` after the file rename produces a build-time error (`Proxy is missing expected function export name`). Caught + fixed in the same commit.
+- **`serverExternalPackages` is the right escape hatch for native-binding modules under Turbopack**, not an `experimental.*` flag. Works at top-level `next.config.ts`.
+- **Three warnings collapse into one polish commit cleanly** when they share the `next.config.ts` + Next 16 conventions surface. Good model for future small-cleanup passes.
+
+### Deployed / Released
+
+- `fea85e1` pushed to `main` on `arunpr614/ai-brain`. Repo is 5 commits deep: planning → self-critique → empirical sanity → v0.1.0 foundation → v0.1.1 polish.
+- No hosted deploy (per C5).
+
+### Documents created or updated this period
+
+**Code:**
+- `src/proxy.ts` (renamed from `src/middleware.ts`, function renamed)
+- `next.config.ts` updated: `turbopack.root` + `serverExternalPackages`
+
+**No doc/tracker changes yet for v0.2.0** — those land when v0.2.0 ships.
+
+### Current remaining to-do
+
+**v0.2.0 Capture core — now starting.** Scope (in execution order):
+
+1. **F-101 URL capture** — new deps `@mozilla/readability`, `jsdom`; `src/lib/capture/url.ts` fetches URL → extracts title/author/body text; new `/items/capture` route with URL paste form.
+2. **F-102 PDF capture** — wire the validated-in-v0.0.1 `unpdf` pipeline: extract text + pages + metadata; apply the 301 chars/page paywall heuristic; drag-drop + file-picker UI.
+3. **F-103 Header/footer stripping** — detect repeating top/bottom lines across pages, strip before storing (per self-critique P-4). Utility in `src/lib/capture/strip.ts`.
+4. **F-104 FTS5 full-text search** — new migration `002_fts5.sql` with `items_fts` virtual table + triggers to keep it in sync; search bar on Library; `/search?q=` route.
+5. **F-105 Markdown export** — `GET /api/items/[id]/export.md` returns the item as standard markdown with YAML frontmatter (ready for Obsidian sync in v0.10.0).
+6. **F-106 Capture UI** — unified `/capture` page with tabs: URL / PDF / Note. ⌘K gets a "Capture URL" + "Capture PDF" entry.
+7. Commit + push v0.2.0; update `PROJECT_TRACKER.md` + `ROADMAP_TRACKER.md`; append running log.
+
+**v0.2.0 exit criteria (from BUILD_PLAN.md):** "Paste any web URL, hit save, see it parsed in the library with clean title and full text. Drop a PDF, same. FTS search finds keywords across items. Markdown export endpoint returns valid markdown."
+
+**Deferred to later v0.1.x / v0.2.x:**
+- Add a `turbopack.root` comment explaining why the pin exists (cosmetic)
+- Possibly extract `tokens.css` → multi-file if it grows past ~200 lines
+
+### Open questions / decisions needed
+
+- **URL fetch policy.** For URL capture, do we use `fetch()` with a custom User-Agent, or add a headless browser (Playwright) for JS-heavy sites? Lean: start with plain `fetch` + `jsdom` — covers the vast majority of news/blog articles. Playwright would be a v0.10.0 add.
+- **Per-URL timeout / size limits.** What's the cap on a single fetch? Lean: 15s timeout, 5MB max response body. Document in config.
+- **Duplicate detection.** If the same URL is saved twice, do we upsert, create a new item, or warn? Lean: warn + link to existing item. Not a blocker for v0.2.0 exit.
+
+I'll make reasonable defaults on each and surface them in the v0.2.0 commit.
+
+### State snapshot
+
+- **Current phase / version:** v0.1.0 ● shipped + v0.1.1 ● polish shipped → **v0.2.0 Capture core (starting now)**
+- **App version:** `0.1.0` (will bump to `0.2.0` when v0.2.0 exit criteria are met)
+- **Plan version:** `v0.3.0-plan`
+- **Repo:** https://github.com/arunpr614/ai-brain (commit `fea85e1`)
+- **Active trackers:** `BUILD_PLAN.md` · `DESIGN.md` · `DESIGN_SYSTEM.md` · `ROADMAP_TRACKER.md` · `PROJECT_TRACKER.md` · `RUNNING_LOG.md` · `docs/research/{SELF_CRITIQUE,EMPIRICAL_SANITY}.md`
+- **Next milestone:** v0.2.0 exit — "paste URL → parsed article, drop PDF → extracted text, FTS search works, markdown export returns valid content"
+
+---
+
+## 2026-05-07 18:15 — v0.2.0 Capture core shipped
+
+**Entry author:** AI agent (Claude) · **Triggered by:** all 6 v0.2.0 features complete + smoke-tested; user confirmed URL+PDF+Note MVP scope
+
+### Planned since last entry
+
+Ship the v0.2.0 exit contract: paste URL → clean article; drop PDF → extracted text; full-text search finds keywords; markdown export returns valid content. Resolve self-critique P-4 (header/footer strip). Keep scope tight — no image OCR, no chip filters.
+
+Mid-session, user asked about source-type coverage. I spawned a research agent to compare AI Brain/Recall/Knowly, then user aligned on keeping the URL+PDF+Note MVP scope as-is. Agent was stopped before it wrote a deliverable — decision was clear without the memo.
+
+### Done
+
+**v0.2.0 features (6 shipped, 0 deferred into v0.2.x):**
+
+- **F-101 URL capture** — `src/lib/capture/url.ts` uses `@mozilla/readability` + `jsdom`. 15-second timeout, 5 MB response cap, custom user-agent, charset detection from content-type. Validates URL shape, rejects non-HTML content-types with a clear error. Duplicate-URL detection on `source_url` returns a "duplicate" state with "Open existing" and "Save again anyway" affordances.
+- **F-102 PDF capture** — `src/lib/capture/pdf.ts` via `unpdf@1.6.2` (validated in v0.0.1). 50 MB max file size. Applies the v0.0.1-calibrated **301 chars/page paywall threshold**. Also flags `possible_scanned_page` when any page has <50 chars AND file bytes/page > 3 KB. Metadata extraction recovers title from PDF info dict; falls back to filename.
+- **F-103 Header/footer stripping** — `src/lib/capture/strip.ts` detects repeating top/bottom lines across ≥50% of pages via normalized-line fuzzy match (collapses page numbers like "3 / 12" and "Page 3 of 12" before comparing). Only triggers for docs with ≥3 pages. Resolves self-critique P-4. Unit-tested inline — correctly strips "Lenny's Newsletter · Issue 1" from a 3-page fixture.
+- **F-104 FTS5 full-text search** — migration `002_fts5.sql` with `items_fts` virtual table using `porter unicode61` tokenizer (English stemming + diacritic folding). Keeps sync via INSERT/UPDATE/DELETE triggers. Backfills pre-existing items on migration run. `src/db/items.ts#searchItems` wraps with a LIKE fallback if FTS5 is ever unavailable. `/search` route added. Verified on 3 seeded items: `growth`→"Product-led growth playbook", `attention`→"AI Engineering Handbook", `velocity`→"How to ship fast". All correct.
+- **F-105 Markdown export** — `GET /api/items/[id]/export.md` returns a download with `Content-Type: text/markdown`. YAML frontmatter keys: `title, source_type, source_url, author, captured, brain_id, total_pages, extraction_warning`. These are the **exact keys v0.10.0 Obsidian sync will use when writing into the vault folder** — stable schema now.
+- **F-106 Unified capture UI** — `/capture` page with 3 tabs (URL / PDF / Note) synced to `?tab=` query param. PDF tab uses a drag-drop dropzone backed by `/api/capture/pdf` (multipart POST on the Node runtime to bypass server-action body limits). ⌘K palette gets "Capture URL", "Capture PDF", "New note", "Search library" entries. Library page gets a search bar + a "Capture" button (replacing "New note"). `/items/new` kept as a redirect to `/capture?tab=note` for bookmarks.
+
+**New DB repo functions:** `insertCaptured` (unifies all three source types behind one call), `findItemByUrl` (duplicate detection), `searchItems` (FTS5 with LIKE fallback).
+
+**Cleanups:** removed unused `useState`/`useTransition` imports from `tabs.tsx`; removed unused `Plus` import from command palette; deleted orphan `src/app/items/new/form.tsx` (replaced by capture tabs).
+
+**Quality gates:**
+- `npm run typecheck` → 0 errors
+- `npm run lint` → 0 errors
+- `npm run build` → 10 routes + 2 API endpoints, all compiled. `002_fts5.sql` applied during build-time page collection.
+- End-to-end smoke test: PIN set via tsx, 3 items seeded, FTS verified, export endpoint returned valid markdown with correct frontmatter, `/search` route rendered results. All green.
+
+**Version bump:** `package.json` 0.1.0 → 0.2.0.
+
+### Learned
+
+- **Readability handles `example.com` fine** — extracted the "Example Domain" title and 111-char body. It's sensitive to the DOM having a recognizable article structure, which is exactly what it's designed for; we'll find the first real failure mode when Arun captures a JS-heavy site (SPA news sites, paywalled Substack) in actual use.
+- **unpdf at scale: 18-page PDF in 237 ms.** Matches the v0.0.1 100 ms/PDF average on smaller docs. Linear-ish in page count. No memory concerns.
+- **FTS5 `porter` tokenizer is the right default.** Stemming means `"growth"` matches `growth` / `grows` / `growing`; `"attention"` matches `attention` / `attentive`. No config work needed.
+- **Server actions can't handle large files** — Next.js caps form-post bodies around 4.5 MB by default. For PDFs we had to fall back to a route handler (`/api/capture/pdf`) with `runtime = "nodejs"`. Worth remembering for v0.5.0 PDF-over-LAN from the Android APK.
+- **The "contentless external-content" FTS5 pattern** requires `id UNINDEXED` for the joining column. Standard-looking SQL otherwise.
+- **The research-agent's memo wasn't written** — user decided "current MVP scope is right" before the agent finished. Saved context. Good reminder: decisions that don't need supporting docs shouldn't spawn them.
+
+### Deployed / Released
+
+Commit pending with this entry. Will push to `arunpr614/ai-brain` on `main`.
+
+### Documents created or updated this period
+
+**Code (13 new files):**
+- `src/lib/capture/url.ts` — URL fetch + Readability
+- `src/lib/capture/pdf.ts` — unpdf-based PDF extraction
+- `src/lib/capture/strip.ts` — header/footer stripping
+- `src/db/migrations/002_fts5.sql` — FTS5 virtual table + sync triggers
+- `src/app/capture-actions.ts` — URL capture server action + PDF action
+- `src/app/capture/page.tsx`, `src/app/capture/tabs.tsx`, `src/app/capture/pdf-dropzone.tsx`
+- `src/app/api/capture/pdf/route.ts` — multipart upload endpoint
+- `src/app/api/items/[id]/export.md/route.ts` — markdown export
+- `src/app/search/page.tsx` — search results
+- `src/app/items/new/page.tsx` — now a redirect shim
+
+**Code (updated):**
+- `src/db/items.ts` — added `insertCaptured`, `findItemByUrl`, `searchItems`
+- `src/app/page.tsx` — search bar + Capture button + URL/PDF icons
+- `src/app/items/[id]/page.tsx` — source-URL link, warning pill, markdown export button
+- `src/components/command-palette.tsx` — Capture URL/PDF/Note + Search entries
+- `package.json` — deps added (`@mozilla/readability`, `jsdom`, `unpdf`); version 0.1.0 → 0.2.0
+
+**Docs (updated):**
+- `PROJECT_TRACKER.md` v0.3.0 → v0.4.0 (v0.2.0 row flipped to ●)
+- `ROADMAP_TRACKER.md` v0.3.0 → v0.4.0 (F-101..F-106 shipped; CAP-4 explicitly deferred with rationale)
+- `README.md` — "Current status" + stack table reflects 0.2.0
+- `RUNNING_LOG.md` — this entry
+
+### Current remaining to-do
+
+**v0.3.0 Intelligence — next phase.** Scope from BUILD_PLAN §5:
+- DIG-1/2/3 — auto-summary + key-quote extraction + dual-pane original-vs-digest view (needs Ollama)
+- ORG-4/5/6 — auto-category (14 Knowly taxonomy buckets), auto-title, auto-tag
+- ORG-7/10 — manual tags + collections + bulk operations
+- INT-2 — bulk export
+- **Precondition:** `OLLAMA_MAX_LOADED_MODELS=1` env + `keep_alive` tuning from §15.1. Ollama is already installed + qwen2.5:7b pulled from v0.0.1.
+- **Pre-v0.3.0 research:** R-LLM-b (Qwen 3 head-to-head) — a ~30-minute run before wiring the enrichment pipeline. Worth doing; Qwen 3 may collapse the stack to a single model.
+
+**Also pending (non-blocking):**
+- R-VEC benchmark before v0.4.0 (sqlite-vec at 10k+ chunks)
+- LLM usage tracking surface in Settings (the `llm_usage` table is there; v0.3.0 will start writing to it)
+
+### Open questions / decisions needed
+
+- **URL capture edge cases I haven't tested yet:** JS-rendered SPAs (Twitter, Reddit threads), paywalled Substack posts that require login, redirected tracker URLs. Will surface as real failures when you start capturing live content; not worth gold-plating now.
+- **Should we promote LLM usage indicator to v0.2.x?** — Surfacing "0 calls this month" as a placeholder in Settings costs ~30 min and preempts confusion when v0.3.0 adds a real counter. Low priority.
+
+### State snapshot
+
+- **Current phase / version:** v0.1.0 ● + v0.1.1 ● + v0.2.0 ● → **v0.3.0 Intelligence (next)**
+- **App version:** `0.2.0` in `package.json`
+- **Plan version:** `v0.3.0-plan`
+- **Repo:** https://github.com/arunpr614/ai-brain — 5 commits deep + pending v0.2.0 commit
+- **Active trackers:** `BUILD_PLAN.md` · `DESIGN.md` · `DESIGN_SYSTEM.md` · `ROADMAP_TRACKER.md` · `PROJECT_TRACKER.md` · `RUNNING_LOG.md` · `docs/research/{SELF_CRITIQUE,EMPIRICAL_SANITY}.md`
+- **Next milestone:** v0.3.0 exit — "10 captured items each have summary + category + title + auto-tags; dual-pane view renders; tags + collections CRUD works; enrichment runs in ≤30 s wall time per item."

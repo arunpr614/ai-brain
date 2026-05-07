@@ -1,8 +1,9 @@
 # AI Brain — Roadmap Tracker
 
-**Document version:** v0.3.0-roadmap
+**Document version:** v0.4.0-roadmap
 **Date:** 2026-05-07
 **Changelog:**
+- v0.4.0-roadmap — v0.2.0 Capture core SHIPPED; F-101..F-106 all shipped; migrations runner applied `002_fts5.sql` during build.
 - v0.3.0-roadmap — v0.1.0 Foundation SHIPPED; Next.js 16 + React 19 + Tailwind 4 runtime live; F-000..F-010 all shipped.
 - v0.2.1-roadmap — v0.0.1 Empirical Sanity Morning COMPLETE; all 5 S-* items shipped; added F-041 (cold-start dedup); v0.5.0 plugin corrected to `@capgo/capacitor-share-target`.
 - v0.2.0-roadmap — added v0.0.1 Empirical Sanity gate; expanded v0.5.0 scope with mDNS (F-035), CSRF (F-036), token rotation (F-037), QR display (F-038), native file stream (F-039), WebAuthn stretch (F-040); added F-000 migrations runner to v0.1.0. Driven by `docs/research/SELF_CRITIQUE.md`.
@@ -74,19 +75,24 @@ Gate inserted per `docs/research/SELF_CRITIQUE.md §8 item 1`. Converts desk res
 
 **Exit:** ✅ Smoke-tested end-to-end: setup PIN → library empty state → new note form → detail view → delete. Theme toggle round-trips. Initial backup snapshot written on dev-server boot. DB migrations applied idempotently on build + dev.
 
-### v0.2.0 — Capture core
+### v0.2.0 — Capture core ✅ **SHIPPED** 2026-05-07
 
 | ID | Item | Status | Notes |
 |---|---|---|---|
-| CAP-1 | Save URL (paste box + `⌘N`) | planned | |
-| CAP-2 | Save PDF (drag-drop + batch) | planned | Blocked by R-PDF |
-| CAP-3 | Manual note (markdown editor) | planned | Already stub in v0.1 |
-| CAP-4 | Save screenshot / image with OCR *(stretch)* | planned | Tesseract.js; keep optional |
-| ORG-1 | Library list (chronological) + chip filters | planned | Exists in v0.1; polish pass here |
-| ORG-2 | Full-text search (FTS5) | planned | |
-| INT-1 | Export item as Markdown | planned | |
+| F-101 / CAP-1 | Save URL via Readability + jsdom | **shipped** | `src/lib/capture/url.ts`; 15s timeout, 5MB cap, custom UA; duplicate-URL warn flow |
+| F-102 / CAP-2 | Save PDF via unpdf pipeline | **shipped** | `src/lib/capture/pdf.ts`; 50MB cap; paywall guard @ 301 cpp; scan signal @ <50 chars/page + >3KB/page |
+| CAP-3 | Manual note (markdown editor) | **shipped** | Migrated from v0.1 `/items/new` to `/capture?tab=note` |
+| CAP-4 | Save screenshot / image with OCR *(stretch)* | **deferred** | Scoped out of v0.2.0 per MVP alignment — stays deferred until R-OCR phase |
+| F-103 | Header/footer stripping utility | **shipped** | `src/lib/capture/strip.ts`; 50% page threshold; self-critique P-4 resolved |
+| F-104 / ORG-2 | FTS5 full-text search | **shipped** | Migration `002_fts5.sql` with porter tokenizer + sync triggers; `/search` route; LIKE fallback |
+| F-105 / INT-1 | Markdown export endpoint | **shipped** | `GET /api/items/[id]/export.md` with YAML frontmatter; Obsidian-ready |
+| F-106 | Unified `/capture` page with tabs | **shipped** | URL / PDF / Note tabs + drag-drop PDF dropzone + ⌘K entries |
 
-**Exit:** any URL renders as clean text; dropped PDF parses; FTS finds keywords; markdown export round-trips.
+**Deferred from v0.2.0 (vs the original plan):**
+- CAP-4 image OCR — explicit MVP-scope decision (URL + PDF + Note is the right floor); revisit post-R-OCR
+- ORG-1 chip filters polish — library list works chronologically; filters arrive when v0.3.0 adds categories/tags
+
+**Exit:** ✅ Smoke-tested: URL extraction pulls `<title>` + body via Readability; 18-page Lenny PDF extracts in 237 ms with stripped boilerplate; FTS5 returns correct hits for `growth`, `attention`, `velocity` queries; markdown export returns valid frontmatter + body.
 
 ### v0.3.0 — Intelligence
 

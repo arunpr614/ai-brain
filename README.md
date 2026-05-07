@@ -2,7 +2,7 @@
 
 A local-first personal knowledge app that combines the best of **Recall.it** and **Knowly** — capture, auto-organize, RAG chat, spaced-repetition, and AI-generated pages/journeys — all running on your own Mac, with a sideloadable Android APK as a thin LAN client.
 
-**Current status:** v0.1.0 Foundation in progress. Next.js app scaffolded, DB schema + migrations runner, theme toggle, auth (PIN), library + notes, command palette, backup scheduler all shipped.
+**Current status:** v0.2.0 Capture core shipped. URL capture (via Mozilla Readability), PDF capture (via unpdf, with paywall-truncation detection), manual notes, full-text search (FTS5), and Markdown export all work end-to-end. On top of the v0.1.0 foundation (PIN auth, theme toggle, command palette, periodic SQLite backups).
 
 ## Run it
 
