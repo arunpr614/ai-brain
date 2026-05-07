@@ -1,7 +1,10 @@
-# Brain — Roadmap Tracker
+# AI Brain — Roadmap Tracker
 
-**Document version:** v0.1.0-roadmap
+**Document version:** v0.2.0-roadmap
 **Date:** 2026-05-07
+**Changelog:**
+- v0.2.0-roadmap — added v0.0.1 Empirical Sanity gate; expanded v0.5.0 scope with mDNS (F-035), CSRF (F-036), token rotation (F-037), QR display (F-038), native file stream (F-039), WebAuthn stretch (F-040); added F-000 migrations runner to v0.1.0. Driven by `docs/research/SELF_CRITIQUE.md`.
+- v0.1.0-roadmap — initial roadmap.
 **Purpose:** Sequenced log of every feature, deferred idea, and phase exit criterion for Brain. This is the **strategic** view: what ships in which version, in what order, and why.
 
 Companion docs:
@@ -18,7 +21,8 @@ Companion docs:
 
 | Version | Lane theme | Exit criteria (one-liner) | Est. weeks | Cumulative |
 |---|---|---|---|---|
-| v0.1.0 | Foundation | App runs on localhost; manual notes in a list | 1.0 | 1.0 |
+| v0.0.1 | Empirical sanity | Measure the 4 research spikes on Arun's actual Mac | 0.1 (3h) | 0.1 |
+| v0.1.0 | Foundation | App runs on localhost; manual notes in a list | 1.0 | 1.1 |
 | v0.2.0 | Capture core | URL + PDF + note all ingest through one pipeline | 1.0 | 2.0 |
 | v0.3.0 | Intelligence | Every item auto-summarized, categorized, tagged | 1.5 | 3.5 |
 | v0.4.0 | Ask (RAG) | Chat with library; citations; streaming | 2.0 | 5.5 |
@@ -36,10 +40,25 @@ Companion docs:
 
 Each row is an atomic feature that ships with its phase. Cross-reference ID matches `FEATURE_INVENTORY.md`.
 
+### v0.0.1 — Empirical Sanity Morning *(3 hours; BLOCKS v0.1.0)*
+
+Gate inserted per `docs/research/SELF_CRITIQUE.md §8 item 1`. Converts desk research into measurements on Arun's Mac.
+
+| ID | Item | Status | Notes |
+|---|---|---|---|
+| S-001 | Ollama + Qwen 2.5 7B tok/s measurement | planned | Self-critique L-1 |
+| S-002 | `unpdf` extraction on 10 real Lenny PDFs | planned | Self-critique P-1 / P-2 |
+| S-003 | Throwaway Capacitor APK + AVD share-intent test | planned | Self-critique C-2 / C-4 / C-6 |
+| S-004 | WebAuthn TouchID feasibility check | planned | Self-critique A-5 (unblocks v0.5.0 stretch) |
+| S-005 | Write `docs/research/EMPIRICAL_SANITY.md` | planned | Replaces hypotheses with numbers |
+
+**Exit:** `EMPIRICAL_SANITY.md` committed. If any measurement invalidates a §15 locked-in decision, update §15 before v0.1.0 starts.
+
 ### v0.1.0 — Foundation
 
 | ID | Item | Status | Notes |
 |---|---|---|---|
+| F-000 | **DB migrations runner** (`src/db/migrations/NNN_*.sql` + `_migrations` table) | planned | Self-critique X-4; must land before any schema commit |
 | F-001 | Next.js 15 + Tailwind 4 + shadcn/ui scaffold | planned | Per `DESIGN_SYSTEM.md` §5 |
 | F-002 | SQLite + better-sqlite3 + sqlite-vec loaded | planned | |
 | F-003 | Core schema (items, chunks, collections, tags, cards, chat_messages, settings) | planned | |
@@ -100,21 +119,29 @@ Each row is an atomic feature that ships with its phase. Cross-reference ID matc
 
 **Exit:** "What did I save about growth loops?" → streamed answer with 3 citation chips linking to items.
 
-### v0.5.0 — APK + extension
+### v0.5.0 — APK + extension *(scope expanded per self-critique)*
 
 | ID | Item | Status | Notes |
 |---|---|---|---|
 | F-014 | Capacitor 6 integration + Android project | planned | Blocked by R-CAP |
-| F-015 | `capacitor.config.ts` with LAN server URL | planned | Blocked by R-AUTH |
-| F-016 | LAN token auth middleware | planned | Blocked by R-AUTH |
+| F-015 | `capacitor.config.ts` with LAN server URL + `brain.local` mDNS | planned | Blocked by R-AUTH |
+| F-016 | LAN token auth middleware + rate limiter (10/min) | planned | Blocked by R-AUTH; self-critique A-2 |
 | F-017 | Build pipeline `npm run build:apk` | planned | |
 | F-018 | Self-signed debug keystore; docs for `adb install` | planned | |
+| F-035 | **mDNS `brain.local`** via `bonjour-service` on Mac | planned | Self-critique A-4; promoted from v0.10.0 (+2h) |
+| F-036 | **CSRF / Origin header validation + `SameSite=Strict`** cookies | planned | Self-critique A-3 |
+| F-037 | **Token rotation script** `scripts/rotate-token.sh` | planned | Self-critique A-1 |
+| F-038 | **First-run token QR display** (`qrcode` + `qrcode-terminal`) | planned | Self-critique A-8 |
+| F-039 | **Native file-stream upload path** (CapacitorHttp, avoid WebView heap) | planned | Self-critique C-5 |
 | CAP-6 | Android share-sheet target (URL, text, PDF) | planned | Blocked by R-CAP |
 | F-019 | Mobile bottom-nav layout | planned | Per `DESIGN_SYSTEM.md` §7.2 |
 | F-020 | Mac-unreachable offline screen | planned | Per `DESIGN_SYSTEM.md` §9 |
 | CAP-5 | Chrome MV3 extension (popup + context menu) | planned | |
+| **F-040** | **WebAuthn / TouchID unlock on web UI (STRETCH)** | stretch | Self-critique A-5; promoted from v0.10.0 (+1h) |
 
-**Exit:** APK installed on Pixel; share URL from Chrome Android → appears on Mac library in ≤2s. Desktop Chrome extension saves page to localhost.
+**Exit:** APK installed on Pixel; share URL from Chrome Android via `brain.local` → appears on Mac library in ≤2s. DHCP reassignment does NOT require APK rebuild. First-run token QR scan works. Desktop Chrome extension saves page to localhost. (Stretch: TouchID prompt replaces PIN on web UI.)
+
+**Known v0.5.0 limitation:** Café / public Wi-Fi APK access is NOT supported (see self-critique A-6 / Q5 decision). Home Wi-Fi only in v0.5.0. Tailscale deferred to v0.10.0+ as optional day-2 add.
 
 ### v0.6.0 — GenPage + auto-clusters
 

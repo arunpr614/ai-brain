@@ -1,10 +1,11 @@
-# Brain — Build Plan
+# AI Brain — Build Plan
 
-**App name:** **Brain**
-**Document version:** v0.2.0-plan
+**App name:** **AI Brain**
+**Document version:** v0.2.1-plan
 **Date:** 2026-05-07
 **Status:** Planning (pre-code). Re-opens the project closed on 2026-05-07 per `PROJECT_CLOSURE.md`.
 **Changelog:**
+- v0.2.1-plan — self-critique remediations: added 3-hour empirical sanity morning gate before v0.1.0; promoted mDNS (`brain.local`) to v0.5.0 scope; promoted WebAuthn/TouchID unlock to v0.5.0 stretch; added Claude API fallback $10/month default cap with clear cost framing; café-mode documented as known v0.5.0 limitation (Tailscale stays a v0.10.0+ day-2 add); added DB migrations pattern, auth rate-limiting, CSRF/Origin checks, token-rotation script. Companion doc: `docs/research/SELF_CRITIQUE.md`.
 - v0.2.0-plan — added §15 Locked-in technical decisions (synthesis of R-LLM, R-PDF, R-CAP, R-AUTH research spikes). Concrete npm deps, Ollama model list, intent filters, env-var contracts, pipeline shapes.
 - v0.1.1-plan — name locked to "Brain" (now "AI Brain"); removed Lenny-seed from v0.2.0 scope (deferred to post-v1.0.0 backlog); backup cadence made configurable with a 6-hour default; credit UX explicitly dropped; added reference to `DESIGN_SYSTEM.md` (sibling doc) for all UX decisions.
 - v0.1.0-plan — initial plan.
@@ -217,6 +218,18 @@ Cross-referenced with `FEATURE_INVENTORY.md`. Column "Phase" = which `v0.x.0` sh
 
 **Time estimate is optimistic part-time** (Arun-hours assume ~1 focused evening / some weekend). Buffer is 30% — don't budget anyone else's time against these.
 
+### v0.0.1 — Empirical Sanity Morning *(est. 3 hours, blocks v0.1.0)*
+
+**Goal:** Convert the 4 desk-research spikes into measured reality on Arun's actual Mac before any production code lands. Output: `docs/research/EMPIRICAL_SANITY.md` with concrete numbers.
+
+- (15 min) Install Ollama; `ollama pull qwen2.5:7b-instruct-q4_K_M`; run a 4 K-token prompt; record first-token latency and tok/s. (Addresses self-critique finding **L-1**, **X-1**.)
+- (30 min) `npm init` a throwaway folder; `npm i unpdf`; run `extractText()` on 10 assorted Lenny PDFs (short, long, paywalled, illustrated); visually diff output against source posts; measure chars-per-page distribution. (Addresses **P-1**, **P-2**.)
+- (60 min) Scaffold a throwaway Capacitor 6 project; install `@capawesome/capacitor-android-share-target`; create Pixel 9 API 35 AVD; build debug APK; test `text/plain` share intent (cold + warm start) and `application/pdf` share intent; verify end-to-end payload reaches a dev-server endpoint. (Addresses **C-2**, **C-4**, **C-6**.)
+- (15 min) Verify WebAuthn platform authenticator works in local Chrome (quick Next.js hello-world with TouchID prompt). (Addresses **A-5**, unblocks v0.5.0 TouchID stretch.)
+- (remainder, ~60 min) Author `docs/research/EMPIRICAL_SANITY.md` with measured numbers, photos of the AVD receiving a share, and a verdict per finding ("holds up" vs "needs remediation").
+
+**Exit criteria:** EMPIRICAL_SANITY.md committed. If any measurement invalidates a §15 locked-in decision, update §15 and bump plan version before proceeding.
+
 ### v0.1.0 — Foundation *(est. 1 week)*
 
 **Goal:** Empty app runs on `localhost:3000`, I can add a manual note and see it in a list.
@@ -293,15 +306,25 @@ Cross-referenced with `FEATURE_INVENTORY.md`. Column "Phase" = which `v0.x.0` sh
 **Goal:** I install a debug APK on my Pixel, share a URL from Chrome → it lands in my Mac library within 2 seconds.
 
 - Add Capacitor: `npm i @capacitor/core @capacitor/android`, `npx cap init`, `npx cap add android`
-- `capacitor.config.ts` — set `server.url = "http://192.168.1.x:3000"` (configurable via env at build time)
+- `capacitor.config.ts` — `server.url` resolves at build time: prefer `http://brain.local:3000` (mDNS), fall back to baked LAN IP
+- **mDNS advertising** (scope promoted from v0.10.0 per self-critique A-4): `bonjour-service` npm pkg on the Mac advertises `brain.local` → survives DHCP IP changes without APK rebuild
 - Plugin: `@capawesome/capacitor-android-share-target` — register intent filters for `text/plain` and `application/pdf`
 - On share intent: open `/capture` with prefilled URL or uploaded PDF → POST to Mac
-- Build: `npm run build:apk` → runs `next build` (static export mode for asset caching) + `npx cap sync` + `./gradlew assembleDebug`
+- **Large-PDF path (per self-critique C-5):** native Capacitor `Filesystem` + `CapacitorHttp` stream file directly to Mac's `/api/capture` — avoid WebView 256 MB heap limit
+- Build: `npm run build:apk` → runs `next build` + `npx cap sync` + `./gradlew assembleDebug`
 - Self-sign debug keystore; commit `keystore.debug.gpg` encrypted with passphrase; docs for `adb install`
-- **LAN connectivity guards:** show "cannot reach Mac" screen with retry; don't crash
-- **Chrome extension (MV3)** — tiny popup + context menu "Save to Brain" → POSTs to `http://localhost:3000/api/capture`; handles PDF page by downloading then uploading
+- **LAN auth:** bearer token middleware + `BRAIN_BIND` env toggle (home/café); auto-generate + QR-display token on first `npm run dev` via `qrcode-terminal`
+- **Auth rate limiter** (per self-critique A-2): 10 failed auth attempts per IP per minute → 429
+- **CSRF / Origin validation** (per self-critique A-3): `SameSite=Strict` cookies; reject state-changing requests with missing or non-allowlisted `Origin` header
+- **Token rotation script** (per self-critique A-1): `scripts/rotate-token.sh` regenerates token + stamps version into APK filename (`ai-brain-apk-v{token-id}.apk`)
+- **LAN connectivity guards:** show "cannot reach Mac" screen with retry; don't crash; offline fallback HTML bundled in APK
+- **Chrome extension (MV3)** — tiny popup + context menu "Save to AI Brain" → POSTs to `http://brain.local:3000/api/capture`; handles PDF page by downloading then uploading
 
-**Exit criteria:** APK installed on phone, on same Wi-Fi as Mac. In Chrome Android I hit Share → "Brain" → URL appears on Mac library within 2 s. In Desktop Chrome I hit the extension's pinned icon → current page is saved.
+**v0.5.0 stretch (per self-critique A-5):** WebAuthn / TouchID unlock on the web UI — platform authenticator; no password page on subsequent sessions. Estimated +1 day.
+
+**Known v0.5.0 limitation (per self-critique A-6 / Q5 decision):** café / public Wi-Fi access for the APK is **not supported** in v0.5.0. Café mode = bind `127.0.0.1` only; phone loses access. For now Arun accesses AI Brain only on home Wi-Fi. Tailscale is the v0.10.0+ day-2 add that unlocks café access (30-min setup per device) — kept out of v0.5.0 to preserve scope and the "no third-party auth" posture.
+
+**Exit criteria:** APK installed on phone, on same Wi-Fi as Mac. In Chrome Android I hit Share → "AI Brain" → URL appears on Mac library within 2 s using `brain.local`. DHCP reassignment doesn't require APK rebuild. In Desktop Chrome I hit the extension's pinned icon → current page is saved. First-run token QR scan works end-to-end.
 
 ---
 
@@ -545,7 +568,15 @@ OLLAMA_KEEP_ALIVE=10m             # active chat keeps model hot; idle unload aft
 | Flow plan | qwen2.5:14b | 16384 | 3000 | 5m (unload after) |
 | Embed chunks | nomic-embed-text | 8192 | — | 30m |
 
-**API fallback toggle:** `settings.llm.api_fallback.enabled = false` by default. When enabled, heavy ops swap to `claude-haiku-4-5` (configurable). Requires `ANTHROPIC_API_KEY` in `.env`. Never used for embeddings (cost compounds with corpus size).
+**API fallback toggle:** `settings.llm.api_fallback.enabled = false` by default. When enabled, heavy ops swap to `claude-haiku-4-5` (fast/cheap) or `claude-sonnet-4-5` (quality). Requires `ANTHROPIC_API_KEY` in `.env`. Never used for embeddings (cost compounds with corpus size).
+
+**API cost cap (per self-critique X-3):**
+- `settings.llm.api_fallback.monthly_cap_usd` — default **$10.00**
+- Usage tracked in SQLite table `llm_usage` (per-call tokens + cost); tallied per calendar month
+- Soft cap: at 80% of budget, Settings badge goes amber; at 100%, fallback disables automatically until next month
+- Hard cap: a single request cannot exceed 5% of the monthly cap (prevents a stuck loop)
+- **What $10 buys (Anthropic published pricing):** ~1,000 Haiku chat queries (33/day), OR ~125 Sonnet GenPage regenerations (4/day), OR any mix. Default path stays local Ollama (free) — the cap exists so a bug can't silently run up a bill.
+- Live "Spent $X.YZ this month" indicator in `/settings/ai-provider`
 
 ### 15.2 PDF extraction *(source: R-PDF)*
 
@@ -615,10 +646,37 @@ Install via `adb install` on Pixel with "Install unknown apps" toggled on for th
   - `.env` `BRAIN_BIND=127.0.0.1` → localhost only (café mode)
   - Script `scripts/toggle-bind.sh home|cafe` flips it + restarts dev server.
 
-**v0.10.0 hardening** (deferred):
+**v0.5.0 stretch (per self-critique A-5):** WebAuthn / TouchID platform-authenticator unlock on the web UI. Fallback to PIN when no platform authenticator is present. Credential stored in macOS keychain via WebAuthn.
+
+**v0.5.0 scope (per self-critique A-4):** mDNS hostname — `bonjour-service` npm pkg on the Mac advertises `brain.local`. APK and Chrome extension prefer `brain.local`, fall back to baked LAN IP. This removes the DHCP-reassignment rebuild problem.
+
+**v0.5.0 additions (per self-critique A-1, A-2, A-3, A-8):**
+- `scripts/rotate-token.sh` — regenerate `.env` token + stamp token-id into `ai-brain-apk-v{id}.apk` filename so Arun knows which APK pairs with which token
+- Auth middleware rate-limit: 10 failed attempts per IP per minute → 429 (simple in-memory map; no external dep)
+- Cookie policy: `SameSite=Strict; HttpOnly`; Origin-header allowlist on state-changing requests; CSRF token in a non-cookie header for any form POST
+- `qrcode` + `qrcode-terminal` npm deps — first-run token display in terminal
+
+**v0.10.0 hardening** (still deferred):
 - QR-pairing flow replacing manual token paste — per-device revocable tokens stored in device keychain
-- Tailscale recommendation for café use (replaces binding toggle)
-- WebAuthn / TouchID for web-UI unlock
+- Tailscale integration for café mode (replaces binding toggle)
+
+### 15.5 Data & vector stack *(source: architectural decision, not spiked)*
+
+Confirmed ahead of R-VEC (benchmark deferred to v0.4.0):
+```json
+{
+  "better-sqlite3": "^11.x",
+  "sqlite-vec": "^0.1.x"
+}
+```
+Single SQLite file at `data/brain.sqlite` carries all state: items, chunks, embeddings (sqlite-vec virtual table), collections, tags, cards, chat_messages, settings, `llm_usage`, `_migrations`. Backup = `VACUUM INTO data/backups/<ts>.sqlite`.
+
+**Migrations pattern (per self-critique X-4):**
+- Directory: `src/db/migrations/NNN_description.sql` (e.g., `001_initial_schema.sql`, `002_add_llm_usage.sql`)
+- Runner: `src/db/client.ts` tracks applied migrations in a `_migrations` table (`id INTEGER PK, name TEXT, applied_at INTEGER`)
+- Applied automatically on server start in order; refuses to start if a migration fails
+- Never edit an applied migration — always add a new one
+- Enables schema evolution v0.1.0 → v0.4.0+ without losing captured items
 
 ### 15.5 Data & vector stack *(source: architectural decision, not spiked)*
 

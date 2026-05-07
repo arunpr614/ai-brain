@@ -1,6 +1,6 @@
-# Brain — Project Tracker
+# AI Brain — Project Tracker
 
-**Document version:** v0.1.0-tracker
+**Document version:** v0.2.0-tracker
 **Date:** 2026-05-07
 **Owner:** Arun
 **Update cadence:** at phase start, at phase end, and whenever a blocker appears.
@@ -15,12 +15,13 @@ Legend: `○` not started · `◐` in progress · `●` complete · `✖` blocke
 
 | Phase | Version | Status | Started | Ended | Notes |
 |---|---|---|---|---|---|
-| Planning | — | ◐ | 2026-05-07 | — | Strategy + plan + design system locked; research spikes pending |
-| v0.1.0 Foundation | 0.1.0 | ○ | — | — | Blocked by R-LLM, R-AUTH research |
-| v0.2.0 Capture core | 0.2.0 | ○ | — | — | Blocked by R-PDF research |
-| v0.3.0 Intelligence | 0.3.0 | ○ | — | — | Blocked by R-LLM (model choice) |
+| Planning | — | ● | 2026-05-07 | 2026-05-07 | Plan + design + 4 P0 research + self-critique all complete; GitHub repo live |
+| **v0.0.1 Empirical Sanity** | 0.0.1 | ○ | — | — | **3-hour gate** blocking v0.1.0; converts desk research into measurements |
+| v0.1.0 Foundation | 0.1.0 | ○ | — | — | Waiting on v0.0.1 |
+| v0.2.0 Capture core | 0.2.0 | ○ | — | — | Ready pending v0.1.0 |
+| v0.3.0 Intelligence | 0.3.0 | ○ | — | — | Needs LLM eval harness (critique L-2) |
 | v0.4.0 Ask (RAG) | 0.4.0 | ○ | — | — | Blocked by R-VEC |
-| v0.5.0 APK + extension | 0.5.0 | ○ | — | — | Blocked by R-CAP, R-AUTH |
+| v0.5.0 APK + extension | 0.5.0 | ○ | — | — | Scope expanded: +mDNS, +WebAuthn stretch, +CSRF, +token rotation |
 | v0.6.0 GenPage + clusters | 0.6.0 | ○ | — | — | Blocked by R-CLUSTER |
 | v0.7.0 GenLink | 0.7.0 | ○ | — | — | — |
 | v0.8.0 Review (SRS) | 0.8.0 | ○ | — | — | Blocked by R-FSRS |
@@ -60,10 +61,11 @@ Blocking spikes must land before the phase they block. Non-blocking can run in p
 
 | ID | Question | Blocks | Priority | Status | Output file |
 |---|---|---|---|---|---|
-| R-LLM | Which Ollama models run well on my Mac? | v0.3.0 | **P0** (blocks planning exit) | ○ | `docs/research/llm-sizing.md` |
-| R-CAP | Does `@capawesome/capacitor-android-share-target` work on Android 14+? | v0.5.0 | **P0** | ○ | `docs/research/android-share.md` |
-| R-PDF | Best PDF extractor for messy Substack PDFs | v0.2.0 | **P0** | ○ | `docs/research/pdf-extraction.md` |
-| R-AUTH | LAN auth model: token / Tailscale / SSH tunnel | v0.5.0 | **P0** | ○ | `docs/research/lan-auth.md` |
+| R-LLM | Which Ollama models run well on my Mac? | v0.3.0 | **P0** | ● | `docs/research/llm-sizing.md` (empirical verification in v0.0.1 per critique L-1) |
+| R-CAP | Does `@capawesome/capacitor-android-share-target` work on Android 14+? | v0.5.0 | **P0** | ● | `docs/research/android-share.md` (empirical verification in v0.0.1 per critique C-2) |
+| R-PDF | Best PDF extractor for messy Substack PDFs | v0.2.0 | **P0** | ● | `docs/research/pdf-extraction.md` (empirical verification in v0.0.1 per critique P-1) |
+| R-AUTH | LAN auth model: token / Tailscale / SSH tunnel | v0.5.0 | **P0** | ● | `docs/research/lan-auth.md` |
+| R-SELF-CRITIQUE | Adversarial review of own research | — | retrospective | ● | `docs/research/SELF_CRITIQUE.md` (35 findings, 25 open; drives remediations above) |
 | R-VEC | sqlite-vec perf at 10k+ chunks | v0.4.0 | P1 | ○ | `docs/research/vector-bench.md` |
 | R-FSRS | SRS algorithm choice (SM-2 / FSRS) | v0.8.0 | P1 | ○ | `docs/research/srs-algorithm.md` |
 | R-CLUSTER | Topic clustering: JS vs Python sidecar vs LLM-only | v0.6.0 | P2 | ○ | `docs/research/clustering.md` |
