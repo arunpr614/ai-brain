@@ -39,7 +39,16 @@ export default async function RootLayout({
   const { pref, resolved } = await resolveTheme();
 
   return (
-    <html lang="en" data-theme={resolved} className={`${inter.variable} ${jetbrainsMono.variable}`}>
+    <html
+      lang="en"
+      data-theme={resolved}
+      className={`${inter.variable} ${jetbrainsMono.variable}`}
+      // The `themeScript` below reconciles `data-theme` to the client's
+      // real preference BEFORE React hydrates, so the server's guess
+      // ("light" or the stored cookie) and the actual browser attribute
+      // may legitimately differ. Tell React it's OK.
+      suppressHydrationWarning
+    >
       <head>
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
       </head>
