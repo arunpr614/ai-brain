@@ -281,3 +281,113 @@ Remaining research (non-blocking for v0.1.0–v0.3.0):
 - **Repo:** https://github.com/arunpr614/ai-brain (public, main at `b869d90` + local follow-up commit for this self-critique wave)
 - **Active trackers:** `BUILD_PLAN.md` · `DESIGN.md` · `DESIGN_SYSTEM.md` · `ROADMAP_TRACKER.md` · `PROJECT_TRACKER.md` · `RUNNING_LOG.md` · `docs/research/SELF_CRITIQUE.md`
 - **Next milestone:** v0.0.1 Empirical Sanity Morning — run and document before any v0.1.0 code.
+
+---
+
+## 2026-05-07 17:10 — v0.0.1 Empirical Sanity Morning complete
+
+**Entry author:** AI agent (Claude) · **Triggered by:** v0.0.1 exit criteria met
+
+### Planned since last entry
+
+At the 15:42 entry, v0.0.1 was an open gate. Plan was to run 4 spikes in a single 3-hour block: Ollama tok/s benchmark, unpdf PDF extraction on 10 real Lenny PDFs, Capacitor share-target AVD test, WebAuthn feasibility. Arun confirmed Option A ("let's go").
+
+### Done
+
+Ran all four spikes on Arun's M1 Pro 32 GB in sequence with parallel steps where possible.
+
+**S-001 Ollama benchmark:**
+- Installed Ollama 0.23.1 via Homebrew
+- Pulled `qwen2.5:7b-instruct-q4_K_M` (4.4 GB)
+- Benchmarked with real 995-token prompt (Lenny article summarization → JSON)
+- Results: **24 tok/s generation, 141 ms first-token (warm), 20,975 tok/s prompt processing**
+- The extrapolated 32-38 tok/s was ~30% optimistic. First-token latency was 10x better than expected. Target UX remains comfortable with revised num_predict budgets.
+
+**S-002 unpdf extraction:**
+- 10 varied Lenny PDFs from 2022-2026 (634 KB to 3.6 MB)
+- `unpdf@1.6.2` extracted all cleanly: avg 100 ms, 10/10 titles recovered, 0 ligature issues
+- chars/page distribution: p5=430, p50=920, p95=1394 → **paywall threshold calibrated to 301 cpp**
+
+**S-003 Capacitor share-target:**
+- **Critical finding:** The plugin named in R-CAP (`@capawesome/capacitor-android-share-target`) **returns 404 on npm**. Replaced with `@capgo/capacitor-share-target@8.0.30` (actively maintained, last publish 3 days before this spike).
+- Required JDK 21 (not 17 as assumed) for Capacitor 8. Installed Zulu 21 via Homebrew.
+- Built debug APK in 46s, installed on Pixel AVD API 34, tested cold-start + warm-start share intents.
+- Both flows deliver the `shareReceived` event cleanly. Payload: `{title, texts[], files[]}`.
+- Discovered cold-start double-fire (event re-fires on app resume) → new F-041 task for 2-second dedup.
+- Plugin's `addListener()` is synchronous, not Promise-returning as README claims.
+
+**S-004 WebAuthn:**
+- Validated `@simplewebauthn/browser` + `@simplewebauthn/server` v13.3.0 current (MIT, same maintainer)
+- Confirmed macOS 26.4 + Chrome 108+ support TouchID via localhost Secure Context
+- No entitlement or special config needed — browser brokers OS prompt
+
+**S-005 Report:**
+- Authored `docs/research/EMPIRICAL_SANITY.md` (8 sections, ~2500 words)
+- Updated `BUILD_PLAN.md` → v0.3.0-plan with measured numbers and plan corrections
+- Updated `ROADMAP_TRACKER.md` → v0.2.1-roadmap with all S-* shipped + F-041 added
+- Updated `PROJECT_TRACKER.md` → v0.2.1-tracker with v0.0.1 closed ●
+- Marked 8 self-critique findings as RESOLVED in `SELF_CRITIQUE.md` v0.1.1-critique
+- 3 new findings discovered during spike (C-1b plugin name, C-9 dedup, C-10 sync API, C-11 JDK 21) — all documented
+
+### Learned
+
+- **Empirical spikes catch what desk research cannot.** The plugin name in the plan was flat wrong. No amount of documentation review would have caught that — only trying to `npm install` it did. X-1 (empirical verification missing) was the #1 critique finding for good reason.
+- **The M1 Pro + Metal throughput is real but lower than extrapolated.** 24 tok/s not 35. The bandwidth-scaling formula in R-LLM used a LLaMA-2 baseline that didn't generalize to Qwen 2.5 Q4_K_M. Future benchmarks should always be measured on the actual model + hardware combo.
+- **First-token latency trumps throughput for perceived UX.** 141 ms first token with 24 tok/s streaming feels better than 2000 ms first token with 40 tok/s. Revised UX target accordingly.
+- **Capacitor 8 is the current major.** Our plan said 6. Capacitor 8 requires JDK 21. Both facts worth knowing before v0.5.0.
+- **AVD works fine for share-intent testing.** No physical device needed until device-to-Mac LAN testing in v0.5.0.
+- **Substack PDFs are clean.** No ligature corruption across 10 samples. The concern raised in R-PDF §4 was theoretical, not empirical.
+- **Cold-start event delivery is ~560 ms.** Fast enough that listener registration in `app/layout.tsx` catches it reliably.
+
+### Deployed / Released
+
+Nothing user-facing. Toolchain now resident on the Mac:
+- Ollama 0.23.1 at `/opt/homebrew/opt/ollama/bin/ollama`
+- Qwen 2.5 7B model in `~/.ollama/models/`
+- Zulu JDK 17 + 21 (both installed; JDK 21 is active for Capacitor)
+- Android SDK + AVDs (pre-existing; unchanged)
+
+Throwaway artifacts at `/tmp/ai-brain-spikes/` (not committed — transient scratch).
+
+### Documents created or updated this period
+
+Created:
+- `docs/research/EMPIRICAL_SANITY.md` — complete v0.0.1 spike report
+
+Updated:
+- `BUILD_PLAN.md` v0.2.1-plan → **v0.3.0-plan** (§15.1 tok/s measured, §15.2 threshold calibrated, §15.3 plugin corrected, §15.4 WebAuthn deps)
+- `ROADMAP_TRACKER.md` v0.2.0-roadmap → v0.2.1-roadmap (all S-* shipped, F-041 added, F-014 note updated)
+- `PROJECT_TRACKER.md` v0.2.0-tracker → v0.2.1-tracker (v0.0.1 closed ●, v0.1.0 unblocked)
+- `docs/research/SELF_CRITIQUE.md` → v0.1.1-critique (8 findings resolved, 4 new ones added)
+
+### Current remaining to-do
+
+**Immediately unblocked:** v0.1.0 Foundation phase can begin at any time.
+
+Concrete next-session tasks:
+
+1. `npx create-next-app@latest` → scaffold Next.js 15 + TS + Tailwind + App Router in the repo
+2. `npx shadcn@latest init` → set up component library to match `DESIGN.md` tokens
+3. Install: `better-sqlite3`, `sqlite-vec`, `zod`, `lucide-react`, `@radix-ui/react-*` primitives
+4. Commit F-000 migrations runner FIRST (before any schema) per critique X-4
+5. Commit `001_initial_schema.sql` with core tables (items, chunks, collections, tags, cards, chat_messages, settings, _migrations, llm_usage)
+6. Implement theme toggle (SSR-safe, cookie-persisted) per DESIGN.md §13
+7. Library list view + new-note form + item detail view
+8. ⌘K command palette stub (navigate Library / Inbox / Settings)
+9. 6-hour SQLite backup scheduler (`node-cron` + `VACUUM INTO`)
+10. README with run instructions
+
+### Open questions / decisions needed
+
+- None blocking. D-4 Obsidian vault path still deferred to v0.10.0.
+- v0.1.0 will reveal whether the shadcn/ui CSS-variable bridge to our DESIGN.md tokens is as clean as planned — first integration test.
+
+### State snapshot
+
+- **Current phase / version:** v0.0.1 ● complete → **v0.1.0 Foundation (ready to start)**
+- **App version:** not yet released; will start at `0.1.0` on first commit of `package.json`
+- **Plan version:** `v0.3.0-plan`
+- **Critique version:** `v0.1.1-critique` — 8 findings resolved, 3 new discovered+documented
+- **Repo:** https://github.com/arunpr614/ai-brain — 2 commits on main, this report makes 3
+- **Active trackers:** `BUILD_PLAN.md` · `DESIGN.md` · `DESIGN_SYSTEM.md` · `ROADMAP_TRACKER.md` · `PROJECT_TRACKER.md` · `RUNNING_LOG.md` · `docs/research/SELF_CRITIQUE.md` · `docs/research/EMPIRICAL_SANITY.md`
+- **Next milestone:** v0.1.0 exit — "I can add 3 notes, see them listed, click one, see content. Theme toggle works. 6h backup runs."

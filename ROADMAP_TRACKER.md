@@ -1,8 +1,9 @@
 # AI Brain — Roadmap Tracker
 
-**Document version:** v0.2.0-roadmap
+**Document version:** v0.2.1-roadmap
 **Date:** 2026-05-07
 **Changelog:**
+- v0.2.1-roadmap — v0.0.1 Empirical Sanity Morning COMPLETE; all 5 S-* items shipped; added F-041 (cold-start dedup); v0.5.0 plugin corrected to `@capgo/capacitor-share-target`.
 - v0.2.0-roadmap — added v0.0.1 Empirical Sanity gate; expanded v0.5.0 scope with mDNS (F-035), CSRF (F-036), token rotation (F-037), QR display (F-038), native file stream (F-039), WebAuthn stretch (F-040); added F-000 migrations runner to v0.1.0. Driven by `docs/research/SELF_CRITIQUE.md`.
 - v0.1.0-roadmap — initial roadmap.
 **Purpose:** Sequenced log of every feature, deferred idea, and phase exit criterion for Brain. This is the **strategic** view: what ships in which version, in what order, and why.
@@ -46,13 +47,13 @@ Gate inserted per `docs/research/SELF_CRITIQUE.md §8 item 1`. Converts desk res
 
 | ID | Item | Status | Notes |
 |---|---|---|---|
-| S-001 | Ollama + Qwen 2.5 7B tok/s measurement | planned | Self-critique L-1 |
-| S-002 | `unpdf` extraction on 10 real Lenny PDFs | planned | Self-critique P-1 / P-2 |
-| S-003 | Throwaway Capacitor APK + AVD share-intent test | planned | Self-critique C-2 / C-4 / C-6 |
-| S-004 | WebAuthn TouchID feasibility check | planned | Self-critique A-5 (unblocks v0.5.0 stretch) |
-| S-005 | Write `docs/research/EMPIRICAL_SANITY.md` | planned | Replaces hypotheses with numbers |
+| S-001 | Ollama + Qwen 2.5 7B tok/s measurement | **shipped** | Measured: 24 tok/s gen, 141 ms first-token. Self-critique L-1 resolved. |
+| S-002 | `unpdf` extraction on 10 real Lenny PDFs | **shipped** | 100ms avg; threshold calibrated to 301 cpp. Self-critique P-1/P-2 resolved. |
+| S-003 | Throwaway Capacitor APK + AVD share-intent test | **shipped** | Plugin name corrected: `@capgo/...` not `@capawesome/...`. Self-critique C-2/C-4/C-6 resolved. |
+| S-004 | WebAuthn TouchID feasibility check | **shipped** | `@simplewebauthn` v13.3.0 + TouchID validated. Self-critique A-5 resolved. |
+| S-005 | Write `docs/research/EMPIRICAL_SANITY.md` | **shipped** | Complete report committed 2026-05-07. |
 
-**Exit:** `EMPIRICAL_SANITY.md` committed. If any measurement invalidates a §15 locked-in decision, update §15 before v0.1.0 starts.
+**Exit:** ✅ `EMPIRICAL_SANITY.md` committed 2026-05-07. Plan bumped to v0.3.0-plan. Two corrections merged into §15 (plugin name, PDF threshold). **v0.1.0 unblocked.**
 
 ### v0.1.0 — Foundation
 
@@ -123,7 +124,7 @@ Gate inserted per `docs/research/SELF_CRITIQUE.md §8 item 1`. Converts desk res
 
 | ID | Item | Status | Notes |
 |---|---|---|---|
-| F-014 | Capacitor 6 integration + Android project | planned | Blocked by R-CAP |
+| F-014 | Capacitor **8** integration + Android project (JDK 21) | planned | Validated v0.0.1; Capacitor 8.3.1 |
 | F-015 | `capacitor.config.ts` with LAN server URL + `brain.local` mDNS | planned | Blocked by R-AUTH |
 | F-016 | LAN token auth middleware + rate limiter (10/min) | planned | Blocked by R-AUTH; self-critique A-2 |
 | F-017 | Build pipeline `npm run build:apk` | planned | |
@@ -133,7 +134,8 @@ Gate inserted per `docs/research/SELF_CRITIQUE.md §8 item 1`. Converts desk res
 | F-037 | **Token rotation script** `scripts/rotate-token.sh` | planned | Self-critique A-1 |
 | F-038 | **First-run token QR display** (`qrcode` + `qrcode-terminal`) | planned | Self-critique A-8 |
 | F-039 | **Native file-stream upload path** (CapacitorHttp, avoid WebView heap) | planned | Self-critique C-5 |
-| CAP-6 | Android share-sheet target (URL, text, PDF) | planned | Blocked by R-CAP |
+| CAP-6 | Android share-sheet target via `@capgo/capacitor-share-target@^8.0.30` | planned | Plugin validated on AVD v0.0.1 |
+| **F-041** | **Cold-start dedup window (2s)** on shareReceived | planned | New — discovered in v0.0.1 spike |
 | F-019 | Mobile bottom-nav layout | planned | Per `DESIGN_SYSTEM.md` §7.2 |
 | F-020 | Mac-unreachable offline screen | planned | Per `DESIGN_SYSTEM.md` §9 |
 | CAP-5 | Chrome MV3 extension (popup + context menu) | planned | |

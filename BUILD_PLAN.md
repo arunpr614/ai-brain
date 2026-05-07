@@ -1,10 +1,11 @@
 # AI Brain — Build Plan
 
 **App name:** **AI Brain**
-**Document version:** v0.2.1-plan
+**Document version:** v0.3.0-plan
 **Date:** 2026-05-07
 **Status:** Planning (pre-code). Re-opens the project closed on 2026-05-07 per `PROJECT_CLOSURE.md`.
 **Changelog:**
+- v0.3.0-plan — v0.0.1 Empirical Sanity Morning **PASSED**. Empirical measurements merged into §15: Qwen 2.5 7B = 24 tok/s gen + 141 ms first-token on M1 Pro (rev'd UX targets accordingly); PDF paywall threshold calibrated to **301 chars/page** across 10 real Lenny samples; **share-target plugin corrected** from nonexistent `@capawesome/capacitor-android-share-target` → `@capgo/capacitor-share-target@^8.0.30`; Capacitor major bumped to 8 (requires JDK 21); added F-041 cold-start dedup window; WebAuthn library + chain validated. Critique findings L-1, P-1, P-2, C-2, C-4, C-6, A-5, X-1 marked RESOLVED. Companion: `docs/research/EMPIRICAL_SANITY.md`.
 - v0.2.1-plan — self-critique remediations: added 3-hour empirical sanity morning gate before v0.1.0; promoted mDNS (`brain.local`) to v0.5.0 scope; promoted WebAuthn/TouchID unlock to v0.5.0 stretch; added Claude API fallback $10/month default cap with clear cost framing; café-mode documented as known v0.5.0 limitation (Tailscale stays a v0.10.0+ day-2 add); added DB migrations pattern, auth rate-limiting, CSRF/Origin checks, token-rotation script. Companion doc: `docs/research/SELF_CRITIQUE.md`.
 - v0.2.0-plan — added §15 Locked-in technical decisions (synthesis of R-LLM, R-PDF, R-CAP, R-AUTH research spikes). Concrete npm deps, Ollama model list, intent filters, env-var contracts, pipeline shapes.
 - v0.1.1-plan — name locked to "Brain" (now "AI Brain"); removed Lenny-seed from v0.2.0 scope (deferred to post-v1.0.0 backlog); backup cadence made configurable with a 6-hour default; credit UX explicitly dropped; added reference to `DESIGN_SYSTEM.md` (sibling doc) for all UX decisions.
@@ -548,7 +549,7 @@ ollama pull nomic-embed-text                  # embeddings (768-dim, 8K ctx)
 
 **Disk footprint:** ~17.7 GB (3.9% of 455 GB free). **Ruled out:** `llama3.3:70b` — needs ~44 GB RAM, exceeds the 32 GB envelope.
 
-**Expected throughput (M1 Pro, Metal):** 7B Q4_K_M ≈ 32–38 tok/s generation, 200+ tok/s prompt processing. First token in RAG chat: ~1.5–2 s. Summarize-on-ingest: ≤15 s per item.
+**Measured throughput (M1 Pro, Metal, confirmed 2026-05-07, v0.0.1 spike):** 7B Q4_K_M = **24 tok/s generation**, **20,975 tok/s prompt processing** (cached 1218-token context), **first-token latency 141 ms** (warm), load-from-disk 27 s (first time) → 0.09 s (warm). The desk-research extrapolation of 32-38 tok/s was ~30% optimistic; reality is slower but first-token latency is dramatically better than expected. Target UX remains comfortable. Raw: `docs/research/EMPIRICAL_SANITY.md §1`.
 
 **Ollama env defaults** (set in `~/.ollama/config` or launch env):
 ```
@@ -558,15 +559,17 @@ OLLAMA_KV_CACHE_TYPE=q8_0         # halves KV cache memory with negligible quali
 OLLAMA_KEEP_ALIVE=10m             # active chat keeps model hot; idle unload after 10 min
 ```
 
-**Per-workload `num_ctx` / `num_predict`:**
-| Workload | Model | num_ctx | num_predict | keep_alive |
-|---|---|---|---|---|
-| Summarize on ingest | qwen2.5:7b | 8192 | 800 | 5m |
-| RAG chat | qwen2.5:7b | 8192 | 1500 (streaming) | 10m (while chat open) |
-| Noun-phrase (GenLink) | phi3.5 | 2048 | 200 | 2m |
-| GenPage generate | qwen2.5:14b | 16384 | 2500 | 5m (unload after) |
-| Flow plan | qwen2.5:14b | 16384 | 3000 | 5m (unload after) |
-| Embed chunks | nomic-embed-text | 8192 | — | 30m |
+**Per-workload `num_ctx` / `num_predict` (calibrated to measured 24 tok/s — v0.0.1):**
+| Workload | Model | num_ctx | num_predict | wall-time budget | keep_alive |
+|---|---|---|---|---|---|
+| Summarize on ingest | qwen2.5:7b | 8192 | 600 | ≤25 s | 5m |
+| RAG chat | qwen2.5:7b | 8192 | 500 (streaming) | first token <500 ms, ≤20 s total | 10m (while chat open) |
+| Noun-phrase (GenLink) | phi3.5 | 2048 | 200 | ≤4 s | 2m |
+| GenPage generate | qwen2.5:14b | 16384 | 2000 | ≤2 min | 5m (unload after) |
+| Flow plan | qwen2.5:14b | 16384 | 2500 | ≤2.5 min | 5m (unload after) |
+| Embed chunks | nomic-embed-text | 8192 | — | batch | 30m |
+
+Budgets reflect measured M1 Pro throughput, not the extrapolated numbers that were in v0.2.x of this plan.
 
 **API fallback toggle:** `settings.llm.api_fallback.enabled = false` by default. When enabled, heavy ops swap to `claude-haiku-4-5` (fast/cheap) or `claude-sonnet-4-5` (quality). Requires `ANTHROPIC_API_KEY` in `.env`. Never used for embeddings (cost compounds with corpus size).
 
@@ -578,7 +581,9 @@ OLLAMA_KEEP_ALIVE=10m             # active chat keeps model hot; idle unload aft
 - **What $10 buys (Anthropic published pricing):** ~1,000 Haiku chat queries (33/day), OR ~125 Sonnet GenPage regenerations (4/day), OR any mix. Default path stays local Ollama (free) — the cap exists so a bug can't silently run up a bill.
 - Live "Spent $X.YZ this month" indicator in `/settings/ai-provider`
 
-### 15.2 PDF extraction *(source: R-PDF)*
+### 15.2 PDF extraction *(source: R-PDF; empirically validated v0.0.1)*
+
+**Measured baseline (10 Lenny PDFs, 2026-05-07):** 100 ms avg per PDF, 0 ligature issues, metadata `title` recovered 10/10 (author never set by Substack). chars/page distribution p5=430, p50=920, p95=1394. See `docs/research/EMPIRICAL_SANITY.md §2`.
 
 **Dependencies (npm):**
 ```json
@@ -593,8 +598,10 @@ OLLAMA_KEEP_ALIVE=10m             # active chat keeps model hot; idle unload aft
 ```
 PDF file → unpdf.extractText({ mergePages: false })
         → capture { totalPages, text[] }
-        → if totalPages > 3 && avg chars/page < 500
-            → flag extraction_warning = "possible_paywall_truncation_or_scan"
+        → if avg chars/page < 301         // calibrated threshold from v0.0.1 empirical run (p5 × 0.7)
+            → flag extraction_warning = "possible_paywall_truncation"
+        → if any page < 50 chars AND file_size / totalPages > 3 KB
+            → flag extraction_warning = "possible_scanned_page"
             → if poppler available: retry via pdftotext
         → unpdf.getMeta({ parseDates: true }) → {title, author, creationDate}
         → chunks
@@ -602,24 +609,39 @@ PDF file → unpdf.extractText({ mergePages: false })
 
 **Deferred to future R-OCR spike:** scanned-PDF OCR via `tesseract.js` v7. Don't block v0.2.0.
 
-### 15.3 Android share-sheet + APK *(source: R-CAP)*
+### 15.3 Android share-sheet + APK *(source: R-CAP; empirically validated v0.0.1 with plugin correction)*
 
-**Plugin choice (v0.5.0):**
+**⚠️ Plan correction (v0.0.1 spike):** The plugin originally named in R-CAP (`@capawesome/capacitor-android-share-target`) **does not exist on npm** (404). The correct package is `@capgo/capacitor-share-target`, same feature set, actively maintained, last publish 2026-05-04. Plan updated accordingly.
+
+**Plugin choice (v0.5.0, verified on AVD 2026-05-07):**
 ```json
 {
-  "@capacitor/core": "^6.x",
-  "@capacitor/android": "^6.x",
-  "@capawesome/capacitor-android-share-target": "^6.x"
+  "@capacitor/core": "^8.3.1",
+  "@capacitor/cli": "^8.3.1",
+  "@capacitor/android": "^8.3.1",
+  "@capgo/capacitor-share-target": "^8.0.30"
 }
 ```
 
-**Intent filters** registered in `android/app/src/main/AndroidManifest.xml`:
-- `ACTION_SEND` + `text/plain` → URLs and shared text
+**Toolchain requirement:** JDK **21** (not 17). Capacitor 8 fails with `invalid source release: 21` on older JDKs. Install via `brew install --cask zulu@21`.
+
+**Plugin API notes (observed on AVD):**
+- Event name: `shareReceived` (not `appShareReceived`)
+- Payload shape: `{ title: string, texts: string[], files: {name, mimeType, uri}[] }`
+- `addListener()` is **synchronous** in v8.0.30 (README showing `.then()` is wrong)
+- No `getLastShareData()` method — events fire automatically on MainActivity start
+- Cold-start delivery: ~560 ms after intent fire; listener catches it reliably when registered in `app/layout.tsx`
+- **Cold-start double-fire gotcha:** plugin re-fires the event on app resume → **F-041: 2-second dedup window** by `(title + texts[0])` hash
+
+**Intent filters** registered directly on `.MainActivity` (not a separate activity) in `android/app/src/main/AndroidManifest.xml`:
+- `ACTION_SEND` + `text/plain` → URLs and shared text ✅ verified on AVD
 - `ACTION_SEND` + `application/pdf` → PDF share
 - `ACTION_SEND` + `image/*` → screenshot capture (v0.2.0 stretch)
 - `ACTION_SEND_MULTIPLE` + `application/pdf` → bulk PDF share
 
-**Cold-start gotcha (must implement):** on app mount in `app/layout.tsx`, call `ShareTarget.getLastShareData()` once — the plugin queues the intent before the JS listener is attached; the listener alone misses cold-start shares.
+**Cold-start handling (validated on AVD):** Register `CapacitorShareTarget.addListener('shareReceived', ...)` at the top of `app/layout.tsx` client boundary. Cold-start intents reliably arrive ~560 ms after intent fire — the listener is attached in time. **No `getLastShareData()` call needed** (the capawesome-based advice in R-CAP was wrong; Capgo plugin auto-fires events on activity start).
+
+**F-041 cold-start dedup:** The plugin re-fires the event on app resume, producing duplicate events. Wrap the handler in a 2-second dedup window keyed on `(title + texts[0] + files[0]?.uri)` hash.
 
 **Build pipeline** (`scripts/build-apk.sh`):
 ```
@@ -646,7 +668,16 @@ Install via `adb install` on Pixel with "Install unknown apps" toggled on for th
   - `.env` `BRAIN_BIND=127.0.0.1` → localhost only (café mode)
   - Script `scripts/toggle-bind.sh home|cafe` flips it + restarts dev server.
 
-**v0.5.0 stretch (per self-critique A-5):** WebAuthn / TouchID platform-authenticator unlock on the web UI. Fallback to PIN when no platform authenticator is present. Credential stored in macOS keychain via WebAuthn.
+**v0.5.0 stretch (per self-critique A-5, validated v0.0.1):** WebAuthn / TouchID platform-authenticator unlock on the web UI. Fallback to PIN when no platform authenticator is present. Credential stored in macOS keychain via WebAuthn.
+
+Dependencies (added to v0.5.0 npm set):
+```json
+{
+  "@simplewebauthn/browser": "^13.3.0",
+  "@simplewebauthn/server": "^13.3.0"
+}
+```
+Both packages MIT, same maintainer (MasterKale), validated current in v0.0.1 empirical morning. Runtime feature detection: `window.PublicKeyCredential?.isUserVerifyingPlatformAuthenticatorAvailable?.()` before showing "Use TouchID" UI; fall back to PIN page on false.
 
 **v0.5.0 scope (per self-critique A-4):** mDNS hostname — `bonjour-service` npm pkg on the Mac advertises `brain.local`. APK and Chrome extension prefer `brain.local`, fall back to baked LAN IP. This removes the DHCP-reassignment rebuild problem.
 

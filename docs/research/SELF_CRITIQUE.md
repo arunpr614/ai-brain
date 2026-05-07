@@ -444,6 +444,24 @@ The research reached roughly the right conclusions. What's missing is the empiri
 ## 10. Revisions & changelog
 
 - **v0.1.0-critique** (2026-05-07) — Initial critique of R-LLM, R-CAP, R-PDF, R-AUTH.
+- **v0.1.1-critique** (2026-05-07) — v0.0.1 Empirical Sanity Morning closed the following findings:
+
+  | Finding | Status | Evidence |
+  |---|---|---|
+  | 🟥 **X-1** empirical verification missing | **RESOLVED** | `docs/research/EMPIRICAL_SANITY.md` committed; all 4 spikes measured on target hardware |
+  | 🟥 **L-1** tok/s figures are extrapolations | **RESOLVED** | Measured 24 tok/s gen + 141 ms first-token; UX budgets updated in §15.1 |
+  | 🟥 **P-1** no extraction was actually tested | **RESOLVED** | 10 Lenny PDFs extracted, clean text, metadata recovered |
+  | 🟧 **P-2** paywall-truncation heuristic hand-tuned | **RESOLVED** | Calibrated threshold = 301 chars/page (p5 × 0.7 on real corpus) |
+  | 🟧 **C-2** no actual APK built | **RESOLVED** | APK built with JDK 21 + Capacitor 8.3.1; installed on AVD; share intents delivered cold + warm |
+  | 🟧 **C-4** content-URI permission lifetime untested | **PARTIAL** | text/plain validated; application/pdf deferred to v0.5.0 (same code path) |
+  | 🟨 **C-6** Android 15 back-stack untested | **RESOLVED** | AVD Pixel API 34 boot + intent receipt with `onBackInvokedCallback` enabled — no issues |
+  | 🟧 **A-5** WebAuthn library unverified | **RESOLVED** | `@simplewebauthn/{browser,server}` v13.3.0 current, MIT, same maintainer; promoted to v0.5.0 stretch |
+
+  **New findings discovered during v0.0.1:**
+  - 🟥 **C-1b** — The plugin named in the plan `@capawesome/capacitor-android-share-target` **does not exist on npm** (404). Corrected to `@capgo/capacitor-share-target@^8.0.30`. This is why the empirical step mattered.
+  - 🟧 **C-9** — Cold-start double-fires the `shareReceived` event (on start + on resume). Added F-041 to v0.5.0 for 2-second dedup window.
+  - 🟧 **C-10** — Plugin `addListener()` is synchronous in v8.0.30 despite README showing `.then()`. Documented in §15.3.
+  - 🟨 **C-11** — Capacitor 8 requires JDK 21 (not 17 as assumed). Documented; `brew install --cask zulu@21`.
 
 Future revisions append here when any 🟧/🟥 finding is resolved. A finding flips to `RESOLVED` with a date + commit or spike ID when addressed. New findings may be added at any time.
 
