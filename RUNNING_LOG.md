@@ -752,3 +752,105 @@ Commit pending with this entry. Will push to `arunpr614/ai-brain` on `main`.
 - **Repo:** https://github.com/arunpr614/ai-brain — 5 commits deep + pending v0.2.0 commit
 - **Active trackers:** `BUILD_PLAN.md` · `DESIGN.md` · `DESIGN_SYSTEM.md` · `ROADMAP_TRACKER.md` · `PROJECT_TRACKER.md` · `RUNNING_LOG.md` · `docs/research/{SELF_CRITIQUE,EMPIRICAL_SANITY}.md`
 - **Next milestone:** v0.3.0 exit — "10 captured items each have summary + category + title + auto-tags; dual-pane view renders; tags + collections CRUD works; enrichment runs in ≤30 s wall time per item."
+
+---
+
+## 2026-05-07 21:20 — v0.1.2 dev stability + R-LLM-b complete, v0.3.0 kickoff
+
+**Entry author:** AI agent (Claude) · **Triggered by:** two commits landed post v0.2.0; v0.3.0 about to start
+
+### Planned since last entry
+
+Three goals since the 18:15 v0.2.0 entry:
+1. Let Arun verify v0.2.0 running locally in the browser.
+2. Fix whatever surfaces during that verification (proactively budgeted for dev-server stability).
+3. Resolve self-critique finding L-6 (Qwen 3 vs Qwen 2.5) with a real empirical head-to-head before wiring the v0.3.0 enrichment pipeline.
+
+### Done
+
+**v0.1.2 dev stability patch (commit `a578cfa`):**
+- Dev server crashed with a V8 OOM after ~38 min of Turbopack hot-reloads on the default ~4 GB Node heap. Bumped `NODE_OPTIONS='--max-old-space-size=8192'` on `dev`/`build`/`start` scripts in `package.json`. M1 Pro has 32 GB; 8 GB is comfortable headroom.
+- Secondary: React hydration warning — the pre-hydration theme script legitimately overrides the server-rendered `data-theme` attribute. Added `suppressHydrationWarning` on `<html>` in `src/app/layout.tsx` (the only legitimate use of that escape hatch in the app). Warning gone.
+- Separate stale-cache issue observed once: `Cannot find module 'better-sqlite3-<hash>'` — fixed by `rm -rf .next/dev .next/cache`. Documented in the commit body for future-self.
+
+**R-LLM-b Qwen 3 head-to-head spike (commit `ec16a7d`):**
+- Pulled `qwen3:8b` (5.2 GB, ~13 min over 6.5 MB/s). Kept `qwen2.5:7b-instruct-q4_K_M` from v0.0.1.
+- Built `scripts/rllm-b-bench.ts` — 5 real samples (3 Lenny PDFs + 2 URL articles via live Readability). Same unified enrichment prompt through both models: summary + 5 verbatim quotes + 14-category classifier + cleaned title + 3-8 hyphenated tags, all as JSON.
+- **Results:**
+  - Qwen 2.5 7B: avg 26.7 s/item, 23 tok/s, 5/5 parse, 5/5 structure
+  - Qwen 3 8B (with `think: false`): avg 29.0 s/item, 18 tok/s, 5/5 parse, 5/5 structure
+- **Critical gotcha discovered (L-9 in SELF_CRITIQUE.md):** Qwen 3's thinking mode is on by default. When `format: "json"` is set, the `<think>…</think>` prelude counts against `num_predict`, producing truncated mid-JSON strings with `Expected ',' or '}' after property value` errors. First Qwen 3 pass was 2/5 failures. Fix: pass `"think": false` at the top level of the Ollama generate payload. Qwen 2.5 ignores the flag, so setting it unconditionally in the LLM client wrapper is safe.
+- **Decision:** keep Qwen 2.5 7B as the v0.3.0 enrichment primary (9% faster, smaller, same reliability). **Adopt Qwen 3 8B as the v0.6.0 GenPage quality model**, supplanting the earlier `qwen2.5:14b` plan — same quality ceiling with a smaller RAM footprint.
+- Written up in `docs/research/llm-b-qwen3.md` with the final v0.3.0 prompt template locked.
+- **Other quality observation** (L-10): both models mis-classify written Q&A interviews as "Podcast Episode". Noted; consider adding `Interview` as a 15th category in v0.3.0 prompt work.
+
+**Planning decisions locked for v0.3.0:**
+- Enrichment model: `qwen2.5:7b-instruct-q4_K_M`
+- Prompt: final version in `docs/research/llm-b-qwen3.md §7`
+- Per-item budget: 30 s wall / 1200 output tokens / temperature 0.3 / `num_ctx: 8192`
+- Retry policy: one retry at temperature 0.1; if second attempt fails, store raw response in `extraction_warning` and mark `enrichment_state = 'error'` — no third try
+- Orchestration: SQLite-backed queue with state machine (`pending → running → done|error`); not a separate research spike per explicit call
+- Cleanup: Ollama daemon stopped after spike to free ~6 GB RAM
+
+**Also this session (not work; tactical):** Completed R-LLM-b task. Task list cleaned — all v0.2.0 tasks closed; R-LLM-b marked shipped.
+
+### Learned
+
+- **The thinking-mode bug is exactly the bug that gets shipped without empirical verification.** The self-critique (L-6) said "Qwen 3 is 13 months old; evaluate it." A naïve swap based on that alone would have broken 40% of enrichments in v0.3.0 silently. Vindicates the empirical-sanity discipline we put in place after v0.0.0.
+- **The Qwen 3 speed disadvantage is real and structural**: 8.2B params vs Qwen 2.5's 7.6B, on M1 Pro's bandwidth-limited inference → 18 tok/s vs 23 tok/s predicted by theory, measured at those exact values. The rule "bigger model = better model" doesn't survive wall-time budgets.
+- **Qwen 3's better titles come from one specific thing:** it resists collapsing whitespace into hyphens. Qwen 2.5 produced `"You-Should-Be-Playing-With-Gpts-At-Work"` from the filename slug; Qwen 3 rewrote it to `"You Should Be Playing With GPTs At Work"`. A prompt tweak on Qwen 2.5 ("do not use hyphens as word separators in the title") may close that quality gap without paying the speed penalty. Worth trying during v0.3.0 prompt iteration.
+- **Turbopack dev-cache can go stale across major edits** (e.g., renaming middleware.ts → proxy.ts). `rm -rf .next/dev .next/cache && npm run dev` fixes it. Not a code issue; a bundler-cache one.
+- **Node's default heap (~4 GB) is too small for a long Next.js 16 + Turbopack dev session.** 8 GB is the new floor; documented in `package.json`.
+
+### Deployed / Released
+
+- `a578cfa` — v0.1.2 dev stability (heap + SSR warning)
+- `ec16a7d` — R-LLM-b research docs
+
+Both pushed to `main` on `arunpr614/ai-brain`. Repo now 7 commits deep.
+
+No app deploy (per C5 — pre-v1.0.0 is local-only).
+
+### Documents created or updated this period
+
+Created:
+- `docs/research/llm-b-qwen3.md` — R-LLM-b decision memo with final v0.3.0 prompt template + model stack verdict
+- `scripts/rllm-b-bench.ts` — reusable enrichment benchmark harness (5-item fixture, env-driven model list)
+
+Updated:
+- `docs/research/SELF_CRITIQUE.md` — appended v0.1.2-critique: L-6 RESOLVED; new findings L-9 (thinking-mode) + L-10 (interview mis-classification)
+- `src/app/layout.tsx` — `suppressHydrationWarning` on `<html>`
+- `package.json` — NODE_OPTIONS='--max-old-space-size=8192' on dev/build/start
+
+### Current remaining to-do
+
+**v0.3.0 Intelligence — starting now.** Ordered execution plan:
+
+1. **F-201 LLM client** — `src/lib/llm/ollama.ts`. Typed wrapper around `/api/generate` + `/api/chat` + `/api/embeddings`. Always passes `think: false`. Exposes `keep_alive`, `num_ctx`, `num_predict`, `temperature`. Reads `OLLAMA_DEFAULT_MODEL` from env with a sensible fallback.
+2. **F-202 Enrichment queue** — new migration `003_enrichment_queue.sql` adds `enrichment_jobs` table (fields: item_id, state, attempts, last_error, created_at, claimed_at, completed_at) with state machine. `src/lib/queue/enrichment.ts` has a poll-and-claim worker loop started from `instrumentation.ts` on server boot. Idempotent against Next.js hot-reloads.
+3. **F-203 Enrichment pipeline** — `src/lib/enrich/pipeline.ts` consumes jobs: calls LLM, parses JSON (with one retry at temp 0.1), upserts `summary`, `category`, `title` (conditional rewrite), creates tag rows + item_tags links, marks item `enriched_at` and `enrichment_state = 'done'`. Writes to `llm_usage` table.
+4. **F-204 Dual-pane view** — item detail page gets an AI digest right-panel (300px) with summary, 5 quote blocks, category chip, auto-tag chips. Original body stays in the 68ch left panel.
+5. **F-205 Enrichment status UI** — `enriching…` pill on library cards for items with `enrichment_state = 'pending' | 'running'`. SSE or polling (probably polling — cheaper for a personal app).
+6. **F-206 Manual tags + collections CRUD** — UI for create/rename/delete tags + collections; assign/unassign via item detail + library bulk select.
+7. **F-207 Bulk operations** — library multi-select (shift-click + cmd-click + checkbox) → apply tag, move to collection, delete.
+8. **F-208 Bulk export** — new endpoint `GET /api/library/export.zip` streams all items as markdown files in a zip.
+9. v0.3.0 exit commit + push + tracker updates.
+
+**Estimated ~1.5 weeks per plan**; today's session targets F-201 through F-204 (the core async-enrichment flow). F-205..F-208 land in follow-up sessions.
+
+### Open questions / decisions needed
+
+Two soft decisions I'll make as we go unless you object:
+
+- **Run the Ollama daemon via `brew services start ollama` (always-on)** or manually per session? Recommend `brew services` since it's now a required dependency in dev. One-time toggle.
+- **SSE vs polling for enrichment status** — polling (every 3s, only on library/inbox pages). SSE adds complexity that's not warranted for a 1-user app. Recommend polling.
+
+### State snapshot
+
+- **Current phase / version:** v0.2.0 ● shipped + v0.1.2 ● polish → **v0.3.0 Intelligence (starting now)**
+- **App version:** `0.2.0` (will bump to `0.3.0` at phase exit)
+- **Plan version:** `v0.3.0-plan`
+- **Repo:** https://github.com/arunpr614/ai-brain (commit `ec16a7d`, 7 commits on main)
+- **Active trackers:** `BUILD_PLAN.md` · `DESIGN.md` · `DESIGN_SYSTEM.md` · `ROADMAP_TRACKER.md` · `PROJECT_TRACKER.md` · `RUNNING_LOG.md` · `docs/research/{SELF_CRITIQUE,EMPIRICAL_SANITY,llm-b-qwen3}.md`
+- **Models on disk:** `qwen2.5:7b-instruct-q4_K_M` (4.7 GB) + `qwen3:8b` (5.2 GB). Embeddings + Phi not yet pulled.
+- **Next milestone:** v0.3.0 partial — async enrichment queue running, first real item gets auto-summary + category + title + tags; dual-pane view renders.

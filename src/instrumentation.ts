@@ -9,9 +9,11 @@ export async function register(): Promise<void> {
 
   const { getDb } = await import("@/db/client");
   const { startBackupScheduler } = await import("@/lib/backup");
+  const { startEnrichmentWorker } = await import("@/lib/queue/enrichment-worker");
 
   // Touching getDb() warms the connection + runs migrations.
   getDb();
 
   startBackupScheduler();
+  startEnrichmentWorker();
 }

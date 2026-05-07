@@ -29,6 +29,14 @@ export function proxy(req: NextRequest) {
 
   const token = req.cookies.get(SESSION_COOKIE)?.value;
   if (!token) {
+    // API routes: return JSON 401 so fetch() callers see a structured error
+    // instead of following a redirect to an HTML /unlock page.
+    if (pathname.startsWith("/api/")) {
+      return NextResponse.json(
+        { error: "unauthenticated" },
+        { status: 401, headers: { "cache-control": "no-store" } },
+      );
+    }
     const url = req.nextUrl.clone();
     url.pathname = "/unlock";
     url.searchParams.set("next", pathname);

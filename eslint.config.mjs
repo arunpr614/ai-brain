@@ -12,6 +12,8 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Throwaway benchmark / spike scripts — intentionally loose typing
+    "scripts/**",
   ]),
 ]);
 

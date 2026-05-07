@@ -1,5 +1,6 @@
 import { FileText, Globe, Plus, Search, StickyNote } from "lucide-react";
 import Link from "next/link";
+import { ItemEnrichmentWatch } from "@/components/item-enrichment-watch";
 import { listItems } from "@/db/items";
 
 function formatRelative(ts: number): string {
@@ -72,9 +73,17 @@ export default function LibraryPage() {
                   <SourceIcon type={it.source_type} />
                 </span>
                 <div className="min-w-0 flex-1">
-                  <h2 className="truncate text-[18px] font-medium leading-[1.55] text-[var(--text-primary)]">
-                    {it.title}
-                  </h2>
+                  <div className="flex items-start justify-between gap-3">
+                    <h2 className="truncate text-[18px] font-medium leading-[1.55] text-[var(--text-primary)]">
+                      {it.title}
+                    </h2>
+                    <span className="shrink-0">
+                      <ItemEnrichmentWatch
+                        itemId={it.id}
+                        initialState={it.enrichment_state}
+                      />
+                    </span>
+                  </div>
                   <div className="mt-1 flex items-center gap-2 text-xs text-[var(--text-secondary)]">
                     <span className="uppercase tracking-wide">{it.source_type}</span>
                     <span className="text-[var(--text-muted)]">·</span>

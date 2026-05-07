@@ -106,6 +106,8 @@ export interface ItemRow {
   author: string | null;
   body: string;
   summary: string | null;
+  /** JSON-encoded array of 5 key quotes from enrichment. Added v0.3.0 (migration 004). */
+  quotes: string | null;
   category: string | null;
   captured_at: number;
   enriched_at: number | null;
