@@ -1,22 +1,22 @@
 import { NextResponse, type NextRequest } from "next/server";
 
 /**
- * Edge middleware: gate every route behind session cookie PRESENCE.
- * The cookie is HMAC-signed; real verification runs server-side on each
- * request via `@/lib/auth#verifySessionToken`. Edge runtime cannot use
- * node:crypto so we cannot fully verify here — a missing cookie is the
- * only signal needed to decide whether to redirect to /unlock.
+ * Next.js 16 proxy (formerly middleware): gate every route behind session
+ * cookie PRESENCE. The cookie is HMAC-signed; real verification runs
+ * server-side on each request via `@/lib/auth#verifySessionToken`. Edge
+ * runtime cannot use node:crypto so we cannot fully verify here — a missing
+ * cookie is the only signal needed to decide whether to redirect to /unlock.
  *
  * This two-layer check is safe because:
  *   1. The signed cookie is generated with a server-only key.
  *   2. Every server page / action that reads the cookie re-verifies the HMAC.
- *   3. Edge middleware's job is only to redirect anonymous users, not
- *      to authorize sensitive operations.
+ *   3. The proxy's job is only to redirect anonymous users, not to authorize
+ *      sensitive operations.
  */
 const SESSION_COOKIE = "brain-session";
 const PUBLIC_PATHS = new Set(["/unlock", "/setup"]);
 
-export function middleware(req: NextRequest) {
+export function proxy(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
   if (pathname.startsWith("/api/auth")) {
