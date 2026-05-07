@@ -405,7 +405,7 @@ The research reached roughly the right conclusions. What's missing is the empiri
 
 7. 🟧 **L-2** — LLM eval harness; Qwen 2.5 7B vs Qwen 3 7B vs Gemma 2 9B on 10-item set.
 8. 🟧 **L-3, L-4, L-5** — Cold-load pre-warming; concurrency queue; memory-pressure pre-flight.
-9. 🟧 **L-6** — R-LLM-b mini-spike on Qwen 3.
+9. 🟧 **L-6** — R-LLM-b mini-spike on Qwen 3. **RESOLVED 2026-05-07** per `docs/research/llm-b-qwen3.md`.
 
 ### Must do before v0.5.0 (APK + extension)
 
@@ -462,6 +462,16 @@ The research reached roughly the right conclusions. What's missing is the empiri
   - 🟧 **C-9** — Cold-start double-fires the `shareReceived` event (on start + on resume). Added F-041 to v0.5.0 for 2-second dedup window.
   - 🟧 **C-10** — Plugin `addListener()` is synchronous in v8.0.30 despite README showing `.then()`. Documented in §15.3.
   - 🟨 **C-11** — Capacitor 8 requires JDK 21 (not 17 as assumed). Documented; `brew install --cask zulu@21`.
+
+- **v0.1.2-critique** (2026-05-07) — R-LLM-b mini-spike closed the Qwen 3 question:
+
+  | Finding | Status | Evidence |
+  |---|---|---|
+  | 🟧 **L-6** Qwen 3 dismissed as "too new" but is 13 months old | **RESOLVED** | `docs/research/llm-b-qwen3.md`; Qwen 3 8B evaluated on 5-item harness; 9% slower than Qwen 2.5 7B for enrichment, equally reliable, better titles + tag coverage. Decision: keep Qwen 2.5 for v0.3.0 enrichment; Qwen 3 supplants Qwen 2.5 14B for v0.6.0 GenPage. |
+
+  **New findings discovered during R-LLM-b:**
+  - 🟧 **L-9** — Qwen 3's default "thinking mode" burns `num_predict` tokens on `<think>…</think>` traces, producing truncated / malformed JSON when `format: "json"` is set. **Fix:** pass `"think": false` on every Ollama call targeting a Qwen-3-family model. Qwen 2.5 ignores the flag cleanly, so set it unconditionally in `src/lib/llm/ollama.ts`.
+  - 🟨 **L-10** — Written interviews (e.g. Lenny Q&A transcripts) are mis-classified as `Podcast Episode` by both models. Consider adding `Interview` as a 15th category in the v0.3.0 prompt. Low priority.
 
 Future revisions append here when any 🟧/🟥 finding is resolved. A finding flips to `RESOLVED` with a date + commit or spike ID when addressed. New findings may be added at any time.
 
