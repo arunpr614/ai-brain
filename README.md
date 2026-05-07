@@ -2,12 +2,20 @@
 
 A local-first personal knowledge app that combines the best of **Recall.it** and **Knowly** — capture, auto-organize, RAG chat, spaced-repetition, and AI-generated pages/journeys — all running on your own Mac, with a sideloadable Android APK as a thin LAN client.
 
-**Current status:** planning + research phase. No code yet.
+**Current status:** v0.1.0 Foundation in progress. Next.js app scaffolded, DB schema + migrations runner, theme toggle, auth (PIN), library + notes, command palette, backup scheduler all shipped.
+
+## Run it
+
+```bash
+npm install
+npm run dev
+# open http://localhost:3000 — set a PIN, then add your first note
+```
 
 ## Core constraints
 
 - **100% local.** SQLite + Ollama on the Mac. No cloud services until `v1.0.0`.
-- **Sideloadable Android APK** via Capacitor 6, talking to the Mac over LAN.
+- **Sideloadable Android APK** via Capacitor 8, talking to the Mac over LAN.
 - **Single user.** Designed for one person; no multi-tenant plumbing.
 - **Feature parity** with Recall.it + Knowly as the north star (36 of 47 features shipping pre-v1.0.0; see `FEATURE_INVENTORY.md` + `ROADMAP_TRACKER.md`).
 
@@ -15,15 +23,16 @@ A local-first personal knowledge app that combines the best of **Recall.it** and
 
 | Layer | Choice |
 |---|---|
-| Frontend | Next.js 15 + React 19 + TypeScript |
-| Styling | Tailwind 4 + shadcn/ui + Radix + Lucide |
+| Frontend | Next.js 16 + React 19 + TypeScript |
+| Styling | Tailwind 4 + Radix primitives + Lucide |
 | DB | better-sqlite3 + sqlite-vec (single file) |
 | LLM runtime | Ollama (local) |
-| Default model | `qwen2.5:7b-instruct-q4_K_M` |
+| Default model | `qwen2.5:7b-instruct-q4_K_M` — measured 24 tok/s gen, 141 ms first-token on M1 Pro |
 | Embeddings | `nomic-embed-text` |
-| PDF extraction | `unpdf` + optional poppler fallback |
-| Mobile | Capacitor 6 + `@capawesome/capacitor-android-share-target` |
-| Auth (v0.5.0) | static bearer token + LAN binding toggle |
+| PDF extraction | `unpdf@1.6.2` + optional poppler fallback |
+| Mobile | Capacitor 8 + `@capgo/capacitor-share-target` (requires JDK 21) |
+| Auth (v0.1.0) | Local PIN (PBKDF2-HMAC-SHA256, HMAC session cookie) |
+| Auth (v0.5.0) | +LAN bearer token, +mDNS `brain.local`, +WebAuthn TouchID (stretch) |
 
 See `BUILD_PLAN.md` §15 for exact versions, intent filters, Ollama env vars, and pipeline shapes.
 
@@ -31,7 +40,7 @@ See `BUILD_PLAN.md` §15 for exact versions, intent filters, Ollama env vars, an
 
 | Doc | Purpose |
 |---|---|
-| `BUILD_PLAN.md` | Phased architecture + roadmap (prose). Current: `v0.2.0-plan`. |
+| `BUILD_PLAN.md` | Phased architecture + roadmap (prose). Current: `v0.3.0-plan`. |
 | `DESIGN.md` | Design tokens (getdesign.md spec). Light + dark. |
 | `DESIGN_SYSTEM.md` | Operational UX contract + per-screen acceptance checklist. |
 | `ROADMAP_TRACKER.md` | Every feature pinned to a version lane; deferred items with reopen triggers. |

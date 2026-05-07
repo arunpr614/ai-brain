@@ -1,6 +1,6 @@
 # AI Brain — Project Tracker
 
-**Document version:** v0.2.1-tracker
+**Document version:** v0.3.0-tracker
 **Date:** 2026-05-07
 **Owner:** Arun
 **Update cadence:** at phase start, at phase end, and whenever a blocker appears.
@@ -17,7 +17,7 @@ Legend: `○` not started · `◐` in progress · `●` complete · `✖` blocke
 |---|---|---|---|---|---|
 | Planning | — | ● | 2026-05-07 | 2026-05-07 | Plan + design + 4 P0 research + self-critique all complete; GitHub repo live |
 | v0.0.1 Empirical Sanity | 0.0.1 | ● | 2026-05-07 | 2026-05-07 | All 5 S-* shipped; plan v0.2.1→v0.3.0; two plan corrections (plugin name, PDF threshold) |
-| v0.1.0 Foundation | 0.1.0 | ○ | — | — | **UNBLOCKED** — ready to start |
+| v0.1.0 Foundation | 0.1.0 | ● | 2026-05-07 | 2026-05-07 | F-000..F-010 all shipped (Next.js 16 + SQLite + migrations + PIN auth + theme + library + ⌘K + 6h backup). Smoke-tested end-to-end. |
 | v0.2.0 Capture core | 0.2.0 | ○ | — | — | Ready pending v0.1.0 |
 | v0.3.0 Intelligence | 0.3.0 | ○ | — | — | Needs LLM eval harness (critique L-2) |
 | v0.4.0 Ask (RAG) | 0.4.0 | ○ | — | — | Blocked by R-VEC |

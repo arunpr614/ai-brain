@@ -1,8 +1,9 @@
 # AI Brain — Roadmap Tracker
 
-**Document version:** v0.2.1-roadmap
+**Document version:** v0.3.0-roadmap
 **Date:** 2026-05-07
 **Changelog:**
+- v0.3.0-roadmap — v0.1.0 Foundation SHIPPED; Next.js 16 + React 19 + Tailwind 4 runtime live; F-000..F-010 all shipped.
 - v0.2.1-roadmap — v0.0.1 Empirical Sanity Morning COMPLETE; all 5 S-* items shipped; added F-041 (cold-start dedup); v0.5.0 plugin corrected to `@capgo/capacitor-share-target`.
 - v0.2.0-roadmap — added v0.0.1 Empirical Sanity gate; expanded v0.5.0 scope with mDNS (F-035), CSRF (F-036), token rotation (F-037), QR display (F-038), native file stream (F-039), WebAuthn stretch (F-040); added F-000 migrations runner to v0.1.0. Driven by `docs/research/SELF_CRITIQUE.md`.
 - v0.1.0-roadmap — initial roadmap.
@@ -55,23 +56,23 @@ Gate inserted per `docs/research/SELF_CRITIQUE.md §8 item 1`. Converts desk res
 
 **Exit:** ✅ `EMPIRICAL_SANITY.md` committed 2026-05-07. Plan bumped to v0.3.0-plan. Two corrections merged into §15 (plugin name, PDF threshold). **v0.1.0 unblocked.**
 
-### v0.1.0 — Foundation
+### v0.1.0 — Foundation ✅ **SHIPPED** 2026-05-07
 
 | ID | Item | Status | Notes |
 |---|---|---|---|
-| F-000 | **DB migrations runner** (`src/db/migrations/NNN_*.sql` + `_migrations` table) | planned | Self-critique X-4; must land before any schema commit |
-| F-001 | Next.js 15 + Tailwind 4 + shadcn/ui scaffold | planned | Per `DESIGN_SYSTEM.md` §5 |
-| F-002 | SQLite + better-sqlite3 + sqlite-vec loaded | planned | |
-| F-003 | Core schema (items, chunks, collections, tags, cards, chat_messages, settings) | planned | |
-| F-004 | Single-user local auth (password on first run, session cookie) | planned | Blocked by R-AUTH |
-| F-005 | Library list view (chronological) | planned | |
-| F-006 | "New note" form (title + markdown) | planned | |
-| F-007 | Item detail view | planned | |
-| F-008 | Theme toggle (system / light / dark), SSR-safe | planned | Per `DESIGN_SYSTEM.md` §13 |
-| F-009 | Backup scheduler (6h default, configurable) | planned | Per `BUILD_PLAN.md` §13 |
-| F-010 | Command palette scaffold (`⌘K`) | planned | Minimal: navigate to Library/Inbox/Settings |
+| F-000 | DB migrations runner + `_migrations` tracking | **shipped** | `src/db/client.ts` runs any unapplied `src/db/migrations/NNN_*.sql` on server start |
+| F-001 | Next.js 16.2.5 + React 19.2 + Tailwind 4 scaffold | **shipped** | create-next-app + token-driven globals.css per DESIGN.md |
+| F-002 | SQLite + better-sqlite3 + sqlite-vec loaded | **shipped** | Vec extension loads when native binding available; silent no-op otherwise |
+| F-003 | Core schema | **shipped** | 13 tables: items, chunks, collections, item_collections, tags, item_tags, cards, chat_threads, chat_messages, settings, llm_usage, _migrations + sqlite_sequence |
+| F-004 | Single-user local auth (PIN v1) | **shipped** | PBKDF2-HMAC-SHA256 PIN + HMAC session cookie + proxy middleware gate + /setup /unlock flows |
+| F-005 | Library list view (chronological) | **shipped** | `/` — empty-state + card-item rows with source icon, title, metadata, relative time |
+| F-006 | "New note" form (title + markdown) | **shipped** | `/items/new` — server action + zod validation + error state |
+| F-007 | Item detail view | **shipped** | `/items/[id]` — Charter article typography, kebab delete |
+| F-008 | Theme toggle (system / light / dark), SSR-safe | **shipped** | Cookie-persisted; pre-hydration script prevents FOUC; Monitor/Sun/Moon radiogroup in Settings |
+| F-009 | Backup scheduler (6h default, configurable) | **shipped** | `VACUUM INTO data/backups/YYYY-MM-DD_HHMM.sqlite`; retention 28; boots via `src/instrumentation.ts` |
+| F-010 | Command palette scaffold (`⌘K`) | **shipped** | cmdk-based; Navigate → Library/Settings + Capture → New note |
 
-**Exit:** add 3 notes, list shows them, click one, see content. Theme toggle works. Backup snapshot exists on disk after 6h.
+**Exit:** ✅ Smoke-tested end-to-end: setup PIN → library empty state → new note form → detail view → delete. Theme toggle round-trips. Initial backup snapshot written on dev-server boot. DB migrations applied idempotently on build + dev.
 
 ### v0.2.0 — Capture core
 

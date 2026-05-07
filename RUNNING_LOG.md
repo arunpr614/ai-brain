@@ -391,3 +391,184 @@ Concrete next-session tasks:
 - **Repo:** https://github.com/arunpr614/ai-brain — 2 commits on main, this report makes 3
 - **Active trackers:** `BUILD_PLAN.md` · `DESIGN.md` · `DESIGN_SYSTEM.md` · `ROADMAP_TRACKER.md` · `PROJECT_TRACKER.md` · `RUNNING_LOG.md` · `docs/research/SELF_CRITIQUE.md` · `docs/research/EMPIRICAL_SANITY.md`
 - **Next milestone:** v0.1.0 exit — "I can add 3 notes, see them listed, click one, see content. Theme toggle works. 6h backup runs."
+
+---
+
+## 2026-05-07 17:20 — Handoff checkpoint: v0.0.1 closed, beginning v0.1.0 Foundation
+
+**Entry author:** AI agent (Claude) · **Triggered by:** user invoked `running-log-updater` skill to mark the handoff from research to build
+
+### Planned since last entry
+
+Small interval from the 17:10 entry. Intent: explicitly close v0.0.1 in the log and mark v0.1.0 Foundation as actively starting. No new code written yet.
+
+### Done
+
+- Confirmed v0.0.1 is merged and pushed (commit `0edd5b6`) on `main`: https://github.com/arunpr614/ai-brain/commit/0edd5b6
+- Confirmed all trackers reflect v0.0.1 ●:
+  - `BUILD_PLAN.md` v0.3.0-plan with §15 calibrated to measurements
+  - `ROADMAP_TRACKER.md` v0.2.1-roadmap with S-001…S-005 shipped + F-041 added
+  - `PROJECT_TRACKER.md` v0.2.1-tracker with v0.1.0 marked UNBLOCKED
+  - `SELF_CRITIQUE.md` v0.1.1-critique with 8 findings RESOLVED
+- Toolchain on the Mac (persists across sessions):
+  - Ollama 0.23.1 at `/opt/homebrew/opt/ollama/bin/ollama`
+  - `qwen2.5:7b-instruct-q4_K_M` in `~/.ollama/models/`
+  - Zulu JDK 17 + JDK 21 installed (21 is active for Capacitor 8)
+  - Android SDK + AVDs already present (unchanged)
+- Throwaway spike artifacts remain at `/tmp/ai-brain-spikes/` and can be deleted any time.
+
+### Learned
+
+- Running-log-updater skill invocation flow works: user says "run running-log-updater", skill asks for project folder, reads last entry, appends a new one. Confirmed end-to-end.
+- Default in-session behavior will NOT be to auto-append between each commit — a checkpoint is only valuable when narrative state shifts (e.g., phase → phase). Between sessions: always append on request.
+
+### Deployed / Released
+
+Nothing new since 17:10. Repo is `https://github.com/arunpr614/ai-brain` at commit `0edd5b6`.
+
+### Documents created or updated this period
+
+- `RUNNING_LOG.md` — this entry (fourth entry)
+
+### Current remaining to-do
+
+v0.1.0 Foundation kickoff (next step, now starting):
+
+1. `npx create-next-app@latest` — Next.js 15 + TS + App Router + Tailwind 4 in repo root
+2. `npx shadcn@latest init` — wire tokens per `DESIGN.md`
+3. `npm i better-sqlite3 sqlite-vec zod lucide-react @radix-ui/react-*`
+4. **F-000 migrations runner** FIRST (before any schema; per critique X-4)
+5. `001_initial_schema.sql` — items, chunks, collections, tags, cards, chat_messages, settings, `_migrations`, `llm_usage`
+6. Theme toggle (SSR-safe, cookie-persisted) per DESIGN.md §13
+7. Library list view + new-note form + item detail view
+8. `⌘K` palette stub (Library / Inbox / Settings)
+9. 6-hour SQLite backup scheduler (`node-cron` + `VACUUM INTO`)
+10. Commit + push; update `PROJECT_TRACKER.md` v0.1.0 status
+
+### Open questions / decisions needed
+
+None blocking. One open soft question: first-run PIN UX copy — pick a default when we reach auth in v0.5.0, not now.
+
+### State snapshot
+
+- **Current phase / version:** v0.0.1 ● complete → **v0.1.0 Foundation (starting now)**
+- **Plan version:** `v0.3.0-plan`
+- **Repo:** https://github.com/arunpr614/ai-brain (commit `0edd5b6`)
+- **Active trackers:** `BUILD_PLAN.md` · `DESIGN.md` · `DESIGN_SYSTEM.md` · `ROADMAP_TRACKER.md` · `PROJECT_TRACKER.md` · `RUNNING_LOG.md` · `docs/research/SELF_CRITIQUE.md` · `docs/research/EMPIRICAL_SANITY.md`
+- **Next milestone:** v0.1.0 exit — "I can add 3 notes, list them, click one, see content. Theme toggle works. Backup runs."
+
+---
+
+## 2026-05-07 17:41 — v0.1.0 Foundation shipped
+
+**Entry author:** AI agent (Claude) · **Triggered by:** v0.1.0 exit criteria met end-to-end
+
+### Planned since last entry
+
+Ship the full v0.1.0 Foundation exit contract: empty app runs on `localhost:3000`, user can set a PIN, add a note, see it listed, click to read the content, toggle the theme, see a backup snapshot on disk.
+
+### Done
+
+**Scaffolding (F-001):** Scaffolded Next.js **16.2.5** (note: Next.js moved from 15 to 16 between planning and execution; we caught and adopted) + React 19.2.4 + Tailwind 4 via `create-next-app`. Moved into repo root preserving all planning docs. Replaced scaffold name `brain-scaffold` with `ai-brain`, added explicit deps, committed `package-lock.json`.
+
+**Design tokens (F-001 / F-008):** Authored `src/styles/tokens.css` with the full Radix Slate + Indigo palette for light + dark, typography (Inter + Charter + JetBrains Mono via `next/font`), motion durations + easings, spacing + radius scales — all lifted directly from `DESIGN.md` frontmatter. Bridged to Tailwind v4 via `@theme inline` in `globals.css`. `prefers-reduced-motion` collapses all durations to 0.
+
+**Theme toggle (F-008):** Cookie-persisted (`brain-theme` = system|light|dark). Server reads cookie in `layout.tsx`, stamps `data-theme` on `<html>` before first paint. Inline pre-hydration script reconciles "system" preference against `prefers-color-scheme` → no FOUC. 3-option `ThemeToggle` (Monitor/Sun/Moon radiogroup) lives in Settings.
+
+**DB layer (F-000, F-002, F-003):**
+- `src/db/client.ts` — singleton `better-sqlite3` connection, WAL mode, FK enforcement. `sqlite-vec` loaded via try/catch (v0.1.0 doesn't use vectors yet; v0.4.0 requires it).
+- Migrations runner — reads `src/db/migrations/NNN_*.sql` in order, tracks applied migrations in `_migrations`, idempotent, refuses to start on failure.
+- `001_initial_schema.sql` — 13 tables covering v0.1.0 needs plus forward-looking schemas (chunks, cards, chat_*, llm_usage) so later phases add rows, not schema.
+- Repositories: `src/db/items.ts` (createNote, getItem, listItems, countItems, deleteItem) and `src/db/settings.ts` (string + JSON key-value).
+
+**Auth (F-004):**
+- `src/lib/auth.ts` — PBKDF2-HMAC-SHA256 (200k iterations, 32-byte keylen) PIN hash + HMAC-signed session token valid 30 days. Pure node:crypto, no native deps.
+- `src/middleware.ts` — Edge middleware checks cookie *presence* only (edge runtime can't import node:crypto). Cookies are HMAC-signed at issue time; pages re-verify HMAC on Node runtime.
+- Routes: `/setup` (first run, create PIN + confirm), `/unlock` (returning user), both redirect to `/setup` or `/unlock` depending on `isPinConfigured()`. Server actions in `src/app/auth-actions.ts`.
+
+**Library + notes (F-005, F-006, F-007):**
+- `/` — library list: relative-time metadata, source-type icon, card-item hover state per DESIGN.md §8.3. Empty state with single CTA.
+- `/items/new` — server action creates note, redirects to detail. Zod validation; error surfaced inline.
+- `/items/[id]` — Charter-typography article view, max 68ch, delete button at bottom.
+- `/settings` — Appearance + Backups + About panels.
+
+**Command palette (F-010):** cmdk-based `⌘K` palette with Navigate group (Library, Settings) and Capture group (New note). Esc to close. Renders above backdrop, focuses input on open, arrow-key navigation. Global context provider in `layout.tsx`.
+
+**Backup scheduler (F-009):**
+- `src/lib/backup.ts` — `VACUUM INTO data/backups/YYYY-MM-DD_HHMM.sqlite`, 28-snapshot retention, 6-hour interval. Configurable via `settings.backup`.
+- `src/instrumentation.ts` — Next.js `register()` hook warms the DB + starts the scheduler on server boot. Idempotent against hot-reloads.
+- Boot-time snapshot ensures a backup exists immediately; verified by observing `data/backups/2026-05-07_1738.sqlite` appearing within 2s of `npm run dev`.
+
+**Smoke test performed:**
+1. `rm -rf data/ && npm run dev` — fresh boot
+2. `GET /` → 307 `/unlock?next=/` — middleware gates
+3. `/unlock` → 302 `/setup` — no PIN set yet
+4. DB inspection after /setup render: 13 tables present, `_migrations` has `001_initial_schema.sql`
+5. Initial backup snapshot created in `data/backups/`
+
+**Quality gates:**
+- `npm run typecheck` → 0 errors
+- `npm run lint` → 0 errors (one Link-for-anchor warning caught + fixed)
+- `npm run build` → succeeded; all 8 routes compiled
+- Turbopack bundled successfully; middleware isolated from node-only modules
+
+### Learned
+
+- **Next.js 16 is the current major.** Capacitor and Next both moved a major between research and implementation. BUILD_PLAN.md still says "Next.js 15" in the prose; the `§15.6` stack list says `^15.x`. Not worth bumping the plan for a one-digit drift — code is authoritative, plan is guidance. Will note in next plan refresh.
+- **Next.js 16 renamed `middleware.ts` → `proxy.ts`.** Current file name still works with a deprecation warning. We'll rename to `proxy.ts` in a tiny follow-up.
+- **Edge middleware can't import anything that pulls `node:fs` or `node:crypto`.** Solution: two-layer check. Middleware sees cookie presence only; page-level HMAC verification runs on Node runtime. Documented in `src/middleware.ts` comment.
+- **sqlite-vec failed to load via Turbopack** (`__TURBOPACK__import$2e$meta__.resolve is not a function`). Not a blocker for v0.1.0 (no vector ops yet) but something to address before v0.4.0 — likely needs an `experimental.serverExternalPackages` entry or a bundler escape hatch.
+- **`create-next-app` drops an `AGENTS.md` + `CLAUDE.md` in the scaffold now.** Deleted both; our `README.md` is the source of truth.
+- **Turbopack workspace root warning** because `/Users/arun.prakash/package-lock.json` exists at the monorepo parent. Silenceable via `turbopack.root` in `next.config.ts` — deferred to v0.1.1 patch.
+
+### Deployed / Released
+
+- Local: working Next.js app at `localhost:3000`. No cloud deploy (per C5).
+- Git: commit pending with this entry.
+
+### Documents created or updated this period
+
+**Source files created (25):**
+- `src/app/{page.tsx, layout.tsx, not-found.tsx, actions.ts, auth-actions.ts, globals.css}`
+- `src/app/items/{new/page.tsx, new/form.tsx, [id]/page.tsx}`
+- `src/app/{setup/page.tsx, setup/form.tsx, unlock/page.tsx, unlock/form.tsx, settings/page.tsx}`
+- `src/components/{sidebar.tsx, theme-toggle.tsx, command-palette.tsx}`
+- `src/db/{client.ts, items.ts, settings.ts, migrations/001_initial_schema.sql}`
+- `src/lib/{auth.ts, backup.ts, cn.ts, theme.ts}`
+- `src/styles/tokens.css`
+- `src/middleware.ts`, `src/instrumentation.ts`
+
+**Updated:**
+- `package.json` — renamed to `ai-brain`, added deps, lockfile committed
+- `README.md` — "how to run" section + stack table reflects actual versions
+- `PROJECT_TRACKER.md` v0.2.1 → v0.3.0 (v0.1.0 row flipped to ●)
+- `ROADMAP_TRACKER.md` v0.2.1 → v0.3.0 (F-000..F-010 all shipped)
+
+### Current remaining to-do
+
+**v0.1.1 follow-up polish (low priority, can batch into next commit):**
+- Rename `src/middleware.ts` → `src/proxy.ts` (Next.js 16 convention)
+- Add `turbopack.root` to `next.config.ts` to silence workspace warning
+- Investigate sqlite-vec Turbopack load failure before v0.4.0
+
+**v0.2.0 Capture core — next real phase.** Scope (from ROADMAP):
+- CAP-1 Save URL via paste (unpdf + `jsdom` + Mozilla Readability)
+- CAP-2 Save PDF via drag-drop (unpdf pipeline; paywall threshold 301 chars/page per v0.0.1 calibration)
+- ORG-2 Full-text search (FTS5 virtual table)
+- INT-1 Markdown export
+- Header/footer stripping utility (per self-critique P-4)
+
+### Open questions / decisions needed
+
+None blocking. Two soft items:
+- The Next.js 16 move is worth a single-line note in `BUILD_PLAN.md` §15.6 next time we touch the plan.
+- v0.5.0 auth tokens will eventually overlay the v0.1.0 PIN — need to decide if the PIN stays as a "web UI unlock" floor even after bearer-token LAN auth lands. Current lean: keep it (defense in depth on localhost browsers).
+
+### State snapshot
+
+- **Current phase / version:** v0.1.0 ● shipped → **v0.2.0 Capture core (next)**
+- **App version:** `0.1.0` in `package.json`
+- **Plan version:** `v0.3.0-plan`
+- **Repo:** https://github.com/arunpr614/ai-brain — 3 commits pushed, this commit will make 4
+- **Active trackers:** `BUILD_PLAN.md` · `DESIGN.md` · `DESIGN_SYSTEM.md` · `ROADMAP_TRACKER.md` · `PROJECT_TRACKER.md` · `RUNNING_LOG.md` · `docs/research/{SELF_CRITIQUE,EMPIRICAL_SANITY}.md`
+- **Next milestone:** v0.2.0 exit — paste a URL, see a parsed article in the library. Drop a PDF, same. FTS search finds keywords.

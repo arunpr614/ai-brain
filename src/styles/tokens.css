@@ -1,0 +1,121 @@
+/* AI Brain — design tokens
+ * Single source of truth. Every color/space/radius/shadow/motion value
+ * referenced in components MUST come from here. See DESIGN.md for the
+ * full specification.
+ *
+ * Themes:
+ *   - :root                         → light theme (default)
+ *   - :root[data-theme="dark"]      → dark theme
+ * System preference is applied server-side via a `theme` cookie; set
+ * `data-theme` on <html> before first paint to avoid FOUC.
+ */
+
+:root {
+  /* Accent — Radix Indigo */
+  --accent-9: #3e63dd;
+  --accent-10: #3a5ccc;
+  --accent-11: #3a5bc7;
+  --accent-3: #f0f4ff;
+  --on-accent: #ffffff;
+
+  /* Neutral — Radix Slate */
+  --bg: #fbfcfd;
+  --surface: #f8f9fa;
+  --surface-raised: #ffffff;
+  --border: #d7dbdf;
+  --border-strong: #b9bbc6;
+  --text-primary: #1c2024;
+  --text-secondary: #60646c;
+  --text-muted: #8b8d98;
+
+  /* Semantic (reserved — only when the meaning matches) */
+  --success: #2a7e3b;
+  --warning: #ab6400;
+  --danger: #ce2c31;
+  --info: #00749e;
+
+  /* Highlight (user text highlights) */
+  --highlight: #fff3b0;
+
+  /* Radius */
+  --radius-xs: 4px;
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+  --radius-full: 9999px;
+
+  /* Spacing (4px base) */
+  --space-0: 0;
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+  --space-12: 48px;
+  --space-16: 64px;
+  --space-20: 96px;
+
+  /* Elevation — only three tiers; only for floating layers */
+  --shadow-sm: 0 1px 2px rgb(15 18 25 / 0.06);
+  --shadow-md: 0 6px 24px rgb(15 18 25 / 0.08);
+  --shadow-lg: 0 16px 48px rgb(15 18 25 / 0.12);
+
+  /* Motion */
+  --duration-fast: 80ms;
+  --duration-base: 120ms;
+  --duration-med: 150ms;
+  --duration-slow: 300ms;
+  --ease-out: cubic-bezier(0, 0, 0.2, 1);
+  --ease-in: cubic-bezier(0.4, 0, 1, 1);
+  --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* Typography */
+  --font-ui: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-article: "Charter", "Iowan Old Style", "Cambria", "Georgia", serif;
+  --font-mono: "JetBrains Mono", "Menlo", "Consolas", monospace;
+
+  /* Color-scheme hint for native form controls + scrollbars */
+  color-scheme: light;
+}
+
+:root[data-theme="dark"] {
+  --accent-9: #5472e4;
+  --accent-10: #6983eb;
+  --accent-11: #9eb1ff;
+  --accent-3: #182449;
+  --on-accent: #ffffff;
+
+  --bg: #111113;
+  --surface: #18191b;
+  --surface-raised: #1d1e20;
+  --border: #2b2d30;
+  --border-strong: #43484e;
+  --text-primary: #edeef0;
+  --text-secondary: #9ba1a6;
+  --text-muted: #60646c;
+
+  --success: #63c174;
+  --warning: #f1a10d;
+  --danger: #ff6369;
+  --info: #7ce2fe;
+  --highlight: #4a3f10;
+
+  --shadow-sm: 0 1px 2px rgb(0 0 0 / 0.4);
+  --shadow-md: 0 6px 24px rgb(0 0 0 / 0.5);
+  --shadow-lg: 0 16px 48px rgb(0 0 0 / 0.6);
+
+  color-scheme: dark;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --duration-fast: 0ms;
+    --duration-base: 0ms;
+    --duration-med: 0ms;
+    --duration-slow: 0ms;
+  }
+}
