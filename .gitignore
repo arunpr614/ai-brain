@@ -1,0 +1,80 @@
+# Dependencies
+node_modules/
+.pnp
+.pnp.*
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/versions
+
+# Testing
+coverage/
+*.lcov
+
+# Next.js
+.next/
+out/
+build/
+dist/
+
+# Production
+*.tsbuildinfo
+next-env.d.ts
+
+# Environment
+.env
+.env.local
+.env.*.local
+!.env.example
+
+# Data (local SQLite + backups + Ollama caches)
+data/
+data/brain.sqlite
+data/brain.sqlite-shm
+data/brain.sqlite-wal
+data/backups/
+
+# Mac
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon?
+._*
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Android (Capacitor)
+android/app/build/
+android/.gradle/
+android/local.properties
+android/*.keystore
+android/app/release/
+android/app/debug/
+*.apk
+*.aab
+
+# iOS (future)
+ios/App/Pods/
+ios/App/build/
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+*.log
+
+# Temporary files
+*.tmp
+.claude/
+
+# Obsidian vault (user-configurable target; never commit)
+vault/
+
+# Debug
+.turbo/
