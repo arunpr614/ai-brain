@@ -1,16 +1,27 @@
 /**
- * Local single-user auth (v0.1.0). A PIN is set on first run; a session
- * cookie grants access. Middleware (src/middleware.ts) enforces this.
+ * Local single-user auth (v0.1.0 + F-043 hardening).
+ * A PIN is set on first run; a session cookie grants access.
+ * src/proxy.ts checks presence; this module verifies the HMAC.
  *
  * Hash: PBKDF2-HMAC-SHA-256 × 200k iterations via Node crypto.
  *   - Avoids a native dep (argon2id via @node-rs/argon2 requires
  *     platform-specific binaries that conflict with Capacitor packaging).
  *   - Timing-safe comparison via crypto.timingSafeEqual.
  *
- * Session: HMAC-signed token in a cookie valid 30 days. No external JWT.
+ * Session: HMAC-signed token in a cookie valid 30 days (SESSION_TTL_MS).
+ * Token format: `<expiresMs>.<hmacHex>`. `verifySessionToken` rejects if
+ * the expiry has passed OR the HMAC doesn't verify. No external JWT.
  *
- * v0.5.0 will layer bearer-token LAN auth + optional WebAuthn/TouchID
- * on top of this; v0.1.0 ships the PIN floor.
+ * Cookie attributes: HttpOnly + SameSite=Strict + Path=/ (see
+ * SESSION_COOKIE_OPTIONS). Secure omitted pre-v0.5.0 because dev runs on
+ * plain http://127.0.0.1; v0.5.0 F-037 adds LAN TLS + cookie rotation.
+ *
+ * Key rotation policy (pre-v0.5.0): the signing key is generated once at
+ * first PIN setup and persisted in `settings`. It is NOT rotated
+ * automatically. If the key is suspected leaked, the only recovery path
+ * is the setup flow with the reset flag (F-056) — which generates a new
+ * signing key and invalidates all outstanding tokens. Full rotation
+ * (F-037) ships in v0.5.0 alongside LAN bearer tokens.
  */
 import crypto from "node:crypto";
 import { getJsonSetting, setJsonSetting } from "@/db/settings";
