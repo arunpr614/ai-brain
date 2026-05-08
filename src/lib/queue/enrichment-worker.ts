@@ -27,25 +27,45 @@ const STALE_CLAIM_MS = 90_000;
 const MAX_ATTEMPTS = 3;
 const OLLAMA_DOWN_BACKOFF_MS = 30_000;
 
-let running = false;
-let stopRequested = false;
+// F-044 (self-critique A-2): module-level flags do not survive Next's HMR
+// re-evaluation — every fast-refresh would boot a second worker. A
+// globalThis attribute persists across module reloads within the same
+// Node process, which is the correct scope for "exactly one worker per
+// process."
+declare global {
+  var __brainEnrichmentWorker:
+    | { running: boolean; stopRequested: boolean }
+    | undefined;
+}
+
+function workerState() {
+  if (!globalThis.__brainEnrichmentWorker) {
+    globalThis.__brainEnrichmentWorker = {
+      running: false,
+      stopRequested: false,
+    };
+  }
+  return globalThis.__brainEnrichmentWorker;
+}
 
 export function startEnrichmentWorker(): void {
-  if (running) return;
-  running = true;
-  stopRequested = false;
+  const state = workerState();
+  if (state.running) return;
+  state.running = true;
+  state.stopRequested = false;
   console.log("[enrich] worker starting");
   void loop();
 }
 
 export function stopEnrichmentWorker(): void {
-  stopRequested = true;
+  workerState().stopRequested = true;
 }
 
 async function loop(): Promise<void> {
   sweepStaleClaims();
+  const state = workerState();
 
-  while (!stopRequested) {
+  while (!state.stopRequested) {
     const alive = await isOllamaAlive();
     if (!alive) {
       console.warn(`[enrich] ollama unreachable; backing off ${OLLAMA_DOWN_BACKOFF_MS}ms`);
@@ -63,7 +83,7 @@ async function loop(): Promise<void> {
     await sleep(POLL_INTERVAL_MS);
   }
 
-  running = false;
+  state.running = false;
   console.log("[enrich] worker stopped");
 }
 
