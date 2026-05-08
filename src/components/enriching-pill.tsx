@@ -7,7 +7,13 @@ interface Status {
   state: "pending" | "running" | "done" | "error";
   last_error: string | null;
   updated_at: number;
+  /** F-046: retry attempts from enrichment_jobs; 0 when job row missing. */
+  attempts: number;
 }
+
+// Mirrors MAX_ATTEMPTS in src/lib/queue/enrichment-worker.ts. Kept as a
+// literal here so the client bundle doesn't pull in the server-only module.
+const MAX_ATTEMPTS = 3;
 
 /**
  * Polls /api/items/[id]/enrichment-status every 3s while state is
@@ -32,6 +38,7 @@ export function EnrichingPill({
     state: initialState,
     last_error: null,
     updated_at: Date.now(),
+    attempts: 0,
   }));
 
   useEffect(() => {
@@ -75,7 +82,12 @@ export function EnrichingPill({
     );
   }
 
-  const label = status.state === "running" ? "enriching…" : "queued";
+  const retrying = status.attempts > 1;
+  const label = retrying
+    ? `retrying ${status.attempts}/${MAX_ATTEMPTS}…`
+    : status.state === "running"
+      ? "enriching…"
+      : "queued";
 
   return (
     <span

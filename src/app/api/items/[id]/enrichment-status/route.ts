@@ -17,17 +17,31 @@ export async function GET(
     return NextResponse.json({ error: "unauthenticated" }, { status: 401 });
   }
   const { id } = await params;
+  // F-046 (self-critique A-4): surface attempts so the EnrichingPill can
+  // distinguish "queued" from "retrying 2/3". The LEFT JOIN may duplicate
+  // the items row if multiple enrichment_jobs exist for the same item
+  // (shouldn't happen today but defensive): pick the most recent job.
   const row = getDb()
     .prepare(
       `SELECT items.enrichment_state AS state,
               items.enriched_at AS updated_at,
-              enrichment_jobs.last_error AS last_error
+              j.last_error AS last_error,
+              j.attempts AS attempts
        FROM items
-       LEFT JOIN enrichment_jobs ON enrichment_jobs.item_id = items.id
+       LEFT JOIN (
+         SELECT item_id, last_error, attempts,
+                ROW_NUMBER() OVER (PARTITION BY item_id ORDER BY id DESC) AS rn
+         FROM enrichment_jobs
+       ) AS j ON j.item_id = items.id AND j.rn = 1
        WHERE items.id = ?`,
     )
     .get(id) as
-    | { state: string; updated_at: number | null; last_error: string | null }
+    | {
+        state: string;
+        updated_at: number | null;
+        last_error: string | null;
+        attempts: number | null;
+      }
     | undefined;
   if (!row) return NextResponse.json({ error: "not_found" }, { status: 404 });
 
@@ -36,6 +50,7 @@ export async function GET(
       state: row.state,
       last_error: row.last_error,
       updated_at: row.updated_at ?? Date.now(),
+      attempts: row.attempts ?? 0,
     },
     { headers: { "cache-control": "no-store" } },
   );
