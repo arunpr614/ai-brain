@@ -1510,3 +1510,62 @@ v0.3.1 tag (pending this commit)
 - **Only new dep this phase:** `tsx@^4.19.2` (dev)
 - **Repo:** `main` 32 commits ahead of `origin/main`; tag `v0.3.1` local; **not pushed**
 - **Next milestone:** R-VEC spike execution (blocks v0.4.0) — or whatever the user decides next
+
+---
+
+## 2026-05-08 14:37 — Post-release supplement: tag cut + final verification
+
+**Entry author:** AI agent (Claude) · **Triggered by:** running-log-updater skill, post-release journal note (supplements the 14:33 phase-close entry).
+
+> Short supplement, not a restatement. The full v0.3.1 phase-close story lives in the 14:33 entry; this one captures only what happened between the release commit landing and now.
+
+### Planned since last entry
+
+The 14:33 entry was **bundled into** the release commit `6fd645e` itself — so anything that happened strictly after that commit (tag cut, post-tag verification, final repo-state snapshot) needed a follow-up entry. The release plan (v0.3.1-plan v2.0 §T-B-6) listed two steps still pending at that point:
+
+1. Create annotated tag `v0.3.1` at the release commit.
+2. Re-verify every gate one more time against the tagged HEAD so "v0.3.1" literally points at a green commit.
+
+### Done
+
+- **Annotated tag cut locally** at `6fd645e`:
+  - `git tag -a v0.3.1 -m "v0.3.1 — Polish + Hardening…"` with a body that enumerates the 17 work items and the "green at release" status.
+  - `git tag -l "v*"` confirms `v0.3.1` is the only version tag in the repo.
+- **Post-tag gate re-run** — all five bars are green at the tagged commit:
+  - `npm test` → 24 unit tests pass (5 shouldSweep + 9 auth + 10 pipeline)
+  - `npm run smoke` → 16 assertions pass
+  - `npm run typecheck` → clean
+  - `npm run lint` → clean
+  - `npm run build` → 14 routes compile
+
+### Learned
+
+- Cutting the tag **after** the release commit (rather than amending the commit to carry the tag) is the right ordering: if the final verification had failed, I'd have been able to `git revert` the release commit cleanly without a dangling tag. Worth keeping as a discipline for v0.4.0.
+- The F-054 revert rehearsal I ran before the release commit gave me confidence that the release commit is itself revertable — validated the guard as a real pre-tag step, not theatre.
+
+### Deployed / Released
+
+**Local-only release intact.** `v0.3.1` tag at `6fd645e` on `main`. Nothing pushed.
+
+### Documents created or updated this period
+
+- `RUNNING_LOG.md` — this supplement (1 entry appended).
+
+No tracker or code files touched between the 14:33 release commit and now — all subsequent work is either local-git state (tagging) or no-op verification (running scripts).
+
+### Current remaining to-do
+
+1. **`git push origin main --tags`** — 32 commits + tag `v0.3.1` still local-only. Awaiting explicit user approval per GSD norm.
+2. **R-VEC spike** per [`docs/plans/R-VEC-spike.md`](./docs/plans/R-VEC-spike.md). Blocks v0.4.0 Ask (RAG). Default: start next session unless user redirects.
+3. Optional: `gsd-review` cross-AI read on the v0.4.0 plan when that plan exists (mitigation for critique M-3).
+
+### Open questions / decisions needed
+
+- **Push approval** for `main` + tags — still pending.
+- **Next-session default** — R-VEC, or something else? If user doesn't redirect before next session, assume R-VEC.
+
+### State snapshot
+
+- **Current phase / version:** v0.3.1 ✅ SHIPPED (tag at `6fd645e`); v0.4.0 Ask (RAG) not started, blocked by R-VEC
+- **Active trackers:** `BUILD_PLAN.md` · `ROADMAP_TRACKER.md` v0.6.0 · `PROJECT_TRACKER.md` v0.6.0 · `BACKLOG.md` v3.0 · `RUNNING_LOG.md` · `docs/plans/{v0.3.1-polish,R-VEC-spike,SELF_CRITIQUE_2026-05-08_10-14-16}.md`
+- **Next milestone:** R-VEC spike execution (half-day timebox) OR `git push` if user prefers to release public first
