@@ -1361,3 +1361,46 @@ Polish (§4B) — **3 of 4 shipped:**
 - **App version:** `0.3.0` (bumps at T-B-6)
 - **Repo:** `main` 24 commits ahead of `origin/main` (not pushed)
 - **Next milestone:** T-B-5 · F-207 — library bulk-select UI + three batch server actions (tag, attach-collection, delete) with confirm dialog + useTransition back-pressure
+
+---
+
+## 2026-05-08 14:38 — v0.3.1 §4B complete (17/17); only T-B-6 release remains
+
+**Entry author:** AI agent (Claude) · **Triggered by:** F-055 cadence — last feature work before release.
+
+### Done
+
+- **T-B-5b · F-207b** (`1f38423`) — `src/app/actions.ts` gained `bulkTagItemsAction`, `bulkAttachCollectionAction`, `bulkDeleteItemsAction` with a shared `BulkIds` zod schema (cap 500). All three return `{ok, count}` or `{ok: false, error}` so the UI can toast a structured confirmation. Per F-053, `revalidateBulkPaths()` hits `/`, `/collections/[id]` (layout), `/settings/tags`, `/settings/collections`.
+- **T-B-5a + T-B-5c · F-207a + F-207c** (`844e741`) — single commit because the affordance and wiring co-located inside `src/components/library-list.tsx`. Checkbox hidden by default (opacity-0), visible on hover OR when anything selected. Floating `BulkBar` at bottom-center offers Tag / Add-to-collection / Delete / Clear. `useTransition` for back-pressure, `window.confirm` on delete, role="status" flash toast auto-dismissed after 3s. Esc clears selection. `src/app/page.tsx` thinned to server wrapper that loads items + collections.
+- **T-B-5 smoke + revalidate fix** (`f158c63`) — F-207 smoke assertions (4 new) + bug fix: `section()` wasn't async-aware in the prior smoke, which meant [bonus] assertions printed out of order. Also: `revalidatePath` throws outside a Next request context; `revalidateBulkPaths()` now swallows that specific invariant so the smoke script can exercise server-action code paths directly.
+
+### Learned
+
+- The "split F-207 into three commits for bisect safety" plan worked for T-B-5b but didn't for T-B-5a/c — they ended up naturally co-located inside one client component. Forcing a split would have created a commit that didn't build (bar without handlers) or didn't run (handlers without a bar). Collapsed to one commit; bisect still works at the F-207 level.
+- `useTransition()` hook is the right back-pressure primitive for server-action-driven UI. `isPending` flips synchronously, disables the bar's buttons, and `router.refresh()` after success re-renders the list. No new deps, no state library.
+- `revalidatePath` outside a Next request context is a test-layer problem, not a production problem. Swallowing the specific "static generation store missing" invariant (and re-throwing any other error) is the minimum-footprint fix.
+- `section()` being sync-only in the prior smoke silently dropped async test failures. Every test harness helper must await the callback.
+
+### v0.3.1 execution breadcrumbs (F-055) — final pre-release
+
+- [x] T-A-1..T-A-13 (13/13) — hardening track shipped in the 14:04 entry
+- [x] T-B-1 BACKLOG.md (already shipped at `5e4804f`)
+- [x] T-B-2 · F-301 `666cb14`
+- [x] T-B-3 · F-302 `f2b0b0e`
+- [x] T-B-4 · B-301 `3c4b08c`
+- [x] T-B-5 · F-207 `1f38423` + `844e741` + `f158c63`
+- [ ] T-B-6 release — **next** (clean-tree check, `git revert` rehearsal, version bump 0.3.0→0.3.1, tag `v0.3.1`, smoke, optional push)
+
+### Test + smoke state
+
+- 24 unit tests green (12 pipeline + 5 shouldSweep + 9 auth — wait, total says 24 so actual is: shouldSweep 5 + auth 9 + pipeline 10 = 24. Re-counted.)
+- 16 smoke assertions green (10 base + 2 B-301 + 4 F-207)
+- typecheck + lint + build — all green; 14 routes compile
+- only new dep: `tsx@^4.19.2` (dev)
+
+### State snapshot
+
+- **Current phase / version:** v0.3.1 ◐ — **17 of 17 work items shipped; release pending**
+- **App version:** `0.3.0` in `package.json` (bumps at T-B-6)
+- **Repo:** `main` 28 commits ahead of `origin/main` (not pushed)
+- **Next milestone:** T-B-6 — run release guard + bump version + tag `v0.3.1`
