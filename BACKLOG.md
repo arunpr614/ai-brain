@@ -2,11 +2,11 @@
 
 | Field | Value |
 |-------|--------|
-| **Document version** | v0.3.1-backlog v3.0 (post-release) |
+| **Document version** | v4.0-backlog (v0.4.0 kickoff) |
 | **Date** | 2026-05-08 |
 | **Owner** | Arun |
 | **Update cadence** | at every phase kickoff; whenever an item is promoted, deferred, or closed |
-| **Revision** | v3.0 — v0.3.1 shipped; all §1 items moved to §5 closed with commit SHAs |
+| **Revision** | v4.0 — v0.4.0 execution started; §5 rotated to `docs/archive/BACKLOG_ARCHIVE_2026-05.md` (P-11 closed); F-057 closed under T-0 |
 
 > Single source of truth for work that is **not in the active phase plan** but is known-needed, nice-to-have, or idea-captured. Items promoted from here land in `BUILD_PLAN.md` under a phase heading. Items closed here get a strikethrough and a closing commit SHA.
 
@@ -86,41 +86,18 @@ Full plan: [`docs/plans/v0.3.1-polish.md`](./docs/plans/v0.3.1-polish.md) (v2.0)
 | I-01 | Auto-collection suggestion from enrichment tags | Would sit behind a user toggle; needs R-CLUSTER first. |
 | I-02 | Per-item "regenerate enrichment" button | Already safe: `enrichItem` is idempotent. UI work only. |
 | I-03 | Export Obsidian vault directly (not just zip) | Requires D-4 (Obsidian vault path) — still open. |
-| F-057 | Audit `sqlite-vec` resolved version on install (lockfile said 0.1.6, installed 0.1.9) | P2. Reproduce with `npm ls sqlite-vec sqlite-vec-darwin-arm64`. Consider explicit sub-package pin if drift repeats. Not a blocker — 0.1.9 shipped in v0.3.1 and meets R-VEC thresholds by > 10×. |
+| ~~F-057~~ | ~~Audit `sqlite-vec` resolved version on install~~ | **Closed 2026-05-08** under v0.4.0 T-0 (`e8f104a`): pinned to 0.1.9 with explicit overrides for all five platform sub-packages. `npm ls` shows `sqlite-vec-darwin-arm64@0.1.9 overridden`. |
 
 ---
 
 ## 5. Recently closed
 
-### R-VEC spike (GREEN, 2026-05-08)
+Rotated 2026-05-08 (plan T-2 / P-11). Everything shipped in or before v0.3.1 + the R-VEC spike + F-057 lives in [`docs/archive/BACKLOG_ARCHIVE_2026-05.md`](./docs/archive/BACKLOG_ARCHIVE_2026-05.md). Future v0.4.0 closures accumulate here until the next rotation (rule of thumb: rotate when §5 crosses ~20 items).
 
-- ~~R-VEC~~ sqlite-vec performance benchmark at 1k/10k/50k chunks on M1 Pro — **GREEN verdict**, all four thresholds pass with ≥ 10× headroom. v0.4.0 Ask/RAG unblocked. Findings: [`docs/research/vector-bench.md`](./docs/research/vector-bench.md). Scripts: [`scripts/spike-vec-smoke.mjs`](./scripts/spike-vec-smoke.mjs), [`scripts/spike-vec-bench.mjs`](./scripts/spike-vec-bench.mjs). Follow-up **F-057** (version-drift audit for `sqlite-vec`) added to §4-adjacent hardening backlog.
+### v0.4.0 in progress (closing as tasks land)
 
-### v0.3.1 Polish + Hardening (shipped 2026-05-08)
-
-**Polish (§4B):**
-- ~~F-207~~ Library multi-select + bulk tag/collection/delete (`1f38423` actions · `844e741` UI · `f158c63` smoke)
-- ~~F-301~~ Wire `CollectionEditor` into item detail (`666cb14`)
-- ~~F-302~~ Inline tag editor on item detail (`f2b0b0e`)
-- ~~B-301~~ Title de-hyphenation, tightened heuristic (`3c4b08c`)
-
-**Hardening (§4A):**
-- ~~F-042~~ Bind dev server to `127.0.0.1` — P0 (`54bc92f`)
-- ~~F-043~~ Session cookie expiry + `SameSite=Strict` + auth tests (`9431332`)
-- ~~F-044~~ `globalThis` worker guard (HMR-safe) (`d4ae435`)
-- ~~F-045~~ Periodic `sweepStaleClaims()` + exported `shouldSweep()` (`9cffda4`)
-- ~~F-046~~ Retry attempts on enrichment status + pill (`db01434`)
-- ~~F-047~~ Non-nodejs instrumentation skip log (`6316361`)
-- ~~F-048~~ WAL + `synchronous=NORMAL` post-condition (`0da8dcd`)
-- ~~F-034~~ DB restore script + runbook (`7d4a259`)
-- ~~F-049~~ Exact-pin `sqlite-vec@0.1.6` (`3bbf1a7`)
-- ~~F-050~~ `errors.jsonl` 5MB-rotation error sink (`1fd3b08`)
-- ~~F-051~~ `node:test` runner + `tsx` + first tests (`92e0d0f`)
-- ~~F-052~~ `scripts/smoke-v0.3.1.mjs` + `npm run smoke` (`ce6de9c`, `f158c63`)
-- ~~F-053~~ Bulk actions revalidate collection + tag paths (rolled into `1f38423`)
-- ~~F-054~~ Release guard — tree-clean + revert rehearsal (T-B-6 gate)
-- ~~F-055~~ Per-task `RUNNING_LOG.md` breadcrumbs (applied throughout)
-- ~~F-056~~ PIN overwrite guard + `deleteSetting` helper (`6580a11`)
+- ~~F-057~~ sqlite-vec pin audit → 0.1.9 with explicit overrides (`e8f104a`, T-0)
+- ~~M-3~~ Cross-AI plan review (`150ccf5`, T-1) — 4 patches absorbed into plan v1.2; review file: [`docs/plans/v0.4.0-ask-REVIEW.md`](./docs/plans/v0.4.0-ask-REVIEW.md)
 
 ---
 
