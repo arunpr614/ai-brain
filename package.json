@@ -18,7 +18,8 @@
     "smoke": "node --import tsx scripts/smoke-v0.3.1.mjs && node --import tsx scripts/smoke-v0.4.0.mjs",
     "smoke:0.3.1": "node --import tsx scripts/smoke-v0.3.1.mjs",
     "smoke:0.4.0": "node --import tsx scripts/smoke-v0.4.0.mjs",
-    "backfill:embeddings": "node --import tsx scripts/backfill-embeddings.mjs"
+    "backfill:embeddings": "node --import tsx scripts/backfill-embeddings.mjs",
+    "bench:ask": "node --import tsx scripts/bench-ask.mjs"
   },
   "dependencies": {
     "@mozilla/readability": "^0.6.0",
