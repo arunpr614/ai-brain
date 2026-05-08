@@ -1320,3 +1320,44 @@ Parallel lane (blocks v0.4.0, not v0.3.1 closure): R-VEC spike per `docs/plans/R
 - **Only new dev dep this phase:** `tsx@^4.19.2`
 - **Repo:** `main` 20 commits ahead of `origin/main` (not pushed)
 - **Next milestone:** T-B-2 (F-301) — wire `CollectionEditor` into `src/app/items/[id]/page.tsx`
+
+---
+
+## 2026-05-08 14:18 — T-B-2, T-B-3, T-B-4 shipped (F-301, F-302, B-301)
+
+**Entry author:** AI agent (Claude) · **Triggered by:** F-055 cadence — three polish commits before the large F-207 piece.
+
+### Done
+
+- **T-B-2 · F-301** (`666cb14`) — `CollectionEditor` now imported + rendered on `src/app/items/[id]/page.tsx`. Aside restructured as a vertical flex stack so Collections is always visible (not gated on enrichment done).
+- **T-B-3 · F-302** (`f2b0b0e`) — new `src/components/tag-editor.tsx` mirroring `CollectionEditor`'s shape; uses `useRef` to reset the input after successful add. Auto vs manual tags get distinct borders. Duplicate/empty inputs are rejected by the existing zod schema in `taxonomy-actions.ts`. Removed the old read-only tag block from inside the digest card so there's no duplicate state.
+- **T-B-4 · B-301** (`3c4b08c`) — `postProcessTitle` added in `src/lib/enrich/pipeline.ts` with the tightened "0 spaces && ≥2 hyphens" rule. Preserves mixed-case acronyms like `PMs` / `iPhone` while still normalising all-caps screamers like `HYPHENATED`. 12 unit tests in `src/lib/enrich/pipeline.test.ts`; smoke script's B-301 stub now asserts two headline cases end-to-end.
+
+### Learned
+
+- The first naive title-casing pass lowercased `PMs` → `Pms`. Fixed by preserving tokens with ≥1 lowercase AND ≥2 uppercase letters — the signature of brand/acronym casing. Pure all-caps tokens (zero lowercase) still normalise.
+- Putting Tags + Collections in their own always-visible cards (rather than inside the conditional digest card) is the correct UX shape: users often want to organize an item *before* enrichment completes, not after.
+- `useRef<HTMLFormElement>` + `formRef.current?.reset()` inside the server-action form works cleanly in the App Router and doesn't require any state management beyond what React provides.
+
+### v0.3.1 execution breadcrumbs (F-055) — update
+
+Polish (§4B) — **3 of 4 shipped:**
+- [x] T-B-2 · F-301 `666cb14`
+- [x] T-B-3 · F-302 `f2b0b0e`
+- [x] T-B-4 · B-301 `3c4b08c`
+- [ ] T-B-5 · F-207 — **next** (library bulk-select + batch actions; largest polish piece)
+- [ ] T-B-6 release
+
+### Test + smoke state
+
+- 24 unit tests green (12 pipeline + 5 shouldSweep + 9 auth — `pipeline` folder now the biggest surface)
+- 12 smoke assertions green (10 base + 2 B-301)
+- typecheck + lint clean
+- No new deps
+
+### State snapshot
+
+- **Current phase / version:** v0.3.1 ◐ — **§4A 13/13 + §4B 3/4 = 16 of 17 work items shipped**
+- **App version:** `0.3.0` (bumps at T-B-6)
+- **Repo:** `main` 24 commits ahead of `origin/main` (not pushed)
+- **Next milestone:** T-B-5 · F-207 — library bulk-select UI + three batch server actions (tag, attach-collection, delete) with confirm dialog + useTransition back-pressure
