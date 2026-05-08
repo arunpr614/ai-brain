@@ -952,3 +952,38 @@ The 21:20 kickoff listed 9 v0.3.0 tasks (F-201..F-208 + exit commit). Goal for t
 - **Models on disk:** `qwen2.5:7b-instruct-q4_K_M` (default) + `qwen3:8b` (v0.6.0 GenPage path). Ollama running in background from this session.
 - **Active trackers:** `BUILD_PLAN.md` · `DESIGN.md` · `DESIGN_SYSTEM.md` · `ROADMAP_TRACKER.md` · `PROJECT_TRACKER.md` · `RUNNING_LOG.md` · `docs/research/{SELF_CRITIQUE,EMPIRICAL_SANITY,llm-b-qwen3}.md`
 - **Next milestone:** v0.3.0 exit — "10 captured items each have summary + category + title + tags in ≤30 s; dual-pane renders; collections CRUD works; bulk export returns a valid zip."
+
+---
+
+## 2026-05-08 — v0.3.1 Polish + Hardening phase opened (post-handover)
+
+### Context
+
+Resumed the project after the 2026-05-07 v0.3.0 ship (`5d1c390`) via the `Handover_docs_07_05_2026/` package. The previous agent left the handover folder untracked and had not formalised a v0.3.1 plan. This session closes both gaps plus an adversarial architecture + plan self-critique, then starts execution.
+
+### Commits this session (newest first)
+
+- `54bc92f` — **T-A-1 · F-042 (P0)**: bind Next dev+start to `127.0.0.1` until v0.5.0 CSRF lands (package.json + src/instrumentation.ts policy comment). Typecheck green.
+- `9cd92fd` — absorb self-critique into ROADMAP_TRACKER (v0.5.0), PROJECT_TRACKER (v0.5.0), BACKLOG (v2.0), v0.3.1-polish plan (v2.0 two-track)
+- `5c1f937` — adversarial self-critique of architecture + v0.3.1/R-VEC plans (22 findings, `docs/plans/SELF_CRITIQUE_2026-05-08_10-14-16.md`)
+- `5e4804f` — BACKLOG.md + v0.3.1 polish plan + R-VEC spike plan (`docs/plans/`)
+- `dad9ca6` — commit the 10-file handover package the previous agent had left untracked
+
+### v0.3.1 execution breadcrumbs (F-055)
+
+- [ ] T-A-1 · F-042 ✅ shipped `54bc92f`
+- [ ] T-A-2 · F-048 — WAL pragmas — **next**
+- [ ] T-A-3 · F-044 — HMR worker guard
+- [ ] T-A-4 · F-045 — periodic stale sweep
+- [ ] T-A-5 · F-047 · T-A-6 · F-046 · T-A-7 · F-051 · T-A-8 · F-043 · T-A-9 · F-034 · T-A-10 · F-049 · T-A-11 · F-050 · T-A-12 · F-056 · T-A-13 · F-052
+- [ ] T-B-1 · BACKLOG.md ✅ already shipped at `5e4804f`
+- [ ] T-B-2 · F-301 · T-B-3 · F-302 · T-B-4 · B-301 · T-B-5 · F-207 · T-B-6 release
+
+### State snapshot
+
+- **Current phase / version:** v0.3.0 ● → **v0.3.1 ◐ hardening track in progress**
+- **App version:** `0.3.0` in `package.json` (bumps to `0.3.1` at phase exit via T-B-6)
+- **Plan version:** `v0.3.1-plan v2.0` (two-track)
+- **Repo:** https://github.com/arunpr614/ai-brain — `main` is 5 commits ahead of `origin/main` (not pushed this session)
+- **Active trackers:** BUILD_PLAN, ROADMAP_TRACKER v0.5.0, PROJECT_TRACKER v0.5.0, BACKLOG v2.0, RUNNING_LOG, `docs/plans/{v0.3.1-polish,R-VEC-spike,SELF_CRITIQUE_2026-05-08_10-14-16}.md`
+- **Next milestone:** T-A-2 (F-048) — force `journal_mode=WAL` + `synchronous=NORMAL` on every connection open in `src/db/client.ts`
