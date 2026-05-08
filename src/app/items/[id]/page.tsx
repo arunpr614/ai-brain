@@ -2,7 +2,12 @@ import { ArrowLeft, Download, ExternalLink, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { deleteItemAction } from "@/app/actions";
+import { CollectionEditor } from "@/components/collection-editor";
 import { ItemEnrichmentWatch } from "@/components/item-enrichment-watch";
+import {
+  listCollections,
+  listCollectionsForItem,
+} from "@/db/collections";
 import { getItem } from "@/db/items";
 import { listTagsForItem } from "@/db/tags";
 
@@ -27,9 +32,13 @@ export default async function ItemDetailPage({
 
   const captured = new Date(item.captured_at).toLocaleString();
   const tags = listTagsForItem(item.id);
+  const attachedCollections = listCollectionsForItem(item.id);
+  const availableCollections = listCollections("manual");
   const quotes = parseQuotes(item.quotes);
   const hasDigest =
     item.enrichment_state === "done" && (item.summary || quotes.length > 0);
+  const hasAnyCollections =
+    attachedCollections.length > 0 || availableCollections.length > 0;
 
   return (
     <div className="mx-auto max-w-[1180px] px-8 py-10">
@@ -127,8 +136,34 @@ export default async function ItemDetailPage({
           </footer>
         </article>
 
-        {/* RIGHT: AI digest */}
-        <aside className="font-sans text-sm lg:sticky lg:top-8 lg:self-start">
+        {/* RIGHT: Collections + AI digest */}
+        <aside className="flex flex-col gap-6 font-sans text-sm lg:sticky lg:top-8 lg:self-start">
+          {/* F-301: Collections editor — always visible so the user can
+              attach/detach without waiting for enrichment to finish. */}
+          <div className="rounded-lg border border-[var(--border)] bg-[var(--surface)] p-5">
+            <p className="mb-2 text-[11px] font-medium uppercase tracking-wider text-[var(--text-muted)]">
+              Collections
+            </p>
+            {hasAnyCollections ? (
+              <CollectionEditor
+                itemId={item.id}
+                attached={attachedCollections}
+                available={availableCollections}
+              />
+            ) : (
+              <p className="text-xs text-[var(--text-muted)]">
+                Create one in{" "}
+                <Link
+                  href="/settings/collections"
+                  className="text-[var(--accent-11)] hover:underline"
+                >
+                  Settings → Collections
+                </Link>{" "}
+                to start organizing.
+              </p>
+            )}
+          </div>
+
           {hasDigest ? (
             <div className="flex flex-col gap-6 rounded-lg border border-[var(--border)] bg-[var(--surface)] p-5">
               {item.category && (
