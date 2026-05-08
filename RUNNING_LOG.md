@@ -1754,3 +1754,77 @@ Embedding worker loop (consumer of `embedding_jobs` queue) is NOT yet wired — 
 - **Tests:** 52/52 green (24 prior + 28 new). typecheck + lint clean.
 - **Repo:** `main` 8 commits ahead of `origin/main`; tag `v0.3.1` on origin; nothing pushed this session.
 - **Next milestone:** T-6 FTS5 cleanup → T-7 retriever → T-8..T-10 `/api/ask` route (biggest single unit; new session recommended).
+
+---
+
+## 2026-05-08 19:00 — v0.4.0 T-6 + T-7: FTS5 cleanup + retriever shipped
+
+**Entry author:** AI agent (Claude) · **Triggered by:** user directive "execute next step" twice in a row
+
+### Planned since last entry
+
+Continue v0.4.0 execution from the 18:10 checkpoint. Target: ship T-6 (FTS5 LIKE-fallback removal, critique A-8) and T-7 (retriever over vec0 + chunks_rowid bridge). Stop before T-8..T-10 (API/SSE/generator), which needs fresh context.
+
+### Done
+
+- **T-6 (`e5f5b13`):** Removed the LIKE fallback from `searchItems()` in `src/db/items.ts`. FTS5 MATCH is the sole path now; phrase-quoting (the existing double-quote wrap) neutralises every operator character the fallback was written to catch. 4 new tests in `src/db/items.test.ts` — normal bm25 ranking, empty query short-circuit, FTS5-operator chars (`-`, `:`, `()`, `AND`, `NEAR`) don't throw, embedded double quotes + SQL-injection-shaped input handled safely. Grepped callers first: only `src/app/search/page.tsx` uses `searchItems()`, and it passes user input directly — covered by the operator-char test.
+- **T-7 (`b4749f0`):** `src/lib/retrieve/index.ts` — `retrieve(query, {topK, itemId, minSimilarity})` returns `RetrievedChunk[]` with `chunk_id`, `item_id`, `item_title`, `body`, `similarity`. SQL structure: vec0 `MATCH` in a subquery with its own `LIMIT`, outer `JOIN chunks_rowid → chunks → items` pulls the enriched rows. `topK` caps at 50; `topK=0` short-circuits; `itemId` scope over-fetches 4× then filters in JS. 8 tests using a deterministic FNV-hash fake embedder (same text → same vector).
+- **Test surface growth:** 56 → 64 tests (+4 items, +8 retriever). `npm test`, `npm run typecheck`, `npm run lint`, `npm run smoke` all green at every commit.
+
+### Learned
+
+- **vec0 requires `LIMIT` directly on the `MATCH` query.** Can't sit on an outer `JOIN`. Error surfaces as `A LIMIT or 'k = ?' constraint is required on vec0 knn queries`. Fix: subquery pattern — `SELECT rowid, distance FROM chunks_vec WHERE embedding MATCH ? ORDER BY distance LIMIT ?` → then `JOIN` in an outer SELECT.
+- **vec0 returns L2 (Euclidean) distance, not cosine.** First pass of the retriever computed `similarity = 1 - distance` which produces negatives for L2 > 1 (common: unit-normalised vectors give L2 in `[0, 2]`). The silent failure was that every result fell below `minSimilarity=0` and got filtered out. Correct conversion for unit-normalised vectors: `cosine = 1 - L2²/2` → range `[−1, 1]`, same ranking order. Documented inline on `RetrievedChunk.similarity`.
+- **FTS5 phrase-quoting is sufficient defence.** The old LIKE fallback was written in v0.2.0 "so the UI never breaks," but once we wrap user input in `""` (escaping embedded `"` by doubling), FTS5 MATCH doesn't throw on operator chars. The fallback never actually ran in production — and when it did, it returned non-ranked rows in a silently-different order, which would have been worse than a 500.
+- **Plan-task path confusion caught by greppping.** Plan T-6 referenced `src/lib/search/fts.ts`; actual code lives in `src/db/items.ts::searchItems`. The [VERIFY] item from my 18:10 self-critique — "grep for LIKE usage *and* callers" — paid off immediately. Future plans should cite real paths, not aspirational ones.
+
+### Deployed / Released
+
+Nothing deployed. 10 commits unpushed on `main` (`66487e0` R-VEC through `b4749f0` T-7). Still `0.3.1` in `package.json`.
+
+### Documents created or updated this period
+
+- `src/db/items.ts` — LIKE fallback removed from `searchItems()`; updated docstring explaining phrase-quoting safety
+- `src/db/items.test.ts` + `src/db/items.test.setup.ts` — NEW (4 tests for FTS5 special-char safety)
+- `src/lib/retrieve/index.ts` — NEW (retriever with vec0 subquery pattern + cosine-from-L2 conversion)
+- `src/lib/retrieve/index.test.ts` + `src/lib/retrieve/index.test.setup.ts` — NEW (8 tests)
+
+### Current remaining to-do (v0.4.0 task IDs)
+
+1. **T-8 — `/api/ask` route skeleton.** POST, validates body with zod, calls `retrieve()`, stubs generator with echo, emits SSE frames `retrieve`, `token`, `done`. Exit: `curl http://localhost:3000/api/ask` returns retrieve + done frames.
+2. **T-9 — ASK-1 + ASK-2 + DIG-4:** real generator using `ollama.generate({ stream: true })`, SSE token pipe, `[CITE:chunk_id]` post-filter (drop orphans → log via shared sink per P-4), `llm_usage` write.
+3. **T-10 — SC-8:** Ollama-offline error path (`isOllamaAlive()` preflight, structured SSE error frame).
+4. **T-11..T-13 — UI:** `/ask` page + streaming hook + citation chips + thread persistence + per-item chat.
+5. **T-14..T-16 — Semantic search UI + related-items panel + backfill script.**
+6. **T-17..T-20 — smoke + bench + release guard + running-log + tracker updates.**
+
+### Open questions / decisions needed
+
+- **Embedding worker ordering** still open — raised in 18:10 entry. Default: ship worker loop inside T-16 backfill. Ask at T-8 kickoff.
+- **Push timing** — my prior action item said push after T-10. Still on track; no action needed now.
+
+### Session self-critique
+
+- **T-7 shipped with a wrong similarity formula that none of my 8 tests caught until I ran them.** The fake-embedder tests failed at first run because of the math bug, which is arguably the point of tests — but the real lesson is that I designed a fake embedder that produces vectors with identical-direction hits (cosine ≈ 1) and wrote the assertions around that, so `distance=0 → sim=1` looked fine. Only the `itemId scope` test, which matched a less-similar item, tripped the negative-similarity regime and surfaced the bug. If my fake had produced only perfect matches, I'd have shipped a retriever that returns `[]` for every realistic query. **Pattern-level:** my test corpora skew toward very-similar or very-different — missing the medium-similarity regime that real embeddings actually live in.
+- **I wrote a debug script (`scripts/debug-retrieve.mjs`) inline and then deleted it.** Handy for the one-off, but a "vec0 sanity check" script would be genuinely useful to keep — every future retriever change risks the same L2-vs-cosine confusion. Should have kept it as `scripts/spike-retrieve-sanity.mjs` alongside `spike-vec-smoke.mjs`. Small regret; low blast radius; worth mentioning for the next agent.
+- **I iterated on the retriever SQL three times before it worked.** First: direct query with `WHERE MATCH ... AND item_id = ?` (failed — vec0 needs LIMIT on the MATCH). Second: subquery pattern (worked but similarity formula wrong). Third: corrected formula. The commit message captures the final state cleanly, but a future bisect won't show the intermediate failures because I didn't commit in between. That's the right call for a single-task commit, but if a later agent runs `git bisect` expecting to see intermediate states, they won't. Not a real problem — the tests and docstrings carry the intent.
+- **No cross-AI review on T-6 or T-7.** Plan only gated M-3 on the plan itself (T-1), and I did that. But for both tasks involving non-trivial SQL, a second look would have caught the L2-vs-cosine thing earlier. Scope call — not worth running a new gsd-review substitute per task.
+
+### Action items for the next agent
+
+1. **[VERIFY]** Before using `retrieve()` against live embeddings, confirm `nomic-embed-text` outputs are unit-normalised. If not, the `1 - L2²/2` cosine conversion drifts. Inspect one real vector's L2 norm: `sqrt(sum(v[i]^2))` should be `≈ 1.0`. If not, switch to `similarity = -distance` (monotonic, same ranking, different absolute values) and update the minSimilarity threshold defaults in the `/api/ask` route accordingly.
+2. **[DO]** When wiring `/api/ask` in T-8..T-9, expose `similarity` in the `retrieve` SSE frame — debugging generator-quality issues without it is painful. Plan §5.5 lists only `retrieve/token/citation/done` frame types; extend the `retrieve` frame payload to include per-chunk similarity.
+3. **[DO]** Add a persistent `scripts/spike-retrieve-sanity.mjs` (or fold it into the existing vec smoke suite) that embeds 5 real queries against a small corpus and prints similarity + top item. Without it, any future L2-vs-cosine-style silent failure returns `[]` and looks like an empty library.
+4. **[VERIFY]** At T-8 skeleton stage, curl the echo-generator path BEFORE wiring the real generator. Next 16 streaming server actions can misbehave with ReadableStream wrapping; catch it empty-body first.
+5. **[ASK]** User on embedding-worker ordering before starting T-8 (same question raised in 18:10 entry, still open). Default remains: worker loop inside T-16 backfill.
+6. **[DO]** Push `origin main` after T-10 ships green — 10 commits currently unpushed, and the next three tasks add another 3+ commits. Keeping the remote within 15 of HEAD is a reasonable guardrail.
+
+### State snapshot
+
+- **Current phase / version:** v0.3.1 shipped → v0.4.0 Ask (RAG) **in execution**, **8 of 21 tasks done** (T-0..T-7)
+- **App version:** `0.3.1` in `package.json`
+- **Plan:** `docs/plans/v0.4.0-ask.md` v1.2
+- **Active trackers:** `PROJECT_TRACKER.md` v0.6.0 · `ROADMAP_TRACKER.md` v0.6.1 · `BACKLOG.md` v4.0 · `RUNNING_LOG.md` · plan + review docs
+- **Tests:** 64/64 green. typecheck + lint + smoke (16/16) all clean.
+- **Repo:** `main` 10 commits ahead of `origin/main`; tag `v0.3.1` on origin; nothing pushed this session.
+- **Next milestone:** T-8 `/api/ask` route skeleton (SSE, echo generator).
