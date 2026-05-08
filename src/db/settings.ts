@@ -34,3 +34,11 @@ export function getJsonSetting<T>(key: string, fallback: T): T {
 export function setJsonSetting<T>(key: string, value: T): void {
   setSetting(key, JSON.stringify(value));
 }
+
+/**
+ * Delete a setting row. Used by F-056 reset path to wipe auth.pin before
+ * setup re-runs. Idempotent — missing rows are a no-op.
+ */
+export function deleteSetting(key: string): void {
+  getDb().prepare("DELETE FROM settings WHERE key = ?").run(key);
+}
