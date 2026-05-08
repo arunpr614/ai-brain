@@ -14,6 +14,14 @@
  *   layer handles the distinct class of model-unavailable / timeout errors.
  */
 
+import {
+  appendFileSync,
+  existsSync,
+  mkdirSync,
+  renameSync,
+  statSync,
+} from "node:fs";
+import { dirname, resolve } from "node:path";
 import { getDb } from "@/db/client";
 import { enrichItem } from "@/lib/enrich/pipeline";
 import { isOllamaAlive } from "@/lib/llm/ollama";
@@ -26,6 +34,13 @@ const IDLE_INTERVAL_MS = 10_000; // when no work, back off
 const STALE_CLAIM_MS = 90_000;
 const MAX_ATTEMPTS = 3;
 const OLLAMA_DOWN_BACKOFF_MS = 30_000;
+
+// F-050 (self-critique A-10): lightweight append-only JSONL sink for
+// enrichment failures so the user has a retrospective trail beyond the
+// console log. Rotates at 5 MB by renaming the current file to .1 and
+// dropping the previous .1 on the next rotation (two-file policy).
+const ERRORS_LOG_PATH = resolve(process.cwd(), "data/errors.jsonl");
+const ERRORS_LOG_MAX_BYTES = 5 * 1024 * 1024;
 
 // F-044 (self-critique A-2): module-level flags do not survive Next's HMR
 // re-evaluation — every fast-refresh would boot a second worker. A
@@ -177,9 +192,39 @@ async function runOne(job: JobRow): Promise<void> {
   }
 }
 
+function logFailureToJsonl(entry: {
+  ts: number;
+  item_id: string;
+  attempt: number;
+  error: string;
+  terminal: boolean;
+}): void {
+  try {
+    mkdirSync(dirname(ERRORS_LOG_PATH), { recursive: true });
+    if (existsSync(ERRORS_LOG_PATH)) {
+      const { size } = statSync(ERRORS_LOG_PATH);
+      if (size >= ERRORS_LOG_MAX_BYTES) {
+        renameSync(ERRORS_LOG_PATH, `${ERRORS_LOG_PATH}.1`);
+      }
+    }
+    appendFileSync(ERRORS_LOG_PATH, `${JSON.stringify(entry)}\n`);
+  } catch (err) {
+    // Don't let a file-system problem cascade into worker failure.
+    console.warn(`[enrich] errors.jsonl write failed: ${(err as Error).message}`);
+  }
+}
+
 function handleFailure(job: JobRow, error: string): void {
   const db = getDb();
-  if (job.attempts >= MAX_ATTEMPTS) {
+  const terminal = job.attempts >= MAX_ATTEMPTS;
+  logFailureToJsonl({
+    ts: Date.now(),
+    item_id: job.item_id,
+    attempt: job.attempts,
+    error,
+    terminal,
+  });
+  if (terminal) {
     db.prepare(
       `UPDATE enrichment_jobs
        SET state = 'error', last_error = ?, completed_at = unixepoch() * 1000
