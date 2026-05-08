@@ -1213,3 +1213,110 @@ Polish (§4B) — **NEXT:**
 - **Test status:** 14 tests (5 shouldSweep + 9 auth) green; `npm run smoke` 10 assertions green
 - **New dev dep this phase:** `tsx@^4.19.2` (only one; T-A-7 decision)
 - **Next milestone:** T-B-2 (F-301) — smallest user-visible win in the polish track
+
+---
+
+## 2026-05-08 14:04 — v0.3.1 §4A hardening track COMPLETE (13/13); pivot to polish track
+
+**Entry author:** AI agent (Claude) · **Triggered by:** Milestone reached — all self-critique-absorbed hardening items shipped; one-stop structured entry before starting §4B polish so a context reset has a clean pickup point.
+
+### Planned since last entry
+
+The 2026-05-08 12:41 entry opened v0.3.1 with 4 of 13 §4A items shipped (F-042, F-048, F-044, F-045 — P0 + three P1 reliability fixes). The 12:58 entry added F-047, F-046, F-051 (3 more, including the `node:test` runner adoption). This block's plan was to finish the remaining 6 §4A items — F-043 (session cookie hardening + tests), F-049 (exact-pin sqlite-vec), F-056 (PIN-overwrite guard), F-050 (errors.jsonl sink), F-034 (restore script + runbook), F-052 (phase-exit smoke script) — and then leave a fully logged milestone before §4B polish work begins.
+
+Success criteria going in:
+1. Every P0/P1 self-critique item (2026-05-08) closed with a commit SHA.
+2. `npm run typecheck && npm run lint && npm test && npm run smoke` all green at the end.
+3. No polish-track (§4B) work started until hardening is complete — avoid the common failure mode of interleaving tracks.
+4. `RUNNING_LOG.md` has a proper skill-formatted milestone entry, not only mid-work breadcrumbs.
+
+### Done
+
+**Code shipped (6 more commits closing the hardening track):**
+
+- **T-A-8 · F-043 (P1)** `9431332` — documented session cookie policy in `src/lib/auth.ts` (expiry + HttpOnly + SameSite=Strict were already live from v0.1.0; the critique A-5 gap was really "undocumented rotation policy + no test coverage"). Added `src/lib/auth.test.ts` with 9 tests covering cookie options, PIN lifecycle, session token round-trip, and tampering rejection. Added `src/lib/auth.test.setup.ts` as a side-effect-imported setup file that reserves a tmp SQLite path before the DB singleton opens. Added `:memory:` exception to F-048's pragma post-condition so synthetic test DBs don't trip the boot assertion.
+- **T-A-10 · F-049 (P1)** `3bbf1a7` — `sqlite-vec` in `package.json` went from `^0.1.6` → `0.1.6`. Lockfile regenerated.
+- **T-A-12 · F-056 (P2)** `6580a11` — `setupAction` now requires `reset=1` in form data to overwrite an existing PIN. With the flag, it deletes `auth.pin` (which regenerates the signing key via `setPin`, invalidating all outstanding session tokens — the pre-v0.5.0 key-rotation escape hatch referenced in `auth.ts` docstring). Added `deleteSetting(key)` helper in `src/db/settings.ts`.
+- **T-A-11 · F-050 (P2)** `1fd3b08` — `handleFailure` in `src/lib/queue/enrichment-worker.ts` appends `{ts, item_id, attempt, error, terminal}` to `data/errors.jsonl`. Two-file rotation: at 5 MB the file is renamed to `.jsonl.1`, replacing any prior `.1`. fs errors are downgraded to `console.warn` so a full disk can't cascade.
+- **T-A-9 · F-034 (P1)** `7d4a259` — `scripts/restore-from-backup.sh` (chmod +x) plus runbook in `Handover_docs/Handover_docs_07_05_2026/07_Deployment_and_Operations.md` §7.1. The script refuses to run if the server is up (`lsof -iTCP:3000 -sTCP:LISTEN`), sidelines the current DB + WAL sidecars to `.pre-restore-<ts>.bak` rather than deleting them.
+- **T-A-13 · F-052 (P1)** `ce6de9c` — `scripts/smoke-v0.3.1.mjs` + new `npm run smoke` script. 10 assertions across 5 phases: pragmas, items+FTS5 round-trip, tag CRUD, collection CRUD, auth. Hooks for F-207 bulk actions and B-301 `postProcessTitle` left as commented stubs so T-B-* know exactly where to plug in.
+
+**Running log breadcrumbs per F-055:** `38a2386`, `abcce99`, `312817c`, `c802957`, `d00fd89`.
+
+**Full §4A scoreboard (complete):**
+
+| Task | Commit | Severity | Target |
+|---|---|---|---|
+| T-A-1 · F-042 | `54bc92f` | **P0** | `127.0.0.1` bind |
+| T-A-2 · F-048 | `0da8dcd` | P1 | WAL post-condition |
+| T-A-3 · F-044 | `d4ae435` | P1 | HMR worker guard |
+| T-A-4 · F-045 | `9cffda4` | P1 | Periodic stale sweep |
+| T-A-5 · F-047 | `6316361` | P2 | Non-nodejs boot log |
+| T-A-6 · F-046 | `db01434` | P2 | `attempts` on pill |
+| T-A-7 · F-051 | `92e0d0f` | P1 | `node:test` runner |
+| T-A-8 · F-043 | `9431332` | P1 | Auth docs + 9 tests |
+| T-A-9 · F-034 | `7d4a259` | P1 | Restore script + runbook |
+| T-A-10 · F-049 | `3bbf1a7` | P1 | sqlite-vec exact pin |
+| T-A-11 · F-050 | `1fd3b08` | P2 | errors.jsonl rotation |
+| T-A-12 · F-056 | `6580a11` | P2 | PIN overwrite guard |
+| T-A-13 · F-052 | `ce6de9c` | P1 | `npm run smoke` |
+
+### Learned
+
+- **Critique grounded in code reads is more reliable than critique grounded in handover claims.** A-5 framed the cookie story as "no expiry + no SameSite" but the actual code at `src/lib/auth.ts` lines 61, 84–86, 92 already had both. F-043 therefore became a documentation + test-coverage task, not a new-mechanism task. This pattern repeated for A-6 (WAL pragmas were already set — the critique collapsed to "add a stickiness assertion"). Future self-critiques should lead with verified code reads.
+- **`node:test` + `tsx` ESM trips on top-level await.** The first attempt at `src/lib/auth.test.ts` put `await import()` at module scope and failed with an esbuild CJS-output error. Fix: split env setup into a sibling `*.test.setup.ts` imported for its side effect BEFORE any DB-reaching static import.
+- **`node --test "src/**/*.test.ts"` glob pattern correctly ignores `*.test.setup.ts`.** The trailing literal `.test.ts` matches only the full suffix, not any substring.
+- **`:memory:` SQLite cannot enter WAL mode.** The F-048 post-condition fires a hard error for any non-`:memory:` DB — essential for production integrity, but required an escape hatch so test DBs work.
+- **`handleFailure`'s fs writes must not cascade into worker failure.** Wrapping `appendFileSync` in a try/catch + warn prevents a full `/data` disk from killing the enrichment queue, which would then kill every item's processing.
+- **Shell-script `lsof` guards are brittle if not `-sTCP:LISTEN`.** Without that filter, an outbound connection on port 3000 (TIME_WAIT or similar) would also match. Caught during the restore-script review.
+
+### Deployed / Released
+
+No release. `package.json` still reads `0.3.0`; `main` is 20 commits ahead of `origin/main` and **not pushed** — awaiting user approval at T-B-6. Tag `v0.3.1` will be cut at release time.
+
+Test state at entry time: 14 unit tests (5 `shouldSweep` + 9 `auth`) green; `npm run smoke` exits 0 with 10/10 assertions passing. Typecheck + lint green. Only net-new dependency this phase: `tsx@^4.19.2` (dev-only) adopted at T-A-7 to power the `node:test` runner with TypeScript path aliases.
+
+### Documents created or updated this period
+
+**Created:**
+- `src/lib/auth.test.ts` + `src/lib/auth.test.setup.ts` — first auth test suite.
+- `scripts/restore-from-backup.sh` — DB restore tool (executable bit set).
+- `scripts/smoke-v0.3.1.mjs` — phase-exit end-to-end smoke (run via `npm run smoke`).
+
+**Updated:**
+- `src/lib/auth.ts` — cookie-policy + key-rotation-policy docstring.
+- `src/app/auth-actions.ts` — F-056 reset-flag guard on setup path.
+- `src/db/client.ts` — F-048 `:memory:` exception for test DBs.
+- `src/db/settings.ts` — `deleteSetting()` helper.
+- `src/lib/queue/enrichment-worker.ts` — F-050 errors.jsonl sink in `handleFailure`.
+- `package.json` + `package-lock.json` — `sqlite-vec` exact-pin; `npm run smoke` script.
+- `Handover_docs/Handover_docs_07_05_2026/07_Deployment_and_Operations.md` — §7.1 Restore runbook.
+- `RUNNING_LOG.md` — this entry + 4 prior breadcrumb entries this session.
+
+### Current remaining to-do
+
+v0.3.1 polish track §4B (all `planned`, none started):
+
+1. **T-B-2 · F-301** — wire `CollectionEditor` into `src/app/items/[id]/page.tsx`. Smallest user-visible win; the component already exists. **← immediate next.**
+2. **T-B-3 · F-302** — inline tag editor on item detail. Same shape as T-B-2; reuses `addTagToItemAction` + `removeTagFromItemAction`.
+3. **T-B-4 · B-301** — title de-hyphenation with tightened heuristic (0 spaces && ≥2 hyphens). First real usage of the `node:test` runner for pipeline logic.
+4. **T-B-5 · F-207** — library bulk-select UI + batch tag/collection/delete server actions. Largest change in the phase; split into three commits (UI state, actions, wiring).
+5. **T-B-6 release** — clean tree + `git revert` rehearsal + version bump + tag `v0.3.1` + `npm run smoke` as the final gate.
+
+Parallel lane (blocks v0.4.0, not v0.3.1 closure): R-VEC spike per `docs/plans/R-VEC-spike.md`.
+
+### Open questions / decisions needed
+
+- **Push approval:** `git push origin main` — 20 commits are local-only. User approval still pending.
+- **Cross-AI review of v0.3.1 plan:** critique M-3 flagged the same-agent-wrote-plan-and-critique blind spot. `gsd-review` could mitigate if available for this project; user should decide whether to run it before T-B-6 tag.
+- None of the above blocks T-B-2 — starting polish track is safe.
+
+### State snapshot
+
+- **Current phase / version:** v0.3.0 ● shipped → v0.3.1 ◐ — **§4A hardening 13/13 shipped; §4B polish 0/4 shipped**
+- **App version:** `0.3.0` in `package.json` (bumps to `0.3.1` at T-B-6)
+- **Active trackers:** `BUILD_PLAN.md` · `ROADMAP_TRACKER.md` v0.5.0 · `PROJECT_TRACKER.md` v0.5.0 · `BACKLOG.md` v2.0 · `RUNNING_LOG.md` · `docs/plans/{v0.3.1-polish,R-VEC-spike,SELF_CRITIQUE_2026-05-08_10-14-16}.md`
+- **Test + smoke:** 14 unit tests green · 10 smoke assertions green · typecheck + lint green
+- **Only new dev dep this phase:** `tsx@^4.19.2`
+- **Repo:** `main` 20 commits ahead of `origin/main` (not pushed)
+- **Next milestone:** T-B-2 (F-301) — wire `CollectionEditor` into `src/app/items/[id]/page.tsx`
