@@ -1,13 +1,16 @@
 "use client";
 
 /**
- * Chat message renderer (T-11 skeleton; T-12 upgrades citations → chips).
+ * Chat message renderer with T-12 citation chips.
  *
- * For T-11 the assistant body is rendered verbatim including any `[CITE:id]`
- * markers. T-12 replaces the raw-text path with a parser that slices out
- * markers and renders clickable chips linking to `/items/<item_id>`.
+ * Assistant text passes through parseCitations(); `[CITE:id]` markers
+ * render as <CitationChip> linking to `/items/<item_id>?highlight=...#chunk-...`.
+ * User text renders verbatim (no markers expected).
  */
+import { Fragment } from "react";
 import type { AskRetrievedChunk } from "@/lib/client/use-ask-stream";
+import { parseCitations } from "@/lib/ask/parse-citations";
+import { CitationChip } from "./citation-chip";
 
 export interface ChatMessageProps {
   role: "user" | "assistant";
@@ -29,7 +32,27 @@ export function ChatMessage({ role, content, chunks }: ChatMessageProps) {
         {isUser ? "You" : "Brain"}
       </div>
       <div className="whitespace-pre-wrap text-sm text-[var(--text-primary)]">
-        {content || (isUser ? "" : <span className="text-[var(--text-muted)]">…</span>)}
+        {content ? (
+          isUser ? (
+            content
+          ) : (
+            parseCitations(content).map((seg, i) =>
+              seg.type === "text" ? (
+                <Fragment key={i}>{seg.text}</Fragment>
+              ) : (
+                <CitationChip
+                  key={i}
+                  chunk_id={seg.chunk_id}
+                  chunks={chunks ?? []}
+                />
+              ),
+            )
+          )
+        ) : isUser ? (
+          ""
+        ) : (
+          <span className="text-[var(--text-muted)]">…</span>
+        )}
       </div>
       {!isUser && chunks && chunks.length > 0 && (
         <div className="mt-3 border-t border-[var(--border)] pt-2">
@@ -37,12 +60,13 @@ export function ChatMessage({ role, content, chunks }: ChatMessageProps) {
             Retrieved from {chunks.length} chunk{chunks.length === 1 ? "" : "s"}
           </div>
           <ul className="flex flex-wrap gap-1.5">
-            {chunks.slice(0, 6).map((c) => (
+            {chunks.slice(0, 6).map((c, i) => (
               <li
                 key={c.chunk_id}
                 className="rounded-full border border-[var(--border)] bg-[var(--surface-raised)] px-2 py-0.5 text-[11px] text-[var(--text-secondary)]"
                 title={`similarity ${c.similarity.toFixed(3)}`}
               >
+                <span className="mr-1 font-mono text-[var(--text-muted)]">{i + 1}.</span>
                 {c.item_title}
               </li>
             ))}

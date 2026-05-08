@@ -1,14 +1,16 @@
-import { ArrowLeft, Download, ExternalLink, Trash2 } from "lucide-react";
+import { ArrowLeft, Download, ExternalLink, Quote, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { deleteItemAction } from "@/app/actions";
 import { CollectionEditor } from "@/components/collection-editor";
 import { ItemEnrichmentWatch } from "@/components/item-enrichment-watch";
+import { ScrollToHash } from "@/components/scroll-to-hash";
 import { TagEditor } from "@/components/tag-editor";
 import {
   listCollections,
   listCollectionsForItem,
 } from "@/db/collections";
+import { listChunksForItem } from "@/db/chunks";
 import { getItem } from "@/db/items";
 import { listTagsForItem } from "@/db/tags";
 
@@ -24,10 +26,13 @@ function parseQuotes(raw: string | null): string[] {
 
 export default async function ItemDetailPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ id: string }>;
+  searchParams: Promise<{ highlight?: string }>;
 }) {
   const { id } = await params;
+  const { highlight } = await searchParams;
   const item = getItem(id);
   if (!item) notFound();
 
@@ -41,8 +46,17 @@ export default async function ItemDetailPage({
   const hasAnyCollections =
     attachedCollections.length > 0 || availableCollections.length > 0;
 
+  // T-12: when arriving via an Ask citation chip, resolve the chunk body so
+  // we can render a highlight panel with an anchor the scroll-to-hash hook
+  // can find. Silently ignore invalid/foreign chunk_ids — the chip just
+  // looks like a regular item link.
+  const highlightedChunk = highlight
+    ? listChunksForItem(item.id).find((c) => c.id === highlight) ?? null
+    : null;
+
   return (
     <div className="mx-auto max-w-[1180px] px-8 py-10">
+      <ScrollToHash />
       <Link
         href="/"
         className="mb-6 inline-flex items-center gap-1.5 text-sm text-[var(--text-secondary)] transition-colors hover:text-[var(--text-primary)]"
@@ -50,6 +64,21 @@ export default async function ItemDetailPage({
         <ArrowLeft className="h-3.5 w-3.5" strokeWidth={2} />
         Back to Library
       </Link>
+
+      {highlightedChunk && (
+        <aside
+          id={`chunk-${highlightedChunk.id}`}
+          className="mb-8 rounded-lg border border-[var(--accent-9)] bg-[var(--accent-3)] p-4"
+        >
+          <div className="mb-2 flex items-center gap-2 text-[11px] font-medium uppercase tracking-wider text-[var(--accent-11)]">
+            <Quote className="h-3.5 w-3.5" strokeWidth={2} />
+            Cited passage
+          </div>
+          <p className="whitespace-pre-wrap text-sm text-[var(--text-primary)]">
+            {highlightedChunk.body}
+          </p>
+        </aside>
+      )}
 
       <div className="grid gap-10 lg:grid-cols-[minmax(0,68ch)_360px]">
         {/* LEFT: original content */}
