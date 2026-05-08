@@ -170,6 +170,121 @@ export async function generate(opts: GenerateOptions): Promise<GenerateResult> {
 }
 
 /**
+ * Streaming generate — v0.4.0 T-9.
+ *
+ * Consumes Ollama's NDJSON stream (`stream: true`), yielding each token's
+ * text delta. Caller is responsible for aggregating + post-processing
+ * (e.g. [CITE:...] marker parsing in src/lib/ask/generator.ts).
+ *
+ * Metrics: the final NDJSON line contains `done: true` plus prompt_eval_count
+ * and eval_count. These are captured by the caller via the `onDone` hook
+ * so token-counting survives without a second pass through the buffered text.
+ */
+export interface GenerateStreamOptions extends Omit<GenerateOptions, "format"> {
+  /** Called once with total token counts when Ollama emits the final frame. */
+  onDone?: (metrics: { input_tokens: number; output_tokens: number; wall_ms: number }) => void;
+}
+
+export async function* generateStream(
+  opts: GenerateStreamOptions,
+): AsyncGenerator<string, void, void> {
+  const model = opts.model ?? DEFAULT_MODEL;
+  const body = {
+    model,
+    prompt: opts.prompt,
+    system: opts.system,
+    stream: true,
+    think: false,
+    options: {
+      num_ctx: opts.num_ctx ?? 8192,
+      num_predict: opts.num_predict ?? 1200,
+      temperature: opts.temperature ?? 0.3,
+    },
+    keep_alive: opts.keep_alive ?? "15m",
+  };
+
+  const t0 = Date.now();
+  let res: Response;
+  try {
+    res = await fetch(`${OLLAMA_HOST}/api/generate`, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify(body),
+      signal: opts.signal,
+    });
+  } catch (err) {
+    const e = err as Error;
+    if (e.name === "AbortError" || e.name === "TimeoutError") {
+      throw new OllamaError("timeout", "Ollama stream request timed out");
+    }
+    throw new OllamaError(
+      "connection",
+      `Cannot reach Ollama at ${OLLAMA_HOST}: ${e.message}. Is the daemon running?`,
+    );
+  }
+
+  if (!res.ok) {
+    const text = await res.text().catch(() => "");
+    throw new OllamaError(
+      "http",
+      `Ollama returned ${res.status} ${res.statusText}: ${text.slice(0, 200)}`,
+      res.status,
+    );
+  }
+  if (!res.body) {
+    throw new OllamaError("invalid_response", "Ollama streaming response has no body");
+  }
+
+  const reader = res.body.getReader();
+  const decoder = new TextDecoder();
+  let buffer = "";
+  let inputTokens = 0;
+  let outputTokens = 0;
+
+  try {
+    for (;;) {
+      const { value, done } = await reader.read();
+      if (done) break;
+      buffer += decoder.decode(value, { stream: true });
+      // NDJSON: one JSON object per line.
+      let newlineIdx;
+      while ((newlineIdx = buffer.indexOf("\n")) !== -1) {
+        const line = buffer.slice(0, newlineIdx).trim();
+        buffer = buffer.slice(newlineIdx + 1);
+        if (!line) continue;
+        let frame: {
+          response?: string;
+          done?: boolean;
+          prompt_eval_count?: number;
+          eval_count?: number;
+        };
+        try {
+          frame = JSON.parse(line);
+        } catch {
+          continue; // skip malformed lines; Ollama is reliable here but be defensive
+        }
+        if (typeof frame.response === "string" && frame.response.length > 0) {
+          yield frame.response;
+        }
+        if (frame.done) {
+          inputTokens = frame.prompt_eval_count ?? 0;
+          outputTokens = frame.eval_count ?? 0;
+        }
+      }
+    }
+  } finally {
+    reader.releaseLock();
+    if (opts.onDone) {
+      opts.onDone({
+        input_tokens: inputTokens,
+        output_tokens: outputTokens,
+        wall_ms: Date.now() - t0,
+      });
+    }
+  }
+}
+
+/**
  * Convenience: generate + parse JSON with one retry at lower temperature.
  *
  * Per R-LLM-b §7: "If JSON.parse fails once, retry once with the same payload

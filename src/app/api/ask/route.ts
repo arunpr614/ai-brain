@@ -15,7 +15,8 @@ import { type NextRequest } from "next/server";
 import { z } from "zod";
 import { SESSION_COOKIE } from "@/lib/auth";
 import { retrieve } from "@/lib/retrieve";
-import { echoGenerator, orchestrateAsk, toSSEStream, encodeSSE } from "@/lib/ask/sse";
+import { orchestrateAsk, toSSEStream, encodeSSE } from "@/lib/ask/sse";
+import { ollamaGenerator } from "@/lib/ask/generator";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -75,7 +76,7 @@ export async function POST(req: NextRequest) {
     orchestrateAsk({
       question: parsed.question,
       chunks,
-      generator: echoGenerator,
+      generator: ollamaGenerator({ thread_id: parsed.thread_id }),
       signal: req.signal,
     }),
     req.signal,
