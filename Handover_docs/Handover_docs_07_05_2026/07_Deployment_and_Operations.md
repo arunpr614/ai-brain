@@ -134,8 +134,50 @@ AI Brain pre-v1.0.0 has **no production environment** — "rollback" means rever
 1. Identify the last good commit: `git log --oneline` and pick one before the regression.
 2. `git revert <bad-commit>` (produces a clean revert commit; safer than `reset --hard`).
 3. Verify smoke checks (§4).
-4. If the revert involved a DB migration: find the matching snapshot in `data/backups/brain-<timestamp>.sqlite` (the scheduler keeps 28 × 6h = ~7 days of history), stop the dev server, copy the snapshot over `data/brain.sqlite`, and restart.
+4. If the revert involved a DB migration: find the matching snapshot in `data/backups/brain-<timestamp>.sqlite` (the scheduler keeps 28 × 6h = ~7 days of history), use the restore script below (§7.1), then restart the dev server.
 5. Append a `RUNNING_LOG.md` entry describing the revert and the trigger.
+
+### 7.1 Restore from backup *(F-034, added v0.3.1)*
+
+Script: [`scripts/restore-from-backup.sh`](../../scripts/restore-from-backup.sh)
+
+**Procedure:**
+
+```bash
+# 1. Stop the server (Ctrl+C the `npm run dev` terminal). The script
+#    refuses to run while anything is listening on 127.0.0.1:3000.
+# 2. Pick a backup from data/backups/ — the scheduler keeps 28 × 6h
+#    snapshots (~7 days of history).
+ls -lt data/backups/ | head
+
+# 3. Run the restore.
+./scripts/restore-from-backup.sh data/backups/brain-YYYY-MM-DD_HHMM.sqlite
+
+# 4. Restart the dev server and unlock.
+npm run dev
+```
+
+**What the script does:**
+
+- Refuses to run if `npm run dev` / `npm run start` is live (`lsof` check on 127.0.0.1:3000 — corrupting an open WAL would be the single most destructive thing possible here).
+- Moves the current `data/brain.sqlite` (plus its `-shm` and `-wal` sidecars) aside to `data/brain.sqlite.pre-restore-<timestamp>.bak` — the restore is reversible; nothing is deleted.
+- Copies the chosen backup into place as the new `data/brain.sqlite`.
+- Prints the sideline path at the end so an operator mistake is one `mv` away from reversal.
+
+**Verification after restore:** load `/`, confirm the library contents match the backup's timestamp (item count, most-recent capture), and manually open one item.
+
+**Rollback of the restore itself:** if the restored DB is worse than the one you replaced:
+
+```bash
+# stop the server first
+mv data/brain.sqlite.pre-restore-<timestamp>.bak data/brain.sqlite
+# if WAL sidecars were also sidelined:
+mv data/brain.sqlite-shm.pre-restore-<timestamp>.bak data/brain.sqlite-shm
+mv data/brain.sqlite-wal.pre-restore-<timestamp>.bak data/brain.sqlite-wal
+npm run dev
+```
+
+**Pre-v1.0.0 limits:** no point-in-time recovery; restores land on 6-hour boundaries. Post-v1.0.0 may introduce shorter cadence if needed.
 
 ## 8. Capacitor APK build (v0.5.0, deferred)
 
