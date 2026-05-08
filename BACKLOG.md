@@ -2,17 +2,21 @@
 
 | Field | Value |
 |-------|--------|
-| **Document version** | v0.3.1-backlog v2.0 |
+| **Document version** | v0.3.1-backlog v3.0 (post-release) |
 | **Date** | 2026-05-08 |
 | **Owner** | Arun |
 | **Update cadence** | at every phase kickoff; whenever an item is promoted, deferred, or closed |
-| **Revision** | v2.0 — absorbed 2026-05-08 self-critique into §1 (F-042..F-056) |
+| **Revision** | v3.0 — v0.3.1 shipped; all §1 items moved to §5 closed with commit SHAs |
 
 > Single source of truth for work that is **not in the active phase plan** but is known-needed, nice-to-have, or idea-captured. Items promoted from here land in `BUILD_PLAN.md` under a phase heading. Items closed here get a strikethrough and a closing commit SHA.
 
 ---
 
-## 1. Active phase — v0.3.1 Polish + hardening
+## 1. Active phase — none
+
+v0.3.1 shipped 2026-05-08. Next phase (v0.4.0 Ask/RAG) blocked by R-VEC spike ([`docs/plans/R-VEC-spike.md`](./docs/plans/R-VEC-spike.md)).
+
+### Historical (v0.3.1 snapshot, for reference — all closed; see §5)
 
 Full plan: [`docs/plans/v0.3.1-polish.md`](./docs/plans/v0.3.1-polish.md) (v2.0). Critique source: [`docs/plans/SELF_CRITIQUE_2026-05-08_10-14-16.md`](./docs/plans/SELF_CRITIQUE_2026-05-08_10-14-16.md).
 
@@ -87,7 +91,31 @@ Full plan: [`docs/plans/v0.3.1-polish.md`](./docs/plans/v0.3.1-polish.md) (v2.0)
 
 ## 5. Recently closed
 
-*(none yet — first backlog entry)*
+### v0.3.1 Polish + Hardening (shipped 2026-05-08)
+
+**Polish (§4B):**
+- ~~F-207~~ Library multi-select + bulk tag/collection/delete (`1f38423` actions · `844e741` UI · `f158c63` smoke)
+- ~~F-301~~ Wire `CollectionEditor` into item detail (`666cb14`)
+- ~~F-302~~ Inline tag editor on item detail (`f2b0b0e`)
+- ~~B-301~~ Title de-hyphenation, tightened heuristic (`3c4b08c`)
+
+**Hardening (§4A):**
+- ~~F-042~~ Bind dev server to `127.0.0.1` — P0 (`54bc92f`)
+- ~~F-043~~ Session cookie expiry + `SameSite=Strict` + auth tests (`9431332`)
+- ~~F-044~~ `globalThis` worker guard (HMR-safe) (`d4ae435`)
+- ~~F-045~~ Periodic `sweepStaleClaims()` + exported `shouldSweep()` (`9cffda4`)
+- ~~F-046~~ Retry attempts on enrichment status + pill (`db01434`)
+- ~~F-047~~ Non-nodejs instrumentation skip log (`6316361`)
+- ~~F-048~~ WAL + `synchronous=NORMAL` post-condition (`0da8dcd`)
+- ~~F-034~~ DB restore script + runbook (`7d4a259`)
+- ~~F-049~~ Exact-pin `sqlite-vec@0.1.6` (`3bbf1a7`)
+- ~~F-050~~ `errors.jsonl` 5MB-rotation error sink (`1fd3b08`)
+- ~~F-051~~ `node:test` runner + `tsx` + first tests (`92e0d0f`)
+- ~~F-052~~ `scripts/smoke-v0.3.1.mjs` + `npm run smoke` (`ce6de9c`, `f158c63`)
+- ~~F-053~~ Bulk actions revalidate collection + tag paths (rolled into `1f38423`)
+- ~~F-054~~ Release guard — tree-clean + revert rehearsal (T-B-6 gate)
+- ~~F-055~~ Per-task `RUNNING_LOG.md` breadcrumbs (applied throughout)
+- ~~F-056~~ PIN overwrite guard + `deleteSetting` helper (`6580a11`)
 
 ---
 

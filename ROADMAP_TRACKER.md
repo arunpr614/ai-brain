@@ -1,9 +1,10 @@
 # AI Brain — Roadmap Tracker
 
-**Document version:** v0.5.0-roadmap
+**Document version:** v0.6.0-roadmap
 **Date:** 2026-05-08
 **Changelog:**
-- **v0.5.0-roadmap** — v0.3.0 Intelligence SHIPPED (`5d1c390`); inserted **v0.3.1 Polish + Hardening** phase absorbing all actionable findings from [`docs/plans/SELF_CRITIQUE_2026-05-08_10-14-16.md`](./docs/plans/SELF_CRITIQUE_2026-05-08_10-14-16.md); promoted F-034 (restore script) from v0.10.0 → v0.3.1; added F-042..F-055 spanning hardening, observability, test infrastructure, and process gates.
+- **v0.6.0-roadmap** — v0.3.1 Polish + Hardening SHIPPED. All 17 work items (F-042..F-056 + F-034 + F-207/F-301/F-302/B-301) closed with commit SHAs. Tag `v0.3.1` on main. Critique A-series + P-series all closed (table in `PROJECT_TRACKER.md` §5). Next lane: v0.4.0 Ask (RAG), blocked by R-VEC.
+- v0.5.0-roadmap — v0.3.0 Intelligence SHIPPED (`5d1c390`); inserted **v0.3.1 Polish + Hardening** phase absorbing all actionable findings from [`docs/plans/SELF_CRITIQUE_2026-05-08_10-14-16.md`](./docs/plans/SELF_CRITIQUE_2026-05-08_10-14-16.md); promoted F-034 (restore script) from v0.10.0 → v0.3.1; added F-042..F-055 spanning hardening, observability, test infrastructure, and process gates.
 - v0.4.0-roadmap — v0.2.0 Capture core SHIPPED; F-101..F-106 all shipped; migrations runner applied `002_fts5.sql` during build.
 - v0.3.0-roadmap — v0.1.0 Foundation SHIPPED; Next.js 16 + React 19 + Tailwind 4 runtime live; F-000..F-010 all shipped.
 - v0.2.1-roadmap — v0.0.1 Empirical Sanity Morning COMPLETE; all 5 S-* items shipped; added F-041 (cold-start dedup); v0.5.0 plugin corrected to `@capgo/capacitor-share-target`.
@@ -29,7 +30,7 @@ Companion docs:
 | v0.1.0 | Foundation | App runs on localhost; manual notes in a list | 1.0 | 1.1 |
 | v0.2.0 | Capture core | URL + PDF + note all ingest through one pipeline | 1.0 | 2.0 |
 | v0.3.0 | Intelligence | Every item auto-summarized, categorized, tagged | 1.5 | 3.5 |
-| **v0.3.1** | **Polish + hardening** | **F-207 bulk ops + 4 UX polish + 14 hardening/test items from self-critique** | **0.6** | **4.1** |
+| v0.3.1 ✅ | Polish + hardening | SHIPPED 2026-05-08 — all 17 items closed | 0.6 | 4.1 |
 | v0.4.0 | Ask (RAG) | Chat with library; citations; streaming | 2.0 | 6.1 |
 | v0.5.0 | APK + extension | Sideloaded Android APK + Chrome MV3 extension | 1.5 | 7.0 |
 | v0.6.0 | GenPage + auto-clusters | AI-written multi-section pages; auto-topic clusters | 2.0 | 9.0 |
@@ -112,80 +113,37 @@ Gate inserted per `docs/research/SELF_CRITIQUE.md §8 item 1`. Converts desk res
 
 **Exit:** ✅ Enrichment worker processes queue end-to-end; dual-pane view renders; tag/collection CRUD functional via settings; bulk zip export works. F-207 multi-select UI + four UX polish items carried to v0.3.1.
 
-### v0.3.1 — Polish + hardening *(next active phase)*
+### v0.3.1 — Polish + hardening ✅ **SHIPPED** 2026-05-08
 
-Absorbs (a) the four deferred polish items from v0.3.0 and (b) the 22-finding [self-critique](./docs/plans/SELF_CRITIQUE_2026-05-08_10-14-16.md) dated 2026-05-08. See [`docs/plans/v0.3.1-polish.md`](./docs/plans/v0.3.1-polish.md) for executable task breakdown; per finding M-2 that plan is linked from `BUILD_PLAN.md` top.
+All 17 work items closed with commit SHAs. Typecheck + lint + build + 24 unit tests + 16 smoke assertions all green at release. Tag `v0.3.1` on `main`. Only new dev dep: `tsx@^4.19.2`.
 
-#### Polish (carried from v0.3.0)
+| ID | Item | Commit | Severity |
+|---|---|---|---|
+| F-207 | Library multi-select + bulk tag/collection/delete | `1f38423`, `844e741`, `f158c63` | — |
+| F-301 | Wire `CollectionEditor` into item detail | `666cb14` | — |
+| F-302 | Inline tag editor on item detail | `f2b0b0e` | — |
+| B-301 | Title de-hyphenation post-processor (0 spaces && ≥2 hyphens rule) | `3c4b08c` | — |
+| F-042 | Bind Next dev+start to `127.0.0.1` | `54bc92f` | **P0** |
+| F-043 | Cookie expiry + `SameSite=Strict` + policy docs + 9 tests | `9431332` | P1 |
+| F-044 | `globalThis` worker boot guard (HMR-safe) | `d4ae435` | P1 |
+| F-045 | Periodic `sweepStaleClaims()` + `shouldSweep()` helper | `9cffda4` | P1 |
+| F-046 | Expose `attempts` on enrichment-status endpoint + pill | `db01434` | P2 |
+| F-047 | Log non-nodejs `instrumentation.ts` branch | `6316361` | P2 |
+| F-048 | WAL + `synchronous=NORMAL` post-condition assertion | `0da8dcd` | P1 |
+| F-034 | DB restore script + runbook (promoted from v0.10.0) | `7d4a259` | P1 |
+| F-049 | Exact-pin `sqlite-vec@0.1.6` | `3bbf1a7` | P1 |
+| F-050 | `data/errors.jsonl` 5MB-rotation sink in `handleFailure` | `1fd3b08` | P2 |
+| F-051 | Adopt `node:test` + `tsx` + first tests for `shouldSweep` | `92e0d0f` | P1 |
+| F-052 | `scripts/smoke-v0.3.1.mjs` + `npm run smoke` | `ce6de9c`, `f158c63` | P1 |
+| F-053 | Bulk actions revalidate `/collections/[id]` + `/settings/tags` | rolled into `1f38423` | P1 |
+| F-054 | Release guard: tree-clean + `git revert` rehearsal | ran as T-B-6 gate | P1 |
+| F-055 | Per-task `RUNNING_LOG.md` breadcrumbs | applied throughout phase | P1 |
+| F-056 | Refuse PIN overwrite without explicit reset flag | `6580a11` | P2 |
 
-| ID | Item | Status | Origin | Notes |
-|---|---|---|---|---|
-| F-207 | Library multi-select + bulk tag/collection/delete | planned | v0.3.0 deferral | Backend primitives in `tags.ts` / `collections.ts` / `items.ts` already exist |
-| F-301 | Wire `CollectionEditor` into item detail page | planned | v0.3.0 partial | Component exists; page does not import it |
-| F-302 | Inline tag editor on item detail page | planned | v0.3.1 polish | Reuse `addTagToItemAction` + `removeTagFromItemAction` |
-| B-301 | Title de-hyphenation post-processor | planned | v0.3.0 QA finding | Heuristic tightened per critique P-1 — must NOT rewrite `State-of-the-Art 2026` |
-
-#### Security + CSRF hardening (from self-critique A-1, A-5)
-
-| ID | Item | Status | Severity | Notes |
-|---|---|---|---|---|
-| F-042 | **Bind Next dev server to `127.0.0.1`** + document LAN exposure ban pre-v0.5.0 | planned | **P0** | Critique A-1; move network exposure + CSRF into v0.5.0 where it's already scoped (F-035..F-037) |
-| F-043 | **Session cookie expiry + `SameSite=Strict`** — add `expires_at` claim, verify in `verifySessionToken`, document rotation in `03_Secrets_and_Configuration.md` | planned | P1 | Critique A-5 |
-
-#### Enrichment reliability (from self-critique A-2, A-3, A-4, A-11)
-
-| ID | Item | Status | Severity | Notes |
-|---|---|---|---|---|
-| F-044 | **`globalThis.__enrichmentWorkerStarted` guard** — survive HMR double-boot | planned | P1 | Critique A-2 |
-| F-045 | **Periodic `sweepStaleClaims()`** inside worker loop, not just at boot | planned | P1 | Critique A-3; 3-line change |
-| F-046 | **Expose `attempts` in `/api/items/[id]/enrichment-status`** — UI can show "retrying 2/3" | planned | P2 | Critique A-4 |
-| F-047 | **Log non-nodejs `instrumentation.ts` branch** — silent-failure prevention | planned | P2 | Critique A-11; one line |
-
-#### Data integrity (from self-critique A-6, A-7, A-9)
-
-| ID | Item | Status | Severity | Notes |
-|---|---|---|---|---|
-| F-048 | **Confirm + force `PRAGMA journal_mode=WAL` + `synchronous=NORMAL`** on every connection open in `src/db/client.ts` | planned | P1 | Critique A-6; bulk ops in F-207 make this load-bearing |
-| F-034 | **DB restore script + runbook** — `scripts/restore-from-backup.sh` + paragraph in `07_Deployment_and_Operations.md` | planned | P1 | **Promoted from v0.10.0.** Critique A-7; current backup story has no restore path |
-| F-049 | **Exact-pin `sqlite-vec@0.1.6`** in `package.json` before R-VEC spike | planned | P1 | Critique A-9 |
-
-#### Observability (from self-critique A-10)
-
-| ID | Item | Status | Severity | Notes |
-|---|---|---|---|---|
-| F-050 | **`data/errors.jsonl` rotation** in `handleFailure` — lightweight error sink, pre-v0.4.0 | planned | P2 | Critique A-10; unblocks future `/settings` error surface |
-
-#### Process + safety (from self-critique P-4, P-6, P-12, M-1, M-2, M-4)
-
-| ID | Item | Status | Severity | Notes |
-|---|---|---|---|---|
-| F-051 | **`node:test` precedent set** + `npm test` script + first test file for `postProcessTitle` | planned | P1 | Critique P-2 |
-| F-052 | **`scripts/smoke-v0.3.1.mjs`** — scripted end-to-end check replacing six manual smokes | planned | P1 | Critique P-4; ~40 lines |
-| F-053 | **Bulk actions revalidate `/collections/[id]` + `/settings/tags`** in addition to `/` | planned | P1 | Critique P-6 |
-| F-054 | **Release guard** — T-6 must run `git status` clean + `git log v0.3.0..HEAD --oneline` inspection + `git revert --no-commit HEAD && git reset --hard HEAD` rehearsal before tagging | planned | P1 | Critique P-12 + M-4 |
-| F-055 | **Per-task `RUNNING_LOG.md` one-liner** after every T-n commit — survives mid-phase context reset | planned | P1 | Critique M-1 |
-
-#### Single-user assertion (from self-critique A-12)
-
-| ID | Item | Status | Severity | Notes |
-|---|---|---|---|---|
-| F-056 | **Refuse to overwrite `pin_hash`** in setup action unless explicit reset flag present | planned | P2 | Critique A-12 |
-
-**Exit criteria (v0.3.1):**
-1. All four carried items (F-207, F-301, F-302, B-301) shipped with associated commits recorded in `BACKLOG.md` §5.
-2. All P0 and P1 findings (F-042, F-043, F-044, F-045, F-048, F-034, F-049, F-051, F-052, F-053, F-054, F-055) closed.
-3. P2 findings (F-046, F-047, F-050, F-056) either closed or explicitly carried to v0.4.0 with reopen trigger.
-4. `npm run typecheck && npm run lint && npm run build && npm test` green.
-5. `scripts/smoke-v0.3.1.mjs` runs clean on a fresh checkout.
-6. `package.json` at `0.3.1`, tag `v0.3.1` on `main`.
-7. RUNNING_LOG.md has per-task breadcrumbs + a phase-close entry.
-
-**Explicitly out of scope (v0.3.1):**
-- R-VEC spike (lives in [`docs/plans/R-VEC-spike.md`](./docs/plans/R-VEC-spike.md); must land before v0.4.0 but is a parallel lane, not a v0.3.1 deliverable)
-- Full CSRF middleware (stays in v0.5.0 F-036; v0.3.1 F-042 is the interim guardrail)
-- FTS5 LIKE-fallback cleanup (critique A-8 → defer to v0.4.0)
-- BACKLOG §5 archive rotation (critique P-11 → defer to v0.4.0)
-- Cross-AI plan review (critique M-3 → run if `gsd-review` is available, otherwise user reads §1–§2 of the critique)
+**Deliberately deferred from critique to v0.4.0:**
+- A-8 FTS5 LIKE-fallback cleanup
+- P-11 BACKLOG §5 archive rotation
+- M-3 Cross-AI plan review (run `gsd-review` if available at v0.4.0 plan time)
 
 ### v0.4.0 — Ask (RAG)
 
@@ -330,10 +288,10 @@ Moved out of v0.1.0–v1.0.0 scope. Each has a "reopen trigger" — a concrete s
 ## 4. Lifecycle board (snapshot — 2026-05-08)
 
 ```
-future (5)  →  backlog (0)  →  planned (90+)  →  in-progress (19, v0.3.1)  →  shipped (31, through v0.3.0)
+future (5)  →  backlog (0)  →  planned (70+)  →  in-progress (0)  →  shipped (48, through v0.3.1)
 ```
 
-**In progress (v0.3.1):** F-207, F-301, F-302, B-301, F-042, F-043, F-044, F-045, F-046, F-047, F-048, F-034 (promoted), F-049, F-050, F-051, F-052, F-053, F-054, F-055, F-056 — grouped by theme under §2 v0.3.1. Roadmap changed from "all planned, none in-progress" to "one active execution phase" at this snapshot.
+v0.3.1 closed 2026-05-08. No active phase until the R-VEC spike starts (blocks v0.4.0 Ask/RAG).
 
 ---
 
@@ -364,6 +322,7 @@ Ordering decisions worth recording so future-me doesn't second-guess:
 ## 7. Changelog
 
 - **2026-05-08** — Inserted v0.3.1 Polish + hardening phase driven by [`docs/plans/SELF_CRITIQUE_2026-05-08_10-14-16.md`](./docs/plans/SELF_CRITIQUE_2026-05-08_10-14-16.md) (22 findings → 15 actionable work items F-042..F-056). F-034 (restore runbook) promoted from v0.10.0 → v0.3.1 per critique A-7. v0.3.0 Intelligence marked shipped at `5d1c390`. Cumulative estimate shifts from 15.0 → 15.6 weeks.
+- **2026-05-08 (release)** — v0.3.1 SHIPPED. All 17 work items closed with commit SHAs. Tag `v0.3.1` on `main`. Lifecycle board: planned 70+ / in-progress 0 / shipped 48. Next lane: v0.4.0 Ask (RAG), blocked by R-VEC spike.
 - 2026-05-07 — Created. All features placed in phase lanes. Lenny seed moved to `future` (FUT-1) per user decision.
 
 ---

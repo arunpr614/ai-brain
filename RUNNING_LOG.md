@@ -1404,3 +1404,109 @@ Polish (§4B) — **3 of 4 shipped:**
 - **App version:** `0.3.0` in `package.json` (bumps at T-B-6)
 - **Repo:** `main` 28 commits ahead of `origin/main` (not pushed)
 - **Next milestone:** T-B-6 — run release guard + bump version + tag `v0.3.1`
+
+---
+
+## 2026-05-08 14:33 — v0.3.1 SHIPPED — phase close
+
+**Entry author:** AI agent (Claude) · **Triggered by:** T-B-6 release gate — phase-complete milestone entry per F-055 discipline.
+
+### Planned since last entry
+
+The 14:38 breadcrumb left v0.3.1 with 17 of 17 work items shipped but the release rituals (F-054 guard, version bump, tracker updates, tag) still pending. This entry wraps T-B-6: all release gates pass, `package.json` bumped to `0.3.1`, trackers + backlog aligned with final state, tag `v0.3.1` cut locally. Not yet pushed to origin — awaiting user approval.
+
+### Done
+
+**Release guard (F-054) — all passes:**
+- Working tree clean at HEAD `bec171d`
+- `git log 5d1c390..HEAD` — 31 commits, every entry is a v0.3.1 phase commit (no drift)
+- Revert rehearsal: `git revert --no-commit HEAD && git reset --hard HEAD` succeeded → last commit is cleanly revertable
+- `npm run typecheck && npm run lint && npm test && npm run smoke && npm run build` all green
+
+**Version + trackers bumped:**
+- `package.json` 0.3.0 → **0.3.1**; `package-lock.json` regenerated (both top-level and nested "ai-brain" entries updated)
+- `PROJECT_TRACKER.md` bumped v0.5.0-tracker → v0.6.0-tracker; §1 row for v0.3.1 flipped ◐ → ● with end date; §2 rewritten from "in-progress v0.3.1" to "v0.3.1 shipped; next v0.4.0 blocked on R-VEC"; §5 "Known risks" table converted to closure receipts with commit SHAs
+- `ROADMAP_TRACKER.md` bumped v0.5.0-roadmap → v0.6.0-roadmap; v0.3.1 lane summary row marked ✅; v0.3.1 section body replaced with the final commit-SHA table; lifecycle board updated to shipped=48
+- `BACKLOG.md` bumped v2.0 → v3.0; §1 moved to "Active phase — none"; §5 now lists all 17 v0.3.1 items with strikethrough + commit SHAs
+
+**Phase-close commit + tag:** (landing next in this session as the final v0.3.1 commits)
+
+### Learned
+
+- Applying `F-054` as a pre-tag gate took ~30 seconds but would have caught the "revert rehearsal produces merge conflicts" kind of problem before it bit us on push. The rehearsal was painless because the breadcrumb commits are pure docs — every revert was a single-file change.
+- `npm install --package-lock-only` is the right way to refresh a lockfile after a manual version bump in `package.json` (avoids a full `npm install` that'd also try to fetch new versions).
+- `revalidatePath` outside a Next request context throwing "static generation store missing" was the last blocker for making the smoke script test bulk actions directly. Catching that specific invariant in `revalidateBulkPaths()` is a surgical fix — production behaviour unchanged.
+- Opened the phase with 13 hardening items on paper; closed with 17 work items because F-053/F-054/F-055 ended up as disciplines applied to other commits rather than standalone tasks. Worth noting in future phase plans: distinguish **feature tasks** from **discipline tasks** in the scoreboard.
+
+### Deployed / Released
+
+**Local-only release.** `package.json` now at `0.3.1`. Tag `v0.3.1` created on `main`. **Not pushed to origin** — pending explicit user approval per the GSD project norm.
+
+Full commit list from v0.3.1 phase (31 commits):
+```
+v0.3.1 tag (pending this commit)
+├─ T-B-6 release commit (this)
+├─ bec171d docs(F-055) §4B scoreboard
+├─ f158c63 feat(F-207) smoke + revalidate fix
+├─ 844e741 feat(F-207a+c) library-list + BulkBar
+├─ 1f38423 feat(F-207b, F-053) bulk actions
+├─ 14b508c docs(F-055) T-B-2..T-B-4 breadcrumb
+├─ 3c4b08c fix(B-301) title de-hyphenation
+├─ f2b0b0e feat(F-302) inline tag editor
+├─ 666cb14 feat(F-301) wire CollectionEditor
+├─ 00f1700 docs(F-055) §4A complete milestone entry
+├─ d00fd89 docs(F-055) §4A scoreboard
+├─ ce6de9c feat(F-052) smoke script
+├─ 7d4a259 feat(F-034) restore script + runbook
+├─ 1fd3b08 feat(F-050) errors.jsonl rotation
+├─ 6580a11 fix(F-056) PIN overwrite guard
+├─ 3bbf1a7 chore(F-049) sqlite-vec exact pin
+├─ 9431332 fix(F-043) cookie policy + auth tests
+├─ c802957 docs(F-055) T-A-5..T-A-7 breadcrumb
+├─ 92e0d0f feat(F-051) node:test runner
+├─ db01434 feat(F-046) attempts on pill
+├─ 6316361 chore(F-047) non-nodejs log
+├─ 312817c docs(F-055) kickoff entry
+├─ abcce99 docs(F-055) T-A-2..T-A-4 breadcrumb
+├─ 9cffda4 fix(F-045) periodic stale sweep
+├─ d4ae435 fix(F-044) HMR worker guard
+├─ 0da8dcd fix(F-048) WAL post-condition
+├─ 38a2386 docs(F-055) kickoff breadcrumb
+├─ 54bc92f fix(F-042, P0) 127.0.0.1 bind
+├─ 9cd92fd docs absorb self-critique into trackers
+├─ 5c1f937 docs self-critique 22 findings
+├─ 5e4804f docs BACKLOG + v0.3.1 plan + R-VEC plan
+└─ dad9ca6 docs commit handover package
+```
+
+### Documents created or updated this period (T-B-6)
+
+- `package.json` + `package-lock.json` — version `0.3.0` → `0.3.1`
+- `PROJECT_TRACKER.md` — v0.6.0-tracker; v0.3.1 row closed; §2 and §5 rewritten
+- `ROADMAP_TRACKER.md` — v0.6.0-roadmap; v0.3.1 section converted to final SHA table
+- `BACKLOG.md` — v3.0; §1 neutered, §5 populated with 17 strikethrough receipts
+- `RUNNING_LOG.md` — this phase-close entry
+
+### Current remaining to-do
+
+**v0.4.0 Ask (RAG) preparation — parallel-lane work, user decides ordering:**
+
+1. **R-VEC spike** per [`docs/plans/R-VEC-spike.md`](./docs/plans/R-VEC-spike.md). Blocks v0.4.0. Expected half-day, hard-cap one day. Three pass/fail thresholds + GREEN/YELLOW/RED decision gate. **Parallel note:** critique P-8 (RSS metric) should be absorbed into the spike's harness when it starts.
+2. **Cross-AI plan review of v0.4.0 (when planned)** — mitigation for critique M-3. Use `gsd-review` if available.
+3. **Push approval:** `git push origin main --tags` — 32 commits (31 + this release commit) + tag `v0.3.1`.
+4. **Optional cleanup:** critique A-8 (FTS5 LIKE-fallback removal) and P-11 (BACKLOG §5 archive rotation) can be absorbed into v0.4.0 opportunistically.
+
+### Open questions / decisions needed
+
+- **Push approval:** user still has not approved `git push origin main --tags`. 32 local commits accumulate risk if the laptop goes offline.
+- **Next phase trigger:** start R-VEC spike now, or step back and align with any product-level changes first? Default: start R-VEC next session unless user redirects.
+
+### State snapshot
+
+- **Current phase / version:** v0.3.1 ✅ SHIPPED → v0.4.0 Ask (RAG) **blocked by R-VEC** (not started)
+- **App version:** `0.3.1` in `package.json`
+- **Active trackers:** `BUILD_PLAN.md` · `ROADMAP_TRACKER.md` v0.6.0-roadmap · `PROJECT_TRACKER.md` v0.6.0-tracker · `BACKLOG.md` v3.0 · `RUNNING_LOG.md` · `docs/plans/{v0.3.1-polish,R-VEC-spike,SELF_CRITIQUE_2026-05-08_10-14-16}.md`
+- **Test + smoke state at release:** 24 unit tests · 16 smoke assertions · `npm run typecheck && npm run lint && npm run build` all green
+- **Only new dep this phase:** `tsx@^4.19.2` (dev)
+- **Repo:** `main` 32 commits ahead of `origin/main`; tag `v0.3.1` local; **not pushed**
+- **Next milestone:** R-VEC spike execution (blocks v0.4.0) — or whatever the user decides next
