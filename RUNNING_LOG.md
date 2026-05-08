@@ -991,3 +991,123 @@ Resumed the project after the 2026-05-07 v0.3.0 ship (`5d1c390`) via the `Handov
 - **Repo:** https://github.com/arunpr614/ai-brain — `main` is 8 commits ahead of `origin/main` (not pushed this session)
 - **Active trackers:** BUILD_PLAN, ROADMAP_TRACKER v0.5.0, PROJECT_TRACKER v0.5.0, BACKLOG v2.0, RUNNING_LOG, `docs/plans/{v0.3.1-polish,R-VEC-spike,SELF_CRITIQUE_2026-05-08_10-14-16}.md`
 - **Next milestone:** T-A-5 (F-047) — log non-nodejs instrumentation skip; cheap P2 housekeeping before T-A-6/T-A-7 bigger changes
+
+---
+
+## 2026-05-08 12:41 — Post-v0.3.0 handover pickup + v0.3.1 hardening track opened (F-042..F-045 shipped)
+
+**Entry author:** AI agent (Claude) · **Triggered by:** user asked the agent to pick up the project from the previous session's handover, plan v0.3.1, self-critique, and begin execution.
+
+### Planned since last entry
+
+The prior 2026-05-07 entry closed with v0.3.0 Intelligence partially complete and "v0.3.0 finish (F-206..F-208) next." Between that entry and today's pickup, the previous agent shipped v0.3.0 in full (`5d1c390`) and authored a 10-file AI-to-AI handover package (`Handover_docs/Handover_docs_07_05_2026/`) — but left the handover folder untracked and had not yet formalised a v0.3.1 plan.
+
+Today's goals, in order:
+1. Commit the untracked handover so v0.3.0's closure is canonical in git.
+2. Produce a structured v0.3.1 implementation plan for the four items deferred from v0.3.0 (F-207 bulk ops, F-301 wire CollectionEditor, F-302 inline tag editor, B-301 title de-hyphenation) plus the R-VEC spike plan that blocks v0.4.0.
+3. Run an adversarial self-critique on the architecture + both plans while the context is fresh.
+4. Fold every actionable critique finding into the roadmap / tracker / backlog / plan so the state is durable across a context reset.
+5. Begin executing the §4A hardening track, starting with the P0 item (F-042) and continuing into reliability fixes.
+
+### Done
+
+**Planning + documentation:**
+- Committed the 10-file handover package at `dad9ca6` so v0.3.0 closure is canonical in git.
+- Created [`BACKLOG.md`](./BACKLOG.md) at project root (previously a known-missing tracker per `PROJECT_TRACKER.md` §2).
+- Wrote [`docs/plans/v0.3.1-polish.md`](./docs/plans/v0.3.1-polish.md) v1.0 — executable task breakdown for the four carried polish items (T-B-2..T-B-5 + T-B-6 release).
+- Wrote [`docs/plans/R-VEC-spike.md`](./docs/plans/R-VEC-spike.md) — the sqlite-vec benchmark plan that must land before v0.4.0, with GREEN/YELLOW/RED decision gate and concrete p50/p95/build-time thresholds.
+- Produced [`docs/plans/SELF_CRITIQUE_2026-05-08_10-14-16.md`](./docs/plans/SELF_CRITIQUE_2026-05-08_10-14-16.md) — 22 findings against the architecture and plans, severity-classified (A-1..A-12 architecture, P-1..P-12 plans, M-1..M-4 meta), each grounded in code reads at HEAD `5e4804f`.
+- Absorbed every actionable critique item into the source-of-truth docs:
+  - `ROADMAP_TRACKER.md` bumped to v0.5.0-roadmap — inserted v0.3.1 Polish + hardening phase with 15 new work items (F-042..F-056) grouped into five themes: security/CSRF, enrichment reliability, data integrity, observability, process+safety. F-034 (DB restore) promoted from v0.10.0 → v0.3.1. v0.3.0 Intelligence marked shipped.
+  - `PROJECT_TRACKER.md` bumped to v0.5.0-tracker — current phase switched from "Planning" to "v0.3.1 Polish + hardening"; §5 Blockers now carries a per-finding risk register mapping every P0/P1 critique item to its F-ID owner.
+  - `BACKLOG.md` bumped to v2.0 — §1 restructured into 1a polish, 1b hardening (with critique refs + severity), 1c deliberately deferred.
+  - `docs/plans/v0.3.1-polish.md` bumped to v2.0 — restructured as two tracks: §4A hardening first (T-A-1..T-A-13, F-042 ships before any other code), §4B polish second. B-301 heuristic tightened to the narrow rule "fire only on `0 spaces && ≥2 hyphens`" so `State-of-the-Art 2026` survives. T-B-5b bulk actions now explicitly revalidate `/collections/[id]` + `/settings/tags` (per F-053). T-B-6 release gated on clean tree + `git revert` rehearsal (per F-054).
+
+**Code — hardening track §4A, first 4 of 13 items shipped:**
+- **T-A-1 · F-042 · P0** (`54bc92f`) — `package.json` dev+start scripts now pass `-H 127.0.0.1`; `src/instrumentation.ts` has a documented network-exposure policy block warning any future agent not to remove the flag until v0.5.0 CSRF (F-035/F-036/F-037) lands.
+- **T-A-2 · F-048 · P1** (`0da8dcd`) — `src/db/client.ts` now asserts `journal_mode` comes back as `wal` and `synchronous` as `1` (NORMAL) after setting the pragmas. Pragmas were already being set; the post-condition guards against silent failures in alternative SQLite builds. Verified live DB reports `wal` + `1`.
+- **T-A-3 · F-044 · P1** (`d4ae435`) — `src/lib/queue/enrichment-worker.ts` replaced module-level `running` / `stopRequested` flags with `globalThis.__brainEnrichmentWorker` so Next HMR fast-refresh can't re-initialise the flags and start a second worker.
+- **T-A-4 · F-045 · P1** (`9cffda4`) — `sweepStaleClaims()` now runs on a rolling cadence inside the worker loop (not just at boot). Extracted `shouldSweep(now, lastSweepAt): boolean` as a pure, exported function for the `node:test` harness landing in T-A-7.
+- RUNNING_LOG breadcrumbs for every code commit appended via `38a2386` and `abcce99` (per F-055).
+
+### Learned
+
+- **Handover hygiene gap:** previous agents can successfully write a full handover package and then forget to `git add` it. Worth treating "untracked planning folder" as a phase-exit lint.
+- **`src/db/client.ts` already sets WAL + NORMAL + FK pragmas at `getDb()`** (lines 35–37). The critique (A-6) was partially wrong about risk — the concern collapses from "pragmas not set" to "pragmas might silently not stick." Resolved by adding the assertion, not by re-adding the pragmas.
+- **Live DB reports `PRAGMA journal_mode` = `wal` and `synchronous` = `1`** on disk — the existing install was already correctly configured.
+- **Next.js HMR does re-evaluate modules, and module-scope `let` flags will be reset on every fast-refresh.** Confirms critique A-2 in principle; the `globalThis` escape hatch is the idiomatic fix.
+- **B-301 de-hyphenation heuristic "hyphens > spaces" over-fires** on legitimate compound adjectives like `State-of-the-Art 2026` (3 hyphens, 1 space). The narrower rule "0 spaces AND ≥2 hyphens" preserves all the tricky cases in the test table without false-positives — tightened in the v2.0 plan before T-B-4 runs.
+- **The same agent writing plan, architecture, and self-critique is a systemic blind spot** (critique M-3). This session is a partial mitigation at best; a cross-AI review via `gsd-review` is the real fix, deferred for when that tool is reached for.
+- **Full AI-assisted workflow benefits from per-task `RUNNING_LOG.md` breadcrumbs**, not just a phase-close entry. Mid-phase context reset without breadcrumbs means the next agent has to reverse-engineer progress from git log. F-055 formalises "append after every T-n commit."
+
+### Deployed / Released
+
+No release cut today. v0.3.0 remains the last released version (`5d1c390`); `package.json` still reads `0.3.0` and will bump to `0.3.1` at T-B-6. `main` is 10 commits ahead of `origin/main` — **not pushed** this session; user approval required before `git push`.
+
+Tag snapshot this session (newest first):
+- `abcce99` docs(F-055): breadcrumbs for T-A-2..T-A-4
+- `9cffda4` fix(F-045): periodic stale-claim sweep
+- `d4ae435` fix(F-044): HMR-safe worker guard
+- `0da8dcd` fix(F-048): WAL/synchronous post-condition assertion
+- `38a2386` docs(F-055): RUNNING_LOG kickoff + F-042 breadcrumb
+- `54bc92f` fix(F-042, P0): bind dev+start to 127.0.0.1
+- `9cd92fd` docs: absorb self-critique into roadmap + tracker + plan
+- `5c1f937` docs: 22-finding adversarial self-critique
+- `5e4804f` docs: BACKLOG + v0.3.1 plan + R-VEC spike plan
+- `dad9ca6` docs: commit 10-file handover package
+
+### Documents created or updated this period
+
+**Created:**
+- [`BACKLOG.md`](./BACKLOG.md) — project-root backlog; v2.0 structure (polish / hardening / deferred).
+- [`docs/plans/v0.3.1-polish.md`](./docs/plans/v0.3.1-polish.md) — two-track execution plan for v0.3.1 (v2.0).
+- [`docs/plans/R-VEC-spike.md`](./docs/plans/R-VEC-spike.md) — sqlite-vec benchmark plan (blocks v0.4.0).
+- [`docs/plans/SELF_CRITIQUE_2026-05-08_10-14-16.md`](./docs/plans/SELF_CRITIQUE_2026-05-08_10-14-16.md) — 22-finding adversarial review.
+- `Handover_docs/Handover_docs_07_05_2026/**` — 10 files from prior session, newly tracked in git.
+
+**Updated:**
+- `ROADMAP_TRACKER.md` — v0.4.0-roadmap → **v0.5.0-roadmap**. Inserted v0.3.1 phase with F-042..F-056; promoted F-034.
+- `PROJECT_TRACKER.md` — v0.4.0-tracker → **v0.5.0-tracker**. §1 phase row for v0.3.1 added; §2 rewritten from Planning → v0.3.1 detail view; §5 carries per-finding risk register.
+- `package.json` — dev+start scripts bind to `127.0.0.1`; version unchanged at `0.3.0`.
+- `src/instrumentation.ts` — network-exposure policy comment block.
+- `src/db/client.ts` — WAL + synchronous post-condition assertion.
+- `src/lib/queue/enrichment-worker.ts` — `globalThis` worker guard; periodic `sweepStaleClaims()`; `shouldSweep()` exported.
+- `RUNNING_LOG.md` — this entry.
+
+### Current remaining to-do
+
+**v0.3.1 hardening track §4A — 9 of 13 tasks remaining:**
+1. **T-A-5 · F-047** (P2, XS) — log non-nodejs `instrumentation.ts` skip branch; one line. **← immediate next.**
+2. **T-A-6 · F-046** (P2, S) — expose `attempts` on `/api/items/[id]/enrichment-status`; update `EnrichingPill` to show "Retrying 2/3".
+3. **T-A-7 · F-051** (P1, S) — adopt `node:test` + `npm test` script; write first tests for `shouldSweep(now, last)` so T-A-4's work has coverage.
+4. T-A-8 · F-043 (P1, S) — session cookie expiry claim + `SameSite=Strict`; auth tests against the new runner.
+5. T-A-9 · F-034 (P1, XS) — `scripts/restore-from-backup.sh` + paragraph in `07_Deployment_and_Operations.md`.
+6. T-A-10 · F-049 (P1, XS) — exact-pin `sqlite-vec@0.1.6` before R-VEC starts.
+7. T-A-11 · F-050 (P2, S) — `data/errors.jsonl` rotation in `handleFailure`.
+8. T-A-12 · F-056 (P2, XS) — refuse PIN overwrite without explicit reset flag.
+9. T-A-13 · F-052 (P1, S) — `scripts/smoke-v0.3.1.mjs` end-to-end phase-exit smoke.
+
+**v0.3.1 polish track §4B — starts after §4A:**
+- T-B-2 · F-301 — wire `CollectionEditor` into `src/app/items/[id]/page.tsx` (smallest user-visible win).
+- T-B-3 · F-302 — inline tag editor on item detail.
+- T-B-4 · B-301 — title de-hyphenation with the tightened heuristic (0 spaces + ≥2 hyphens).
+- T-B-5 · F-207 — library bulk-select UI + batch actions (revalidating `/collections/[id]` + `/settings/tags` per F-053).
+- T-B-6 release — version bump, smoke script, tag, push approval.
+
+**Out of band (parallel lane, blocks v0.4.0):** R-VEC spike per `docs/plans/R-VEC-spike.md`.
+
+### Open questions / decisions needed
+
+- **None blocking.** The session's execution order is pre-committed in the v0.3.1 plan.
+- **Pending user approval:** `git push origin main` — 10 commits ahead of `origin/main`. Not pushed automatically.
+- **Deferred to when reached:** whether to run `gsd-review` against the v0.3.1 plan as mitigation for critique M-3 (same-agent-wrote-plan-and-critique blind spot).
+
+### State snapshot
+
+- **Current phase / version:** v0.3.0 ● shipped → **v0.3.1 ◐ hardening track — 4 of 13 §4A items shipped**
+- **App version:** `0.3.0` in `package.json` (bumps to `0.3.1` at T-B-6 release)
+- **Plan version:** `v0.3.1-plan v2.0` (two-track)
+- **Repo:** https://github.com/arunpr614/ai-brain — `main` 10 commits ahead of `origin/main` (not pushed)
+- **Active trackers:** `BUILD_PLAN.md` · `DESIGN.md` · `DESIGN_SYSTEM.md` · `ROADMAP_TRACKER.md` v0.5.0 · `PROJECT_TRACKER.md` v0.5.0 · `BACKLOG.md` v2.0 · `RUNNING_LOG.md` · `docs/plans/{v0.3.1-polish,R-VEC-spike,SELF_CRITIQUE_2026-05-08_10-14-16}.md`
+- **Models on disk:** `qwen2.5:7b-instruct-q4_K_M` (default) + `qwen3:8b` (v0.6.0 GenPage candidate).
+- **Next milestone:** T-A-5 (F-047) — log the non-nodejs `instrumentation.ts` skip path; then T-A-6 (F-046) attempts on status endpoint; then T-A-7 (F-051) `node:test` precedent and first real tests.
