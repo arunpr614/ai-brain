@@ -12,9 +12,9 @@
 
 ---
 
-## 1. Active phase — none
+## 1. Active phase — v0.4.0 Ask (RAG) planned, not yet in execution
 
-v0.3.1 shipped 2026-05-08. R-VEC spike completed **GREEN** on 2026-05-08 ([findings](./docs/research/vector-bench.md)). **Next phase (v0.4.0 Ask/RAG) is unblocked and ready to plan** — draft `docs/plans/v0.4.0-ask.md` next.
+v0.3.1 shipped 2026-05-08. R-VEC spike closed **GREEN** on 2026-05-08. **Plan drafted 2026-05-08:** [`docs/plans/v0.4.0-ask.md`](./docs/plans/v0.4.0-ask.md) (v1.0, 21 tasks). Execution kicks off after T-0 (F-057 pin audit) clears.
 
 ### Historical (v0.3.1 snapshot, for reference — all closed; see §5)
 

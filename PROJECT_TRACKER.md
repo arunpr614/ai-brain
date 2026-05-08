@@ -21,7 +21,7 @@ Legend: `○` not started · `◐` in progress · `●` complete · `✖` blocke
 | v0.2.0 Capture core | 0.2.0 | ● | 2026-05-07 | 2026-05-07 | URL (Readability) + PDF (unpdf, 301 cpp paywall guard) + Note + header/footer strip + FTS5 search + markdown export + unified /capture tabs. Smoke-tested. |
 | v0.3.0 Intelligence | 0.3.0 | ● | 2026-05-07 | 2026-05-07 | Ollama client + enrichment queue + pipeline (summary/category/title/tags/quotes) + dual-pane view + enriching pill + tags/collections CRUD + bulk zip export. F-207 bulk-ops UI deferred to v0.3.1. |
 | v0.3.1 Polish + hardening | 0.3.1 | ● | 2026-05-08 | 2026-05-08 | All 17 work items shipped: 4 polish (F-207, F-301, F-302, B-301) + 13 hardening (F-042..F-056 minus duplicates + F-034 promoted from v0.10.0). 24 unit tests + 16 smoke assertions green. `tsx@^4.19.2` added as only new dev dep. Tag `v0.3.1`. |
-| v0.4.0 Ask (RAG) | 0.4.0 | ○ | — | — | **Unblocked 2026-05-08** — R-VEC GREEN ([findings](./docs/research/vector-bench.md)); next step is v0.4.0 plan draft |
+| v0.4.0 Ask (RAG) | 0.4.0 | ○ | — | — | Plan drafted 2026-05-08 ([`docs/plans/v0.4.0-ask.md`](./docs/plans/v0.4.0-ask.md)) — 21 tasks, absorbs all 6 R-VEC action items + A-8 + P-11 + M-3 |
 | v0.5.0 APK + extension | 0.5.0 | ○ | — | — | Scope expanded: +mDNS, +WebAuthn stretch, +CSRF, +token rotation |
 | v0.6.0 GenPage + clusters | 0.6.0 | ○ | — | — | Blocked by R-CLUSTER |
 | v0.7.0 GenLink | 0.7.0 | ○ | — | — | — |
