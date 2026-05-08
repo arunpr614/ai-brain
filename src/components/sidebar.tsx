@@ -24,7 +24,7 @@ interface NavItem {
 const ITEMS: NavItem[] = [
   { href: "/", label: "Library", icon: Library, enabled: true },
   { href: "/inbox", label: "Inbox", icon: Inbox, enabled: false },
-  { href: "/ask", label: "Ask", icon: MessageSquare, enabled: false },
+  { href: "/ask", label: "Ask", icon: MessageSquare, enabled: true },
   { href: "/gen", label: "GenPages", icon: Sparkles, enabled: false },
   { href: "/review", label: "Review", icon: BookOpen, enabled: false },
   { href: "/settings", label: "Settings", icon: Settings, enabled: true },
