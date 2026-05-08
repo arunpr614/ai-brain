@@ -133,15 +133,27 @@ async function run() {
     deleteCollection(collectionId);
   });
 
-  // ---------- F-207 / B-301 hooks (T-B-* lands these) ----------
+  // ---------- B-301 postProcessTitle (T-B-4 landed) ----------
+  console.log("\n[bonus] B-301 postProcessTitle");
+  const { postProcessTitle } = await import("../src/lib/enrich/pipeline.ts");
+  section("slug input is de-hyphenated + title-cased", () => {
+    assert.equal(
+      postProcessTitle("Growth-Loops-Messy-Draft"),
+      "Growth Loops Messy Draft",
+    );
+  });
+  section("compound-adjective titles with spaces survive untouched", () => {
+    assert.equal(
+      postProcessTitle("State-of-the-Art 2026"),
+      "State-of-the-Art 2026",
+    );
+  });
+
+  // ---------- F-207 hook (T-B-5 lands this) ----------
   // When F-207 ships, import the bulk actions from src/app/actions.ts and
   // exercise bulkTagItemsAction / bulkAttachCollectionAction /
   // bulkDeleteItemsAction here. Keep the section stub so T-B-6 doesn't
   // have to rediscover where to plug in.
-  //
-  // When B-301 ships, import postProcessTitle from src/lib/enrich/pipeline.ts
-  // and assert {"Growth-Loops-Messy-Draft" -> "Growth Loops Messy Draft",
-  //            "State-of-the-Art 2026"     -> "State-of-the-Art 2026"}.
 }
 
 try {

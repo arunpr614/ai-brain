@@ -33,6 +33,65 @@ function billingMonth(d = new Date()): string {
   return `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, "0")}`;
 }
 
+/**
+ * B-301 (v0.3.1): de-hyphenate filename-slug titles without touching
+ * legitimate compound-adjective titles.
+ *
+ * Fires ONLY when the title has zero spaces AND at least two hyphens.
+ * Rationale (per self-critique P-1): the earlier "hyphens > spaces"
+ * heuristic misfires on inputs like "State-of-the-Art 2026" (3 hyphens,
+ * 1 space). The tightened rule preserves every compound-adjective title
+ * because they always contain a space somewhere.
+ *
+ * When the rule fires: replace hyphens with spaces, then title-case each
+ * word except small connector words, which lowercase unless they're the
+ * first word.
+ *
+ * Exported for F-051 unit tests (src/lib/enrich/pipeline.test.ts).
+ */
+const SMALL_WORDS = new Set([
+  "a",
+  "an",
+  "and",
+  "or",
+  "the",
+  "of",
+  "in",
+  "on",
+  "for",
+  "to",
+  "with",
+  "at",
+  "by",
+  "but",
+  "vs",
+]);
+
+export function postProcessTitle(raw: string): string {
+  const title = raw.trim();
+  if (title.length === 0) return raw;
+  const hyphens = (title.match(/-/g) || []).length;
+  const hasSpace = /\s/.test(title);
+  if (hasSpace || hyphens < 2) return raw;
+
+  const words = title.split("-").filter((w) => w.length > 0);
+  return words
+    .map((word, i) => {
+      // Preserve mixed-case tokens that look like acronyms/brand casing
+      // ("PMs", "iPhone", "NYTimes") — signalled by ≥1 uppercase AND ≥1
+      // lowercase letter. All-caps screamers like "HYPHENATED" don't
+      // qualify and still get normalised.
+      const upperCount = (word.match(/[A-Z]/g) || []).length;
+      const lowerCount = (word.match(/[a-z]/g) || []).length;
+      if (upperCount >= 1 && lowerCount >= 1 && upperCount >= 2) return word;
+
+      const lower = word.toLowerCase();
+      if (i > 0 && SMALL_WORDS.has(lower)) return lower;
+      return lower.charAt(0).toUpperCase() + lower.slice(1);
+    })
+    .join(" ");
+}
+
 function recordLlmUsage(args: {
   provider: "ollama";
   model: string;
@@ -123,6 +182,7 @@ export async function enrichItem(item_id: string): Promise<EnrichmentResult> {
   // Write everything in a single transaction so a crash mid-update doesn't
   // leave a half-enriched item.
   const db = getDb();
+  const cleanedTitle = postProcessTitle(output.title);
   const tx = db.transaction(() => {
     db.prepare(
       `UPDATE items
@@ -137,7 +197,7 @@ export async function enrichItem(item_id: string): Promise<EnrichmentResult> {
       output.summary,
       JSON.stringify(output.quotes),
       output.category,
-      output.title,
+      cleanedTitle,
       item_id,
     );
 
