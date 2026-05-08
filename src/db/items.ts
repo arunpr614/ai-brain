@@ -99,34 +99,28 @@ export function findItemByUrl(url: string): ItemRow | null {
 
 /**
  * FTS5-backed full-text search (v0.2.0 F-104). Ranks by bm25.
- * If FTS5 is unavailable for any reason, falls back to LIKE search so
- * the UI never breaks.
+ *
+ * Special-character safety: we wrap the user query in double quotes for
+ * FTS5 phrase-match, which neutralises operators (`AND`, `OR`, `-`, `:`,
+ * parens, etc.). Embedded double quotes are escaped by doubling.
+ *
+ * v0.4.0 T-6 (critique A-8): the old LIKE fallback is removed. It was
+ * written defensively in v0.2.0 but phrase quoting covers every real
+ * failure mode, and the fallback silently returned non-ranked rows when
+ * it did fire — worse than propagating the error.
  */
 export function searchItems(query: string, limit = 50): ItemRow[] {
   const q = query.trim();
   if (!q) return [];
   const db = getDb();
-  try {
-    // sanitize FTS5 input: strip special operators and wrap in quotes
-    const safe = q.replace(/"/g, '""');
-    const rows = db
-      .prepare(
-        `SELECT items.* FROM items_fts
-         JOIN items ON items.id = items_fts.id
-         WHERE items_fts MATCH ?
-         ORDER BY bm25(items_fts) ASC
-         LIMIT ?`,
-      )
-      .all(`"${safe}"`, limit) as ItemRow[];
-    return rows;
-  } catch {
-    const like = `%${q.replace(/[\\%_]/g, (c) => "\\" + c)}%`;
-    return db
-      .prepare(
-        `SELECT * FROM items
-         WHERE title LIKE ? ESCAPE '\\' OR body LIKE ? ESCAPE '\\'
-         ORDER BY captured_at DESC LIMIT ?`,
-      )
-      .all(like, like, limit) as ItemRow[];
-  }
+  const safe = q.replace(/"/g, '""');
+  return db
+    .prepare(
+      `SELECT items.* FROM items_fts
+       JOIN items ON items.id = items_fts.id
+       WHERE items_fts MATCH ?
+       ORDER BY bm25(items_fts) ASC
+       LIMIT ?`,
+    )
+    .all(`"${safe}"`, limit) as ItemRow[];
 }

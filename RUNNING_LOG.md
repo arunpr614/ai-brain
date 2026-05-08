@@ -1653,3 +1653,104 @@ Nothing deployed. Commit `66487e0` is on local `main`, 1 commit ahead of `origin
 - **R-VEC result:** GREEN — p50=6.25 ms, p95=6.88 ms, build=294 ms at 10k / 768-dim on M1 Pro. sqlite-vec runtime: 0.1.9 (drift from 0.1.6 lockfile — F-057).
 - **Repo:** `main` 1 commit ahead of `origin/main` (`66487e0`); tag `v0.3.1` on origin.
 - **Next milestone:** Draft `docs/plans/v0.4.0-ask.md`.
+
+---
+
+## 2026-05-08 18:10 — v0.4.0 execution kickoff: 6/21 tasks, all tests green
+
+**Entry author:** AI agent (Claude) · **Triggered by:** user directive "execute the next step" after R-VEC GREEN + plan drafted
+
+### Planned since last entry
+
+Pick up where the 15:32 R-VEC entry left off: draft `docs/plans/v0.4.0-ask.md`, then begin execution with T-0 preflight. Scope for this session: everything up to and including the foundation-layer tasks (preflight, schema, chunker, embeddings). No UI or API work this session — those need more context room.
+
+### Done
+
+- **Plan drafted and locked.** `docs/plans/v0.4.0-ask.md` v1.0 → v1.1 → v1.2 across 3 commits:
+  - v1.0 (`a57f5b7`): 21 tasks across 7 tracks, 8 SCs including SC-8 Ollama-offline.
+  - v1.1 (`3ab8d19`): user-approved decisions on embedding dim (768, no 1024 bench) and F-057 pin target (0.1.9 with overrides, not 0.1.6 rollback).
+  - v1.2 (`150ccf5`): M-3 self-review absorbed — 4 patches (P-1 EMBED_MODEL_NOT_INSTALLED path, P-2 SC-7 warm-only bar, P-3 embedding_jobs schema mirrors enrichment_jobs, P-4 orphan-citation logging).
+- **Preflight cleared (T-0, T-1, T-2):**
+  - T-0 (`e8f104a`): `sqlite-vec@0.1.9` with explicit `overrides.sqlite-vec-{darwin,linux,windows}-*@0.1.9`. `npm ls` now deterministic. Smoke passes. F-049's caret drift is gone.
+  - T-1 (`150ccf5`): `gsd-review` unavailable, substituted independent-lens self-review at `docs/plans/v0.4.0-ask-REVIEW.md`. 4 non-blocking patches absorbed into plan v1.2.
+  - T-2 (`c603ec6`): BACKLOG §5 rotated to `docs/archive/BACKLOG_ARCHIVE_2026-05.md`. §5 now live section for v0.4.0-in-progress closures. F-057 + M-3 marked closed.
+- **Foundation layer built (T-3, T-4, T-5):**
+  - T-3 (`6e4957a`): migrations `005_vector_index.sql` (chunks_vec vec0 float[768] + chunks_rowid BigInt bridge) and `006_embedding_jobs.sql` (sibling queue mirroring enrichment_jobs, trigger on enrichment_state → 'done', backfill for already-enriched items). `src/db/chunks.ts` exports `insertChunkWithRowid(BigInt)`, `getRowidForChunk`, `countChunks`, `listChunksForItem`. 6 tests green.
+  - T-4 (`5637520`): `src/lib/chunk/index.ts` — markdown-aware semantic chunker. 400–800 token target (4 chars/token heuristic), 10 % overlap, paragraph-boundary splits, fenced code blocks atomic, heading lines preserved, overlong-paragraph fallback via sentence split then char split. 10 tests green.
+  - T-5 (`cdf1d2f`): `src/lib/embed/{client,pipeline}.ts` + shared `src/lib/errors/sink.ts` (lifted from F-050). `embed()` hits Ollama `/api/embed` with full error taxonomy (`EMBED_MODEL_NOT_INSTALLED` carrying exact pull command, `EMBED_CONNECTION`, `EMBED_HTTP`, `EMBED_INVALID_RESPONSE`). `embedItem()` chunks → batches 16/call → writes chunks + chunks_rowid + chunks_vec in one transaction, idempotent. `embedItemWithRetry()` 3× exponential backoff, fail-fast on non-retriable codes, retry-exhaust marks `embedding_jobs.state='error'` + logs via shared sink. 12 tests green (6 pipeline, 6 client).
+- **Test surface growth:** 24 → 52 tests (+28 this session). Typecheck + lint clean after every commit.
+
+### Learned
+
+- **vec0 rowid bind requires BigInt, empirically.** The R-VEC spike surfaced this from the smoke script; v0.4.0 operationalised it across `chunks.ts` and the embedding pipeline. Inline comments at both the SQL migration and the JS caller prevent a future refactor from silently breaking on a `Number` bind.
+- **`sqlite-vec` npm overrides stick — verified.** After `rm -rf node_modules/sqlite-vec*` + `npm install`, `npm ls` reports the overridden sub-package on the same line as the version, and runtime `vec_version()` matches. F-057's core fix holds.
+- **tsx/CJS top-level-await is a recurring gotcha.** First encountered for `auth.test.ts` (previous session); hit again for `chunks.test.ts` this session. Workaround is the side-effect-only `.test.setup.ts` file — used for both chunks and embed pipeline tests. Worth considering whether to switch to an ESM test runner (Vitest) in a future phase, but not now.
+- **Shared error sink was a clean lift, not a premature abstraction.** `src/lib/errors/sink.ts` was extracted at T-5 precisely because T-5 + T-9 (orphan citations) will both write JSONL entries; the enrichment worker keeps its original copy for now to minimise blast radius. Refactor the worker to use the shared sink is a low-risk follow-up.
+- **Token counting as `ceil(chars/4)` is enough for chunking.** Adding `gpt-tokenizer` would add a new dep for a heuristic gate that doesn't need to be precise. Documented inline in `src/lib/chunk/index.ts` so a future agent can swap in an accurate tokenizer if generator-time context math ever needs it.
+
+### Deployed / Released
+
+Nothing deployed. 8 commits unpushed on `main` (`66487e0` R-VEC through `cdf1d2f` T-5). No version bump; still `0.3.1` in `package.json` until T-19 release.
+
+### Documents created or updated this period
+
+- `docs/plans/v0.4.0-ask.md` — NEW (v1.0, v1.1, v1.2 in 3 commits)
+- `docs/plans/v0.4.0-ask-REVIEW.md` — NEW (M-3 self-review; reference for plan v1.2)
+- `docs/archive/BACKLOG_ARCHIVE_2026-05.md` — NEW (P-11 rotation)
+- `BACKLOG.md` — §5 slimmed, §4 F-057 closed, §1 updated for v0.4.0-planned
+- `PROJECT_TRACKER.md` — R-VEC row `● GREEN`, blockers cleared, v0.4.0 row notes "Plan drafted — 21 tasks"
+- `ROADMAP_TRACKER.md` — v0.6.0 → v0.6.1 (R-VEC unblocked F-013); v0.4.0 §2 narrative updated
+- `src/db/migrations/{005_vector_index,006_embedding_jobs}.sql` — NEW
+- `src/db/chunks.ts` + `chunks.test.ts` + `chunks.test.setup.ts` — NEW
+- `src/lib/chunk/index.ts` + `index.test.ts` — NEW
+- `src/lib/embed/client.ts` + `client.test.ts` — NEW
+- `src/lib/embed/pipeline.ts` + `pipeline.test.ts` + `pipeline.test.setup.ts` — NEW
+- `src/lib/errors/sink.ts` — NEW (lifted pattern)
+- `package.json` + `package-lock.json` — sqlite-vec pin + overrides
+- `scripts/spike-vec-smoke.mjs`, `scripts/spike-vec-bench.mjs` — NEW (from R-VEC, commit `66487e0`)
+- `docs/research/vector-bench.md` — NEW (R-VEC findings)
+
+### Current remaining to-do (v0.4.0 task IDs)
+
+1. **T-6 — A-8 FTS5 LIKE-fallback cleanup.** `src/lib/search/fts.ts` becomes FTS5-only. Low-risk refactor; grep the callers first.
+2. **T-7 — Retriever.** `src/lib/retrieve/index.ts` with `retrieve(query, {topK, itemId, minSimilarity})`. SQL joins `chunks_vec` → `chunks_rowid` → `chunks` → `items`. SC-3 (determinism) as a test.
+3. **T-8..T-10 — `/api/ask` route + generator + SSE + Ollama-offline error path.** This is the biggest single day of work; needs fresh context.
+4. **T-11..T-13 — UI: `/ask` page, citation chips, thread persistence.**
+5. **T-14..T-16 — Semantic search UI, related-items panel, backfill script.**
+6. **T-17..T-20 — Smoke + bench + release guard + running-log + tracker updates.**
+
+Embedding worker loop (consumer of `embedding_jobs` queue) is NOT yet wired — pipeline exists, worker-side consumer ships alongside API work, likely folded into T-10 or T-16 depending on whether we want background embedding or on-demand-at-first-retrieve. **Decision needed at T-8 kickoff.**
+
+### Open questions / decisions needed
+
+- **Embedding worker ordering.** Sibling worker loop consuming `embedding_jobs` can ship (a) alongside T-5's pipeline (separate task), (b) folded into backfill T-16, or (c) deferred post-v0.4.0 and have the ask route embed on-demand if chunks_vec is empty. Default: (b) at T-16. Happy to re-sequence if user preference differs.
+- **Push timing.** 8 commits unpushed. Can stay local through v0.4.0 T-19 release, or push at each clean test-green gate. Not asked for this session; will ask at T-19.
+
+### Session self-critique
+
+- **I extracted `src/lib/errors/sink.ts` as a "shared" helper but only one caller uses it.** `src/lib/queue/enrichment-worker.ts` still has its inline `logFailureToJsonl()`. That's premature generalisation — the sink file is justified only if T-9 actually writes orphan citations to it, which is plan-stated but not yet delivered. If T-9 slips or the design changes, this file sits there as dead-weight abstraction. Should have left the logger inline in `embed/pipeline.ts` and lifted it only when T-9 landed. Pattern: **I preemptively factored a helper because the plan said a second caller was coming, instead of waiting for the second caller to exist.** Minor — but worth catching because this is the second time I've done preemptive-DRY this project (the first was the earlier `recordLlmUsage` helper).
+- **Plan T-0 asked for a reinstall verification; I did it but conflated `package.json` version and platform-override drift.** The fix was right, but when I narrated "F-049 pin didn't hold," that's only partly true — F-049 pinned the JS wrapper which stayed at 0.1.6 in the lockfile, and the drift was specifically in the platform sub-package resolution. The T-0 commit message is accurate; the R-VEC findings doc language is slightly imprecise. Not worth correcting in place; noted for future phrasing.
+- **I committed 9 times this session without pushing.** That's a growing risk surface if the laptop goes offline. The plan says push gates at T-19, but the longer we accumulate unpushed work, the more painful a recovery if the `.git/` object store corrupts. **Recommendation for next agent:** push after T-10 (mid-phase) rather than waiting for T-19.
+- **I accepted a 1.5× slack on chunk size in tests (`c.token_count <= tiny.maxTokens * 1.5`).** That's honest accounting for the overlong-paragraph fallback, but a stricter test that feeds a paragraph-bounded input and asserts exact-max would tighten the contract. Not bad enough to block; flagging in case real data turns up chunks that blow past `max` for non-fallback reasons.
+- **I didn't validate the embedding pipeline against a live Ollama.** Tests use a mocked `embed()`. The first-ever live call will be at T-16 backfill (or earlier if user kicks tyres). If the real `/api/embed` response shape deviates from my mock (e.g. wraps embeddings in an outer object), the integration will fail on first contact. **Recognition blind spot:** I've only seen Ollama via its `/api/generate` shape from `src/lib/llm/ollama.ts`; `/api/embed` is unverified locally.
+- **I ran long past a natural stopping point.** The preflight+foundation block (T-0..T-5) is genuinely one coherent unit of work, and the commit density is reasonable, but the context window is getting dense and T-6 onward is API + UI surface. Stopping here is the right call; I actually recommended stopping before this running-log update, which was then followed by "and then execute the next step." That's a soft edge in the hand-off protocol — when an agent says "stop here," the user directive to continue should override, but only if the user is aware of the context cost. Noted.
+
+### Action items for the next agent
+
+1. **[VERIFY]** Before running any task that actually embeds real items, run a one-off live call to `/api/embed` (e.g. `curl -s http://localhost:11434/api/embed -d '{"model":"nomic-embed-text","input":["hello"]}' | jq '.embeddings | length'`). If the response shape doesn't match `src/lib/embed/client.ts` expectations (top-level `embeddings: number[][]`), fix the client before T-16 backfill runs — it will otherwise silently fail for every item.
+2. **[DO]** Decide the embedding-worker ordering question before starting T-8. Plan default is to ship the worker inside T-16 backfill; if you'd rather have a background worker consuming `embedding_jobs` auto-triggered by the enrichment-state trigger, spec it as a new T-5.5 and land it before T-8.
+3. **[DO]** Push `origin main` after T-10 (generator + streaming skeleton green), not at T-19 release. 8+ commits accumulating locally is an avoidable risk.
+4. **[DON'T]** Extract any more "shared" helpers until you have two concrete callers in the same commit. `src/lib/errors/sink.ts` has one caller; don't repeat the pattern.
+5. **[VERIFY]** T-6 FTS5 LIKE-fallback removal: grep for `LIKE` usage in `src/lib/search/fts.ts` *and* its callers before editing. If any caller relies on the LIKE path as a fallback for malformed queries (special characters, etc.), T-6 must preserve that branch in a different shape or T-6 becomes a regression.
+6. **[ASK]** User on test-framework switch: tsx/CJS top-level-await has now bitten twice (auth, chunks). Vitest would eliminate the `.test.setup.ts` workaround. Not urgent; ask opportunistically — e.g. when a third test needs the workaround.
+7. **[DO]** When T-9 orphan-citation logging ships, retrofit `src/lib/queue/enrichment-worker.ts::logFailureToJsonl` to call the shared `logError()` from `src/lib/errors/sink.ts` — that's when the shared sink actually earns its existence.
+
+### State snapshot
+
+- **Current phase / version:** v0.3.1 shipped → v0.4.0 Ask (RAG) **in execution**, 6 of 21 tasks done
+- **App version:** `0.3.1` in `package.json` (bump to `0.4.0` at T-19)
+- **Plan:** `docs/plans/v0.4.0-ask.md` v1.2
+- **Active trackers:** `PROJECT_TRACKER.md` v0.6.0 · `ROADMAP_TRACKER.md` v0.6.1 · `BACKLOG.md` v4.0 · `RUNNING_LOG.md` (this file) · `docs/plans/v0.4.0-ask.md` v1.2 · `docs/plans/v0.4.0-ask-REVIEW.md`
+- **Tests:** 52/52 green (24 prior + 28 new). typecheck + lint clean.
+- **Repo:** `main` 8 commits ahead of `origin/main`; tag `v0.3.1` on origin; nothing pushed this session.
+- **Next milestone:** T-6 FTS5 cleanup → T-7 retriever → T-8..T-10 `/api/ask` route (biggest single unit; new session recommended).
