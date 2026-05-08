@@ -1,9 +1,10 @@
 # AI Brain — Roadmap Tracker
 
-**Document version:** v0.6.0-roadmap
+**Document version:** v0.6.1-roadmap
 **Date:** 2026-05-08
 **Changelog:**
-- **v0.6.0-roadmap** — v0.3.1 Polish + Hardening SHIPPED. All 17 work items (F-042..F-056 + F-034 + F-207/F-301/F-302/B-301) closed with commit SHAs. Tag `v0.3.1` on main. Critique A-series + P-series all closed (table in `PROJECT_TRACKER.md` §5). Next lane: v0.4.0 Ask (RAG), blocked by R-VEC.
+- **v0.6.1-roadmap** — R-VEC spike closed **GREEN** on 2026-05-08. All four thresholds pass with ≥ 10× headroom at 10k chunks (p50=6.25 ms, p95=6.88 ms, build=294 ms, reopen=6.47 ms). 50k tier also healthy. v0.4.0 Ask (RAG) **unblocked**. Findings: [`docs/research/vector-bench.md`](./docs/research/vector-bench.md). F-013 (embeddings pipeline) now unblocked; next action is drafting `docs/plans/v0.4.0-ask.md`.
+- v0.6.0-roadmap — v0.3.1 Polish + Hardening SHIPPED. All 17 work items (F-042..F-056 + F-034 + F-207/F-301/F-302/B-301) closed with commit SHAs. Tag `v0.3.1` on main. Critique A-series + P-series all closed (table in `PROJECT_TRACKER.md` §5). Next lane: v0.4.0 Ask (RAG), blocked by R-VEC.
 - v0.5.0-roadmap — v0.3.0 Intelligence SHIPPED (`5d1c390`); inserted **v0.3.1 Polish + Hardening** phase absorbing all actionable findings from [`docs/plans/SELF_CRITIQUE_2026-05-08_10-14-16.md`](./docs/plans/SELF_CRITIQUE_2026-05-08_10-14-16.md); promoted F-034 (restore script) from v0.10.0 → v0.3.1; added F-042..F-055 spanning hardening, observability, test infrastructure, and process gates.
 - v0.4.0-roadmap — v0.2.0 Capture core SHIPPED; F-101..F-106 all shipped; migrations runner applied `002_fts5.sql` during build.
 - v0.3.0-roadmap — v0.1.0 Foundation SHIPPED; Next.js 16 + React 19 + Tailwind 4 runtime live; F-000..F-010 all shipped.
@@ -151,7 +152,7 @@ All 17 work items closed with commit SHAs. Typecheck + lint + build + 24 unit te
 |---|---|---|---|
 | F-011 | Semantic chunker (markdown-aware, 400–800 tok, 10% overlap) | planned | |
 | F-012 | Re-chunk migration for existing items | planned | |
-| F-013 | Embeddings pipeline (Ollama `nomic-embed-text`, batched) | planned | Blocked by R-VEC |
+| F-013 | Embeddings pipeline (Ollama `nomic-embed-text`, batched) | planned | Unblocked — R-VEC GREEN. 768-dim confirmed viable. |
 | ASK-1 | Chat over library (RAG) | planned | |
 | ASK-2 | Citation-grounded answers | planned | |
 | ASK-3 | Per-item chat | planned | |
@@ -291,7 +292,7 @@ Moved out of v0.1.0–v1.0.0 scope. Each has a "reopen trigger" — a concrete s
 future (5)  →  backlog (0)  →  planned (70+)  →  in-progress (0)  →  shipped (48, through v0.3.1)
 ```
 
-v0.3.1 closed 2026-05-08. No active phase until the R-VEC spike starts (blocks v0.4.0 Ask/RAG).
+v0.3.1 closed 2026-05-08. R-VEC spike completed **GREEN** 2026-05-08 ([findings](./docs/research/vector-bench.md)). Next active work = drafting v0.4.0 Ask (RAG) plan.
 
 ---
 
@@ -323,6 +324,7 @@ Ordering decisions worth recording so future-me doesn't second-guess:
 
 - **2026-05-08** — Inserted v0.3.1 Polish + hardening phase driven by [`docs/plans/SELF_CRITIQUE_2026-05-08_10-14-16.md`](./docs/plans/SELF_CRITIQUE_2026-05-08_10-14-16.md) (22 findings → 15 actionable work items F-042..F-056). F-034 (restore runbook) promoted from v0.10.0 → v0.3.1 per critique A-7. v0.3.0 Intelligence marked shipped at `5d1c390`. Cumulative estimate shifts from 15.0 → 15.6 weeks.
 - **2026-05-08 (release)** — v0.3.1 SHIPPED. All 17 work items closed with commit SHAs. Tag `v0.3.1` on `main`. Lifecycle board: planned 70+ / in-progress 0 / shipped 48. Next lane: v0.4.0 Ask (RAG), blocked by R-VEC spike.
+- **2026-05-08 (R-VEC)** — R-VEC spike closed GREEN. Measured p50=6.25 ms / p95=6.88 ms / build=294 ms at 10k chunks on M1 Pro — all four thresholds pass by > 10×. 50k tier also within budget. v0.4.0 Ask (RAG) unblocked. F-013 embeddings pipeline confirmed viable on 768-dim. Caveat: `sqlite-vec` resolved to 0.1.9 vs lockfile pin 0.1.6 — tracked as F-057.
 - 2026-05-07 — Created. All features placed in phase lanes. Lenny seed moved to `future` (FUT-1) per user decision.
 
 ---

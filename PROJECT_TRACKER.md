@@ -21,7 +21,7 @@ Legend: `○` not started · `◐` in progress · `●` complete · `✖` blocke
 | v0.2.0 Capture core | 0.2.0 | ● | 2026-05-07 | 2026-05-07 | URL (Readability) + PDF (unpdf, 301 cpp paywall guard) + Note + header/footer strip + FTS5 search + markdown export + unified /capture tabs. Smoke-tested. |
 | v0.3.0 Intelligence | 0.3.0 | ● | 2026-05-07 | 2026-05-07 | Ollama client + enrichment queue + pipeline (summary/category/title/tags/quotes) + dual-pane view + enriching pill + tags/collections CRUD + bulk zip export. F-207 bulk-ops UI deferred to v0.3.1. |
 | v0.3.1 Polish + hardening | 0.3.1 | ● | 2026-05-08 | 2026-05-08 | All 17 work items shipped: 4 polish (F-207, F-301, F-302, B-301) + 13 hardening (F-042..F-056 minus duplicates + F-034 promoted from v0.10.0). 24 unit tests + 16 smoke assertions green. `tsx@^4.19.2` added as only new dev dep. Tag `v0.3.1`. |
-| v0.4.0 Ask (RAG) | 0.4.0 | ○ | — | — | Blocked by R-VEC spike ([`docs/plans/R-VEC-spike.md`](./docs/plans/R-VEC-spike.md)) |
+| v0.4.0 Ask (RAG) | 0.4.0 | ○ | — | — | **Unblocked 2026-05-08** — R-VEC GREEN ([findings](./docs/research/vector-bench.md)); next step is v0.4.0 plan draft |
 | v0.5.0 APK + extension | 0.5.0 | ○ | — | — | Scope expanded: +mDNS, +WebAuthn stretch, +CSRF, +token rotation |
 | v0.6.0 GenPage + clusters | 0.6.0 | ○ | — | — | Blocked by R-CLUSTER |
 | v0.7.0 GenLink | 0.7.0 | ○ | — | — | — |
@@ -80,7 +80,7 @@ Blocking spikes must land before the phase they block. Non-blocking can run in p
 | R-PDF | Best PDF extractor for messy Substack PDFs | v0.2.0 | **P0** | ● | `docs/research/pdf-extraction.md` (empirical verification in v0.0.1 per critique P-1) |
 | R-AUTH | LAN auth model: token / Tailscale / SSH tunnel | v0.5.0 | **P0** | ● | `docs/research/lan-auth.md` |
 | R-SELF-CRITIQUE | Adversarial review of own research | — | retrospective | ● | `docs/research/SELF_CRITIQUE.md` (35 findings, 25 open; drives remediations above) |
-| R-VEC | sqlite-vec perf at 10k+ chunks | v0.4.0 | P1 | ○ | `docs/research/vector-bench.md` |
+| R-VEC | sqlite-vec perf at 10k+ chunks | v0.4.0 | P1 | ● GREEN | `docs/research/vector-bench.md` |
 | R-FSRS | SRS algorithm choice (SM-2 / FSRS) | v0.8.0 | P1 | ○ | `docs/research/srs-algorithm.md` |
 | R-CLUSTER | Topic clustering: JS vs Python sidecar vs LLM-only | v0.6.0 | P2 | ○ | `docs/research/clustering.md` |
 | R-YT | yt-dlp reliability on YouTube auto-subs in 2026 | v0.10.0 | P2 | ○ | `docs/research/youtube.md` |
@@ -101,7 +101,7 @@ Blocking spikes must land before the phase they block. Non-blocking can run in p
 
 ## 5. Blockers
 
-- **v0.4.0 Ask (RAG)** is blocked by **R-VEC spike** ([plan](./docs/plans/R-VEC-spike.md)).
+- **None.** R-VEC cleared GREEN on 2026-05-08; v0.4.0 Ask (RAG) is ready to plan. Findings: [`docs/research/vector-bench.md`](./docs/research/vector-bench.md).
 
 ### Critique-derived risks — all closed as of v0.3.1 release
 
@@ -159,5 +159,6 @@ These aren't measured yet — added to remind future-me:
 - 2026-05-07 — Decisions D-1, D-2, D-3 closed. Repo name set to `arunpr614/ai-brain` (public). Mac specs captured (M1 Pro / 32 GB / 455 GB free). Full AI-assisted coding confirmed. P0 research spikes kicked off in parallel.
 - **2026-05-08** — v0.3.1 Polish + hardening opened as active phase. Absorbed 22 findings from [`docs/plans/SELF_CRITIQUE_2026-05-08_10-14-16.md`](./docs/plans/SELF_CRITIQUE_2026-05-08_10-14-16.md) into 15 work items (F-042..F-056). F-034 promoted from v0.10.0. §2 rewritten from "Planning" to "v0.3.1 Polish + hardening" view. Blockers section updated with per-finding risk table.
 - **2026-05-08 (release)** — v0.3.1 SHIPPED. All 17 items closed. 24 unit tests + 16 smoke assertions green. §2 rewritten to v0.3.1 final status; §5 blockers + critique risks table marked all-closed. `package.json` 0.3.0 → 0.3.1; tag `v0.3.1` on `main`. Next phase v0.4.0 Ask (RAG) blocked on R-VEC spike.
+- **2026-05-08 (R-VEC)** — R-VEC spike completed GREEN. All four thresholds pass with ≥ 10× headroom at 10k chunks (p50=6.25 ms vs 80 ms, p95=6.88 ms vs 200 ms, build=294 ms vs 30 s, reopen=6.47 ms vs 5 s). 50k tier also healthy (p50=30 ms, p95=36 ms). Caveat: `sqlite-vec` resolved to 0.1.9 despite lockfile pin of 0.1.6 — follow-up F-057 logged. v0.4.0 unblocked; next step = draft `docs/plans/v0.4.0-ask.md`.
 
 **Update rule:** every phase transition appends one row here with date + what changed.

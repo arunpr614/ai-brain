@@ -14,7 +14,7 @@
 
 ## 1. Active phase — none
 
-v0.3.1 shipped 2026-05-08. Next phase (v0.4.0 Ask/RAG) blocked by R-VEC spike ([`docs/plans/R-VEC-spike.md`](./docs/plans/R-VEC-spike.md)).
+v0.3.1 shipped 2026-05-08. R-VEC spike completed **GREEN** on 2026-05-08 ([findings](./docs/research/vector-bench.md)). **Next phase (v0.4.0 Ask/RAG) is unblocked and ready to plan** — draft `docs/plans/v0.4.0-ask.md` next.
 
 ### Historical (v0.3.1 snapshot, for reference — all closed; see §5)
 
@@ -65,7 +65,7 @@ Full plan: [`docs/plans/v0.3.1-polish.md`](./docs/plans/v0.3.1-polish.md) (v2.0)
 
 | ID | Question | Blocks | Priority | Plan |
 |---|---|---|---|---|
-| R-VEC | sqlite-vec perf at 10k+ chunks on M1 Pro | v0.4.0 | P1 | [`docs/plans/R-VEC-spike.md`](./docs/plans/R-VEC-spike.md) |
+| ~~R-VEC~~ | ~~sqlite-vec perf at 10k+ chunks on M1 Pro~~ | ~~v0.4.0~~ | — | **Closed 2026-05-08 GREEN** — see §5 |
 | R-FSRS | SRS algorithm choice (SM-2 / FSRS) | v0.8.0 | P1 | — |
 | R-CLUSTER | Topic clustering (JS vs Python vs LLM-only) | v0.6.0 | P2 | — |
 | R-YT | yt-dlp reliability on YouTube auto-subs | v0.10.0 | P2 | — |
@@ -86,10 +86,15 @@ Full plan: [`docs/plans/v0.3.1-polish.md`](./docs/plans/v0.3.1-polish.md) (v2.0)
 | I-01 | Auto-collection suggestion from enrichment tags | Would sit behind a user toggle; needs R-CLUSTER first. |
 | I-02 | Per-item "regenerate enrichment" button | Already safe: `enrichItem` is idempotent. UI work only. |
 | I-03 | Export Obsidian vault directly (not just zip) | Requires D-4 (Obsidian vault path) — still open. |
+| F-057 | Audit `sqlite-vec` resolved version on install (lockfile said 0.1.6, installed 0.1.9) | P2. Reproduce with `npm ls sqlite-vec sqlite-vec-darwin-arm64`. Consider explicit sub-package pin if drift repeats. Not a blocker — 0.1.9 shipped in v0.3.1 and meets R-VEC thresholds by > 10×. |
 
 ---
 
 ## 5. Recently closed
+
+### R-VEC spike (GREEN, 2026-05-08)
+
+- ~~R-VEC~~ sqlite-vec performance benchmark at 1k/10k/50k chunks on M1 Pro — **GREEN verdict**, all four thresholds pass with ≥ 10× headroom. v0.4.0 Ask/RAG unblocked. Findings: [`docs/research/vector-bench.md`](./docs/research/vector-bench.md). Scripts: [`scripts/spike-vec-smoke.mjs`](./scripts/spike-vec-smoke.mjs), [`scripts/spike-vec-bench.mjs`](./scripts/spike-vec-bench.mjs). Follow-up **F-057** (version-drift audit for `sqlite-vec`) added to §4-adjacent hardening backlog.
 
 ### v0.3.1 Polish + Hardening (shipped 2026-05-08)
 

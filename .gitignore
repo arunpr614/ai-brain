@@ -78,3 +78,4 @@ vault/
 
 # Debug
 .turbo/
+tmp/
