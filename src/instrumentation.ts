@@ -13,7 +13,15 @@
  * `-H 127.0.0.1` flag or add `0.0.0.0` bindings here.
  */
 export async function register(): Promise<void> {
-  if (process.env.NEXT_RUNTIME !== "nodejs") return;
+  if (process.env.NEXT_RUNTIME !== "nodejs") {
+    // F-047 (self-critique A-11): make the skip visible in the boot log so
+    // an accidental Edge-runtime move on a route doesn't silently mean
+    // "worker + backup didn't start."
+    console.log(
+      `[boot] instrumentation skipped — NEXT_RUNTIME=${process.env.NEXT_RUNTIME ?? "(unset)"} (expected "nodejs")`,
+    );
+    return;
+  }
 
   const { getDb } = await import("@/db/client");
   const { startBackupScheduler } = await import("@/lib/backup");
