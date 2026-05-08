@@ -2,23 +2,58 @@
 
 | Field | Value |
 |-------|--------|
-| **Document version** | v0.3.1-backlog |
+| **Document version** | v0.3.1-backlog v2.0 |
 | **Date** | 2026-05-08 |
 | **Owner** | Arun |
 | **Update cadence** | at every phase kickoff; whenever an item is promoted, deferred, or closed |
+| **Revision** | v2.0 — absorbed 2026-05-08 self-critique into §1 (F-042..F-056) |
 
 > Single source of truth for work that is **not in the active phase plan** but is known-needed, nice-to-have, or idea-captured. Items promoted from here land in `BUILD_PLAN.md` under a phase heading. Items closed here get a strikethrough and a closing commit SHA.
 
 ---
 
-## 1. Active deferrals (carried from v0.3.0 → v0.3.1)
+## 1. Active phase — v0.3.1 Polish + hardening
 
-| ID | Title | Source | Size | Notes |
+Full plan: [`docs/plans/v0.3.1-polish.md`](./docs/plans/v0.3.1-polish.md) (v2.0). Critique source: [`docs/plans/SELF_CRITIQUE_2026-05-08_10-14-16.md`](./docs/plans/SELF_CRITIQUE_2026-05-08_10-14-16.md).
+
+### 1a. Polish (carried from v0.3.0)
+
+| ID | Title | Source | Size | Severity | Notes |
+|---|---|---|---|---|---|
+| F-207 | Library bulk-select UI (multi-select + batch tag/collection/delete) | v0.3.0 scope | M | — | Backend primitives exist; plan §T-B-5. |
+| B-301 | Title hyphenation post-processor | v0.3.0 QA finding | S | — | **Heuristic tightened per critique P-1**: fire only on `0 spaces && ≥ 2 hyphens`. |
+| F-301 | Wire `CollectionEditor` into item detail | v0.3.0 partial | XS | — | Component exists at [`src/components/collection-editor.tsx`](./src/components/collection-editor.tsx). |
+| F-302 | Inline tag editor on item detail | v0.3.1 polish | S | — | Reuse `addTagToItemAction` + `removeTagFromItemAction`. |
+
+### 1b. Hardening (absorbed from 2026-05-08 self-critique)
+
+| ID | Title | Critique ref | Severity | Track |
 |---|---|---|---|---|
-| F-207 | Library bulk-select UI (multi-select + batch tag/collection/delete) | v0.3.0 scope | M | Backend primitives exist (`tags.ts`, `collections.ts`, `items.ts`). See [`docs/plans/v0.3.1-polish.md`](./docs/plans/v0.3.1-polish.md) §4. |
-| B-301 | Title hyphenation post-processor | v0.3.0 QA finding | S | Qwen 2.5 emits `Growth-Loops-Messy-Draft` from filename slugs. Post-process in [`src/lib/enrich/pipeline.ts`](./src/lib/enrich/pipeline.ts) when hyphens > spaces. |
-| F-301 | Wire `CollectionEditor` into item detail | v0.3.0 partial | XS | Component exists at [`src/components/collection-editor.tsx`](./src/components/collection-editor.tsx); page is [`src/app/items/[id]/page.tsx`](./src/app/items/[id]/page.tsx). |
-| F-302 | Inline tag editor on item detail | v0.3.1 polish | S | `addTagToItemAction` + `removeTagFromItemAction` already exist in [`src/app/taxonomy-actions.ts`](./src/app/taxonomy-actions.ts). |
+| F-042 | Bind Next dev server to `127.0.0.1` | A-1 | **P0** | §4A T-A-1 |
+| F-043 | Session cookie expiry + `SameSite=Strict` | A-5 | P1 | §4A T-A-8 |
+| F-044 | `globalThis` worker-boot guard (HMR-safe) | A-2 | P1 | §4A T-A-3 |
+| F-045 | Periodic `sweepStaleClaims()` inside loop | A-3 | P1 | §4A T-A-4 |
+| F-046 | Expose `attempts` on enrichment status endpoint | A-4 | P2 | §4A T-A-6 |
+| F-047 | Log non-nodejs `instrumentation.ts` branch | A-11 | P2 | §4A T-A-5 |
+| F-048 | Force `WAL` + `synchronous=NORMAL` per-connection | A-6 | P1 | §4A T-A-2 |
+| F-034 | DB restore script + runbook (promoted from v0.10.0) | A-7 | P1 | §4A T-A-9 |
+| F-049 | Exact-pin `sqlite-vec@0.1.6` before R-VEC | A-9 | P1 | §4A T-A-10 |
+| F-050 | `data/errors.jsonl` rotation | A-10 | P2 | §4A T-A-11 |
+| F-051 | Adopt `node:test` + `npm test` precedent | P-2 | P1 | §4A T-A-7 |
+| F-052 | `scripts/smoke-v0.3.1.mjs` end-to-end smoke | P-4 | P1 | §4A T-A-13 |
+| F-053 | Bulk actions revalidate `/collections/[id]` + `/settings/tags` | P-6 | P1 | §4B T-B-5b |
+| F-054 | Release guard (clean tree + revert rehearsal) | P-12, M-4 | P1 | §4B T-B-6 |
+| F-055 | Per-task `RUNNING_LOG.md` breadcrumbs | M-1 | P1 | Cross-cutting (append after every `T-*` commit) |
+| F-056 | Refuse PIN overwrite without reset flag | A-12 | P2 | §4A T-A-12 |
+
+### 1c. Deliberately deferred from critique to v0.4.0+
+
+| Critique ref | Why deferred |
+|---|---|
+| A-8 (FTS5 LIKE fallback cleanup) | Revisit when hybrid search stresses FTS5 in v0.4.0 |
+| P-11 (BACKLOG.md §5 archive rotation) | Not urgent before §5 has > ~20 closed items |
+| P-5 (plan provenance nits) | Cosmetic; folded into v2.0 plan header |
+| M-3 (cross-AI review) | Run if `gsd-review` is available; otherwise user spot-checks |
 
 ---
 

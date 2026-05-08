@@ -1,7 +1,7 @@
 # AI Brain — Project Tracker
 
-**Document version:** v0.4.0-tracker
-**Date:** 2026-05-07
+**Document version:** v0.5.0-tracker
+**Date:** 2026-05-08
 **Owner:** Arun
 **Update cadence:** at phase start, at phase end, and whenever a blocker appears.
 
@@ -20,7 +20,8 @@ Legend: `○` not started · `◐` in progress · `●` complete · `✖` blocke
 | v0.1.0 Foundation | 0.1.0 | ● | 2026-05-07 | 2026-05-07 | F-000..F-010 all shipped (Next.js 16 + SQLite + migrations + PIN auth + theme + library + ⌘K + 6h backup). Smoke-tested end-to-end. |
 | v0.2.0 Capture core | 0.2.0 | ● | 2026-05-07 | 2026-05-07 | URL (Readability) + PDF (unpdf, 301 cpp paywall guard) + Note + header/footer strip + FTS5 search + markdown export + unified /capture tabs. Smoke-tested. |
 | v0.3.0 Intelligence | 0.3.0 | ● | 2026-05-07 | 2026-05-07 | Ollama client + enrichment queue + pipeline (summary/category/title/tags/quotes) + dual-pane view + enriching pill + tags/collections CRUD + bulk zip export. F-207 bulk-ops UI deferred to v0.3.1. |
-| v0.4.0 Ask (RAG) | 0.4.0 | ○ | — | — | Blocked by R-VEC |
+| **v0.3.1 Polish + hardening** | 0.3.1 | **◐** | **2026-05-08** | — | **Active.** 19 work items: 4 carried (F-207/F-301/F-302/B-301) + 15 self-critique items (F-042..F-056) + F-034 promoted from v0.10.0. Plan: [`docs/plans/v0.3.1-polish.md`](./docs/plans/v0.3.1-polish.md). Critique: [`docs/plans/SELF_CRITIQUE_2026-05-08_10-14-16.md`](./docs/plans/SELF_CRITIQUE_2026-05-08_10-14-16.md). |
+| v0.4.0 Ask (RAG) | 0.4.0 | ○ | — | — | Blocked by R-VEC spike ([`docs/plans/R-VEC-spike.md`](./docs/plans/R-VEC-spike.md)) |
 | v0.5.0 APK + extension | 0.5.0 | ○ | — | — | Scope expanded: +mDNS, +WebAuthn stretch, +CSRF, +token rotation |
 | v0.6.0 GenPage + clusters | 0.6.0 | ○ | — | — | Blocked by R-CLUSTER |
 | v0.7.0 GenLink | 0.7.0 | ○ | — | — | — |
@@ -31,27 +32,44 @@ Legend: `○` not started · `◐` in progress · `●` complete · `✖` blocke
 
 ---
 
-## 2. Current phase details — Planning
+## 2. Current phase details — v0.3.1 Polish + hardening
 
-**Goal:** Lock plan, design system, and research queue before writing code.
+**Goal:** Close the four polish items carried from v0.3.0 + absorb all actionable findings from the 2026-05-08 self-critique before starting v0.4.0 Ask/RAG.
 
-| Deliverable | Status | File |
+| Deliverable | Status | File / pointer |
 |---|---|---|
-| Strategy doc (existing) | ● | `STRATEGY.md` |
-| Feature inventory (existing) | ● | `FEATURE_INVENTORY.md` |
-| Project closure marker (existing; now historical) | ● | `PROJECT_CLOSURE.md` |
-| Build plan | ● | `BUILD_PLAN.md` v0.1.1-plan |
-| Design system | ● | `DESIGN_SYSTEM.md` v0.1.0-design |
-| Project tracker (this file) | ● | `PROJECT_TRACKER.md` |
-| Roadmap tracker | ● | `ROADMAP_TRACKER.md` |
-| Backlog file | ○ | `BACKLOG.md` (create at v0.1.0 kickoff) |
-| Research spikes (4 blocking) | ◐ | see §3 |
+| Backlog file | ● | [`BACKLOG.md`](./BACKLOG.md) (created 2026-05-08) |
+| v0.3.1 execution plan | ● | [`docs/plans/v0.3.1-polish.md`](./docs/plans/v0.3.1-polish.md) |
+| Self-critique document | ● | [`docs/plans/SELF_CRITIQUE_2026-05-08_10-14-16.md`](./docs/plans/SELF_CRITIQUE_2026-05-08_10-14-16.md) |
+| R-VEC spike plan (parallel, blocks v0.4.0) | ● | [`docs/plans/R-VEC-spike.md`](./docs/plans/R-VEC-spike.md) |
+| F-207 Library bulk-ops UI | ○ | planned — T-5 in the v0.3.1 plan |
+| F-301 Wire `CollectionEditor` | ○ | planned — T-2 (smallest visible win, start here) |
+| F-302 Inline tag editor | ○ | planned — T-3 |
+| B-301 Title de-hyphenation | ○ | planned — T-4 (heuristic needs tightening per critique P-1 before implementation) |
+| F-042 Bind dev server to `127.0.0.1` | ○ | **P0** — critique A-1; do before any further code lands |
+| F-043 Session cookie expiry + SameSite | ○ | P1 — critique A-5 |
+| F-044 HMR-safe worker boot guard | ○ | P1 — critique A-2 |
+| F-045 Periodic stale-claim sweep | ○ | P1 — critique A-3 |
+| F-046 Expose `attempts` on status endpoint | ○ | P2 — critique A-4 |
+| F-047 Log non-nodejs instrumentation branch | ○ | P2 — critique A-11 |
+| F-048 WAL + synchronous=NORMAL pragmas | ○ | P1 — critique A-6; load-bearing for F-207 bulk writes |
+| F-034 DB restore script + runbook | ○ | P1 — critique A-7; promoted from v0.10.0 |
+| F-049 Exact-pin `sqlite-vec@0.1.6` | ○ | P1 — critique A-9 |
+| F-050 `data/errors.jsonl` rotation | ○ | P2 — critique A-10 |
+| F-051 `node:test` precedent + `npm test` | ○ | P1 — critique P-2 |
+| F-052 `scripts/smoke-v0.3.1.mjs` | ○ | P1 — critique P-4 |
+| F-053 Bulk actions revalidate more paths | ○ | P1 — critique P-6 |
+| F-054 Release guard (clean tree + revert rehearsal) | ○ | P1 — critique P-12 + M-4 |
+| F-055 Per-task `RUNNING_LOG.md` breadcrumbs | ○ | P1 — critique M-1 |
+| F-056 Refuse PIN overwrite without reset flag | ○ | P2 — critique A-12 |
 
-**Exit criteria for Planning → v0.1.0:**
-1. R-LLM, R-CAP, R-PDF, R-AUTH outputs written to `docs/research/`.
-2. Mac hardware specs documented.
-3. GitHub repo `arunpr614/brain` initialized, private, first commit of planning docs pushed.
-4. v0.1.0 kickoff task list created (schema, auth, library page).
+**Phase exit criteria (mirrored in `ROADMAP_TRACKER.md` §2 v0.3.1):**
+1. All four carried items (F-207, F-301, F-302, B-301) shipped with commit SHAs in `BACKLOG.md` §5.
+2. All P0 and P1 items closed; P2 items closed or explicitly carried to v0.4.0.
+3. `npm run typecheck && npm run lint && npm run build && npm test` green.
+4. `scripts/smoke-v0.3.1.mjs` runs clean.
+5. `package.json` at `0.3.1`; tag `v0.3.1`.
+6. RUNNING_LOG.md per-task breadcrumbs + phase-close entry.
 
 ---
 
@@ -87,7 +105,22 @@ Blocking spikes must land before the phase they block. Non-blocking can run in p
 
 ## 5. Blockers
 
-No blockers active. Research spikes are scheduled but not gating other work yet.
+- **v0.4.0 Ask (RAG)** is blocked by **R-VEC spike** ([plan](./docs/plans/R-VEC-spike.md)). R-VEC runs as a parallel lane to v0.3.1 and does not block v0.3.1 closure.
+- **v0.3.1 F-042 (P0)** blocks any further network-exposed code changes. Landing it in T-1 or T-2 of execution is non-negotiable per critique A-1.
+
+### Known risks flagged by 2026-05-08 self-critique (not yet blockers)
+
+| Ref | Risk | Mitigation owner |
+|---|---|---|
+| A-1 | Dev server reachable on LAN without CSRF | F-042 |
+| A-2 | HMR double-boots enrichment worker | F-044 |
+| A-3 | Stale claims never re-swept after initial boot | F-045 |
+| A-5 | Session cookies have no expiry | F-043 |
+| A-6 | WAL pragma unverified; bulk writes could serialize | F-048 |
+| A-7 | No documented DB restore procedure | F-034 |
+| A-9 | `sqlite-vec` caret-pin drifts before R-VEC | F-049 |
+| P-1 | Title de-hyphenation heuristic over-fires on `State-of-the-Art 2026` | B-301 (tighten before implementation) |
+| P-4 | All success criteria say "manual smoke" | F-052 |
 
 ---
 
@@ -120,5 +153,6 @@ These aren't measured yet — added to remind future-me:
 
 - 2026-05-07 — Created. All phases `○`. Planning `◐`.
 - 2026-05-07 — Decisions D-1, D-2, D-3 closed. Repo name set to `arunpr614/ai-brain` (public). Mac specs captured (M1 Pro / 32 GB / 455 GB free). Full AI-assisted coding confirmed. P0 research spikes kicked off in parallel.
+- **2026-05-08** — v0.3.1 Polish + hardening opened as active phase. Absorbed 22 findings from [`docs/plans/SELF_CRITIQUE_2026-05-08_10-14-16.md`](./docs/plans/SELF_CRITIQUE_2026-05-08_10-14-16.md) into 15 work items (F-042..F-056). F-034 promoted from v0.10.0. §2 rewritten from "Planning" to "v0.3.1 Polish + hardening" view. Blockers section updated with per-finding risk table.
 
 **Update rule:** every phase transition appends one row here with date + what changed.
