@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { deleteItemAction } from "@/app/actions";
 import { CollectionEditor } from "@/components/collection-editor";
 import { ItemEnrichmentWatch } from "@/components/item-enrichment-watch";
+import { TagEditor } from "@/components/tag-editor";
 import {
   listCollections,
   listCollectionsForItem,
@@ -138,6 +139,15 @@ export default async function ItemDetailPage({
 
         {/* RIGHT: Collections + AI digest */}
         <aside className="flex flex-col gap-6 font-sans text-sm lg:sticky lg:top-8 lg:self-start">
+          {/* F-302: inline tag editor — always visible so the user can
+              attach/detach tags without going to /settings/tags. */}
+          <div className="rounded-lg border border-[var(--border)] bg-[var(--surface)] p-5">
+            <p className="mb-2 text-[11px] font-medium uppercase tracking-wider text-[var(--text-muted)]">
+              Tags
+            </p>
+            <TagEditor itemId={item.id} tags={tags} />
+          </div>
+
           {/* F-301: Collections editor — always visible so the user can
               attach/detach without waiting for enrichment to finish. */}
           <div className="rounded-lg border border-[var(--border)] bg-[var(--surface)] p-5">
@@ -174,24 +184,6 @@ export default async function ItemDetailPage({
                   <span className="inline-flex rounded-full bg-[var(--accent-3)] px-2.5 py-0.5 text-xs font-medium text-[var(--accent-11)]">
                     {item.category}
                   </span>
-                </div>
-              )}
-
-              {tags.length > 0 && (
-                <div>
-                  <p className="mb-1.5 text-[11px] font-medium uppercase tracking-wider text-[var(--text-muted)]">
-                    Tags
-                  </p>
-                  <div className="flex flex-wrap gap-1.5">
-                    {tags.map((t) => (
-                      <span
-                        key={t.id}
-                        className="rounded-sm border border-[var(--border)] bg-[var(--surface-raised)] px-2 py-0.5 text-xs text-[var(--text-secondary)]"
-                      >
-                        {t.name}
-                      </span>
-                    ))}
-                  </div>
                 </div>
               )}
 
