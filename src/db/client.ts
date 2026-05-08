@@ -36,6 +36,23 @@ export function getDb(): Database.Database {
   db.pragma("foreign_keys = ON");
   db.pragma("synchronous = NORMAL");
 
+  // F-048 (self-critique A-6): verify the pragmas actually took effect.
+  // Bulk writes in F-207 rely on WAL to avoid serializing the enrichment
+  // worker. Fail loud at boot if the SQLite build silently refused WAL.
+  const journalMode = db.pragma("journal_mode", { simple: true }) as string;
+  const syncMode = db.pragma("synchronous", { simple: true }) as number;
+  if (journalMode.toLowerCase() !== "wal") {
+    throw new Error(
+      `[db] journal_mode did not take effect (got "${journalMode}", expected "wal")`,
+    );
+  }
+  if (syncMode !== 1) {
+    // synchronous: 0 OFF, 1 NORMAL, 2 FULL, 3 EXTRA
+    throw new Error(
+      `[db] synchronous did not take effect (got ${syncMode}, expected 1 NORMAL)`,
+    );
+  }
+
   // Load sqlite-vec. If the extension fails, fall back to non-vector operation
   // (v0.1.0 doesn't use vectors yet; v0.4.0 makes this required).
   try {
