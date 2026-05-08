@@ -1,5 +1,5 @@
 /**
- * /api/ask — RAG chat endpoint (v0.4.0 T-8 skeleton).
+ * /api/ask — RAG chat endpoint.
  *
  * POST body:
  *   { question: string, scope?: "library" | "item", item_id?: string,
@@ -8,8 +8,12 @@
  * Response: text/event-stream with frames:
  *   retrieve | token | citation | done | error
  *
- * T-8 ships the echo generator (plumbing verification). T-9 plugs in the
- * real Ollama streaming generator + [CITE:...] post-filter + llm_usage.
+ * Error codes:
+ *   UNAUTHENTICATED   — no session cookie
+ *   BAD_REQUEST       — body schema / scope/item_id mismatch
+ *   OLLAMA_OFFLINE    — daemon unreachable (SC-8, T-10)
+ *   RETRIEVE_FAILED   — vec0 query threw
+ *   STREAM_FAILED     — generator threw mid-stream (wrapped by toSSEStream)
  */
 import { type NextRequest } from "next/server";
 import { z } from "zod";
@@ -17,6 +21,7 @@ import { SESSION_COOKIE } from "@/lib/auth";
 import { retrieve } from "@/lib/retrieve";
 import { orchestrateAsk, toSSEStream, encodeSSE } from "@/lib/ask/sse";
 import { ollamaGenerator } from "@/lib/ask/generator";
+import { isOllamaAlive } from "@/lib/llm/ollama";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -54,6 +59,22 @@ export async function POST(req: NextRequest) {
     return new Response(
       encodeSSE({ type: "error", code: "BAD_REQUEST", message: "scope=item requires item_id" }),
       { status: 400, headers: sseHeaders() },
+    );
+  }
+
+  // T-10 (SC-8): fail fast if Ollama isn't running. The retrieve step needs
+  // Ollama to embed the query, and the generator needs it for streaming.
+  // A structured error SSE frame lets the UI show a friendly message
+  // instead of surfacing a fetch failure mid-stream.
+  if (!(await isOllamaAlive())) {
+    return new Response(
+      encodeSSE({
+        type: "error",
+        code: "OLLAMA_OFFLINE",
+        message:
+          "Ollama isn't reachable at http://localhost:11434. Start it with `ollama serve` and try again.",
+      }),
+      { status: 503, headers: sseHeaders() },
     );
   }
 
