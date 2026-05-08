@@ -31,9 +31,9 @@ process.env.BRAIN_DB_PATH = tmpDbPath;
 console.log(`[smoke] tmp DB at ${tmpDbPath}`);
 
 let failures = 0;
-function section(name, fn) {
+async function section(name, fn) {
   try {
-    fn();
+    await fn();
     console.log(`  ok  ${name}`);
   } catch (err) {
     failures++;
@@ -63,18 +63,18 @@ async function run() {
     await import("../src/lib/auth.ts");
 
   console.log("\n[1/5] schema + pragmas");
-  section("WAL journal mode", () => {
+  await section("WAL journal mode", () => {
     const mode = getDb().pragma("journal_mode", { simple: true });
     assert.equal(String(mode).toLowerCase(), "wal");
   });
-  section("synchronous=NORMAL", () => {
+  await section("synchronous=NORMAL", () => {
     const sync = getDb().pragma("synchronous", { simple: true });
     assert.equal(sync, 1);
   });
 
   console.log("\n[2/5] items + FTS5");
   let itemId;
-  section("insertCaptured + getItem", () => {
+  await section("insertCaptured + getItem", () => {
     const row = insertCaptured({
       source_type: "note",
       title: "Growth loops in consumer products",
@@ -84,7 +84,7 @@ async function run() {
     assert.ok(itemId);
     assert.equal(row.title, "Growth loops in consumer products");
   });
-  section("FTS5 search returns the item", () => {
+  await section("FTS5 search returns the item", () => {
     const hits = searchItems("growth loops");
     assert.ok(hits.length >= 1);
     assert.equal(hits[0].id, itemId);
@@ -92,7 +92,7 @@ async function run() {
 
   console.log("\n[3/5] tags + collections");
   let tagId, collectionId;
-  section("upsertTag + attachTagToItem + listTagsForItem", () => {
+  await section("upsertTag + attachTagToItem + listTagsForItem", () => {
     const tag = upsertTag("growth", "manual");
     tagId = tag.id;
     attachTagToItem(itemId, tagId);
@@ -100,11 +100,11 @@ async function run() {
     assert.equal(tags.length, 1);
     assert.equal(tags[0].name, "growth");
   });
-  section("detachTagFromItem", () => {
+  await section("detachTagFromItem", () => {
     detachTagFromItem(itemId, tagId);
     assert.equal(listTagsForItem(itemId).length, 0);
   });
-  section("createCollection + attach + list", () => {
+  await section("createCollection + attach + list", () => {
     const c = createCollection("Growth reads");
     collectionId = c.id;
     attachItemToCollection(itemId, collectionId);
@@ -114,12 +114,12 @@ async function run() {
   });
 
   console.log("\n[4/5] auth");
-  section("setPin + verifyPin", () => {
+  await section("setPin + verifyPin", () => {
     setPin("1234");
     assert.equal(verifyPin("1234"), true);
     assert.equal(verifyPin("9999"), false);
   });
-  section("session token round-trip", () => {
+  await section("session token round-trip", () => {
     const tok = issueSessionToken();
     assert.equal(verifySessionToken(tok), true);
     const [, mac] = tok.split(".");
@@ -128,7 +128,7 @@ async function run() {
   });
 
   console.log("\n[5/5] teardown");
-  section("deleteItem + deleteCollection", () => {
+  await section("deleteItem + deleteCollection", () => {
     deleteItem(itemId);
     deleteCollection(collectionId);
   });
@@ -136,24 +136,75 @@ async function run() {
   // ---------- B-301 postProcessTitle (T-B-4 landed) ----------
   console.log("\n[bonus] B-301 postProcessTitle");
   const { postProcessTitle } = await import("../src/lib/enrich/pipeline.ts");
-  section("slug input is de-hyphenated + title-cased", () => {
+  await section("slug input is de-hyphenated + title-cased", () => {
     assert.equal(
       postProcessTitle("Growth-Loops-Messy-Draft"),
       "Growth Loops Messy Draft",
     );
   });
-  section("compound-adjective titles with spaces survive untouched", () => {
+  await section("compound-adjective titles with spaces survive untouched", () => {
     assert.equal(
       postProcessTitle("State-of-the-Art 2026"),
       "State-of-the-Art 2026",
     );
   });
 
-  // ---------- F-207 hook (T-B-5 lands this) ----------
-  // When F-207 ships, import the bulk actions from src/app/actions.ts and
-  // exercise bulkTagItemsAction / bulkAttachCollectionAction /
-  // bulkDeleteItemsAction here. Keep the section stub so T-B-6 doesn't
-  // have to rediscover where to plug in.
+  // ---------- F-207 bulk actions (T-B-5 landed) ----------
+  console.log("\n[bonus] F-207 bulk actions");
+  const {
+    bulkTagItemsAction,
+    bulkAttachCollectionAction,
+    bulkDeleteItemsAction,
+  } = await import("../src/app/actions.ts");
+
+  // Seed three items.
+  const seedIds = [];
+  for (const title of ["Bulk A", "Bulk B", "Bulk C"]) {
+    const row = insertCaptured({
+      source_type: "note",
+      title,
+      body: `Body for ${title} — enough text to survive the 200-char guard is not required here because enrichment never runs in the smoke`,
+    });
+    seedIds.push(row.id);
+  }
+
+  await section("bulkTagItemsAction attaches to all 3 items", async () => {
+    const res = await bulkTagItemsAction(seedIds, "bulk-smoke");
+    assert.equal(res.ok, true);
+    if (res.ok) assert.equal(res.count, 3);
+    for (const id of seedIds) {
+      const names = listTagsForItem(id).map((t) => t.name);
+      assert.ok(names.includes("bulk-smoke"));
+    }
+  });
+
+  let smokeCollectionId;
+  await section("bulkAttachCollectionAction attaches all 3 items", async () => {
+    const c = createCollection("Bulk smoke collection");
+    smokeCollectionId = c.id;
+    const res = await bulkAttachCollectionAction(seedIds, smokeCollectionId);
+    assert.equal(res.ok, true);
+    if (res.ok) assert.equal(res.count, 3);
+    for (const id of seedIds) {
+      const cs = listCollectionsForItem(id).map((x) => x.id);
+      assert.ok(cs.includes(smokeCollectionId));
+    }
+  });
+
+  await section("bulkDeleteItemsAction removes all 3 items", async () => {
+    const res = await bulkDeleteItemsAction(seedIds);
+    assert.equal(res.ok, true);
+    if (res.ok) assert.equal(res.count, 3);
+    const { getItem } = await import("../src/db/items.ts");
+    for (const id of seedIds) {
+      assert.equal(getItem(id), null);
+    }
+  });
+
+  await section("bulk actions reject empty input with {ok: false}", async () => {
+    const res = await bulkDeleteItemsAction([]);
+    assert.equal(res.ok, false);
+  });
 }
 
 try {

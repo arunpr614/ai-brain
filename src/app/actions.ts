@@ -52,12 +52,25 @@ const BulkIds = z
   .max(500, "Batch too large — select fewer items");
 
 function revalidateBulkPaths(): void {
-  revalidatePath("/");
+  // revalidatePath throws an invariant ("static generation store missing")
+  // when called outside a Next request context — e.g. from the F-052
+  // smoke script running the same server-action code paths. Swallow the
+  // invariant there; it has no semantic meaning without a request.
+  const safe = (path: string, type?: "layout" | "page") => {
+    try {
+      if (type) revalidatePath(path, type);
+      else revalidatePath(path);
+    } catch (err) {
+      if ((err as Error).message?.includes("static generation store")) return;
+      throw err;
+    }
+  };
+  safe("/");
   // Wildcard collection paths — `layout` so the list of items inside a
   // collection re-renders.
-  revalidatePath("/collections/[id]", "layout");
-  revalidatePath("/settings/tags");
-  revalidatePath("/settings/collections");
+  safe("/collections/[id]", "layout");
+  safe("/settings/tags");
+  safe("/settings/collections");
 }
 
 const BulkTagInput = z.object({
