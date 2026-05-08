@@ -92,12 +92,17 @@ export async function* echoGenerator(input: {
 /**
  * Orchestrates a full ask stream: retrieve frame → token frames →
  * optional citation frames → done. The generator plugs in via AskStreamGenerator.
+ *
+ * T-13: onComplete() fires once the token stream ends (pre `done` frame) with
+ * the fully-accumulated assistant text. The /api/ask route uses this to
+ * persist the assistant message to chat_messages.
  */
 export async function* orchestrateAsk(input: {
   question: string;
   chunks: RetrievedChunk[];
   generator: AskStreamGenerator;
   signal?: AbortSignal;
+  onComplete?: (args: { answer: string; aborted: boolean }) => void;
 }): AsyncIterable<AskFrame> {
   yield {
     type: "retrieve",
@@ -109,14 +114,22 @@ export async function* orchestrateAsk(input: {
     })),
   };
 
+  let accumulated = "";
+  let aborted = false;
   for await (const text of input.generator({
     question: input.question,
     chunks: input.chunks,
     signal: input.signal,
   })) {
-    if (input.signal?.aborted) break;
+    if (input.signal?.aborted) {
+      aborted = true;
+      break;
+    }
+    accumulated += text;
     yield { type: "token", text };
   }
+  if (input.signal?.aborted) aborted = true;
+  input.onComplete?.({ answer: accumulated, aborted });
 
   yield { type: "done" };
 }

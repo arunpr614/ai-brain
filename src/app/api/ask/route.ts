@@ -22,6 +22,7 @@ import { retrieve } from "@/lib/retrieve";
 import { orchestrateAsk, toSSEStream, encodeSSE } from "@/lib/ask/sse";
 import { ollamaGenerator } from "@/lib/ask/generator";
 import { isOllamaAlive } from "@/lib/llm/ollama";
+import { appendMessage, getThread } from "@/db/chat";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -78,6 +79,21 @@ export async function POST(req: NextRequest) {
     );
   }
 
+  // T-13: thread persistence. If thread_id is supplied and valid, write the
+  // user message now so it survives a mid-stream abort. Assistant message is
+  // written in onComplete once the stream finishes.
+  let threadId: string | null = null;
+  if (parsed.thread_id) {
+    if (!getThread(parsed.thread_id)) {
+      return new Response(
+        encodeSSE({ type: "error", code: "THREAD_NOT_FOUND", message: `Thread ${parsed.thread_id} not found.` }),
+        { status: 404, headers: sseHeaders() },
+      );
+    }
+    threadId = parsed.thread_id;
+    appendMessage({ thread_id: threadId, role: "user", content: parsed.question });
+  }
+
   let chunks;
   try {
     chunks = await retrieve(parsed.question, {
@@ -93,12 +109,33 @@ export async function POST(req: NextRequest) {
     );
   }
 
+  const citations = chunks.map((c) => ({
+    chunk_id: c.chunk_id,
+    item_id: c.item_id,
+    item_title: c.item_title,
+    similarity: c.similarity,
+  }));
+
   const stream = toSSEStream(
     orchestrateAsk({
       question: parsed.question,
       chunks,
       generator: ollamaGenerator({ thread_id: parsed.thread_id }),
       signal: req.signal,
+      onComplete: ({ answer, aborted }) => {
+        if (!threadId) return;
+        // Persist whatever was generated even on abort — the user might
+        // want to see a partial response rendered after reload. Flag it
+        // in the citations-metadata sidecar via a role='system' marker
+        // is overkill; aborted state lives in UI memory for v0.4.0.
+        if (answer.trim().length === 0 && aborted) return;
+        appendMessage({
+          thread_id: threadId,
+          role: "assistant",
+          content: answer,
+          citations,
+        });
+      },
     }),
     req.signal,
   );

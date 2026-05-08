@@ -1,4 +1,4 @@
-import { ArrowLeft, Download, ExternalLink, Quote, Trash2 } from "lucide-react";
+import { ArrowLeft, Download, ExternalLink, MessageSquare, Quote, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { deleteItemAction } from "@/app/actions";
@@ -141,6 +141,13 @@ export default async function ItemDetailPage({
           <div className="whitespace-pre-wrap">{item.body}</div>
 
           <footer className="mt-12 flex items-center gap-3 border-t border-[var(--border)] pt-6">
+            <Link
+              href={`/items/${item.id}/ask`}
+              className="inline-flex h-8 items-center gap-2 rounded-md border border-[var(--border)] bg-transparent px-3 font-sans text-sm font-medium text-[var(--text-secondary)] transition-colors hover:border-[var(--border-strong)] hover:text-[var(--text-primary)]"
+            >
+              <MessageSquare className="h-3.5 w-3.5" strokeWidth={2} />
+              Ask this item
+            </Link>
             <a
               href={`/api/items/${item.id}/export.md`}
               className="inline-flex h-8 items-center gap-2 rounded-md border border-[var(--border)] bg-transparent px-3 font-sans text-sm font-medium text-[var(--text-secondary)] transition-colors hover:border-[var(--border-strong)] hover:text-[var(--text-primary)]"

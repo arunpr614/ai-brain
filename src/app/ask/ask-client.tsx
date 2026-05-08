@@ -14,7 +14,12 @@ interface Turn {
   errorMessage?: string;
 }
 
-export function AskClient() {
+export interface AskClientProps {
+  /** Optional: restrict retrieval to a single item's chunks (per-item chat). */
+  itemId?: string;
+}
+
+export function AskClient({ itemId }: AskClientProps = {}) {
   const stream = useAskStream();
   const [turns, setTurns] = useState<Turn[]>([]);
   const [pendingId, setPendingId] = useState<string | null>(null);
@@ -26,7 +31,11 @@ export function AskClient() {
       ...prev,
       { id, question, answer: "", chunks: [] },
     ]);
-    await stream.ask({ question });
+    await stream.ask(
+      itemId
+        ? { question, scope: "item", item_id: itemId }
+        : { question },
+    );
     // Finalize turn once stream resolves (done or error).
     setTurns((prev) =>
       prev.map((t) =>
