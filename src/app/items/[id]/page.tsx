@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { deleteItemAction } from "@/app/actions";
 import { CollectionEditor } from "@/components/collection-editor";
 import { ItemEnrichmentWatch } from "@/components/item-enrichment-watch";
+import { RelatedItems } from "@/components/related-items";
 import { ScrollToHash } from "@/components/scroll-to-hash";
 import { TagEditor } from "@/components/tag-editor";
 import {
@@ -13,6 +14,7 @@ import {
 import { listChunksForItem } from "@/db/chunks";
 import { getItem } from "@/db/items";
 import { listTagsForItem } from "@/db/tags";
+import { findRelatedItems } from "@/lib/related";
 
 function parseQuotes(raw: string | null): string[] {
   if (!raw) return [];
@@ -53,6 +55,11 @@ export default async function ItemDetailPage({
   const highlightedChunk = highlight
     ? listChunksForItem(item.id).find((c) => c.id === highlight) ?? null
     : null;
+
+  // T-15 (EXP-3): pure DB operation — no network / Ollama. Safe on every
+  // item-detail render. Returns [] if this item has no embedded chunks yet,
+  // and RelatedItems component renders nothing in that case.
+  const related = findRelatedItems(item.id, { limit: 5 });
 
   return (
     <div className="mx-auto max-w-[1180px] px-8 py-10">
@@ -183,6 +190,10 @@ export default async function ItemDetailPage({
             </p>
             <TagEditor itemId={item.id} tags={tags} />
           </div>
+
+          {/* T-15 (EXP-3): related items by semantic similarity. Hidden
+              when the item has no embeddings yet. */}
+          <RelatedItems items={related} />
 
           {/* F-301: Collections editor — always visible so the user can
               attach/detach without waiting for enrichment to finish. */}
