@@ -62,10 +62,19 @@ export function stopEnrichmentWorker(): void {
 }
 
 async function loop(): Promise<void> {
-  sweepStaleClaims();
   const state = workerState();
+  let lastSweepAt = 0;
 
   while (!state.stopRequested) {
+    // F-045 (self-critique A-3): sweep stale claims on a rolling cadence,
+    // not just at boot. A wedged fetch to Ollama can leave a claim in the
+    // `running` state forever — without a periodic sweep the only rescue
+    // path is a full server restart.
+    if (shouldSweep(Date.now(), lastSweepAt)) {
+      sweepStaleClaims();
+      lastSweepAt = Date.now();
+    }
+
     const alive = await isOllamaAlive();
     if (!alive) {
       console.warn(`[enrich] ollama unreachable; backing off ${OLLAMA_DOWN_BACKOFF_MS}ms`);
@@ -85,6 +94,14 @@ async function loop(): Promise<void> {
 
   state.running = false;
   console.log("[enrich] worker stopped");
+}
+
+/**
+ * Exported for the T-A-7 `node:test` harness (F-051). Pure function so it
+ * can be unit-tested without touching the DB or the timing loop.
+ */
+export function shouldSweep(now: number, lastSweepAt: number): boolean {
+  return now - lastSweepAt >= STALE_CLAIM_MS;
 }
 
 interface JobRow {
