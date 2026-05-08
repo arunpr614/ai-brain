@@ -1111,3 +1111,44 @@ Tag snapshot this session (newest first):
 - **Active trackers:** `BUILD_PLAN.md` · `DESIGN.md` · `DESIGN_SYSTEM.md` · `ROADMAP_TRACKER.md` v0.5.0 · `PROJECT_TRACKER.md` v0.5.0 · `BACKLOG.md` v2.0 · `RUNNING_LOG.md` · `docs/plans/{v0.3.1-polish,R-VEC-spike,SELF_CRITIQUE_2026-05-08_10-14-16}.md`
 - **Models on disk:** `qwen2.5:7b-instruct-q4_K_M` (default) + `qwen3:8b` (v0.6.0 GenPage candidate).
 - **Next milestone:** T-A-5 (F-047) — log the non-nodejs `instrumentation.ts` skip path; then T-A-6 (F-046) attempts on status endpoint; then T-A-7 (F-051) `node:test` precedent and first real tests.
+
+---
+
+## 2026-05-08 12:58 — v0.3.1 hardening track: T-A-5..T-A-7 shipped (F-047, F-046, F-051)
+
+**Entry author:** AI agent (Claude) · **Triggered by:** F-055 per-task breadcrumb cadence; continues the 12:41 entry.
+
+### Done
+
+- **T-A-5 · F-047** (`6316361`) — `src/instrumentation.ts` now logs `[boot] instrumentation skipped — NEXT_RUNTIME=…` when the early-return branch fires, so an accidental Edge-runtime move on a route surfaces in the boot trace. P2.
+- **T-A-6 · F-046** (`db01434`) — `/api/items/[id]/enrichment-status` returns `attempts` from the latest `enrichment_jobs` row via `ROW_NUMBER()`. `EnrichingPill` shows `retrying N/3…` when `attempts > 1`. Client bundle stays slim (`MAX_ATTEMPTS = 3` mirrored as a literal, not imported). P2.
+- **T-A-7 · F-051** (`92e0d0f`) — added `tsx@^4.19.2` as a devDependency + `npm test` runs `node --import tsx --test "src/**/*.test.ts"`. First test file at `src/lib/queue/enrichment-worker.test.ts` with 5 green tests for `shouldSweep(now, lastSweepAt)` — the helper extracted by F-045. This is the first test file in the project per the P-2 critique. P1.
+
+### Learned
+
+- Node 20's built-in `node:test` + `tsx` `--import` loader is the lightest path to TypeScript tests with `@/` path aliases — no Jest, no Vitest, no config file needed beyond the existing `tsconfig.json`.
+- `tsx` is the only new dependency this phase; the rest of v0.3.1 stays zero-net-new-dep per §5 of the plan.
+- Importing the enrichment-worker module inside a test causes `better-sqlite3` to load transitively but the pure function under test never touches the DB — test run wall time is sub-second.
+
+### Deployed / Released
+
+No release. `package.json` still at `0.3.0`; `main` is 13 commits ahead of `origin/main`. Not pushed.
+
+### v0.3.1 execution breadcrumbs (F-055) — update
+
+- [x] T-A-1 · F-042 `54bc92f`
+- [x] T-A-2 · F-048 `0da8dcd`
+- [x] T-A-3 · F-044 `d4ae435`
+- [x] T-A-4 · F-045 `9cffda4`
+- [x] T-A-5 · F-047 `6316361`
+- [x] T-A-6 · F-046 `db01434`
+- [x] T-A-7 · F-051 `92e0d0f`
+- [ ] T-A-8 · F-043 — **next** (session cookie expiry + SameSite=Strict; auth tests against the new runner)
+- [ ] T-A-9 · F-034 · T-A-10 · F-049 · T-A-11 · F-050 · T-A-12 · F-056 · T-A-13 · F-052
+- [ ] T-B-2 · F-301 · T-B-3 · F-302 · T-B-4 · B-301 · T-B-5 · F-207 · T-B-6 release
+
+### State snapshot
+
+- **Current phase / version:** v0.3.0 ● → v0.3.1 ◐ — **7 of 13 §4A items shipped** (all P0 + 5 of 7 P1 closed)
+- **Next milestone:** T-A-8 (F-043) — session cookie `exp` claim + `SameSite=Strict` + `auth.test.ts`
+- **Repo:** `main` 13 commits ahead of `origin/main` (not pushed)
