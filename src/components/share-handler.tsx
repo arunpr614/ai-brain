@@ -153,15 +153,7 @@ export function ShareHandler() {
           }
 
           if (firstFile && firstFile.mimeType === "application/pdf") {
-            // PDF streaming lands in T-13 (CapacitorHttp multipart); for
-            // T-12 we acknowledge the intent but surface a TODO toast.
-            alert(
-              "PDF upload ships in the next step of v0.5.0. For now, open the file in Brain manually.",
-            );
-            await reportClientError(
-              "share.intent.pdf-pending-t13",
-              firstFile.name ?? "unknown.pdf",
-            );
+            await capturePdf(base, token, firstFile, router);
             return;
           }
 
@@ -217,6 +209,95 @@ async function captureUrl(
     `POST /api/capture/url ${res.status}`,
   );
   alert(`Capture failed (HTTP ${res.status}). Check the Brain error log.`);
+}
+
+async function capturePdf(
+  base: string,
+  token: string,
+  shared: { uri?: string; name?: string; mimeType?: string },
+  router: ReturnType<typeof useRouter>,
+): Promise<void> {
+  const { uri, name } = shared;
+  if (!uri) {
+    alert("PDF share missing file URI — cannot upload.");
+    return;
+  }
+
+  // On Android, `uri` is a `content://` path. With
+  // capacitor.config.ts → plugins.CapacitorHttp.enabled=true (T-9), the
+  // patched `window.fetch` resolves content-URIs via ContentResolver
+  // internally and surfaces the bytes as a Blob. This avoids loading
+  // the full PDF into the WebView JS heap as a base64 string, which
+  // was the v0.5.0 F-039 goal.
+  let blob: Blob;
+  try {
+    const fetched = await fetch(uri);
+    if (!fetched.ok) throw new Error(`HTTP ${fetched.status}`);
+    blob = await fetched.blob();
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : "unknown";
+    await reportClientError("share.pdf.read-failed", `fetch(${uri}) ${msg}`);
+    alert(`Could not read PDF (${msg}).`);
+    return;
+  }
+
+  // SHA256 round-trip (F-039 gap G-2 acceptance). Compute client-side
+  // and hand the digest to the server via header so a mismatch on the
+  // wire surfaces as 422 instead of a silently-truncated upload.
+  const expected = await sha256Hex(blob);
+
+  const form = new FormData();
+  form.append("pdf", blob, name ?? "shared.pdf");
+
+  let res: Response;
+  try {
+    res = await fetch(`${base}/api/capture/pdf`, {
+      method: "POST",
+      headers: {
+        authorization: `Bearer ${token}`,
+        "x-expected-sha256": expected,
+      },
+      body: form,
+    });
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : "network error";
+    await reportClientError("share.pdf.upload-failed", `POST /api/capture/pdf ${msg}`);
+    alert(`PDF upload failed: ${msg}`);
+    return;
+  }
+
+  if (res.ok) {
+    const data = (await res.json().catch(() => ({}))) as { id?: string };
+    if (data.id) router.push(`/items/${data.id}`);
+    return;
+  }
+
+  if (res.status === 422) {
+    const data = (await res.json().catch(() => ({}))) as {
+      expected?: string;
+      actual?: string;
+    };
+    await reportClientError(
+      "share.pdf.sha256-mismatch",
+      `expected=${data.expected ?? "?"} actual=${data.actual ?? "?"}`,
+    );
+    alert("PDF upload corrupted in transit (SHA256 mismatch). Please retry.");
+    return;
+  }
+
+  await reportClientError(
+    "share.http.capture-failed",
+    `POST /api/capture/pdf ${res.status}`,
+  );
+  alert(`PDF upload failed (HTTP ${res.status}).`);
+}
+
+async function sha256Hex(blob: Blob): Promise<string> {
+  const buf = await blob.arrayBuffer();
+  const digest = await crypto.subtle.digest("SHA-256", buf);
+  return Array.from(new Uint8Array(digest))
+    .map((b) => b.toString(16).padStart(2, "0"))
+    .join("");
 }
 
 async function captureNote(
