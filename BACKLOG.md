@@ -2,19 +2,25 @@
 
 | Field | Value |
 |-------|--------|
-| **Document version** | v5.0-backlog (v0.4.0 closed · v0.5.0 next) |
+| **Document version** | v6.0-backlog (v0.5.0 active) |
 | **Date** | 2026-05-09 |
 | **Owner** | Arun |
 | **Update cadence** | at every phase kickoff; whenever an item is promoted, deferred, or closed |
-| **Revision** | v5.0 — v0.4.0 SHIPPED 2026-05-09 (tag `v0.4.0`); all 21 tasks closed; §1 rewritten to v0.5.0 framing; §5 accumulated v0.4.0 closures |
+| **Revision** | v6.0 — v0.5.0 plan drafted; §5 rotated to `docs/archive/BACKLOG_ARCHIVE_2026-05-09.md` under v0.5.0 T-0 (v0.4.0 closure set preserved there); new closures accumulate in §5 as v0.5.0 tasks land |
 
 > Single source of truth for work that is **not in the active phase plan** but is known-needed, nice-to-have, or idea-captured. Items promoted from here land in `BUILD_PLAN.md` under a phase heading. Items closed here get a strikethrough and a closing commit SHA.
 
 ---
 
-## 1. Active phase — v0.4.0 SHIPPED 2026-05-09; next is v0.5.0 APK + extension
+## 1. Active phase — v0.5.0 APK + Chrome extension (plan drafted; executing)
 
-v0.4.0 closed 2026-05-09 with all 21 tasks (T-0..T-19) shipped. Tag `v0.4.0` annotated on `main`; 23 commits + tag pushed to `origin/main`. 107 unit tests + 29 smoke assertions green. Full closure list in §5. Next lane = v0.5.0 APK + extension — no blockers; R-AUTH and R-CAP are both closed. Plan drafting has not started.
+v0.4.0 closed 2026-05-09 (tag `v0.4.0`). v0.5.0 kicked off the same day with research + critique + plan:
+
+- [`docs/plans/v0.5.0-RESEARCH.md`](./docs/plans/v0.5.0-RESEARCH.md) (R-0.5.0) — supersedes R-CAP (partial API drift) and refreshes R-AUTH for Capacitor 8.3.3.
+- [`docs/plans/v0.5.0-RESEARCH-CRITIQUE.md`](./docs/plans/v0.5.0-RESEARCH-CRITIQUE.md) — 1 blocker + 7 HIGH + 11 other items, all resolved in the plan.
+- [`docs/plans/v0.5.0-apk-extension.md`](./docs/plans/v0.5.0-apk-extension.md) (v1.0) — 37 tasks across 7 waves; 7 locked decisions (D-v0.5.0-1..7); M-3 cross-AI review gated at T-1 before any auth code lands.
+
+Execution starts at T-0 (this rotation). No blockers; R-AUTH / R-CAP both closed; empirical sanity from v0.0.1 still valid.
 
 ### Historical (v0.3.1 snapshot, for reference — all closed; see §5)
 
@@ -92,40 +98,16 @@ Full plan: [`docs/plans/v0.3.1-polish.md`](./docs/plans/v0.3.1-polish.md) (v2.0)
 
 ## 5. Recently closed
 
-Rotated 2026-05-08 (plan T-2 / P-11). Everything shipped in or before v0.3.1 + the R-VEC spike + F-057 lives in [`docs/archive/BACKLOG_ARCHIVE_2026-05.md`](./docs/archive/BACKLOG_ARCHIVE_2026-05.md). Future v0.4.0 closures accumulate here until the next rotation (rule of thumb: rotate when §5 crosses ~20 items).
+Rotated 2026-05-09 under v0.5.0 T-0. Prior closure sets:
 
-### v0.4.0 closures (all shipped; rotate at next v0.5.0 kickoff)
+- **v0.4.0 Ask (RAG)** — 21 tasks (T-0..T-19) + T-20 tracker update → [`docs/archive/BACKLOG_ARCHIVE_2026-05-09.md`](./docs/archive/BACKLOG_ARCHIVE_2026-05-09.md)
+- **v0.3.1 Polish + Hardening + R-VEC spike + F-057** → [`docs/archive/BACKLOG_ARCHIVE_2026-05.md`](./docs/archive/BACKLOG_ARCHIVE_2026-05.md)
 
-**Pre-plan housekeeping:**
-- ~~F-057~~ sqlite-vec pin audit → 0.1.9 with explicit platform overrides (`e8f104a`, T-0)
-- ~~M-3~~ Cross-AI plan review (`150ccf5`, T-1) — 4 patches absorbed into plan v1.2; review file: [`docs/plans/v0.4.0-ask-REVIEW.md`](./docs/plans/v0.4.0-ask-REVIEW.md)
-- ~~P-11~~ BACKLOG §5 archive rotation → `docs/archive/BACKLOG_ARCHIVE_2026-05.md` (`c603ec6`, T-2)
-- ~~A-8~~ FTS5 LIKE-fallback removed from `searchItems()` (`e5f5b13`, T-6)
+New v0.5.0 closures accumulate below as tasks land (rule of thumb: rotate when this section crosses ~20 items).
 
-**Migrations + queue (T-3):**
-- Migration 005 — `chunks_vec` (vec0 float[768]) + `chunks_rowid` TEXT→INT bridge (`6e4957a`)
-- Migration 006 — `embedding_jobs` sibling queue + trigger on `enrichment_state='done'` + backfill clause
+### v0.5.0 closures (in progress)
 
-**Chunker + embeddings:**
-- ~~F-011~~ markdown-aware semantic chunker, 400–800 tok, 10% overlap (`5637520`, T-4)
-- ~~F-013~~ embedding pipeline: Ollama `nomic-embed-text`, 768-dim, batch=16, idempotent write of chunks + chunks_rowid + chunks_vec in single txn; retry 3× exp backoff with fail-fast on non-retriable codes (`cdf1d2f`, T-5)
-- ~~F-012~~ backfill script for already-enriched items (`0eceda9`, T-16) — preflight exits 2/3 on daemon-down/model-missing
-
-**Retrieve + Ask:**
-- vec0 retriever with subquery-LIMIT pattern + L2→cosine (`b4749f0`, T-7)
-- ~~ASK-1~~ / ~~DIG-4~~ /api/ask SSE route — Zod validation, session auth, thread preflight, user-message-write-before-stream (`80597c0`, T-8; `71e3676`, T-9; `ab35c7a`, T-10)
-- ~~ASK-2~~ citation chips + scroll-to-chunk on item detail (`a17a68b`, T-12)
-- ~~ASK-3~~ per-item chat at /items/[id]/ask (`9f6321c`, T-13)
-- ~~ASK-4~~ thread persistence: create/append/list/delete cascade (`9f6321c`, T-13)
-
-**Search + related:**
-- ~~ORG-3~~ unified search (fts/semantic/hybrid via RRF k=60) + /api/search + /search mode toggle (`14b357f`, T-14)
-- ~~EXP-3~~ related-items panel on item detail (mean chunk centroid, L2-normalised, vec0 MATCH excluding source) (`59f7ac2`, T-15)
-
-**Release gate:**
-- 13-assertion end-to-end smoke (`a2e00c9`, T-17)
-- SC-7 latency bench scaffold + research doc (`030370c`, T-18) — live numbers pending user run
-- Version bump 0.3.1 → 0.4.0 + annotated tag `v0.4.0` (`726ce21`, T-19)
+_None yet — T-0 rotation is this commit._
 
 ---
 
