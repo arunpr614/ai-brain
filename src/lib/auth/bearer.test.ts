@@ -19,6 +19,7 @@ import {
   isBearerRoute,
   loadLanToken,
   tokenFingerprint,
+  validateOrigin,
   verifyBearerToken,
 } from "./bearer";
 
@@ -252,5 +253,32 @@ describe("auth/bearer — checkBearerRateLimit (SC-8)", () => {
       assert.equal(checkBearerRateLimit(TOKEN, t + i), true);
     }
     assert.equal(checkBearerRateLimit(TOKEN, t + DEFAULT_RATE_LIMIT), false);
+  });
+});
+
+describe("auth/bearer — validateOrigin (T-5 / F-036)", () => {
+  it("permits missing Origin (server-to-server, CLI, curl)", () => {
+    assert.equal(validateOrigin(null), true);
+    assert.equal(validateOrigin(undefined), true);
+    assert.equal(validateOrigin(""), true);
+  });
+
+  it("permits the three documented allow-list origins", () => {
+    assert.equal(validateOrigin("http://localhost:3000"), true);
+    assert.equal(validateOrigin("http://127.0.0.1:3000"), true);
+    assert.equal(validateOrigin("http://brain.local:3000"), true);
+  });
+
+  it("permits chrome-extension:// with any install ID", () => {
+    assert.equal(validateOrigin("chrome-extension://abcdefghijklmnop"), true);
+    assert.equal(validateOrigin("chrome-extension://something-else-entirely"), true);
+  });
+
+  it("rejects other origins", () => {
+    assert.equal(validateOrigin("http://evil.example"), false);
+    assert.equal(validateOrigin("https://localhost:3000"), false); // scheme mismatch
+    assert.equal(validateOrigin("http://localhost:3001"), false); // port mismatch
+    assert.equal(validateOrigin("http://brain.local:8080"), false);
+    assert.equal(validateOrigin("http://LOCALHOST:3000"), false); // case-sensitive; Origin is always lowercase in practice but guard anyway
   });
 });

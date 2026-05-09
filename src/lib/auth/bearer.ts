@@ -233,3 +233,42 @@ export function checkBearerRateLimit(token: string, now: number = Date.now()): b
 export function __resetRateLimiterForTests(): void {
   RATE_STATE.clear();
 }
+
+/**
+ * Origin-header validation (v0.5.0 T-5, F-036 / D-v0.5.0-7).
+ *
+ * Applies to bearer-authenticated cross-origin callers. The WebView APK
+ * shares the server's origin (same-origin after `brain.local` resolves);
+ * the Chrome extension runs at `chrome-extension://<id>` and is legitimately
+ * cross-origin. Server-side `fetch()` calls (e.g., curl smokes, scripts)
+ * send no Origin header at all, which we must permit for CLI tooling.
+ *
+ * Accepted origins:
+ *   - null / missing  (server-to-server, CLI, curl; no browser context)
+ *   - http://localhost:3000
+ *   - http://127.0.0.1:3000
+ *   - http://brain.local:3000
+ *   - chrome-extension://<any-id>  (MV3 extensions have a random install ID;
+ *     we cannot pin this at build time without the user rebuilding when the
+ *     extension reloads)
+ *
+ * Rejections are logged by the caller as `lan.bearer.reject-origin` via
+ * logError(). Route handlers that want Origin checks call validateOrigin()
+ * AFTER verifyBearerToken() returns ok.
+ *
+ * Plan §4.5 CSRF posture already argues this is defense-in-depth: bearer
+ * tokens on non-mutating GETs are already rejected by the allow-list of
+ * BEARER_ROUTES; the POST paths here add an extra belt-and-braces layer.
+ */
+const ALLOWED_ORIGINS = new Set([
+  "http://localhost:3000",
+  "http://127.0.0.1:3000",
+  "http://brain.local:3000",
+]);
+
+export function validateOrigin(originHeader: string | null | undefined): boolean {
+  if (!originHeader) return true;
+  if (ALLOWED_ORIGINS.has(originHeader)) return true;
+  if (originHeader.startsWith("chrome-extension://")) return true;
+  return false;
+}
