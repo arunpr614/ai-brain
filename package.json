@@ -10,8 +10,10 @@
   "license": "MIT",
   "scripts": {
     "dev": "NODE_OPTIONS='--max-old-space-size=8192' next dev -H 127.0.0.1",
+    "dev:lan": "BRAIN_LAN_MODE=1 NODE_OPTIONS='--max-old-space-size=8192' next dev -H 0.0.0.0",
     "build": "NODE_OPTIONS='--max-old-space-size=8192' next build",
     "start": "NODE_OPTIONS='--max-old-space-size=8192' next start -H 127.0.0.1",
+    "start:lan": "BRAIN_LAN_MODE=1 NODE_OPTIONS='--max-old-space-size=8192' next start -H 0.0.0.0",
     "lint": "eslint",
     "typecheck": "tsc --noEmit",
     "test": "node --import tsx --test \"src/**/*.test.ts\"",
@@ -29,6 +31,7 @@
     "@radix-ui/react-tooltip": "^1.2.8",
     "@types/jsdom": "^28.0.1",
     "better-sqlite3": "^11.10.0",
+    "bonjour-service": "^1.3.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "cmdk": "^1.1.1",
