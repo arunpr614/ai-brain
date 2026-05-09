@@ -91,22 +91,78 @@ export default async function LanInfoPage() {
           <p className="font-mono text-xs text-[var(--text-muted)]">
             {ip}:3000
           </p>
+          {/*
+            v0.5.0 T-17 addition — manual-entry fallback for cases where
+            the QR scanner is non-functional (damaged camera, permission
+            repeatedly denied, or dev testing without a device). Both
+            values are already visible on this page in unencoded form
+            below the QR so a user can type them into the APK's manual-
+            setup UI when T-16's future "enter manually" affordance lands.
+          */}
+          <details className="mt-2 w-full text-xs text-[var(--text-muted)]">
+            <summary className="cursor-pointer select-none">
+              Can&apos;t scan? Enter manually.
+            </summary>
+            <dl className="mt-2 grid grid-cols-[auto_1fr] gap-x-3 gap-y-1 font-mono text-[var(--text-primary)]">
+              <dt className="text-[var(--text-muted)]">IP</dt>
+              <dd className="break-all">{ip}</dd>
+              <dt className="text-[var(--text-muted)]">Port</dt>
+              <dd>3000</dd>
+              <dt className="text-[var(--text-muted)]">Token</dt>
+              <dd className="break-all">{token}</dd>
+            </dl>
+          </details>
         </div>
       </section>
 
+      {/*
+        v0.5.0 T-17 / F-038 / gap G-4 — Chrome extension bootstrap UX.
+        The extension itself ships in wave 5 (T-23..T-29); until then the
+        link targets chrome://extensions so the user can at least find the
+        Extensions page after sideloading. Once the extension publishes an
+        options page at a known chrome-extension://<id>/options.html the
+        link will be updated — but for a locally-loaded unpacked
+        extension, chrome://extensions is the canonical entry point (click
+        "Details" on the Brain row → "Extension options").
+      */}
       <section className="mb-10">
         <h2 className="mb-3 text-sm font-medium uppercase tracking-wide text-[var(--text-secondary)]">
           Chrome extension — paste token
         </h2>
         <div className="rounded-lg border border-[var(--border)] bg-[var(--surface)] p-4">
-          <p className="mb-2 text-xs text-[var(--text-secondary)]">
-            In the extension options page, set <strong>Brain URL</strong> to{" "}
-            <code className="font-mono text-[var(--text-primary)]">
-              http://{ip}:3000
-            </code>{" "}
-            and paste the token below.
-          </p>
+          <ol className="mb-4 list-decimal space-y-1.5 pl-5 text-xs text-[var(--text-secondary)]">
+            <li>
+              Install the Brain extension (see{" "}
+              <code className="font-mono text-[var(--text-primary)]">
+                extension/README.md
+              </code>{" "}
+              for sideload steps).
+            </li>
+            <li>
+              Open{" "}
+              <a
+                href="chrome://extensions"
+                className="font-mono text-[var(--accent-11)] underline decoration-dotted underline-offset-2"
+              >
+                chrome://extensions
+              </a>
+              , find <strong>Brain</strong>, click <strong>Details → Extension options</strong>.
+            </li>
+            <li>
+              Set <strong>Brain URL</strong> to{" "}
+              <code className="font-mono text-[var(--text-primary)]">
+                http://{ip}:3000
+              </code>{" "}
+              and paste the token below into the <strong>Token</strong> field.
+            </li>
+            <li>Click <strong>Test connection</strong>, then <strong>Save</strong>.</li>
+          </ol>
           <LanInfoActions token={token} />
+          <p className="mt-3 text-xs text-[var(--text-muted)]">
+            Chrome does not allow a website to open an extension&apos;s options
+            page automatically; <code className="font-mono">chrome://</code>{" "}
+            links must be navigated manually.
+          </p>
         </div>
       </section>
     </div>
