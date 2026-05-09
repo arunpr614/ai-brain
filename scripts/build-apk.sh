@@ -43,18 +43,46 @@ fi
 ARTIFACT_DIR="$REPO_ROOT/data/artifacts"
 ARTIFACT_PATH="$ARTIFACT_DIR/brain-debug-${VERSION}.apk"
 GRADLE_OUTPUT="$REPO_ROOT/android/app/build/outputs/apk/debug/app-debug.apk"
+KEYSTORE_PATH="$REPO_ROOT/android/app/debug.keystore"
 
 echo "[build-apk] version=${VERSION}"
 echo "[build-apk] artifact=${ARTIFACT_PATH}"
 
-echo "[build-apk] step 1/4  typecheck + next build"
+# v0.5.0 T-19 / F-018 — ensure a project-local debug keystore exists.
+# Signing identity pinned at android/app/debug.keystore so all machines
+# building this branch produce mutually-installable APKs. Defaults match
+# what AGP's auto-generated debug keystore uses (storepass / keypass
+# "android", alias "androiddebugkey", CN "Android Debug"), so there's no
+# divergence from the Gradle convention. File is gitignored; scripts/
+# recreate on first run.
+if [[ ! -f "$KEYSTORE_PATH" ]]; then
+  echo "[build-apk] step 0/5  debug keystore missing — generating at $KEYSTORE_PATH"
+  if ! command -v keytool >/dev/null 2>&1; then
+    echo "[build-apk] FAIL: keytool not on PATH (install JDK to continue)" >&2
+    exit 1
+  fi
+  keytool -genkeypair \
+    -keystore "$KEYSTORE_PATH" \
+    -storepass android \
+    -keypass android \
+    -alias androiddebugkey \
+    -keyalg RSA -keysize 2048 \
+    -validity 10000 \
+    -dname "CN=Android Debug,O=Android,C=US" \
+    -noprompt >/dev/null
+  echo "[build-apk]         keystore generated (alias=androiddebugkey, validity=10000d)"
+else
+  echo "[build-apk] step 0/5  debug keystore present"
+fi
+
+echo "[build-apk] step 1/5  typecheck + next build"
 npx tsc --noEmit
 npm run build
 
-echo "[build-apk] step 2/4  capacitor sync"
+echo "[build-apk] step 2/5  capacitor sync"
 npx cap sync android
 
-echo "[build-apk] step 3/4  gradle assembleDebug"
+echo "[build-apk] step 3/5  gradle assembleDebug"
 cd "$REPO_ROOT/android"
 ./gradlew assembleDebug
 cd "$REPO_ROOT"
@@ -64,7 +92,7 @@ if [[ ! -f "$GRADLE_OUTPUT" ]]; then
   exit 1
 fi
 
-echo "[build-apk] step 4/4  copy APK to data/artifacts"
+echo "[build-apk] step 4/5  copy APK to data/artifacts"
 mkdir -p "$ARTIFACT_DIR"
 cp "$GRADLE_OUTPUT" "$ARTIFACT_PATH"
 

@@ -16,7 +16,27 @@ android {
             ignoreAssetsPattern = '!.svn:!.git:!.ds_store:!*.scc:.*:!CVS:!thumbs.db:!picasa.ini:!*~'
         }
     }
+    // v0.5.0 T-19 / F-018 — project-local debug keystore.
+    //
+    // Default AGP behaviour signs debug builds with ~/.android/debug.keystore
+    // (a per-developer file). That works, but it means two developers
+    // building the same branch produce APKs signed by different identities,
+    // so `adb install -r` refuses the second machine's APK. Pinning the
+    // debug keystore at `android/app/debug.keystore` gives a repo-local,
+    // reproducible signing identity. The file itself is gitignored —
+    // scripts/build-apk.sh creates it with `keytool -genkey` on first run.
+    signingConfigs {
+        debug {
+            storeFile file('debug.keystore')
+            storePassword 'android'
+            keyAlias 'androiddebugkey'
+            keyPassword 'android'
+        }
+    }
     buildTypes {
+        debug {
+            signingConfig signingConfigs.debug
+        }
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'

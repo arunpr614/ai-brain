@@ -51,6 +51,65 @@ See `BUILD_PLAN.md` §15 for exact versions, intent filters, Ollama env vars, an
 | `PROJECT_CLOSURE.md` | Historical — this project was closed, then reopened on 2026-05-07. |
 | `docs/research/` | Research spike outputs (R-LLM, R-CAP, R-PDF, R-AUTH). |
 
+## Android APK (v0.5.0)
+
+The APK is a thin Capacitor WebView that points at the live Next.js
+server on your Mac (`http://brain.local:3000` by default). No static
+export, no offline copy of the app — the Mac is the source of truth.
+
+### Build
+
+```bash
+npm run build:apk
+# → data/artifacts/brain-debug-<version>.apk  (~8 MB)
+```
+
+The script runs `tsc --noEmit`, `next build`, `cap sync android`, and
+`./gradlew assembleDebug`, then copies the signed APK into
+`data/artifacts/`. First run generates a project-local debug keystore
+at `android/app/debug.keystore` (gitignored, created via `keytool`
+with the AGP-default alias `androiddebugkey`); subsequent runs reuse
+it. Cold build ~90s on an M1 Pro; warm rebuild <10s.
+
+### Install on an Android device or emulator
+
+```bash
+# List connected devices (USB-debug-enabled phones + running emulators)
+adb devices
+
+# Install or upgrade in place; -r keeps app data across reinstalls
+adb install -r data/artifacts/brain-debug-<version>.apk
+```
+
+If `adb` is not on your `PATH`, export it from the Android SDK:
+
+```bash
+export PATH="$HOME/Library/Android/sdk/platform-tools:$PATH"
+```
+
+### First-run pairing
+
+1. On your Mac, `npm run dev:lan` (binds to `0.0.0.0:3000`).
+2. Open **Settings → LAN Info** in the web UI; copy the generated QR.
+3. Launch the APK on your phone; unlock with PIN; go to the QR scanner
+   (`/setup-apk`) and scan the Mac's screen. The APK stores the bearer
+   token + base URL in Capacitor Preferences and routes back to the
+   Library.
+
+Rotate the bearer token any time from **Settings → LAN Info → Rotate
+token**; all paired devices must re-pair after a rotation.
+
+### Keystore recovery
+
+If `android/app/debug.keystore` is deleted, `scripts/build-apk.sh`
+regenerates it on the next run — but the new keystore has a different
+identity, so `adb install -r` will refuse to upgrade an APK signed by
+the old keystore (Android enforces same-signer for in-place upgrades).
+Workaround: `adb uninstall com.arunprakash.brain` on the device, then
+reinstall. T-20 adds an automatic backup copy at
+`data/backups/debug.keystore.backup` on every build; copy that to an
+external path once you have a working install.
+
 ## Versioning
 
 - `v0.x.y` = pre-hosting, local-only.
