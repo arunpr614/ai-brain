@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { cookies } from "next/headers";
-import { FolderTree, Tags } from "lucide-react";
+import { FolderTree, Tags, Wifi } from "lucide-react";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { getJsonSetting } from "@/db/settings";
 import { isTheme, THEME_COOKIE, type Theme } from "@/lib/theme";
@@ -47,6 +47,13 @@ export default async function SettingsPage() {
           >
             <Tags className="h-4 w-4 text-[var(--text-muted)]" strokeWidth={2} />
             <span className="font-medium">Tags</span>
+          </Link>
+          <Link
+            href="/settings/lan-info"
+            className="flex items-center gap-3 rounded-lg border border-[var(--border)] bg-[var(--surface)] px-4 py-3 text-sm text-[var(--text-primary)] transition-colors hover:border-[var(--border-strong)]"
+          >
+            <Wifi className="h-4 w-4 text-[var(--text-muted)]" strokeWidth={2} />
+            <span className="font-medium">LAN pairing</span>
           </Link>
         </div>
       </section>
