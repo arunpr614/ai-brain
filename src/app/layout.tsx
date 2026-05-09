@@ -4,6 +4,7 @@ import { cookies } from "next/headers";
 import "./globals.css";
 import { Sidebar } from "@/components/sidebar";
 import { CommandPaletteProvider } from "@/components/command-palette";
+import { ShareHandler } from "@/components/share-handler";
 import { isTheme, THEME_COOKIE, type Theme } from "@/lib/theme";
 
 const inter = Inter({
@@ -54,6 +55,7 @@ export default async function RootLayout({
       </head>
       <body>
         <CommandPaletteProvider>
+          <ShareHandler />
           <div className="flex min-h-full">
             <Sidebar />
             <main className="flex-1 overflow-x-hidden" data-theme-pref={pref}>
