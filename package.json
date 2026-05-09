@@ -25,6 +25,12 @@
     "bench:ask": "node --import tsx scripts/bench-ask.mjs"
   },
   "dependencies": {
+    "@capacitor/android": "^8.3.3",
+    "@capacitor/camera": "^8.2.0",
+    "@capacitor/cli": "^8.3.3",
+    "@capacitor/core": "^8.3.3",
+    "@capacitor/preferences": "^8.0.1",
+    "@capgo/capacitor-share-target": "^8.0.30",
     "@mozilla/readability": "^0.6.0",
     "@radix-ui/react-dialog": "^1.1.15",
     "@radix-ui/react-slot": "^1.2.3",
