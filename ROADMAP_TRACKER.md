@@ -1,9 +1,10 @@
 # AI Brain — Roadmap Tracker
 
-**Document version:** v0.6.1-roadmap
-**Date:** 2026-05-08
+**Document version:** v0.7.0-roadmap
+**Date:** 2026-05-09
 **Changelog:**
-- **v0.6.1-roadmap** — R-VEC spike closed **GREEN** on 2026-05-08. All four thresholds pass with ≥ 10× headroom at 10k chunks (p50=6.25 ms, p95=6.88 ms, build=294 ms, reopen=6.47 ms). 50k tier also healthy. v0.4.0 Ask (RAG) **unblocked**. Findings: [`docs/research/vector-bench.md`](./docs/research/vector-bench.md). F-013 (embeddings pipeline) now unblocked; next action is drafting `docs/plans/v0.4.0-ask.md`.
+- **v0.7.0-roadmap** — v0.4.0 Ask (RAG) SHIPPED 2026-05-09. All 11 planned features closed (F-011, F-012, F-013, ASK-1..4, DIG-4, ORG-3, EXP-3). 107 unit tests + 29 smoke assertions green. Tag `v0.4.0` on `main`. SC-7 live latency bench pending user-side run (non-blocking). Lifecycle board: shipped 48 → 59; next lane v0.5.0 APK + extension, no blockers.
+- v0.6.1-roadmap — R-VEC spike closed **GREEN** on 2026-05-08. All four thresholds pass with ≥ 10× headroom at 10k chunks (p50=6.25 ms, p95=6.88 ms, build=294 ms, reopen=6.47 ms). 50k tier also healthy. v0.4.0 Ask (RAG) **unblocked**. Findings: [`docs/research/vector-bench.md`](./docs/research/vector-bench.md). F-013 (embeddings pipeline) now unblocked; next action is drafting `docs/plans/v0.4.0-ask.md`.
 - v0.6.0-roadmap — v0.3.1 Polish + Hardening SHIPPED. All 17 work items (F-042..F-056 + F-034 + F-207/F-301/F-302/B-301) closed with commit SHAs. Tag `v0.3.1` on main. Critique A-series + P-series all closed (table in `PROJECT_TRACKER.md` §5). Next lane: v0.4.0 Ask (RAG), blocked by R-VEC.
 - v0.5.0-roadmap — v0.3.0 Intelligence SHIPPED (`5d1c390`); inserted **v0.3.1 Polish + Hardening** phase absorbing all actionable findings from [`docs/plans/SELF_CRITIQUE_2026-05-08_10-14-16.md`](./docs/plans/SELF_CRITIQUE_2026-05-08_10-14-16.md); promoted F-034 (restore script) from v0.10.0 → v0.3.1; added F-042..F-055 spanning hardening, observability, test infrastructure, and process gates.
 - v0.4.0-roadmap — v0.2.0 Capture core SHIPPED; F-101..F-106 all shipped; migrations runner applied `002_fts5.sql` during build.
@@ -32,7 +33,7 @@ Companion docs:
 | v0.2.0 | Capture core | URL + PDF + note all ingest through one pipeline | 1.0 | 2.0 |
 | v0.3.0 | Intelligence | Every item auto-summarized, categorized, tagged | 1.5 | 3.5 |
 | v0.3.1 ✅ | Polish + hardening | SHIPPED 2026-05-08 — all 17 items closed | 0.6 | 4.1 |
-| v0.4.0 | Ask (RAG) | Chat with library; citations; streaming | 2.0 | 6.1 |
+| v0.4.0 ✅ | Ask (RAG) | SHIPPED 2026-05-09 — all 21 tasks closed; tag `v0.4.0` | 2.0 | 6.1 |
 | v0.5.0 | APK + extension | Sideloaded Android APK + Chrome MV3 extension | 1.5 | 7.0 |
 | v0.6.0 | GenPage + auto-clusters | AI-written multi-section pages; auto-topic clusters | 2.0 | 9.0 |
 | v0.7.0 | GenLink | Clickable-word AI sub-pages | 1.0 | 10.0 |
@@ -146,22 +147,31 @@ All 17 work items closed with commit SHAs. Typecheck + lint + build + 24 unit te
 - P-11 BACKLOG §5 archive rotation
 - M-3 Cross-AI plan review (run `gsd-review` if available at v0.4.0 plan time)
 
-### v0.4.0 — Ask (RAG)
+### v0.4.0 — Ask (RAG) ✅ **SHIPPED** 2026-05-09
 
 | ID | Item | Status | Notes |
 |---|---|---|---|
-| F-011 | Semantic chunker (markdown-aware, 400–800 tok, 10% overlap) | planned | |
-| F-012 | Re-chunk migration for existing items | planned | |
-| F-013 | Embeddings pipeline (Ollama `nomic-embed-text`, batched) | planned | Unblocked — R-VEC GREEN. 768-dim confirmed viable. |
-| ASK-1 | Chat over library (RAG) | planned | |
-| ASK-2 | Citation-grounded answers | planned | |
-| ASK-3 | Per-item chat | planned | |
-| ASK-4 | Chat history persistence | planned | |
-| DIG-4 | Streaming responses (SSE) | planned | |
-| ORG-3 | Semantic search | planned | |
-| EXP-3 | Related-items panel on item view | planned | Earliest graph-adjacent feature |
+| F-011 | Semantic chunker (markdown-aware, 400–800 tok, 10% overlap) | **shipped** | `src/lib/chunk/index.ts` · T-4 `5637520` |
+| F-012 | Backfill script for already-enriched items | **shipped** | `scripts/backfill-embeddings.mjs` · T-16 `0eceda9` |
+| F-013 | Embeddings pipeline (Ollama `nomic-embed-text`, batched) | **shipped** | `src/lib/embed/{client,pipeline}.ts` — 768-dim, batch=16, idempotent · T-5 `cdf1d2f` |
+| ASK-1 | Chat over library (RAG) | **shipped** | `/api/ask` SSE + `/ask` UI · T-8/T-9/T-10/T-11 |
+| ASK-2 | Citation-grounded answers | **shipped** | `[CITE:id]` filter + citation chips + scroll-to-chunk · T-9/T-12 |
+| ASK-3 | Per-item chat | **shipped** | `/items/[id]/ask` · T-13 `9f6321c` |
+| ASK-4 | Chat history persistence | **shipped** | `src/db/chat.ts` — threads + messages + cascade delete · T-13 |
+| DIG-4 | Streaming responses (SSE) | **shipped** | `src/lib/ask/sse.ts` — `AskFrame` union, `orchestrateAsk(onComplete)` · T-8 |
+| ORG-3 | Semantic search | **shipped** | `src/lib/search/index.ts` — fts/semantic/hybrid modes, RRF k=60 · T-14 `14b357f` |
+| EXP-3 | Related-items panel on item view | **shipped** | `src/lib/related/index.ts` + `src/components/related-items.tsx` — mean chunk centroid · T-15 `59f7ac2` |
 
-**Exit:** "What did I save about growth loops?" → streamed answer with 3 citation chips linking to items.
+**Also shipped under v0.4.0:**
+- T-3 migrations 005 (`chunks_vec` + `chunks_rowid` bridge) + 006 (`embedding_jobs` sibling queue with trigger)
+- T-6 / A-8 FTS5 LIKE-fallback removed from `searchItems()`
+- T-17 13-assertion v0.4.0 end-to-end smoke (`scripts/smoke-v0.4.0.mjs`)
+- T-18 SC-7 bench scaffold (`scripts/bench-ask.mjs` + `docs/research/ask-latency.md`) — live numbers pending user run
+- T-0 F-057 `sqlite-vec@0.1.9` explicit platform overrides
+- T-1 M-3 cross-AI plan review (4 patches absorbed into plan v1.2)
+- T-2 P-11 backlog §5 rotation to `docs/archive/BACKLOG_ARCHIVE_2026-05.md`
+
+**Exit:** ✅ Streamed answers with citation chips on `/ask` and `/items/[id]/ask`; 107 unit tests + 29 smoke assertions green; tag `v0.4.0` annotated on `main`.
 
 ### v0.5.0 — APK + extension *(scope expanded per self-critique)*
 
@@ -289,10 +299,10 @@ Moved out of v0.1.0–v1.0.0 scope. Each has a "reopen trigger" — a concrete s
 ## 4. Lifecycle board (snapshot — 2026-05-08)
 
 ```
-future (5)  →  backlog (0)  →  planned (70+)  →  in-progress (0)  →  shipped (48, through v0.3.1)
+future (5)  →  backlog (0)  →  planned (60+)  →  in-progress (0)  →  shipped (59, through v0.4.0)
 ```
 
-v0.3.1 closed 2026-05-08. R-VEC spike completed **GREEN** 2026-05-08 ([findings](./docs/research/vector-bench.md)). Next active work = drafting v0.4.0 Ask (RAG) plan.
+v0.4.0 closed 2026-05-09. All 11 planned v0.4.0 features shipped (F-011, F-012, F-013, ASK-1..4, DIG-4, ORG-3, EXP-3); tag `v0.4.0` on `main`. Next active work = v0.5.0 APK + extension (no blockers).
 
 ---
 
@@ -325,6 +335,7 @@ Ordering decisions worth recording so future-me doesn't second-guess:
 - **2026-05-08** — Inserted v0.3.1 Polish + hardening phase driven by [`docs/plans/SELF_CRITIQUE_2026-05-08_10-14-16.md`](./docs/plans/SELF_CRITIQUE_2026-05-08_10-14-16.md) (22 findings → 15 actionable work items F-042..F-056). F-034 (restore runbook) promoted from v0.10.0 → v0.3.1 per critique A-7. v0.3.0 Intelligence marked shipped at `5d1c390`. Cumulative estimate shifts from 15.0 → 15.6 weeks.
 - **2026-05-08 (release)** — v0.3.1 SHIPPED. All 17 work items closed with commit SHAs. Tag `v0.3.1` on `main`. Lifecycle board: planned 70+ / in-progress 0 / shipped 48. Next lane: v0.4.0 Ask (RAG), blocked by R-VEC spike.
 - **2026-05-08 (R-VEC)** — R-VEC spike closed GREEN. Measured p50=6.25 ms / p95=6.88 ms / build=294 ms at 10k chunks on M1 Pro — all four thresholds pass by > 10×. 50k tier also within budget. v0.4.0 Ask (RAG) unblocked. F-013 embeddings pipeline confirmed viable on 768-dim. Caveat: `sqlite-vec` resolved to 0.1.9 vs lockfile pin 0.1.6 — tracked as F-057.
+- **2026-05-09 (release)** — v0.4.0 SHIPPED. All 11 planned features closed across 21 tasks (T-0..T-19). 107 unit tests + 29 smoke assertions green. Tag `v0.4.0` annotated on `main`; 23 commits + tag pushed to `origin/main`. Lifecycle board: shipped 48 → 59. Next lane: v0.5.0 APK + extension — no blockers. SC-7 live latency verification is a user-side measurement step and is tracked as non-blocking (`docs/research/ask-latency.md` scaffold populated by `npm run bench:ask`).
 - 2026-05-07 — Created. All features placed in phase lanes. Lenny seed moved to `future` (FUT-1) per user decision.
 
 ---

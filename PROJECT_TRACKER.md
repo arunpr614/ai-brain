@@ -1,7 +1,7 @@
 # AI Brain — Project Tracker
 
-**Document version:** v0.6.0-tracker
-**Date:** 2026-05-08
+**Document version:** v0.7.0-tracker
+**Date:** 2026-05-09
 **Owner:** Arun
 **Update cadence:** at phase start, at phase end, and whenever a blocker appears.
 
@@ -21,7 +21,7 @@ Legend: `○` not started · `◐` in progress · `●` complete · `✖` blocke
 | v0.2.0 Capture core | 0.2.0 | ● | 2026-05-07 | 2026-05-07 | URL (Readability) + PDF (unpdf, 301 cpp paywall guard) + Note + header/footer strip + FTS5 search + markdown export + unified /capture tabs. Smoke-tested. |
 | v0.3.0 Intelligence | 0.3.0 | ● | 2026-05-07 | 2026-05-07 | Ollama client + enrichment queue + pipeline (summary/category/title/tags/quotes) + dual-pane view + enriching pill + tags/collections CRUD + bulk zip export. F-207 bulk-ops UI deferred to v0.3.1. |
 | v0.3.1 Polish + hardening | 0.3.1 | ● | 2026-05-08 | 2026-05-08 | All 17 work items shipped: 4 polish (F-207, F-301, F-302, B-301) + 13 hardening (F-042..F-056 minus duplicates + F-034 promoted from v0.10.0). 24 unit tests + 16 smoke assertions green. `tsx@^4.19.2` added as only new dev dep. Tag `v0.3.1`. |
-| v0.4.0 Ask (RAG) | 0.4.0 | ○ | — | — | Plan drafted 2026-05-08 ([`docs/plans/v0.4.0-ask.md`](./docs/plans/v0.4.0-ask.md)) — 21 tasks, absorbs all 6 R-VEC action items + A-8 + P-11 + M-3 |
+| v0.4.0 Ask (RAG) | 0.4.0 | ● | 2026-05-08 | 2026-05-09 | All 21 tasks shipped (T-0..T-19). Chunker + embeddings + vec0 retriever + SSE /api/ask + /ask UI + threads + unified search (fts/semantic/hybrid RRF) + related items + backfill + smoke + SC-7 bench scaffold. 107 unit tests + 29 smoke assertions green. Tag `v0.4.0` on `main`. SC-7 live bench pending user run. |
 | v0.5.0 APK + extension | 0.5.0 | ○ | — | — | Scope expanded: +mDNS, +WebAuthn stretch, +CSRF, +token rotation |
 | v0.6.0 GenPage + clusters | 0.6.0 | ○ | — | — | Blocked by R-CLUSTER |
 | v0.7.0 GenLink | 0.7.0 | ○ | — | — | — |
@@ -32,40 +32,52 @@ Legend: `○` not started · `◐` in progress · `●` complete · `✖` blocke
 
 ---
 
-## 2. Current phase details — v0.3.1 SHIPPED; next v0.4.0 Ask (RAG) (blocked by R-VEC)
+## 2. Current phase details — v0.4.0 SHIPPED; next v0.5.0 APK + extension
 
-**v0.3.1 closed on 2026-05-08.** All 17 work items landed across the hardening (§4A, 13 items) and polish (§4B, 4 items) tracks. Release commit + tag on `main` at HEAD. Full story in [`RUNNING_LOG.md`](./RUNNING_LOG.md) entries dated 2026-05-08.
+**v0.4.0 closed on 2026-05-09.** All 21 tasks shipped across 7 tracks (T-0..T-19) per [`docs/plans/v0.4.0-ask.md`](./docs/plans/v0.4.0-ask.md) (v1.2). Release commit + tag `v0.4.0` on `main`. Full story in [`RUNNING_LOG.md`](./RUNNING_LOG.md) entries 20–22.
 
-### v0.3.1 final status (all shipped)
+### v0.4.0 final status (all shipped)
 
-| Track | Count | Items |
+| Track | Tasks | Feature refs |
 |---|---|---|
-| §4A hardening | 13 | F-042 (P0) · F-043 · F-044 · F-045 · F-046 · F-047 · F-048 · F-049 · F-050 · F-051 · F-052 · F-034 (promoted) · F-056 |
-| §4B polish | 4 | F-301 · F-302 · B-301 · F-207 |
-| Cross-cutting | 2 | F-053 (revalidate paths, rolled into F-207b) · F-054/F-055 (release guard + breadcrumbs, rolled into T-B-6) |
+| Migrations & queue | T-3 | 005_vector_index.sql · 006_embedding_jobs.sql (with trigger + backfill) |
+| Chunker + embeddings | T-4, T-5, T-16 | F-011 semantic chunker · F-013 embeddings pipeline (nomic-embed-text, 768-dim, batch=16) · F-012 backfill script |
+| Retriever + search | T-6, T-7, T-14 | vec0 + chunks_rowid bridge (BigInt rowid, L2→cosine) · ORG-3 unified search (fts/semantic/hybrid RRF k=60) |
+| Ask orchestration | T-8, T-9, T-10 | ASK-1 SSE /api/ask · [CITE:id] filter + orphan logging · Ollama-offline 503 preflight |
+| Ask UI | T-11, T-12 | ASK-1 /ask page + useAskStream + Stop · ASK-2 citation chips + scroll-to-chunk |
+| Threads + per-item | T-13 | ASK-3 per-item chat · ASK-4 thread persistence (create/append/list/delete) |
+| Related + release | T-15, T-17, T-18, T-19 | EXP-3 related-items panel (mean centroid) · 13-assertion v0.4.0 smoke · SC-7 bench scaffold · version bump + tag |
+| Pre-plan housekeeping | T-0, T-1, T-2 | F-057 sqlite-vec@0.1.9 pin · M-3 cross-AI review (4 patches) · P-11 backlog archive rotation |
 
 **Green at release:**
-- 24 unit tests
-- 16 smoke assertions (`npm run smoke`)
+- 107 unit tests (52 → 107, +55)
+- 29 smoke assertions across v0.3.1 (16) + v0.4.0 (13)
 - `npm run typecheck && npm run lint && npm run build` all clean
-- Only new dev dep: `tsx@^4.19.2`
+- New runtime deps: `sqlite-vec@0.1.9` (explicit overrides), `@radix-ui/react-tooltip`, `cmdk` additions
+- No new dev deps beyond v0.3.1's `tsx`
 
-### Next phase: v0.4.0 Ask (RAG)
+### SC-7 live verification (user action, not release-blocking)
 
-**Blocker:** R-VEC spike per [`docs/plans/R-VEC-spike.md`](./docs/plans/R-VEC-spike.md). Must land a GREEN/YELLOW/RED verdict before v0.4.0 planning starts. Three thresholds on M1 Pro:
-- p50 top-k=8 cosine < 80ms
-- p95 < 200ms
-- index build < 30s cold / < 5s warm-reopen at 10k chunks
+Code paths + preflights + bench scaffold are verified; the live first-token/full-answer latency numbers are an M1-Pro-on-user-machine measurement. To populate `docs/research/ask-latency.md`:
 
-If RED, escalate to a FAISS sidecar (Python) or LanceDB (single-binary Rust) — preferred escalation is LanceDB per critique P-10.
+```bash
+ollama pull nomic-embed-text
+npm run backfill:embeddings
+npm run bench:ask
+```
 
-### Pending items from v0.3.1 critique carried to v0.4.0
+Thresholds: p95 first-token < 2000 ms (warm), p95 full-answer < 8000 ms. Cold-run is discarded per plan patch P-2.
 
-| Critique ref | Item | Why deferred |
+### Next phase: v0.5.0 APK + extension
+
+No blockers. R-AUTH closed. R-CAP closed (v0.0.1 S-003 validated `@capgo/capacitor-share-target` on AVD). Scope is expanded per self-critique: +mDNS (F-035), +CSRF (F-036), +token rotation (F-037), +QR display (F-038), +native file stream (F-039), +WebAuthn stretch (F-040), +cold-start dedup (F-041).
+
+### Open v0.4.0 questions carried forward
+
+| Ref | Item | Disposition |
 |---|---|---|
-| A-8 | FTS5 LIKE-fallback cleanup | Revisit when v0.4.0 hybrid search stresses FTS5 |
-| P-11 | BACKLOG.md §5 archive rotation | Not urgent until §5 >~20 closed items |
-| M-3 | Cross-AI plan review | Run `gsd-review` at v0.4.0 plan time if available |
+| SC-7 | Live latency numbers on user's real library | Pending user action above; non-blocking |
+| P-4 (new) | Per-chunk token counts use char/4 heuristic, not tiktoken | Revisit if chunk boundaries drift noticeably; monitor via retrieve quality |
 
 ---
 
@@ -160,5 +172,6 @@ These aren't measured yet — added to remind future-me:
 - **2026-05-08** — v0.3.1 Polish + hardening opened as active phase. Absorbed 22 findings from [`docs/plans/SELF_CRITIQUE_2026-05-08_10-14-16.md`](./docs/plans/SELF_CRITIQUE_2026-05-08_10-14-16.md) into 15 work items (F-042..F-056). F-034 promoted from v0.10.0. §2 rewritten from "Planning" to "v0.3.1 Polish + hardening" view. Blockers section updated with per-finding risk table.
 - **2026-05-08 (release)** — v0.3.1 SHIPPED. All 17 items closed. 24 unit tests + 16 smoke assertions green. §2 rewritten to v0.3.1 final status; §5 blockers + critique risks table marked all-closed. `package.json` 0.3.0 → 0.3.1; tag `v0.3.1` on `main`. Next phase v0.4.0 Ask (RAG) blocked on R-VEC spike.
 - **2026-05-08 (R-VEC)** — R-VEC spike completed GREEN. All four thresholds pass with ≥ 10× headroom at 10k chunks (p50=6.25 ms vs 80 ms, p95=6.88 ms vs 200 ms, build=294 ms vs 30 s, reopen=6.47 ms vs 5 s). 50k tier also healthy (p50=30 ms, p95=36 ms). Caveat: `sqlite-vec` resolved to 0.1.9 despite lockfile pin of 0.1.6 — follow-up F-057 logged. v0.4.0 unblocked; next step = draft `docs/plans/v0.4.0-ask.md`.
+- **2026-05-09 (release)** — v0.4.0 SHIPPED. All 21 tasks closed (T-0..T-19). 107 unit tests + 29 smoke assertions (v0.3.1 + v0.4.0) green. `package.json` 0.3.1 → 0.4.0; tag `v0.4.0` annotated on `main`; 23 commits + tag pushed to `origin/main`. Next lane: v0.5.0 APK + extension — no blockers. SC-7 live bench (first-token + full-answer p95) is a user-side measurement task pending; code paths + preflights verified.
 
 **Update rule:** every phase transition appends one row here with date + what changed.
