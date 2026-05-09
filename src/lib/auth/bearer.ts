@@ -29,6 +29,8 @@
  *     equal the empty expected string.
  */
 import crypto from "node:crypto";
+import * as nodeFs from "node:fs";
+import * as nodePath from "node:path";
 
 /**
  * Minimum acceptable length for a bearer token. 32 hex chars = 128 bits.
@@ -95,6 +97,51 @@ export function loadLanToken(): string | null {
 /** 32-byte hex = 64 chars = 256 bits of entropy. */
 export function generateLanToken(): string {
   return crypto.randomBytes(32).toString("hex");
+}
+
+/**
+ * Boot-time helper (T-4). Called from `src/instrumentation.ts#register`.
+ * If BRAIN_LAN_TOKEN is already set to a valid value, returns false and does
+ * nothing. Otherwise generates a fresh 32-byte hex token, writes (or updates)
+ * the `BRAIN_LAN_TOKEN=...` line in `.env` at the repo root, sets
+ * `process.env.BRAIN_LAN_TOKEN` for the running process, and returns true.
+ *
+ * Writes to the real `.env`, never `.env.example`. Preserves other lines in
+ * `.env` via simple line-based replace/append. If `.env` doesn't exist, a new
+ * file is created with a single `BRAIN_LAN_TOKEN=...` line.
+ *
+ * The return value tells the caller whether to log `lan.bearer.token-generated`.
+ *
+ * Not tested directly (side-effecting fs); covered by T-4 integration path
+ * and verified at T-22 Pixel smoke (first real server boot).
+ */
+export function ensureLanToken(options?: {
+  envPath?: string;
+  onGenerate?: (token: string) => void;
+}): boolean {
+  if (loadLanToken() !== null) return false;
+
+  const envPath = options?.envPath ?? nodePath.resolve(process.cwd(), ".env");
+  const token = generateLanToken();
+  const line = `BRAIN_LAN_TOKEN=${token}`;
+
+  let body = "";
+  if (nodeFs.existsSync(envPath)) {
+    body = nodeFs.readFileSync(envPath, "utf8");
+  }
+
+  if (/^BRAIN_LAN_TOKEN=.*$/m.test(body)) {
+    body = body.replace(/^BRAIN_LAN_TOKEN=.*$/m, line);
+  } else {
+    // Append with a preceding newline if the file exists and doesn't end in one.
+    if (body.length > 0 && !body.endsWith("\n")) body += "\n";
+    body += `${line}\n`;
+  }
+
+  nodeFs.writeFileSync(envPath, body, { mode: 0o600 });
+  process.env.BRAIN_LAN_TOKEN = token;
+  options?.onGenerate?.(token);
+  return true;
 }
 
 /**

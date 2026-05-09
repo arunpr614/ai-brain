@@ -26,9 +26,27 @@ export async function register(): Promise<void> {
   const { getDb } = await import("@/db/client");
   const { startBackupScheduler } = await import("@/lib/backup");
   const { startEnrichmentWorker } = await import("@/lib/queue/enrichment-worker");
+  const { ensureLanToken } = await import("@/lib/auth/bearer");
+  const { logError } = await import("@/lib/errors/sink");
 
   // Touching getDb() warms the connection + runs migrations.
   getDb();
+
+  // v0.5.0 T-4: auto-generate BRAIN_LAN_TOKEN on first boot if absent.
+  // Writes the value back to .env at the repo root so it survives restarts.
+  // The log line is the operator's signal that they should open Settings →
+  // LAN Info and scan the QR onto their APK/extension.
+  const generated = ensureLanToken({
+    onGenerate: () => {
+      console.log(
+        "[boot] Generated BRAIN_LAN_TOKEN and wrote to .env — open /settings/lan-info to pair APK / extension.",
+      );
+      logError({ type: "lan.bearer.token-generated", ts: Date.now() });
+    },
+  });
+  if (!generated) {
+    // No log spam when the token is already configured; intentional silence.
+  }
 
   startBackupScheduler();
   startEnrichmentWorker();
