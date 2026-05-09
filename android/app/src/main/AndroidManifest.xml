@@ -78,4 +78,15 @@
     <!-- Permissions -->
 
     <uses-permission android:name="android.permission.INTERNET" />
+
+    <!--
+      v0.5.0 T-16 / F-037 — CAMERA permission for first-run QR scanning.
+      The setup screen uses navigator.mediaDevices.getUserMedia() to stream
+      the rear camera into a <video>, then decodes frames with jsqr. The
+      permission prompt surfaces on first use (Android runtime permissions
+      model — no app-install-time prompt). QR scanning is the ONLY use
+      case; `@capacitor/camera`'s getPhoto() path is not wired up.
+    -->
+    <uses-permission android:name="android.permission.CAMERA" />
+    <uses-feature android:name="android.hardware.camera" android:required="false" />
 </manifest>
