@@ -31,7 +31,12 @@ import { logError } from "@/lib/errors/sink";
  * bearer verification runs in-proxy.
  */
 const SESSION_COOKIE = "brain-session";
-const PUBLIC_PATHS = new Set(["/unlock", "/setup"]);
+// /offline.html (v0.5.0 T-14 / F-020) is served from /public as a static
+// fallback and must render BEFORE auth — the whole point is that the
+// server might be up but the device isn't paired, or the server might be
+// down and this HTML is cached in the WebView. A redirect to /unlock
+// would trap the user in a loop.
+const PUBLIC_PATHS = new Set(["/unlock", "/setup", "/offline.html"]);
 
 export function proxy(req: NextRequest) {
   const { pathname } = req.nextUrl;

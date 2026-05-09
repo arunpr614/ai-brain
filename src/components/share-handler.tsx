@@ -25,6 +25,7 @@
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { isDuplicateShare, shareDedupKey } from "@/lib/capture/dedup";
+import { probeReachability, describeVerdict } from "@/lib/client/reachability";
 
 interface SharePayload {
   title?: string;
@@ -142,6 +143,26 @@ export function ShareHandler() {
           }
 
           const base = await getBrainUrl();
+
+          // 2b. Reachability probe (T-14 / F-020 / SC-11). A Mac-asleep
+          // case would otherwise surface as a generic fetch error deep
+          // inside captureUrl/capturePdf; probing first lets us route to
+          // /offline.html where the user gets a retry + re-scan-QR UX.
+          const verdict = await probeReachability({
+            baseUrl: base,
+            bearerToken: token,
+            timeoutMs: 2000,
+          });
+          if (!verdict.ok) {
+            await reportClientError(
+              "share.reachability.fail",
+              `${verdict.reason}: ${describeVerdict(verdict)}`,
+            ).catch(() => undefined);
+            // router.push keeps the WebView inside Next.js; offline.html
+            // is served directly by Next.js's static handler from /public.
+            router.push("/offline.html");
+            return;
+          }
 
           // 3. Route by content type.
           const firstText = payload.texts?.[0]?.trim() ?? "";

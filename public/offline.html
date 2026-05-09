@@ -1,0 +1,228 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Brain — offline</title>
+    <style>
+      /*
+       * Self-contained: this page is served from /public/offline.html and must
+       * render even when the Next.js server is dead. No Tailwind, no external
+       * fonts, no JS frameworks. Design tokens hand-picked to approximate
+       * design-system neutrals so the page doesn't look jarringly different.
+       */
+      :root {
+        color-scheme: light dark;
+        --bg: #fafaf9;
+        --surface: #ffffff;
+        --text: #1c1917;
+        --muted: #57534e;
+        --border: #e7e5e4;
+        --accent: #0f766e;
+        --accent-hover: #0d5f58;
+        --danger: #b91c1c;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --bg: #1c1917;
+          --surface: #292524;
+          --text: #f5f5f4;
+          --muted: #a8a29e;
+          --border: #44403c;
+          --accent: #5eead4;
+          --accent-hover: #99f6e4;
+        }
+      }
+      * { box-sizing: border-box; }
+      html, body {
+        margin: 0;
+        padding: 0;
+        background: var(--bg);
+        color: var(--text);
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          "Helvetica Neue", Arial, sans-serif;
+        -webkit-font-smoothing: antialiased;
+      }
+      main {
+        max-width: 32rem;
+        margin: 0 auto;
+        padding: 2.5rem 1.25rem;
+      }
+      .card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 0.75rem;
+        padding: 1.5rem;
+      }
+      h1 {
+        margin: 0 0 0.5rem;
+        font-size: 1.5rem;
+        line-height: 1.2;
+      }
+      p {
+        margin: 0.5rem 0;
+        line-height: 1.5;
+        color: var(--muted);
+      }
+      .status {
+        margin-top: 1rem;
+        padding: 0.75rem 1rem;
+        border-radius: 0.5rem;
+        background: var(--bg);
+        border: 1px solid var(--border);
+        font-size: 0.9rem;
+      }
+      .status.error { color: var(--danger); }
+      .status.ok { color: var(--accent); }
+      .actions {
+        display: flex;
+        gap: 0.75rem;
+        flex-wrap: wrap;
+        margin-top: 1.25rem;
+      }
+      button, a.button {
+        display: inline-block;
+        padding: 0.65rem 1.15rem;
+        border-radius: 0.5rem;
+        border: 1px solid var(--border);
+        background: var(--surface);
+        color: var(--text);
+        font-weight: 500;
+        font-size: 0.95rem;
+        cursor: pointer;
+        text-decoration: none;
+      }
+      button.primary {
+        background: var(--accent);
+        border-color: var(--accent);
+        color: #ffffff;
+      }
+      button.primary:hover, button.primary:focus {
+        background: var(--accent-hover);
+        border-color: var(--accent-hover);
+      }
+      button:disabled { opacity: 0.6; cursor: not-allowed; }
+      .meta {
+        margin-top: 1.25rem;
+        font-size: 0.8rem;
+        color: var(--muted);
+      }
+      .spinner {
+        display: inline-block;
+        width: 0.9rem;
+        height: 0.9rem;
+        border: 2px solid currentColor;
+        border-right-color: transparent;
+        border-radius: 50%;
+        animation: spin 0.8s linear infinite;
+        vertical-align: middle;
+        margin-right: 0.4rem;
+      }
+      @keyframes spin { to { transform: rotate(360deg); } }
+    </style>
+  </head>
+  <body>
+    <main>
+      <div class="card">
+        <h1>Brain is not reachable</h1>
+        <p>
+          The APK could not connect to your Brain server. The most common cause
+          is that your Mac is asleep, off the same Wi-Fi, or the Brain dev
+          server is not running.
+        </p>
+        <div id="status" class="status" role="status" aria-live="polite">
+          Tap <strong>Retry</strong> to test the connection.
+        </div>
+        <div class="actions">
+          <button id="retry" class="primary" type="button">Retry</button>
+          <a id="rescan" class="button" href="/setup-apk">Re-scan QR</a>
+        </div>
+        <p class="meta">
+          If retry keeps failing: wake the Mac, confirm <code>npm run
+          dev:lan</code> is running, and that both devices are on the same
+          network.
+        </p>
+      </div>
+    </main>
+
+    <script>
+      /*
+       * This inline script intentionally does NOT import reachability.ts —
+       * the offline page is served from /public and must render even when
+       * the Next.js server is dead, so bundled ES modules are not available.
+       * Keep this in sync with src/lib/client/reachability.ts at the wire
+       * level: 2s timeout, GET /api/health, cache-bypass, status-code case
+       * analysis mirrors the TS module.
+       *
+       * Why no bearer token: the offline page runs before pairing is
+       * confirmed and cannot reliably read Capacitor Preferences via
+       * bundled plugin imports from a static /public page. We probe the
+       * current origin without auth — the proxy responds 401 if the
+       * server is up but the token path is wanted, which is enough signal
+       * to distinguish "Brain up" from "Brain down / unreachable". The
+       * richer bearer-authed probe runs from share-handler.tsx using the
+       * canonical reachability.ts module.
+       */
+      (function () {
+        const statusEl = document.getElementById("status");
+        const retryBtn = document.getElementById("retry");
+
+        function setStatus(text, cls) {
+          statusEl.className = "status" + (cls ? " " + cls : "");
+          statusEl.innerHTML = text;
+        }
+
+        async function probe() {
+          retryBtn.disabled = true;
+          setStatus('<span class="spinner"></span> Testing connection...');
+          const base = window.location.origin;
+          const controller = new AbortController();
+          const timer = setTimeout(function () { controller.abort(); }, 2000);
+          const started = (performance && performance.now) ? performance.now() : Date.now();
+          try {
+            const res = await fetch(base.replace(/\/+$/, "") + "/api/health", {
+              method: "GET",
+              cache: "no-store",
+              signal: controller.signal,
+            });
+            const elapsed = Math.round(((performance && performance.now) ? performance.now() : Date.now()) - started);
+            clearTimeout(timer);
+            if (res.status === 200) {
+              setStatus("Connected (" + elapsed + " ms). Redirecting…", "ok");
+              setTimeout(function () { window.location.href = "/"; }, 400);
+              return;
+            }
+            if (res.status === 401) {
+              // 401 here means Brain IS up but the cookie/bearer is absent —
+              // which is exactly the "server reachable, go pair" case. The
+              // main app will route to /unlock or /setup-apk from the root
+              // navigation, so send the user there.
+              setStatus("Brain is running but not paired with this device. Redirecting to setup…", "ok");
+              setTimeout(function () { window.location.href = "/"; }, 600);
+              return;
+            }
+            if (res.status === 403) {
+              setStatus("Brain rejected the origin. Tap <strong>Re-scan QR</strong> to re-pair.", "error");
+            } else {
+              setStatus("Brain returned HTTP " + res.status + ". Check the server log and retry.", "error");
+            }
+          } catch (err) {
+            clearTimeout(timer);
+            const isAbort = err && (err.name === "AbortError" || (err.message || "").toLowerCase().indexOf("abort") !== -1);
+            if (isAbort) {
+              setStatus("Brain did not respond within 2 s. Wake the Mac and retry.", "error");
+            } else {
+              setStatus("Cannot reach Brain (" + (err && err.message ? err.message : "network error") + "). Check Wi-Fi and retry.", "error");
+            }
+          } finally {
+            retryBtn.disabled = false;
+          }
+        }
+
+        retryBtn.addEventListener("click", probe);
+        // Initial auto-probe on arrival so the user sees status immediately.
+        probe();
+      })();
+    </script>
+  </body>
+</html>

@@ -55,6 +55,13 @@ describe("proxy — public paths", () => {
     const res = proxy(mkReq("/api/auth/pin"));
     assert.notEqual(res.status, 401);
   });
+
+  it("/offline.html passes without auth (T-14 / F-020)", () => {
+    const res = proxy(mkReq("/offline.html"));
+    assert.notEqual(res.status, 401);
+    assert.notEqual(res.status, 302);
+    assert.notEqual(res.status, 307);
+  });
 });
 
 describe("proxy — session cookie path", () => {
