@@ -23,6 +23,45 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
 
+            <!--
+              v0.5.0 T-11 / CAP-6 — Android share-sheet receiver.
+
+              Per v0.0.1 S-003 spike + research §10 corrections: intent
+              filters live on MainActivity directly (R-CAP proposed a
+              separate ShareTargetActivity; that was wrong). The Capgo
+              plugin (@capgo/capacitor-share-target@8.0.30) hooks into
+              onNewIntent()/onCreate() and emits a `shareReceived` JS
+              event with payload `{title, texts[], files[]}`.
+
+              Three filters:
+                1. text/plain (URLs, raw text from Chrome, Notes, etc.)
+                2. application/pdf (single PDF from Drive, Gmail, etc.)
+                3. ACTION_SEND_MULTIPLE application/pdf (multi-PDF share)
+
+              F-041 2s cold-start dedup is server-side in T-12; nothing
+              to do here in the manifest.
+
+              NOTE: manual additions must sit BELOW the LAUNCHER filter.
+              `cap sync` may rewrite content ABOVE this comment on a
+              future plugin add; keep share-intent filters after that
+              block (research §8 T-11 Capacitor footgun note).
+            -->
+            <intent-filter>
+                <action android:name="android.intent.action.SEND" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:mimeType="text/plain" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.SEND" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:mimeType="application/pdf" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.SEND_MULTIPLE" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:mimeType="application/pdf" />
+            </intent-filter>
+
         </activity>
 
         <provider
