@@ -75,6 +75,26 @@ else
   echo "[build-apk] step 0/5  debug keystore present"
 fi
 
+# v0.5.0 T-20 / F-018 / gap G-3 / REVIEW P1-2 — keystore backup.
+#
+# Copies the active debug keystore to data/backups/debug.keystore.backup
+# on every build. F-009's pruneOldBackups() only matches *.sqlite, so
+# this file persists indefinitely — intentional: losing the signing
+# identity means every paired device needs `adb uninstall` to accept a
+# rebuilt APK.
+#
+# The in-tree backup protects against accidental deletion of
+# android/app/debug.keystore. It does NOT protect against a full repo
+# wipe or laptop loss. For that, the README documents a one-time
+# operator step: copy data/backups/debug.keystore.backup to an
+# external, non-repo path (e.g., ~/Documents/Brain-keystore-backup/)
+# after the first successful build.
+KEYSTORE_BACKUP_DIR="$REPO_ROOT/data/backups"
+KEYSTORE_BACKUP_PATH="$KEYSTORE_BACKUP_DIR/debug.keystore.backup"
+mkdir -p "$KEYSTORE_BACKUP_DIR"
+cp "$KEYSTORE_PATH" "$KEYSTORE_BACKUP_PATH"
+echo "[build-apk]         keystore backup → $KEYSTORE_BACKUP_PATH"
+
 echo "[build-apk] step 1/5  typecheck + next build"
 npx tsc --noEmit
 npm run build

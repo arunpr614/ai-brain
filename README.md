@@ -105,10 +105,35 @@ If `android/app/debug.keystore` is deleted, `scripts/build-apk.sh`
 regenerates it on the next run — but the new keystore has a different
 identity, so `adb install -r` will refuse to upgrade an APK signed by
 the old keystore (Android enforces same-signer for in-place upgrades).
-Workaround: `adb uninstall com.arunprakash.brain` on the device, then
-reinstall. T-20 adds an automatic backup copy at
-`data/backups/debug.keystore.backup` on every build; copy that to an
-external path once you have a working install.
+
+**Two-tier backup strategy:**
+
+1. **Automatic in-tree backup.** Every `npm run build:apk` copies the
+   active keystore to `data/backups/debug.keystore.backup`. This file
+   is NOT rotated (F-009's `pruneOldBackups()` only matches `*.sqlite`,
+   so `.backup` files persist indefinitely — intentional). Protects
+   against accidental deletion of `android/app/debug.keystore`.
+
+2. **Operator-managed external backup (one-time step).** After the
+   first successful build, copy the backup to an external, non-repo
+   path so a full repo wipe or laptop loss doesn't take the keystore
+   with it:
+
+   ```bash
+   mkdir -p ~/Documents/Brain-keystore-backup
+   cp data/backups/debug.keystore.backup ~/Documents/Brain-keystore-backup/debug.keystore
+   ```
+
+   Refresh the external copy after any keystore rotation. There is no
+   automation for this step by design — the script can't safely guess
+   where "external" lives, and you should intentionally choose a path
+   that is (a) on a different filesystem than the repo and (b) included
+   in whatever backup scheme you use (Time Machine, iCloud, etc.).
+
+**If both backups are lost:** `adb uninstall com.arunprakash.brain` on
+every paired device, then reinstall a fresh APK. Local app storage
+(Capacitor Preferences: `brain_token`, `brain_url`) is wiped by
+uninstall, so you'll need to re-scan the setup QR.
 
 ## Versioning
 
