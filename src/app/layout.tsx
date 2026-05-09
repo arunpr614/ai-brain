@@ -58,7 +58,15 @@ export default async function RootLayout({
           <ShareHandler />
           <div className="flex min-h-full">
             <Sidebar />
-            <main className="flex-1 overflow-x-hidden" data-theme-pref={pref}>
+            {/*
+              v0.5.0 T-15 / F-019 — bottom padding on mobile keeps the
+              content clear of the fixed bottom-nav (see sidebar.tsx).
+              ~3.5rem nav height + safe-area inset; cleared at `md:`.
+            */}
+            <main
+              className="flex-1 overflow-x-hidden pb-[calc(3.5rem+env(safe-area-inset-bottom))] md:pb-0"
+              data-theme-pref={pref}
+            >
               {children}
             </main>
           </div>

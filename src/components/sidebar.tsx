@@ -34,13 +34,20 @@ export function Sidebar() {
   const pathname = usePathname();
   const { open } = useCommandPalette();
 
+  // v0.5.0 T-15 / F-019 — responsive nav.
+  // Desktop (`md:` and up): left rail aside with labels + Cmd-K search.
+  // Mobile (below `md:`): bottom bar with icon-only links for the enabled
+  // routes, safe-area padding for gesture bar / nav bar. Both trees render
+  // from the same ITEMS constant so nav stays in sync; a new React
+  // component was deliberately not added (plan constraint F-019).
   return (
-    <aside
-      className={cn(
-        "sticky top-0 flex h-screen w-60 flex-col border-r border-[var(--border)] bg-[var(--surface)] p-3",
-        "transition-[width] duration-[var(--duration-med)] ease-[var(--ease-in-out)]",
-      )}
-    >
+    <>
+      <aside
+        className={cn(
+          "sticky top-0 hidden h-screen w-60 flex-col border-r border-[var(--border)] bg-[var(--surface)] p-3 md:flex",
+          "transition-[width] duration-[var(--duration-med)] ease-[var(--ease-in-out)]",
+        )}
+      >
       <div className="px-2 pb-4 pt-1">
         <h1 className="text-sm font-semibold tracking-tight text-[var(--text-primary)]">
           AI Brain
@@ -93,6 +100,43 @@ export function Sidebar() {
           );
         })}
       </nav>
-    </aside>
+      </aside>
+
+      {/*
+        Mobile bottom-nav (below `md:`). Fixed-position so it sits atop
+        any scroll container without page-layout work. `pb-[env(safe-area-inset-bottom)]`
+        keeps it clear of the Android 3-button gesture bar and iOS home
+        indicator; `pt-2` is the touch-target padding above.
+      */}
+      <nav
+        aria-label="Primary mobile"
+        className={cn(
+          "fixed inset-x-0 bottom-0 z-40 flex md:hidden",
+          "border-t border-[var(--border)] bg-[var(--surface)]",
+          "pb-[max(env(safe-area-inset-bottom),0.25rem)] pt-2",
+        )}
+      >
+        {ITEMS.filter((i) => i.enabled).map(({ href, label, icon: Icon }) => {
+          const active = pathname === href;
+          return (
+            <Link
+              key={`mobile-${href}`}
+              href={href}
+              className={cn(
+                "flex flex-1 flex-col items-center justify-center gap-0.5 px-2 py-1 text-[11px] font-medium",
+                "transition-colors duration-[var(--duration-fast)]",
+                active
+                  ? "text-[var(--accent-11)]"
+                  : "text-[var(--text-secondary)] hover:text-[var(--text-primary)]",
+              )}
+              aria-current={active ? "page" : undefined}
+            >
+              <Icon className="h-5 w-5" strokeWidth={2} />
+              <span>{label}</span>
+            </Link>
+          );
+        })}
+      </nav>
+    </>
   );
 }
