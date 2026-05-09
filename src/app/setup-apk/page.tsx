@@ -23,7 +23,7 @@ import { useCallback, useState } from "react";
 import { useRouter } from "next/navigation";
 import { QrScanner, type QrScannerError } from "@/components/qr-scanner";
 import { parseSetupUri } from "@/lib/lan/setup-uri";
-import { probeReachability, describeVerdict } from "@/lib/client/reachability";
+import { resolveBaseUrl } from "@/lib/client/reachability-decision";
 
 type Stage =
   | { kind: "scanning" }
@@ -36,42 +36,6 @@ async function writePreferences(token: string, baseUrl: string): Promise<void> {
   const mod = await import("@capacitor/preferences");
   await mod.Preferences.set({ key: "brain_token", value: token });
   await mod.Preferences.set({ key: "brain_url", value: baseUrl });
-}
-
-/**
- * D-v0.5.0-3 reachability decision tree.
- *   1. Try http://brain.local:3000/api/health (mDNS path).
- *   2. Try http://<scanned-ip>:3000/api/health (DHCP fallback).
- *   3. Neither: return error with the more-specific verdict.
- * Returns the base URL that succeeded so the caller can persist it as
- * brain_url in Preferences.
- */
-async function resolveBaseUrl(
-  ip: string,
-  token: string,
-): Promise<{ ok: true; base: string } | { ok: false; reason: string }> {
-  const mdnsBase = "http://brain.local:3000";
-  const mdnsVerdict = await probeReachability({
-    baseUrl: mdnsBase,
-    bearerToken: token,
-    timeoutMs: 2000,
-  });
-  if (mdnsVerdict.ok) return { ok: true, base: mdnsBase };
-
-  const ipBase = `http://${ip}:3000`;
-  const ipVerdict = await probeReachability({
-    baseUrl: ipBase,
-    bearerToken: token,
-    timeoutMs: 2000,
-  });
-  if (ipVerdict.ok) return { ok: true, base: ipBase };
-
-  // Prefer the IP-fallback diagnostic since it's the more-reliable path
-  // in the common "Mac off Wi-Fi" scenario.
-  return {
-    ok: false,
-    reason: `Tried ${mdnsBase} and ${ipBase}. ${describeVerdict(ipVerdict)}`,
-  };
 }
 
 export default function SetupApkPage() {
@@ -88,7 +52,7 @@ export default function SetupApkPage() {
 
       setStage({ kind: "verifying", message: "Testing connection to Brain…" });
       try {
-        const resolution = await resolveBaseUrl(parsed.ip, parsed.token);
+        const resolution = await resolveBaseUrl({ ip: parsed.ip, token: parsed.token });
         if (!resolution.ok) {
           setStage({ kind: "verify-error", message: resolution.reason });
           return;

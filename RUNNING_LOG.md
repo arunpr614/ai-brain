@@ -2321,3 +2321,148 @@ v0.5.0 plan is **13/37 tasks** shipped (T-0..T-6, T-8..T-13). T-7 deferred into 
 - **Tests:** **210** unit/route tests passing · v0.3.1 smoke 16/16 · v0.4.0 smoke 13/13 · typecheck + lint clean · Gradle debug APK builds clean (8.9 MB)
 - **Repo:** `main` **14 commits ahead of origin/main**, not pushed this session; tags `v0.3.1` + `v0.4.0` on origin; clean working tree
 - **Next milestone:** T-14 (offline screen + reachability probe) — first Wave 2 task without an Android runtime blocker
+
+---
+
+## 2026-05-09 23:02 — v0.5.0 T-14..T-18 shipped + first v0.5.0 push to origin
+
+**Entry author:** AI agent (Claude) · **Triggered by:** user "Address the notes from self critique and then proceed to next step" → iterations of "execute next step" through five tasks, then "Push first then /running-log-updater"
+
+### Planned since last entry
+Entry 25 closed with 13/37 v0.5.0 tasks done and seven action items for the next agent — the top three of which (plan-doc reconciliation, `10/min` grep, T-14 execution) I committed to address before anything else. Goal for this session: clear the reconciliation TODO, drive T-14..T-18 (offline screen → mobile nav → QR scanner → extension bootstrap UX → APK build pipeline), and execute action item 5 (push the stale v0.5.0 diff to `origin/main` once the 20-commit threshold was crossed). Constraint: maintain 5-gate green on every commit (typecheck + lint + tests + build + Gradle where applicable).
+
+### Done
+
+**Plan-doc reconciliation (`ce7f965`):** closed entry-25 action items 3 + 4 before touching new code. Amended `docs/plans/v0.5.0-apk-extension.md` to v1.2 — T-9 plugin pins rewritten from stale `^6.0.0` to actually-installed `^8.0.1` (Preferences) / `^8.2.0` (Camera); P3-2 row updated; new v1.2 changelog entry narrating the two drifts. Grepped `10/min` across `docs/`, `src/`, `scripts/`, `.env.example`, `README.md` — zero live-code hits; remaining references are historical in REVIEW / SELF_CRITIQUE / RESEARCH artifacts and one deliberate math illustration on plan §2 line 175 supporting the raise to 30. No edits needed there.
+
+**T-14 offline screen + reachability probe (`992c5e4`):** three new files + two edits.
+- `src/app/api/health/route.ts` — 30-line GET endpoint returning `{ok, ts}`. Was referenced in `BEARER_ROUTES` and offline-page probe since T-3 but didn't exist as a route handler; this closes the gap.
+- `src/lib/client/reachability.ts` — pure probe module (180 lines) with tagged-union `ReachabilityVerdict`. Real `AbortController` wired to `setTimeout` so fetches abort rather than being orphaned. 7 failure reasons (`timeout` | `network` | `unauthorized` | `forbidden` | `server-error` | `unexpected-status` | ok). Injectable `fetchFn` + `now` for tests. Companion `describeVerdict()` for UI.
+- `public/offline.html` — self-contained static page (~230 lines, inline CSS + JS, light+dark via `prefers-color-scheme`). Must render even when Next.js is dead, so it ships no module imports. Probes origin without a bearer; 200 or 401 both mean "Brain up → back to /", only timeout/network means offline.
+- `src/components/share-handler.tsx` now calls `probeReachability()` before every capture; on fail routes to `/offline.html` + logs `share.reachability.fail` via `reportClientError()`.
+- `src/proxy.ts` added `/offline.html` to `PUBLIC_PATHS` (otherwise proxy would redirect to `/unlock` and trap the user). +1 proxy test.
+- `src/lib/client/reachability.test.ts` — 12 tests with injected fetch + fake clock: all 6 verdict branches, real AbortController abort (verified via `signal.addEventListener("abort")` counter), Authorization header presence/absence, trailing-slash URL normalization, describeVerdict human-readable strings.
+
+**T-15 mobile bottom-nav (`35f0431`):** `sidebar.tsx` extended with second JSX subtree — `<aside>` gets `hidden md:flex` (desktop only); new fixed-position `<nav>` gets `flex md:hidden` (mobile only). Both trees render from shared `ITEMS` constant, honoring plan's "no new React components" constraint. `layout.tsx` main content gets `pb-[calc(3.5rem+env(safe-area-inset-bottom))] md:pb-0` so bottom-nav overlap doesn't clip page content on mobile. Pure Tailwind + JSX; no new tests (no new logic).
+
+**T-16 QR scanner + first-run setup (`6ff89d3`):** five new files + one manifest edit.
+- `src/lib/lan/setup-uri.ts` — pure parser for `brain://setup?ip=...&token=...` URIs with strict validation: scheme must be `brain:`, host must be `setup`, `ip` dotted-quad IPv4 (octets 0..255), `token` 64 hex lowercase. Tagged-union Verdict with human-readable reason strings. 12 tests covering round-trip + every rejection path.
+- `src/components/qr-scanner.tsx` — live camera QR decoder via `getUserMedia({facingMode: "environment"})` piped into hidden `<video>`, frame-to-`<canvas>` in a RAF loop, decoded with `jsqr`. Clean tear-down: cancel RAF + stop all tracks + null `srcObject` on unmount or successful decode. Emits raw decoded text; parent owns parse-and-store. 4 error states surfaced via `QrScannerError` union.
+- `src/app/setup-apk/page.tsx` — `"use client"` orchestrator with 5 stages (`scanning`, `scan-error`, `verifying`, `verify-error`, `paired`). Implements D-v0.5.0-3 decision tree inline as `resolveBaseUrl()`: try `http://brain.local:3000` with bearer token, fall back to `http://<scanned-ip>:3000`, return whichever works. On success: `Preferences.set({key: 'brain_token'})` + `Preferences.set({key: 'brain_url'})` then `router.push("/")`.
+- `android/app/src/main/AndroidManifest.xml` — added `uses-permission CAMERA` + `uses-feature camera required=false` so camera-less Androids can still install.
+- `package.json` — `jsqr@^1.4.0` installed (first new dep for v0.5.0 since T-9 plugin trio).
+- Entry-25 action item 2 closed: verified `npm info @capacitor/camera version` returns `8.2.0`; matches installed. No drift.
+
+**T-17 extension bootstrap UX (`9de5b37`):** single-file extension of `/settings/lan-info/page.tsx`. QR section gains a collapsible `<details>` fallback exposing `{ip, port, token}` in copyable form for broken-camera / dev-test cases. Chrome extension section replaced the one-sentence hint with a 4-step ordered list (sideload → `chrome://extensions` → Details → Extension options → paste token → Test connection → Save). Added `chrome://` link with footnote explaining Chrome's security model forbids sites from auto-opening extension options pages. Closes gap G-4 from the research critique. No new components, no new tests.
+
+**T-18 APK build pipeline (`f35fd6b`):** `scripts/build-apk.sh` implements 4-stage pipeline (`tsc --noEmit` → `next build` → `cap sync android` → `gradle assembleDebug` → copy APK to `data/artifacts/brain-debug-<version>.apk`). Version read from `package.json` via `grep+sed` (no `jq` dependency). `set -euo pipefail`, fails fast on any stage. `npm run build:apk` wired in `package.json`. Verified end-to-end: produced `data/artifacts/brain-debug-0.4.0.apk` (8.9 MB, `*.apk` already gitignored). Version reads `0.4.0` because release bump to `0.5.0` is T-35 — artifact naming is stable across tagged checkouts.
+
+**Safety push to `origin/main`:** after T-18 landed and cumulative local diff hit 20 commits (threshold flagged in entry-25 action item 5), pushed `main` → `origin/main`. No tag, no PR. Range pushed: `db89668..f35fd6b` (20 commits = `a4e0772` through `f35fd6b`, the whole v0.5.0 T-0..T-18 surface). `origin/main` now at `f35fd6b`; local is 0 ahead.
+
+### Learned
+- **The `File` constructor + `Uint8Array` TS-strict papercut has a clean resolution.** `.buffer.slice(0) as ArrayBuffer` produces a plain `ArrayBuffer` (stripping the `SharedArrayBuffer` possibility from `ArrayBufferLike`). Used in T-13 tests, confirmed standard pattern.
+- **`public/offline.html` needs different probe semantics than the bundled ESM module.** Static HTML can't reliably import Capacitor plugins, so a first attempt at reading `brain_token` from Preferences inside the inline script was wrong. The right read: probe `window.location.origin/api/health` without a bearer; 200 or 401 both mean "server up, route back to /", only timeout/network means offline. Simpler AND more correct.
+- **Proxy `PUBLIC_PATHS` needs `/offline.html`.** First T-14 attempt had the share-handler routing to `/offline.html` but the proxy would redirect the unauthenticated fetch to `/unlock`, trapping the user in an infinite loop. Caught before commit; added `/offline.html` to the allow-list with a note.
+- **The `@capgo/capacitor-share-target` research doc was wrong in two places and the `@capacitor/preferences` / `@capacitor/camera` version claim was stale.** Research doc said `ShareTarget` export + `.type` payload field + `^6.0.0` plugin major. Real answers (caught by `tsc` and `npm info`): `CapacitorShareTarget` export + `.mimeType` field + `^8.x` major. Third repeated instance this session of "research-doc claim contradicted by the compiler/registry"; same pattern flagged in entry 24.
+- **Next.js 16 `/setup-apk/page.tsx` with `"use client"` works fine as a page-level client component.** No need for a client-component wrapper inside a server-component page. Simpler hierarchy.
+- **`jsqr`'s `inversionAttempts: "dontInvert"` option is the correct default for live camera feeds.** The library otherwise tries multiple inversions per frame, costing significant CPU on each RAF tick. Dark-on-light QRs (the case here) need only the non-inverted pass.
+- **The session's gate cadence (5 gates per commit) is holding.** 6 commits landed this session across 5 tasks + 1 doc reconciliation; every single one ran typecheck + lint + tests + build + (when Android-touching) `cap sync` + Gradle. Zero post-commit follow-up fixes needed.
+
+### Deployed / Released
+- **6 new commits on `main`:** `ce7f965` (doc reconciliation + log entry 25), `992c5e4` (T-14), `35f0431` (T-15), `6ff89d3` (T-16), `9de5b37` (T-17), `f35fd6b` (T-18).
+- **Pushed `main` → `origin/main`** at `f35fd6b`. Range `db89668..f35fd6b`. Local 0 ahead.
+- **Debug APK built locally** at `data/artifacts/brain-debug-0.4.0.apk` (8.9 MB, gitignored). Not installed on any device yet.
+- **No tag cut** — v0.5.0 release tag is T-35. No PR created.
+
+### Documents created or updated this period
+- `docs/plans/v0.5.0-apk-extension.md` — v1.1 → v1.2 (T-9 plugin pins, P3-2 row, v1.2 changelog entry)
+- `RUNNING_LOG.md` — entry 25 appended (T-4..T-13 narration + 7 action items)
+- `src/app/api/health/route.ts` — GET liveness endpoint (NEW, 30 lines)
+- `src/lib/client/reachability.ts` — pure probe module (NEW, 180 lines)
+- `src/lib/client/reachability.test.ts` — 12 tests (NEW)
+- `public/offline.html` — self-contained offline page (NEW, ~230 lines)
+- `src/components/share-handler.tsx` — pre-capture reachability gate
+- `src/proxy.ts` — `/offline.html` added to `PUBLIC_PATHS`
+- `src/proxy.test.ts` — +1 test for offline path
+- `src/components/sidebar.tsx` — second JSX subtree for mobile bottom-nav
+- `src/app/layout.tsx` — main content bottom-padding on mobile
+- `src/lib/lan/setup-uri.ts` — pure parser (NEW)
+- `src/lib/lan/setup-uri.test.ts` — 12 tests (NEW)
+- `src/components/qr-scanner.tsx` — live camera decoder (NEW, 170 lines)
+- `src/app/setup-apk/page.tsx` — client-side orchestrator (NEW, 170 lines)
+- `android/app/src/main/AndroidManifest.xml` — CAMERA permission
+- `package.json` — `jsqr@^1.4.0` + `build:apk` script
+- `src/app/settings/lan-info/page.tsx` — collapsible manual-entry + 4-step extension bootstrap
+- `scripts/build-apk.sh` — one-shot build pipeline (NEW, chmod +x)
+
+### Current remaining to-do
+v0.5.0 plan at **18/37 tasks** shipped (T-0..T-6, T-8..T-18; T-7 folded into T-21). Next:
+
+- **T-19** — debug keystore auto-gen via `keytool -genkey` if missing; extends `scripts/build-apk.sh`; `adb install -r` docs in `README.md`.
+- **T-20** — keystore backup to `data/backups/debug.keystore.backup`; README external-backup step for gap G-3 / REVIEW P1-2.
+- **T-21** — AVD smoke (includes T-7 scutil/firewall prerequisite). Hard gate.
+- **T-22** — Pixel physical device smoke. Hard release gate.
+- **T-23..T-29** — Chrome MV3 extension (Chrome 147 fetch pre-flight smoke gates the scaffold).
+- **T-30..T-32** — WebAuthn stretch (gated on waves 0-5 under budget).
+- **T-33..T-36** — release smoke, release guard, version bump + tag, tracker close.
+
+### Open questions / decisions needed
+- **T-7 consent still pending** — user deferred at session 25, still hasn't run `sudo scutil --set LocalHostName brain` + macOS firewall allow. Blocks T-21 AVD smoke.
+- **Pixel device availability** — T-22 physical hardware gate. Still blocked on user's actual Pixel.
+- **SC-7 live ask-latency bench from v0.4.0** — still pending, still non-blocking.
+- **No runtime Android verification yet** — 10 Android-touching tasks shipped across sessions 25+26 (T-9, T-10, T-11, T-12, T-13, T-14, T-15, T-16, T-17, T-18) with only Gradle-compile + unit-test signals. T-21 AVD smoke is the first integration signal.
+
+### Session self-critique
+
+**Decisions made without approval:**
+- **Rewrote the `public/offline.html` inline probe mid-task** without asking, replacing the Capacitor-Preferences-reading version with an unauthenticated `window.location.origin` probe. Good outcome (first version was broken — speculative `/assets/capacitor-preferences.js` import), but I made the design change inline without flagging it. Could have sent a one-sentence note before the second Write.
+- **Pinned `jsqr@^1.4.0` at T-16 without asking** about alternative decoder libs (ZXing, qr-scanner). `jsqr` has zero runtime deps and 800K weekly downloads; likely the right call. User implicitly approved via "execute" but did not authorize the specific lib.
+- **Chose chrome:// as the T-17 extension-options link target** because the extension doesn't exist yet (T-23..T-29). An alternative was leaving the link dead until T-27; I shipped chrome:// + a footnote instead. Defensible, but a small design decision made solo.
+- **Decided to push to `origin/main` when asked "what is your recommendation?"** rather than defaulting to "let me show you both options". I gave a direct "push first" recommendation with rationale. User accepted. This is the right-shaped answer for the question asked, but worth noting as a behavioral pattern — the user has repeatedly used "what is your recommendation?" this milestone and direct recommendations are landing well.
+
+**Shortcuts / skipped steps:**
+- **T-14 and T-15 were not rendered in a browser before commit.** Entry-25 recognition-blind-spot item flagged "no UI device test"; this session added two more UI-touching tasks (T-15 bottom-nav, T-16 setup screen, T-17 settings page extension) with no visual verification. Relying on typecheck + lint + layout knowledge only. Low risk for T-17 (copy-paste changes to existing page); medium risk for T-15 (new layout mode) and T-16 (entirely new page).
+- **T-16 camera path is unverified.** `getUserMedia` + RAF + `jsqr` works as a pattern in general, but the `paused` prop handoff on retry, Android runtime permission timing, and jsqr's performance on a Pixel camera feed are all unknowns until T-21 AVD smoke. Ship-and-test-later pattern.
+- **Did not add end-to-end tests for T-16's D-v0.5.0-3 decision tree.** The `resolveBaseUrl()` logic in `page.tsx` is reachable only via component render. A pure function extracted + tested would be <20 lines more. Deferred in favor of session velocity.
+- **T-17 changes were not visually verified in the `/settings/lan-info` live page.** Pure copy and list-structure changes; low risk, but the recognition gap noted above deepens.
+- **`scripts/build-apk.sh` error paths are untested.** The `set -euo pipefail` gives me fail-fast semantics for free, but I did not simulate a Gradle failure mid-run to confirm the early-exit is clean (stale artifacts in `data/artifacts/` with previous version name, partial keystore state, etc.). T-19 will edit this script; worth testing then.
+
+**Scope creep / scope narrowing:**
+- **T-14 added `/api/health` even though the plan didn't list it as a separate file.** Defensible — the endpoint was already in `BEARER_ROUTES` (T-3) and the plan's decision-tree examples reference `/api/health` throughout, so it was an implicit dependency. Still, landing a new route as an unlisted side effect of T-14 is scope drift. Net positive.
+- **T-16 added `uses-feature android.hardware.camera` alongside the required `uses-permission CAMERA`.** Plan mentioned only the permission. The `uses-feature` adds manifest-level detection so camera-less devices (rare but possible — tablets) can still install. Good-hygiene addition, not plan-authorized.
+- **T-17 scope bloomed slightly:** plan said "copyable token + Copy button + Open extension options link". I also added the "Can't scan? Enter manually." `<details>` on the QR section. Directly serves gap G-4 but wasn't in the plan sentence. Micro-creep.
+
+**Assumptions that proved wrong:**
+- **Initially assumed the offline page could use Capacitor Preferences.** Wrong — static HTML from `/public` has no module system. Caught during second-look review of my own code; fixed before commit.
+- **Initially tried to use `setup-apk-client.tsx` as a separate client component** before realizing page-level `"use client"` is cleaner. Fixed in-flight (second Write overwrote the stray file path before it was ever created). Zero filesystem impact but muddled thinking showed up in the first Write.
+- **Initially ran `git commit` from `android/` working directory** after the Gradle build; `git add` used repo-relative paths that didn't resolve. Caught, retried from repo root with absolute paths. ~60 seconds lost.
+
+**Pattern-level concerns:**
+- **Research-doc drift caught the compiler three times this session** (Capacitor plugin export name + payload field in entry 25; plugin major versions this session). Each catch was at first `tsc` / `npm info` / `lint` run. Ideal is front-running these at planning time. Proposal: before any new-module task, spend 60 seconds on `ls node_modules/<pkg>/dist/*.d.ts` + `npm info <pkg>` to ground API claims. Entry 25 flagged this; entry 26 did not close it.
+- **Zero runtime verification for 10 straight Android-touching tasks.** Sessions 25+26 have now shipped the entire APK surface (Capacitor shell, NSC, intent filters, share-handler, PDF path, offline page, mobile layout, QR scanner, extension UX, build pipeline) without ever installing a build on a device. T-21 is 3 tasks away. If T-21 reveals a systemic bug (e.g., Capacitor 8.x content-URI fetch differs from research-doc claim), rollback cost is 10 commits.
+- **Plan-doc drift was closed but a follow-up drift might be accumulating.** T-14 added `/api/health`, T-16 added `uses-feature camera` — both should be added to the plan's file lists or marked in a future reconciliation pass. Otherwise plan-as-source-of-truth degrades between reconciliation commits.
+- **Session velocity is high (6 commits, 5 tasks, ~3 hours).** Gate cadence holding but the per-task deliberation time is compressed. Worth tracking: was T-16's 340-line single-file component the right decision, or would splitting QR-scanner orchestration from Preferences-storage have been cleaner? Not reviewed in-session.
+
+**Recognition blind spots:**
+- **No browser render of any UI change this session.** Same gap as entry 25, deepened by 4 more UI tasks.
+- **No real camera hardware exercised.** `jsqr` correctness unknown on a real Pixel camera.
+- **No cold-WebView behavior exercised.** First APK launch paths (PIN → unlock → setup-apk → QR → paired → /) have never been run in sequence.
+- **Extension UX (T-17) has no extension to pair with.** The 4-step list is future-coupled — if T-27 options-page UX differs, T-17 copy needs updating.
+
+### Action items for the next agent
+
+1. **[VERIFY]** Before starting T-19, `npm run build:apk` a second time on a clean working tree to confirm the scripted pipeline reproduces `data/artifacts/brain-debug-0.4.0.apk`. Entry-26 verified this once this session; a fresh run across a sessions boundary catches state drift (e.g., stale `.next/`, `cap sync` config mismatch).
+2. **[DO]** Execute **T-19** next — extend `scripts/build-apk.sh` with `keytool -genkey` auto-gen if `android/app/debug.keystore` (or the AGP-managed default at `~/.android/debug.keystore`) is missing; add `adb install -r` + `adb devices` docs to `README.md`. Keep T-20 as a separate commit so the keystore-backup logic and gap G-3 documentation are a reviewable diff.
+3. **[ASK]** Before starting T-21 (AVD smoke), confirm user consent a THIRD time on `sudo scutil --set LocalHostName brain` + macOS firewall allow for `node` on port 3000. Entries 24 + 25 asked, user deferred both times. T-21 cannot start without this — it is the entry fee. Include a one-liner "paste this into Terminal when ready" so the user can execute without ambiguity.
+4. **[VERIFY]** At T-21 kickoff, before any AVD install: `adb devices` shows an online emulator, `dns-sd -G v4 brain.local` on the Mac returns the LAN IP in ≤ 2 s, and `curl -v http://brain.local:3000/api/health` returns 200. Each failure surfaces a distinct root-cause branch (no AVD / no mDNS / no firewall hole / server not running). This is the scaffolding for everything else in T-21.
+5. **[DON'T]** Don't amend `RUNNING_LOG.md` entries; appends only. If entry 26 contained any inaccuracies (dates, SHAs, counts), write the correction into the next entry's "Learned" or "Done" section with `Correction to entry 26:` prefix. Log is append-only by design.
+6. **[DO]** Before landing any new npm dep (session 27+), run `npm info <pkg> version && ls node_modules/<pkg>/dist/*.d.ts 2>/dev/null | head -3` as a 60-second ground-truth check. This closes the research-doc-drift pattern flagged in entries 25 and 26.
+7. **[DO]** After T-21 passes, amend `docs/plans/v0.5.0-apk-extension.md` to add `/api/health` to T-14's file list and `uses-feature camera` to T-16's file list — both shipped as unlisted additions and should appear in the plan-of-record for future traceability.
+
+### State snapshot
+- **Current phase / version:** v0.5.0 executing (18 of 37 tasks done — T-0..T-6, T-8..T-18; T-7 folded into T-21; waves 0-3 complete; wave 4 started with T-18)
+- **Plan:** `docs/plans/v0.5.0-apk-extension.md` v1.2 (plugin pins + T-7 deferral reconciled; `/api/health` + `uses-feature camera` not yet added to plan file lists — see action item 7)
+- **Active trackers:** `PROJECT_TRACKER.md` v0.7.0 · `ROADMAP_TRACKER.md` v0.7.0 · `BACKLOG.md` v6.0 · `RUNNING_LOG.md` (26 entries)
+- **Tests:** **235** unit/route tests passing · v0.3.1 smoke 16/16 · v0.4.0 smoke 13/13 · typecheck + lint clean · Gradle debug APK builds in <2s warm / ~90s cold (8.9 MB via `npm run build:apk`)
+- **Repo:** `main` **0 commits ahead of origin/main**, pushed `db89668..f35fd6b` at 22:50 local; tags `v0.3.1` + `v0.4.0` on origin; clean working tree
+- **Next milestone:** T-19 (keystore auto-gen) — first task whose output materially changes every subsequent build
