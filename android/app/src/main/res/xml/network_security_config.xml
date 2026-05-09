@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  v0.5.0 T-10 / D-v0.5.0-4 (REVIEW P0-1 corrected shape).
+
+  LAN-only cleartext policy. base-config permits cleartext globally so the
+  QR-IP fallback (D-v0.5.0-3) can reach any DHCP-assigned RFC1918 address
+  the user scans into @capacitor/preferences. Android Network Security
+  Configuration schema does NOT support CIDR-based allow-lists; per-domain
+  entries below document the *expected* hosts but they are not the
+  enforcement boundary.
+
+  Bearer token + 256-bit entropy are the primary security layer on LAN
+  (plan §5 threat model). This XML is documentation hygiene, not transport
+  security.
+
+  Future-tightening hook: when LAN HTTPS ships post-v1.0.0, change
+  <base-config> to cleartextTrafficPermitted="false" and the three
+  documented domains below continue to work for the subset still needing
+  cleartext.
+-->
+<network-security-config>
+    <base-config cleartextTrafficPermitted="true" />
+
+    <domain-config cleartextTrafficPermitted="true">
+        <domain includeSubdomains="false">brain.local</domain>
+        <domain includeSubdomains="false">localhost</domain>
+        <domain includeSubdomains="false">10.0.2.2</domain>
+    </domain-config>
+</network-security-config>
