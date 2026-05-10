@@ -2466,3 +2466,151 @@ v0.5.0 plan at **18/37 tasks** shipped (T-0..T-6, T-8..T-18; T-7 folded into T-2
 - **Tests:** **235** unit/route tests passing · v0.3.1 smoke 16/16 · v0.4.0 smoke 13/13 · typecheck + lint clean · Gradle debug APK builds in <2s warm / ~90s cold (8.9 MB via `npm run build:apk`)
 - **Repo:** `main` **0 commits ahead of origin/main**, pushed `db89668..f35fd6b` at 22:50 local; tags `v0.3.1` + `v0.4.0` on origin; clean working tree
 - **Next milestone:** T-19 (keystore auto-gen) — first task whose output materially changes every subsequent build
+
+---
+
+## 2026-05-09 23:50 — Pivot: LAN-only → Cloudflare Tunnel (v0.5.0 architecture change at T-21 gate)
+
+**Entry author:** AI agent (Claude) · **Triggered by:** user at T-21 gate (after consenting to `sudo scutil` and installing adb) discovered that configuring the macOS application firewall was "complicated"; requested alternatives explicitly mentioning cloud deployment was acceptable; chose **Option 1: Cloudflare Tunnel** from a 5-option menu
+
+### Planned since last entry
+Entry 26 left the project with 21/37 v0.5.0 tasks done, waves 0-4 complete, `origin/main` at `f35fd6b`. Local was 3 commits ahead (T-18, T-19, T-20 + hygiene pass). Plan was: complete user-side prerequisites for T-21 (`sudo scutil`, firewall allow, AVD setup), then execute AVD smoke as the hard gate before Wave 5.
+
+### Done
+
+**Pre-T-21 prerequisites handled (~30 min):**
+- Captured original LocalHostName `QRTJR6CTXW` via `scutil --get LocalHostName`. Recorded as rollback value in project memory + entry-27 State snapshot.
+- Diagnosed `adb: command not found` on user's shell. Discovered Android Studio was already installed (SDK at `~/Library/Android/sdk/`), just missing from PATH. Appended Android SDK paths to `~/.zshrc`:
+  ```bash
+  export ANDROID_HOME="$HOME/Library/Android/sdk"
+  export PATH="$ANDROID_HOME/platform-tools:$ANDROID_HOME/emulator:$PATH"
+  ```
+- User confirmed `adb version` → `1.0.41`, `adb devices` → empty list (clean), two AVDs available (`Pixel_API_UpsideDownCakePrivacySandbox`, `Pixel_XL_API_34`).
+- Captured `sudo scutil --set LocalHostName brain` consent, recorded in memory file `project_ai_brain_android_env.md`.
+- Pre-flight: Mac LAN IP `192.168.1.17`, APK at `data/artifacts/brain-debug-0.4.0.apk` ready, current LocalHostName unchanged (`QRTJR6CTXW`).
+
+**Pivot decision taken (no code yet):**
+- User asked about macOS firewall state; reported "On". I confirmed the T-21 flow would pop a one-time `node` allow prompt during Phase C (AVD install + run).
+- User's next message: "I have changed my mind. It's complicated to change the firewall configuration of my machine. Give me another more alternative to proceed with this project. I am open to cloud deployments."
+- Presented 5 alternatives with pros/cons, ranked: (1) Cloudflare Tunnel, (2) Tailscale, (3) ngrok, (4) Vercel + Postgres migration, (5) PWA instead of APK.
+- User clarified scope narrowly: "it's [the Mac-networking plumbing]. and revert my localhostname. Let's pivot to 'Option 1: Cloudflare Tunnel — zero-config tunnel, keep everything else'."
+- Verified LocalHostName unchanged (user never ran `sudo scutil`, so "revert" was a no-op). Nothing destroyed.
+
+**22-item task list created via TaskCreate** covering the three-stage planning discipline + 18 execution tasks + tracker updates + physical Pixel smoke. Structure:
+- Stage 1 — R-CFT research spike (cloudflared on Mac, tunnel lifecycle, install story, sleep/wake, cellular reach)
+- Stage 2 — self-critique of R-CFT
+- Stage 3 — plan v2.0 (`docs/plans/v0.5.0-apk-extension-v2.md`) superseding v1.3
+- Stage 4 — cross-AI review of v2.0 → v2.1 via `Plan` architect agent
+- T-CF-0 through T-CF-14 — execution tasks (archive v1.3, install cloudflared, delete mDNS+NSC, QR schema swap, env-driven tunnel URL, simplified reachability, build pipeline injection, pairing page update, README rewrite, AVD smoke, cleanup, tracker update, physical Pixel smoke)
+- T-CF-15..21 — Chrome extension wave (v1.3 T-23..29 renumbered, simplified by stable HTTPS origin)
+- T-CF-22..25 — release wave (v1.3 T-33..36 renumbered)
+
+### Learned
+
+- **The `sudo scutil` + macOS firewall combo was a higher-friction gate than I signaled in entries 24+25.** I repeatedly described the firewall step as "click Allow once when the prompt appears"; the user's actual experience was that navigating to Settings → Network → Firewall, understanding what changes, and deciding whether to approve a persistent permission for `node` is legitimately complicated for a non-technical user (memory fact: "Non-technical user; full AI-assist"). My risk-framing was calibrated for a developer audience. Action-item note for future sessions: weight the user's role when estimating task friction.
+- **The LAN-only design had a hidden cost that the pivot exposes.** The entire plan v1.0..v1.3 accepted cleartext-over-LAN (D-v0.5.0-4, research §3 RISK-9) as a necessary compromise for zero-config. Cloudflare Tunnel gives HTTPS for free with no additional config. The v1.3 plan's "future-tightening path: when LAN HTTPS lands" is now moot — HTTPS arrives immediately in v2.0.
+- **The research-doc drift pattern has a new example.** Research §5 listed Tailscale as an alternative but didn't rank Cloudflare Tunnel higher, even though CFT is strictly simpler for this use case (no phone-side install). The 2026-state of CF Tunnel ("quick tunnel" shipped in 2021, fully stable by 2024) wasn't reflected in the research assumptions. Count: four sessions of research-doc-drift this project. Need to actually front-run the verification as action item 6 of entry 25 suggested.
+- **Task count estimate shrinks 37 → ~25 with the pivot.** Waves 0-3 survive almost intact (only T-16 setup page and T-17 pairing UX need copy updates). Wave 4 loses T-7 (scutil) entirely. Wave 5 extension gets easier (stable HTTPS origin). Release wave unchanged. Net work reduction: roughly 7 tasks eliminated, 4 tasks simplified.
+- **The firewall-on fact is still useful for the future.** Even with tunnel, the macOS app firewall will prompt once for `cloudflared` on first run. User is aware.
+
+### Deployed / Released
+- **0 new commits this session after e6433c4 (T-20).** The pivot decision is planning work; no code has been written or destroyed yet.
+- **`~/.zshrc` modified** (user's shell config, outside the repo): Android SDK paths added. Not reverted even though T-21 was pivoted away from — `adb` availability is also needed for T-CF-11 (AVD smoke replacement) and T-CF-14 (physical Pixel). Safe to keep.
+- **Auto-memory updated:** `project_ai_brain_android_env.md` captures SDK paths, AVDs, scutil consent + rollback value. `MEMORY.md` index updated.
+- **No push this session.** Local still 3 commits ahead of origin/main (from entry 26).
+
+### Documents created or updated this period
+- `RUNNING_LOG.md` — this entry (27) appended
+- `~/.zshrc` — Android SDK PATH + ANDROID_HOME (outside repo)
+- `/Users/arun.prakash/.claude/projects/-Users-arun-prakash-Documents-GitHub-arun-cursor/memory/project_ai_brain_android_env.md` — new memory file capturing SDK + AVD + scutil state
+- `/Users/arun.prakash/.claude/projects/-Users-arun-prakash-Documents-GitHub-arun-cursor/memory/MEMORY.md` — index row added
+
+### Current remaining to-do
+
+**Stage 1-4 (pivot planning, ~2 hours):**
+1. R-CFT research spike — `gsd-phase-researcher` agent; output `docs/plans/v0.5.0-CLOUDFLARE-RESEARCH.md`
+2. Self-critique of R-CFT — output `docs/plans/v0.5.0-CLOUDFLARE-RESEARCH-CRITIQUE.md`
+3. Plan v2.0 — `docs/plans/v0.5.0-apk-extension-v2.md`
+4. Cross-AI review — `Plan` agent → `docs/plans/v0.5.0-apk-extension-v2-REVIEW.md` → v2.1 patch absorption
+
+**T-CF-0..14 (execution, ~1 day):**
+- T-CF-0 archive v1.3 to `docs/archive/v0.5.0-lan-approach/`
+- T-CF-1 `brew install cloudflared` (user action) + verify quick tunnel works
+- T-CF-2 delete mDNS code (`src/lib/lan/mdns.ts`, `bonjour-service` dep, instrumentation wiring)
+- T-CF-3 delete `network_security_config.xml` + manifest attribute
+- T-CF-4 QR schema change: `brain://setup?url=<https>&token=<64-hex>` (drop IPv4)
+- T-CF-5 `getTunnelUrl()` reading `BRAIN_TUNNEL_URL` env var
+- T-CF-6 simplify `reachability-decision.ts` to single probe
+- T-CF-7 `scripts/build-apk.sh` injects `BRAIN_TUNNEL_URL` into `capacitor.config.ts`
+- T-CF-8 rebuild APK with tunnel URL; verify via `unzip -p apk assets/capacitor.config.json`
+- T-CF-9 `/settings/pairing` page (renamed or re-scoped) with tunnel-status UI
+- T-CF-10 README "Android APK" section rewrite (brew → tunnel → build → install → pair)
+- T-CF-11 AVD smoke via tunnel (replaces T-21; no scutil, no firewall prompt)
+- T-CF-12 grep-driven dead-code cleanup
+- T-CF-13 tracker updates (PROJECT/ROADMAP/BACKLOG)
+- T-CF-14 physical Pixel smoke via tunnel over cellular (replaces T-22)
+
+**T-CF-15..25 (extension + release, ~same as v1.3 minus complications):**
+- Extension: T-CF-15..21 (Chrome 147 localhost-fetch critique is moot)
+- Release: T-CF-22..25 (version bump, tag, tracker close)
+
+### Open questions / decisions needed
+
+1. **Quick vs named tunnel.** Plan v2.0 needs to lock this. Quick tunnel: $0, rotating URL on every `cloudflared` restart, QR re-scan after Mac restart. Named tunnel: ~$10/yr domain, stable URL forever. Default recommendation: start with quick tunnel, upgrade to named if rotation becomes annoying. **Pending user decision.**
+2. **Does user own a domain?** If yes, named tunnel is the path of least friction. If no, quick tunnel it is.
+3. **Fate of `src/lib/lan/` directory.** Rename to `src/lib/pairing/` or `src/lib/tunnel/`? Git history preserves through renames; no content loss. Defer to plan v2.0.
+4. **Tunnel-down UX.** When `cloudflared` is running but the tunnel is temporarily unreachable (network blip, Cloudflare edge issue), what does the APK show? Current reachability-probe path handles this via the offline page; no new work, just verify at T-CF-11.
+5. **macOS firewall + cloudflared.** First run of cloudflared on the Mac WILL pop an allow prompt (outbound-only, so less alarming than inbound). User should know this before T-CF-1. Not blocking — one click.
+6. **Physical Pixel availability for T-CF-14.** Same pending-hardware status as T-22 under v1.3. Unchanged.
+7. **Rollback to LAN-only if CF tunnel pattern fails.** v1.3 plan is preserved in git history + archive; revert path is `git revert` of the pivot commit range. Not a planning blocker; worth documenting in plan v2.0 §rollback section.
+
+### Session self-critique
+
+**Decisions made without approval:**
+- **Framed the firewall step as "easy" across multiple sessions.** Entries 24, 25, 26 all described the firewall allow prompt as a one-click action; the actual user experience was enough friction to pivot the entire architecture. I should have either (a) walked through the firewall UI once to verify what it actually looks like in the user's macOS version, or (b) asked about user's comfort with system-config changes before building a 37-task plan that required it. Calibration failure.
+- **Proposed 5 alternatives in a single response.** User asked for "another more alternative"; I gave five with rankings. Defensible (option space is genuinely small so enumeration is cheap) but heavier than a direct recommendation. User picked my top recommendation anyway, so no harm done.
+- **Created 22 TaskCreate items in one burst without asking for priority sort.** The TaskList now shows 22 pending items; user hasn't explicitly authorized that level of planning granularity. Defensible since plan v2.0 will consolidate them, but I chose depth over asking.
+
+**Shortcuts / skipped steps:**
+- **Did not actually run R-CFT research this session.** The pivot plan above is based on my training-data knowledge of Cloudflare Tunnel (quick tunnels ship as `cloudflared tunnel --url`, free tier exists, HTTPS included). I've used `cloudflared` in prior projects, but the specific 2026 version numbers, Mac-ARM binary availability, and any breaking changes since my last session with it are unverified. Stage 1 of the pivot (R-CFT) will close this.
+- **Did not verify the `cloudflared` Homebrew formula is current.** Plan assumes `brew install cloudflared` works; should confirm at T-CF-1.
+- **Did not measure actual latency overhead** of tunnel routing for the common "share URL from Android Chrome" flow. Claim: "~50ms, imperceptible". Unverified.
+- **Did not update v1.3 plan's changelog** to note "superseded by v2.0" before planning v2.0. Should fold into T-CF-0 archive step.
+
+**Scope creep / scope narrowing:**
+- **Narrowed:** 37 tasks → ~25 tasks. Deletions: T-6 mDNS, T-7 scutil/firewall, T-10 NSC, three waves' worth of "LAN IP fallback" edge cases. This is legitimate narrowing — the scope of the work shrunk because the requirements shrunk (no more "works on flaky home Wi-Fi routers") not because I cut corners.
+- **Creep:** added "physical Pixel over cellular" as a new capability gate (T-CF-14). v1.3's T-22 only tested Pixel-on-LAN. Cellular reach is a free benefit of the tunnel but also a new test scope.
+
+**Assumptions that proved wrong in this session:**
+- **Assumed the firewall step was low-friction.** Wrong.
+- **Assumed the user would run `sudo scutil` this session.** They didn't. Good thing they didn't — the pivot makes it unnecessary.
+
+**Pattern-level concerns:**
+- **Three-stage planning discipline saved the project again.** Every major v0.5.0 decision (auth boundary, NSC XML, plugin versions) has been caught and corrected at one of the three stages. This pivot — caught at the T-21 GATE, after 21 tasks of LAN-only code — is the first time a stage-failure has forced a re-plan mid-wave. The lesson: the gate-before-hard-action pattern (don't run scutil before asking) worked. If we'd just executed T-21 blindly, the user would have scutil-modified their Mac and still hit the firewall wall.
+- **Friction-assessment for non-technical users is a repeated weak spot.** Memory fact: user is non-technical. Session 26's self-critique flagged "no browser render of UI changes" as a recognition blind spot; session 27 adds "no evaluation of whether the next task's prereqs are within user's comfort zone". Action item needed.
+- **Cumulative-diff pressure turned out to matter less than I thought.** Entry 26 flagged 14+ commits ahead of origin as a risk; this session added 3 more (T-19, T-20, hygiene) and pushed none. If T-21 had destroyed a bunch of work via scutil-then-revert, the unpushed diff would have been painful. It didn't, but the risk was real.
+- **No runtime Android verification across v0.5.0** — entry 26 flagged this as deepening; entry 27 makes it moot for another cycle (we don't run against Android until T-CF-11 under the pivoted plan). Cumulative "shipped without runtime verification" task count: 14 (T-9..T-20). Rollback cost if T-CF-11 reveals a systemic Capacitor 8.x issue: significant.
+
+**Recognition blind spots:**
+- **No CF Tunnel firsthand verification this session.** Plan rests on my memory of how `cloudflared` behaves.
+- **No user-session observation of their firewall UI.** I never saw what they saw.
+- **Free-tier rate limits and tunnel-restart behavior** are unverified against Cloudflare's current docs. R-CFT will cover this.
+
+### Action items for the next agent
+
+1. **[VERIFY]** Before running Stage 1 (R-CFT research), confirm `cloudflared` has a current Homebrew formula: `brew info cloudflared` should return a recent version. If the formula is stale or broken, R-CFT must include the GitHub-releases install path as a fallback.
+2. **[DO]** Run the three-stage planning pipeline end-to-end before writing any pivot code. Research → self-critique → plan v2.0 → cross-AI review → v2.1. This is not optional given that the LAN-plan went through the same pipeline and still hit a user-friction wall at T-21. The pivot plan is a bigger blast radius than v1.0 was; deserves the full discipline.
+3. **[ASK]** User preference on quick tunnel (free, rotating URL) vs named tunnel (~$10/yr domain, stable URL) BEFORE drafting plan v2.0. Decision affects the QR-schema question (rotating URL means QR must re-scan after every Mac restart; stable URL means paired-forever model works).
+4. **[DON'T]** Don't delete `src/lib/lan/` files en masse in T-CF-2 without first verifying the plan v2.1 task list authorizes each deletion. Some code (e.g., bearer auth, rate limiter, Origin validation) sits in files under this tree but is LAN-agnostic and needs to survive the pivot. Grep before rm.
+5. **[DO]** At T-CF-0 (archive step), update v1.3 plan's changelog with a v1.4 bullet noting "superseded by v2.0 Cloudflare Tunnel pivot per entry 27 of RUNNING_LOG.md". This preserves traceability for anyone reading v1.3 later.
+6. **[DO]** When T-CF-11 (AVD smoke replacement) runs, explicitly verify no cleartext fallback remains: `adb shell dumpsys connectivity | grep cleartext` should not flag violations. This closes the risk introduced by removing network_security_config.xml — if any code still hardcodes `http://` somewhere we missed in T-CF-9, it'll fail loudly rather than silently.
+7. **[VERIFY]** Before T-CF-10 (README rewrite), read current README top-to-bottom — entry-26 T-19 added a full "Android APK (v0.5.0)" section. The rewrite needs to preserve the keystore + adb-install parts while replacing the LAN-networking parts. Surgical edit, not wholesale replacement.
+
+### State snapshot
+- **Current phase / version:** v0.5.0 executing (21 of 37 tasks done under v1.3; pivot to v2.0 Cloudflare Tunnel plan triggered at T-21 gate; T-CF-0..14 queued; task count likely 21/~25 after renumbering)
+- **Plan:** `docs/plans/v0.5.0-apk-extension.md` v1.3 ACTIVE but superseded-pending; `v0.5.0-apk-extension-v2.md` NOT YET WRITTEN (Stage 3 of 4 in the new planning cycle)
+- **Active trackers:** `PROJECT_TRACKER.md` v0.7.0 · `ROADMAP_TRACKER.md` v0.7.0 · `BACKLOG.md` v6.0 · `RUNNING_LOG.md` (27 entries)
+- **Tests:** **241** unit/route tests passing · all v0.3.1/v0.4.0 smoke green · typecheck + lint + `npm run build:apk` clean (produces 8.9 MB APK via LAN-era config)
+- **Repo:** `main` **3 commits ahead of origin/main** (T-19, T-20, hygiene-pass 2322516 pending push); tags `v0.3.1` + `v0.4.0` on origin; clean working tree
+- **Mac-side state:** LocalHostName unchanged (`QRTJR6CTXW`). Android SDK in PATH via `~/.zshrc`. Two AVDs available. `cloudflared` NOT YET installed.
+- **Next milestone:** R-CFT research spike (Stage 1 of pivot planning)
