@@ -266,7 +266,7 @@ describe("auth/bearer — validateOrigin (T-5 / F-036)", () => {
   it("permits the three documented allow-list origins", () => {
     assert.equal(validateOrigin("http://localhost:3000"), true);
     assert.equal(validateOrigin("http://127.0.0.1:3000"), true);
-    assert.equal(validateOrigin("http://brain.local:3000"), true);
+    assert.equal(validateOrigin("https://brain.arunp.in"), true);
   });
 
   it("permits chrome-extension:// with any install ID", () => {
@@ -276,9 +276,11 @@ describe("auth/bearer — validateOrigin (T-5 / F-036)", () => {
 
   it("rejects other origins", () => {
     assert.equal(validateOrigin("http://evil.example"), false);
-    assert.equal(validateOrigin("https://localhost:3000"), false); // scheme mismatch
+    assert.equal(validateOrigin("http://brain.arunp.in"), false); // scheme mismatch (http, not https)
+    assert.equal(validateOrigin("https://brain.arunp.in:3000"), false); // port must be absent on https
+    assert.equal(validateOrigin("https://localhost:3000"), false); // scheme mismatch on loopback
     assert.equal(validateOrigin("http://localhost:3001"), false); // port mismatch
-    assert.equal(validateOrigin("http://brain.local:8080"), false);
-    assert.equal(validateOrigin("http://LOCALHOST:3000"), false); // case-sensitive; Origin is always lowercase in practice but guard anyway
+    assert.equal(validateOrigin("http://brain.local:3000"), false); // LAN-era origin removed post-pivot
+    assert.equal(validateOrigin("http://LOCALHOST:3000"), false); // case-sensitive
   });
 });

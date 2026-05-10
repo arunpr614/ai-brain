@@ -235,35 +235,37 @@ export function __resetRateLimiterForTests(): void {
 }
 
 /**
- * Origin-header validation (v0.5.0 T-5, F-036 / D-v0.5.0-7).
+ * Origin-header validation (v0.5.0 T-5 / F-036 / D-v0.5.0-7).
+ * Updated 2026-05-10 for the Cloudflare Tunnel pivot (R-CFT critique §8 R-5):
+ * LAN-era `http://brain.local:3000` replaced by `https://brain.arunp.in`
+ * (the named Cloudflare tunnel URL; stable, HTTPS, no mDNS).
  *
  * Applies to bearer-authenticated cross-origin callers. The WebView APK
- * shares the server's origin (same-origin after `brain.local` resolves);
- * the Chrome extension runs at `chrome-extension://<id>` and is legitimately
- * cross-origin. Server-side `fetch()` calls (e.g., curl smokes, scripts)
- * send no Origin header at all, which we must permit for CLI tooling.
+ * loads `https://brain.arunp.in` and issues fetch() requests from that
+ * origin; the Chrome extension runs at `chrome-extension://<id>` and is
+ * legitimately cross-origin. Server-side fetch() calls (curl smokes,
+ * scripts) send no Origin header at all, which we must permit for CLI
+ * tooling.
  *
  * Accepted origins:
  *   - null / missing  (server-to-server, CLI, curl; no browser context)
- *   - http://localhost:3000
- *   - http://127.0.0.1:3000
- *   - http://brain.local:3000
- *   - chrome-extension://<any-id>  (MV3 extensions have a random install ID;
- *     we cannot pin this at build time without the user rebuilding when the
- *     extension reloads)
+ *   - http://localhost:3000         (dev server, local browser)
+ *   - http://127.0.0.1:3000         (dev server, loopback IP)
+ *   - https://brain.arunp.in        (named Cloudflare tunnel; APK)
+ *   - chrome-extension://<any-id>   (MV3 extensions — random install ID)
  *
  * Rejections are logged by the caller as `lan.bearer.reject-origin` via
  * logError(). Route handlers that want Origin checks call validateOrigin()
  * AFTER verifyBearerToken() returns ok.
  *
- * Plan §4.5 CSRF posture already argues this is defense-in-depth: bearer
- * tokens on non-mutating GETs are already rejected by the allow-list of
- * BEARER_ROUTES; the POST paths here add an extra belt-and-braces layer.
+ * CSRF posture: bearer tokens on non-mutating GETs are already rejected
+ * by the BEARER_ROUTES allow-list; origin validation on POST paths is
+ * belt-and-braces defense-in-depth.
  */
 const ALLOWED_ORIGINS = new Set([
   "http://localhost:3000",
   "http://127.0.0.1:3000",
-  "http://brain.local:3000",
+  "https://brain.arunp.in",
 ]);
 
 export function validateOrigin(originHeader: string | null | undefined): boolean {

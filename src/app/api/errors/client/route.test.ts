@@ -104,11 +104,11 @@ describe("/api/errors/client — origin validation", () => {
     assert.equal(res.status, 200);
   });
 
-  it("permits brain.local origin", async () => {
+  it("permits brain.arunp.in origin (Cloudflare named tunnel — v2.0 pivot)", async () => {
     const res = await POST(
       mkReq(
-        { namespace: "lan.mdns.test", message: "m" },
-        { origin: "http://brain.local:3000" },
+        { namespace: "lan.tunnel.test", message: "m" },
+        { origin: "https://brain.arunp.in" },
       ),
     );
     assert.equal(res.status, 200);

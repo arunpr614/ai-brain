@@ -1,39 +1,41 @@
 import type { CapacitorConfig } from "@capacitor/cli";
 
 /**
- * Capacitor 8.3.3 configuration for the Brain APK (v0.5.0 T-9 / F-014).
+ * Capacitor 8.3.3 configuration for the Brain APK (v0.5.0).
  *
  * Thin-WebView architecture: the APK is a shell that loads the live
  * Next.js server on the Mac. No static export, no bundled app.
  *
  * `webDir: 'public'` serves only as the offline fallback bundle that
  * Capacitor ships inside the APK — when `server.url` is unreachable,
- * the WebView falls back to this directory (plan §6.4 + T-14 offline
- * screen). `public/offline.html` lands in T-14.
+ * the WebView falls back to this directory. `public/offline.html` is
+ * the primary fallback page.
  *
- * `server.url` points at `brain.local` (the macOS LocalHostName set
- * via `sudo scutil --set LocalHostName brain`, T-7 deferred to
- * pre-T-21). The QR-IP fallback (D-v0.5.0-3) is wired at runtime via
- * @capacitor/preferences, not static config.
+ * `server.url` points at the Cloudflare named tunnel mapped to the
+ * user's domain. Setup at `cloudflared tunnel route dns brain
+ * brain.arunp.in`. This URL is STABLE — named tunnels do not rotate
+ * (unlike quick tunnels at `*.trycloudflare.com`), so this value is a
+ * build-time constant, not an env var. See
+ * `docs/plans/v0.5.0-CLOUDFLARE-RESEARCH.md` §6 + the v2.0 pivot plan.
  *
- * Cleartext traffic policy lives in android/app/src/main/res/xml/
- * network_security_config.xml (T-10 / D-v0.5.0-4 — <base-config
- * cleartextTrafficPermitted="true"/>). Do NOT add `cleartext: true`
- * to this file — it would overlay a blanket usesCleartextTraffic
- * attribute that the per-build XML is trying to document more
- * carefully.
+ * `androidScheme: "https"` matches the HTTPS tunnel — named tunnels
+ * terminate TLS at the Cloudflare edge and present a real CA-signed
+ * certificate for `brain.arunp.in`. The legacy `"http"` value was a
+ * LAN-era artifact paired with `network_security_config.xml`'s
+ * cleartext-permitted configuration (both now deleted by the pivot).
  *
  * CapacitorHttp is enabled so the share-handler can stream PDF
- * content-URIs as multipart uploads (T-13 / F-039) without loading
- * the full file into the WebView heap.
+ * content-URIs as multipart uploads (share-intent flow) without
+ * loading the full file into the WebView heap. This is orthogonal to
+ * the tunnel — it's about content:// URI resolution on Android.
  */
 const config: CapacitorConfig = {
   appId: "com.arunprakash.brain",
   appName: "Brain",
   webDir: "public",
   server: {
-    url: "http://brain.local:3000",
-    androidScheme: "http",
+    url: "https://brain.arunp.in",
+    androidScheme: "https",
   },
   plugins: {
     CapacitorHttp: {

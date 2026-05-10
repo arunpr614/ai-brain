@@ -11,7 +11,7 @@
  *     NOT re-verify the token (defense-in-depth lives at the proxy).
  *   - Origin-header validation runs here per D-v0.5.0-7: extensions can
  *     submit (chrome-extension://*) and APK WebView can submit (same-origin
- *     to brain.local:3000 or localhost:3000); everything else is rejected.
+ *     to brain.arunp.in or localhost:3000); everything else is rejected.
  *
  * Schema:
  *   - namespace: matches `/^(lan|share|ext)\.[a-z0-9.-]+$/` — allow-lists
