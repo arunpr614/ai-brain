@@ -1,9 +1,10 @@
 # AI Brain — Roadmap Tracker
 
-**Document version:** v0.7.0-roadmap
-**Date:** 2026-05-09
+**Document version:** v0.8.0-roadmap
+**Date:** 2026-05-10
 **Changelog:**
-- **v0.7.0-roadmap** — v0.4.0 Ask (RAG) SHIPPED 2026-05-09. All 11 planned features closed (F-011, F-012, F-013, ASK-1..4, DIG-4, ORG-3, EXP-3). 107 unit tests + 29 smoke assertions green. Tag `v0.4.0` on `main`. SC-7 live latency bench pending user-side run (non-blocking). Lifecycle board: shipped 48 → 59; next lane v0.5.0 APK + extension, no blockers.
+- **v0.8.0-roadmap** — v0.5.0 **PIVOTED 2026-05-10** from LAN-only design to Cloudflare named tunnel after user reported firewall configuration complexity at T-21 AVD smoke gate. 21 v1.3 LAN tasks shipped (T-0..T-18 + hygiene) and mostly survive the pivot (bearer auth, share-handler, PDF path, offline page, keystore, build pipeline). LAN-specific code pending deletion (mDNS, NSC, two-probe decision tree) under new T-CF-* numbering. v1.3 plan archived at `docs/archive/v0.5.0-lan-approach/`. R-CFT research + critique written; 5 spike reports in `docs/plans/spikes/`; plan v2.0 in drafting. DNS propagation for `arunp.in` (GoDaddy → Cloudflare) in flight. SC-7 from v0.4.0 still pending, still non-blocking.
+- v0.7.0-roadmap — v0.4.0 Ask (RAG) SHIPPED 2026-05-09. All 11 planned features closed (F-011, F-012, F-013, ASK-1..4, DIG-4, ORG-3, EXP-3). 107 unit tests + 29 smoke assertions green. Tag `v0.4.0` on `main`. SC-7 live latency bench pending user-side run (non-blocking). Lifecycle board: shipped 48 → 59; next lane v0.5.0 APK + extension, no blockers.
 - v0.6.1-roadmap — R-VEC spike closed **GREEN** on 2026-05-08. All four thresholds pass with ≥ 10× headroom at 10k chunks (p50=6.25 ms, p95=6.88 ms, build=294 ms, reopen=6.47 ms). 50k tier also healthy. v0.4.0 Ask (RAG) **unblocked**. Findings: [`docs/research/vector-bench.md`](./docs/research/vector-bench.md). F-013 (embeddings pipeline) now unblocked; next action is drafting `docs/plans/v0.4.0-ask.md`.
 - v0.6.0-roadmap — v0.3.1 Polish + Hardening SHIPPED. All 17 work items (F-042..F-056 + F-034 + F-207/F-301/F-302/B-301) closed with commit SHAs. Tag `v0.3.1` on main. Critique A-series + P-series all closed (table in `PROJECT_TRACKER.md` §5). Next lane: v0.4.0 Ask (RAG), blocked by R-VEC.
 - v0.5.0-roadmap — v0.3.0 Intelligence SHIPPED (`5d1c390`); inserted **v0.3.1 Polish + Hardening** phase absorbing all actionable findings from [`docs/plans/SELF_CRITIQUE_2026-05-08_10-14-16.md`](./docs/plans/SELF_CRITIQUE_2026-05-08_10-14-16.md); promoted F-034 (restore script) from v0.10.0 → v0.3.1; added F-042..F-055 spanning hardening, observability, test infrastructure, and process gates.

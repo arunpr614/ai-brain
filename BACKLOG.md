@@ -2,25 +2,54 @@
 
 | Field | Value |
 |-------|--------|
-| **Document version** | v6.0-backlog (v0.5.0 active) |
-| **Date** | 2026-05-09 |
+| **Document version** | v7.0-backlog (v0.5.0 pivoted to Cloudflare Tunnel) |
+| **Date** | 2026-05-10 |
 | **Owner** | Arun |
 | **Update cadence** | at every phase kickoff; whenever an item is promoted, deferred, or closed |
-| **Revision** | v6.0 — v0.5.0 plan drafted; §5 rotated to `docs/archive/BACKLOG_ARCHIVE_2026-05-09.md` under v0.5.0 T-0 (v0.4.0 closure set preserved there); new closures accumulate in §5 as v0.5.0 tasks land |
+| **Revision** | v7.0 — v0.5.0 PIVOTED 2026-05-10 from LAN-only to Cloudflare named tunnel (user reported firewall complexity at T-21 gate). v1.3 LAN plan archived at `docs/archive/v0.5.0-lan-approach/`. New plan v2.0 drafting underway. Task numbering shifts from T-N → T-CF-N. v6.0 history preserved below |
 
 > Single source of truth for work that is **not in the active phase plan** but is known-needed, nice-to-have, or idea-captured. Items promoted from here land in `BUILD_PLAN.md` under a phase heading. Items closed here get a strikethrough and a closing commit SHA.
 
 ---
 
-## 1. Active phase — v0.5.0 APK + Chrome extension (plan drafted; executing)
+## 1. Active phase — v0.5.0 APK + Chrome extension (PIVOTED to Cloudflare Tunnel 2026-05-10)
 
-v0.4.0 closed 2026-05-09 (tag `v0.4.0`). v0.5.0 kicked off the same day with research + critique + plan:
+### Current state (as of 2026-05-10)
 
-- [`docs/plans/v0.5.0-RESEARCH.md`](./docs/plans/v0.5.0-RESEARCH.md) (R-0.5.0) — supersedes R-CAP (partial API drift) and refreshes R-AUTH for Capacitor 8.3.3.
-- [`docs/plans/v0.5.0-RESEARCH-CRITIQUE.md`](./docs/plans/v0.5.0-RESEARCH-CRITIQUE.md) — 1 blocker + 7 HIGH + 11 other items, all resolved in the plan.
-- [`docs/plans/v0.5.0-apk-extension.md`](./docs/plans/v0.5.0-apk-extension.md) (v1.0) — 37 tasks across 7 waves; 7 locked decisions (D-v0.5.0-1..7); M-3 cross-AI review gated at T-1 before any auth code lands.
+v0.4.0 closed 2026-05-09 (tag `v0.4.0`). v0.5.0 began same day with the **LAN-only plan v1.3** (37 tasks, T-0..T-18 shipped). **PIVOTED 2026-05-10** at T-21 gate when user reported macOS firewall configuration was too complex; option menu resolved to Cloudflare **named tunnel** via user's `arunp.in` domain.
 
-Execution starts at T-0 (this rotation). No blockers; R-AUTH / R-CAP both closed; empirical sanity from v0.0.1 still valid.
+**Active plan v2.0 (Cloudflare Tunnel) — drafting in progress:**
+
+- [`docs/plans/v0.5.0-CLOUDFLARE-RESEARCH.md`](./docs/plans/v0.5.0-CLOUDFLARE-RESEARCH.md) (R-CFT, 662 lines) — research spike; verdict PROCEED-WITH-CHANGES; major finding: quick tunnels block SSE, so pivoted to named tunnel.
+- [`docs/plans/v0.5.0-CLOUDFLARE-RESEARCH-CRITIQUE.md`](./docs/plans/v0.5.0-CLOUDFLARE-RESEARCH-CRITIQUE.md) (425 lines) — 5 blockers + 4 HIGH + gaps; B-5 ALLOWED_ORIGINS fix absorbed in commit `279ec9c` ahead of plan v2.0.
+- [`docs/plans/spikes/`](./docs/plans/spikes/) — 5 spike reports (SPIKE-001..005) written during DNS-propagation waiting window on 2026-05-10.
+- **Plan v2.0 document pending** (Stage 3 of planning pipeline).
+- DNS propagation for `arunp.in` (GoDaddy → Cloudflare) in flight at 2026-05-10 20:00; completion expected within 30 min.
+- Next concrete user action: `brew install cloudflared` after DNS propagates.
+
+**Archived under `docs/archive/v0.5.0-lan-approach/`:**
+
+- v0.5.0-RESEARCH.md (R-0.5.0, LAN-era)
+- v0.5.0-RESEARCH-CRITIQUE.md (LAN-era)
+- v0.5.0-apk-extension.md (v1.3, final LAN-era plan)
+- v0.5.0-apk-extension-REVIEW.md (cross-AI review of v1.1 → v1.1 patches)
+- See `docs/archive/v0.5.0-lan-approach/README.md` for pivot rationale.
+
+### Code that survives the pivot (shipped under v1.3, unchanged)
+
+Bearer auth, proxy layered auth, rate limiter, Origin validation (update to named-tunnel origin landed in `279ec9c`), share-handler, dedup, capture endpoints (URL/PDF/note), reachability probe, offline page, QR scanner, keystore pipeline (T-19 + T-20), debug signingConfig in `android/app/build.gradle`.
+
+### Code to delete per pivot (owned by future T-CF-* tasks)
+
+- `src/lib/lan/mdns.ts` + `.test.ts` — T-CF-2
+- `bonjour-service` npm dep — T-CF-2
+- `src/instrumentation.ts` mDNS wiring — T-CF-2
+- `android/app/src/main/res/xml/network_security_config.xml` — T-CF-3
+- AndroidManifest `android:networkSecurityConfig` attribute — T-CF-3
+- `src/lib/client/reachability-decision.ts` two-probe tree (simplify to single probe) — T-CF-6
+- QR schema `ip=` parameter (replace with `url=`) — T-CF-4
+- `share-handler.tsx` `getBrainUrl()` Preferences lookup (replace with hardcoded `https://brain.arunp.in`) — T-CF-2 or T-CF-12
+- README "Android APK" section — T-CF-10
 
 ### Historical (v0.3.1 snapshot, for reference — all closed; see §5)
 
