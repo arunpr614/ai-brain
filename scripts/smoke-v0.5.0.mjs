@@ -118,8 +118,10 @@ async function run() {
   // 5) LAN-era removal gate (SPIKE-002). Excludes *.test.ts — test files
   // legitimately carry brain.local in negative assertions ("prove it's rejected").
   await section("no brain.local references survive in production source", () => {
+    // Excludes *.test.ts (negative assertions) + smoke scripts that literally
+    // grep for the string (self-match would false-alarm).
     const result = execSync(
-      "git grep -l 'brain\\.local' -- 'src/**/*.ts' 'src/**/*.tsx' ':!src/**/*.test.ts' android scripts capacitor.config.ts || true",
+      "git grep -l 'brain\\.local' -- 'src/**/*.ts' 'src/**/*.tsx' ':!src/**/*.test.ts' android scripts ':!scripts/smoke-*.mjs' capacitor.config.ts || true",
       { cwd: repoRoot, encoding: "utf8", shell: "/bin/bash" },
     ).trim();
     assert.equal(result, "", `brain.local still present in:\n${result}`);
@@ -173,10 +175,14 @@ async function run() {
     );
   });
 
-  // 8) Root package.json at 0.5.0
-  await section("package.json version bumped to 0.5.0", () => {
+  // 8) Root package.json at 0.5.0 or higher (v0.5.1+ smokes assert their own exact version)
+  await section("package.json version is 0.5.0 or higher", () => {
     const pkg = JSON.parse(readFileSync(join(repoRoot, "package.json"), "utf8"));
-    assert.equal(pkg.version, "0.5.0");
+    const [major, minor] = pkg.version.split(".").map((n) => parseInt(n, 10));
+    assert.ok(
+      major > 0 || (major === 0 && minor >= 5),
+      `version ${pkg.version} must be 0.5.0+`,
+    );
   });
 }
 
