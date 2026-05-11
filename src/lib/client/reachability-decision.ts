@@ -1,8 +1,8 @@
 /**
  * Single-probe reachability check for APK pairing (T-CF-6).
  *
- * Pre-pivot this was a two-step decision tree (try brain.local then fall
- * back to a scanned IP). Post-pivot there is exactly one origin — the
+ * Pre-pivot this was a two-step decision tree (try the mDNS host then
+ * fall back to a scanned IP). Post-pivot there is exactly one origin — the
  * Cloudflare named tunnel at `BRAIN_TUNNEL_URL` — so the logic collapses
  * to "probe once, report the verdict". Kept as a separate module so the
  * setup-apk page stays thin and we keep unit-test coverage of the probe

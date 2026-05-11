@@ -84,7 +84,7 @@
       the rear camera into a <video>, then decodes frames with jsqr. The
       permission prompt surfaces on first use (Android runtime permissions
       model — no app-install-time prompt). QR scanning is the ONLY use
-      case; `@capacitor/camera`'s getPhoto() path is not wired up.
+      case; no Capacitor camera plugin is used (T-CF-12 removed the dep).
     -->
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-feature android:name="android.hardware.camera" android:required="false" />

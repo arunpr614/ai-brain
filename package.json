@@ -10,10 +10,8 @@
   "license": "MIT",
   "scripts": {
     "dev": "NODE_OPTIONS='--max-old-space-size=8192' next dev -H 127.0.0.1",
-    "dev:lan": "BRAIN_LAN_MODE=1 NODE_OPTIONS='--max-old-space-size=8192' next dev -H 0.0.0.0",
     "build": "NODE_OPTIONS='--max-old-space-size=8192' next build",
     "start": "NODE_OPTIONS='--max-old-space-size=8192' next start -H 127.0.0.1",
-    "start:lan": "BRAIN_LAN_MODE=1 NODE_OPTIONS='--max-old-space-size=8192' next start -H 0.0.0.0",
     "lint": "eslint",
     "typecheck": "tsc --noEmit",
     "test": "node --import tsx --test \"src/**/*.test.ts\"",
@@ -27,7 +25,6 @@
   },
   "dependencies": {
     "@capacitor/android": "^8.3.3",
-    "@capacitor/camera": "^8.2.0",
     "@capacitor/cli": "^8.3.3",
     "@capacitor/core": "^8.3.3",
     "@capacitor/preferences": "^8.0.1",
