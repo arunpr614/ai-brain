@@ -8,6 +8,7 @@
  */
 import { networkInterfaces } from "node:os";
 import { generateLanToken } from "@/lib/auth/bearer";
+import { BRAIN_TUNNEL_URL } from "@/lib/config/tunnel";
 import * as nodeFs from "node:fs";
 import * as nodePath from "node:path";
 
@@ -63,13 +64,13 @@ export function rotateLanToken(options?: { envPath?: string }): string {
 
 /**
  * Build the URI that the APK QR scanner consumes. Schema `brain://setup?
- * ip=<ip>&token=<token>` keeps the payload deep-link-friendly if we later
- * want to support Universal Links; for now it's just a printable string
- * inside the QR matrix.
+ * url=<tunnel-url>&token=<token>` keeps the payload deep-link-friendly.
+ * The `url` is always the build-time tunnel constant — no more IP
+ * plumbing post-pivot (T-CF-4).
  */
-export function buildSetupUri(ip: string, token: string): string {
+export function buildSetupUri(token: string): string {
   const u = new URL("brain://setup");
-  u.searchParams.set("ip", ip);
+  u.searchParams.set("url", BRAIN_TUNNEL_URL);
   u.searchParams.set("token", token);
   return u.toString();
 }

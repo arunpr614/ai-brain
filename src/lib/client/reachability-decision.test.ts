@@ -1,13 +1,14 @@
 /**
- * Tests for resolveBaseUrl() — D-v0.5.0-3 decision tree.
+ * Tests for resolveBaseUrl() — single-probe pattern (T-CF-6).
  *
- * Uses a stub probe factory to drive the four cases: mDNS-green,
- * IP-green-after-mDNS-fail, both-red, and call-ordering (mDNS must
- * be tried first; IP is a fallback, not a parallel race).
+ * Post-pivot the decision collapses to "probe the tunnel, report the
+ * verdict". Cases: green, timeout, unauthorized, token passthrough,
+ * custom timeout.
  */
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
 import { resolveBaseUrl } from "./reachability-decision";
+import { BRAIN_TUNNEL_URL } from "@/lib/config/tunnel";
 import type { ReachabilityVerdict } from "./reachability";
 
 type ProbeFn = (opts: { baseUrl: string; bearerToken?: string | null; timeoutMs?: number }) => Promise<ReachabilityVerdict>;
@@ -22,104 +23,63 @@ function failVerdict(reason: "timeout" | "network" | "unauthorized"): Reachabili
     : { ok: false, reason, latencyMs: 2000 };
 }
 
-/**
- * Stub that routes by baseUrl. Records call order so ordering tests can
- * assert mDNS-first semantics.
- */
-function mkProbe(
-  plan: { mdns?: ReachabilityVerdict; ip?: ReachabilityVerdict },
-  calls: string[] = [],
-): ProbeFn {
-  return async ({ baseUrl }) => {
-    calls.push(baseUrl);
-    if (baseUrl.includes("brain.local")) {
-      if (!plan.mdns) throw new Error(`unexpected mdns probe (baseUrl=${baseUrl})`);
-      return plan.mdns;
-    }
-    if (!plan.ip) throw new Error(`unexpected ip probe (baseUrl=${baseUrl})`);
-    return plan.ip;
-  };
-}
-
-describe("resolveBaseUrl — D-v0.5.0-3 decision tree", () => {
-  it("returns mdns on mDNS-green (never probes IP)", async () => {
+describe("resolveBaseUrl — single-probe tunnel check", () => {
+  it("returns ok with the tunnel base when probe succeeds", async () => {
     const calls: string[] = [];
-    const probe = mkProbe({ mdns: okVerdict() }, calls);
-    const v = await resolveBaseUrl({ ip: "192.168.1.42", token: "tok", probe });
+    const probe: ProbeFn = async ({ baseUrl }) => {
+      calls.push(baseUrl);
+      return okVerdict();
+    };
+    const v = await resolveBaseUrl({ token: "tok", probe });
     assert.equal(v.ok, true);
     if (v.ok) {
-      assert.equal(v.via, "mdns");
-      assert.equal(v.base, "http://brain.local:3000");
+      assert.equal(v.base, BRAIN_TUNNEL_URL);
     }
     assert.equal(calls.length, 1);
-    assert.ok(calls[0].includes("brain.local"));
+    assert.equal(calls[0], BRAIN_TUNNEL_URL);
   });
 
-  it("falls back to IP when mDNS fails, and marks via='ip'", async () => {
-    const calls: string[] = [];
-    const probe = mkProbe(
-      { mdns: failVerdict("timeout"), ip: okVerdict(120) },
-      calls,
-    );
-    const v = await resolveBaseUrl({ ip: "10.0.0.5", token: "tok", probe });
-    assert.equal(v.ok, true);
-    if (v.ok) {
-      assert.equal(v.via, "ip");
-      assert.equal(v.base, "http://10.0.0.5:3000");
-    }
-    assert.equal(calls.length, 2);
-    assert.ok(calls[0].includes("brain.local"));
-    assert.ok(calls[1].includes("10.0.0.5"));
-  });
-
-  it("returns not-ok when both mDNS and IP fail", async () => {
-    const probe = mkProbe({
-      mdns: failVerdict("timeout"),
-      ip: failVerdict("timeout"),
-    });
-    const v = await resolveBaseUrl({ ip: "192.168.1.42", token: "tok", probe });
+  it("returns not-ok on timeout, with tunnel URL in reason", async () => {
+    const probe: ProbeFn = async () => failVerdict("timeout");
+    const v = await resolveBaseUrl({ token: "tok", probe });
     assert.equal(v.ok, false);
     if (!v.ok) {
-      assert.ok(v.reason.includes("brain.local"));
-      assert.ok(v.reason.includes("192.168.1.42"));
-      assert.ok(v.reason.toLowerCase().includes("2 s") || v.reason.toLowerCase().includes("respond"));
+      assert.ok(v.reason.includes(BRAIN_TUNNEL_URL));
     }
   });
 
-  it("surfaces the IP verdict (not mDNS) in the failure reason — IP is more diagnostic", async () => {
-    const probe = mkProbe({
-      mdns: failVerdict("timeout"),
-      ip: failVerdict("unauthorized"),
-    });
-    const v = await resolveBaseUrl({ ip: "192.168.1.42", token: "tok", probe });
+  it("returns not-ok on unauthorized, surfaces re-scan message", async () => {
+    const probe: ProbeFn = async () => failVerdict("unauthorized");
+    const v = await resolveBaseUrl({ token: "tok", probe });
     assert.equal(v.ok, false);
     if (!v.ok) {
-      // Unauthorized path of describeVerdict says "re-scan the QR"
       assert.ok(v.reason.toLowerCase().includes("re-scan") || v.reason.toLowerCase().includes("rotated"));
     }
   });
 
-  it("passes bearerToken to both probe attempts", async () => {
-    const tokens: Array<string | null | undefined> = [];
-    const probe: ProbeFn = async ({ baseUrl, bearerToken }) => {
-      tokens.push(bearerToken);
-      return baseUrl.includes("brain.local")
-        ? failVerdict("timeout")
-        : okVerdict();
-    };
-    await resolveBaseUrl({ ip: "192.168.1.42", token: "my-token", probe });
-    assert.deepEqual(tokens, ["my-token", "my-token"]);
+  it("returns not-ok on network error", async () => {
+    const probe: ProbeFn = async () => failVerdict("network");
+    const v = await resolveBaseUrl({ token: "tok", probe });
+    assert.equal(v.ok, false);
   });
 
-  it("honors custom timeoutMs on both probes", async () => {
-    const timeouts: Array<number | undefined> = [];
-    const probe: ProbeFn = async ({ timeoutMs, baseUrl }) => {
-      timeouts.push(timeoutMs);
-      return baseUrl.includes("brain.local")
-        ? failVerdict("timeout")
-        : okVerdict();
+  it("passes bearerToken through to probe", async () => {
+    const tokens: Array<string | null | undefined> = [];
+    const probe: ProbeFn = async ({ bearerToken }) => {
+      tokens.push(bearerToken);
+      return okVerdict();
     };
-    await resolveBaseUrl({ ip: "192.168.1.42", token: "t", probe, timeoutMs: 500 });
-    assert.deepEqual(timeouts, [500, 500]);
+    await resolveBaseUrl({ token: "my-token", probe });
+    assert.deepEqual(tokens, ["my-token"]);
+  });
+
+  it("honors custom timeoutMs", async () => {
+    const timeouts: Array<number | undefined> = [];
+    const probe: ProbeFn = async ({ timeoutMs }) => {
+      timeouts.push(timeoutMs);
+      return okVerdict();
+    };
+    await resolveBaseUrl({ token: "t", probe, timeoutMs: 500 });
+    assert.deepEqual(timeouts, [500]);
   });
 });

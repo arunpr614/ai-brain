@@ -57,7 +57,7 @@ export default async function LanInfoPage() {
     );
   }
 
-  const setupUri = buildSetupUri(ip, token);
+  const setupUri = buildSetupUri(token);
   const qrDataUri = await toDataURL(setupUri, {
     errorCorrectionLevel: "M",
     margin: 2,

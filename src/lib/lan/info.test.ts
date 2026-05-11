@@ -11,15 +11,14 @@ import { buildSetupUri, getLanIpv4, rotateLanToken } from "./info";
 const ORIGINAL_TOKEN = process.env.BRAIN_LAN_TOKEN;
 
 describe("info/buildSetupUri", () => {
-  it("encodes ip + token as query params on brain://setup", () => {
-    const uri = buildSetupUri("192.168.1.17", "a".repeat(64));
-    assert.match(uri, /^brain:\/\/setup\?ip=192\.168\.1\.17&token=a+$/);
+  it("encodes url + token as query params on brain://setup", () => {
+    const uri = buildSetupUri("a".repeat(64));
+    // The URL param is percent-encoded in a QR URI.
+    assert.match(uri, /^brain:\/\/setup\?url=https%3A%2F%2Fbrain\.arunp\.in&token=a+$/);
   });
 
-  it("does not leak the token in a URL-unencoded form if the token contains special chars", () => {
-    // Hex tokens are [0-9a-f] so this is belt-and-braces; confirm URL
-    // construction doesn't silently drop characters.
-    const uri = buildSetupUri("10.0.0.1", "1234567890abcdef".repeat(4));
+  it("preserves the full token without URL-encoding drops", () => {
+    const uri = buildSetupUri("1234567890abcdef".repeat(4));
     assert.match(uri, /token=1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef/);
   });
 });

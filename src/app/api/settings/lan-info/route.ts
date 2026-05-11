@@ -55,7 +55,7 @@ export async function GET(req: NextRequest) {
     );
   }
 
-  const setup_uri = buildSetupUri(ip, token);
+  const setup_uri = buildSetupUri(token);
   const qr_png_data_uri = await toDataURL(setup_uri, {
     errorCorrectionLevel: "M",
     margin: 2,

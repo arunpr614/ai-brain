@@ -53,7 +53,7 @@ export default function SetupApkPage() {
 
       setStage({ kind: "verifying", message: "Testing connection to Brain…" });
       try {
-        const resolution = await resolveBaseUrl({ ip: parsed.ip, token: parsed.token });
+        const resolution = await resolveBaseUrl({ token: parsed.token });
         if (!resolution.ok) {
           setStage({ kind: "verify-error", message: resolution.reason });
           return;
@@ -123,7 +123,7 @@ export default function SetupApkPage() {
           </p>
           <p className="mt-1 text-[var(--text-muted)]">{stage.message}</p>
           <p className="mt-2 text-xs text-[var(--text-muted)]">
-            Check that the Mac is awake, Brain is running, and both devices are on the same Wi-Fi.
+            Check that the Mac is awake, Brain is running, and the Cloudflare tunnel is up (look for `cloudflared` in the menu bar).
           </p>
           <button
             type="button"

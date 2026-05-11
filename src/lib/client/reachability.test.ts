@@ -31,7 +31,7 @@ function mockFetchThrowing(err: Error): typeof fetch {
 describe("probeReachability", () => {
   it("returns ok=true on HTTP 200", async () => {
     const v = await probeReachability({
-      baseUrl: "http://brain.local:3000",
+      baseUrl: "https://brain.arunp.in",
       fetchFn: mockFetchReturning({ status: 200 }),
       now: fakeNow(),
     });
@@ -44,7 +44,7 @@ describe("probeReachability", () => {
 
   it("returns unauthorized on 401", async () => {
     const v = await probeReachability({
-      baseUrl: "http://brain.local:3000",
+      baseUrl: "https://brain.arunp.in",
       fetchFn: mockFetchReturning({ status: 401 }),
       now: fakeNow(),
     });
@@ -54,7 +54,7 @@ describe("probeReachability", () => {
 
   it("returns forbidden on 403", async () => {
     const v = await probeReachability({
-      baseUrl: "http://brain.local:3000",
+      baseUrl: "https://brain.arunp.in",
       fetchFn: mockFetchReturning({ status: 403 }),
       now: fakeNow(),
     });
@@ -64,7 +64,7 @@ describe("probeReachability", () => {
 
   it("returns server-error on 500", async () => {
     const v = await probeReachability({
-      baseUrl: "http://brain.local:3000",
+      baseUrl: "https://brain.arunp.in",
       fetchFn: mockFetchReturning({ status: 503 }),
       now: fakeNow(),
     });
@@ -77,7 +77,7 @@ describe("probeReachability", () => {
 
   it("returns unexpected-status on other non-200", async () => {
     const v = await probeReachability({
-      baseUrl: "http://brain.local:3000",
+      baseUrl: "https://brain.arunp.in",
       fetchFn: mockFetchReturning({ status: 418 }),
       now: fakeNow(),
     });
@@ -90,7 +90,7 @@ describe("probeReachability", () => {
 
   it("returns network on thrown TypeError (DNS / connection refused)", async () => {
     const v = await probeReachability({
-      baseUrl: "http://brain.local:3000",
+      baseUrl: "https://brain.arunp.in",
       fetchFn: mockFetchThrowing(new TypeError("fetch failed")),
       now: fakeNow(),
     });
@@ -105,7 +105,7 @@ describe("probeReachability", () => {
     const abortErr = new Error("The operation was aborted.");
     abortErr.name = "AbortError";
     const v = await probeReachability({
-      baseUrl: "http://brain.local:3000",
+      baseUrl: "https://brain.arunp.in",
       fetchFn: mockFetchThrowing(abortErr),
       now: fakeNow(),
     });
@@ -127,7 +127,7 @@ describe("probeReachability", () => {
       })) as unknown as typeof fetch;
 
     const v = await probeReachability({
-      baseUrl: "http://brain.local:3000",
+      baseUrl: "https://brain.arunp.in",
       fetchFn,
       timeoutMs: 10,
       now: fakeNow(),
@@ -145,7 +145,7 @@ describe("probeReachability", () => {
     }) as unknown as typeof fetch;
 
     await probeReachability({
-      baseUrl: "http://brain.local:3000",
+      baseUrl: "https://brain.arunp.in",
       bearerToken: "a".repeat(64),
       fetchFn,
       now: fakeNow(),
@@ -161,7 +161,7 @@ describe("probeReachability", () => {
     }) as unknown as typeof fetch;
 
     await probeReachability({
-      baseUrl: "http://brain.local:3000",
+      baseUrl: "https://brain.arunp.in",
       fetchFn,
       now: fakeNow(),
     });
@@ -176,11 +176,11 @@ describe("probeReachability", () => {
     }) as unknown as typeof fetch;
 
     await probeReachability({
-      baseUrl: "http://brain.local:3000///",
+      baseUrl: "https://brain.arunp.in///",
       fetchFn,
       now: fakeNow(),
     });
-    assert.equal(capturedUrl, "http://brain.local:3000/api/health");
+    assert.equal(capturedUrl, "https://brain.arunp.in/api/health");
   });
 });
 
