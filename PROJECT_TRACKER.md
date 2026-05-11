@@ -1,7 +1,7 @@
 # AI Brain — Project Tracker
 
-**Document version:** v0.8.0-tracker
-**Date:** 2026-05-10
+**Document version:** v0.8.1-tracker
+**Date:** 2026-05-11
 **Owner:** Arun
 **Update cadence:** at phase start, at phase end, and whenever a blocker appears.
 
@@ -22,7 +22,7 @@ Legend: `○` not started · `◐` in progress · `●` complete · `✖` blocke
 | v0.3.0 Intelligence | 0.3.0 | ● | 2026-05-07 | 2026-05-07 | Ollama client + enrichment queue + pipeline (summary/category/title/tags/quotes) + dual-pane view + enriching pill + tags/collections CRUD + bulk zip export. F-207 bulk-ops UI deferred to v0.3.1. |
 | v0.3.1 Polish + hardening | 0.3.1 | ● | 2026-05-08 | 2026-05-08 | All 17 work items shipped: 4 polish (F-207, F-301, F-302, B-301) + 13 hardening (F-042..F-056 minus duplicates + F-034 promoted from v0.10.0). 24 unit tests + 16 smoke assertions green. `tsx@^4.19.2` added as only new dev dep. Tag `v0.3.1`. |
 | v0.4.0 Ask (RAG) | 0.4.0 | ● | 2026-05-08 | 2026-05-09 | All 21 tasks shipped (T-0..T-19). Chunker + embeddings + vec0 retriever + SSE /api/ask + /ask UI + threads + unified search (fts/semantic/hybrid RRF) + related items + backfill + smoke + SC-7 bench scaffold. 107 unit tests + 29 smoke assertions green. Tag `v0.4.0` on `main`. SC-7 live bench pending user run. |
-| v0.5.0 APK + extension | 0.5.0 | ◐ | 2026-05-09 | — | **21/37 shipped under v1.3 LAN plan** (T-0..T-18 + hygiene). **PIVOTED 2026-05-10** to Cloudflare named tunnel (firewall complexity at T-21). v1.3 archived; plan v2.0 in drafting; 5 spike reports in `docs/plans/spikes/`; DNS propagation in flight for `arunp.in`. Next: `brew install cloudflared` post-DNS. |
+| v0.5.0 APK + extension | 0.5.0 | ◐ | 2026-05-09 | — | **Post-pivot: plan v2.1 shipped + 8/15 T-CF-* tasks landed** (T-CF-0..4, 6, 8..10, 12). Tunnel live at `https://brain.arunp.in`; APK rebuilt with tunnel URL baked in. Remaining: T-CF-11 AVD smoke (interactive), T-CF-14 physical Pixel (user-gated), T-CF-15..21 Chrome extension wave, T-CF-22..25 release wave. 233 unit tests green. |
 | v0.6.0 GenPage + clusters | 0.6.0 | ○ | — | — | Blocked by R-CLUSTER |
 | v0.7.0 GenLink | 0.7.0 | ○ | — | — | — |
 | v0.8.0 Review (SRS) | 0.8.0 | ○ | — | — | Blocked by R-FSRS |
@@ -173,5 +173,6 @@ These aren't measured yet — added to remind future-me:
 - **2026-05-08 (release)** — v0.3.1 SHIPPED. All 17 items closed. 24 unit tests + 16 smoke assertions green. §2 rewritten to v0.3.1 final status; §5 blockers + critique risks table marked all-closed. `package.json` 0.3.0 → 0.3.1; tag `v0.3.1` on `main`. Next phase v0.4.0 Ask (RAG) blocked on R-VEC spike.
 - **2026-05-08 (R-VEC)** — R-VEC spike completed GREEN. All four thresholds pass with ≥ 10× headroom at 10k chunks (p50=6.25 ms vs 80 ms, p95=6.88 ms vs 200 ms, build=294 ms vs 30 s, reopen=6.47 ms vs 5 s). 50k tier also healthy (p50=30 ms, p95=36 ms). Caveat: `sqlite-vec` resolved to 0.1.9 despite lockfile pin of 0.1.6 — follow-up F-057 logged. v0.4.0 unblocked; next step = draft `docs/plans/v0.4.0-ask.md`.
 - **2026-05-09 (release)** — v0.4.0 SHIPPED. All 21 tasks closed (T-0..T-19). 107 unit tests + 29 smoke assertions (v0.3.1 + v0.4.0) green. `package.json` 0.3.1 → 0.4.0; tag `v0.4.0` annotated on `main`; 23 commits + tag pushed to `origin/main`. Next lane: v0.5.0 APK + extension — no blockers. SC-7 live bench (first-token + full-answer p95) is a user-side measurement task pending; code paths + preflights verified.
+- **2026-05-11 (pivot execution)** — v0.5.0 Cloudflare-tunnel pivot plan v2.1 shipped + 8 of 15 T-CF-* tasks landed in a single session. Plan v2.0 drafted via gsd-planner agent → cross-AI review produced `v0.5.0-apk-extension-v2-REVIEW.md` with 5 HIGH + 5 MEDIUM findings (bearer vs cookie on `/api/settings/lan-info`, unowned `scripts/smoke-sse.sh` creation, missing `data/test.pdf`, uncoordinated `parseSetupUri` return type, orphan `buildSetupUri` signature change) → all absorbed into v2.1 with inline `(REVIEW ...)` annotations. Executed: T-CF-2 (delete mDNS + bonjour-service dep + simplify share-handler URL to `BRAIN_TUNNEL_URL` constant), T-CF-3 (delete `network_security_config.xml`), T-CF-4..6 (QR schema `url=`+`token=` + single-probe reachability), T-CF-8 (rebuild APK with tunnel URL baked in; 8.9 MB at `data/artifacts/brain-debug-0.4.0.apk`), T-CF-9 (pairing page + API for tunnel), T-CF-10 (README rewrite for cloudflared setup + privacy note), T-CF-12 (grep cleanup + drop `@capacitor/camera` + kill `BRAIN_LAN_MODE`/`dev:lan`/`start:lan`). Tests: 233/233 green throughout. Remaining: T-CF-11 AVD smoke (interactive), T-CF-14 physical Pixel (user-gated), T-CF-15..21 Chrome extension wave, T-CF-22..25 release wave.
 
 **Update rule:** every phase transition appends one row here with date + what changed.
