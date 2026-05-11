@@ -1,16 +1,18 @@
 "use client";
 
 /**
- * APK first-run setup page (v0.5.0 T-16 / F-037).
+ * APK first-run setup page (v0.5.0 T-16 / F-037; pivoted to Cloudflare
+ * tunnel T-CF-2..6).
  *
  * Flow:
  *   1. Render QrScanner (camera + live decode via jsqr).
  *   2. On decode, validate via parseSetupUri — a non-brain:// or malformed
  *      QR surfaces an inline error and the scanner re-enables.
  *   3. On valid QR:
- *        a. Write {brain_token, brain_url} to @capacitor/preferences.
- *        b. Run D-v0.5.0-3 reachability decision tree: try brain.local
- *           first, fall back to the scanned IP, then show error.
+ *        a. Write brain_token to @capacitor/preferences (the URL is a
+ *           build-time constant — BRAIN_TUNNEL_URL — so no longer stored).
+ *        b. Probe the tunnel URL with the scanned token (single-probe
+ *           per T-CF-6; the LAN-era two-probe decision tree is gone).
  *        c. On green: navigate to `/`.
  *
  * This page is not exposed to the proxy's PUBLIC_PATHS — the user must
@@ -32,10 +34,9 @@ type Stage =
   | { kind: "verify-error"; message: string }
   | { kind: "paired"; base: string };
 
-async function writePreferences(token: string, baseUrl: string): Promise<void> {
+async function writePreferences(token: string): Promise<void> {
   const mod = await import("@capacitor/preferences");
   await mod.Preferences.set({ key: "brain_token", value: token });
-  await mod.Preferences.set({ key: "brain_url", value: baseUrl });
 }
 
 export default function SetupApkPage() {
@@ -57,7 +58,7 @@ export default function SetupApkPage() {
           setStage({ kind: "verify-error", message: resolution.reason });
           return;
         }
-        await writePreferences(parsed.token, resolution.base);
+        await writePreferences(parsed.token);
         setStage({ kind: "paired", base: resolution.base });
         // Brief success flash, then route home.
         setTimeout(() => router.push("/"), 500);

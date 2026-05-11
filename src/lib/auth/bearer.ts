@@ -237,8 +237,8 @@ export function __resetRateLimiterForTests(): void {
 /**
  * Origin-header validation (v0.5.0 T-5 / F-036 / D-v0.5.0-7).
  * Updated 2026-05-10 for the Cloudflare Tunnel pivot (R-CFT critique §8 R-5):
- * LAN-era `http://brain.local:3000` replaced by `https://brain.arunp.in`
- * (the named Cloudflare tunnel URL; stable, HTTPS, no mDNS).
+ * the LAN-era mDNS origin was replaced by `https://brain.arunp.in`
+ * (the named Cloudflare tunnel URL; stable, HTTPS, no service discovery).
  *
  * Applies to bearer-authenticated cross-origin callers. The WebView APK
  * loads `https://brain.arunp.in` and issues fetch() requests from that

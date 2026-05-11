@@ -26,6 +26,7 @@ import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { isDuplicateShare, shareDedupKey } from "@/lib/capture/dedup";
 import { probeReachability, describeVerdict } from "@/lib/client/reachability";
+import { BRAIN_TUNNEL_URL } from "@/lib/config/tunnel";
 
 interface SharePayload {
   title?: string;
@@ -52,16 +53,6 @@ async function getBearerToken(): Promise<string | null> {
     return value ?? null;
   } catch {
     return null;
-  }
-}
-
-async function getBrainUrl(): Promise<string> {
-  try {
-    const { Preferences } = await import("@capacitor/preferences");
-    const { value } = await Preferences.get({ key: "brain_url" });
-    return value ?? "http://brain.local:3000";
-  } catch {
-    return "http://brain.local:3000";
   }
 }
 
@@ -142,7 +133,7 @@ export function ShareHandler() {
             return;
           }
 
-          const base = await getBrainUrl();
+          const base = BRAIN_TUNNEL_URL;
 
           // 2b. Reachability probe (T-14 / F-020 / SC-11). A Mac-asleep
           // case would otherwise surface as a generic fetch error deep
@@ -344,9 +335,8 @@ async function captureNote(
 async function reportClientError(namespace: string, message: string): Promise<void> {
   try {
     const token = await getBearerToken();
-    const base = await getBrainUrl();
     if (!token) return;
-    await fetch(`${base}/api/errors/client`, {
+    await fetch(`${BRAIN_TUNNEL_URL}/api/errors/client`, {
       method: "POST",
       headers: {
         "content-type": "application/json",
