@@ -19,6 +19,13 @@ import { z } from "zod";
 import { validateOrigin } from "@/lib/auth/bearer";
 import { findItemByUrl, insertCaptured } from "@/db/items";
 import { extractArticleFromUrl, UrlCaptureError } from "@/lib/capture/url";
+import {
+  extractVideoId,
+  canonicalYoutubeUrl,
+  extractYoutubeVideo,
+  YoutubeCaptureError,
+} from "@/lib/capture/youtube";
+import type { CapturedContent } from "@/lib/capture/types";
 import { isDuplicateShare, shareDedupKey } from "@/lib/capture/dedup";
 import { logError } from "@/lib/errors/sink";
 
@@ -55,7 +62,14 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const { url } = parsed.data;
+  const { url: rawUrl } = parsed.data;
+
+  // v0.5.1: YouTube-aware URL normalization BEFORE dedup so variants
+  // (youtu.be/X, watch?v=X, shorts/X, etc.) collide as one library item.
+  // shareDedupKey's first arg stays "url" — it identifies the payload
+  // shape (we're passing a URL), not the source_type of the final item.
+  const videoId = extractVideoId(rawUrl);
+  const url = videoId ? canonicalYoutubeUrl(videoId) : rawUrl;
 
   // Server-side dedup (F-041 defense-in-depth). Catches APK double-fire
   // even if the client-side dedup window was skipped (hot reload, etc.).
@@ -82,11 +96,15 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  let article;
+  // Extractor dispatch. Both return CapturedContent — route never narrows
+  // the union because insertCaptured accepts the shared base type.
+  let content: CapturedContent;
   try {
-    article = await extractArticleFromUrl(url);
+    content = videoId
+      ? await extractYoutubeVideo(videoId, rawUrl)
+      : await extractArticleFromUrl(url);
   } catch (err) {
-    if (err instanceof UrlCaptureError) {
+    if (err instanceof UrlCaptureError || err instanceof YoutubeCaptureError) {
       logError({
         type: "share.http.capture-failed",
         url,
@@ -94,7 +112,7 @@ export async function POST(req: NextRequest) {
         ts: Date.now(),
       });
       return NextResponse.json(
-        { error: "capture_failed", message: err.message },
+        { error: "capture_failed", message: err.message, code: err instanceof YoutubeCaptureError ? err.code : undefined },
         { status: 422 },
       );
     }
@@ -102,12 +120,13 @@ export async function POST(req: NextRequest) {
   }
 
   const item = insertCaptured({
-    source_type: "url",
-    title: article.title,
-    body: article.body,
-    author: article.author,
-    source_url: article.source_url,
-    extraction_warning: article.extraction_warning,
+    source_type: videoId ? "youtube" : "url",
+    title: content.title,
+    body: content.body,
+    author: content.author,
+    source_url: content.source_url,
+    extraction_warning: content.extraction_warning,
+    duration_seconds: content.duration_seconds ?? null,
   });
 
   return NextResponse.json({ id: item.id, duplicate: false }, { status: 201 });
