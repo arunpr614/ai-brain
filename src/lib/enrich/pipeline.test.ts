@@ -8,7 +8,7 @@
  */
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
-import { postProcessTitle } from "./pipeline";
+import { postProcessTitle, composeEnrichmentTitle } from "./pipeline";
 
 describe("postProcessTitle", () => {
   describe("fires on pure slug inputs (0 spaces, ≥2 hyphens)", () => {
@@ -82,5 +82,80 @@ describe("postProcessTitle", () => {
         "The Only Way Forward",
       );
     });
+  });
+});
+
+// v0.5.1 T-YT-7: YouTube items get channel + duration injected into the
+// "Original title" the enrichment LLM sees, so the 12,000-char body slice
+// still has the key metadata for videos where the opening minutes aren't
+// representative. Stored items.title is unchanged.
+describe("composeEnrichmentTitle", () => {
+  it("returns stored title unchanged for non-youtube source types", () => {
+    assert.equal(
+      composeEnrichmentTitle({
+        source_type: "url",
+        title: "Growth loops primer",
+        author: "Lenny",
+        duration_seconds: null,
+      }),
+      "Growth loops primer",
+    );
+  });
+
+  it("appends channel + H:M duration for a long video", () => {
+    assert.equal(
+      composeEnrichmentTitle({
+        source_type: "youtube",
+        title: "Growth loops primer",
+        author: "Lenny's Podcast",
+        duration_seconds: 5000, // 1h 23m
+      }),
+      "Growth loops primer — Lenny's Podcast (1h23m)",
+    );
+  });
+
+  it("omits duration when zero or null", () => {
+    assert.equal(
+      composeEnrichmentTitle({
+        source_type: "youtube",
+        title: "Short",
+        author: "Ch",
+        duration_seconds: 0,
+      }),
+      "Short — Ch",
+    );
+    assert.equal(
+      composeEnrichmentTitle({
+        source_type: "youtube",
+        title: "Short",
+        author: "Ch",
+        duration_seconds: null,
+      }),
+      "Short — Ch",
+    );
+  });
+
+  it("omits channel segment when author is null", () => {
+    assert.equal(
+      composeEnrichmentTitle({
+        source_type: "youtube",
+        title: "Untitled",
+        author: null,
+        duration_seconds: 180,
+      }),
+      "Untitled (3m)",
+    );
+  });
+
+  it("formats minute-only for sub-hour durations", () => {
+    assert.equal(
+      composeEnrichmentTitle({
+        source_type: "youtube",
+        title: "Quick",
+        author: "Ch",
+        duration_seconds: 630, // 10m30s
+      }),
+      "Quick — Ch (10m)",
+    );
   });
 });

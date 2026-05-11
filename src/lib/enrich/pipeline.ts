@@ -29,6 +29,38 @@ function loadItem(id: string): ItemRow | null {
   );
 }
 
+/**
+ * Compose the "Original title" the enrichment LLM sees. For YouTube items,
+ * inject channel + duration so the LLM has the high-value context even
+ * when the 12,000-char body slice misses most of a long transcript.
+ *
+ * Not written back to items.title — the stored title column stays clean
+ * so the library UI can render title + author separately. This is a
+ * read-time concatenation used only for the enrichment prompt input.
+ */
+export function composeEnrichmentTitle(item: {
+  source_type: ItemRow["source_type"];
+  title: string;
+  author: string | null;
+  duration_seconds: number | null;
+}): string {
+  if (item.source_type !== "youtube") return item.title;
+  const parts = [item.title];
+  if (item.author) parts.push(`— ${item.author}`);
+  if (item.duration_seconds && item.duration_seconds > 0) {
+    parts.push(`(${formatDurationForTitle(item.duration_seconds)})`);
+  }
+  return parts.join(" ");
+}
+
+function formatDurationForTitle(seconds: number): string {
+  const h = Math.floor(seconds / 3600);
+  const m = Math.floor((seconds % 3600) / 60);
+  if (h > 0) return `${h}h${m > 0 ? `${m}m` : ""}`;
+  if (m > 0) return `${m}m`;
+  return `${seconds}s`;
+}
+
 function billingMonth(d = new Date()): string {
   return `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, "0")}`;
 }
@@ -151,7 +183,7 @@ export async function enrichItem(item_id: string): Promise<EnrichmentResult> {
       system: ENRICHMENT_SYSTEM,
       prompt: enrichmentUserPrompt({
         source_type: item.source_type,
-        title: item.title,
+        title: composeEnrichmentTitle(item),
         body: item.body,
       }),
       num_ctx: 8192,
