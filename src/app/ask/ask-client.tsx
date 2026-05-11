@@ -31,21 +31,22 @@ export function AskClient({ itemId }: AskClientProps = {}) {
       ...prev,
       { id, question, answer: "", chunks: [] },
     ]);
-    await stream.ask(
+    const result = await stream.ask(
       itemId
         ? { question, scope: "item", item_id: itemId }
         : { question },
     );
-    // Finalize turn once stream resolves (done or error).
+    // Finalize turn from the resolved result (ask returns its accumulated
+    // final values — don't read stream.answer from closure, which is stale).
     setTurns((prev) =>
       prev.map((t) =>
         t.id === id
           ? {
               ...t,
-              answer: stream.answer,
-              chunks: stream.chunks,
-              errorCode: stream.errorCode ?? undefined,
-              errorMessage: stream.errorMessage ?? undefined,
+              answer: result.answer,
+              chunks: result.chunks,
+              errorCode: result.errorCode ?? undefined,
+              errorMessage: result.errorMessage ?? undefined,
             }
           : t,
       ),

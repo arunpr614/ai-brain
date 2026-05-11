@@ -23,13 +23,20 @@ export interface AskRetrievedChunk {
 
 export type AskPhase = "idle" | "connecting" | "retrieving" | "streaming" | "done" | "error";
 
+export interface AskResult {
+  answer: string;
+  chunks: AskRetrievedChunk[];
+  errorCode: string | null;
+  errorMessage: string | null;
+}
+
 export interface UseAskStreamResult {
   phase: AskPhase;
   answer: string;
   chunks: AskRetrievedChunk[];
   errorCode: string | null;
   errorMessage: string | null;
-  ask: (body: AskRequestBody) => Promise<void>;
+  ask: (body: AskRequestBody) => Promise<AskResult>;
   stop: () => void;
   reset: () => void;
 }
@@ -72,7 +79,7 @@ export function useAskStream(): UseAskStreamResult {
     controllerRef.current?.abort();
   }, []);
 
-  const ask = useCallback(async (body: AskRequestBody) => {
+  const ask = useCallback(async (body: AskRequestBody): Promise<AskResult> => {
     controllerRef.current?.abort();
     const ctrl = new AbortController();
     controllerRef.current = ctrl;
@@ -81,6 +88,14 @@ export function useAskStream(): UseAskStreamResult {
     setChunks([]);
     setErrorCode(null);
     setErrorMessage(null);
+
+    // Track final values locally — caller can't rely on React state closure
+    // reads after `ask` resolves (state updates may be batched past the
+    // resolve point).
+    let finalAnswer = "";
+    let finalChunks: AskRetrievedChunk[] = [];
+    let finalErrorCode: string | null = null;
+    let finalErrorMessage: string | null = null;
 
     let res: Response;
     try {
@@ -93,19 +108,23 @@ export function useAskStream(): UseAskStreamResult {
     } catch (err) {
       if ((err as Error).name === "AbortError") {
         setPhase("idle");
-        return;
+        return { answer: "", chunks: [], errorCode: null, errorMessage: null };
       }
-      setErrorCode("NETWORK");
-      setErrorMessage((err as Error).message);
+      finalErrorCode = "NETWORK";
+      finalErrorMessage = (err as Error).message;
+      setErrorCode(finalErrorCode);
+      setErrorMessage(finalErrorMessage);
       setPhase("error");
-      return;
+      return { answer: "", chunks: [], errorCode: finalErrorCode, errorMessage: finalErrorMessage };
     }
 
     if (!res.body) {
-      setErrorCode("NO_BODY");
-      setErrorMessage("Response had no body");
+      finalErrorCode = "NO_BODY";
+      finalErrorMessage = "Response had no body";
+      setErrorCode(finalErrorCode);
+      setErrorMessage(finalErrorMessage);
       setPhase("error");
-      return;
+      return { answer: "", chunks: [], errorCode: finalErrorCode, errorMessage: finalErrorMessage };
     }
 
     // Even on 4xx/5xx, the body is an SSE error frame — parse it the same way.
@@ -133,18 +152,22 @@ export function useAskStream(): UseAskStreamResult {
             continue;
           }
           if (frame.type === "retrieve") {
-            setChunks(frame.chunks);
+            finalChunks = frame.chunks;
+            setChunks(finalChunks);
             setPhase("streaming");
           } else if (frame.type === "token") {
-            setAnswer((prev) => prev + frame.text);
+            finalAnswer += frame.text;
+            setAnswer(finalAnswer);
           } else if (frame.type === "citation") {
             // Citations arrive inline as [CITE:id] inside token text today;
             // a dedicated citation frame is reserved for v0.4.x.
           } else if (frame.type === "done") {
             setPhase("done");
           } else if (frame.type === "error") {
-            setErrorCode(frame.code);
-            setErrorMessage(frame.message);
+            finalErrorCode = frame.code;
+            finalErrorMessage = frame.message;
+            setErrorCode(finalErrorCode);
+            setErrorMessage(finalErrorMessage);
             setPhase("error");
           }
         }
@@ -152,14 +175,18 @@ export function useAskStream(): UseAskStreamResult {
     } catch (err) {
       if ((err as Error).name === "AbortError") {
         setPhase("idle");
-        return;
+        return { answer: finalAnswer, chunks: finalChunks, errorCode: finalErrorCode, errorMessage: finalErrorMessage };
       }
-      setErrorCode("STREAM_READ");
-      setErrorMessage((err as Error).message);
+      finalErrorCode = "STREAM_READ";
+      finalErrorMessage = (err as Error).message;
+      setErrorCode(finalErrorCode);
+      setErrorMessage(finalErrorMessage);
       setPhase("error");
     } finally {
       reader.releaseLock();
     }
+
+    return { answer: finalAnswer, chunks: finalChunks, errorCode: finalErrorCode, errorMessage: finalErrorMessage };
   }, []);
 
   return { phase, answer, chunks, errorCode, errorMessage, ask, stop, reset };

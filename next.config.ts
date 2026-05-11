@@ -13,6 +13,11 @@ const nextConfig: NextConfig = {
   // sqlite-vec uses `import.meta.resolve` to locate its prebuilt binary, which
   // Turbopack's module graph can't statically rewrite.
   serverExternalPackages: ["better-sqlite3", "sqlite-vec"],
+  // Allow dev-mode HMR + React hydration bundle requests from the Cloudflare
+  // tunnel origin (brain.arunp.in → 127.0.0.1:3000). Without this, Next.js 16
+  // blocks /_next/webpack-hmr as a cross-origin dev resource and React never
+  // hydrates, leaving buttons visually rendered but event-handler-less.
+  allowedDevOrigins: ["brain.arunp.in"],
 };
 
 export default nextConfig;
