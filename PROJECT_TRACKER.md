@@ -1,6 +1,6 @@
 # AI Brain — Project Tracker
 
-**Document version:** v0.8.1-tracker
+**Document version:** v0.9.0-tracker
 **Date:** 2026-05-11
 **Owner:** Arun
 **Update cadence:** at phase start, at phase end, and whenever a blocker appears.
@@ -22,7 +22,7 @@ Legend: `○` not started · `◐` in progress · `●` complete · `✖` blocke
 | v0.3.0 Intelligence | 0.3.0 | ● | 2026-05-07 | 2026-05-07 | Ollama client + enrichment queue + pipeline (summary/category/title/tags/quotes) + dual-pane view + enriching pill + tags/collections CRUD + bulk zip export. F-207 bulk-ops UI deferred to v0.3.1. |
 | v0.3.1 Polish + hardening | 0.3.1 | ● | 2026-05-08 | 2026-05-08 | All 17 work items shipped: 4 polish (F-207, F-301, F-302, B-301) + 13 hardening (F-042..F-056 minus duplicates + F-034 promoted from v0.10.0). 24 unit tests + 16 smoke assertions green. `tsx@^4.19.2` added as only new dev dep. Tag `v0.3.1`. |
 | v0.4.0 Ask (RAG) | 0.4.0 | ● | 2026-05-08 | 2026-05-09 | All 21 tasks shipped (T-0..T-19). Chunker + embeddings + vec0 retriever + SSE /api/ask + /ask UI + threads + unified search (fts/semantic/hybrid RRF) + related items + backfill + smoke + SC-7 bench scaffold. 107 unit tests + 29 smoke assertions green. Tag `v0.4.0` on `main`. SC-7 live bench pending user run. |
-| v0.5.0 APK + extension | 0.5.0 | ◐ | 2026-05-09 | — | **Post-pivot: plan v2.1 shipped + 8/15 T-CF-* tasks landed** (T-CF-0..4, 6, 8..10, 12). Tunnel live at `https://brain.arunp.in`; APK rebuilt with tunnel URL baked in. Remaining: T-CF-11 AVD smoke (interactive), T-CF-14 physical Pixel (user-gated), T-CF-15..21 Chrome extension wave, T-CF-22..25 release wave. 233 unit tests green. |
+| v0.5.0 APK + extension | 0.5.0 | ● | 2026-05-09 | 2026-05-11 | **SHIPPED via Cloudflare named tunnel pivot.** Tunnel live at `https://brain.arunp.in` (launchd-persistent); APK baked with tunnel URL; Chrome extension (popup + context menu + options) E2E tested in Edge 147. T-CF-* 22/25 tasks landed (T-CF-21 WebAuthn deferred to v0.5.1). Gates: 233 unit tests · 3 smoke suites (v0.3.1 + v0.4.0 + v0.5.0) · typecheck clean. Tag `v0.5.0` on `main`. Known limitation: YouTube saves 422 (Readability can't extract JS-rendered pages) — deferred to v0.5.1 via transcript capture. |
 | v0.6.0 GenPage + clusters | 0.6.0 | ○ | — | — | Blocked by R-CLUSTER |
 | v0.7.0 GenLink | 0.7.0 | ○ | — | — | — |
 | v0.8.0 Review (SRS) | 0.8.0 | ○ | — | — | Blocked by R-FSRS |
