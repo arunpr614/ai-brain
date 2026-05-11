@@ -53,7 +53,7 @@ export default async function SettingsPage() {
             className="flex items-center gap-3 rounded-lg border border-[var(--border)] bg-[var(--surface)] px-4 py-3 text-sm text-[var(--text-primary)] transition-colors hover:border-[var(--border-strong)]"
           >
             <Wifi className="h-4 w-4 text-[var(--text-muted)]" strokeWidth={2} />
-            <span className="font-medium">LAN pairing</span>
+            <span className="font-medium">Device pairing</span>
           </Link>
         </div>
       </section>

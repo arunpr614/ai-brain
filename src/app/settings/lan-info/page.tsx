@@ -69,20 +69,32 @@ export default async function LanInfoPage() {
       <p className="mb-8 text-sm text-[var(--text-secondary)]">
         Your Brain is accessible at{" "}
         <code className="font-mono text-[var(--text-primary)]">{BRAIN_TUNNEL_URL}</code>{" "}
-        via the Cloudflare tunnel. Scan this QR from the Brain APK on first launch,
-        or paste the token into the Chrome extension settings. Each paired device
-        keeps working until you rotate the token below.
+        via the Cloudflare tunnel. Use the token below to pair the Chrome extension.
+        Each paired device keeps working until you rotate the token.
       </p>
 
       <section className="mb-10">
         <h2 className="mb-3 text-sm font-medium uppercase tracking-wide text-[var(--text-secondary)]">
-          Android APK — scan QR
+          This device
+        </h2>
+        <div className="rounded-lg border border-[var(--border)] bg-[var(--surface)] p-4 text-sm text-[var(--text-secondary)]">
+          <p>
+            Already paired. The Android app is built with the tunnel URL baked in
+            and authenticates with a session cookie, so no QR scan is needed on
+            this device.
+          </p>
+        </div>
+      </section>
+
+      <section className="mb-10">
+        <h2 className="mb-3 text-sm font-medium uppercase tracking-wide text-[var(--text-secondary)]">
+          Pair another device
         </h2>
         <div className="flex flex-col items-center gap-3 rounded-lg border border-[var(--border)] bg-[var(--surface)] p-6">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={qrDataUri}
-            alt="Setup QR code — scan with the Brain APK"
+            alt="Setup QR code — url and token for pairing a second device"
             width={256}
             height={256}
             className="rounded-md border border-[var(--border)]"
@@ -91,15 +103,13 @@ export default async function LanInfoPage() {
             {BRAIN_TUNNEL_URL}
           </p>
           {/*
-            Manual-entry fallback for cases where the QR scanner is
-            non-functional (damaged camera, permission repeatedly denied,
-            or dev testing without a device). The URL is a build-time
-            constant so it's safe to expose in plaintext; the token is
-            the actual secret.
+            Kept `details` collapsible so casual viewers aren't greeted with a
+            raw secret token. The URL is a build-time constant and safe in
+            plaintext; the token is the actual shared secret.
           */}
           <details className="mt-2 w-full text-xs text-[var(--text-muted)]">
             <summary className="cursor-pointer select-none">
-              Can&apos;t scan? Enter manually.
+              Show URL and token
             </summary>
             <dl className="mt-2 grid grid-cols-[auto_1fr] gap-x-3 gap-y-1 font-mono text-[var(--text-primary)]">
               <dt className="text-[var(--text-muted)]">URL</dt>
@@ -108,6 +118,11 @@ export default async function LanInfoPage() {
               <dd className="break-all">{token}</dd>
             </dl>
           </details>
+          <p className="mt-2 text-center text-xs text-[var(--text-muted)]">
+            The QR encodes the URL + token. A future APK build with a QR scanner
+            could consume it on first launch. For now it&apos;s for the extension
+            flow below.
+          </p>
         </div>
       </section>
 
