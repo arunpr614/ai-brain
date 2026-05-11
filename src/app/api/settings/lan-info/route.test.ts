@@ -1,11 +1,10 @@
 /**
- * Tests for GET /api/settings/lan-info (v0.5.0 T-8).
+ * Tests for GET /api/settings/lan-info (v0.5.0 T-8; pivoted T-CF-9).
  *
- * Covers the auth gate (401 without cookie), the happy path (token + QR),
- * and the explicit Cache-Control / Pragma headers (REVIEW missing-risk).
- * The getLanIpv4() helper returns null in sandboxed environments — tests
- * accept either a 200 with ip or a 503 `no_lan_interface`, but never a
- * silent pass through the cache layer.
+ * Covers the auth gate (401 without cookie), the 503 (no token) path, the
+ * happy path (url + token + QR), and the explicit Cache-Control / Pragma
+ * headers (REVIEW TM-1). Post-pivot there is no LAN IP dependency, so the
+ * "no_lan_interface" branch is gone.
  */
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
@@ -42,26 +41,21 @@ describe("/api/settings/lan-info", () => {
     }
   });
 
-  it("returns 200 with ip + token + qr data-uri on valid auth", async () => {
+  it("returns 200 with url + token + qr data-uri on valid auth", async () => {
     const saved = process.env.BRAIN_LAN_TOKEN;
     process.env.BRAIN_LAN_TOKEN = "f".repeat(64);
     try {
       const res = await GET(mkReq({ cookie: "stub" }));
-      // 503 is acceptable in environments without a LAN interface; in that
-      // case the body must still carry the no-lan-interface error code.
-      if (res.status === 503) {
-        const body = await res.json();
-        assert.equal(body.error, "no_lan_interface");
-      } else {
-        assert.equal(res.status, 200);
-        assert.equal(res.headers.get("cache-control"), "no-store, no-cache, must-revalidate");
-        assert.equal(res.headers.get("pragma"), "no-cache");
-        const body = await res.json();
-        assert.match(body.ip, /^\d+\.\d+\.\d+\.\d+$/);
-        assert.equal(body.token, "f".repeat(64));
-        assert.match(body.setup_uri, /^brain:\/\/setup\?/);
-        assert.match(body.qr_png_data_uri, /^data:image\/png;base64,/);
-      }
+      assert.equal(res.status, 200);
+      assert.equal(res.headers.get("cache-control"), "no-store, no-cache, must-revalidate");
+      assert.equal(res.headers.get("pragma"), "no-cache");
+      const body = await res.json();
+      assert.equal(body.url, "https://brain.arunp.in");
+      assert.equal(body.token, "f".repeat(64));
+      assert.match(body.setup_uri, /^brain:\/\/setup\?/);
+      assert.match(body.qr_png_data_uri, /^data:image\/png;base64,/);
+      // No ip field post-pivot
+      assert.equal(body.ip, undefined);
     } finally {
       if (saved === undefined) delete process.env.BRAIN_LAN_TOKEN;
       else process.env.BRAIN_LAN_TOKEN = saved;

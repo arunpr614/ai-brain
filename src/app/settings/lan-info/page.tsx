@@ -1,21 +1,27 @@
 /**
- * /settings/lan-info — pair APK + Chrome extension (v0.5.0 T-8 / F-038).
+ * /settings/lan-info — pair APK + Chrome extension (v0.5.0 T-8 / F-038;
+ * pivoted to Cloudflare tunnel T-CF-9).
  *
- * Shows the Mac's LAN IP, the current BRAIN_LAN_TOKEN, a scannable QR code
- * of the setup URI, and a "Rotate token" button. The APK QR scanner reads
- * the QR directly; the extension options page reads the copyable token.
+ * Shows the public Brain URL (the Cloudflare named tunnel), the current
+ * BRAIN_LAN_TOKEN, a scannable QR code of the setup URI, and a "Rotate
+ * token" button. The APK QR scanner reads the QR directly; the extension
+ * options page reads the copyable token.
+ *
+ * Internal directory name kept as `lan-info` to avoid breaking deep links;
+ * all user-visible copy is tunnel-aware.
  *
  * Server-rendered so the token never reaches a client bundle at build time
  * — it's only present in the PIN-unlocked response body. Cache-Control:
- * no-store is set at both the page (via { dynamic: 'force-dynamic' } and
- * the Response headers) and the API route (see REVIEW missing-risk).
+ * no-store is set at both the page (via { dynamic: 'force-dynamic' }) and
+ * the Response headers (see API route).
  */
 import { cookies, headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { toDataURL } from "qrcode";
 import { SESSION_COOKIE } from "@/lib/auth";
 import { loadLanToken } from "@/lib/auth/bearer";
-import { buildSetupUri, getLanIpv4 } from "@/lib/lan/info";
+import { buildSetupUri } from "@/lib/lan/info";
+import { BRAIN_TUNNEL_URL } from "@/lib/config/tunnel";
 import { LanInfoActions } from "./actions-client";
 
 export const dynamic = "force-dynamic";
@@ -31,27 +37,18 @@ export default async function LanInfoPage() {
   await headers();
 
   const token = loadLanToken();
-  const ip = getLanIpv4();
 
-  if (!token || !ip) {
+  if (!token) {
     return (
       <div className="mx-auto max-w-[680px] px-8 py-10">
         <h1 className="mb-4 text-[30px] font-semibold tracking-[-0.01em] text-[var(--text-primary)]">
-          LAN pairing
+          Device pairing
         </h1>
         <div className="rounded-lg border border-[var(--border)] bg-[var(--surface)] p-4 text-sm text-[var(--text-secondary)]">
-          {!token && (
-            <p>
-              The LAN token is not configured. Restart the server with{" "}
-              <code className="font-mono">npm run dev:lan</code> to auto-generate.
-            </p>
-          )}
-          {!ip && (
-            <p>
-              No non-loopback network interface found. Connect to a Wi-Fi
-              network and reload.
-            </p>
-          )}
+          <p>
+            The bearer token is not configured. Restart the server with{" "}
+            <code className="font-mono">npm run dev</code> to auto-generate, then reload this page.
+          </p>
         </div>
       </div>
     );
@@ -67,12 +64,14 @@ export default async function LanInfoPage() {
   return (
     <div className="mx-auto max-w-[680px] px-8 py-10">
       <h1 className="mb-2 text-[30px] font-semibold leading-[1.2] tracking-[-0.01em] text-[var(--text-primary)]">
-        LAN pairing
+        Device pairing
       </h1>
       <p className="mb-8 text-sm text-[var(--text-secondary)]">
-        Scan this QR from the Brain APK on first launch, or paste the token
-        into the Chrome extension settings. Each paired device keeps working
-        until you rotate the token below.
+        Your Brain is accessible at{" "}
+        <code className="font-mono text-[var(--text-primary)]">{BRAIN_TUNNEL_URL}</code>{" "}
+        via the Cloudflare tunnel. Scan this QR from the Brain APK on first launch,
+        or paste the token into the Chrome extension settings. Each paired device
+        keeps working until you rotate the token below.
       </p>
 
       <section className="mb-10">
@@ -89,25 +88,22 @@ export default async function LanInfoPage() {
             className="rounded-md border border-[var(--border)]"
           />
           <p className="font-mono text-xs text-[var(--text-muted)]">
-            {ip}:3000
+            {BRAIN_TUNNEL_URL}
           </p>
           {/*
-            v0.5.0 T-17 addition — manual-entry fallback for cases where
-            the QR scanner is non-functional (damaged camera, permission
-            repeatedly denied, or dev testing without a device). Both
-            values are already visible on this page in unencoded form
-            below the QR so a user can type them into the APK's manual-
-            setup UI when T-16's future "enter manually" affordance lands.
+            Manual-entry fallback for cases where the QR scanner is
+            non-functional (damaged camera, permission repeatedly denied,
+            or dev testing without a device). The URL is a build-time
+            constant so it's safe to expose in plaintext; the token is
+            the actual secret.
           */}
           <details className="mt-2 w-full text-xs text-[var(--text-muted)]">
             <summary className="cursor-pointer select-none">
               Can&apos;t scan? Enter manually.
             </summary>
             <dl className="mt-2 grid grid-cols-[auto_1fr] gap-x-3 gap-y-1 font-mono text-[var(--text-primary)]">
-              <dt className="text-[var(--text-muted)]">IP</dt>
-              <dd className="break-all">{ip}</dd>
-              <dt className="text-[var(--text-muted)]">Port</dt>
-              <dd>3000</dd>
+              <dt className="text-[var(--text-muted)]">URL</dt>
+              <dd className="break-all">{BRAIN_TUNNEL_URL}</dd>
               <dt className="text-[var(--text-muted)]">Token</dt>
               <dd className="break-all">{token}</dd>
             </dl>
@@ -117,13 +113,14 @@ export default async function LanInfoPage() {
 
       {/*
         v0.5.0 T-17 / F-038 / gap G-4 — Chrome extension bootstrap UX.
-        The extension itself ships in wave 5 (T-23..T-29); until then the
-        link targets chrome://extensions so the user can at least find the
-        Extensions page after sideloading. Once the extension publishes an
-        options page at a known chrome-extension://<id>/options.html the
-        link will be updated — but for a locally-loaded unpacked
-        extension, chrome://extensions is the canonical entry point (click
-        "Details" on the Brain row → "Extension options").
+        The extension itself ships in wave 5 (T-CF-15..T-CF-21); until
+        then the link targets chrome://extensions so the user can at
+        least find the Extensions page after sideloading. Once the
+        extension publishes an options page at a known
+        chrome-extension://<id>/options.html the link will be updated —
+        but for a locally-loaded unpacked extension, chrome://extensions
+        is the canonical entry point (click "Details" on the Brain row →
+        "Extension options").
       */}
       <section className="mb-10">
         <h2 className="mb-3 text-sm font-medium uppercase tracking-wide text-[var(--text-secondary)]">
@@ -151,7 +148,7 @@ export default async function LanInfoPage() {
             <li>
               Set <strong>Brain URL</strong> to{" "}
               <code className="font-mono text-[var(--text-primary)]">
-                http://{ip}:3000
+                {BRAIN_TUNNEL_URL}
               </code>{" "}
               and paste the token below into the <strong>Token</strong> field.
             </li>
