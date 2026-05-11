@@ -1,6 +1,6 @@
 "use client";
 
-import { FileText, Globe, StickyNote, Trash2, X } from "lucide-react";
+import { FileText, Globe, StickyNote, Trash2, Video, X } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState, useTransition } from "react";
@@ -39,9 +39,19 @@ function formatRelative(ts: number): string {
   return new Date(ts).toLocaleDateString();
 }
 
+/** Human label for extraction_warning values. v0.5.1 adds YouTube-specific
+ *  codes (no_transcript, transcript_truncated_2h); older codes fall through
+ *  to the generic label. The raw code remains visible via the title tooltip. */
+function warningLabel(code: string): string {
+  if (code === "no_transcript") return "⚠ no transcript";
+  if (code === "transcript_truncated_2h") return "⚠ truncated at 2h";
+  return "⚠ warning";
+}
+
 function SourceIcon({ type }: { type: string }) {
   if (type === "pdf") return <FileText className="h-4 w-4" strokeWidth={2} />;
   if (type === "url") return <Globe className="h-4 w-4" strokeWidth={2} />;
+  if (type === "youtube") return <Video className="h-4 w-4" strokeWidth={2} />;
   return <StickyNote className="h-4 w-4" strokeWidth={2} />;
 }
 
@@ -208,7 +218,7 @@ export function LibraryList({
                             className="text-[var(--warning)]"
                             title={it.extraction_warning}
                           >
-                            ⚠ warning
+                            {warningLabel(it.extraction_warning)}
                           </span>
                         </>
                       )}
