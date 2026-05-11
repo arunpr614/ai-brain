@@ -22,6 +22,8 @@ export interface InsertCapturedInput {
   total_chars?: number | null;
   extraction_warning?: string | null;
   captured_at?: number;
+  /** Duration in seconds for video items (youtube). v0.5.1. */
+  duration_seconds?: number | null;
 }
 
 export function insertCaptured(input: InsertCapturedInput): ItemRow {
@@ -32,9 +34,10 @@ export function insertCaptured(input: InsertCapturedInput): ItemRow {
   db.prepare(
     `INSERT INTO items (
         id, source_type, source_url, title, author, body,
-        captured_at, total_pages, total_chars, extraction_warning
+        captured_at, total_pages, total_chars, extraction_warning,
+        duration_seconds
      )
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
   ).run(
     id,
     input.source_type,
@@ -46,6 +49,7 @@ export function insertCaptured(input: InsertCapturedInput): ItemRow {
     input.total_pages ?? null,
     totalChars,
     input.extraction_warning ?? null,
+    input.duration_seconds ?? null,
   );
   return getItem(id)!;
 }

@@ -137,6 +137,8 @@ export interface ItemRow {
   extraction_warning: string | null;
   total_pages: number | null;
   total_chars: number | null;
+  /** Duration in seconds for video items (youtube). Null for non-video types. Added v0.5.1 (migration 007). */
+  duration_seconds: number | null;
 }
 
 export interface SettingRow {
