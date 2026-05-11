@@ -1,6 +1,6 @@
 # AI Brain
 
-A local-first personal knowledge app that combines the best of **Recall.it** and **Knowly** — capture, auto-organize, RAG chat, spaced-repetition, and AI-generated pages/journeys — all running on your own Mac, with a sideloadable Android APK as a thin LAN client.
+A local-first personal knowledge app that combines the best of **Recall.it** and **Knowly** — capture, auto-organize, RAG chat, spaced-repetition, and AI-generated pages/journeys — all running on your own Mac, with a sideloadable Android APK reaching the Mac via a Cloudflare named tunnel.
 
 **Current status:** v0.2.0 Capture core shipped. URL capture (via Mozilla Readability), PDF capture (via unpdf, with paywall-truncation detection), manual notes, full-text search (FTS5), and Markdown export all work end-to-end. On top of the v0.1.0 foundation (PIN auth, theme toggle, command palette, periodic SQLite backups).
 
@@ -15,7 +15,7 @@ npm run dev
 ## Core constraints
 
 - **100% local.** SQLite + Ollama on the Mac. No cloud services until `v1.0.0`.
-- **Sideloadable Android APK** via Capacitor 8, talking to the Mac over LAN.
+- **Sideloadable Android APK** via Capacitor 8, reaching the Mac through a Cloudflare named tunnel (`brain.arunp.in`) — no LAN / same-Wi-Fi requirement.
 - **Single user.** Designed for one person; no multi-tenant plumbing.
 - **Feature parity** with Recall.it + Knowly as the north star (36 of 47 features shipping pre-v1.0.0; see `FEATURE_INVENTORY.md` + `ROADMAP_TRACKER.md`).
 
@@ -32,7 +32,8 @@ npm run dev
 | PDF extraction | `unpdf@1.6.2` + optional poppler fallback |
 | Mobile | Capacitor 8 + `@capgo/capacitor-share-target` (requires JDK 21) |
 | Auth (v0.1.0) | Local PIN (PBKDF2-HMAC-SHA256, HMAC session cookie) |
-| Auth (v0.5.0) | +LAN bearer token, +mDNS `brain.local`, +WebAuthn TouchID (stretch) |
+| Auth (v0.5.0) | +bearer token, +Cloudflare named tunnel `brain.arunp.in`, +WebAuthn TouchID (stretch) |
+| Transport (v0.5.0) | Cloudflare named tunnel (outbound QUIC; TLS at edge) via `cloudflared` |
 
 See `BUILD_PLAN.md` §15 for exact versions, intent filters, Ollama env vars, and pipeline shapes.
 
@@ -54,8 +55,57 @@ See `BUILD_PLAN.md` §15 for exact versions, intent filters, Ollama env vars, an
 ## Android APK (v0.5.0)
 
 The APK is a thin Capacitor WebView that points at the live Next.js
-server on your Mac (`http://brain.local:3000` by default). No static
-export, no offline copy of the app — the Mac is the source of truth.
+server on your Mac through a Cloudflare named tunnel
+(`https://brain.arunp.in`). No static export, no offline copy of the
+app — the Mac is the source of truth, and the phone reaches it via the
+public tunnel URL (not the LAN).
+
+### One-time Cloudflare tunnel setup
+
+The tunnel is the transport layer. Run this once per Mac:
+
+```bash
+brew install cloudflared
+cloudflared tunnel login                              # browser auth → writes ~/.cloudflared/cert.pem
+cloudflared tunnel create brain                       # creates tunnel + UUID credentials
+cloudflared tunnel route dns brain brain.arunp.in     # adds CNAME on the Cloudflare zone
+```
+
+Write `~/.cloudflared/config.yml`:
+
+```yaml
+tunnel: brain
+credentials-file: /Users/<you>/.cloudflared/<UUID>.json
+originRequest:
+  keepAliveTimeout: 10m   # SSE streams exceed the default 90s keepalive
+  connectTimeout: 30s
+
+ingress:
+  - hostname: brain.arunp.in
+    service: http://127.0.0.1:3000
+  - service: http_status:404
+```
+
+Then each time you want the tunnel up:
+
+```bash
+cloudflared tunnel run brain        # foreground; 4 QUIC conns to Cloudflare edge
+```
+
+To make the tunnel survive reboots, install it as a launchd service
+(deferred; see the [tunnel persistence](#tunnel-persistence) section).
+
+**Troubleshooting:** if the phone hits NXDOMAIN on `brain.arunp.in`,
+verify the tunnel is live:
+
+```bash
+curl http://127.0.0.1:20241/ready
+# expected: {"status":200,"readyConnections":4,"connectorId":"..."}
+```
+
+If you have outbound-filtering software (Little Snitch, LuLu), allow
+`cloudflared` outbound to ports 7844 (QUIC) + 443 (TCP fallback) →
+`region1.v2.argotunnel.com` and `region2.v2.argotunnel.com`.
 
 ### Build
 
@@ -70,6 +120,9 @@ The script runs `tsc --noEmit`, `next build`, `cap sync android`, and
 at `android/app/debug.keystore` (gitignored, created via `keytool`
 with the AGP-default alias `androiddebugkey`); subsequent runs reuse
 it. Cold build ~90s on an M1 Pro; warm rebuild <10s.
+
+The APK's `capacitor.config.ts` has `server.url = "https://brain.arunp.in"`
+baked in; no per-install configuration needed.
 
 ### Install on an Android device or emulator
 
@@ -89,15 +142,44 @@ export PATH="$HOME/Library/Android/sdk/platform-tools:$PATH"
 
 ### First-run pairing
 
-1. On your Mac, `npm run dev:lan` (binds to `0.0.0.0:3000`).
-2. Open **Settings → LAN Info** in the web UI; copy the generated QR.
+1. On your Mac, `npm run dev` and `cloudflared tunnel run brain`. Verify
+   both are up: `curl https://brain.arunp.in/api/health` should reply.
+2. Open **Settings → Device pairing** in the web UI. The page shows the
+   tunnel URL + QR code.
 3. Launch the APK on your phone; unlock with PIN; go to the QR scanner
    (`/setup-apk`) and scan the Mac's screen. The APK stores the bearer
-   token + base URL in Capacitor Preferences and routes back to the
-   Library.
+   token in Capacitor Preferences and routes back to the Library. The
+   URL is a compile-time constant in the APK so the QR only carries
+   the token.
 
-Rotate the bearer token any time from **Settings → LAN Info → Rotate
-token**; all paired devices must re-pair after a rotation.
+Rotate the bearer token any time from **Settings → Device pairing →
+Rotate token**; all paired devices must re-pair after a rotation.
+
+### Privacy note
+
+Traffic from your phone to the Mac transits Cloudflare's edge. TLS
+terminates at Cloudflare and the request is re-encrypted (actually,
+forwarded over an outbound QUIC tunnel from your Mac to the edge) —
+Cloudflare observes plaintext request/response data the same way any
+HTTPS reverse proxy would. The tunnel is attributed to your Cloudflare
+account (visible in `one.dash.cloudflare.com` → Zero Trust → Networks
+→ Tunnels). This is personal-use, single-tenant data; the trust model
+was chosen over firewall reconfiguration during the v0.5.0 pivot.
+
+### Tunnel persistence
+
+By default `cloudflared tunnel run brain` is a foreground process and
+dies when you close the terminal. To survive reboots, install as a
+launchd service:
+
+```bash
+sudo mkdir -p /etc/cloudflared
+sudo cp ~/.cloudflared/config.yml /etc/cloudflared/config.yml
+sudo cloudflared service install
+```
+
+This writes `/Library/LaunchDaemons/com.cloudflare.cloudflared.plist`
+and starts cloudflared at boot. Verify: `sudo launchctl list | grep cloudflared`.
 
 ### Keystore recovery
 
@@ -132,8 +214,8 @@ the old keystore (Android enforces same-signer for in-place upgrades).
 
 **If both backups are lost:** `adb uninstall com.arunprakash.brain` on
 every paired device, then reinstall a fresh APK. Local app storage
-(Capacitor Preferences: `brain_token`, `brain_url`) is wiped by
-uninstall, so you'll need to re-scan the setup QR.
+(Capacitor Preferences: `brain_token`) is wiped by uninstall, so
+you'll need to re-scan the setup QR.
 
 ## Versioning
 
