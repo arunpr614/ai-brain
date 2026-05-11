@@ -3,9 +3,113 @@
   <head>
     <meta charset="utf-8" />
     <title>Brain</title>
+    <style>
+      :root {
+        color-scheme: light dark;
+        --bg: #fafaf9;
+        --surface: #fff;
+        --border: #e7e5e4;
+        --text: #111;
+        --muted: #78716c;
+        --accent: #111;
+        --accent-text: #fff;
+        --danger: #b91c1c;
+        --success: #15803d;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --bg: #0c0a09;
+          --surface: #1c1917;
+          --border: #292524;
+          --text: #fafaf9;
+          --muted: #a8a29e;
+          --accent: #fafaf9;
+          --accent-text: #0c0a09;
+          --danger: #f87171;
+          --success: #4ade80;
+        }
+      }
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        background: var(--bg);
+        color: var(--text);
+        margin: 0;
+        padding: 16px;
+        width: 340px;
+        font-size: 13px;
+      }
+      h1 {
+        font-size: 14px;
+        font-weight: 600;
+        margin: 0 0 12px;
+      }
+      label {
+        display: block;
+        font-size: 11px;
+        font-weight: 500;
+        color: var(--muted);
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        margin: 10px 0 4px;
+      }
+      input, textarea {
+        width: 100%;
+        box-sizing: border-box;
+        background: var(--surface);
+        color: var(--text);
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        padding: 8px;
+        font-family: inherit;
+        font-size: 13px;
+      }
+      textarea { resize: vertical; min-height: 52px; }
+      button {
+        margin-top: 14px;
+        width: 100%;
+        background: var(--accent);
+        color: var(--accent-text);
+        border: 0;
+        border-radius: 6px;
+        padding: 10px;
+        font-size: 13px;
+        font-weight: 500;
+        cursor: pointer;
+      }
+      button:disabled { opacity: 0.4; cursor: not-allowed; }
+      .status {
+        margin-top: 10px;
+        padding: 8px 10px;
+        border-radius: 6px;
+        font-size: 12px;
+        line-height: 1.4;
+      }
+      .status--pending { background: var(--surface); color: var(--muted); border: 1px solid var(--border); }
+      .status--success { background: color-mix(in srgb, var(--success) 12%, transparent); color: var(--success); }
+      .status--error { background: color-mix(in srgb, var(--danger) 12%, transparent); color: var(--danger); }
+      .link {
+        display: inline-block;
+        margin-top: 10px;
+        color: var(--muted);
+        text-decoration: underline;
+        font-size: 11px;
+        cursor: pointer;
+      }
+    </style>
   </head>
   <body>
-    <div id="app">Loading...</div>
+    <h1>Save to Brain</h1>
+    <div id="app">
+      <label for="title">Title</label>
+      <input id="title" type="text" />
+      <label for="url">URL</label>
+      <input id="url" type="url" />
+      <label for="note">Note (optional)</label>
+      <textarea id="note" rows="2"></textarea>
+      <button id="save">Save to Brain</button>
+      <div id="status" class="status status--pending" hidden></div>
+      <a id="open-options" class="link">Open options</a>
+    </div>
     <script type="module" src="./popup.ts"></script>
   </body>
 </html>

@@ -3,9 +3,107 @@
   <head>
     <meta charset="utf-8" />
     <title>Brain — Options</title>
+    <style>
+      :root {
+        color-scheme: light dark;
+        --bg: #fafaf9;
+        --surface: #fff;
+        --border: #e7e5e4;
+        --text: #111;
+        --muted: #78716c;
+        --accent: #111;
+        --accent-text: #fff;
+        --danger: #b91c1c;
+        --success: #15803d;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --bg: #0c0a09;
+          --surface: #1c1917;
+          --border: #292524;
+          --text: #fafaf9;
+          --muted: #a8a29e;
+          --accent: #fafaf9;
+          --accent-text: #0c0a09;
+          --danger: #f87171;
+          --success: #4ade80;
+        }
+      }
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        background: var(--bg);
+        color: var(--text);
+        margin: 0;
+        padding: 32px;
+        max-width: 560px;
+        font-size: 14px;
+        line-height: 1.5;
+      }
+      h1 { font-size: 18px; margin: 0 0 4px; }
+      p.muted { color: var(--muted); font-size: 13px; margin: 0 0 24px; }
+      label {
+        display: block;
+        font-size: 11px;
+        font-weight: 500;
+        color: var(--muted);
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        margin: 18px 0 6px;
+      }
+      input, code {
+        width: 100%;
+        box-sizing: border-box;
+        background: var(--surface);
+        color: var(--text);
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        padding: 10px 12px;
+        font-family: ui-monospace, "SF Mono", Menlo, monospace;
+        font-size: 13px;
+      }
+      code { display: block; font-family: ui-monospace, monospace; color: var(--muted); }
+      .row { display: flex; gap: 8px; margin-top: 14px; }
+      button {
+        background: var(--accent);
+        color: var(--accent-text);
+        border: 0;
+        border-radius: 6px;
+        padding: 10px 16px;
+        font-size: 13px;
+        font-weight: 500;
+        cursor: pointer;
+      }
+      button.secondary { background: transparent; color: var(--text); border: 1px solid var(--border); }
+      button:disabled { opacity: 0.4; cursor: not-allowed; }
+      .status { margin-top: 12px; padding: 10px 12px; border-radius: 6px; font-size: 13px; }
+      .status--success { background: color-mix(in srgb, var(--success) 12%, transparent); color: var(--success); }
+      .status--error { background: color-mix(in srgb, var(--danger) 12%, transparent); color: var(--danger); }
+      .help { margin-top: 28px; padding: 14px 16px; background: var(--surface); border: 1px solid var(--border); border-radius: 6px; color: var(--muted); font-size: 12px; line-height: 1.6; }
+      .help strong { color: var(--text); }
+    </style>
   </head>
   <body>
-    <div id="app">Loading...</div>
+    <h1>Brain — Options</h1>
+    <p class="muted">Configure the extension to talk to your local Brain over Cloudflare.</p>
+
+    <label>Brain URL</label>
+    <code>https://brain.arunp.in</code>
+
+    <label for="token">Bearer token</label>
+    <input id="token" type="password" placeholder="64-character hex string" autocomplete="off" spellcheck="false" />
+
+    <div class="row">
+      <button id="test" class="secondary">Test connection</button>
+      <button id="save">Save</button>
+    </div>
+
+    <div id="status" class="status" hidden></div>
+
+    <div class="help">
+      <p><strong>How to get a token</strong></p>
+      <p>On your Mac, open <code>https://brain.arunp.in/settings/lan-info</code> (or run <code>scripts/rotate-token.sh</code> from the project root). Copy the 64-character hex token and paste it above.</p>
+    </div>
+
     <script type="module" src="./options.ts"></script>
   </body>
 </html>
