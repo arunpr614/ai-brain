@@ -17,10 +17,12 @@
     "test": "node --import tsx --test \"src/**/*.test.ts\"",
     "check:env": "bash scripts/check-env-gitignored.sh",
     "build:apk": "bash scripts/build-apk.sh",
-    "smoke": "node --import tsx scripts/smoke-v0.3.1.mjs && node --import tsx scripts/smoke-v0.4.0.mjs && node --import tsx scripts/smoke-v0.5.0.mjs",
+    "smoke": "node --import tsx scripts/smoke-v0.3.1.mjs && node --import tsx scripts/smoke-v0.4.0.mjs && node --import tsx scripts/smoke-v0.5.0.mjs && node --import tsx scripts/smoke-v0.5.1.mjs",
     "smoke:0.3.1": "node --import tsx scripts/smoke-v0.3.1.mjs",
     "smoke:0.4.0": "node --import tsx scripts/smoke-v0.4.0.mjs",
     "smoke:0.5.0": "node --import tsx scripts/smoke-v0.5.0.mjs",
+    "smoke:0.5.1": "node --import tsx scripts/smoke-v0.5.1.mjs",
+    "smoke:youtube": "node --import tsx scripts/smoke-youtube.mjs",
     "backfill:embeddings": "node --import tsx scripts/backfill-embeddings.mjs",
     "bench:ask": "node --import tsx scripts/bench-ask.mjs"
   },
