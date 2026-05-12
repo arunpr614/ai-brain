@@ -16,12 +16,18 @@
  * SESSION_COOKIE_OPTIONS). Secure omitted pre-v0.5.0 because dev runs on
  * plain http://127.0.0.1; v0.5.0 F-037 adds LAN TLS + cookie rotation.
  *
- * SameSite was Strict until 2026-05-12; switched to Lax because Android
- * WebView (Capacitor APK) silently drops Strict-scoped cookies on the
- * 303 redirect that follows a successful unlock POST, producing a
- * login → loop-back-to-unlock cycle in the APK. Lax still blocks cross-
- * site POSTs (the real CSRF threat) but permits the cookie to travel
- * through top-level 303s, which is what a PIN-unlock flow needs.
+ * SameSite was Strict until 2026-05-12; switched to Lax as a defensive
+ * improvement. HISTORICAL CORRECTION: the commit that made this change
+ * (89dd61d) claimed it would fix the APK PIN-unlock loop — that claim
+ * was wrong. The actual fix was disabling `CapacitorHttp` in
+ * capacitor.config.ts (commit 9712dd5), which stopped Capacitor's
+ * native HTTP client from racing the cookie flush against the
+ * POST /unlock → 303 → GET / redirect. Lax is retained here because
+ * it is the more defensible default for an app served through a
+ * WebView + tunnel (Strict offers no practical protection over Lax
+ * for a PIN-gated single-tenant app), not because Strict was the
+ * cookie-loss culprit. See RUNNING_LOG.md entry 2026-05-12 Lane L
+ * for the full post-mortem.
  *
  * Key rotation policy (pre-v0.5.0): the signing key is generated once at
  * first PIN setup and persisted in `settings`. It is NOT rotated
