@@ -69,15 +69,31 @@ fi
 
 # --- Classify overall state ------------------------------------------
 # Priority: red > yellow > orange > green.
+#
+# "Up" = ANY HTTP response in 1xx–4xx (the server reached us and said
+# something — a 307 redirect or 401 auth challenge still proves the
+# process is alive and listening). "Down" = 000 (connection refused /
+# timeout) OR 5xx (upstream bad gateway, internal error). This is
+# intentionally forgiving: we only want to light up red when the
+# extension / APK will genuinely fail, not when an auth-gated route
+# correctly challenges an unauthed probe.
 
-# Tunnel unreachable is the user-facing failure — extension + APK both
-# route through it. Anything non-2xx at the tunnel layer is red.
-if [ "$tunnel_code" != "200" ]; then
+is_reachable() {
+  local code="$1"
+  # 000 = no connection at all. 5xx = server errors (incl. 502 = tunnel
+  # can't reach origin). Everything else (1xx-4xx) = the layer responded.
+  case "$code" in
+    000|5*) return 1 ;;
+    *) return 0 ;;
+  esac
+}
+
+if ! is_reachable "$tunnel_code"; then
   icon="🔴"
   label="Brain DOWN"
-elif [ "$nextjs_code" != "200" ] || [ "$cloudflared_code" != "200" ]; then
-  # Tunnel replied 200 (Cloudflare edge or cached), but a local daemon
-  # is misbehaving. Rare — flag as yellow to investigate.
+elif ! is_reachable "$nextjs_code" || ! is_reachable "$cloudflared_code"; then
+  # Tunnel is reachable externally, but a local daemon is misbehaving
+  # (cached response from Cloudflare edge, or weird state). Rare.
   icon="🟡"
   label="Brain degraded"
 elif [ "$ollama_ok" -eq 0 ]; then
@@ -98,20 +114,20 @@ echo "---"
 
 # Per-layer breakdown for the dropdown. Users don't read it often but
 # when something is red, this tells them which layer failed.
-if [ "$nextjs_code" = "200" ]; then
-  echo "✅ Next.js server (127.0.0.1:3000) | font=Menlo size=11"
+if is_reachable "$nextjs_code"; then
+  echo "✅ Next.js server (127.0.0.1:3000) — HTTP $nextjs_code | font=Menlo size=11"
 else
   echo "❌ Next.js server (127.0.0.1:3000) — HTTP $nextjs_code | color=red font=Menlo size=11"
 fi
 
-if [ "$cloudflared_code" = "200" ]; then
+if is_reachable "$cloudflared_code"; then
   echo "✅ cloudflared daemon (127.0.0.1:20241) | font=Menlo size=11"
 else
   echo "❌ cloudflared daemon (127.0.0.1:20241) — HTTP $cloudflared_code | color=red font=Menlo size=11"
 fi
 
-if [ "$tunnel_code" = "200" ]; then
-  echo "✅ Tunnel end-to-end (brain.arunp.in) | font=Menlo size=11"
+if is_reachable "$tunnel_code"; then
+  echo "✅ Tunnel end-to-end (brain.arunp.in) — HTTP $tunnel_code | font=Menlo size=11"
 else
   echo "❌ Tunnel end-to-end (brain.arunp.in) — HTTP $tunnel_code | color=red font=Menlo size=11"
 fi
