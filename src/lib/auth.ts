@@ -12,9 +12,16 @@
  * Token format: `<expiresMs>.<hmacHex>`. `verifySessionToken` rejects if
  * the expiry has passed OR the HMAC doesn't verify. No external JWT.
  *
- * Cookie attributes: HttpOnly + SameSite=Strict + Path=/ (see
+ * Cookie attributes: HttpOnly + SameSite=Lax + Path=/ (see
  * SESSION_COOKIE_OPTIONS). Secure omitted pre-v0.5.0 because dev runs on
  * plain http://127.0.0.1; v0.5.0 F-037 adds LAN TLS + cookie rotation.
+ *
+ * SameSite was Strict until 2026-05-12; switched to Lax because Android
+ * WebView (Capacitor APK) silently drops Strict-scoped cookies on the
+ * 303 redirect that follows a successful unlock POST, producing a
+ * login → loop-back-to-unlock cycle in the APK. Lax still blocks cross-
+ * site POSTs (the real CSRF threat) but permits the cookie to travel
+ * through top-level 303s, which is what a PIN-unlock flow needs.
  *
  * Key rotation policy (pre-v0.5.0): the signing key is generated once at
  * first PIN setup and persisted in `settings`. It is NOT rotated
@@ -99,7 +106,7 @@ export function verifySessionToken(token: string | undefined | null): boolean {
 
 export const SESSION_COOKIE_OPTIONS = {
   httpOnly: true,
-  sameSite: "strict" as const,
+  sameSite: "lax" as const,
   path: "/",
   maxAge: SESSION_TTL_MS / 1000,
   // Secure left off — v0.1.0 runs on http://localhost. v0.5.0 adds an option for LAN TLS.
