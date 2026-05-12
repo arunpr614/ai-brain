@@ -33,19 +33,19 @@ chrome.contextMenus.onClicked.addListener(async (info, tab) => {
 
 function describe(result: CaptureResult): string {
   if (result.ok) {
-    return result.duplicate ? "Already in your library." : "Saved.";
+    return result.duplicate ? "Already in your library." : "Saved to Brain.";
   }
   switch (result.reason) {
     case "no-token":
-      return "Setup required — open the extension options.";
+      return "Open the extension Options to finish setup.";
     case "unauthorized":
-      return "Authentication failed — rotate token in Brain settings.";
+      return "Your token no longer works. Paste a fresh one in Options.";
     case "rate-limited":
-      return "Rate limited — try again in a minute.";
+      return "Too many saves just now. Try again in a minute.";
     case "server-error":
-      return `Brain returned ${result.status}.`;
+      return "Brain had trouble saving this. Try again.";
     case "network":
-      return `Couldn't reach Brain. ${result.message}`;
+      return "Can't reach Brain. Is your Mac awake and the tunnel running?";
     case "inflight":
       return "Already saving this page.";
   }

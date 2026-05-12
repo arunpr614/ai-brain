@@ -27,26 +27,26 @@ function showStatus(kind: "success" | "error", message: string) {
 testBtn.addEventListener("click", async () => {
   const token = tokenEl.value.trim();
   if (!token) {
-    showStatus("error", "Enter a token first.");
+    showStatus("error", "Paste a token first, then test.");
     return;
   }
   testBtn.disabled = true;
-  showStatus("success", "Testing…");
+  showStatus("success", "Checking…");
   const result = await testConnection(token);
   testBtn.disabled = false;
   if (result.ok) {
-    showStatus("success", "Connected. Token is valid.");
+    showStatus("success", "Connected. This token works.");
     return;
   }
   switch (result.reason) {
     case "unauthorized":
-      showStatus("error", "Token rejected. Rotate in Brain settings and paste the new one.");
+      showStatus("error", "This token doesn't work. Open Brain settings on your Mac, generate a fresh one, and paste it here.");
       break;
     case "network":
-      showStatus("error", `Couldn't reach Brain. ${result.message}`);
+      showStatus("error", "Can't reach Brain. Is your Mac awake and the tunnel running?");
       break;
     case "server-error":
-      showStatus("error", `Brain returned ${result.status}.`);
+      showStatus("error", "Brain is reachable but not responding properly. Try again in a minute.");
       break;
   }
 });
@@ -54,9 +54,9 @@ testBtn.addEventListener("click", async () => {
 saveBtn.addEventListener("click", async () => {
   const token = tokenEl.value.trim();
   if (!token) {
-    showStatus("error", "Enter a token first.");
+    showStatus("error", "Paste a token first, then save.");
     return;
   }
   await setToken(token);
-  showStatus("success", "Saved. The popup and context menu can now capture pages.");
+  showStatus("success", "Saved. You can now save pages from the toolbar icon or right-click menu.");
 });
