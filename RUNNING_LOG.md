@@ -2958,3 +2958,132 @@ v0.5.0 pivot at **Stage 3 plan shipped + 9 of 15 T-CF-* tasks complete + F3 shor
 - **Background processes:** `bqf819ye9` (npm run dev on 127.0.0.1:3000, fresh this session); `b9p1wx36c` (cloudflared tunnel run brain, still running from Entry 28).
 - **Library state:** 1 embedded item (Growth-Loops-Messy-Draft; 1 chunk; backfilled via `nomic-embed-text` this session). Confirms Ask retrieval path works end-to-end.
 - **Next milestone:** T-CF-15 Chrome extension pre-flight (5 min user test → unblocks autonomous T-CF-16..19) OR T-CF-22..25 release wave (if strategic decision is to ship v0.5.0 without extension).
+
+---
+
+## 2026-05-12 10:55 — [Lane C] v0.6.0 spike program complete + dual-lane split initiated; Hetzner server provisioned
+
+**Entry author:** AI agent (Claude) — Lane C (cloud migration v0.6.0)
+**Session ID:** 60481fb
+**Triggered by:** user directive to split work across two parallel AI agents; requested plan + execute startup sequence
+
+### Planned since last entry
+The prior session (2026-05-11) ended with v0.5.1 YouTube capture shipped and tagged. Plan for this session: **design and execute the v0.6.0 cloud migration research program** — 9 research spikes (S-1..S-9), select AI providers + cloud host + embeddings strategy + backup path + privacy posture + cost model, then draft the v0.6.0 implementation plan. User explicitly asked for "option 3" — execute all 9 spikes in parallel where dependencies allow, synthesize into a plan, Stage 4 review, self-critique, sign-off.
+
+### Done
+
+**v0.6.0 research program — all 9 spikes complete:**
+
+- `docs/research/brain-usage-baseline.md` (S-1) — Brain has 2 items lifetime, 14 LLM calls total. API cost at projected moderate use: ~$0.30/month. Cloud VM dominates the bill.
+- `docs/research/ai-provider-matrix.md` (S-4) — Hybrid locked: Claude Haiku 4.5 (Batch API, 50% discount) for enrichment + Claude Sonnet 4.6 (realtime streaming) for Ask. Combined ~$0.26–$0.91/mo at expected volume.
+- `docs/research/cloud-host-matrix.md` (S-6) — AWS Lightsail Mumbai 2GB recommended at $10/mo; Fly.io rejected due to SQLite-WAL-on-networked-storage risk; Oracle Free Tier noted as one-shot experiment.
+- `docs/research/embedding-strategy.md` (S-5) — **Flipped prior assumption:** hosted Gemini `text-embedding-004` (free tier) instead of local Ollama on VM. 768 dim matches existing schema; 2GB RAM is too tight for Ollama + Node + SQLite + cloudflared concurrent.
+- `docs/research/enrichment-flow.md` (S-3) — node-cron daily 3 AM UTC batch + Anthropic Batch API; manual "Enrich now" button = realtime Haiku. Migration 008 adds `batch_id`, `batch_submitted_at`. Rollback via `BRAIN_ENRICH_BATCH_MODE=false` env flag. Backfill: existing enriched items untouched.
+- `docs/plans/spikes/v0.6.0-cloud-migration/S-7-MIGRATION-RUNBOOK.md` (S-7) — 03:00 IST cutover window; `.backup` + scp + sha256 integrity check; primary backup = cron + rclone → Backblaze B2 (gpg-encrypted client-side); secondary = Mac pull-sync; rollback path uses existing `scripts/restore-from-backup.sh` (F-034).
+- `docs/research/privacy-threat-delta.md` (S-8) — 3 newly trusted parties (AWS, Anthropic, B2); 8-threat register; 3 explicit local-first downgrades honestly named; gpg-before-B2 client-side encryption is the load-bearing new mitigation; paste-ready README paragraph drafted.
+- `docs/research/v0.6.0-cost-summary.md` (S-9) — Point estimate $10.26/mo at moderate use. VM = 97% of bill. Only meaningful cost lever: Hetzner EU swap saves $5.90/mo at cost of ~300ms latency (later superseded when Hetzner Singapore region was discovered).
+- `docs/research/budget-hosts.md` (follow-on to S-6, user-requested) — Deep dive when user pushed back on $10 Lightsail as too expensive. **Flipped S-6 recommendation:** Hetzner CX22 Helsinki at ~$5.59/mo (with IPv4) now locked. Discovered Hetzner Singapore is CPX-line only, starting at $10 — same as Lightsail, so it saved nothing. Helsinki's ~145ms latency from India is ~8% overhead on Ask first-token time with Anthropic in the loop — imperceptible.
+
+**Dual-lane split initiated:**
+
+- `docs/plans/DUAL-AGENT-HANDOFF-PLAN.md` — full contract: file ownership, handshake mechanics, running-log v2 schema, 7-risk register, kill switch, pre-split TODO.
+- `docs/plans/LANE-L-BOOTSTRAP.md` — Lane L onboarding doc (ground rules, backlog P1/P2/P3, catch-up protocol, emergency-stop triggers).
+- `RUNNING_LOG.md` head: new OWNERSHIP BLOCK (HTML comments) naming Lane C's current shared-file locks (package.json, migrations 008, enrich/*, embeddings/*, scripts/migrate-*, README until v0.6.0 lands).
+- `~/.claude/skills/running-log-updater/SKILL.md` patched: Lane field, Session ID field, Cross-lane notes section, backwards-compatible for single-agent projects.
+- Auto-memory: `project_ai_brain_dual_lane.md` added, indexed in MEMORY.md.
+- Branches: `lane-c/v0.6.0-cloud` (this) pushed to origin; `lane-l/feature-work` created from main and pushed.
+
+**Hetzner server provisioned:**
+
+- CX23 Helsinki, Ubuntu 24.04, 2 vCPU / 4 GB RAM / 40 GB SSD. IPv4 `204.168.155.44`. Name `ubuntu-4gb-hel1-2`. Cost ~$5.59/mo (€4.99 + $0.60 IPv4).
+- SSH key pair created on Mac at `~/.ssh/ai_brain_hetzner{,.pub}` (ed25519). Public key shared with user for Hetzner paste.
+- **Open issue:** user attempted to SSH in and got "Permission denied (publickey)" from root@204.168.155.44 — SSH key wasn't actually selected in the server-creation form (the yellow ! on SSH Keys was ignored). Next action is either Hetzner web console key-paste or server rebuild.
+
+### Cross-lane notes
+
+- **To Lane L:** You have a clean branch at `lane-l/feature-work` off `main@5ebd903`. Recommend starting with P1 = Chrome extension error-surface polish. Before writing any code, run the §1 bootstrap check and read this entry + any subsequent Lane C entries. Do NOT touch `src/lib/embeddings/` or `src/lib/enrich/` — Lane C holds those locks until v0.6.0 ships. Do NOT bump version in `package.json`.
+- **Shared files touched:** `RUNNING_LOG.md` (added OWNERSHIP BLOCK at top + this entry at bottom). `MEMORY.md` in ~/.claude (added dual-lane memory entry — this is user-global, not project-local, so Lane L will see it in its own session automatically).
+- **Owned files touched:** all new files under `docs/plans/*DUAL*`, `docs/plans/LANE-L-BOOTSTRAP.md`, `docs/plans/spikes/v0.6.0-cloud-migration/*`, and all new `docs/research/*.md` (9 spike outputs).
+
+### Learned
+
+- **Hetzner's SSH-key selection is not enforced during server creation.** A yellow `!` warning is the only signal; clicking Create & Buy with no key selected produces a server with root password-auth only. Fallback = web console (`>_` button in server detail page) auto-logs in as root with no password.
+- **Hetzner renamed CX22 → CX23 on newer hardware with same pricing.** Not a problem, but worth knowing — my prior research references "CX22" but the console now shows CX23 as the current-generation equivalent.
+- **Hetzner Singapore is CPX-only, starting at $10.** S-6 landed on Lightsail Mumbai $10 and the user's "give me cheaper" push initially led my research agent to suggest "Hetzner Singapore $5.35" — this was a hallucination. The actual Singapore floor is $10.09 (CPX12 + IPv4), identical in price to Lightsail. Real savings only come from EU regions (Helsinki/Nuremberg/Falkenstein) at ~$5.59.
+- **Gemini text-embedding-004 wins over local Ollama on Lightsail/Hetzner 2GB.** Free tier covers Brain's lifetime projection; 768-dim matches existing schema; MTEB score slightly higher than nomic-embed-text; frees ~700 MB RAM on the VM. S-5 agent flipped my earlier instinct.
+- **Batch API savings are real but cosmetic at this scale.** Anthropic Batch 50% discount saves ~$0.04/mo on projected volume. The op reason to use it (not the financial one) is rate-limit headroom and separating background enrichment from realtime Ask.
+- **Running-log v2 schema change is cheap.** ~15 lines added to the skill; backwards-compatible (single-agent projects omit Lane field). Took 2 minutes.
+
+### Deployed / Released
+
+- `lane-c/v0.6.0-cloud` branch pushed to origin at commit `60481fb` (docs-only — handoff plan + bootstrap + ownership block).
+- `lane-l/feature-work` branch pushed to origin from `main@5ebd903` (empty, ready for Lane L).
+- No version tags. No production deployment. No code changes to the app itself.
+
+### Documents created or updated this period
+
+- `docs/plans/v0.6.0-cloud-migration-RESEARCH-PROGRAM.md` — 9-spike master research plan (v1 full → v2 user-locked narrowed).
+- `docs/plans/spikes/v0.6.0-cloud-migration/S-1..S-9.md` — 9 self-contained spike briefs.
+- `docs/plans/spikes/v0.6.0-cloud-migration/S-7-MIGRATION-RUNBOOK.md` — concrete migration runbook output.
+- `docs/research/brain-usage-baseline.md` — S-1 output.
+- `docs/research/ai-provider-matrix.md` — S-4 output.
+- `docs/research/cloud-host-matrix.md` — S-6 output.
+- `docs/research/embedding-strategy.md` — S-5 output.
+- `docs/research/enrichment-flow.md` — S-3 output.
+- `docs/research/privacy-threat-delta.md` — S-8 output.
+- `docs/research/v0.6.0-cost-summary.md` — S-9 output.
+- `docs/research/budget-hosts.md` — follow-on cheaper-host analysis (user-requested).
+- `docs/plans/DUAL-AGENT-HANDOFF-PLAN.md` — lane-split contract.
+- `docs/plans/LANE-L-BOOTSTRAP.md` — Lane L onboarding.
+- `RUNNING_LOG.md` — OWNERSHIP BLOCK added + this entry.
+- `~/.claude/skills/running-log-updater/SKILL.md` — patched for multi-lane support (global skill, not project-local).
+- `~/.claude/projects/.../memory/project_ai_brain_dual_lane.md` — auto-memory for dual-lane context.
+
+### Current remaining to-do
+
+**Immediate (Lane C next actions):**
+1. Resolve Hetzner SSH key issue — either paste public key via Hetzner web console OR rebuild server with SSH key attached. 30 seconds either way.
+2. SSH login as root → run Step 5 hardening block (create `brain` user, disable root login, disable password auth).
+3. Execute Steps 6–11 of the Hetzner setup plan (firewall, Node.js 20 + sqlite3 + git install, cloudflared install, app directory prep, pre-migration smoke test).
+4. Draft `docs/plans/v0.6.0-cloud-migration.md` plan v1.0 — full task breakdown for Mac → cloud cutover.
+5. Stage 4 cross-AI review → `v0.6.0-cloud-migration-REVIEW.md`.
+6. Self-critique → `v0.6.0-cloud-migration-SELF-CRITIQUE.md`.
+7. Revise plan to v1.2; present for user sign-off.
+8. Execute cutover at 03:00 IST (user-scheduled).
+9. Tag v0.6.0.
+
+**Lane L backlog (for the other agent):**
+- P1: Chrome extension error-surface polish
+- P2: APK bugs filed by user during migration
+- P3: Next feature from `FEATURE_INVENTORY.md` (ask user: tags / collections / export)
+
+### Open questions / decisions needed
+
+1. **Hetzner SSH recovery path** — user to pick between (A) web-console key paste + retain server or (B) server rebuild via Hetzner Rebuild tab with SSH key selected. Either takes 30 sec; both keep the same IP. Recommended (A).
+2. **Lane L spawn timing** — user has the step-by-step in `DUAL-AGENT-HANDOFF-PLAN.md §8`. When do they want to start Lane L? Today in parallel, or after Lane C clears the SSH block?
+3. **B2 account** — user needs to create a Backblaze B2 account before S-7 runbook execution. Not a blocker for server setup but is for backups-go-live.
+4. **Domain/tunnel migration** — `brain.arunp.in` currently points at the Mac-based Cloudflare tunnel. At cutover, the tunnel moves to the Helsinki server. Plan step to explicitly cover this: copy `/etc/cloudflared/config.yml` + credential JSON from Mac to Helsinki server via scp.
+
+### Session self-critique
+
+- **Mis-researched Hetzner Singapore pricing and sent user on a detour.** My budget-host research agent hallucinated "Hetzner Singapore CX23 ~$5.35" based on EU pricing extrapolation. User started a Singapore flow, got to the pricing step, and correctly flagged "it's $10.09 — same as Lightsail." I had to reverse and recommend Helsinki. Cost: ~10 minutes of user time and a dent in trust. Root cause: I accepted the subagent's output without cross-checking against Hetzner's Singapore pricing page. **Correction for future research spikes: verify pricing claims for specific regions before presenting them as facts.**
+- **Missed the "SSH Keys had a yellow ! warning" during server creation.** I told the user to ignore the warning and "pick mac-arun in that section" but didn't insist they actually complete it before clicking Create. Result: server provisioned with no key, SSH rejected, detour into web-console recovery. **Correction: next time a form has a required-but-unenforced field, block the next step until it's confirmed complete.**
+- **Over-engineered the dual-lane plan before validating need.** I spent ~15 min drafting a full 13-section handoff plan with risk register, 7-case sensitivity, kill switch, ownership tables. For a single-user project where the "other lane" is literally the same person opening a new terminal window. The plan is fine — but a 2-paragraph README would have sufficed for week 1, and we'd formalize later if it worked. **Pattern concern:** I default to over-structured outputs when the user says "deep think." The user is non-technical but appreciates terse operational clarity over academic rigor. Calibrate next time.
+- **Running-log skill patch was rushed.** I added the Lane field and Cross-lane notes section but didn't test the resulting template end-to-end (this entry IS the first end-to-end test). If the template has a rendering issue, this entry will surface it — but I should have dry-run the template before shipping the skill change.
+- **Nothing went wrong in the spike program itself.** All 9 spike agents produced usable outputs; S-5 notably flipped a wrong earlier assumption; S-9 caught the "$12/mo stop-squeezing threshold" that prevents future over-optimization. Budget-host follow-up was the ONLY spike where the agent hallucinated a number.
+
+### Action items for the next agent
+
+1. **[VERIFY]** Hetzner SSH access works before running Step 5+ hardening. Command: `ssh -i ~/.ssh/ai_brain_hetzner root@204.168.155.44 'hostname'` — must return hostname, not "Permission denied." If it fails, user must paste the public key via Hetzner web console (server detail → `>_` icon) OR rebuild server via Rebuild tab.
+2. **[DO]** After SSH works, run the Step 5a-c hardening block as a single paste (create `brain` user, disable root/password auth, verify `brain@` login in a second terminal before closing root session).
+3. **[DON'T]** bump `package.json` version on lane-l/feature-work. Only Lane C tags v0.6.0 per the handoff contract.
+4. **[ASK]** User to create a Backblaze B2 account at https://www.backblaze.com/cloud-storage before the cutover — the `scripts/backup-to-b2.sh` step in the runbook needs the B2 key pair. Not blocking server setup but blocking backups-go-live.
+5. **[VERIFY]** Before drafting `docs/plans/v0.6.0-cloud-migration.md`, read `S-7-MIGRATION-RUNBOOK.md` + `enrichment-flow.md` + `embedding-strategy.md` + `privacy-threat-delta.md` as one pass. The plan must weave all four into a single task list, not re-litigate the decisions.
+6. **[DO]** If user files a bug reported against the Mac server during the migration window (pre-cutover), that's a Lane L task, not Lane C. Redirect: "[Lane C] Let Lane L handle this — I'm mid-migration."
+7. **[DON'T]** accept subagent pricing claims without cross-checking the provider's actual pricing page. Applies specifically to `gsd-*` spike agents that use WebSearch for cost data.
+
+### State snapshot
+- **Current phase / version:** v0.5.1 shipped; v0.6.0 cloud migration in planning + server-setup execution.
+- **Active trackers:** `PROJECT_TRACKER.md`, `ROADMAP_TRACKER.md`, `BACKLOG.md`, `docs/plans/DUAL-AGENT-HANDOFF-PLAN.md`, `docs/plans/LANE-L-BOOTSTRAP.md`.
+- **Next milestone:** Hetzner server hardened + app code cloned + pre-migration smoke passes. Target: same session (user-driven).
+- **Branch state:** `lane-c/v0.6.0-cloud @ 60481fb` (this); `lane-l/feature-work @ 5ebd903` (empty, ready); `main @ 5ebd903` unchanged.
