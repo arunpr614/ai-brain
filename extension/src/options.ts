@@ -6,11 +6,12 @@
  * transparency. The token lives in chrome.storage.local so it persists
  * across browser restarts and survives service-worker recycles.
  */
-import { getToken, setToken, testConnection } from "./capture";
+import { clearToken, getToken, setToken, testConnection } from "./capture";
 
 const tokenEl = document.getElementById("token") as HTMLInputElement;
 const saveBtn = document.getElementById("save") as HTMLButtonElement;
 const testBtn = document.getElementById("test") as HTMLButtonElement;
+const clearBtn = document.getElementById("clear") as HTMLButtonElement;
 const statusEl = document.getElementById("status") as HTMLDivElement;
 
 function showStatus(kind: "success" | "error", message: string) {
@@ -59,4 +60,10 @@ saveBtn.addEventListener("click", async () => {
   }
   await setToken(token);
   showStatus("success", "Saved. You can now save pages from the toolbar icon or right-click menu.");
+});
+
+clearBtn.addEventListener("click", async () => {
+  await clearToken();
+  tokenEl.value = "";
+  showStatus("success", "Token cleared. Paste a fresh one from Brain settings to re-pair.");
 });

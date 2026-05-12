@@ -39,6 +39,11 @@ export async function setToken(token: string): Promise<void> {
   await chrome.storage.local.set({ [TOKEN_KEY]: token });
 }
 
+/** Remove the bearer token so the extension forgets its pairing. */
+export async function clearToken(): Promise<void> {
+  await chrome.storage.local.remove(TOKEN_KEY);
+}
+
 /**
  * Double-submit guard — the popup save button and context-menu click can
  * both fire within ~200ms if the user is frantic. We stash a millisecond
