@@ -7,27 +7,48 @@
  */
 import { captureUrl, type CaptureResult } from "./capture";
 
-const MENU_ID = "brain-save";
+const MENU_LINK = "brain-save-link";
+const MENU_PAGE = "brain-save-page";
 
 chrome.runtime.onInstalled.addListener(() => {
+  // Two separate menu entries so the label always matches what will
+  // be captured. Chrome shows only the one whose `contexts` matches
+  // where the user right-clicked — right-click a hyperlink and only
+  // "Save link" appears; right-click page body and only "Save this
+  // page" appears. Previously one entry silently switched behavior
+  // based on cursor position.
   chrome.contextMenus.create({
-    id: MENU_ID,
-    title: "Save to Brain",
-    contexts: ["page", "link"],
+    id: MENU_LINK,
+    title: "Save link to Brain",
+    contexts: ["link"],
+  });
+  chrome.contextMenus.create({
+    id: MENU_PAGE,
+    title: "Save this page to Brain",
+    contexts: ["page", "image", "selection"],
   });
 });
 
 chrome.contextMenus.onClicked.addListener(async (info, tab) => {
-  if (info.menuItemId !== MENU_ID) return;
-  const url = (info.linkUrl ?? info.pageUrl ?? tab?.url ?? "").trim();
-  if (!url) {
-    await notify("Save to Brain", "No URL found on this page.");
+  let url: string;
+  let title: string | undefined;
+
+  if (info.menuItemId === MENU_LINK) {
+    url = (info.linkUrl ?? "").trim();
+    title = undefined;
+  } else if (info.menuItemId === MENU_PAGE) {
+    url = (info.pageUrl ?? tab?.url ?? "").trim();
+    title = tab?.title ?? undefined;
+  } else {
     return;
   }
-  const result = await captureUrl({
-    url,
-    title: tab?.title ?? undefined,
-  });
+
+  if (!url) {
+    await notify("Save to Brain", "No URL to save here.");
+    return;
+  }
+
+  const result = await captureUrl({ url, title });
   await notify("Save to Brain", describe(result));
 });
 
