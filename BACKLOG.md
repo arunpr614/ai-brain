@@ -2,11 +2,11 @@
 
 | Field | Value |
 |-------|--------|
-| **Document version** | v7.0-backlog (v0.5.0 pivoted to Cloudflare Tunnel) |
-| **Date** | 2026-05-10 |
+| **Document version** | v7.1-backlog (v0.6.x plans drafted) |
+| **Date** | 2026-05-12 |
 | **Owner** | Arun |
 | **Update cadence** | at every phase kickoff; whenever an item is promoted, deferred, or closed |
-| **Revision** | v7.0 — v0.5.0 PIVOTED 2026-05-10 from LAN-only to Cloudflare named tunnel (user reported firewall complexity at T-21 gate). v1.3 LAN plan archived at `docs/archive/v0.5.0-lan-approach/`. New plan v2.0 drafting underway. Task numbering shifts from T-N → T-CF-N. v6.0 history preserved below |
+| **Revision** | v7.1 — 2026-05-12: v0.5.0 + v0.5.1 + v0.5.2 + v0.5.3 all SHIPPED. Lane-split active (`lane-c/v0.6.0-cloud` + `lane-l/feature-work`). Two new patch-tier features slotted into v0.6.x by Lane L: Augmented Browsing (AUG-1..10) + Knowledge Graph View (GRAPH-1..8), both desktop-only. Plans at `docs/plans/v0.6.x-augmented-browsing.md` + `docs/plans/v0.6.x-graph-view.md`. Source: Recall.it v2 audit 2026-05-12 (217 rows, `docs/research/recall-feature-audit-v2-2026-05-12.md`) surfaced competitive gaps. §§ below were last touched 2026-05-10 for the v0.5.0 pivot and reference superseded state — full backlog rewrite pending. v7.0 revision history preserved below |
 
 > Single source of truth for work that is **not in the active phase plan** but is known-needed, nice-to-have, or idea-captured. Items promoted from here land in `BUILD_PLAN.md` under a phase heading. Items closed here get a strikethrough and a closing commit SHA.
 
