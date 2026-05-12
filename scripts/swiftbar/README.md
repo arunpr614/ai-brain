@@ -28,16 +28,25 @@ Click the icon for a per-layer breakdown (Next.js / cloudflared / tunnel / Ollam
    show "unidentified developer" — if so, go to **System Settings →
    Privacy & Security → Open Anyway**.
 
-4. **Pick a plugin folder** when SwiftBar asks. Create a new folder
-   called `SwiftBar` inside your `~/Documents/` directory and select it.
+4. **Pick a plugin folder** when SwiftBar asks. Two options:
 
-5. **Install the Brain plugin** by running:
+   - **Default (simplest):** create a new folder called `SwiftBar`
+     inside your `~/Documents/` directory and select it.
+   - **In-repo (this project's convention):** create a folder called
+     `SwiftBar` at the repo root (already git-ignored via `.gitignore`)
+     so everything lives next to the code that provides it. Pass its
+     path via `SWIFTBAR_PLUGIN_DIR` when running the installer (step 5).
+
+5. **Install the Brain plugin** by running, from this repo's root:
    ```
    bash scripts/swiftbar/install.sh
    ```
-   from this repo's root. The script symlinks `brain-health.30s.sh`
-   into your SwiftBar plugin folder so updates to the script in git
-   automatically propagate.
+   Or if you picked the in-repo plugin folder:
+   ```
+   SWIFTBAR_PLUGIN_DIR="$PWD/SwiftBar" bash scripts/swiftbar/install.sh
+   ```
+   The script symlinks `brain-health.30s.sh` into your SwiftBar plugin
+   folder so updates to the script in git propagate automatically.
 
 6. **Tell SwiftBar to start at login.**
    Menu bar → SwiftBar icon → Preferences → check "Launch at Login."
