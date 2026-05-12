@@ -1,6 +1,6 @@
 {
   "name": "brain-extension",
-  "version": "0.5.2",
+  "version": "0.5.3",
   "private": true,
   "description": "Chrome MV3 extension for AI Brain — capture URLs to your local library over the named Cloudflare tunnel.",
   "type": "module",
