@@ -24,10 +24,16 @@ import type { CapacitorConfig } from "@capacitor/cli";
  * LAN-era artifact paired with `network_security_config.xml`'s
  * cleartext-permitted configuration (both now deleted by the pivot).
  *
- * CapacitorHttp is enabled so the share-handler can stream PDF
- * content-URIs as multipart uploads (share-intent flow) without
- * loading the full file into the WebView heap. This is orthogonal to
- * the tunnel — it's about content:// URI resolution on Android.
+ * CapacitorHttp was enabled for share-handler PDF streaming, but on
+ * 2026-05-12 we traced a PIN-unlock loop in the APK to it: when
+ * CapacitorHttp intercepts fetch(), the native CapacitorCookieManager
+ * flushes cookies to the WebView's cookie store asynchronously
+ * (`flush()` is async), which races with the POST /unlock → 303 → GET /
+ * redirect — the GET fires before the session cookie is durable, so
+ * middleware bounces back to /unlock. Disabling CapacitorHttp makes
+ * fetch() use the WebView's native cookie jar (synchronous), which
+ * fixes the loop. Trade-off: PDF shares must fit in WebView heap.
+ * Re-evaluate if large-PDF share becomes a priority use case.
  */
 const config: CapacitorConfig = {
   appId: "com.arunprakash.brain",
@@ -39,7 +45,7 @@ const config: CapacitorConfig = {
   },
   plugins: {
     CapacitorHttp: {
-      enabled: true,
+      enabled: false,
     },
   },
 };
