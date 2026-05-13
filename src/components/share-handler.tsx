@@ -43,6 +43,7 @@ import { ensurePermissionRequested } from "@/lib/outbox/notifications";
 import { buildTransport } from "@/lib/outbox/transport";
 import { savePdf, deletePdf } from "@/lib/outbox/pdf-storage";
 import { syncOnce } from "@/lib/outbox/sync-worker";
+import { showToast } from "@/lib/outbox/toast";
 import type { OutboxEntry } from "@/lib/outbox/types";
 
 interface SharePayload {
@@ -338,9 +339,14 @@ async function enqueueUrl(
   const after = await db.get("outbox", entry.id);
   if (after?.status === "synced" && after.server_id) {
     router.push(`/items/${after.server_id}`);
+    return;
   }
-  // Otherwise the share is queued; user remains in Brain (plan §3.1 — no
-  // toast yet, copy lands in OFFLINE-10).
+  if (after?.status === "stuck") {
+    showToast(after.last_error ?? "Could not save — open Inbox to retry.", "warn");
+    return;
+  }
+  // Still queued — show the offline-confirmation toast (plan §3.1).
+  showToast("Saved offline — will sync when you're back online.", "info");
 }
 
 /**
@@ -462,7 +468,13 @@ async function enqueuePdf(
   const after = await db.get("outbox", entry.id);
   if (after?.status === "synced" && after.server_id) {
     router.push(`/items/${after.server_id}`);
+    return;
   }
+  if (after?.status === "stuck") {
+    showToast(after.last_error ?? "Could not save — open Inbox to retry.", "warn");
+    return;
+  }
+  showToast("Saved offline — PDF will sync when you're back online.", "info");
 }
 
 async function enqueueNote(
@@ -514,7 +526,13 @@ async function enqueueNote(
   const after = await db.get("outbox", entry.id);
   if (after?.status === "synced" && after.server_id) {
     router.push(`/items/${after.server_id}`);
+    return;
   }
+  if (after?.status === "stuck") {
+    showToast(after.last_error ?? "Could not save — open Inbox to retry.", "warn");
+    return;
+  }
+  showToast("Saved offline — note will sync when you're back online.", "info");
 }
 
 /* ---------------------------------------------------------------------- */
