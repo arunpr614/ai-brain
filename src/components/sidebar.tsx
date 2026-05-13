@@ -13,6 +13,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/cn";
 import { useCommandPalette } from "./command-palette";
+import { OutboxBadge } from "./outbox-badge";
 
 interface NavItem {
   href: string;
@@ -23,7 +24,7 @@ interface NavItem {
 
 const ITEMS: NavItem[] = [
   { href: "/", label: "Library", icon: Library, enabled: true },
-  { href: "/inbox", label: "Inbox", icon: Inbox, enabled: false },
+  { href: "/inbox", label: "Inbox", icon: Inbox, enabled: true },
   { href: "/ask", label: "Ask", icon: MessageSquare, enabled: true },
   { href: "/gen", label: "GenPages", icon: Sparkles, enabled: false },
   { href: "/review", label: "Review", icon: BookOpen, enabled: false },
@@ -96,6 +97,7 @@ export function Sidebar() {
                   soon
                 </span>
               )}
+              {enabled && href === "/inbox" && <OutboxBadge />}
             </Link>
           );
         })}
