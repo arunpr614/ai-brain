@@ -29,7 +29,7 @@
  * and case-insensitive paths; we don't pretend to know which).
  */
 
-import { canonicalYoutubeUrl, extractVideoId } from "@/lib/capture/youtube";
+import { canonicalYoutubeUrl, extractVideoId } from "@/lib/capture/youtube-url";
 import type { OutboxEntry, OutboxKind } from "./types";
 
 /** Param-name tokens stripped during URL normalization (lowercase). */

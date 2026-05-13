@@ -24,6 +24,12 @@
  */
 import { JSDOM } from "jsdom";
 import type { CapturedContent } from "./types";
+import { canonicalYoutubeUrl } from "./youtube-url";
+// Re-export the pure URL helpers so existing server-side callers
+// (e.g. /api/capture/url) keep their import paths. New client-side
+// callers should import from ./youtube-url directly to avoid pulling
+// jsdom into the browser bundle.
+export { canonicalYoutubeUrl, extractVideoId, YOUTUBE_PATTERNS } from "./youtube-url";
 
 const INNERTUBE_URL = "https://www.youtube.com/youtubei/v1/player";
 const INNERTUBE_CLIENT = {
@@ -36,14 +42,6 @@ const INNERTUBE_CLIENT = {
 const MAX_SEGMENTS = 7_200; // ~2 h at 1 s/segment
 const WINDOW_MS = 30_000;
 const FETCH_TIMEOUT_MS = 15_000;
-
-const YOUTUBE_PATTERNS: ReadonlyArray<RegExp> = [
-  /^https?:\/\/(?:www\.)?youtube\.com\/watch[^#]*[?&]v=([a-zA-Z0-9_-]{11})/,
-  /^https?:\/\/youtu\.be\/([a-zA-Z0-9_-]{11})(?:[?&#/].*)?$/,
-  /^https?:\/\/(?:www\.)?youtube\.com\/shorts\/([a-zA-Z0-9_-]{11})/,
-  /^https?:\/\/(?:m\.)?youtube\.com\/watch[^#]*[?&]v=([a-zA-Z0-9_-]{11})/,
-  /^https?:\/\/(?:www\.)?youtube\.com\/embed\/([a-zA-Z0-9_-]{11})/,
-];
 
 export type YoutubeCaptureCode =
   | "no_captions"
@@ -72,24 +70,6 @@ export interface TranscriptSegment {
   /** Duration in milliseconds. */
   duration: number;
   text: string;
-}
-
-/**
- * Extract the 11-char YouTube video ID from any of the known URL shapes.
- * Returns null for non-YouTube URLs OR near-miss shapes (channel, playlist,
- * bare `youtu.be/`) so the caller can fall through to the article path.
- */
-export function extractVideoId(url: string): string | null {
-  for (const re of YOUTUBE_PATTERNS) {
-    const m = url.match(re);
-    if (m && m[1]) return m[1];
-  }
-  return null;
-}
-
-/** Normalize any recognized YouTube URL variant to the canonical watch?v= form. */
-export function canonicalYoutubeUrl(videoId: string): string {
-  return `https://www.youtube.com/watch?v=${videoId}`;
 }
 
 /** Parse `<timedtext format="3"><body><p t="ms" d="ms">text</p>...</body></timedtext>`. */
