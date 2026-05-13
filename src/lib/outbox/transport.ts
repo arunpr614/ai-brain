@@ -19,7 +19,8 @@
  */
 
 import type { ProbeOutcome } from "./classify";
-import type { OutboxEntry, OutboxNoteEntry, OutboxUrlEntry } from "./types";
+import { deletePdf, readPdfBytes } from "./pdf-storage";
+import type { OutboxEntry, OutboxNoteEntry, OutboxPdfEntry, OutboxUrlEntry } from "./types";
 
 /** Headers every outbox POST sends. The X-Brain-Client-Api header
  *  triggers the server-side version check (plan §5.5 / OFFLINE-6).
@@ -111,8 +112,85 @@ export async function noteTransport(
 }
 
 /**
+ * PDF transport. Reads bytes from app-private filesystem, POSTs as
+ * multipart/form-data with the X-Expected-Sha256 header (matching the
+ * existing capturePdf direct-POST contract), and on 2xx success deletes
+ * the filesystem blob per plan §4.4 (PDF bytes deleted on sync; only
+ * the metadata row remains).
+ *
+ * Note: multipart bodies don't carry the X-Brain-Client-Api header
+ * elegantly via this Transport's buildHeaders helper because FormData
+ * sets its own content-type. We pass the header explicitly here.
+ */
+export async function pdfTransport(
+  entry: OutboxPdfEntry,
+  baseUrl: string,
+  token: string,
+): Promise<ProbeOutcome> {
+  let bytes: ArrayBuffer;
+  try {
+    bytes = await readPdfBytes(entry.file_path);
+  } catch (err) {
+    return {
+      kind: "network-error",
+      message: `pdf-read-failed: ${err instanceof Error ? err.message : String(err)}`,
+    };
+  }
+
+  const blob = new Blob([bytes], { type: "application/pdf" });
+  const form = new FormData();
+  form.append("pdf", blob, entry.file_name);
+
+  let res: Response;
+  try {
+    res = await fetch(`${baseUrl}/api/capture/pdf`, {
+      method: "POST",
+      headers: {
+        authorization: `Bearer ${token}`,
+        "x-brain-client-api": "1",
+        "x-expected-sha256": entry.expected_sha256,
+      },
+      body: form,
+    });
+  } catch (err) {
+    return {
+      kind: "network-error",
+      message: err instanceof Error ? err.message : String(err),
+    };
+  }
+
+  const retryAfter = res.headers.get("retry-after");
+  const contentType = res.headers.get("content-type");
+
+  let body: unknown;
+  try {
+    const text = await res.text();
+    body = text.length === 0 ? null : JSON.parse(text);
+  } catch {
+    return {
+      kind: "http-non-json",
+      status: res.status,
+      contentType,
+    };
+  }
+
+  // On 2xx success, delete the filesystem blob per plan §4.4. The outbox
+  // row's status flip to 'synced' happens later in applyDisposition; the
+  // file deletion can race ahead because the bytes are no longer needed.
+  if (res.status >= 200 && res.status < 300) {
+    void deletePdf(entry.file_path);
+  }
+
+  return {
+    kind: "http-json",
+    status: res.status,
+    retryAfter,
+    body,
+  };
+}
+
+/**
  * Multiplexer that the sync-worker can call without knowing the kind.
- * Throws on PDF entries — they are not yet outbox-wired (OFFLINE-9).
  */
 export function buildTransport(
   baseUrl: string,
@@ -125,13 +203,7 @@ export function buildTransport(
       case "note":
         return noteTransport(entry, baseUrl, token);
       case "pdf":
-        // PDF outbox wiring lands in OFFLINE-9. Until then any pdf entry
-        // surfacing here is a programmer error — the share-handler routes
-        // PDFs through the direct-POST capturePdf() path.
-        return {
-          kind: "network-error",
-          message: "pdf-outbox-not-implemented",
-        };
+        return pdfTransport(entry, baseUrl, token);
     }
   };
 }

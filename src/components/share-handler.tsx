@@ -41,6 +41,7 @@ import { findByContentHash, initOutbox, putEntry, QuotaWarning, type OutboxDb } 
 import { installTriggers, type TriggerInstall } from "@/lib/outbox/triggers";
 import { ensurePermissionRequested } from "@/lib/outbox/notifications";
 import { buildTransport } from "@/lib/outbox/transport";
+import { savePdf, deletePdf } from "@/lib/outbox/pdf-storage";
 import { syncOnce } from "@/lib/outbox/sync-worker";
 import type { OutboxEntry } from "@/lib/outbox/types";
 
@@ -188,8 +189,14 @@ export function ShareHandler() {
           const firstText = payload.texts?.[0]?.trim() ?? "";
           const firstFile = payload.files?.[0];
 
-          // PDF: still uses the direct-POST path until OFFLINE-9.
+          // PDF → outbox path. Falls back to the legacy direct-POST flow
+          // (with reachability probe + redirect to /offline.html) when
+          // the outbox is unavailable in this build.
           if (firstFile && firstFile.mimeType === "application/pdf") {
+            if (outboxDb) {
+              await enqueuePdf(outboxDb, firstFile, liveToken, router);
+              return;
+            }
             const verdict = await probeReachability({
               baseUrl: BRAIN_TUNNEL_URL,
               bearerToken: liveToken,
@@ -336,6 +343,128 @@ async function enqueueUrl(
   // toast yet, copy lands in OFFLINE-10).
 }
 
+/**
+ * Read the share-target's PDF URI into an in-memory Blob. Shared by
+ * enqueuePdf (outbox path) and capturePdf (direct-POST fallback).
+ *
+ * Handles three URI shapes:
+ *   - `https?://...`  — remote URL (rare; some apps share download links)
+ *   - `/data/...`     — bare filesystem path under app cache
+ *   - `content://...` — Android content provider URI
+ *
+ * The bare-path and content:// paths both go through Capacitor Filesystem
+ * to avoid the same-origin trap fetch() falls into for bare paths
+ * (commit e7695e6 history).
+ */
+async function readSharedPdfAsBlob(uri: string): Promise<Blob> {
+  if (/^https?:\/\//i.test(uri)) {
+    const fetched = await fetch(uri);
+    if (!fetched.ok) throw new Error(`HTTP ${fetched.status}`);
+    return fetched.blob();
+  }
+  const { Filesystem } = await import("@capacitor/filesystem");
+  const result = await Filesystem.readFile({ path: uri });
+  const data = typeof result.data === "string" ? result.data : "";
+  const binary = atob(data);
+  const bytes = new Uint8Array(binary.length);
+  for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+  return new Blob([bytes], { type: "application/pdf" });
+}
+
+async function enqueuePdf(
+  db: OutboxDb,
+  shared: { uri?: string; name?: string; mimeType?: string },
+  token: string,
+  router: ReturnType<typeof useRouter>,
+): Promise<void> {
+  const { uri, name } = shared;
+  if (!uri) {
+    alert("PDF share missing file URI — cannot upload.");
+    return;
+  }
+
+  let blob: Blob;
+  try {
+    blob = await readSharedPdfAsBlob(uri);
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : "unknown";
+    await reportClientError("share.pdf.read-failed", `read(${uri}) ${msg}`);
+    alert(`Could not read PDF (${msg}).`);
+    return;
+  }
+
+  // Plan §8.2: per-PDF max 25 MB. Reject early so we don't consume
+  // outbox / filesystem budget on a doomed-to-fail entry.
+  const MAX_PDF_BYTES = 25 * 1024 * 1024;
+  if (blob.size > MAX_PDF_BYTES) {
+    alert(`PDF is too large (${(blob.size / 1024 / 1024).toFixed(1)} MB). Max 25 MB.`);
+    return;
+  }
+
+  const id = uuid();
+  let saved: Awaited<ReturnType<typeof savePdf>>;
+  try {
+    saved = await savePdf(blob, name ?? "shared.pdf", id);
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err);
+    await reportClientError("share.pdf.outbox-save-failed", msg);
+    alert(`Could not save PDF offline (${msg}).`);
+    return;
+  }
+
+  // Outbox-tier dedup using the worker-computed bytes hash.
+  const contentHash = saved.sha256;
+  const existing = await findByContentHash(db, contentHash);
+  if (existing) {
+    // Same PDF already in outbox. Drop the just-written file so we
+    // don't double-occupy filesystem space.
+    void deletePdf(saved.filePath);
+    if (existing.status === "synced" && existing.server_id) {
+      router.push(`/items/${existing.server_id}`);
+    }
+    return;
+  }
+
+  const entry: OutboxEntry = {
+    id,
+    kind: "pdf",
+    file_path: saved.filePath,
+    file_name: name ?? "shared.pdf",
+    file_size: saved.fileSize,
+    expected_sha256: saved.sha256,
+    status: "queued",
+    attempts: 0,
+    created_at: Date.now(),
+    content_hash: contentHash,
+  };
+
+  try {
+    await putEntry(db, entry);
+  } catch (err) {
+    void deletePdf(saved.filePath);
+    if (err instanceof QuotaWarning) {
+      alert("Storage almost full — sync existing items before saving more.");
+      return;
+    }
+    await reportClientError(
+      "share.outbox.put-failed",
+      err instanceof Error ? err.message : String(err),
+    );
+    alert("Couldn't save offline. Try again.");
+    return;
+  }
+
+  void ensurePermissionRequested();
+
+  const transport = buildTransport(BRAIN_TUNNEL_URL, token);
+  await syncOnce(db, transport).catch(() => undefined);
+
+  const after = await db.get("outbox", entry.id);
+  if (after?.status === "synced" && after.server_id) {
+    router.push(`/items/${after.server_id}`);
+  }
+}
+
 async function enqueueNote(
   db: OutboxDb,
   title: string,
@@ -461,26 +590,9 @@ async function capturePdf(
     return;
   }
 
-  // Read the shared PDF. The plugin hands us either a `content://` URI or
-  // a bare filesystem path under the app cache (e.g.
-  // `/data/user/0/com.arunprakash.brain/cache/shared_files/foo.pdf`).
-  // History: see commit e7695e6 — the @capacitor/filesystem read replaces
-  // the v0.5.3 fetch(uri) path that 404'd after CapacitorHttp was disabled.
   let blob: Blob;
   try {
-    if (/^https?:\/\//i.test(uri)) {
-      const fetched = await fetch(uri);
-      if (!fetched.ok) throw new Error(`HTTP ${fetched.status}`);
-      blob = await fetched.blob();
-    } else {
-      const { Filesystem } = await import("@capacitor/filesystem");
-      const result = await Filesystem.readFile({ path: uri });
-      const data = typeof result.data === "string" ? result.data : "";
-      const binary = atob(data);
-      const bytes = new Uint8Array(binary.length);
-      for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
-      blob = new Blob([bytes], { type: "application/pdf" });
-    }
+    blob = await readSharedPdfAsBlob(uri);
   } catch (err) {
     const msg = err instanceof Error ? err.message : "unknown";
     await reportClientError("share.pdf.read-failed", `read(${uri}) ${msg}`);

@@ -70,7 +70,12 @@ export type HashResponse =
  *
  * `WorkerGlobalScopeLike` is a minimal structural shape — enough that we
  * can call addEventListener + postMessage without pulling in the
- * `WebWorker` lib globally. Tests skip this branch entirely.
+ * `WebWorker` lib globally. The runtime guard distinguishes a real Worker
+ * context (where `self` exists but `window` does NOT) from a main browser
+ * thread (where `self === window`) and from Node tests (no `self`).
+ * Without that distinction, importing this file in a main-thread bundle
+ * — which pdf-hash.ts does for the inline fallback — would register a
+ * stray listener on the window.
  */
 interface WorkerGlobalScopeLike {
   addEventListener(
@@ -80,10 +85,14 @@ interface WorkerGlobalScopeLike {
   postMessage(message: HashResponse): void;
 }
 
-const workerSelf: WorkerGlobalScopeLike | undefined =
-  typeof self !== "undefined" && "postMessage" in (self as object)
-    ? (self as unknown as WorkerGlobalScopeLike)
-    : undefined;
+const inWorkerContext =
+  typeof self !== "undefined" &&
+  typeof (globalThis as { window?: unknown }).window === "undefined" &&
+  "postMessage" in (self as object);
+
+const workerSelf: WorkerGlobalScopeLike | undefined = inWorkerContext
+  ? (self as unknown as WorkerGlobalScopeLike)
+  : undefined;
 
 if (workerSelf) {
   workerSelf.addEventListener("message", async (ev) => {

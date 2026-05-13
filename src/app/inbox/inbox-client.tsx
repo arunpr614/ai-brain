@@ -30,6 +30,7 @@ import {
   putEntry,
   type OutboxDb,
 } from "@/lib/outbox/storage";
+import { deletePdf } from "@/lib/outbox/pdf-storage";
 import { syncOnce } from "@/lib/outbox/sync-worker";
 import { buildTransport } from "@/lib/outbox/transport";
 import type { OutboxEntry, OutboxStatus } from "@/lib/outbox/types";
@@ -193,6 +194,11 @@ export function InboxClient() {
       if (busy || !dbRef.current) return;
       setBusy(true);
       try {
+        // PDF rows hold their bytes on the filesystem; delete those too
+        // so a discard truly frees the storage (plan §4.4 / Q3).
+        if (entry.kind === "pdf") {
+          await deletePdf(entry.file_path).catch(() => undefined);
+        }
         await deleteEntry(dbRef.current, entry.id);
         await refresh();
       } finally {

@@ -186,12 +186,16 @@ describe("buildTransport", () => {
     assert.match(calls[0].url, /\/api\/capture\/note$/);
   });
 
-  it("returns a network-error for pdf entries (not yet outbox-wired)", async () => {
+  it("dispatches pdf entries to /api/capture/pdf (errors out at filesystem read in tests)", async () => {
+    // Outside an APK, readPdfBytes throws filesystem-unavailable. The
+    // pdfTransport surfaces that as network-error. This confirms the
+    // dispatch wiring without needing a Capacitor harness; pdfTransport
+    // happy-path is exercised below with a stubbed plugin.
     const transport = buildTransport("https://brain.test", "T");
     const pdf: OutboxEntry = {
       id: "p1",
       kind: "pdf",
-      file_path: "/tmp/x.pdf",
+      file_path: "outbox-pdfs/p1__x.pdf",
       file_name: "x.pdf",
       file_size: 1,
       expected_sha256: "abc",
@@ -202,6 +206,6 @@ describe("buildTransport", () => {
     };
     const result = await transport(pdf);
     if (result.kind !== "network-error") throw new Error("expected network-error");
-    assert.match(result.message, /pdf-outbox-not-implemented/);
+    assert.match(result.message, /pdf-read-failed/);
   });
 });
