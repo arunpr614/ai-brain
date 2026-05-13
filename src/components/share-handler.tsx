@@ -235,20 +235,40 @@ async function capturePdf(
     return;
   }
 
-  // On Android, `uri` is a `content://` path. With
-  // capacitor.config.ts → plugins.CapacitorHttp.enabled=true (T-9), the
-  // patched `window.fetch` resolves content-URIs via ContentResolver
-  // internally and surfaces the bytes as a Blob. This avoids loading
-  // the full PDF into the WebView JS heap as a base64 string, which
-  // was the v0.5.0 F-039 goal.
+  // Read the shared PDF. The plugin hands us either a `content://` URI or
+  // a bare filesystem path under the app cache (e.g.
+  // `/data/user/0/com.arunprakash.brain/cache/shared_files/foo.pdf`).
+  //
+  // History: with `CapacitorHttp.enabled=true` the patched `window.fetch`
+  // resolved both forms via ContentResolver and returned a Blob without
+  // base64. We disabled CapacitorHttp in 9712dd5 to fix the post-PIN
+  // unlock loop — and that immediately broke PDF share, because plain
+  // browser `fetch()` treats a bare `/data/...` path as a same-origin URL
+  // (resolved against `https://brain.arunp.in/data/...` → 404).
+  //
+  // Fix: read via `@capacitor/filesystem`. The plugin returns base64
+  // bytes through the bridge (~33% heap bloat vs the CapacitorHttp blob
+  // path, but acceptable for personal-use PDFs). Browser `fetch()` is
+  // kept as a fallback for the rare case where the share URI is a real
+  // http(s) URL (some apps share download links rather than files).
   let blob: Blob;
   try {
-    const fetched = await fetch(uri);
-    if (!fetched.ok) throw new Error(`HTTP ${fetched.status}`);
-    blob = await fetched.blob();
+    if (/^https?:\/\//i.test(uri)) {
+      const fetched = await fetch(uri);
+      if (!fetched.ok) throw new Error(`HTTP ${fetched.status}`);
+      blob = await fetched.blob();
+    } else {
+      const { Filesystem } = await import("@capacitor/filesystem");
+      const result = await Filesystem.readFile({ path: uri });
+      const data = typeof result.data === "string" ? result.data : "";
+      const binary = atob(data);
+      const bytes = new Uint8Array(binary.length);
+      for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+      blob = new Blob([bytes], { type: "application/pdf" });
+    }
   } catch (err) {
     const msg = err instanceof Error ? err.message : "unknown";
-    await reportClientError("share.pdf.read-failed", `fetch(${uri}) ${msg}`);
+    await reportClientError("share.pdf.read-failed", `read(${uri}) ${msg}`);
     alert(`Could not read PDF (${msg}).`);
     return;
   }
