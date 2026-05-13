@@ -142,7 +142,16 @@ export async function embedItemWithRetry(
   let last: EmbedResult | null = null;
   for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
     const result = await embedItem(item_id, { ...opts, attempt });
-    if (result.ok) return result;
+    if (result.ok) {
+      getDb()
+        .prepare(
+          `UPDATE embedding_jobs
+             SET state = 'done', completed_at = unixepoch() * 1000, last_error = NULL
+             WHERE item_id = ? AND state != 'done'`,
+        )
+        .run(item_id);
+      return result;
+    }
     last = result;
 
     // Non-retriable fail-fast codes — no further attempts.
