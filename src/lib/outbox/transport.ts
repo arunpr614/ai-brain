@@ -21,13 +21,14 @@
 import type { ProbeOutcome } from "./classify";
 import type { OutboxEntry, OutboxNoteEntry, OutboxUrlEntry } from "./types";
 
-/** Headers every outbox POST sends. Centralized so OFFLINE-6 (X-Brain-Client-Api) edits one site. */
+/** Headers every outbox POST sends. The X-Brain-Client-Api header
+ *  triggers the server-side version check (plan §5.5 / OFFLINE-6).
+ */
 function buildHeaders(token: string): Record<string, string> {
   return {
     "content-type": "application/json",
     authorization: `Bearer ${token}`,
-    // Reserved for OFFLINE-6 (plan §5.5 / B-5):
-    //   "x-brain-client-api": "1",
+    "x-brain-client-api": "1",
   };
 }
 

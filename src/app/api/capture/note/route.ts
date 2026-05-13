@@ -8,6 +8,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { z } from "zod";
 import { validateOrigin } from "@/lib/auth/bearer";
+import { checkClientApiVersion } from "@/lib/auth/api-version";
 import { insertCaptured } from "@/db/items";
 import { isDuplicateShare, shareDedupKey } from "@/lib/capture/dedup";
 import { logError } from "@/lib/errors/sink";
@@ -31,6 +32,9 @@ export async function POST(req: NextRequest) {
     });
     return NextResponse.json({ error: "origin_not_allowed" }, { status: 403 });
   }
+
+  const versionReject = checkClientApiVersion(req);
+  if (versionReject) return versionReject;
 
   let parsed;
   try {

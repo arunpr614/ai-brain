@@ -31,6 +31,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { capturePdfAction } from "@/app/capture-actions";
 import { SESSION_COOKIE } from "@/lib/auth";
 import { validateOrigin } from "@/lib/auth/bearer";
+import { checkClientApiVersion } from "@/lib/auth/api-version";
 import { logError } from "@/lib/errors/sink";
 
 export const runtime = "nodejs";
@@ -62,6 +63,9 @@ export async function POST(req: NextRequest) {
     });
     return NextResponse.json({ error: "origin_not_allowed" }, { status: 403 });
   }
+
+  const versionReject = checkClientApiVersion(req);
+  if (versionReject) return versionReject;
 
   let form: FormData;
   try {
