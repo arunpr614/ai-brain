@@ -85,6 +85,70 @@ describe("normalizeUrlForDedup", () => {
   it("rejects unparseable URLs", () => {
     assert.throws(() => normalizeUrlForDedup("not a url"));
   });
+
+  describe("YouTube canonicalization", () => {
+    const CANONICAL = "https://www.youtube.com/watch?v=dQw4w9WgXcQ";
+
+    it("collapses youtu.be/<id> to canonical watch?v=", () => {
+      assert.equal(
+        normalizeUrlForDedup("https://youtu.be/dQw4w9WgXcQ"),
+        CANONICAL,
+      );
+    });
+
+    it("collapses youtube.com/shorts/<id> to canonical watch?v=", () => {
+      assert.equal(
+        normalizeUrlForDedup("https://www.youtube.com/shorts/dQw4w9WgXcQ"),
+        CANONICAL,
+      );
+    });
+
+    it("collapses youtube.com/embed/<id> to canonical watch?v=", () => {
+      assert.equal(
+        normalizeUrlForDedup("https://www.youtube.com/embed/dQw4w9WgXcQ"),
+        CANONICAL,
+      );
+    });
+
+    it("collapses watch?v= already-canonical form (idempotent)", () => {
+      assert.equal(normalizeUrlForDedup(CANONICAL), CANONICAL);
+    });
+
+    it("ignores tracking params on YouTube URLs (covered by canonical collapse)", () => {
+      assert.equal(
+        normalizeUrlForDedup("https://www.youtube.com/watch?v=dQw4w9WgXcQ&utm_source=tw&t=42"),
+        CANONICAL,
+      );
+    });
+
+    it("yields the same dedup key for every recognized variant of the same video", async () => {
+      const variants = [
+        "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+        "https://youtu.be/dQw4w9WgXcQ",
+        "https://www.youtube.com/shorts/dQw4w9WgXcQ",
+        "https://www.youtube.com/embed/dQw4w9WgXcQ",
+        "https://m.youtube.com/watch?v=dQw4w9WgXcQ",
+      ];
+      const hashes = await Promise.all(variants.map((v) => urlContentHash(v)));
+      // All variants must produce identical hashes.
+      for (let i = 1; i < hashes.length; i++) {
+        assert.equal(hashes[i], hashes[0], `variant index ${i} diverged`);
+      }
+    });
+
+    it("does not collapse different video IDs", async () => {
+      const a = await urlContentHash("https://youtu.be/aaaaaaaaaaa");
+      const b = await urlContentHash("https://youtu.be/bbbbbbbbbbb");
+      assert.notEqual(a, b);
+    });
+
+    it("non-YouTube URLs follow the generic param-stripping path", () => {
+      assert.equal(
+        normalizeUrlForDedup("https://example.com/post?utm_source=x"),
+        "https://example.com/post",
+      );
+    });
+  });
 });
 
 describe("sha256Hex", () => {

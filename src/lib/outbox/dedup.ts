@@ -29,6 +29,7 @@
  * and case-insensitive paths; we don't pretend to know which).
  */
 
+import { canonicalYoutubeUrl, extractVideoId } from "@/lib/capture/youtube";
 import type { OutboxEntry, OutboxKind } from "./types";
 
 /** Param-name tokens stripped during URL normalization (lowercase). */
@@ -49,9 +50,23 @@ export const STRIP_PARAM_NAMES: readonly string[] = [
  * Canonicalize a URL for dedup-key purposes. Throws if the input cannot
  * be parsed by the URL constructor — caller is responsible for calling
  * a more permissive parser before this if needed.
+ *
+ * YouTube special case: any recognized variant (youtube.com/watch?v=,
+ * youtu.be/, /shorts/, /embed/, etc.) collapses to the canonical
+ * watch?v= form BEFORE the generic param-stripping logic runs. This
+ * mirrors the server-side behavior in /api/capture/url:71-72 so the
+ * client-side outbox dedup tier sees what the server sees: one share
+ * per video, regardless of which surface the user shared from. Without
+ * this collapse, sharing the same Short two ways while offline would
+ * enqueue two rows that both later flip to `synced` with the same
+ * server_id (correct, but cosmetically duplicated in /inbox).
  */
 export function normalizeUrlForDedup(input: string): string {
-  const url = new URL(input.trim());
+  const trimmed = input.trim();
+  const videoId = extractVideoId(trimmed);
+  if (videoId) return canonicalYoutubeUrl(videoId);
+
+  const url = new URL(trimmed);
   url.hash = "";
   url.hostname = url.hostname.toLowerCase();
 
