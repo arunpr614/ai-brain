@@ -98,6 +98,7 @@ Blocking spikes must land before the phase they block. Non-blocking can run in p
 | R-CLUSTER | Topic clustering: JS vs Python sidecar vs LLM-only | v0.6.0 | P2 | ○ | `docs/research/clustering.md` |
 | R-YT | yt-dlp reliability on YouTube auto-subs in 2026 | v0.10.0 | P2 | ○ | `docs/research/youtube.md` |
 | R-WHISPER | whisper.cpp vs faster-whisper on my Mac | v0.10.0 | P2 | ○ | `docs/research/whisper.md` |
+| R-GEMMA | Gemma 4 evaluation: on-device E4B + T5Gemma 2 structured-output | v0.8.x (GEMMA-1); any time (GEMMA-2) | P2 | ◐ initial | `docs/research/gemma-4-evaluation.md` (initial 2026-05-13; spike for E4B Android-runnable quant + license verification still pending) |
 
 ---
 

@@ -270,6 +270,7 @@ Promoted from v0.10.0 (`EXP-1` + `EXP-2`) after 2026-05-12 Recall.it v2 audit su
 | REV-4 | Android local notification (8am default) | planned | Capacitor LocalNotifications |
 | F-028 | Due-count badge in sidebar | planned | |
 | F-029 | Mobile swipe-to-rate | planned | |
+| GEMMA-1 | On-device Android summarization via Gemma 4 E4B | candidate | Closes offline-mode unenriched-capture gap. Spike before commit. See `docs/research/gemma-4-evaluation.md`. |
 
 **Exit:** 20 cards reviewed over 5 days; FSRS schedules correctly; streak = 5.
 

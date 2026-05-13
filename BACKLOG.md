@@ -121,6 +121,8 @@ Full plan: [`docs/plans/v0.3.1-polish.md`](./docs/plans/v0.3.1-polish.md) (v2.0)
 | I-01 | Auto-collection suggestion from enrichment tags | Would sit behind a user toggle; needs R-CLUSTER first. |
 | I-02 | Per-item "regenerate enrichment" button | Already safe: `enrichItem` is idempotent. UI work only. |
 | I-03 | Export Obsidian vault directly (not just zip) | Requires D-4 (Obsidian vault path) — still open. |
+| GEMMA-1 | On-device Android summarization via Gemma 4 E4B (or MediaPipe LLM Inference) | Closes the offline-mode unenriched-capture gap exposed by `docs/plans/v0.6.x-offline-mode-apk.md`. **Revisit after** v0.6.x offline ships and dogfooding shows whether unenriched-offline-captures is annoying. Full evaluation: `docs/research/gemma-4-evaluation.md` §4. v0.8.x candidate. |
+| GEMMA-2 | T5Gemma 2 structured-output spike (vs Qwen3-8B) | 1-hour low-risk: feed same enrichment prompts; compare JSON-adherence on tag/category/quote fields. Only worth doing if Qwen3 ever produces malformed JSON that breaks the pipeline. See `docs/research/gemma-4-evaluation.md` §3 row D-1. |
 | ~~F-057~~ | ~~Audit `sqlite-vec` resolved version on install~~ | **Closed 2026-05-08** under v0.4.0 T-0 (`e8f104a`): pinned to 0.1.9 with explicit overrides for all five platform sub-packages. `npm ls` shows `sqlite-vec-darwin-arm64@0.1.9 overridden`. |
 
 ---
