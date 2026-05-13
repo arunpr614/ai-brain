@@ -26,7 +26,8 @@
  * invoke on unmount. ShareHandler does this in its cleanup.
  */
 
-import type { OutboxDb } from "./storage";
+import { countByStatus, type OutboxDb } from "./storage";
+import { maybeNotifyStuckTransition } from "./notifications";
 import { resetQueuedRetryTimes, syncOnce, type Transport } from "./sync-worker";
 
 /** Re-checks every 30 seconds while the app is foreground. */
@@ -58,6 +59,9 @@ export async function installTriggers(
     running = true;
     try {
       await syncOnce(db, transport);
+      // Notify on the 0 → ≥1 stuck transition (plan §5.6 / OFFLINE-8).
+      const stuckCount = await countByStatus(db, "stuck");
+      await maybeNotifyStuckTransition(stuckCount);
     } finally {
       running = false;
     }

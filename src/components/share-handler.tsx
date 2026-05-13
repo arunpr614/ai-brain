@@ -39,6 +39,7 @@ import { BRAIN_TUNNEL_URL } from "@/lib/config/tunnel";
 import { computeContentHash } from "@/lib/outbox/dedup";
 import { findByContentHash, initOutbox, putEntry, QuotaWarning, type OutboxDb } from "@/lib/outbox/storage";
 import { installTriggers, type TriggerInstall } from "@/lib/outbox/triggers";
+import { ensurePermissionRequested } from "@/lib/outbox/notifications";
 import { buildTransport } from "@/lib/outbox/transport";
 import { syncOnce } from "@/lib/outbox/sync-worker";
 import type { OutboxEntry } from "@/lib/outbox/types";
@@ -101,6 +102,7 @@ export function ShareHandler() {
 
     let unmounted = false;
     let removeListener: (() => void) | null = null;
+    let removeNotificationListener: (() => void) | null = null;
     let triggerHandle: TriggerInstall | null = null;
     let outboxDb: OutboxDb | null = null;
 
@@ -129,6 +131,27 @@ export function ShareHandler() {
       if (outboxDb && token) {
         const transport = buildTransport(BRAIN_TUNNEL_URL, token);
         triggerHandle = await installTriggers(outboxDb, transport);
+      }
+
+      // 1b. Notification-tap routing (OFFLINE-8 / plan §5.6). When the user
+      //     taps a stuck-state notification we route them to /inbox.
+      try {
+        const notif = await import("@capacitor/local-notifications");
+        const tapHandle = await notif.LocalNotifications.addListener(
+          "localNotificationActionPerformed",
+          (action) => {
+            const route =
+              (action.notification?.extra as { route?: string } | undefined)?.route;
+            if (typeof route === "string" && route.startsWith("/")) {
+              router.push(route);
+            }
+          },
+        );
+        removeNotificationListener = () => {
+          tapHandle.remove().catch(() => undefined);
+        };
+      } catch {
+        // Plugin unavailable — notifications won't fire either.
       }
 
       // 2. Listener registration (gated on init completion above).
@@ -235,6 +258,7 @@ export function ShareHandler() {
     return () => {
       unmounted = true;
       removeListener?.();
+      removeNotificationListener?.();
       triggerHandle?.uninstall();
       if (outboxDb) {
         outboxDb.close();
@@ -295,6 +319,10 @@ async function enqueueUrl(
     return;
   }
 
+  // First-successful-enqueue is when we ask for the notification
+  // permission (plan §5.6 / OFFLINE-8 / Q2). Idempotent.
+  void ensurePermissionRequested();
+
   // Try the immediate POST. On success → row flips to synced; on failure
   // it stays queued for triggers.ts to retry.
   const transport = buildTransport(BRAIN_TUNNEL_URL, token);
@@ -348,6 +376,8 @@ async function enqueueNote(
     alert("Couldn't save offline. Try again.");
     return;
   }
+
+  void ensurePermissionRequested();
 
   const transport = buildTransport(BRAIN_TUNNEL_URL, token);
   await syncOnce(db, transport).catch(() => undefined);
