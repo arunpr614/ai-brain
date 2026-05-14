@@ -36,7 +36,16 @@ const SESSION_COOKIE = "brain-session";
 // server might be up but the device isn't paired, or the server might be
 // down and this HTML is cached in the WebView. A redirect to /unlock
 // would trap the user in a loop.
-const PUBLIC_PATHS = new Set(["/unlock", "/setup", "/offline.html"]);
+//
+// /sw.js (v0.5.6 SHELL/DIAG-3 fix 2026-05-14) — the service worker
+// script must be served unauthenticated. Browsers refuse to register a
+// SW whose script URL responds with a redirect (SecurityError: "The
+// script resource is behind a redirect, which is disallowed."), so a
+// 302 → /unlock here breaks the entire offline-mode feature. The SW
+// itself enforces the auth boundary at its fetch handler — caching
+// auth-gated routes happens via runtime stale-while-revalidate using
+// the user's session cookie, never via cache.add at install time.
+const PUBLIC_PATHS = new Set(["/unlock", "/setup", "/offline.html", "/sw.js"]);
 
 export function proxy(req: NextRequest) {
   const { pathname } = req.nextUrl;
