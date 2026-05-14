@@ -11,8 +11,12 @@
  * Plan: docs/plans/v0.5.6-app-shell-sw.md (SHELL-1).
  *
  * Strategy by route family:
- *   - shell URLs (/, /inbox, /share-target, /capture, /offline.html, /favicon.ico)
- *     → precached at install via shell-v1 cache, served stale-while-revalidate
+ *   - precache URLs (/offline.html, /favicon.ico) → installed at SW
+ *     activation; auth-public so cache.add never rejects on a redirect
+ *   - shell runtime URLs (/, /inbox, /share-target, /capture) → not
+ *     precached (middleware redirects unauthenticated SW fetches);
+ *     populated lazily into shell-v1 on first authenticated visit
+ *     via stale-while-revalidate
  *   - other HTML pages (/items/:id) → stale-while-revalidate into pages-v1 (fills lazily)
  *   - /_next/static/** → cache-first into static-v1 (Next hashes filenames)
  *   - /api/** → network-only (outbox handles transient errors; SW must NOT proxy)
@@ -27,14 +31,17 @@ const STATIC_CACHE = "brain-static-v1";
 const PAGES_CACHE = "brain-pages-v1";
 const KNOWN_CACHES = [SHELL_CACHE, STATIC_CACHE, PAGES_CACHE];
 
-const SHELL_URLS = [
-  "/",
-  "/inbox",
-  "/share-target",
-  "/capture",
-  "/offline.html",
-  "/favicon.ico",
-];
+// Precache only auth-public, static URLs. Protected routes (/, /inbox,
+// /share-target, /capture) are middleware-gated — they redirect to
+// /unlock when the SW fetches them without the user's session cookie,
+// which makes cache.add reject. Those routes are populated lazily into
+// PAGES_CACHE on first authenticated visit (stale-while-revalidate).
+//
+// Empirical evidence (2026-05-14): cache.addAll on the original 6-URL
+// list rejected with "Failed to execute 'addAll' on 'Cache': Request
+// failed", which prevented SW activation. See
+// docs/research/inspect-webview-output-2026-05-14.md.
+const PRECACHE_URLS = ["/offline.html", "/favicon.ico"];
 
 const NETWORK_ONLY_PATHS = [
   "/api/",
@@ -46,8 +53,16 @@ const NETWORK_ONLY_PATHS = [
 
 const PAGES_PATTERN = /^\/items\/[^/]+(?:\/|$)/;
 
+// Routes whose HTML we still serve stale-while-revalidate from
+// SHELL_CACHE (populated lazily on first visit). cache hits here let
+// offline cold-launch render the library / share-target / inbox
+// chrome even though we don't precache them at install time.
+const SHELL_RUNTIME_PATHS = ["/", "/inbox", "/share-target", "/capture"];
+
 function isShellUrl(pathname) {
-  return SHELL_URLS.includes(pathname);
+  if (PRECACHE_URLS.includes(pathname)) return true;
+  if (SHELL_RUNTIME_PATHS.includes(pathname)) return true;
+  return false;
 }
 
 function isStaticAsset(pathname) {
@@ -70,10 +85,25 @@ function acceptsHtml(request) {
 
 self.addEventListener("install", (event) => {
   event.waitUntil(
-    caches
-      .open(SHELL_CACHE)
-      .then((cache) => cache.addAll(SHELL_URLS))
-      .then(() => self.skipWaiting()),
+    (async () => {
+      const cache = await caches.open(SHELL_CACHE);
+      // Per-URL try/catch so one failure doesn't abort the whole install.
+      // addAll() is all-or-nothing; cache.add() per URL with catch lets
+      // partial precaches succeed.
+      await Promise.all(
+        PRECACHE_URLS.map(async (url) => {
+          try {
+            await cache.add(url);
+          } catch (err) {
+            // Non-fatal — install continues with whatever cached.
+            // Self-log via console for chrome://inspect debugging.
+            // eslint-disable-next-line no-console
+            console.warn("[brain-sw] precache failed:", url, err?.message);
+          }
+        }),
+      );
+      await self.skipWaiting();
+    })(),
   );
 });
 
