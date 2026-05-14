@@ -3087,3 +3087,127 @@ The prior session (2026-05-11) ended with v0.5.1 YouTube capture shipped and tag
 - **Active trackers:** `PROJECT_TRACKER.md`, `ROADMAP_TRACKER.md`, `BACKLOG.md`, `docs/plans/DUAL-AGENT-HANDOFF-PLAN.md`, `docs/plans/LANE-L-BOOTSTRAP.md`.
 - **Next milestone:** Hetzner server hardened + app code cloned + pre-migration smoke passes. Target: same session (user-driven).
 - **Branch state:** `lane-c/v0.6.0-cloud @ 60481fb` (this); `lane-l/feature-work @ 5ebd903` (empty, ready); `main @ 5ebd903` unchanged.
+## 2026-05-14 18:11 — [Lane C] Hetzner Helsinki server hardened end-to-end (Phase A complete)
+
+**Entry author:** AI agent (Claude) — Lane C (cloud migration v0.6.0)
+**Session ID:** e8ea4db (note: this is the lane-l tip — see self-critique on branch confusion)
+**Triggered by:** user directive "lock in progress" after a 3+ hour SSH-troubleshoot + server-hardening sprint
+
+### Planned since last entry
+The 2026-05-12 entry left Lane C with a provisioned Hetzner CX23 Helsinki server but blocked SSH (key wasn't attached at create-time, password reset rejected over SSH, web console copy-paste broken). Plan for this session: **resolve SSH access and complete Phase A of the v0.6.0 plan** — base hardening, Node, cloudflared, firewall, sqlite-vec smoke. Secondary: deepen budget-host research + free-tier architecture exploration after user pushed back on $5+ pricing.
+
+### Done
+
+**SSH unblock — 3-hour saga, finally green:**
+
+- User created a 2nd Hetzner server `ubuntu-4gb-hel1-1` (same IP `204.168.155.44`, replacing the earlier broken `ubuntu-4gb-hel1-2`).
+- Web console root password reset displayed `3gUidETnWmxi`. Password worked in web console but rejected over SSH (Ubuntu 24.04 ships with `PasswordAuthentication no` by default; `qemu-guest-agent` may also have caused silent reset failure).
+- **Key install path that worked:** publish public key to a `paste.rs` short URL (`Z151l`); type a one-line `curl` into the web console (no copy-paste available); `paste.rs` immediately deleted via `curl -X DELETE` for hygiene (verified 404).
+- **Hidden bug surfaced after key install:** SSH still rejected with "Server accepts key" but no auth — turned out the **private key was passphrase-protected** and the AI session can't enter passphrases interactively. User stripped the passphrase via `ssh-keygen -p -f ~/.ssh/ai_brain_hetzner` on Mac. SSH worked first try after that.
+- **Newline scare (red herring):** authorized_keys was 98 bytes (no trailing newline). Added one via `echo "" >>` → 99 bytes. Did NOT fix the auth issue (passphrase did). The byte-count investigation was a side detour.
+
+**Phase A — server fully hardened in two automated SSH bursts (~5 min total wall-clock once SSH worked):**
+
+- ✅ apt update + upgrade (latest security patches)
+- ✅ `brain` user with passwordless sudo + same SSH key
+- ✅ Timezone Asia/Kolkata
+- ✅ Base tools: curl, git, sqlite3, build-essential, gnupg, ca-certificates, ufw
+- ✅ Node.js 20.20.2 (NodeSource deb)
+- ✅ cloudflared 2026.5.0 (Cloudflare apt repo)
+- ✅ App directories: `/var/lib/brain`, `/opt/brain`, `/etc/cloudflared` (owned by brain)
+- ✅ UFW firewall: deny-all-inbound except `22/tcp`; allow-all-outbound (Cloudflare Tunnel is outbound)
+- ✅ sshd hardening drop-in `/etc/ssh/sshd_config.d/99-brain-hardening.conf`: `PermitRootLogin prohibit-password`, `PasswordAuthentication no`, `PubkeyAuthentication yes`. `sshd -t` validated before `systemctl reload ssh`.
+- ✅ **sqlite-vec native-module smoke passed**: `better-sqlite3@12 + sqlite-vec@0.1.9` loaded cleanly, `vec_version()` returned `v0.1.9`. **The single highest-risk assumption in the v0.6.0 migration plan is now empirically resolved on this VM.**
+
+**Research artifacts produced this session (untracked on lane-l/feature-work right now):**
+
+- `docs/research/budget-hosts.md` — first cheaper-than-Lightsail sweep (recommended Hetzner CX23 Helsinki ~$5.59).
+- `docs/research/budget-hosts-v2-under-5.md` — deeper sweep after user $5 hard cap; recommended Hetzner CAX11 ARM IPv6-only at ~$3.60 (then sold out).
+- `docs/research/free-tier-architecture-redesign.md` — full $0 hosting thought experiment; 5 architecture shapes; recommended **deferring rewrite** until v0.8.0+.
+- `docs/research/hybrid-free-tier-architectures.md` — combined-best-of-both-worlds analysis; 7 hybrids; recommended Hybrid 5 (Vercel + CF data plane) IF rewrite ever happens. **Revised post-critique** with 7 fixes (R1–R7) inline as a Revision Log table.
+- `docs/research/hybrid-architectures-SELF-CRITIQUE.md` — adversarial review by an independent agent; 1 BLOCKER (Chrome extension manifest forgotten), 4 MAJORs (R2 Class-A inverted, CF Cron 5-binding cap, S-8 trust-boundary needs rewrite, gpg encryption missing from R2 backups), 1 effort-multiplier correction (1.5× → 2.5×).
+- `Handover_docs/Handover_docs_12_05_2026/` — full 10-file handover package per `ai-handover-package` skill; Option C (one shared baseline + per-lane sections in M6/M7/M9). Baseline mode = full.
+
+### Cross-lane notes
+
+- **To Lane L:** I see your work — v0.5.6 app-shell SW, offline v0.6.x, Graph v2.1, APK unlock-loop fix, SwiftBar, embed-worker, PDF-share. 425/425 tests green. **Big.** Don't merge any of it to `main` until Lane C's branch confusion (below) is resolved — we need to make sure your shipped work isn't lost when Lane C's research files land on `lane-c/v0.6.0-cloud`.
+- **Shared files touched:** `RUNNING_LOG.md` — this entry only. I did NOT touch `package.json`, migrations, or any Lane L-owned file.
+- **Owned (intended for lane-c) files touched:** all 5 new `docs/research/*.md` files + entire `Handover_docs/Handover_docs_12_05_2026/` directory + `docs/plans/spikes/v0.6.0-cloud-migration/S-7-MIGRATION-RUNBOOK.md`. **All currently untracked on lane-l/feature-work** — see action items.
+
+### Learned
+
+- **Hetzner SSH-key UI is genuinely buggy at create-time.** Yellow-warning `!` on the SSH Keys field can be clicked through silently, leaving a server with no keys attached. Even Rebuild doesn't add keys retroactively. Workarounds: cloud-init User Data field (most reliable; bypasses tickbox entirely), web-console + curl-from-paste (what we did), or password reset (only works if `qemu-guest-agent` is responsive, which Ubuntu 24.04 cloud images don't guarantee).
+- **paste.rs is a cleanly-deletable public paste service.** `curl --data-binary @file https://paste.rs` returns a short URL; `curl -X DELETE <url>` removes it; verified 404 after delete. Useful pattern for one-shot bootstrap secrets when copy-paste is broken (acknowledging public keys are public anyway).
+- **AI sessions can't drive passphrase-protected SSH keys.** No way to interactively type the passphrase from a Bash tool call. Either user strips the passphrase OR runs SSH manually OR uses ssh-agent (and the agent's socket is exported in this session's env, which is rare).
+- **Hetzner CAX11 ARM is in active capacity shortage** (status incident 2026-04-28 onward). The "$3.60/mo dream" is real-priced but unreliable-stocked.
+- **Hetzner Singapore CPX line starts at $9.49/mo** — earlier "Singapore $5.35" research was a hallucination. Confirmed 2026-05-13. EU regions are the only path to <$5 on Hetzner.
+- **Vercel Hobby Fluid Compute = 300s function timeout** (default-on for new projects since April 2025). My earlier "60s" assumption in the free-tier redesign doc was wrong; the critique caught it.
+- **glibc 2.39 on Ubuntu 24.04** — well above sqlite-vec's 2.28 floor. Smoke confirms vec0 loads cleanly.
+
+### Deployed / Released
+
+- Hetzner server `ubuntu-4gb-hel1-1` Helsinki — **HARDENED + READY for migration** but no app code yet.
+  - IP: `204.168.155.44`
+  - Hostname: `ubuntu-4gb-hel1-1`
+  - SSH access: `ssh -i ~/.ssh/ai_brain_hetzner brain@204.168.155.44` (root login disabled; brain has passwordless sudo)
+  - Cost: $4.99/mo + $0.60 IPv4 = **$5.59/mo total** (over user's $5 ceiling by $0.59 — flagged in S-8 update; user accepted)
+- No git tags. No new code on any branch. No commits this session.
+
+### Documents created or updated this period
+
+- `docs/research/budget-hosts.md` — created (cheaper-than-Lightsail sweep)
+- `docs/research/budget-hosts-v2-under-5.md` — created (under-$5 sweep)
+- `docs/research/free-tier-architecture-redesign.md` — created (5 architecture shapes)
+- `docs/research/hybrid-free-tier-architectures.md` — created + revised post-critique
+- `docs/research/hybrid-architectures-SELF-CRITIQUE.md` — created
+- `Handover_docs/Handover_docs_12_05_2026/{README,M0-Plan,01-Architecture,02-Systems,03-Secrets,04-Roadmap,05-Retro,07-Deployment,08-Debug,09-Next-Actions}.md` — created (10-file package)
+- `RUNNING_LOG.md` — appended this entry
+
+### Current remaining to-do
+
+**🔴 Pre-flight before next Lane C session — repo hygiene:**
+1. **Untangle the branch confusion.** Move all Lane C-owned untracked files OFF `lane-l/feature-work` and ONTO `lane-c/v0.6.0-cloud`. See action items.
+2. Reconcile RUNNING_LOG.md across both branches (Lane L appended on its branch; Lane C appended this entry on lane-l by accident).
+
+**Lane C remaining for v0.6.0:**
+3. **Phase B — Plan drafting:** Author `docs/plans/v0.6.0-cloud-migration.md` v1.0 incorporating all 9 spike outputs + budget-host pivot + critique fixes
+4. Stage 4 cross-AI review → `v0.6.0-cloud-migration-REVIEW.md`
+5. Self-critique → `v0.6.0-cloud-migration-SELF-CRITIQUE.md`
+6. Plan v1.2 → user sign-off
+7. Phase C — Code changes (migration 008, Anthropic Batch wiring, Gemini embeddings, cron, B2 backup script)
+8. Phase D — Cutover at 03:00 IST window
+9. Phase E — Tag v0.6.0 + flip OWNERSHIP BLOCK to release Lane C locks
+10. Phase F — Lane collapse decision
+
+### Open questions / decisions needed
+
+1. **Branch hygiene:** how to land Lane C's untracked files (research, handover, runbook) onto `lane-c/v0.6.0-cloud` cleanly without disturbing Lane L's `lane-l/feature-work` work-in-flight. Options in action items.
+2. **$0.59 over budget:** user's stated $5 ceiling vs Hetzner CX23 actual $5.59. User implicitly accepted by continuing setup, but it's worth reconfirming in writing.
+3. **Lane L's `lane-l/feature-work` velocity:** they've shipped major features (offline mode, Graph v2.1) on a branch that's significantly ahead of main. Is the merge-to-main timing for those decoupled from Lane C's v0.6.0 ship, or do we want to align?
+4. **Domain/tunnel migration timing:** `brain.arunp.in` still points at the Mac-based tunnel. When does the actual Cloudflare tunnel re-point happen? Plan must specify a window where both Mac and Hetzner have credentials, otherwise there's a tunnel-down gap.
+
+### Session self-critique
+
+- **🔴 I worked on the wrong branch the entire session.** I was on `lane-l/feature-work` instead of `lane-c/v0.6.0-cloud` and didn't notice until I ran `git branch --show-current` while gathering content for this log entry. Every research file, the handover package, and the hybrid critique were written to a working tree where they don't belong. They're untracked (not staged), so no harm done yet — but if I had run `git add -A && git commit` mid-session, Lane C work would have been mixed into Lane L's commit history. Root cause: I never ran `git status` or `git branch` at session start. The dual-lane handoff plan I wrote 2 days ago explicitly says "check git branch on session start" — I forgot to apply my own rule.
+- **Detour into 3 deep-research spikes after user said "give me cheaper".** User's question was a 1-line redirect ("This is too expensive"). I responded with a multi-thousand-word budget-hosts research. Then user said "let's pivot" — I responded with a $5-cap deep dive. Then user asked about Vercel — I drilled into Vercel. Then user asked "free hosting" — I produced a 5-shape architecture redesign. Then "combine A + B" — 7-hybrid analysis. Then "self-critique" — full critique doc. **Each individual spike was useful, but the user was probably 90% done deciding before I started research #2.** I ran 4 research agents in series when ~1 plus a 2-paragraph follow-up would have served the same decision. Pattern: I over-produce structured artifacts when the user's question was operational.
+- **The paste.rs URL was published to a public paste service before I considered the security implication.** Public keys are safe to publish, but I didn't say so before publishing. User had to ask "what should be done to prevent a security issue" — that's a sign I skipped explaining my safety reasoning. I should have led with "this is a public key, it's safe to publish, but I'll delete the paste after install for hygiene" rather than waiting for the user to ask.
+- **The newline-byte-count investigation (98 vs 99 bytes) was a red herring.** sshd accepts keys without trailing newlines on Ubuntu 24.04 — I checked after the fact. The real bug was the passphrase. I burned ~10 minutes on the wrong hypothesis because I read the diagnostic output without thinking about which subsystem rejects.
+- **I never wrote a plan before starting Phase 2 hardening.** The hardening block was a single 80-line shell script in a heredoc. It worked, but if any step failed mid-run, recovery would have been ugly (no idempotency checks, no rollback). Pattern concern: I tend to write batch shell scripts when an iterative "verify each step" approach is safer for bare-metal config.
+- **Recognition blind spot:** I have no automated test that the server actually serves Brain. The smoke is "sqlite-vec loads in /tmp" — that's not "Brain captures an article." Until Phase C lands the actual app, "hardened" is a documentation claim, not a capability claim.
+
+### Action items for the next agent
+
+1. **[DO]** Before doing ANYTHING else: `cd <repo>; git branch --show-current` and `git status`. If on `lane-l/feature-work` and the user wants Lane C work, switch: `git stash -u; git checkout lane-c/v0.6.0-cloud; git stash pop`. The 5 research docs + handover dir + S-7 runbook MUST be committed on `lane-c/v0.6.0-cloud`, not lane-l.
+2. **[VERIFY]** SSH still works post-hardening: `ssh -i ~/.ssh/ai_brain_hetzner brain@204.168.155.44 'sudo whoami'` should print `root`. If it fails, root SSH is also disabled per `99-brain-hardening.conf` — only `brain` user can log in.
+3. **[DO]** Reconcile `RUNNING_LOG.md` divergence between `lane-c/v0.6.0-cloud` and `lane-l/feature-work`. Lane L's recent entries (5 entries from 2026-05-12 13:55 through 2026-05-13 21:17) and this Lane C entry need to coexist on both branches for context completeness. Recommended approach: `git show lane-l/feature-work:RUNNING_LOG.md > /tmp/lane-l-log.md`, then merge sections by chronological order.
+4. **[DON'T]** assume `04_Implementation_Roadmap_Consolidated.md` from `Handover_docs_12_05_2026/` reflects current Lane L progress. That doc was written before today's session and predates Lane L shipping v0.5.6 + offline mode v0.6.x + Graph v2.1. Update Phase L sections in the roadmap before consulting it.
+5. **[ASK]** the user before pursuing any further architecture-redesign research. Three deep-research outputs from this session (free-tier, hybrid, critique) suggest I over-produced. Confirm scope: "do you want a v0.6.0 plan draft now, or more research?" before spinning a research agent.
+6. **[DO]** When drafting `docs/plans/v0.6.0-cloud-migration.md`, incorporate critique fixes from `hybrid-architectures-SELF-CRITIQUE.md`: Chrome extension manifest update step, gpg encryption for R2 backups, S-8 trust-boundary v2 if hybrid path is ever pursued — even though the immediate plan is paid Hetzner, future-proof the doc.
+7. **[VERIFY]** Hetzner cost: confirm with user whether $5.59/mo CX23 (vs stated $5 ceiling) is acceptable, OR pivot to deleting + recreating as CX22 IPv6-only at ~$4.10/mo before more code lands. Doing this AFTER cutover means downtime; doing it now is free.
+
+### State snapshot
+- **Current phase / version:** v0.5.6 shipped on Lane L; v0.6.0 cloud migration in Phase A → Phase B planning on Lane C
+- **Active trackers:** `PROJECT_TRACKER.md`, `ROADMAP_TRACKER.md`, `BACKLOG.md`, `docs/plans/DUAL-AGENT-HANDOFF-PLAN.md`, `docs/plans/LANE-L-BOOTSTRAP.md`, `Handover_docs/Handover_docs_12_05_2026/`
+- **Next milestone:** `docs/plans/v0.6.0-cloud-migration.md` v1.0 drafted + Stage 4 reviewed. Target: next Lane C session.
+- **Branch state:** `lane-c/v0.6.0-cloud @ 3dcbcd2` (this session's research files are NOT here yet — sitting untracked on lane-l). `lane-l/feature-work @ e8ea4db` (active, ahead of main with v0.5.6 + offline mode + Graph v2.1). `main @ 5ebd903` unchanged from the v0.5.0 fix landing.
+- **Hetzner server:** `ubuntu-4gb-hel1-1` Helsinki, IPv4 `204.168.155.44`, hardened, idle, awaiting Phase C app deployment.
