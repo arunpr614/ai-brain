@@ -1,8 +1,22 @@
 # Automating Chrome DevTools Inspection of the Brain Android WebView from Claude Code
 
-**Date:** 2026-05-14  
-**Audience:** Claude Code agent that will implement a headless inspection script for `com.arunprakash.brain`  
+**Date:** 2026-05-14
+**Audience:** Claude Code agent that will implement a headless inspection script for `com.arunprakash.brain`
 **Goal:** Replace four manual chrome://inspect steps with a Node.js script that emits: current WebView URL, service worker registrations + states, cache storage names, and per-cache URL lists.
+**Self-critique applied:** v1.1 incorporates fixes from `automate-webview-devtools-from-claude-code-SELF-CRITIQUE.md` §6 items #3–#15. Item #1 (run §F script against live device) was acted on by `scripts/inspect-webview.mjs` and `docs/research/inspect-webview-output-2026-05-14.md` — the run revealed a Capacitor-specific WebSocket-hangup issue that drove a 4-attempt retry loop into the production script.
+
+---
+
+## §0. TL;DR (read this first if you are an agent)
+
+1. `npm install chrome-remote-interface` (already in `devDependencies` for this project).
+2. Open the Brain APK on a connected Pixel; PIN-unlock so the WebView is on `https://brain.arunp.in/...` not `/unlock` or `/setup-apk`.
+3. Run `node scripts/inspect-webview.mjs`.
+4. The script asserts pass/fail for: SW status `activated`, three named caches exist, `brain-shell-v1` contains the 6 expected paths.
+5. Exit code: 0 = all green; 1 = at least one assertion failed; 2 = 30s deadline exceeded.
+6. If you only want target enumeration without WebSocket interaction, hit `http://localhost:9222/json` after `adb forward tcp:9222 localabstract:webview_devtools_remote_<pid>` — that path always works even when WebSocket connections are flaky in Capacitor's WebView (observed 2026-05-14).
+
+The rest of this document explains *why* and provides the protocol details when the script needs adaptation.
 
 ---
 
@@ -182,11 +196,12 @@ const { caches } = await client.CacheStorage.requestCacheNames({
 client.ServiceWorker.workerVersionUpdated(({ versions }) => { ... });
 ```
 
-**Lines of code for full use case:** ~80-100 lines  
-**Pros:** No overhead, exposes raw CDP 1:1, easy to use `client.send()` for any command, works with any Chromium target including Android WebViews.  
+**Capability fit:** thinnest correct CDP abstraction. Every domain is exposed as a first-class namespace property (e.g. `client.CacheStorage.requestCacheNames(...)` instead of `session.send('CacheStorage.requestCacheNames', ...)`). For our use case — query CacheStorage and ServiceWorker domains — this avoids the `session.send()` indirection that Puppeteer and Playwright force.
+
+**Pros:** No overhead, exposes raw CDP 1:1, easy to use `client.send()` for any command, works with any Chromium target including Android WebViews.
 **Cons:** No high-level abstractions; you manage all timing/waiting manually; actively maintained but smaller community than Puppeteer.
 
-**Version at time of writing:** 0.33.x (npm). Node.js v6.3.0+ required.
+**Version at time of writing:** 0.34.x (npm). Node.js v6.3.0+ required.
 
 ---
 
@@ -225,9 +240,10 @@ const { caches } = await session.send('CacheStorage.requestCacheNames', {
 });
 ```
 
-**Lines of code for full use case:** ~90-120 lines (the CacheStorage path requires CDPSession)  
-**Pros:** Familiar API; `page.evaluate()` available; strong documentation; large community.  
-**Cons:** `browserWSEndpoint` requires the **browser-level** WebSocket URL from `/json/version` (not the page URL). Android WebViews may not expose a browser-level endpoint reliably, forcing you to use `browserURL: 'http://localhost:9222'` instead. CacheStorage/ServiceWorker domains still need raw `CDPSession.send()` because Puppeteer has no high-level API for them.
+**Capability fit:** higher-level, but for this use case the high-level API doesn't help. Puppeteer has no first-class API for `CacheStorage` or `ServiceWorker` domain commands — you fall through to `page.target().createCDPSession()` and then `session.send('CacheStorage.requestCacheNames', ...)`. That's the same JSON-RPC call you'd make with `chrome-remote-interface`, just routed through one extra abstraction layer. Net code is comparable; mental model is more confusing.
+
+**Pros:** Familiar API; `page.evaluate()` available; strong documentation; large community.
+**Cons:** `browserWSEndpoint` may require parsing `/json/version` for the browser-level URL. Android WebViews don't always expose this reliably; `browserURL: 'http://localhost:9222'` (Puppeteer auto-discovery) is the safer entry point. CacheStorage/ServiceWorker domains still drop to raw `CDPSession.send()` regardless.
 
 ---
 
@@ -260,9 +276,10 @@ const { caches } = await session.send('CacheStorage.requestCacheNames', {
 });
 ```
 
-**Lines of code for full use case:** ~90-110 lines  
-**Pros:** `connectOverCDP` accepts plain HTTP URL (no need to manually parse `/json/version`); well-maintained; TypeScript types included.  
-**Cons:** Playwright docs explicitly warn "This connection is significantly lower fidelity than the Playwright protocol connection." Some Playwright-specific APIs don't work over CDP. Adds a large dependency (~100 MB) when you only need CDP.
+**Capability fit:** similar to Puppeteer — CacheStorage/ServiceWorker still require `context.newCDPSession(page)` and `session.send(...)`. `connectOverCDP` accepting a plain HTTP URL is a small ergonomic win over Puppeteer's browserWSEndpoint discovery, but doesn't change the depth of code needed for our use case.
+
+**Pros:** `connectOverCDP` accepts plain HTTP URL (no need to manually parse `/json/version`); well-maintained; TypeScript types included.
+**Cons:** Playwright docs explicitly warn "This connection is significantly lower fidelity than the Playwright protocol connection." Some Playwright-specific APIs don't work over CDP. `playwright-core` (no bundled browsers) is ~5–15 MB on disk vs `chrome-remote-interface` at ~200 KB — modest but real overhead for capabilities (page automation, screenshot, navigation) we don't need.
 
 ---
 
@@ -296,8 +313,9 @@ const send = (method, params) => new Promise(resolve => {
 });
 ```
 
-**Lines of code for full use case:** ~150-200 lines  
-**Pros:** Zero abstraction overhead; works anywhere `ws` works; no CDP library dependency.  
+**Capability fit:** maximum control, maximum ceremony. You write the JSON-RPC message-correlation layer that `chrome-remote-interface` already provides for free. The only reasons to choose this: avoiding any external dep, or learning CDP from scratch.
+
+**Pros:** Zero abstraction overhead; works anywhere `ws` works; no CDP library dependency.
 **Cons:** You reinvent the message-correlation wheel; verbose; easy to miss edge cases (errors, timeouts).
 
 ---
@@ -306,12 +324,12 @@ const send = (method, params) => new Promise(resolve => {
 
 **Use `chrome-remote-interface`.**
 
-Rationale:
-- It is the thinnest correct abstraction over raw CDP.
+Rationale (capability-based, not LOC-counted):
+- It is the thinnest correct abstraction over raw CDP — domains are namespaced properties; no `session.send()` indirection.
 - `CDP.List()` and `CDP({ target: wsUrl })` map exactly to our discovery and attach steps.
-- All five CDP domains we need (Target, ServiceWorker, CacheStorage, Runtime, Page) are exposed as first-class namespaced properties — no `session.send()` indirection.
-- ~80 lines of actual script vs. ~100-120 for Puppeteer/Playwright with CDPSession fallback.
-- Puppeteer and Playwright add tens of megabytes for capabilities (screenshot, PDF, browser launch) we do not need.
+- All five CDP domains we need (Target, ServiceWorker, CacheStorage, Runtime, Page) are exposed as first-class namespaced properties.
+- Puppeteer and Playwright force `CDPSession.send(...)` for our exact use case (CacheStorage / ServiceWorker have no high-level API in either) — same JSON-RPC call, more abstraction layers.
+- `playwright-core` is ~5–15 MB; `puppeteer-core` similar. CRI is ~200 KB. The size argument is modest but consistent.
 - The `ws` option is strictly more work with no benefit.
 
 ---
@@ -529,18 +547,12 @@ Consequence: the `securityOrigin` for `CacheStorage.requestCacheNames` is `"http
 
 ### E.6 — Capacitor `webContentsDebuggingEnabled` Flag
 
-From `CapConfig.java` in the Capacitor source:
-```java
-webContentsDebuggingEnabled = JSONUtils.getBoolean(
-    configJSON, 
-    "android.webContentsDebuggingEnabled", 
-    isDebug  // default = (applicationInfo.flags & FLAG_DEBUGGABLE) != 0
-);
-```
+Capacitor's Android Bridge gates WebView debug exposure on the app's debuggable flag by default. Specifically: the `android.webContentsDebuggingEnabled` config option falls back to `(applicationInfo.flags & FLAG_DEBUGGABLE) != 0`. This is in `CapConfig.java` in the Capacitor source — the actual line drifts between major versions, so refer to `https://github.com/ionic-team/capacitor/blob/main/android/capacitor/src/main/java/com/getcapacitor/CapConfig.java` and search for `webContentsDebuggingEnabled` rather than relying on a paraphrased excerpt that will rot.
 
-**For debug builds** (built with `npx cap run android` or `./gradlew assembleDebug`): `FLAG_DEBUGGABLE` is set → WebView debugging is auto-enabled → the `webview_devtools_remote_<pid>` socket appears.
+**Behavior summary:**
 
-**For release builds** (signed release APK, Google Play): `FLAG_DEBUGGABLE` is NOT set → WebView debugging is disabled by default → the socket does NOT appear.
+- **Debug builds** (built with `npx cap run android` or `./gradlew assembleDebug`): `FLAG_DEBUGGABLE` is set → WebView debugging is auto-enabled → the `webview_devtools_remote_<pid>` socket appears.
+- **Release builds** (signed release APK, Google Play): `FLAG_DEBUGGABLE` is NOT set → WebView debugging is disabled by default → the socket does NOT appear.
 
 To force it on in a release build, add to `capacitor.config.ts`:
 ```typescript
@@ -549,7 +561,28 @@ android: {
 }
 ```
 
-For automated CI/CD inspection of a release APK, this must be explicitly set.
+For automated CI/CD inspection of a release APK, this must be explicitly set. For this project (Brain, debug-built APK), the flag is auto-enabled; the socket has been confirmed at `@webview_devtools_remote_<pid>` as recently as 2026-05-14.
+
+### E.11 — PIN unlock state hides the SW from inspection
+
+The Brain APK has a PIN-unlock screen on cold-launch. If the WebView is showing `https://brain.arunp.in/unlock` or `/setup-apk`, the page target's URL reflects that. CacheStorage queries still work (origin-bound), but the SW may not have intercepted page navigations yet (because the navigation that registered the SW hasn't happened from the user's perspective).
+
+**Practical implication:** before running the inspector, drive the WebView through PIN unlock so the page target's URL is on `/`, `/inbox`, or another post-pairing route. The DIAG-1 hardened script in `scripts/inspect-webview.mjs` warns when the URL contains `/unlock` or `/setup-apk`.
+
+### E.12 — Capacitor's WebView CDP server can be flaky on WebSocket connect
+
+**Empirical finding 2026-05-14, Pixel 7 Pro, Brain APK 0.5.6:** the HTTP `/json` endpoint reliably returned the page target after `adb forward tcp:9222 localabstract:webview_devtools_remote_<pid>`, but `chrome-remote-interface`'s WebSocket connect to the page target's `webSocketDebuggerUrl` consistently failed with `socket hang up` (4/4 attempts). HTTP `/json/version` and `/json/list` returned empty bodies on the same run.
+
+This is **not** documented as a Capacitor-specific issue — it appears to be an Android System WebView CDP server quirk that surfaces under some Capacitor configurations (`server.url` + `androidScheme: "https"` is suspected). The `webview_devtools_remote_<pid>` socket itself is healthy (the page target enumeration via `/json` works), but interactive WebSocket sessions are gated.
+
+**Mitigation:**
+
+1. Implement retry-with-backoff on the CDP WebSocket connect (4 attempts, 500ms apart) — works in some cases.
+2. Fall back to HTTP `/json` for read-only target enumeration when WebSocket is unavailable.
+3. Use the WebView's own DevTools Console (chrome://inspect → click `inspect` → Console tab) and run JS directly. This is what the user has to do when the script can't reach the runtime.
+4. As a last resort, drop CRI in favor of raw `ws` — there's no evidence this fixes the underlying issue, but it removes one library layer.
+
+If you encounter this empirically, document the WebView/Capacitor versions in `docs/research/inspect-webview-output-<date>.md` so future agents can correlate.
 
 ### E.7 — Timing: Wait for `Runtime.executionContextCreated` Before Querying
 
@@ -1006,30 +1039,16 @@ There is no maintained, purpose-built CLI for "inspect Android WebView caches an
 
 ---
 
-## Quick Reference: Full Command Sequence
+## §I. Security note (added per self-critique §3.3)
 
-```bash
-# 1. Ensure device is connected and app is running
-adb devices -l
+Running `adb forward tcp:9222 localabstract:webview_devtools_remote_<pid>` exposes the WebView's full debugging surface to **localhost on the Mac**, unauthenticated. Any local process can connect to port 9222 and execute arbitrary JS in the WebView's context (`Runtime.evaluate`), read its IndexedDB, dump cookies, inspect the network. Treat the script as a developer-only tool:
 
-# 2. Get app PID (manual verification)
-adb shell pidof com.arunprakash.brain
+- Don't run on shared/multi-user machines without considering blast radius.
+- Always call `adb forward --remove tcp:9222` (or `--remove-all`) when done. The DIAG-1 hardened script does this automatically on exit (including SIGINT/SIGTERM).
+- For CI/CD on shared runners: bind the inspector to a non-default port and tear it down in a `finally` step.
 
-# 3. Verify debug socket (manual verification)
-adb shell cat /proc/net/unix | grep webview_devtools_remote
-
-# 4. Install dep (first time only)
-cd /path/to/ai-brain && npm install chrome-remote-interface
-
-# 5. Run the inspector script
-node scripts/inspect-webview.mjs
-
-# 6. Optional: inspect raw target list manually
-PID=$(adb shell pidof com.arunprakash.brain | tr -d '\r')
-adb forward tcp:9222 localabstract:webview_devtools_remote_${PID}
-curl -s http://localhost:9222/json | python3 -m json.tool
-```
+The WebView itself is not exposed to the network — only to the device's loopback interface, then tunneled to the Mac's loopback via ADB. But the Mac's loopback is shared by every local process.
 
 ---
 
-*Research compiled 2026-05-14. CDP protocol specs from chromedevtools.github.io/devtools-protocol/ (tip-of-tree). Socket name format from Chromium source aw_devtools_server.cc. Capacitor behavior from CapConfig.java source and official Capacitor config docs. Project-specific origin and cache names from ai-brain/capacitor.config.ts and public/sw.js.*
+*Research v1.1 compiled 2026-05-14. CDP protocol specs from chromedevtools.github.io/devtools-protocol/ (tip-of-tree). Socket name format from Chromium source aw_devtools_server.cc. Capacitor behavior from CapConfig.java source (look up the live line number rather than relying on the paraphrased excerpt that v1.0 of this doc shipped — see §E.6 fix). Project-specific origin and cache names from ai-brain/capacitor.config.ts and public/sw.js. v1.1 incorporates self-critique remediation per `automate-webview-devtools-from-claude-code-SELF-CRITIQUE.md` §6, including the empirical Capacitor WebSocket finding from §E.12.*
