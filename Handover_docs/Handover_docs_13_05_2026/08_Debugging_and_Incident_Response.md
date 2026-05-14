@@ -24,6 +24,7 @@
 | **K-6** | **HIGH** | **Outbox device verification** | APK 0.5.5 built but never installed on the Pixel; manual matrix unrun | Lane L | **action item M9 §3.2** |
 | **K-7** | **LOW** | **`npm audit` 4 vulns ignored** | 3 plugin installs across 2 sessions, no audit review | Lane L | **action item M9 §3.5** |
 | **K-8** | **LOW** | **`009_edges.sql` uncommitted** | Carried in working tree across 4 sessions; GRAPH-1 sketch | Lane L | resolve at GRAPH-1 kickoff |
+| **K-9** | **HIGH** | **WebView cold-start offline = ERR_INTERNET_DISCONNECTED** | Capacitor thin-WebView fails on offline cold-start because `server.url` can't be fetched. All 12 OFFLINE-* commits unreachable on device. | Lane L | being fixed in v0.5.6 (`docs/plans/v0.5.6-app-shell-sw.md`); SHELL-1 + SHELL-2 committed |
 
 ## 2. K-1 — Hetzner SSH rejects key (BLOCKING Lane C, unchanged)
 

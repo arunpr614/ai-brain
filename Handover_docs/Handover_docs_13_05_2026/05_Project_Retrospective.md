@@ -79,6 +79,8 @@ Pattern:
 
 **Hypothesis: every plan should go through 2 critique cycles before execution.** v3 didn't get a third critique because the user accepted my proposed defaults to the 10 questions and we executed. If matrix testing surfaces a v3 critique-3, this hypothesis stays alive.
 
+**Update 2026-05-14: hypothesis materialized at largest severity.** Manual matrix run on the Pixel surfaced `ERR_INTERNET_DISCONNECTED` on offline cold-start — plan v3 had zero references to service workers / app-shell / WebView cold-start. All 12 OFFLINE-* commits were correct code but unreachable on the device because the bundle containing `share-handler.tsx` couldn't load. Fix planned in `docs/plans/v0.5.6-app-shell-sw.md` (Path C — SW for app-shell + library offline reading IN scope). The hypothesis is now strongly supported, not pending.
+
 ### 5.3 Backoff math vs plan literal
 
 OFFLINE-2 backoff: plan §5.3 schedule says "attempt 9+ → +3600s" (1-hour cap). Pure-exponential math `2^(a-1) * 10s` only reaches the 1-hour cap at attempt 10 (5120s > 3600s). When I implemented the math first, the test that asserted attempt 9 = 3600s failed.
