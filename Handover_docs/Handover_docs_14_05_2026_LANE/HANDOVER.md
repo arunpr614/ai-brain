@@ -342,7 +342,7 @@ This was the contract between the two lanes. After the collapse it becomes **his
 **Resolution rule:** prefer Lane C's version (it's the canonical source authored by Lane C). After the merge, add a note at the top:
 
 ```markdown
-> **STATUS: SUPERSEDED 2026-05-XX.** This document governed dual-lane work from 2026-05-12 to 2026-05-XX. Lane C and Lane L have been merged back to `main`. See `Handover_docs/Handover_docs_14_05_2026_LANE_COLLAPSE/HANDOVER.md` for the collapse mechanics. Work now resumes in single-lane mode on `main`.
+> **STATUS: SUPERSEDED 2026-05-XX.** This document governed dual-lane work from 2026-05-12 to 2026-05-XX. Lane C and Lane L have been merged back to `main`. See `Handover_docs/Handover_docs_14_05_2026_LANE/HANDOVER.md` for the collapse mechanics. Work now resumes in single-lane mode on `main`.
 ```
 
 Do not delete the file — it's part of the project history.
@@ -460,7 +460,7 @@ After the collapse, append a **new** memory entry: `project_ai_brain_lane_collap
 ### 9.6. Files NOT to touch during the collapse
 
 - `Handover_docs/Handover_docs_12_05_2026/` — frozen baseline, do not edit
-- `Handover_docs/Handover_docs_14_05_2026_LANE_COLLAPSE/` (this directory) — the next agent reads this; don't edit until after the collapse, then add a CLOSURE.md noting completion
+- `Handover_docs/Handover_docs_14_05_2026_LANE/` (this directory) — the next agent reads this; don't edit until after the collapse, then add a CLOSURE.md noting completion
 - Any file under `docs/research/` — these are spike outputs, append-only
 
 ---
