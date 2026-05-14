@@ -9,6 +9,11 @@ const nextConfig: NextConfig = {
   turbopack: {
     root: projectRoot,
   },
+  // Hide the Next.js dev-mode "N" indicator. The APK WebView loads the
+  // dev server via the Cloudflare tunnel, so the indicator overlaps the
+  // mobile bottom-nav's Library tab. Off in dev; production builds have
+  // never rendered it. Reported via APK on Pixel 7 Pro 2026-05-14.
+  devIndicators: false,
   // Keep native + dynamically-resolved modules on the Node side of the server bundle.
   // sqlite-vec uses `import.meta.resolve` to locate its prebuilt binary, which
   // Turbopack's module graph can't statically rewrite.
