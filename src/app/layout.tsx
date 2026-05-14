@@ -5,6 +5,7 @@ import "./globals.css";
 import { Sidebar } from "@/components/sidebar";
 import { CommandPaletteProvider } from "@/components/command-palette";
 import { ShareHandler } from "@/components/share-handler";
+import { SWBootstrap } from "@/components/sw-bootstrap";
 import { isTheme, THEME_COOKIE, type Theme } from "@/lib/theme";
 
 const inter = Inter({
@@ -55,6 +56,7 @@ export default async function RootLayout({
       </head>
       <body>
         <CommandPaletteProvider>
+          <SWBootstrap />
           <ShareHandler />
           <div className="flex min-h-full">
             <Sidebar />
