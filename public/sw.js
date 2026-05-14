@@ -125,9 +125,17 @@ self.addEventListener("activate", (event) => {
   );
 });
 
+// ignoreVary because Next.js sends Vary: rsc, next-router-state-tree,
+// next-router-prefetch, next-router-segment-prefetch — header values
+// always differ between SW-stored response and fresh navigation, so
+// strict Vary matching causes 100% cache miss on /, /inbox, etc.
+// ignoreSearch because RSC payloads are stored under the same path with
+// ?_rsc=<hash>; we want a navigation to / to match the bare / cache key.
+const MATCH_OPTS = { ignoreVary: true, ignoreSearch: true };
+
 async function staleWhileRevalidate(request, cacheName) {
   const cache = await caches.open(cacheName);
-  const cached = await cache.match(request);
+  const cached = await cache.match(request, MATCH_OPTS);
   const networkPromise = fetch(request)
     .then((response) => {
       if (response && response.ok && response.type !== "opaque") {
@@ -144,7 +152,7 @@ async function staleWhileRevalidate(request, cacheName) {
 
 async function cacheFirst(request, cacheName) {
   const cache = await caches.open(cacheName);
-  const cached = await cache.match(request);
+  const cached = await cache.match(request, MATCH_OPTS);
   if (cached) return cached;
   try {
     const network = await fetch(request);
