@@ -79,16 +79,19 @@ self.addEventListener("install", (event) => {
 
 self.addEventListener("activate", (event) => {
   event.waitUntil(
-    caches
-      .keys()
-      .then((names) =>
-        Promise.all(
-          names
-            .filter((n) => n.startsWith("brain-") && !KNOWN_CACHES.includes(n))
-            .map((n) => caches.delete(n)),
-        ),
-      )
-      .then(() => self.clients.claim()),
+    (async () => {
+      const names = await caches.keys();
+      await Promise.all(
+        names
+          .filter((n) => n.startsWith("brain-") && !KNOWN_CACHES.includes(n))
+          .map((n) => caches.delete(n)),
+      );
+      // claim() makes this SW the controller for ALL existing clients,
+      // including the page that just registered it. Without this the
+      // registering page stays uncontrolled until a navigation, which
+      // means the first offline cold-start has no SW interception.
+      await self.clients.claim();
+    })(),
   );
 });
 

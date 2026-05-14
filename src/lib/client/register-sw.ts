@@ -29,6 +29,22 @@ export function registerAppShellSW(): void {
 
   void navigator.serviceWorker
     .register("/sw.js", { scope: "/" })
+    .then((reg) => {
+      // After first install, controlchange fires when the new SW takes
+      // control of this page. Without this reload, the registering page
+      // remains uncontrolled until next navigation — which means the
+      // first offline cold-launch finds no controller and falls through
+      // to the network (which is dead). Reloading once after first
+      // controlchange ensures the next cold-launch hits a controlled
+      // page that the SW can intercept.
+      let reloaded = false;
+      navigator.serviceWorker.addEventListener("controllerchange", () => {
+        if (reloaded) return;
+        reloaded = true;
+        window.location.reload();
+      });
+      return reg;
+    })
     .catch((err) => {
       // SW registration is best-effort; failures don't block the app.
       // The app continues to work online; offline cold-start falls
