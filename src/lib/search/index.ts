@@ -17,8 +17,9 @@
 import { searchItems } from "@/db/items";
 import { getItem } from "@/db/items";
 import { retrieve } from "@/lib/retrieve";
-import type { embed } from "@/lib/embed/client";
 import type { ItemRow } from "@/db/client";
+
+type EmbedFn = (inputs: string[]) => Promise<Float32Array[]>;
 
 export type SearchMode = "fts" | "semantic" | "hybrid";
 
@@ -28,7 +29,7 @@ export interface SearchOptions {
   /** chunks to pull from vec0 before collapsing to items (semantic/hybrid). */
   vectorPoolSize?: number;
   /** Test hook: override the embedder passed to retrieve(). */
-  embedFn?: typeof embed;
+  embedFn?: EmbedFn;
 }
 
 const DEFAULT_LIMIT = 50;
@@ -94,7 +95,7 @@ export async function searchUnified(
 async function semanticItems(
   q: string,
   poolSize: number,
-  embedFn?: typeof embed,
+  embedFn?: EmbedFn,
 ): Promise<ItemRow[]> {
   const chunks = await retrieve(q, { topK: poolSize, embedFn });
   const seen = new Set<string>();

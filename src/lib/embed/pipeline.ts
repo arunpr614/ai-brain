@@ -16,7 +16,8 @@
 import { getDb } from "@/db/client";
 import { insertChunkWithRowid } from "@/db/chunks";
 import { chunkBody } from "@/lib/chunk";
-import { embed, EmbedError, EMBED_DIM } from "./client";
+import { EmbedError, EMBED_DIM } from "./client";
+import { getEmbedProvider } from "./factory";
 import { logError } from "@/lib/errors/sink";
 
 const BATCH_SIZE = 16;
@@ -27,9 +28,13 @@ export type EmbedResult =
   | { ok: true; item_id: string; chunk_count: number; duration_ms: number }
   | { ok: false; item_id: string; code: string; message: string; attempts: number };
 
+/** Structural alias so tests can inject a fake without importing the
+ * provider type. Matches EmbedProvider.embed's call shape. */
+type EmbedFn = (inputs: string[]) => Promise<Float32Array[]>;
+
 interface EmbedItemOptions {
-  /** Inject embed fn for tests. Defaults to production client. */
-  embedFn?: typeof embed;
+  /** Inject embed fn for tests. Defaults to factory-resolved provider. */
+  embedFn?: EmbedFn;
   /** Override chunker opts (for tests). */
   chunkOpts?: Parameters<typeof chunkBody>[1];
   /** Attempt number for retry accounting (default 1). */
@@ -74,7 +79,7 @@ export async function embedItem(
     return { ok: true, item_id, chunk_count: 0, duration_ms: Date.now() - started };
   }
 
-  const embedFn = opts.embedFn ?? embed;
+  const embedFn: EmbedFn = opts.embedFn ?? ((inputs) => getEmbedProvider().embed(inputs));
   const vectors: Float32Array[] = [];
   for (let i = 0; i < chunks.length; i += BATCH_SIZE) {
     const batch = chunks.slice(i, i + BATCH_SIZE).map((c) => c.body);

@@ -1,6 +1,6 @@
 import { ArrowLeft, FileText, StickyNote, Globe } from "lucide-react";
 import Link from "next/link";
-import { isOllamaAlive } from "@/lib/llm/ollama";
+import { getEmbedProvider } from "@/lib/embed/factory";
 import { searchUnified, type SearchMode } from "@/lib/search";
 
 function formatRelative(ts: number): string {
@@ -38,8 +38,8 @@ export default async function SearchPage({
     ? (modeParam as SearchMode)
     : "fts";
 
-  const needsOllama = mode === "semantic" || mode === "hybrid";
-  const ollamaDown = needsOllama && !(await isOllamaAlive());
+  const needsEmbed = mode === "semantic" || mode === "hybrid";
+  const ollamaDown = needsEmbed && !(await getEmbedProvider().isAlive());
 
   const results = query && !ollamaDown ? await searchUnified(query, { mode, limit: 100 }) : [];
 

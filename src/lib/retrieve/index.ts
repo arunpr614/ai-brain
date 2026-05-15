@@ -16,7 +16,10 @@
  * surfaces.
  */
 import { getDb } from "@/db/client";
-import { embed, EMBED_DIM } from "@/lib/embed/client";
+import { EMBED_DIM } from "@/lib/embed/client";
+import { getEmbedProvider } from "@/lib/embed/factory";
+
+type EmbedFn = (inputs: string[]) => Promise<Float32Array[]>;
 
 export interface RetrievedChunk {
   chunk_id: string;
@@ -39,7 +42,7 @@ export interface RetrieveOptions {
   /** Drop chunks with similarity < this value. Default 0 (no floor). */
   minSimilarity?: number;
   /** Inject embed fn for tests. */
-  embedFn?: typeof embed;
+  embedFn?: EmbedFn;
 }
 
 const DEFAULT_TOP_K = 8;
@@ -60,7 +63,7 @@ export async function retrieve(
   const topK = Math.min(opts.topK ?? DEFAULT_TOP_K, MAX_TOP_K);
   const minSim = opts.minSimilarity ?? 0;
 
-  const embedFn = opts.embedFn ?? embed;
+  const embedFn: EmbedFn = opts.embedFn ?? ((inputs) => getEmbedProvider().embed(inputs));
   const [vec] = await embedFn([q]);
   if (!vec || vec.length !== EMBED_DIM) return [];
 

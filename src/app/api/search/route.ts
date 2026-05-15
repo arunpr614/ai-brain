@@ -8,7 +8,7 @@
  */
 import { type NextRequest, NextResponse } from "next/server";
 import { SESSION_COOKIE } from "@/lib/auth";
-import { isOllamaAlive } from "@/lib/llm/ollama";
+import { getEmbedProvider } from "@/lib/embed/factory";
 import { searchUnified, type SearchMode } from "@/lib/search";
 
 export const runtime = "nodejs";
@@ -34,12 +34,12 @@ export async function GET(req: NextRequest) {
   const mode = rawMode as SearchMode;
   const limit = Math.min(Math.max(1, Number(searchParams.get("limit") ?? 50)), 200);
 
-  if ((mode === "semantic" || mode === "hybrid") && !(await isOllamaAlive())) {
+  if ((mode === "semantic" || mode === "hybrid") && !(await getEmbedProvider().isAlive())) {
     return NextResponse.json(
       {
         error: "OLLAMA_OFFLINE",
         message:
-          "Ollama isn't reachable at http://localhost:11434. Start it with `ollama serve` and retry.",
+          "The embed provider is unreachable. If running locally, start Ollama with `ollama serve`.",
       },
       { status: 503 },
     );
