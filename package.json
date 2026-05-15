@@ -24,6 +24,7 @@
     "smoke:0.5.0": "node --import tsx scripts/smoke-v0.5.0.mjs",
     "smoke:0.5.1": "node --import tsx scripts/smoke-v0.5.1.mjs",
     "smoke:youtube": "node --import tsx scripts/smoke-youtube.mjs",
+    "smoke:batch": "node --import tsx scripts/smoke-batch.ts",
     "backfill:embeddings": "node --import tsx scripts/backfill-embeddings.mjs",
     "bench:ask": "node --import tsx scripts/bench-ask.mjs"
   },
