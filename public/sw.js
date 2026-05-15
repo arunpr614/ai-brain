@@ -26,9 +26,13 @@
  * change shape; activate event purges any cache whose name doesn't match.
  */
 
-const SHELL_CACHE = "brain-shell-v1";
-const STATIC_CACHE = "brain-static-v1";
-const PAGES_CACHE = "brain-pages-v1";
+// Bumped to v2: previous SW used ignoreSearch on static assets,
+// causing wrong-bundle returns and black-screen hydration failures.
+// activate handler purges any name not in KNOWN_CACHES, so old v1
+// entries auto-evict on first activate.
+const SHELL_CACHE = "brain-shell-v2";
+const STATIC_CACHE = "brain-static-v2";
+const PAGES_CACHE = "brain-pages-v2";
 const KNOWN_CACHES = [SHELL_CACHE, STATIC_CACHE, PAGES_CACHE];
 
 // Precache only auth-public, static URLs. Protected routes (/, /inbox,
@@ -125,17 +129,23 @@ self.addEventListener("activate", (event) => {
   );
 });
 
-// ignoreVary because Next.js sends Vary: rsc, next-router-state-tree,
-// next-router-prefetch, next-router-segment-prefetch — header values
-// always differ between SW-stored response and fresh navigation, so
-// strict Vary matching causes 100% cache miss on /, /inbox, etc.
-// ignoreSearch because RSC payloads are stored under the same path with
-// ?_rsc=<hash>; we want a navigation to / to match the bare / cache key.
-const MATCH_OPTS = { ignoreVary: true, ignoreSearch: true };
+// HTML/page matching only:
+//   ignoreVary because Next.js sends Vary: rsc, next-router-state-tree,
+//     next-router-prefetch, next-router-segment-prefetch — header values
+//     always differ between SW-stored response and fresh navigation, so
+//     strict Vary matching causes 100% cache miss on /, /inbox, etc.
+//   ignoreSearch because RSC payloads are stored under the same path
+//     with ?_rsc=<hash>; we want a navigation to / to match the bare /
+//     cache key.
+// DO NOT apply ignoreSearch to static assets — Next.js dev mode adds
+// query strings to chunk URLs and ignoreSearch would return the wrong
+// bundle, causing hydration mismatch / black screen on cold-launch.
+const PAGE_MATCH_OPTS = { ignoreVary: true, ignoreSearch: true };
+const STATIC_MATCH_OPTS = { ignoreVary: true };
 
 async function staleWhileRevalidate(request, cacheName) {
   const cache = await caches.open(cacheName);
-  const cached = await cache.match(request, MATCH_OPTS);
+  const cached = await cache.match(request, PAGE_MATCH_OPTS);
   const networkPromise = fetch(request)
     .then((response) => {
       if (response && response.ok && response.type !== "opaque") {
@@ -152,7 +162,7 @@ async function staleWhileRevalidate(request, cacheName) {
 
 async function cacheFirst(request, cacheName) {
   const cache = await caches.open(cacheName);
-  const cached = await cache.match(request, MATCH_OPTS);
+  const cached = await cache.match(request, STATIC_MATCH_OPTS);
   if (cached) return cached;
   try {
     const network = await fetch(request);
