@@ -26,13 +26,17 @@
  * change shape; activate event purges any cache whose name doesn't match.
  */
 
-// Bumped to v2: previous SW used ignoreSearch on static assets,
-// causing wrong-bundle returns and black-screen hydration failures.
-// activate handler purges any name not in KNOWN_CACHES, so old v1
-// entries auto-evict on first activate.
-const SHELL_CACHE = "brain-shell-v2";
-const STATIC_CACHE = "brain-static-v2";
-const PAGES_CACHE = "brain-pages-v2";
+// Bumped to v3: v2 used ignoreSearch on page matching → SW returned
+// cached RSC payloads (Content-Type: text/x-component) for document
+// navigations, rendering raw text instead of HTML. v3 fix:
+// (a) drop ignoreSearch from page matching
+// (b) normalize cache keys to strip _rsc query params at put time
+// (c) skip caching of RSC requests entirely (they're prefetch streams,
+//     not consumable as standalone HTML)
+// activate handler purges all v1+v2 entries automatically.
+const SHELL_CACHE = "brain-shell-v3";
+const STATIC_CACHE = "brain-static-v3";
+const PAGES_CACHE = "brain-pages-v3";
 const KNOWN_CACHES = [SHELL_CACHE, STATIC_CACHE, PAGES_CACHE];
 
 // Precache only auth-public, static URLs. Protected routes (/, /inbox,
@@ -129,27 +133,67 @@ self.addEventListener("activate", (event) => {
   );
 });
 
-// HTML/page matching only:
-//   ignoreVary because Next.js sends Vary: rsc, next-router-state-tree,
-//     next-router-prefetch, next-router-segment-prefetch — header values
-//     always differ between SW-stored response and fresh navigation, so
-//     strict Vary matching causes 100% cache miss on /, /inbox, etc.
-//   ignoreSearch because RSC payloads are stored under the same path
-//     with ?_rsc=<hash>; we want a navigation to / to match the bare /
-//     cache key.
-// DO NOT apply ignoreSearch to static assets — Next.js dev mode adds
-// query strings to chunk URLs and ignoreSearch would return the wrong
-// bundle, causing hydration mismatch / black screen on cold-launch.
-const PAGE_MATCH_OPTS = { ignoreVary: true, ignoreSearch: true };
+// HTML/page matching: ignoreVary because Next.js sends Vary headers
+// (rsc, next-router-state-tree, next-router-prefetch,
+// next-router-segment-prefetch) whose values differ between cache-put
+// and fresh navigation; strict Vary matching causes 100% miss.
+//
+// We do NOT use ignoreSearch on page matching. Earlier attempt did,
+// and the SW returned RSC payloads (?_rsc=<hash> entries with
+// Content-Type: text/x-component) for plain document navigations,
+// which the browser rendered as raw text instead of HTML.
+//
+// Instead: at cache-put time we discard RSC requests entirely (only
+// store HTML responses keyed by their bare path). See cachePutPageOnly.
+//
+// Static asset matching: ignoreVary only (no ignoreSearch). Next.js
+// dev mode adds query strings to chunk URLs; ignoreSearch would
+// return wrong bundle → hydration mismatch.
+const PAGE_MATCH_OPTS = { ignoreVary: true };
 const STATIC_MATCH_OPTS = { ignoreVary: true };
+
+function isRscRequest(request) {
+  // Next.js identifies RSC fetches with `RSC: 1` header OR ?_rsc query
+  // OR Accept: text/x-component
+  if (request.headers.get("RSC") === "1") return true;
+  if ((request.headers.get("Accept") || "").includes("text/x-component")) {
+    return true;
+  }
+  if (new URL(request.url).searchParams.has("_rsc")) return true;
+  return false;
+}
+
+function strippedKey(request) {
+  // Cache key for pages: the URL without _rsc / search params, so
+  // /?_rsc=abc and / collapse to one entry. Returns a Request with
+  // the same method+headers but a normalized URL.
+  const url = new URL(request.url);
+  url.search = "";
+  return new Request(url.toString(), {
+    method: request.method,
+    headers: request.headers,
+    credentials: request.credentials,
+  });
+}
 
 async function staleWhileRevalidate(request, cacheName) {
   const cache = await caches.open(cacheName);
-  const cached = await cache.match(request, PAGE_MATCH_OPTS);
+  // Pages: always look up by the path-only key. RSC navigations hit the
+  // network but never store (they're prefetch payloads, not full HTML).
+  const isRsc = isRscRequest(request);
+  const lookupKey = isRsc ? request : strippedKey(request);
+  const cached = await cache.match(lookupKey, PAGE_MATCH_OPTS);
   const networkPromise = fetch(request)
     .then((response) => {
-      if (response && response.ok && response.type !== "opaque") {
-        cache.put(request, response.clone()).catch(() => {});
+      if (
+        response &&
+        response.ok &&
+        response.type !== "opaque" &&
+        !isRsc // never cache RSC responses — they're not consumable as HTML
+      ) {
+        // Store under the bare path so a future document navigation
+        // matches without ignoreSearch.
+        cache.put(strippedKey(request), response.clone()).catch(() => {});
       }
       return response;
     })
