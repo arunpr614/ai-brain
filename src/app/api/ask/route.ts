@@ -21,7 +21,7 @@ import { SESSION_COOKIE } from "@/lib/auth";
 import { retrieve } from "@/lib/retrieve";
 import { orchestrateAsk, toSSEStream, encodeSSE } from "@/lib/ask/sse";
 import { ollamaGenerator } from "@/lib/ask/generator";
-import { isOllamaAlive } from "@/lib/llm/ollama";
+import { getAskProvider } from "@/lib/llm/factory";
 import { appendMessage, getThread } from "@/db/chat";
 
 export const runtime = "nodejs";
@@ -63,17 +63,18 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  // T-10 (SC-8): fail fast if Ollama isn't running. The retrieve step needs
-  // Ollama to embed the query, and the generator needs it for streaming.
-  // A structured error SSE frame lets the UI show a friendly message
-  // instead of surfacing a fetch failure mid-stream.
-  if (!(await isOllamaAlive())) {
+  // T-10 (SC-8): fail fast if the Ask LLM provider isn't reachable. The
+  // generator needs it for streaming. The retrieve step needs the embed
+  // provider (still Ollama-backed at v0.6.0 B-8 — embed wrapper lands in
+  // B-9..B-11). The error code stays OLLAMA_OFFLINE for client/test back-
+  // compat; it now means "the configured Ask provider is unreachable".
+  if (!(await getAskProvider().isAlive())) {
     return new Response(
       encodeSSE({
         type: "error",
         code: "OLLAMA_OFFLINE",
         message:
-          "Ollama isn't reachable at http://localhost:11434. Start it with `ollama serve` and try again.",
+          "The Ask LLM provider is unreachable. If running locally, start Ollama with `ollama serve`.",
       }),
       { status: 503, headers: sseHeaders() },
     );

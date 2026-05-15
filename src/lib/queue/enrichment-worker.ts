@@ -25,7 +25,7 @@ import { dirname, resolve } from "node:path";
 import { getDb } from "@/db/client";
 import { enrichItem } from "@/lib/enrich/pipeline";
 import { embedItemWithRetry } from "@/lib/embed/pipeline";
-import { isOllamaAlive } from "@/lib/llm/ollama";
+import { getEnrichProvider } from "@/lib/llm/factory";
 
 const POLL_INTERVAL_MS = 2_000;
 const IDLE_INTERVAL_MS = 10_000; // when no work, back off
@@ -91,9 +91,9 @@ async function loop(): Promise<void> {
       lastSweepAt = Date.now();
     }
 
-    const alive = await isOllamaAlive();
+    const alive = await getEnrichProvider().isAlive();
     if (!alive) {
-      console.warn(`[enrich] ollama unreachable; backing off ${OLLAMA_DOWN_BACKOFF_MS}ms`);
+      console.warn(`[enrich] LLM provider unreachable; backing off ${OLLAMA_DOWN_BACKOFF_MS}ms`);
       await sleep(OLLAMA_DOWN_BACKOFF_MS);
       continue;
     }

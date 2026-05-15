@@ -9,7 +9,7 @@
  */
 import { getDb, type ItemRow } from "@/db/client";
 import { attachTagToItem, clearAutoTagsForItem, upsertTag } from "@/db/tags";
-import { generateJson } from "@/lib/llm/ollama";
+import { getEnrichProvider } from "@/lib/llm/factory";
 import { LLMError } from "@/lib/llm/errors";
 import {
   enrichmentUserPrompt,
@@ -178,9 +178,10 @@ export async function enrichItem(item_id: string): Promise<EnrichmentResult> {
   }
 
   const t0 = Date.now();
-  let result: Awaited<ReturnType<typeof generateJson<unknown>>>;
+  const provider = getEnrichProvider();
+  let result: Awaited<ReturnType<typeof provider.generateJson<unknown>>>;
   try {
-    result = await generateJson<unknown>({
+    result = await provider.generateJson<unknown>({
       system: ENRICHMENT_SYSTEM,
       prompt: enrichmentUserPrompt({
         source_type: item.source_type,

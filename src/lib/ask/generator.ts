@@ -1,7 +1,7 @@
 /**
- * Real Ollama-backed generator — v0.4.0 T-9.
+ * Real LLM-backed generator — v0.4.0 T-9, factory-resolved in v0.6.0 B-8.
  *
- * Wraps `ollama.generateStream()` with:
+ * Wraps the configured Ask provider's generateStream() with:
  *   - a system prompt that forces citation-grounded answers
  *   - incremental [CITE:chunk_id] parsing as tokens arrive
  *   - orphan-citation drop + log (plan patch P-4)
@@ -12,9 +12,12 @@
  * filtered in-stream so the UI doesn't see orphan references.
  */
 import { getDb } from "@/db/client";
-import { generateStream } from "@/lib/llm/ollama";
+import { getAskProvider } from "@/lib/llm/factory";
+import type { GenerateStreamOptions } from "@/lib/llm/types";
 import { logError } from "@/lib/errors/sink";
 import type { RetrievedChunk } from "@/lib/retrieve";
+
+type StreamFn = (opts: GenerateStreamOptions) => AsyncIterable<string>;
 
 const SYSTEM_PROMPT = `You are AI Brain, a personal knowledge assistant. Answer ONLY from the provided library chunks below. If nothing in the chunks answers the question, say exactly: "I don't have anything on this in your library."
 
@@ -34,7 +37,7 @@ export interface OllamaGeneratorOptions {
   thread_id?: string;
   model?: string;
   /** Test hook: override the underlying stream. */
-  streamFn?: typeof generateStream;
+  streamFn?: StreamFn;
   /** Test hook: skip DB write. */
   skipUsageRecord?: boolean;
 }
@@ -54,7 +57,8 @@ export function ollamaGenerator(opts: OllamaGeneratorOptions = {}) {
     const prompt = buildPrompt(input.question, input.chunks);
     const model = opts.model ?? process.env.OLLAMA_DEFAULT_MODEL;
 
-    const streamImpl = opts.streamFn ?? generateStream;
+    const streamImpl: StreamFn =
+      opts.streamFn ?? ((streamOpts) => getAskProvider().generateStream(streamOpts));
 
     // Incremental parser state. Buffer only the portion that might be an
     // in-progress [CITE:... — everything else flushes immediately.
