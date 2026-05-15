@@ -133,12 +133,22 @@ export interface ItemRow {
   category: string | null;
   captured_at: number;
   enriched_at: number | null;
-  enrichment_state: "pending" | "running" | "done" | "error";
+  /**
+   * `batched` added v0.6.0 (migration 008): item has been submitted to an
+   * Anthropic Message Batch and is awaiting result. Carries a non-null
+   * `batch_id`.
+   */
+  enrichment_state: "pending" | "running" | "batched" | "done" | "error";
   extraction_warning: string | null;
   total_pages: number | null;
   total_chars: number | null;
   /** Duration in seconds for video items (youtube). Null for non-video types. Added v0.5.1 (migration 007). */
   duration_seconds: number | null;
+  /**
+   * Anthropic Message Batch id (e.g. `msgbatch_...`) when this item has been
+   * submitted to a daily batch. Null otherwise. Added v0.6.0 (migration 008).
+   */
+  batch_id: string | null;
 }
 
 export interface SettingRow {

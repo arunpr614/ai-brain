@@ -279,7 +279,7 @@ export default async function ItemDetailPage({
 function DigestPlaceholder({
   state,
 }: {
-  state: "pending" | "running" | "done" | "error";
+  state: "pending" | "running" | "batched" | "done" | "error";
 }) {
   const copy =
     state === "error"

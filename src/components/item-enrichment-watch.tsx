@@ -13,7 +13,7 @@ export function ItemEnrichmentWatch({
   initialState,
 }: {
   itemId: string;
-  initialState: "pending" | "running" | "done" | "error";
+  initialState: "pending" | "running" | "batched" | "done" | "error";
 }) {
   const router = useRouter();
   return (

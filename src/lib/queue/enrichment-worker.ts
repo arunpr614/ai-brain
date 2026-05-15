@@ -123,7 +123,7 @@ export function shouldSweep(now: number, lastSweepAt: number): boolean {
 interface JobRow {
   id: number;
   item_id: string;
-  state: "pending" | "running" | "done" | "error";
+  state: "pending" | "running" | "batched" | "done" | "error";
   attempts: number;
 }
 

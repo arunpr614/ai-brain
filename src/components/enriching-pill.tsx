@@ -4,7 +4,7 @@ import { AlertCircle, Sparkles } from "lucide-react";
 import { useEffect, useState } from "react";
 
 interface Status {
-  state: "pending" | "running" | "done" | "error";
+  state: "pending" | "running" | "batched" | "done" | "error";
   last_error: string | null;
   updated_at: number;
   /** F-046: retry attempts from enrichment_jobs; 0 when job row missing. */
@@ -30,7 +30,7 @@ export function EnrichingPill({
   compact = false,
 }: {
   itemId: string;
-  initialState: "pending" | "running" | "done" | "error";
+  initialState: "pending" | "running" | "batched" | "done" | "error";
   onDone?: () => void;
   compact?: boolean;
 }) {
