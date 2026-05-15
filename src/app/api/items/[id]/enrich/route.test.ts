@@ -120,6 +120,24 @@ test("queue path: works on items already in 'done' state", async () => {
   assert.equal(row.enrichment_state, "pending");
 });
 
+test("realtime path: returns 409 when item is already 'running'", async () => {
+  const item = insertCaptured({
+    source_type: "note",
+    title: "race B test",
+    body: "x".repeat(500),
+  });
+  // Simulate a concurrent caller already in flight.
+  getDb()
+    .prepare("UPDATE items SET enrichment_state = 'running' WHERE id = ?")
+    .run(item.id);
+
+  const res = await POST(mkReq(item.id, { force: "realtime" }), paramsFor(item.id));
+  assert.equal(res.status, 409);
+  const body = await res.json();
+  assert.equal(body.error, "conflict");
+  assert.equal(body.state, "running");
+});
+
 test("queue path: missing enrichment_jobs row gets re-inserted (drift recovery)", async () => {
   const item = insertCaptured({
     source_type: "note",

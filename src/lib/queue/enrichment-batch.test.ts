@@ -500,6 +500,80 @@ test("pollAllInFlightBatches: nothing in flight is a no-op", async () => {
   assert.equal(polled.length, 0);
 });
 
+// ---- Race A: realtime finishes first, then batch poll fires ------------
+//
+// Scenario from S-12:
+//   1. submitDailyBatch claims item X → state='batched', batch_id=B.
+//   2. User clicks "Enrich now" → realtime path transitions to 'running',
+//      runs enrichItem(), transitions to 'done', clears batch_id.
+//   3. Five minutes later, poll fires for batch B → result for X comes
+//      back → writeBatchResult sees state is now 'done' (not 'batched')
+//      and short-circuits.
+//
+// This test simulates step 3 directly — assert the poll does NOT
+// overwrite the realtime-produced enrichment.
+
+test("Race A: poll write short-circuits when item already moved to 'done'", async () => {
+  getDb().prepare("UPDATE items SET enrichment_state = 'done'").run();
+  const item = insertCaptured({
+    source_type: "note",
+    title: "raceA test",
+    body: "x".repeat(500),
+  });
+  // Simulate end of step 2: realtime path finished, state='done', summary
+  // written, batch_id cleared.
+  getDb()
+    .prepare(
+      `UPDATE items
+       SET enrichment_state = 'done',
+           summary = 'realtime-produced summary',
+           title = 'realtime-produced title',
+           batch_id = NULL
+       WHERE id = ?`,
+    )
+    .run(item.id);
+
+  // The poll loop's `SELECT DISTINCT batch_id WHERE batch_id IS NOT NULL`
+  // wouldn't even pick up this item anymore — but defensively, also
+  // verify writeBatchResult is a no-op when called directly with the
+  // late-arriving batch entry.
+  const { provider } = makeProvider({
+    resultsByCustomId: {
+      [item.id]: {
+        custom_id: item.id,
+        type: "succeeded",
+        response: validEnrichmentJson,
+        metrics: { input_tokens: 100, output_tokens: 50, wall_ms: 0 },
+      },
+    },
+  });
+
+  // Manually re-mark with a stale batch_id to force the poll to query
+  // and discover the result, then verify the writeBatchResult predicate
+  // (state='batched') guards the realtime-produced row.
+  getDb()
+    .prepare(
+      "UPDATE items SET batch_id = ? WHERE id = ? AND enrichment_state = 'done'",
+    )
+    .run("msgbatch_RaceA", item.id);
+
+  await pollAllInFlightBatches(provider);
+
+  const row = getDb()
+    .prepare(
+      "SELECT enrichment_state, summary, title FROM items WHERE id = ?",
+    )
+    .get(item.id) as {
+    enrichment_state: string;
+    summary: string;
+    title: string;
+  };
+  // Poll did NOT overwrite — realtime-produced summary/title preserved.
+  assert.equal(row.enrichment_state, "done");
+  assert.equal(row.summary, "realtime-produced summary");
+  assert.equal(row.title, "realtime-produced title");
+});
+
 test("pollAllInFlightBatches returns early when provider lacks batch", async () => {
   // Should not throw, should not poll.
   await pollAllInFlightBatches(ollamaShapedProvider());

@@ -30,10 +30,16 @@ export const dynamic = "force-dynamic";
  *   call" with "captures batch nightly at 50% off." Realtime is the
  *   escape hatch when the user can't wait until 01:00 IST.
  *
- * Idempotency: marking a 'batched' item back to 'pending' (queue path)
- * clears its batch_id. The orphaned batch entry, when its result lands,
- * sees the item is no longer 'batched' and short-circuits in
- * pollAllInFlightBatches.writeBatchResult().
+ * Idempotency (Phase C-6):
+ *   - Realtime path acquires the row via an atomic 'running' transition
+ *     guarded by `enrichment_state IN ('pending','batched','done','error')`.
+ *     If the item is already 'running' (another caller in flight), this
+ *     returns 409 Conflict — closes Race B (concurrent realtime + cron-
+ *     submit) and any double-click on the UI button.
+ *   - Queue path clears batch_id when resetting to 'pending'. The
+ *     orphaned batch entry (if any), when its result lands later, sees
+ *     the item is no longer 'batched' and short-circuits in
+ *     pollAllInFlightBatches.writeBatchResult — closes Race A.
  */
 export async function POST(
   req: NextRequest,
@@ -52,8 +58,40 @@ export async function POST(
   const force = req.nextUrl.searchParams.get("force");
 
   if (force === "realtime") {
+    // Atomic claim: transition any non-'running' state to 'running' so a
+    // concurrent caller (or a poll tick mid-write) sees the row as
+    // already in flight and short-circuits. WHERE-predicate gate is the
+    // load-bearing part; UPDATE on better-sqlite3 is single-statement
+    // atomic.
+    const claim = getDb()
+      .prepare(
+        `UPDATE items
+         SET enrichment_state = 'running', batch_id = NULL
+         WHERE id = ? AND enrichment_state IN ('pending', 'batched', 'done', 'error')`,
+      )
+      .run(id);
+    if (claim.changes === 0) {
+      const current = (
+        getDb()
+          .prepare("SELECT enrichment_state FROM items WHERE id = ?")
+          .get(id) as { enrichment_state: string } | undefined
+      )?.enrichment_state;
+      return NextResponse.json(
+        { error: "conflict", state: current ?? "unknown" },
+        { status: 409 },
+      );
+    }
+
     const result = await enrichItem(id);
     if (!result.ok) {
+      // enrichItem leaves state at 'running' on failure; reset to 'error'
+      // so the polling UI shows the right pill and the queue worker's
+      // stale-claim sweep doesn't re-resurrect it.
+      getDb()
+        .prepare(
+          "UPDATE items SET enrichment_state = 'error' WHERE id = ? AND enrichment_state = 'running'",
+        )
+        .run(id);
       return NextResponse.json(
         { ok: false, error: result.error, raw: result.raw },
         { status: 500 },
