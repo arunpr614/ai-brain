@@ -1,8 +1,9 @@
 # AI Brain — Roadmap Tracker
 
-**Document version:** v0.9.1-roadmap
+**Document version:** v0.9.2-roadmap
 **Date:** 2026-05-12
 **Changelog:**
+- **v0.9.2-roadmap** — Inserted new **v0.6.x** patch-tier phase for Augmented Browsing (AUG-1..10) + Knowledge Graph View (GRAPH-1..8), both desktop-only by design (APK + viewport guard). Promoted from v0.10.0: `EXP-1` (edges table) → `GRAPH-1`; `EXP-2` (graph viz) → `GRAPH-5..8`. Both struck through at their original locations with forwarding pointers. Detailed plans at `docs/plans/v0.6.x-augmented-browsing.md` and `docs/plans/v0.6.x-graph-view.md`. Source motivation: 2026-05-12 Recall.it v2 audit (`docs/research/recall-feature-audit-v2-2026-05-12.md`, 217 rows) surfaced 36 graph capabilities + 13 augmented-browsing capabilities as competitive gaps where Brain had only thin placeholders.
 - **v0.9.1-roadmap** — v0.5.1 **SHIPPED 2026-05-12**: YouTube video capture. Four-stage plan (research → Stage 4 review → self-critique → plan v1.2). 9 atomic T-YT-* commits. Key design choices: (1) server-side only — extension + APK unchanged, both get YouTube for free via `/api/capture/url`; (2) zero new npm deps — inline InnerTube POST + `<timedtext format="3">` XML parser using `jsdom` already in the project; (3) body stays pure transcript so retrieval chunks are clean, enrichment gets channel + duration via composed title at the LLM-call site; (4) 2h segment cap with honest `transcript_truncated_2h` warning; (5) YouTube icon + human warning labels in Library. Live-smoke `npm run smoke:youtube` passes against `jNQXAC9IVRw` + `dQw4w9WgXcQ`. 260 tests (233 → 260, +27); 4 smoke suites. Tag `v0.5.1` on `main`.
 - v0.9.0-roadmap — v0.5.0 **SHIPPED 2026-05-11** via Cloudflare named-tunnel pivot. Tunnel persistent at `https://brain.arunp.in` via launchd daemon (required plist patch to pass `--config /etc/cloudflared/config.yml tunnel run` — homebrew's `service install` ships a broken plist by default). APK `brain-debug-0.5.0.apk` (7.7 MB) baked with tunnel URL; physical-phone Ask streaming proven over cellular (T-CF-14 F3). Chrome MV3 extension (popup + right-click context menu + options) E2E tested in Edge 147 (T-CF-20 PASS). T-CF-21 WebAuthn deferred to v0.5.1. Known limitation carried to v0.5.1: YouTube saves return 422 because Readability can't extract JS-rendered pages — v0.5.1 adds transcript capture (extension + APK share target). 233 unit tests · 3 smoke suites (v0.3.1 + v0.4.0 + v0.5.0) · typecheck clean. Tag `v0.5.0` on `main`.
 - v0.8.1-roadmap — v0.5.0 **pivot execution under way** 2026-05-11. Plan v2.0 drafted → Stage 4 cross-AI review produced 5 HIGH + 5 MEDIUM findings (all absorbed into v2.1). 8 of 15 T-CF-* tasks shipped in one session: T-CF-2 (mDNS deletion + `BRAIN_TUNNEL_URL` constant), T-CF-3 (NSC deletion), T-CF-4..6 (QR schema `url=`+`token=`; single-probe reachability), T-CF-8 (APK rebuilt with tunnel URL baked in; 8.9 MB), T-CF-9 (pairing page + API for tunnel), T-CF-10 (README tunnel setup), T-CF-12 (grep cleanup + dropped `@capacitor/camera` + removed `BRAIN_LAN_MODE`/`dev:lan`/`start:lan`). 233 unit tests green. Remaining: T-CF-11 AVD smoke (interactive), T-CF-14 physical Pixel (user-gated), T-CF-15..21 Chrome extension wave, T-CF-22..25 release wave.
@@ -203,6 +204,35 @@ All 17 work items closed with commit SHAs. Typecheck + lint + build + 24 unit te
 
 **Known v0.5.0 limitation:** Café / public Wi-Fi APK access is NOT supported (see self-critique A-6 / Q5 decision). Home Wi-Fi only in v0.5.0. Tailscale deferred to v0.10.0+ as optional day-2 add.
 
+### v0.6.x — Augmented Browsing + Graph View *(patch-tier, desktop only; Lane L 2026-05-12)*
+
+Promoted from v0.10.0 (`EXP-1` + `EXP-2`) after 2026-05-12 Recall.it v2 audit surfaced 36 graph capabilities + 13 augmented-browsing capabilities as competitive gaps. Both features are **excluded from the Android APK** by design. Detailed plans at `docs/plans/v0.6.x-augmented-browsing.md` and `docs/plans/v0.6.x-graph-view.md`.
+
+| ID | Item | Status | Notes |
+|---|---|---|---|
+| AUG-1 | `GET /api/index/keywords` endpoint (title + tags + summary) | planned | Read-only; bearer-authed; cacheable |
+| AUG-2 | Extension content script injected on all URLs | planned | Requires `scripting` + `<all_urls>` in manifest |
+| AUG-3 | `chrome.storage.local`-cached keyword index, 5-min refresh | planned | Zero per-page server calls |
+| AUG-4 | Case-insensitive substring match against cached index | planned | Pure local; unit-testable |
+| AUG-5 | Shadow-DOM highlight badges over matched phrases | planned | CSS-isolated from host page |
+| AUG-6 | Shadow-DOM side-panel showing matched items | planned | Click-through to `/items/{id}` |
+| AUG-7 | Options-page toggle (default OFF) | planned | Opt-in |
+| AUG-8 | Options-page per-site suppression list | planned | Privacy escape hatch |
+| AUG-9 | Global keyboard shortcut to toggle on current tab | planned | |
+| AUG-10 | Plain-language error surfaces | planned | Matches commit 59bba64 style |
+| GRAPH-1 | Migration `009_edges.sql` (supersedes thin `EXP-1`) | planned | Sorted-pair uniqueness; cascade-on-delete |
+| GRAPH-2 | `src/db/edges.ts` repository | planned | `upsertEdge`, `listAllEdges`, `updateEdgesForItem` |
+| GRAPH-3 | Edge-maintenance hook in `embedItemWithRetry` | planned | Fires on every successful embed (~6ms added) |
+| GRAPH-4 | `scripts/backfill-edges.mjs` one-shot populator | planned | BigInt-safe per `src/lib/related/index.ts:84` precedent |
+| GRAPH-5 | `src/app/graph/page.tsx` server component | planned | Reads items + edges |
+| GRAPH-6 | `src/app/graph/graph-client.tsx` with d3-force canvas | planned | Pan/zoom; click-node → item page. Supersedes thin `EXP-2` |
+| GRAPH-7 | APK + viewport gating (Capacitor + CSS `min-width: 1024px`) | planned | Two-layer guard |
+| GRAPH-8 | Sidebar nav entry (desktop-only visibility) | planned | Add to `src/components/sidebar.tsx` ITEMS |
+
+**Exit:** open Brain on Mac → right-sidebar shows Graph nav → `/graph` page renders all items as a navigable node/edge canvas → click node opens item. Install Chrome extension → toggle Augmented Browsing ON → navigate to a page on a topic you've saved → shadow-DOM highlights appear on matched phrases → click-through opens the saved item.
+
+**Deferred from scope** (revisit post-MVP): AugBrowsing body-text matching; Graph local-neighborhood mode; Graph tag-cluster coloring; Graph filters; all other capabilities from Recall v2 audit §Graph + §Augmented browsing.
+
 ### v0.6.0 — GenPage + auto-clusters
 
 | ID | Item | Status | Notes |
@@ -213,7 +243,7 @@ All 17 work items closed with commit SHAs. Typecheck + lint + build + 24 unit te
 | ORG-8 | Topic clustering (auto-collections) | planned | Blocked by R-CLUSTER |
 | ORG-9 | Smart filters (dynamic) | planned | |
 | GEN-5 | "Summarize my recent saves" home card | planned | |
-| EXP-1 | Knowledge graph data model (edges table) | planned | Not viz yet |
+| ~~EXP-1~~ | ~~Knowledge graph data model (edges table)~~ | **promoted to v0.6.x (GRAPH-1)** | Superseded by concrete plan |
 
 **Exit:** `product-led growth` → GenPage with 4 sections + 12 citations in ≤2 min. Auto-clusters group items sensibly.
 
@@ -240,6 +270,7 @@ All 17 work items closed with commit SHAs. Typecheck + lint + build + 24 unit te
 | REV-4 | Android local notification (8am default) | planned | Capacitor LocalNotifications |
 | F-028 | Due-count badge in sidebar | planned | |
 | F-029 | Mobile swipe-to-rate | planned | |
+| GEMMA-1 | On-device Android summarization via Gemma 4 E4B | candidate | Closes offline-mode unenriched-capture gap. Spike before commit. See `docs/research/gemma-4-evaluation.md`. |
 
 **Exit:** 20 cards reviewed over 5 days; FSRS schedules correctly; streak = 5.
 
@@ -263,7 +294,7 @@ All 17 work items closed with commit SHAs. Typecheck + lint + build + 24 unit te
 | CAP-8 | Podcast ingest (RSS + whisper.cpp) | planned | Blocked by R-WHISPER |
 | CAP-13 | EPUB ingest | planned | |
 | CAP-14 | DOCX / RTF / ODT ingest (`mammoth` / pandoc sidecar) | planned | |
-| EXP-2 | Graph viz (d3-force, local-graph mode, accessible-table) | planned | |
+| ~~EXP-2~~ | ~~Graph viz (d3-force, local-graph mode, accessible-table)~~ | **promoted to v0.6.x (GRAPH-5..GRAPH-8)** | MVP global-graph shipped in v0.6.x; local-graph-mode + accessible-table remain deferred here |
 | INT-3 | Obsidian sync folder (frontmatter, wikilinks, conflicts) | planned | |
 | F-033 | Hardening pass: error boundaries, queue rate limits | planned | |
 | ~~F-034~~ | ~~DB restore script + runbook~~ | **promoted to v0.3.1** | Self-critique A-7 — can't wait until v0.10.0 |

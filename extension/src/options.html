@@ -74,6 +74,7 @@
         cursor: pointer;
       }
       button.secondary { background: transparent; color: var(--text); border: 1px solid var(--border); }
+      button.danger { color: var(--danger); border-color: color-mix(in srgb, var(--danger) 40%, var(--border)); }
       button:disabled { opacity: 0.4; cursor: not-allowed; }
       .status { margin-top: 12px; padding: 10px 12px; border-radius: 6px; font-size: 13px; }
       .status--success { background: color-mix(in srgb, var(--success) 12%, transparent); color: var(--success); }
@@ -95,6 +96,7 @@
     <div class="row">
       <button id="test" class="secondary">Test connection</button>
       <button id="save">Save</button>
+      <button id="clear" class="secondary danger">Clear token</button>
     </div>
 
     <div id="status" class="status" hidden></div>

@@ -33,7 +33,7 @@ async function prefillFromActiveTab() {
 async function handleSave() {
   const url = urlEl.value.trim();
   if (!url) {
-    showStatus("error", "URL is required");
+    showStatus("error", "No URL to save on this tab.");
     return;
   }
 
@@ -62,22 +62,22 @@ function renderResult(result: CaptureResult) {
 
   switch (result.reason) {
     case "no-token":
-      showStatus("error", "Setup required — paste your Brain token in Options.");
+      showStatus("error", "Open Options and paste your Brain token to finish setup.");
       break;
     case "unauthorized":
-      showStatus("error", "Authentication failed — rotate the token in Brain settings.");
+      showStatus("error", "Your token no longer works. Open Options and paste a fresh one from Brain settings.");
       break;
     case "rate-limited":
-      showStatus("error", "Rate limited — wait a minute and try again.");
+      showStatus("error", "Too many saves in a short time. Wait a minute and try again.");
       break;
     case "server-error":
-      showStatus("error", `Brain returned ${result.status}. ${result.body}`.trim());
+      showStatus("error", "Brain had trouble saving this page. Try again in a few seconds.");
       break;
     case "network":
-      showStatus("error", `Couldn't reach Brain. ${result.message}`);
+      showStatus("error", "Can't reach Brain. Is your Mac awake and the tunnel running?");
       break;
     case "inflight":
-      showStatus("error", "Already saving — hang on a sec.");
+      showStatus("error", "Already saving this — give it a moment.");
       break;
   }
 }
@@ -92,6 +92,6 @@ saveBtn.addEventListener("click", handleSave);
 (async () => {
   await prefillFromActiveTab();
   if (!(await getToken())) {
-    showStatus("error", "Setup required — paste your Brain token in Options.");
+    showStatus("error", "Open Options and paste your Brain token to finish setup.");
   }
 })();

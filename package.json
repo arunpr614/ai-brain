@@ -1,6 +1,6 @@
 {
   "name": "ai-brain",
-  "version": "0.5.1",
+  "version": "0.5.6",
   "description": "Local-first personal knowledge app combining Recall.it + Knowly features. Next.js + SQLite + Ollama + Capacitor. Pre-hosting until v1.0.0.",
   "private": true,
   "repository": {
@@ -30,6 +30,9 @@
     "@capacitor/android": "^8.3.3",
     "@capacitor/cli": "^8.3.3",
     "@capacitor/core": "^8.3.3",
+    "@capacitor/filesystem": "^8.1.2",
+    "@capacitor/local-notifications": "^8.1.0",
+    "@capacitor/network": "^8.0.1",
     "@capacitor/preferences": "^8.0.1",
     "@capgo/capacitor-share-target": "^8.0.30",
     "@mozilla/readability": "^0.6.0",
@@ -41,6 +44,7 @@
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "cmdk": "^1.1.1",
+    "idb": "^8.0.3",
     "jsdom": "^29.1.1",
     "jsqr": "^1.4.0",
     "jszip": "^3.10.1",
@@ -62,8 +66,10 @@
     "@types/qrcode": "^1.5.6",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "chrome-remote-interface": "^0.34.0",
     "eslint": "^9",
     "eslint-config-next": "16.2.5",
+    "fake-indexeddb": "^6.2.5",
     "tailwindcss": "^4",
     "tsx": "^4.19.2",
     "typescript": "^5"

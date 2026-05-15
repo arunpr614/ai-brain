@@ -28,9 +28,9 @@ describe("auth module", () => {
   });
 
   describe("SESSION_COOKIE_OPTIONS", () => {
-    it("sets HttpOnly + SameSite=Strict + Path=/", () => {
+    it("sets HttpOnly + SameSite=Lax + Path=/", () => {
       assert.equal(SESSION_COOKIE_OPTIONS.httpOnly, true);
-      assert.equal(SESSION_COOKIE_OPTIONS.sameSite, "strict");
+      assert.equal(SESSION_COOKIE_OPTIONS.sameSite, "lax");
       assert.equal(SESSION_COOKIE_OPTIONS.path, "/");
     });
 

@@ -2,11 +2,12 @@
  * Regression guard (v0.5.0 T-5 / D-v0.5.0-7): no GET route handler performs a
  * state-mutating operation.
  *
- * With SameSite=Strict session cookies AND token-gated bearer routes, the
+ * With SameSite=Lax session cookies AND token-gated bearer routes, the
  * remaining CSRF vector is a malicious page doing:
  *   location = "http://brain.local:3000/api/foo-destructive-get"
- * The browser DOES send the Strict cookie on top-level navigation, so if any
+ * The browser DOES send the Lax cookie on top-level navigation, so if any
  * GET handler writes, an attacker can trigger it without touching POST.
+ * (Same guarantee under Strict — the test's job is unchanged either way.)
  *
  * This test statically scans every `src/app/api/**\/route.ts` for:
  *   1. `export async function GET` (or `export function GET`)

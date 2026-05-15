@@ -24,6 +24,7 @@ import {
 import { dirname, resolve } from "node:path";
 import { getDb } from "@/db/client";
 import { enrichItem } from "@/lib/enrich/pipeline";
+import { embedItemWithRetry } from "@/lib/embed/pipeline";
 import { isOllamaAlive } from "@/lib/llm/ollama";
 
 const POLL_INTERVAL_MS = 2_000;
@@ -183,6 +184,23 @@ async function runOne(job: JobRow): Promise<void> {
       console.log(
         `[enrich] job #${job.id} DONE in ${result.wall_ms}ms (attempts: ${result.attempts})`,
       );
+      // v0.4.0 SC-1: embedding follows enrichment in the same worker pass.
+      // The enrichment-state trigger (migration 006) inserts the
+      // embedding_jobs row when enrichment flips to 'done'; we drain it
+      // inline so search/Ask see the new item without waiting for a
+      // separate worker. Failure here is non-fatal for the user-visible
+      // capture flow — embedItemWithRetry marks the job state='error' on
+      // retry-exhaust and the next sweep can re-queue.
+      const embedResult = await embedItemWithRetry(job.item_id);
+      if (embedResult.ok) {
+        console.log(
+          `[embed] item=${job.item_id} chunks=${embedResult.chunk_count} duration=${embedResult.duration_ms}ms`,
+        );
+      } else {
+        console.warn(
+          `[embed] item=${job.item_id} FAILED ${embedResult.code}: ${embedResult.message}`,
+        );
+      }
       return;
     }
     handleFailure(job, result.error);

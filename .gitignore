@@ -83,3 +83,8 @@ vault/
 # Debug
 .turbo/
 tmp/
+
+# SwiftBar plugin folder — user-local runtime directory. The actual
+# plugin script is tracked under scripts/swiftbar/; anything that
+# lands here (symlinks, caches, .bak files) is per-machine state.
+/SwiftBar/

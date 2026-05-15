@@ -2,11 +2,11 @@
 
 | Field | Value |
 |-------|--------|
-| **Document version** | v7.0-backlog (v0.5.0 pivoted to Cloudflare Tunnel) |
-| **Date** | 2026-05-10 |
+| **Document version** | v7.1-backlog (v0.6.x plans drafted) |
+| **Date** | 2026-05-12 |
 | **Owner** | Arun |
 | **Update cadence** | at every phase kickoff; whenever an item is promoted, deferred, or closed |
-| **Revision** | v7.0 — v0.5.0 PIVOTED 2026-05-10 from LAN-only to Cloudflare named tunnel (user reported firewall complexity at T-21 gate). v1.3 LAN plan archived at `docs/archive/v0.5.0-lan-approach/`. New plan v2.0 drafting underway. Task numbering shifts from T-N → T-CF-N. v6.0 history preserved below |
+| **Revision** | v7.1 — 2026-05-12: v0.5.0 + v0.5.1 + v0.5.2 + v0.5.3 all SHIPPED. Lane-split active (`lane-c/v0.6.0-cloud` + `lane-l/feature-work`). Two new patch-tier features slotted into v0.6.x by Lane L: Augmented Browsing (AUG-1..10) + Knowledge Graph View (GRAPH-1..8), both desktop-only. Plans at `docs/plans/v0.6.x-augmented-browsing.md` + `docs/plans/v0.6.x-graph-view.md`. Source: Recall.it v2 audit 2026-05-12 (217 rows, `docs/research/recall-feature-audit-v2-2026-05-12.md`) surfaced competitive gaps. §§ below were last touched 2026-05-10 for the v0.5.0 pivot and reference superseded state — full backlog rewrite pending. v7.0 revision history preserved below |
 
 > Single source of truth for work that is **not in the active phase plan** but is known-needed, nice-to-have, or idea-captured. Items promoted from here land in `BUILD_PLAN.md` under a phase heading. Items closed here get a strikethrough and a closing commit SHA.
 
@@ -121,6 +121,8 @@ Full plan: [`docs/plans/v0.3.1-polish.md`](./docs/plans/v0.3.1-polish.md) (v2.0)
 | I-01 | Auto-collection suggestion from enrichment tags | Would sit behind a user toggle; needs R-CLUSTER first. |
 | I-02 | Per-item "regenerate enrichment" button | Already safe: `enrichItem` is idempotent. UI work only. |
 | I-03 | Export Obsidian vault directly (not just zip) | Requires D-4 (Obsidian vault path) — still open. |
+| GEMMA-1 | On-device Android summarization via Gemma 4 E4B (or MediaPipe LLM Inference) | Closes the offline-mode unenriched-capture gap exposed by `docs/plans/v0.6.x-offline-mode-apk.md`. **Revisit after** v0.6.x offline ships and dogfooding shows whether unenriched-offline-captures is annoying. Full evaluation: `docs/research/gemma-4-evaluation.md` §4. v0.8.x candidate. |
+| GEMMA-2 | T5Gemma 2 structured-output spike (vs Qwen3-8B) | 1-hour low-risk: feed same enrichment prompts; compare JSON-adherence on tag/category/quote fields. Only worth doing if Qwen3 ever produces malformed JSON that breaks the pipeline. See `docs/research/gemma-4-evaluation.md` §3 row D-1. |
 | ~~F-057~~ | ~~Audit `sqlite-vec` resolved version on install~~ | **Closed 2026-05-08** under v0.4.0 T-0 (`e8f104a`): pinned to 0.1.9 with explicit overrides for all five platform sub-packages. `npm ls` shows `sqlite-vec-darwin-arm64@0.1.9 overridden`. |
 
 ---
