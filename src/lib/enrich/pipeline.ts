@@ -9,7 +9,8 @@
  */
 import { getDb, type ItemRow } from "@/db/client";
 import { attachTagToItem, clearAutoTagsForItem, upsertTag } from "@/db/tags";
-import { generateJson, OllamaError } from "@/lib/llm/ollama";
+import { generateJson } from "@/lib/llm/ollama";
+import { LLMError } from "@/lib/llm/errors";
 import {
   enrichmentUserPrompt,
   ENRICHMENT_SYSTEM,
@@ -189,10 +190,9 @@ export async function enrichItem(item_id: string): Promise<EnrichmentResult> {
       num_ctx: 8192,
       num_predict: 1200,
       temperature: 0.3,
-      keep_alive: "15m",
     });
   } catch (err) {
-    const e = err as OllamaError;
+    const e = err as LLMError;
     const raw =
       typeof (e as unknown as { cause?: { raw?: string } }).cause?.raw === "string"
         ? (e as unknown as { cause: { raw: string } }).cause.raw
@@ -246,8 +246,8 @@ export async function enrichItem(item_id: string): Promise<EnrichmentResult> {
     provider: "ollama",
     model: result.metrics ? "qwen2.5:7b-instruct-q4_K_M" : "unknown",
     purpose: "enrichment",
-    input_tokens: result.metrics.prompt_eval_count,
-    output_tokens: result.metrics.eval_count,
+    input_tokens: result.metrics.input_tokens,
+    output_tokens: result.metrics.output_tokens,
     cost_usd: 0, // local inference
   });
 

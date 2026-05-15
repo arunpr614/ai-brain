@@ -1,73 +1,69 @@
+// src/lib/llm/ollama.ts — Ollama provider (v0.6.0 B-2).
+//
+// Adapts the existing Ollama-direct functions to satisfy the
+// LLMProvider interface defined in ./types.ts. Existing call sites
+// continue to import the module-level functions (generate,
+// generateStream, generateJson, isOllamaAlive) — those now delegate
+// to a default-singleton OllamaProvider so behavior is unchanged.
+//
+// Shape changes from v0.5.x:
+//   - GenerateMetrics is the honest 3-field schema
+//     {input_tokens, output_tokens, wall_ms}. The Ollama-specific
+//     internals (load_duration, prompt_eval_tps, etc.) are still
+//     computed for diagnostics but exposed via getOllamaDiagnostics()
+//     when needed; they no longer ride on every call.
+//   - OllamaError is now an alias for LLMError. Same codes, same
+//     constructor signature; existing throw/catch sites compile
+//     unchanged.
+//
+// Enforces (unchanged from v0.3.0+):
+//   - think: false on every request (Qwen 3 thinking-mode bug per
+//     SELF_CRITIQUE.md L-9; Qwen 2.5 ignores the flag cleanly)
+//   - keep_alive defaults tuned for our workloads ("15m")
+//   - JSON-mode retry at lower temperature on parse failure
+
+import { LLMError } from "./errors";
+import type {
+  GenerateJsonResult,
+  GenerateMetrics,
+  GenerateOptions,
+  GenerateResult,
+  GenerateStreamOptions,
+  LLMProvider,
+} from "./types";
+
+/** Re-exports so external imports stay stable. */
+export { LLMError } from "./errors";
+export type {
+  GenerateJsonResult,
+  GenerateMetrics,
+  GenerateOptions,
+  GenerateResult,
+  GenerateStreamOptions,
+} from "./types";
+
 /**
- * Typed Ollama client wrapper — F-201 (v0.3.0).
- *
- * Sole entry point for every LLM call in AI Brain. Enforces:
- *   - think: false on every request (Qwen 3 thinking mode bug per
- *     SELF_CRITIQUE.md L-9; Qwen 2.5 ignores the flag cleanly, so setting
- *     it unconditionally is safe)
- *   - keep_alive defaults tuned for our workloads
- *   - Structured error handling with one retry at lower temperature
- *     (per R-LLM-b recommendation)
- *
- * No streaming here — v0.3.0 enrichment is batch. v0.4.0 chat will
- * add a separate streaming path.
+ * Backwards-compatibility alias. Existing consumers (e.g.
+ * src/lib/enrich/pipeline.ts) catch `OllamaError`; the codes and
+ * constructor signature match LLMError exactly. New code should
+ * import LLMError directly.
  */
+export { LLMError as OllamaError } from "./errors";
 
-const OLLAMA_HOST = process.env.OLLAMA_HOST || "http://localhost:11434";
+const DEFAULT_HOST = process.env.OLLAMA_HOST || "http://localhost:11434";
 const DEFAULT_MODEL = process.env.OLLAMA_DEFAULT_MODEL || "qwen2.5:7b-instruct-q4_K_M";
+const DEFAULT_KEEP_ALIVE = "15m";
 
-export interface GenerateOptions {
+interface OllamaProviderOptions {
+  host?: string;
   model?: string;
-  system?: string;
-  prompt: string;
-  /** Parse response as JSON. When true, the return type is unknown-shaped JSON. */
-  format?: "json" | "text";
-  num_ctx?: number;
-  num_predict?: number;
-  temperature?: number;
-  /** e.g. "15m", "10m", 0 (unload immediately) */
+  /** Default keep_alive applied to every generate / stream call. */
   keep_alive?: string | number;
-  /** Abort controller signal. Times out if not set; default 90s. */
-  signal?: AbortSignal;
-}
-
-export interface GenerateMetrics {
-  total_duration_ms: number;
-  load_duration_ms: number;
-  prompt_eval_count: number;
-  prompt_eval_duration_ms: number;
-  prompt_eval_tps: number;
-  eval_count: number;
-  eval_duration_ms: number;
-  eval_tps: number;
-  wall_ms: number;
-}
-
-export interface GenerateResult {
-  model: string;
-  response: string;
-  metrics: GenerateMetrics;
-}
-
-export class OllamaError extends Error {
-  code: "http" | "timeout" | "connection" | "invalid_response";
-  status?: number;
-  constructor(code: OllamaError["code"], message: string, status?: number) {
-    super(message);
-    this.code = code;
-    this.name = "OllamaError";
-    this.status = status;
-  }
 }
 
 function asMs(ns: number | undefined): number {
   if (typeof ns !== "number" || !Number.isFinite(ns)) return 0;
   return Math.round(ns / 1e6);
-}
-
-function tps(tokens: number | undefined, duration_ns: number | undefined): number {
-  if (!tokens || !duration_ns || duration_ns === 0) return 0;
-  return Math.round((tokens / duration_ns) * 1e9);
 }
 
 /**
@@ -80,273 +76,381 @@ function stripThinking(text: string): string {
 }
 
 /**
- * Run one generate call. Throws OllamaError on HTTP / connection failures.
- * Does NOT retry — callers compose their own retry policy (see `generateJson`).
+ * Concrete LLMProvider for a local Ollama daemon. Constructed by the
+ * factory (B-7) when LLM_*_PROVIDER=ollama, or via the default
+ * singleton below.
  */
-export async function generate(opts: GenerateOptions): Promise<GenerateResult> {
-  const model = opts.model ?? DEFAULT_MODEL;
-  const signal =
-    opts.signal ??
-    (typeof AbortSignal !== "undefined" && "timeout" in AbortSignal
-      ? (AbortSignal as unknown as { timeout: (ms: number) => AbortSignal }).timeout(90_000)
-      : undefined);
+export class OllamaProvider implements LLMProvider {
+  private host: string;
+  private defaultModel: string;
+  private keepAlive: string | number;
 
-  const body = {
-    model,
-    prompt: opts.prompt,
-    system: opts.system,
-    stream: false,
-    format: opts.format === "json" ? "json" : undefined,
-    // Unconditional: SELF_CRITIQUE L-9. Qwen 3 burns num_predict on
-    // <think> traces otherwise. Qwen 2.5 ignores.
-    think: false,
-    options: {
-      num_ctx: opts.num_ctx ?? 8192,
-      num_predict: opts.num_predict ?? 1200,
-      temperature: opts.temperature ?? 0.3,
-    },
-    keep_alive: opts.keep_alive ?? "15m",
-  };
+  constructor(opts: OllamaProviderOptions = {}) {
+    this.host = opts.host ?? DEFAULT_HOST;
+    this.defaultModel = opts.model ?? DEFAULT_MODEL;
+    this.keepAlive = opts.keep_alive ?? DEFAULT_KEEP_ALIVE;
+  }
 
-  const t0 = Date.now();
-  let res: Response;
-  try {
-    res = await fetch(`${OLLAMA_HOST}/api/generate`, {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify(body),
-      signal,
-    });
-  } catch (err) {
-    const e = err as Error;
-    if (e.name === "AbortError" || e.name === "TimeoutError") {
-      throw new OllamaError("timeout", `Ollama request timed out`);
+  async generate(opts: GenerateOptions): Promise<GenerateResult> {
+    const model = opts.model ?? this.defaultModel;
+    const signal =
+      opts.signal ??
+      (typeof AbortSignal !== "undefined" && "timeout" in AbortSignal
+        ? (AbortSignal as unknown as { timeout: (ms: number) => AbortSignal }).timeout(90_000)
+        : undefined);
+
+    const body = {
+      model,
+      prompt: opts.prompt,
+      system: opts.system,
+      stream: false,
+      think: false,
+      options: {
+        num_ctx: opts.num_ctx ?? 8192,
+        num_predict: opts.num_predict ?? 1200,
+        temperature: opts.temperature ?? 0.3,
+      },
+      keep_alive: this.keepAlive,
+    };
+
+    const t0 = Date.now();
+    let res: Response;
+    try {
+      res = await fetch(`${this.host}/api/generate`, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify(body),
+        signal,
+      });
+    } catch (err) {
+      const e = err as Error;
+      if (e.name === "AbortError" || e.name === "TimeoutError") {
+        throw new LLMError("timeout", `Ollama request timed out`);
+      }
+      throw new LLMError(
+        "connection",
+        `Cannot reach Ollama at ${this.host}: ${e.message}. Is the daemon running?`,
+      );
     }
-    throw new OllamaError(
-      "connection",
-      `Cannot reach Ollama at ${OLLAMA_HOST}: ${e.message}. Is the daemon running?`,
-    );
-  }
-  const wall_ms = Date.now() - t0;
+    const wall_ms = Date.now() - t0;
 
-  if (!res.ok) {
-    const text = await res.text().catch(() => "");
-    throw new OllamaError(
-      "http",
-      `Ollama returned ${res.status} ${res.statusText}: ${text.slice(0, 200)}`,
-      res.status,
-    );
-  }
+    if (!res.ok) {
+      const text = await res.text().catch(() => "");
+      throw new LLMError(
+        "http",
+        `Ollama returned ${res.status} ${res.statusText}: ${text.slice(0, 200)}`,
+        res.status,
+      );
+    }
 
-  const data = (await res.json()) as {
-    response?: string;
-    total_duration?: number;
-    load_duration?: number;
-    prompt_eval_count?: number;
-    prompt_eval_duration?: number;
-    eval_count?: number;
-    eval_duration?: number;
-  };
+    const data = (await res.json()) as {
+      response?: string;
+      total_duration?: number;
+      load_duration?: number;
+      prompt_eval_count?: number;
+      prompt_eval_duration?: number;
+      eval_count?: number;
+      eval_duration?: number;
+    };
 
-  if (typeof data.response !== "string") {
-    throw new OllamaError("invalid_response", "Ollama response missing `response` field");
-  }
+    if (typeof data.response !== "string") {
+      throw new LLMError("invalid_response", "Ollama response missing `response` field");
+    }
 
-  return {
-    model,
-    response: stripThinking(data.response),
-    metrics: {
+    const metrics: GenerateMetrics = {
+      input_tokens: data.prompt_eval_count ?? 0,
+      output_tokens: data.eval_count ?? 0,
+      wall_ms,
+    };
+
+    // Diagnostics not on the public LLMProvider surface — kept as a
+    // best-effort side channel for the bench script via
+    // getLastOllamaDiagnostics() if we choose to expose it later.
+    lastDiagnostics = {
       total_duration_ms: asMs(data.total_duration),
       load_duration_ms: asMs(data.load_duration),
-      prompt_eval_count: data.prompt_eval_count ?? 0,
       prompt_eval_duration_ms: asMs(data.prompt_eval_duration),
-      prompt_eval_tps: tps(data.prompt_eval_count, data.prompt_eval_duration),
-      eval_count: data.eval_count ?? 0,
       eval_duration_ms: asMs(data.eval_duration),
-      eval_tps: tps(data.eval_count, data.eval_duration),
-      wall_ms,
-    },
-  };
-}
+    };
 
-/**
- * Streaming generate — v0.4.0 T-9.
- *
- * Consumes Ollama's NDJSON stream (`stream: true`), yielding each token's
- * text delta. Caller is responsible for aggregating + post-processing
- * (e.g. [CITE:...] marker parsing in src/lib/ask/generator.ts).
- *
- * Metrics: the final NDJSON line contains `done: true` plus prompt_eval_count
- * and eval_count. These are captured by the caller via the `onDone` hook
- * so token-counting survives without a second pass through the buffered text.
- */
-export interface GenerateStreamOptions extends Omit<GenerateOptions, "format"> {
-  /** Called once with total token counts when Ollama emits the final frame. */
-  onDone?: (metrics: { input_tokens: number; output_tokens: number; wall_ms: number }) => void;
-}
+    return {
+      model,
+      response: stripThinking(data.response),
+      metrics,
+    };
+  }
 
-export async function* generateStream(
-  opts: GenerateStreamOptions,
-): AsyncGenerator<string, void, void> {
-  const model = opts.model ?? DEFAULT_MODEL;
-  const body = {
-    model,
-    prompt: opts.prompt,
-    system: opts.system,
-    stream: true,
-    think: false,
-    options: {
-      num_ctx: opts.num_ctx ?? 8192,
-      num_predict: opts.num_predict ?? 1200,
-      temperature: opts.temperature ?? 0.3,
-    },
-    keep_alive: opts.keep_alive ?? "15m",
-  };
+  async *generateStream(opts: GenerateStreamOptions): AsyncGenerator<string, void, void> {
+    const model = opts.model ?? this.defaultModel;
+    const body = {
+      model,
+      prompt: opts.prompt,
+      system: opts.system,
+      stream: true,
+      think: false,
+      options: {
+        num_ctx: opts.num_ctx ?? 8192,
+        num_predict: opts.num_predict ?? 1200,
+        temperature: opts.temperature ?? 0.3,
+      },
+      keep_alive: this.keepAlive,
+    };
 
-  const t0 = Date.now();
-  let res: Response;
-  try {
-    res = await fetch(`${OLLAMA_HOST}/api/generate`, {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify(body),
-      signal: opts.signal,
-    });
-  } catch (err) {
-    const e = err as Error;
-    if (e.name === "AbortError" || e.name === "TimeoutError") {
-      throw new OllamaError("timeout", "Ollama stream request timed out");
+    const t0 = Date.now();
+    let res: Response;
+    try {
+      res = await fetch(`${this.host}/api/generate`, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify(body),
+        signal: opts.signal,
+      });
+    } catch (err) {
+      const e = err as Error;
+      if (e.name === "AbortError" || e.name === "TimeoutError") {
+        throw new LLMError("timeout", "Ollama stream request timed out");
+      }
+      throw new LLMError(
+        "connection",
+        `Cannot reach Ollama at ${this.host}: ${e.message}. Is the daemon running?`,
+      );
     }
-    throw new OllamaError(
-      "connection",
-      `Cannot reach Ollama at ${OLLAMA_HOST}: ${e.message}. Is the daemon running?`,
-    );
-  }
 
-  if (!res.ok) {
-    const text = await res.text().catch(() => "");
-    throw new OllamaError(
-      "http",
-      `Ollama returned ${res.status} ${res.statusText}: ${text.slice(0, 200)}`,
-      res.status,
-    );
-  }
-  if (!res.body) {
-    throw new OllamaError("invalid_response", "Ollama streaming response has no body");
-  }
+    if (!res.ok) {
+      const text = await res.text().catch(() => "");
+      throw new LLMError(
+        "http",
+        `Ollama returned ${res.status} ${res.statusText}: ${text.slice(0, 200)}`,
+        res.status,
+      );
+    }
+    if (!res.body) {
+      throw new LLMError("invalid_response", "Ollama streaming response has no body");
+    }
 
-  const reader = res.body.getReader();
-  const decoder = new TextDecoder();
-  let buffer = "";
-  let inputTokens = 0;
-  let outputTokens = 0;
+    const reader = res.body.getReader();
+    const decoder = new TextDecoder();
+    let buffer = "";
+    let inputTokens = 0;
+    let outputTokens = 0;
 
-  try {
-    for (;;) {
-      const { value, done } = await reader.read();
-      if (done) break;
-      buffer += decoder.decode(value, { stream: true });
-      // NDJSON: one JSON object per line.
-      let newlineIdx;
-      while ((newlineIdx = buffer.indexOf("\n")) !== -1) {
-        const line = buffer.slice(0, newlineIdx).trim();
-        buffer = buffer.slice(newlineIdx + 1);
-        if (!line) continue;
-        let frame: {
-          response?: string;
-          done?: boolean;
-          prompt_eval_count?: number;
-          eval_count?: number;
-        };
-        try {
-          frame = JSON.parse(line);
-        } catch {
-          continue; // skip malformed lines; Ollama is reliable here but be defensive
-        }
-        if (typeof frame.response === "string" && frame.response.length > 0) {
-          yield frame.response;
-        }
-        if (frame.done) {
-          inputTokens = frame.prompt_eval_count ?? 0;
-          outputTokens = frame.eval_count ?? 0;
+    try {
+      for (;;) {
+        const { value, done } = await reader.read();
+        if (done) break;
+        buffer += decoder.decode(value, { stream: true });
+        let newlineIdx;
+        while ((newlineIdx = buffer.indexOf("\n")) !== -1) {
+          const line = buffer.slice(0, newlineIdx).trim();
+          buffer = buffer.slice(newlineIdx + 1);
+          if (!line) continue;
+          let frame: {
+            response?: string;
+            done?: boolean;
+            prompt_eval_count?: number;
+            eval_count?: number;
+          };
+          try {
+            frame = JSON.parse(line);
+          } catch {
+            continue;
+          }
+          if (typeof frame.response === "string" && frame.response.length > 0) {
+            yield frame.response;
+          }
+          if (frame.done) {
+            inputTokens = frame.prompt_eval_count ?? 0;
+            outputTokens = frame.eval_count ?? 0;
+          }
         }
       }
+    } finally {
+      reader.releaseLock();
+      if (opts.onDone) {
+        opts.onDone({
+          input_tokens: inputTokens,
+          output_tokens: outputTokens,
+          wall_ms: Date.now() - t0,
+        });
+      }
     }
-  } finally {
-    reader.releaseLock();
-    if (opts.onDone) {
-      opts.onDone({
-        input_tokens: inputTokens,
-        output_tokens: outputTokens,
-        wall_ms: Date.now() - t0,
-      });
+  }
+
+  async generateJson<T = unknown>(
+    opts: GenerateOptions,
+  ): Promise<GenerateJsonResult<T>> {
+    const firstAttempt = await this.generateRaw({ ...opts, format: "json" });
+    try {
+      return {
+        parsed: JSON.parse(firstAttempt.response) as T,
+        raw: firstAttempt.response,
+        metrics: firstAttempt.metrics,
+        attempts: 1,
+      };
+    } catch {
+      // Retry at lower temperature.
     }
-  }
-}
 
-/**
- * Convenience: generate + parse JSON with one retry at lower temperature.
- *
- * Per R-LLM-b §7: "If JSON.parse fails once, retry once with the same payload
- * + temperature: 0.1. If second attempt fails, store raw response and mark
- * enrichment_state = 'error'."
- *
- * On second failure, throws OllamaError("invalid_response", ...) with the raw
- * text attached as `cause` for caller inspection.
- */
-export async function generateJson<T = unknown>(
-  opts: Omit<GenerateOptions, "format">,
-): Promise<{ parsed: T; raw: string; metrics: GenerateMetrics; attempts: number }> {
-  const firstAttempt = await generate({ ...opts, format: "json" });
-  try {
-    return {
-      parsed: JSON.parse(firstAttempt.response) as T,
-      raw: firstAttempt.response,
-      metrics: firstAttempt.metrics,
-      attempts: 1,
-    };
-  } catch {
-    // Retry at lower temperature.
-  }
-
-  const retry = await generate({
-    ...opts,
-    format: "json",
-    temperature: 0.1,
-  });
-  try {
-    return {
-      parsed: JSON.parse(retry.response) as T,
-      raw: retry.response,
-      metrics: retry.metrics,
-      attempts: 2,
-    };
-  } catch (err) {
-    const e = err as Error;
-    const wrapped = new OllamaError(
-      "invalid_response",
-      `Model produced malformed JSON after retry: ${e.message}`,
-    );
-    // attach raw for diagnostics
-    (wrapped as unknown as { cause?: unknown }).cause = { raw: retry.response };
-    throw wrapped;
-  }
-}
-
-/**
- * Quickly check whether the daemon is reachable. Used by the enrichment
- * worker to decide whether to retry jobs or stall.
- */
-export async function isOllamaAlive(): Promise<boolean> {
-  try {
-    const res = await fetch(`${OLLAMA_HOST}/api/tags`, {
-      signal:
-        typeof AbortSignal !== "undefined" && "timeout" in AbortSignal
-          ? (AbortSignal as unknown as { timeout: (ms: number) => AbortSignal }).timeout(2000)
-          : undefined,
+    const retry = await this.generateRaw({
+      ...opts,
+      format: "json",
+      temperature: 0.1,
     });
-    return res.ok;
-  } catch {
-    return false;
+    try {
+      return {
+        parsed: JSON.parse(retry.response) as T,
+        raw: retry.response,
+        metrics: retry.metrics,
+        attempts: 2,
+      };
+    } catch (err) {
+      const e = err as Error;
+      const wrapped = new LLMError(
+        "invalid_response",
+        `Model produced malformed JSON after retry: ${e.message}`,
+      );
+      (wrapped as unknown as { cause?: unknown }).cause = { raw: retry.response };
+      throw wrapped;
+    }
   }
+
+  async isAlive(): Promise<boolean> {
+    try {
+      const res = await fetch(`${this.host}/api/tags`, {
+        signal:
+          typeof AbortSignal !== "undefined" && "timeout" in AbortSignal
+            ? (AbortSignal as unknown as { timeout: (ms: number) => AbortSignal }).timeout(2000)
+            : undefined,
+      });
+      return res.ok;
+    } catch {
+      return false;
+    }
+  }
+
+  /**
+   * Internal generate that accepts the `format` flag — used only by
+   * generateJson to ask Ollama for a structured response. Not on the
+   * public LLMProvider surface.
+   */
+  private async generateRaw(
+    opts: GenerateOptions & { format?: "json" | "text" },
+  ): Promise<GenerateResult> {
+    const model = opts.model ?? this.defaultModel;
+    const signal =
+      opts.signal ??
+      (typeof AbortSignal !== "undefined" && "timeout" in AbortSignal
+        ? (AbortSignal as unknown as { timeout: (ms: number) => AbortSignal }).timeout(90_000)
+        : undefined);
+
+    const body = {
+      model,
+      prompt: opts.prompt,
+      system: opts.system,
+      stream: false,
+      format: opts.format === "json" ? "json" : undefined,
+      think: false,
+      options: {
+        num_ctx: opts.num_ctx ?? 8192,
+        num_predict: opts.num_predict ?? 1200,
+        temperature: opts.temperature ?? 0.3,
+      },
+      keep_alive: this.keepAlive,
+    };
+
+    const t0 = Date.now();
+    let res: Response;
+    try {
+      res = await fetch(`${this.host}/api/generate`, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify(body),
+        signal,
+      });
+    } catch (err) {
+      const e = err as Error;
+      if (e.name === "AbortError" || e.name === "TimeoutError") {
+        throw new LLMError("timeout", `Ollama request timed out`);
+      }
+      throw new LLMError(
+        "connection",
+        `Cannot reach Ollama at ${this.host}: ${e.message}. Is the daemon running?`,
+      );
+    }
+    const wall_ms = Date.now() - t0;
+
+    if (!res.ok) {
+      const text = await res.text().catch(() => "");
+      throw new LLMError(
+        "http",
+        `Ollama returned ${res.status} ${res.statusText}: ${text.slice(0, 200)}`,
+        res.status,
+      );
+    }
+
+    const data = (await res.json()) as {
+      response?: string;
+      total_duration?: number;
+      load_duration?: number;
+      prompt_eval_count?: number;
+      prompt_eval_duration?: number;
+      eval_count?: number;
+      eval_duration?: number;
+    };
+
+    if (typeof data.response !== "string") {
+      throw new LLMError("invalid_response", "Ollama response missing `response` field");
+    }
+
+    return {
+      model,
+      response: stripThinking(data.response),
+      metrics: {
+        input_tokens: data.prompt_eval_count ?? 0,
+        output_tokens: data.eval_count ?? 0,
+        wall_ms,
+      },
+    };
+  }
+}
+
+interface OllamaDiagnostics {
+  total_duration_ms: number;
+  load_duration_ms: number;
+  prompt_eval_duration_ms: number;
+  eval_duration_ms: number;
+}
+let lastDiagnostics: OllamaDiagnostics | null = null;
+
+/** Last call's Ollama-specific timings. Used by bench scripts only. */
+export function getLastOllamaDiagnostics(): OllamaDiagnostics | null {
+  return lastDiagnostics;
+}
+
+/**
+ * Default singleton — the back-compat shim every existing call site
+ * uses. The factory (B-7) will replace these with provider-aware
+ * resolution, but until then `generate()` etc. keep their pre-B-2
+ * call shape.
+ */
+const defaultProvider = new OllamaProvider();
+
+export function generate(opts: GenerateOptions): Promise<GenerateResult> {
+  return defaultProvider.generate(opts);
+}
+
+export function generateStream(
+  opts: GenerateStreamOptions,
+): AsyncGenerator<string, void, void> {
+  return defaultProvider.generateStream(opts);
+}
+
+export function generateJson<T = unknown>(
+  opts: GenerateOptions,
+): Promise<GenerateJsonResult<T>> {
+  return defaultProvider.generateJson<T>(opts);
+}
+
+export function isOllamaAlive(): Promise<boolean> {
+  return defaultProvider.isAlive();
 }
