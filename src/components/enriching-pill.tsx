@@ -5,6 +5,12 @@ import { useEffect, useState } from "react";
 
 interface Status {
   state: "pending" | "running" | "batched" | "done" | "error";
+  /**
+   * v0.6.0 Phase C-8: present only when state='batched' (Anthropic
+   * Message Batch in flight). Shown via tooltip for the rare power-user
+   * who wants to inspect the underlying batch.
+   */
+  batch_id?: string | null;
   last_error: string | null;
   updated_at: number;
   /** F-046: retry attempts from enrichment_jobs; 0 when job row missing. */
@@ -87,10 +93,21 @@ export function EnrichingPill({
     ? `retrying ${status.attempts}/${MAX_ATTEMPTS}…`
     : status.state === "running"
       ? "enriching…"
-      : "queued";
+      : status.state === "batched"
+        ? "queued for tonight's batch"
+        : "queued";
+
+  // v0.6.0 Phase C-9: 'batched' uses a distinct tooltip carrying the
+  // Anthropic batch_id (when present) so a power-user can correlate
+  // with the daily cron log without breaking the visual rhythm.
+  const tooltip =
+    status.state === "batched" && status.batch_id
+      ? `Anthropic batch ${status.batch_id}`
+      : undefined;
 
   return (
     <span
+      title={tooltip}
       className={`inline-flex items-center gap-1 rounded-full bg-[var(--surface-raised)] text-[var(--text-secondary)] ${
         compact ? "px-1.5 py-0.5 text-[10px]" : "px-2 py-0.5 text-xs"
       }`}

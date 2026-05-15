@@ -25,6 +25,7 @@ export async function GET(
     .prepare(
       `SELECT items.enrichment_state AS state,
               items.enriched_at AS updated_at,
+              items.batch_id AS batch_id,
               j.last_error AS last_error,
               j.attempts AS attempts
        FROM items
@@ -39,6 +40,7 @@ export async function GET(
     | {
         state: string;
         updated_at: number | null;
+        batch_id: string | null;
         last_error: string | null;
         attempts: number | null;
       }
@@ -48,6 +50,9 @@ export async function GET(
   return NextResponse.json(
     {
       state: row.state,
+      // v0.6.0 Phase C-8: surface batch_id so the pill can show
+      // "Queued for tonight's batch" with optional debug context.
+      batch_id: row.batch_id,
       last_error: row.last_error,
       updated_at: row.updated_at ?? Date.now(),
       attempts: row.attempts ?? 0,
