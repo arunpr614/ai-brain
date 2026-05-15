@@ -2990,3 +2990,110 @@ Strictly in the user-set order:
 - **Plans authored this session:** 3 (`v0.6.x-augmented-browsing.md` v1+v2, `v0.6.x-graph-view.md` v1, `v0.6.x-offline-mode-apk.md` v1). 1 rewrite (AB v2). 2 pending rewrites/docs (Graph v2 + research spike).
 - **Memory entries added:** 1 (`feedback_empirical_evidence_first.md`).
 - **Next milestone:** Graph plan v2 approved + GRAPH-1 execution, then AUG-1..7 execution, then offline-mode execution. All three land under v0.6.x patch releases on Lane L; no tag bumps to v0.6.0 until Lane C cloud migration completes.
+
+---
+
+## 2026-05-15 13:40 — [Lane L] v0.5.6 service-worker app shell — offline cold-launch verified on two devices
+
+**Entry author:** AI agent (Claude) — Lane L (local features / APK)
+**Session ID:** `c40d0741`
+**Triggered by:** user wanted offline mode to actually work in the APK (cold-launch with no network died with `ERR_INTERNET_DISCONNECTED`, blocking the whole v0.6.x outbox feature)
+
+### Planned since last entry
+
+After the v0.5.5 ship the user discovered that Capacitor's thin-WebView (`server.url=https://brain.arunp.in`) had no offline survivability: kill the network and the WebView reported `net::ERR_INTERNET_DISCONNECTED` before any JS — including the share-handler / outbox — could load. The plan was Path C: a hand-rolled service worker that pre-caches `/offline.html` + `/favicon.ico` and stale-while-revalidates the four shell tabs (`/`, `/inbox`, `/share-target`, `/capture`) and `/_next/static/**`, so the app shell hydrates offline. Bucket A pass (cold-launch + library renders + outbox path runs) was the ship gate. Library-offline-IN-scope was deferred to v0.6.x (local-DB reads).
+
+### Done
+
+- **Service worker landed** (`public/sw.js`, 269 lines). Three iterations under one tag because each fix exposed the next bug:
+  - **v1 (SHELL-1..7):** initial shell with `cache.addAll` over 6 URLs. Failed at install with `addAll` rejection because protected routes 302-redirect to `/unlock` for an unauthenticated SW. Split into auth-public `PRECACHE_URLS = ["/offline.html", "/favicon.ico"]` + per-URL `cache.add` with try/catch so partial precaches survive. Added `clients.claim()` + `controllerchange`-triggered one-shot reload in `register-sw.ts` so the registering page becomes controlled before first cold-launch.
+  - **v2:** SW registered but Inbox tab dead-ended on `/offline.html`. Cause: Next.js 16 sends `Vary: rsc, next-router-state-tree, …` headers; strict Vary matching = 100% miss. Fix: added `{ ignoreVary: true, ignoreSearch: true }` to `cache.match`. Side effect on Pixel: APK opened to a black screen because static-asset matching with `ignoreSearch` returned wrong Next.js dev chunks → hydration mismatch. Split into `PAGE_MATCH_OPTS = { ignoreVary: true }` and `STATIC_MATCH_OPTS = { ignoreVary: true }` (no ignoreSearch on either), bumped cache name v1→v2.
+  - **v3:** Library double-tap rendered raw RSC payload as text (user screenshot showed serialized component tree). Cause: with `ignoreSearch` removed but RSC entries still cacheable, the SW stored `/?_rsc=<hash>` (`Content-Type: text/x-component`) and served it back to a document navigation. Final fix: `isRscRequest()` detection (RSC header / Accept / `_rsc` query), `strippedKey()` normalizes cache keys to bare path at put time, RSC responses are *never* cached. Bumped v2→v3.
+- **Proxy bypass for `/sw.js`** (`src/proxy.ts` PUBLIC_PATHS). Browsers refuse to register a SW whose script URL is behind a redirect (SecurityError). Without this, the proxy 302'd `/sw.js` → `/unlock`, breaking registration on every cold-load.
+- **Hidden Next.js dev "N" indicator** (`next.config.ts` `devIndicators: false`) — was overlapping the bottom-nav Library tap target on the Pixel.
+- **Hardened CDP inspector script** (`scripts/inspect-webview.mjs`) — adb preflight, 30s deadline, 4-attempt retry, PID discovery via `pidof` + socket via `webview_devtools_remote_<pid>`. Empirically: the Capacitor 8.3.3 WebView accepts the CDP HTTP handshake but hangs the WebSocket upgrade — confirmed identically on Pixel and Redmi, so this is a Capacitor limitation not a device issue. Inspector remains useful as a precondition probe; deeper introspection still requires manual `chrome://inspect`.
+- **Two-device offline verification matrix** (Pixel 7 Pro + Redmi Note 7S):
+  - Cold-launch in airplane mode → ✅ Library renders with full item list on both devices
+  - Inbox tab offline → ✅ "Loading outbox…", Sync now disabled
+  - Ask + Settings tabs offline → ✅ (warmed pre-airplane)
+  - Item detail (`/items/<id>`) offline → ⚠️ falls through to `/offline.html` (expected; Library→item is RSC nav, not full HTML doc)
+- **Redmi Note 7S brought online as second test device**: MIUI USB Debugging (Security settings) toggled, APK 0.5.6 installed, paired (already had session cookie from prior visit), full ADB-driven warm-up + airplane-mode test loop automated end-to-end. Bottom-nav tap coordinates discovered via `uiautomator dump` (`Library 136,2101 / Inbox 405,2101 / Ask 675,2101 / Settings 944,2101`).
+- **Branch tangle recovered.** Mid-session, commit `633194f` accidentally landed on `lane-c/v0.6.0-cloud` instead of `lane-l/feature-work`. Verified the change had also been cherry-picked onto lane-l, then reset local lane-c (origin had not yet seen it). No data loss; no force-push to a published branch.
+
+### Cross-lane notes
+
+- **To Lane C:** all v0.5.6 work is on `lane-l/feature-work` and does not block the cloud migration. Service worker is in `public/sw.js` — if Lane C's cloud architecture changes the auth model (e.g., session cookie lifecycle), bump `SHELL_CACHE`/`STATIC_CACHE`/`PAGES_CACHE` from `brain-*-v3` to `-v4` to force purge. The `KNOWN_CACHES` array in `sw.js` and the `activate` handler will clean up old versions automatically. **Per Lane L tiered rule (commit `48967cd`)**, this v0.5.6 patch ship was acceptable on Lane L without Lane C signoff.
+- **Shared files touched:** `src/proxy.ts` (one-line PUBLIC_PATHS addition for `/sw.js`), `next.config.ts` (`devIndicators: false`), `package.json` (version bump pending — not yet bumped this session). Both proxy and next.config edits are additive; no breaking change for Lane C.
+- **Owned files touched (Lane L):** `public/sw.js` (new), `src/lib/client/register-sw.ts` (new), `scripts/inspect-webview.mjs` (new), `docs/plans/v0.5.6-app-shell-sw.md` (new + REVISED variant), `docs/research/automate-webview-devtools-from-claude-code.md` + `-SELF-CRITIQUE.md` (new), `docs/research/inspect-webview-output-2026-05-14.md` (new).
+
+### Learned
+
+- **Capacitor thin-WebView has no inherent offline.** With `server.url`, every navigation including the document HTML hits the network. Without a SW, airplane-mode cold-launch is `ERR_INTERNET_DISCONNECTED` *before any JS executes* — share-handler, outbox, reachability probe, all of it. This was not obvious from the Capacitor docs; only an empirical airplane-mode test surfaced it.
+- **`cache.addAll` is all-or-nothing.** One redirected URL fails the whole batch and the SW never activates. Per-URL `cache.add` with try/catch is the correct pattern when any precache target might be auth-gated.
+- **SW script URL must be auth-public.** Browsers throw `SecurityError: The script resource is behind a redirect, which is disallowed.` if `/sw.js` returns a 3xx. Even a redirect to `/unlock` (which would normally be caught and handled) breaks SW registration entirely. Add `/sw.js` to the proxy's PUBLIC_PATHS unconditionally.
+- **Next.js `Vary` headers prevent SW cache hits.** Without `ignoreVary: true`, `cache.match` misses every time because Next sends `Vary: rsc, next-router-state-tree, next-router-prefetch, next-router-segment-prefetch` and the values change per request.
+- **`ignoreSearch` is dangerous on a mixed cache.** Same pattern saved (e.g.) `/?_rsc=abc` and `/` to one cache; with `ignoreSearch: true` a document navigation could match the RSC variant and the WebView would render `text/x-component` as raw text. Either split caches or normalize keys at put time. We chose normalize.
+- **RSC navigations should never go through the SW cache as HTML.** Detect via `RSC: 1` header, `Accept: text/x-component`, or `?_rsc=` query. They are prefetch streams, not standalone documents.
+- **CDP-over-adb fails on Capacitor WebView.** HTTP `/json` works; WebSocket upgrade hangs. Confirmed twice (Pixel, Redmi). This kills the "let Claude Code drive DevTools" plan documented in `docs/research/automate-webview-devtools-from-claude-code.md` — see that doc's SELF-CRITIQUE for the gory details. Manual `chrome://inspect` remains the only path for live SW Console debugging on Capacitor.
+- **MIUI requires a separate "USB debugging (Security settings)" toggle** beyond standard `adb` enablement, otherwise APK install fails with `INSTALL_FAILED_USER_RESTRICTED`.
+- **Item-detail-offline is genuinely out of v0.5.6 scope.** Library→item is a Next.js client-side RSC navigation; the bare `/items/<id>` HTML doc is never fetched, so the SW has nothing to cache. The right fix is v0.6.x's local-DB read path (no HTTP), not a SW workaround.
+
+### Deployed / Released
+
+- **Nothing tagged yet.** v0.5.6 SW work is all on `lane-l/feature-work` HEAD `c40d074`. No `package.json` bump, no git tag, no release APK build. Pixel and Redmi were tested with debug APKs from `npm run android:debug`. **Ship sequence is the next step** (see remaining to-do).
+
+### Documents created or updated this period
+
+- `public/sw.js` — new, 269 lines, three iterations under one filename (versioned via cache name `brain-*-v3`)
+- `src/lib/client/register-sw.ts` — new, hand-rolled SW registration with controllerchange reload
+- `src/proxy.ts` — added `/sw.js` to PUBLIC_PATHS
+- `next.config.ts` — `devIndicators: false`
+- `public/offline.html` — exists (predates this session); inline-script reachability probe with 2s timeout, no module imports (must work when Next server is dead)
+- `scripts/inspect-webview.mjs` — new, hardened CDP inspector
+- `docs/plans/v0.5.6-app-shell-sw.md` — original SHELL plan
+- `docs/plans/v0.5.6-app-shell-sw-REVISED.md` — diagnose-first revision after first registration failure
+- `docs/research/automate-webview-devtools-from-claude-code.md` — 1035-line CDP automation research
+- `docs/research/automate-webview-devtools-from-claude-code-SELF-CRITIQUE.md` — 15 remediation items in §6
+- `docs/research/inspect-webview-output-2026-05-14.md` — empirical evidence file (Pixel + Redmi WebView CDP behavior)
+
+### Current remaining to-do
+
+1. **Ship v0.5.6.** Bump `package.json` to `0.5.6`, update `CHANGELOG.md` with offline-shell summary + item-detail caveat, tag `v0.5.6`, push tag, build release APK.
+2. **Document item-detail-offline limitation in v0.6.x plan** — one-paragraph addition to `docs/plans/v0.6.x-offline-mode-apk.md` clarifying that Library→item offline depends on local-DB read path (not SW caching), so it is correctly v0.6.x-scoped.
+3. **Decide CDP-research disposition.** `docs/research/automate-webview-devtools-from-claude-code.md` is now empirically falsified for Capacitor WebViews; either prepend a "STATUS: SUPERSEDED — Capacitor blocks WebSocket upgrade" banner or delete the doc. The SELF-CRITIQUE can stay as a record of what was tried.
+4. **Resume v0.6.x lane-L track.** Per prior log entry, the planned sequence is Graph plan v2 → GRAPH-1 → AUG-1..7 → offline-mode v0.6.x execution. v0.5.6 was an unplanned interrupt that re-enabled the offline track.
+5. **Keep `lane-l/feature-work` rebased on `origin/main` if Lane C lands cloud changes.** Run `git rev-list --count origin/main..origin/lane-l/feature-work` before any new lane-L work.
+
+### Open questions / decisions needed
+
+- **Ship sequence go/no-go.** User has the full picture; awaiting explicit "ship" before bumping version + tagging. (Asked at end of session.)
+- **CDP research doc fate** — supersede vs delete. Default plan: prepend supersession banner unless user prefers to nuke it.
+
+### Session self-critique
+
+This was a long session with real friction worth surfacing.
+
+- **Three "final fix" cache-version bumps in one session.** v1→v2→v3 in cache names because each fix had a side effect that wasn't predicted. The right move on attempt 1 would have been to write a small empirical test (precache a single document URL, verify `cache.match` returns it) *before* shipping the relaxed match opts to the device. Instead I shipped, the user found the bug, I fixed forward. Three times. The `KNOWN_CACHES` purge logic saved us from cache-pollution but the user paid in reinstall cycles.
+- **`ignoreSearch` was added without thinking through the RSC implication.** Next.js's `?_rsc=` query is the entire mechanism Next uses to differentiate document vs RSC requests — relaxing search-key matching collapses that distinction. I added the flag because Inbox was missing the cache; I should have read the Vary headers + understood why before reaching for `ignoreSearch`. The user caught the consequence (raw RSC text) on a real device, not me on paper.
+- **CDP automation research published before the runnable script was tested.** `docs/research/automate-webview-devtools-from-claude-code.md` (1035 lines) recommended `chrome-remote-interface` + provided a §F runnable script. The script has *never run successfully against a Capacitor WebView*. The SELF-CRITIQUE caught this but only because the user asked for a self-critique — I would not have flagged it on my own. Pattern: when I produce a long doc, I tend to over-trust the structure as a proxy for correctness.
+- **`rm -rf .next` while dev server was running.** Caused a Turbopack panic and 502/524 from Cloudflare. User was waiting on a working server. Should have killed the dev process first; the action was reflexive, not thought through. Falls under "destructive shortcut" — exactly the kind of action the system prompt warns against.
+- **Branch tangle on `lane-c/v0.6.0-cloud`.** A commit landed on the wrong branch. Recovered cleanly because origin hadn't seen it yet, but the root cause was that I didn't check `git branch --show-current` before committing during a fast iteration cycle. Pattern-level concern: in long fix-forward sessions, branch hygiene degrades.
+- **Recognition blind spot for the Capacitor WebView CDP issue.** I produced a 1035-line research doc on CDP automation *before* empirically verifying that the Capacitor WebView even accepts the WebSocket upgrade. The CDP HTTP handshake works, which is enough to pass a shallow probe — but the actual debugging payload never lands. Two devices later, this is now confirmed. The right move was a 30-minute spike (`websocat` against the forwarded socket) before writing the implementation guide.
+
+### Action items for the next agent
+
+1. **[VERIFY]** Before bumping `package.json` to 0.5.6, run `git status` clean and `git log --oneline origin/lane-l/feature-work..HEAD` empty — i.e., everything in the SW chain is pushed. The shipping commits are `f571df6` through `c40d074`.
+2. **[DO]** When tagging `v0.5.6`, write the CHANGELOG entry to explicitly state: "Library / Inbox / Ask / Settings render offline; tapping into an item still requires a network round-trip — this is by design, full library offline lands in v0.6.x." Don't pretend item-offline is in scope.
+3. **[DON'T]** Reach for `ignoreSearch: true` on `cache.match` for any new SW route family without first auditing whether RSC variants of that path are also cached. The v3 fix is delicate; one new route that bypasses `strippedKey()` at put time can re-introduce the raw-text bug.
+4. **[DON'T]** Run `rm -rf .next` while the Next dev server is running. Kill the dev process first, then clear `.next/dev` only (not the whole `.next`), then restart. The Turbopack panic from this session cost ~5 minutes of user wait time.
+5. **[DO]** Prepend a `> **STATUS: SUPERSEDED 2026-05-15** — Capacitor 8.3.3 WebView accepts CDP HTTP handshake but hangs the WebSocket upgrade; verified on Pixel 7 Pro + Redmi Note 7S. Manual `chrome://inspect` remains the only working path.` banner to `docs/research/automate-webview-devtools-from-claude-code.md`. Don't delete — the SELF-CRITIQUE is still useful as a methodology record.
+6. **[ASK]** Before resuming Lane L v0.6.x work, ask the user whether the next track is Graph plan v2 (per pre-v0.5.6 plan) or full library-offline (the natural follow-on from v0.5.6 SHELL). The interrupt may have shifted priorities.
+7. **[VERIFY]** Run `git branch --show-current` before any commit during multi-fix iteration cycles. Lane L commits land on `lane-l/feature-work`; Lane C commits land on `lane-c/v0.6.0-cloud`. The cost of getting this wrong is a recovery cycle.
+
+### State snapshot
+
+- **Current phase / version:** `v0.5.6` SW app shell complete on Lane L; not yet tagged. Two-device offline cold-launch verified (Pixel 7 Pro + Redmi Note 7S). v0.6.x lane-L work paused since 2026-05-12 to land this offline-cold-launch fix.
+- **Active trackers:** `PROJECT_TRACKER.md` · `ROADMAP_TRACKER.md` · `BACKLOG.md` · `RUNNING_LOG.md` (30 entries after this append) · `docs/plans/v0.5.6-app-shell-sw-REVISED.md`.
+- **Repo:** `lane-l/feature-work` at `c40d074`. Per memory `project_ai_brain_dual_lane.md` — Lane L owns local features / APK / extension; Lane C owns the cloud migration.
+- **Tests:** SW behavior is empirically verified on two physical devices. No automated regression coverage — re-introducing `ignoreSearch` on page matching, or removing `/sw.js` from PUBLIC_PATHS, would silently break offline cold-launch and there is no test to catch it.
+- **Next milestone:** ship `v0.5.6` (tag + APK), then resume v0.6.x lane-L track per user preference (Graph v2 vs library-offline-from-DB).
