@@ -27,7 +27,6 @@
     "bench:ask": "node --import tsx scripts/bench-ask.mjs"
   },
   "dependencies": {
-    "@anthropic-ai/sdk": "^0.96.0",
     "@capacitor/android": "^8.3.3",
     "@capacitor/cli": "^8.3.3",
     "@capacitor/core": "^8.3.3",

@@ -378,9 +378,7 @@ test("AnthropicProvider.submitBatch: posts mapped requests; pollBatch returns su
       assert.match(err.error, /503/);
     }
 
-    // SDK may call retrieve > once (poll + internal results URL lookup);
-    // the contract is "we got results", not "exactly one retrieve hit".
-    assert.ok(retrieveCalls >= 1);
+    assert.equal(retrieveCalls, 1);
     assert.equal(resultsCalls, 1);
   } finally {
     await stub.close();
