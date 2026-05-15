@@ -25,6 +25,9 @@ export async function register(): Promise<void> {
   const { getDb } = await import("@/db/client");
   const { startBackupScheduler } = await import("@/lib/backup");
   const { startEnrichmentWorker } = await import("@/lib/queue/enrichment-worker");
+  const { startEnrichmentBatchCron } = await import(
+    "@/lib/queue/enrichment-batch-cron"
+  );
   const { ensureLanToken } = await import("@/lib/auth/bearer");
   const { logError } = await import("@/lib/errors/sink");
 
@@ -49,4 +52,9 @@ export async function register(): Promise<void> {
 
   startBackupScheduler();
   startEnrichmentWorker();
+  // v0.6.0 Phase C-4: daily Anthropic Message Batch scheduler. Provider-
+  // gated — no-op when LLM_ENRICH_PROVIDER lacks submitBatch (Ollama,
+  // OpenRouter). The cron still registers so a runtime env flip + restart
+  // activates the path without a code change.
+  startEnrichmentBatchCron();
 }
