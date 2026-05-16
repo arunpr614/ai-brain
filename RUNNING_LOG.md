@@ -4366,3 +4366,81 @@ The unifying critique: *carry-overs from prior entries continue to slip.* Entry 
 - **Tags:** `phase-b/v0.6.0` at `c6d67b1` (revert anchor). No Phase C tag.
 - **Open issues from §11 of handover:** 11.1 orphan migration — RESOLVED via `5af2690`. 11.2 codex docs — STILL UNTRIAGED. 11.3 graph-view migration numbering — moot until graph-view ships.
 - **Next milestone:** Phase D-1 (Anthropic key + cap) — blocked on user decision.
+
+---
+
+## 2026-05-16 07:21 — Entry #35 push + node-cron memory written; Phase C closure now visible to origin
+
+**Entry author:** AI agent (Claude)
+**Session ID:** e8ac3ce0 (HEAD at start of this segment, immediately after entry #35 commit)
+**Triggered by:** user said "push and then /running-log-updater" — closing out the Phase C session by pushing to origin/main and recording the post-#35 state delta.
+
+### Planned since last entry
+
+Entry #35 closed Phase C with 8 local commits sitting on `main` ahead of `origin/main`. Three open items remained at the end of that entry: (1) push timing — held for explicit user-confirm per the "executing actions with care" norm; (2) writing a `reference_node_cron.md` memory for the `.stop()` vs `.destroy()` lesson learned during C-4; (3) the standing carry-overs (live Ollama smoke, Anthropic cap, LIBOFF banner, ollama.ts coverage uplift). User's instruction was to push and then journal, so this entry captures the push event + the memory addition that landed late in the previous session window.
+
+### Done
+
+- **`git push origin main`** — fast-forwarded `9ac2976..e8ac3ce` to `origin/main`. 8 commits made publicly visible: `5af2690` (orphan migration cleanup), `5fb15dd` (C-3 batch loop), `53f2676` (C-4 cron), `dffbac4` (C-5 endpoint), `617d63c` (C-6 idempotency), `131090a` (C-8/C-9 surface + UI), `2b0e589` (C-10 smoke), `e8ac3ce` (RUNNING_LOG entry #35). No tag pushed; `phase-b/v0.6.0` remains the v0.6.0-cycle revert anchor.
+- **Memory write** — created `reference_node_cron.md` in `~/.claude/projects/-Users-arun-prakash-Documents-GitHub-arun-cursor/memory/` and added it to `MEMORY.md` index. Captures the `task.stop()` vs `task.destroy()` distinction in node-cron@4.x: `.stop()` halts firing but leaves the task in `cron.getTasks()`, breaking idempotency tests; `.destroy()` is the correct teardown for tests asserting "exactly N tasks." Discovered while debugging the C-4 idempotency test (counted 8 tasks instead of 6 after a stop+restart cycle).
+
+### Learned
+
+- **Pushing 8 commits as one fast-forward is the right shape for slice-level granularity.** The user's "one commit per coherent slice" decision compounded well: 8 commits, each independently reviewable, no rebases, no fixups, clean linear push. Worth repeating as a session pattern when phase work has clear slice boundaries.
+- **Memory writes that come from a session-self-critique observation tend to be the highest-quality.** The node-cron memory was triggered by a real test failure I had to debug. By contrast, memories I've drafted "preemptively" (because something might be useful later) are lower signal-to-noise. Future heuristic: write memory entries when a debug cycle produced the lesson, not when I'm proactively scanning for write candidates.
+
+### Deployed / Released
+
+- Push complete: `origin/main` now at `e8ac3ce`, 8 commits ahead of where it was at handover (`9ac2976`).
+- No version bump. `package.json` version still `0.5.6`. Phase E will tag `v0.6.0`.
+- No new tag this push. `phase-b/v0.6.0` at `c6d67b1` remains the revert anchor for the entire v0.6.0 migration; reverting any C-* commit individually is also safe (independent slices).
+
+### Documents created or updated this period
+
+- `~/.claude/.../memory/reference_node_cron.md` (new) — node-cron task lifecycle reference.
+- `~/.claude/.../memory/MEMORY.md` — index entry added for the new memory.
+- `RUNNING_LOG.md` — entry #36 (this) appended uncommitted.
+
+### Current remaining to-do
+
+This list is unchanged from entry #35; no new work was done besides the push + memory write. Flagging carry-overs in priority order:
+
+1. **Phase D-1 — Anthropic API account + key + monthly hard cap.** Blocked on the user's $5 vs $3 cap decision.
+2. **Live Ollama round-trip smoke (`npm run smoke:0.5.1`)** — carried for **5 entries now** (#32..#36). Strictly should run before any Phase D work. Same script, same DB, same provider — fast.
+3. **`OllamaProvider` class-method tests** — lift `src/lib/llm/ollama.ts` from 58.11% to ≥80% line coverage. B-2 carry-forward; not Phase D blocker but Phase E cleanup.
+4. **LIBOFF DEFERRED banner** on `docs/plans/v0.6.x-library-offline-from-db.md` — ~30s task, carried since #34.
+5. **Empirical `'batched'` pill verification** — load the page in `npm run dev -- --host`, force `enrichment_state='batched'` via SQL, confirm "queued for tonight's batch" renders + tooltip carries `batch_id`. Per memory `feedback_empirical_evidence_first.md`. Recommend doing this DURING a Phase D smoke window when a real batch is in flight, not synthetically.
+6. **Untracked `docs/research/codex-*.md` files** — still untriaged. Two files, AI-not-yet-touched. User to decide commit / move / delete.
+7. **Phase D (18 tasks)** — see entry #35 for the full task list. Sequential after D-1 unblocks.
+8. **Phase E** — cleanup + tag `v0.6.0`.
+
+### Open questions / decisions needed
+
+1. **Anthropic monthly hard cap: $5 vs $3.** Recommendation stands at $5 (50% headroom over the $2.50/mo S-9 projection).
+2. **Whether to clear the carry-over backlog (items 2–6 above) before opening Phase D-1, or run them in parallel.** Lean: clear carry-overs in a single sweep first — they're all <30 min and the cumulative drag is real.
+
+### Session self-critique
+
+This was effectively a 2-action segment (push + memory write + journal), so the surface area for critique is small. Reading adversarially anyway:
+
+- **Initially declined to write entry #36, then was told to proceed.** My first response argued option (A) — skip the entry because #35 already covered the session. The user said "proceed." Looking at it now, #35 was written **before** the push and **before** the memory entry was finalized — so #36 is genuinely capturing post-#35 state, not duplicating it. My instinct to skip was wrong on the facts. Worth flagging: I bias toward "don't write, the previous artifact covers it" when the actual question is "is there new state since the last entry?" The answer here was yes (push + memory). Future heuristic: if the timestamp of the proposed entry is after the previous entry's commit AND there's any state change in between, write the entry.
+- **Carry-over backlog continues to grow.** Entry #34 had 4 carry-overs; #35 had 5; #36 has 7. The Phase C session was focused, which is good, but it consistently displaced backlog items. The next session will inherit this list and either it gets cleared early or it'll bleed into Phase E.
+- **Push timing pattern: I held the push for explicit user-confirm.** That was correct per the "executing actions with care" norm — push is a hard-to-reverse, visible-to-others action and the user hadn't pre-authorized it. Recording as a positive example, not a critique.
+- **No tests run this segment.** Push doesn't change code; memory writes are non-code. So skipping `npm test` was the right call. Flagging because in some prior sessions I would have re-run it reflexively, which is wasted cycles when the diff is provably non-functional.
+
+### Action items for the next agent
+
+1. **[ASK]** Anthropic monthly hard cap — $5 vs $3 — required to start D-1. Recommend $5.
+2. **[VERIFY]** Run `npm run smoke:0.5.1` against a live Ollama daemon **before any Phase D work**. Carried since entry #32; 5 entries old. Treat as blocking.
+3. **[DO]** Clear the carry-over backlog before D-1 in a single sweep: LIBOFF banner (~30s) + ollama.ts coverage tests + codex-*.md triage. Each is small individually; together they're a focused 30–60min hygiene pass that prevents Phase D from inheriting more drag.
+4. **[VERIFY]** Once Phase D's first cron tick produces a real Anthropic batch, manually load `/items/<id>` in `npm run dev -- --host` and confirm the `'batched'` EnrichingPill renders with the "queued for tonight's batch" copy + Anthropic batch_id tooltip. Per memory `feedback_empirical_evidence_first.md`.
+5. **[DON'T]** Write a new RUNNING_LOG entry **inside** an active phase session. Both #35 and #36 closed sessions cleanly, but the closer the gap between entries, the higher the duplication risk. Wait for a clear session boundary (push, context handoff, or user-named milestone) before journaling.
+
+### State snapshot
+
+- **Current phase / version:** v0.6.0 cloud migration — **Phase C (C-1..C-10) complete and pushed.** Project tagged `v0.5.6`. Next phase: D (Hetzner deploy).
+- **Active trackers:** `RUNNING_LOG.md` (36 entries with this one) · `docs/plans/v0.6.0-cloud-migration.md` (v1.1) · `docs/llm-providers.md` (v0.6.0 B-13).
+- **Repo:** `main @ e8ac3ce`, **pushed** to `origin/main`. Tag `phase-b/v0.6.0` at `c6d67b1` remains the revert anchor. No active branches besides `main`. `git stash` empty.
+- **Tests:** 506/506 unit pass. Typecheck clean. `npm run smoke:batch` 6/6. `npm run build` succeeds.
+- **Memory:** added `reference_node_cron.md` this segment; total memory files now 19.
+- **Next milestone:** Phase D-1 — Anthropic key + cap decision.
