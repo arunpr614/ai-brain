@@ -5,6 +5,8 @@ import type { NextConfig } from "next";
 const projectRoot = dirname(fileURLToPath(import.meta.url));
 
 const nextConfig: NextConfig = {
+  // Self-contained production bundle for Hetzner deploy (no node_modules needed).
+  output: "standalone",
   // Pin workspace root so Turbopack stops guessing against ancestor lockfiles.
   turbopack: {
     root: projectRoot,
