@@ -4444,3 +4444,105 @@ This was effectively a 2-action segment (push + memory write + journal), so the 
 - **Tests:** 506/506 unit pass. Typecheck clean. `npm run smoke:batch` 6/6. `npm run build` succeeds.
 - **Memory:** added `reference_node_cron.md` this segment; total memory files now 19.
 - **Next milestone:** Phase D-1 — Anthropic key + cap decision.
+
+---
+
+## 2026-05-18 22:34 — Phase D-1..D-9 shipped: Hetzner is hot
+
+**Entry author:** AI agent (Claude)
+**Session ID:** `5e39d32e` (HEAD at end of session)
+**Triggered by:** Continuing from `Handover_docs/Handover_docs_16_05_2026_PHASE_D_KICKOFF/HANDOVER.md`. User started session with provisioning of vendor accounts and ran the agent through D-1..D-9 in one sitting.
+
+### Planned since last entry
+The Phase D kickoff handover identified D-1 (user-side Anthropic provisioning) as the unblock for everything else. The plan: D-1..D-4 user-side vendor signups, then D-5 gpg keypair on Mac, D-6 secrets on Hetzner, D-7 standalone build, D-8 rsync, D-9 systemd unit. Goal of this session: get Brain running as a managed systemd service on Hetzner with all four vendor keys wired in, so D-10 (Cloudflare tunnel preview hostname) and D-11 (Hetzner smoke) can land in the next session.
+
+### Done
+**D-1 — Anthropic API key + caps.** User set $5/mo hard cap + $3/mo soft alert in console.anthropic.com under `arunpr614` GitHub identity, then generated `sk-ant-api03-...` key. Written to `.env`. Initial paste was the wrong credential format (looked like an OAuth/admin token, not an API key) — agent flagged before writing, user re-paste was correct.
+
+**D-2 — Gemini API key (AI Studio).** User created key at aistudio.google.com (free tier, `text-embedding-004`, 1500 RPM, no CC). Written to `.env`.
+
+**D-3 — OpenRouter standby key.** User generated `sk-or-v1-...` at openrouter.ai. Written to `.env`. Standby only — `LLM_*_PROVIDER` does not reference it on Hetzner; sits idle as a swap target per the plan §1 lock #7.
+
+**D-4 — Backblaze B2 bucket + scoped App Key.** User signed up at backblaze.com, enabled 2FA via authenticator app, created bucket `ai-brain-backups-arunpr614` (private, US East 005, encryption disabled — gpg client-side encryption per S-7 runbook compensates), set custom lifecycle rule (30 days hide + 1 day delete). Created scoped App Key `ai-brain-hetzner` (read+write, scoped to one bucket, no list-all-buckets). Initial attempt produced a Master Application Key by mistake — agent flagged, user revoked it and created the correctly-scoped key. Verified end-to-end via live `b2_authorize_account` API call: HTTP 200, bucketId match, 18 capabilities. Four B2 vars written to `.env`. **Self-critique on B2 vs alternatives written before proceeding** — concluded B2 is the right call (cross-cloud isolation from Hetzner, 11-year track record), beat R2 on the failure-mode argument.
+
+**D-5 — gpg keypair on Mac.** RSA 4096, identity `ai-brain-backup-2026-05-18 <brain@arunp.in>`, fingerprint `950DF65D8792145A06D2263FBC1CCA584E82D84B`. 6-word diceware passphrase generated on agent side, displayed once in chat, user saved to Bitwarden + a second backup location. Round-trip encrypt/decrypt smoke test green on Mac before proceeding to D-6.
+
+**D-6 — `/etc/brain/.env` on Hetzner.** SCP'd public key to Hetzner, imported into brain user's gpg keyring, marked ultimate trust via `--import-ownertrust` (avoiding the TTY-required `--edit-key trust` flow). Created `/etc/brain/` dir as `700 brain:brain`, wrote `.env` as `600 brain:brain` with all 13 production vars including `LLM_ENRICH_PROVIDER=anthropic`, `LLM_ASK_PROVIDER=anthropic`, `EMBED_PROVIDER=gemini`. Bearer token (`BRAIN_LAN_TOKEN`) carried over from Mac `.env` so APK + extension keep working transparently across cutover.
+
+**D-7 — Next.js standalone build.** Added `output: "standalone"` to `next.config.ts` (3-line config edit, no new deps). `npm run build` green. Bundle: `.next/standalone/server.js` + `node_modules` (510 MB total, but bloated — Next.js trace included repo-root docs that shouldn't ship; flagged for Phase E hygiene).
+
+**D-8 — Rsync to Hetzner.** Selective rsync of `server.js`, `package.json`, `node_modules`, `.next/`, `src/`, `scripts/`, `public/` to `/opt/brain/` (62 MB on Hetzner). **Native module mismatch hit:** standalone bundle ships Mac-arm64 `better_sqlite3.node`. `npm rebuild better-sqlite3` failed because `prebuild-install` got pruned by Next.js standalone tracing. Workaround: `npm install --no-save better-sqlite3@11.10.0 sqlite-vec@0.1.9` on Hetzner pulled fresh Linux-x64 prebuilds. **555 transitive packages installed as side effect** — adds bloat, flagged for Phase E hygiene. Smoke test verified: `Database(":memory:").prepare("SELECT sqlite_version()").get()` returns 3.49.2; `sqliteVec.load(db); db.prepare("SELECT vec_version()").get()` returns v0.1.9. Direct `node server.js` boot was clean: Next.js 16.2.5 ready, all 8 migrations applied, backup scheduler + enrichment worker + batch cron all started.
+
+**D-9 — systemd unit `brain.service`.** Created `scripts/deploy/brain.service` (in repo, version-controlled). Installed at `/etc/systemd/system/brain.service` mode 0644 root:root. `systemctl daemon-reload` + `systemctl enable --now brain` succeeded. Verified: `is-active=active`, `is-enabled=enabled` (auto-starts on reboot). Hardened: `NoNewPrivileges`, `PrivateTmp`, `ProtectSystem=strict`, `ProtectHome=true`, `ReadWritePaths=/opt/brain/data`. Bearer-authed `GET /api/health` returns `HTTP 200 {"ok":true}`. Journal shows clean boot banner identical to D-8 manual run.
+
+**Slice-level commit decision.** User asked agent to self-critique three options for committing the `next.config.ts` change. Agent argued option B (bundle with D-9) was the most honest slice — the config change is inert without a consumer; D-9 is what makes it meaningful. User locked B. Result: one commit `5e39d32` covering D-7 + D-9 source changes, framed as "Hetzner deploy capability".
+
+### Learned
+- **Anthropic `console.anthropic.com` shows "API Keys" but billing-cap settings live under "Plans & Billing"** — must be set BEFORE generating the API key per the locked memory. Confirmed in workflow.
+- **B2 has TWO buttons on the App Keys page** — "Generate Master Application Key" at the top and "Add a New Application Key" below. They're easy to confuse. Master keys have full account access; scoped keys are what we want for Hetzner. Worth flagging in any future B2 walkthrough.
+- **Next.js standalone bundles strip dev deps**, including `prebuild-install`, which native modules need at install time. `npm rebuild` fails on a stripped node_modules tree. Workaround: `npm install --no-save <module>` to fetch fresh prebuilds. This is an undocumented gotcha for native-module + standalone-output setups.
+- **B2 lifecycle "Keep prior versions for 30 days"** preset only deletes prior versions of the same filename. Datestamped backups (different filename per night) need "Use custom lifecycle rules" with `daysFromUploadingToHiding=30, daysFromHidingToDeleting=1`. Important for any nightly-snapshot backup pattern.
+- **`gpg --edit-key trust` requires a TTY** — fails over plain SSH. `gpg --import-ownertrust` is the non-interactive equivalent for setting trust level on imported keys. Worth referencing in any future automated gpg-on-server flow.
+- **Hetzner CX23 toolchain status confirmed:** Node 20.20.2, npm 10.8.2, gcc/g++ available, Python 3.12.3, gpg 2.4.4. `better-sqlite3@11.10.0` Linux-x64 prebuild + `sqlite-vec@0.1.9` Linux-x64 prebuild both load cleanly. No glibc surprises.
+
+### Deployed / Released
+- **Hetzner CX23 Helsinki (`204.168.155.44`)**: Brain v0.6.0 (HEAD `5e39d32`) running as systemd service `brain.service`, listening on 127.0.0.1:3000 only (not yet exposed publicly — D-10 wires the tunnel). All four vendor keys live in `/etc/brain/.env`. SQLite is empty/fresh; Mac DB rsync happens at D-12 cutover.
+- **Repo HEAD:** `5e39d32 feat(D-7,D-9): Hetzner deploy capability` on `main`. **Not yet pushed to origin** — local only.
+
+### Documents created or updated this period
+- `next.config.ts` — added `output: "standalone"`.
+- `scripts/deploy/brain.service` (NEW) — systemd unit for Brain on Hetzner.
+- `.env` — added `ANTHROPIC_API_KEY`, `GEMINI_API_KEY`, `OPENROUTER_API_KEY`, `B2_KEY_ID`, `B2_APPLICATION_KEY`, `B2_ENDPOINT`, `B2_BUCKET_NAME`. Gitignored, working tree clean.
+- `~/.gnupg/` (Mac) — RSA 4096 keypair for backup encryption.
+- `/etc/brain/.env` (Hetzner, mode 0600 brain:brain) — 13 production env vars.
+- `/etc/systemd/system/brain.service` (Hetzner, mode 0644 root:root) — copy of repo file.
+- Memory: `project_ai_brain_cutover_pacing.md` (NEW) — locked user defaults: agent picks cutover date ≥48h after D-11 smoke, 2–3h on-call latency at 03:00 IST, rollback-to-Mac plan accepted.
+
+### Current remaining to-do
+1. **D-10** — Cloudflare Tunnel preview hostname (e.g. `brain-staging.arunp.in`). User-side micro-step: `cloudflared tunnel login` browser flow (or API token paste).
+2. **D-11** — Hetzner smoke against preview hostname: capture, list, enrich, enrichment-status, Ask streaming. **First real Anthropic spend** (~$0.01 expected).
+3. **D-12** — rsync `data/brain.sqlite` Mac→Hetzner during 03:00 IST cutover window.
+4. **D-13** — DNS cutover at 03:00 IST: stop Mac cloudflared → CF DNS swap → start Hetzner cloudflared on `brain.arunp.in`.
+5. **D-14** — `launchctl unload` Mac Brain.
+6. **D-15..D-18** — User-side capture from APK; Ask query streaming verify; wait for first 01:00 IST batch run; backup smoke (gpg-decrypt B2 object, row-count compare).
+7. **Phase E** — cleanup + tag v0.6.0 + monitoring + carry-over hygiene from §11 of handover.
+
+### Open questions / decisions needed
+- **D-10 cloudflared auth method.** Option A: user generates a Cloudflare API token in dashboard, pastes to agent. Option B: install `cloudflared` on Hetzner first, run `cloudflared tunnel login` interactively (browser OAuth), agent takes over after. Lean: B (no token in chat).
+- **Cutover date.** Agent will propose ≥48h after D-11 green per locked memory `project_ai_brain_cutover_pacing.md`. Not yet scheduled — depends on when D-10/D-11 land.
+- **`/opt/brain/node_modules` bloat.** 555 transitive packages from `npm install --no-save`, including `prebuild-install` and friends. Phase E task to slim to `--omit=dev`. Not blocking D-10/D-11.
+- **2 npm vulnerabilities** (1 moderate, 1 high) reported during the install. Almost certainly transitive in the bloat. Phase E `npm audit` task.
+
+### Session self-critique
+Honest audit of behavior across this session:
+
+1. **Plaintext-chat secrets exposure is now load-bearing.** All four vendor API keys (Anthropic, Gemini, OpenRouter, B2 application key) PLUS the gpg backup passphrase were pasted/displayed in chat plaintext. Agent flagged each at the time but did not push hard enough on Option B alternatives (e.g., agent could have asked user to generate the gpg passphrase in Bitwarden and paste back, instead of agent generating it). The mitigation is "rotate all secrets in Phase E" — but that's deferred work that has historically not always landed. **Pattern concern:** the path-of-least-resistance for agent-generated secrets defaults to chat-display, which is the wrong default for a project where conversation history persists.
+
+2. **Master B2 key incident is a near-miss.** User generated a Master Application Key by clicking the wrong button. Agent caught it after-the-fact when user pasted the credentials. Had user not pasted the `keyName` field, agent would have written a master key to `.env` and shipped it to Hetzner. The walkthrough in §5 of the chat instruction did say "Master Application Key at the top — DON'T USE THIS" but the warning was buried in a longer step. **Future: lead each vendor walkthrough's load-bearing step with a screenshot or visual cue, not just text.**
+
+3. **`prebuild-install` failure was unanticipated.** The plan implied D-8 was a single rsync. Hitting the native-module rebuild issue cost ~3 minutes and 555 packages of bloat. **Self-critique:** agent should have verified before D-8 that the standalone bundle's native binaries were Linux-x64. A `file node_modules/better-sqlite3/build/Release/*.node` check on the standalone artifact (Mac side) would have surfaced this and let agent design the rsync to skip the broken binary entirely, or use `npm install --no-save` from the start without rsync wasting bandwidth on Mac binaries.
+
+4. **Bundle bloat acknowledged but not fixed.** 510 MB standalone artifact contains `Handover_docs/`, `BACKLOG.md`, `RUNNING_LOG.md`, `docs/`. Next.js's `outputFileTracingRoot` default is the repo root, which is too generous. Agent rsynced a curated subset to work around it, but did not fix the config. **Pattern concern:** agent has a habit of "work around the bloat now, fix in Phase E" which lets cruft accumulate. Phase E is a real hygiene-debt account.
+
+5. **Granularity decision was healthy.** User's question "self-critique three options" forced honest evaluation; agent argued for B (bundle next.config.ts with D-9) on substance, not by defending the original lean. Result: one coherent slice commit, not performative micro-commits. This is the slice-level rule working as intended.
+
+6. **No empirical UI verification of D-9 in a browser.** Service is up; bearer-authed `/api/health` is 200; but no human has loaded a page or pressed a button on the live Hetzner box yet. Per memory `feedback_empirical_evidence_first.md`, this is exactly the kind of gap that should be closed during D-11 smoke. Flagged in to-do.
+
+### Action items for the next agent
+
+1. **[VERIFY]** Before D-10, run `gpg --list-keys brain@arunp.in` on Hetzner — confirm fingerprint matches `950DF65D8792145A06D2263FBC1CCA584E82D84B`. If a different key is present, do NOT proceed with backups; investigate first.
+2. **[VERIFY]** Before D-12 rsync, confirm Hetzner DB row count: `ssh ... 'sqlite3 /opt/brain/data/brain.sqlite "SELECT COUNT(*) FROM items"'` should return 0 (fresh DB). Mac side should match the captured-items count from before cutover.
+3. **[ASK]** Confirm D-10 cloudflared auth method (A: API token in chat, B: browser OAuth flow on Hetzner). Do not assume B without user confirmation.
+4. **[DON'T]** Do NOT default to agent-generated secrets displayed in chat. For any new credential needed in Phase D-10..D-18 (e.g., cloudflared tunnel token), default to "user generates in their tool, pastes back" unless the user explicitly opts to have agent generate.
+5. **[DO]** Add to Phase E hygiene checklist: rotate all 4 vendor API keys + gpg keypair (passphrase was displayed in chat). Check `Handover_docs/.../Handover_docs_18_05_2026_PHASE_D_PROGRESS/` (if created) for the rotation runbook.
+6. **[DO]** During D-11 smoke, exercise `/api/health`, `/api/items` (POST capture + GET list), `/api/items/:id/enrich`, `/api/items/:id/enrichment-status`, and `/api/ask` with streaming. **First Anthropic spend lands here** — keep an eye on the dashboard during the smoke.
+7. **[DO]** After D-18, before tagging v0.6.0, fix `next.config.ts` `outputFileTracingRoot` so the standalone bundle stops including repo-root docs/`Handover_docs/`. Currently the bundle is 510 MB locally, only 62 MB after curated rsync — that delta is wasted bandwidth on every deploy.
+
+### State snapshot
+- **Current phase / version:** v0.6.0 cloud migration — **Phase D-1..D-9 complete and committed locally.** Project tagged `v0.5.6`. Tag `phase-b/v0.6.0` at `c6d67b1` remains the revert anchor for the v0.6.0 cycle.
+- **Active trackers:** `RUNNING_LOG.md` (37 entries with this one) · `docs/plans/v0.6.0-cloud-migration.md` (v1.1) · `docs/llm-providers.md` (v0.6.0 B-13).
+- **Repo:** `main @ 5e39d32`. **Not pushed to origin yet** — push before next session ends so other agents can pick up. `git stash` empty. No active branches besides `main`.
+- **Hetzner:** `204.168.155.44` running `brain.service` v0.6.0; `/api/health` 200 with bearer; not yet behind tunnel.
+- **Tests:** 506/506 unit pass (no new tests this session). Typecheck clean. Build succeeds. Live boot smoke green on Hetzner.
+- **Memory:** added `project_ai_brain_cutover_pacing.md` this segment; total memory files now 21.
+- **Next milestone:** Phase D-10 — Cloudflare Tunnel preview hostname.
