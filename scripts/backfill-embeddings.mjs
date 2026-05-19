@@ -3,7 +3,7 @@
  * Backfill embeddings for already-enriched items.
  *
  * Originally v0.4.0 F-012 / T-16 (Ollama-only). Rewritten in v0.6.0 S-13 to
- * route through the embed factory (createEmbedProvider), so it works against
+ * route through the embed factory (getEmbedProvider), so it works against
  * any provider the EMBED_PROVIDER env var selects (ollama, gemini).
  *
  * What it does:
@@ -48,11 +48,11 @@
 const args = parseArgs(process.argv.slice(2));
 
 async function preflight() {
-  const { createEmbedProvider } = await import("../src/lib/embed/factory.ts");
+  const { getEmbedProvider } = await import("../src/lib/embed/factory.ts");
   const { EmbedError } = await import("../src/lib/embed/client.ts");
   let provider;
   try {
-    provider = createEmbedProvider();
+    provider = getEmbedProvider();
   } catch (err) {
     console.error(
       `[backfill] Could not construct embed provider for EMBED_PROVIDER=${process.env.EMBED_PROVIDER ?? "ollama"}:`,
