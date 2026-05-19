@@ -1,5 +1,5 @@
 /**
- * Tests for GET /api/settings/lan-info (v0.5.0 T-8; pivoted T-CF-9).
+ * Tests for GET /api/settings/device-pairing (v0.5.0 T-8; pivoted T-CF-9; renamed v0.6.1 T-12).
  *
  * Covers the auth gate (401 without cookie), the 503 (no token) path, the
  * happy path (url + token + QR), and the explicit Cache-Control / Pragma
@@ -14,13 +14,13 @@ import { GET } from "./route";
 function mkReq(opts: { cookie?: string } = {}): NextRequest {
   const headers = new Headers();
   if (opts.cookie) headers.set("cookie", `brain-session=${opts.cookie}`);
-  return new NextRequest("http://localhost/api/settings/lan-info", {
+  return new NextRequest("http://localhost/api/settings/device-pairing", {
     method: "GET",
     headers,
   });
 }
 
-describe("/api/settings/lan-info", () => {
+describe("/api/settings/device-pairing", () => {
   it("returns 401 without session cookie", async () => {
     const res = await GET(mkReq());
     assert.equal(res.status, 401);

@@ -1,5 +1,5 @@
 /**
- * GET /api/settings/lan-info (v0.5.0 T-8 / F-038; pivoted T-CF-9).
+ * GET /api/settings/device-pairing (v0.5.0 T-8 / F-038; pivoted T-CF-9; renamed v0.6.1 T-12).
  *
  * Returns {url, token, setup_uri, qr_png_data_uri} for the pairing UI.
  * The `url` is the Cloudflare named tunnel (build-time constant); no

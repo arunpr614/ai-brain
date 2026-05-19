@@ -37,11 +37,11 @@ export async function register(): Promise<void> {
   // v0.5.0 T-4: auto-generate BRAIN_LAN_TOKEN on first boot if absent.
   // Writes the value back to .env at the repo root so it survives restarts.
   // The log line is the operator's signal that they should open Settings →
-  // LAN Info and scan the QR onto their APK/extension.
+  // Device Pairing and scan the QR onto their APK/extension.
   const generated = ensureLanToken({
     onGenerate: () => {
       console.log(
-        "[boot] Generated BRAIN_LAN_TOKEN and wrote to .env — open /settings/lan-info to pair APK / extension.",
+        "[boot] Generated BRAIN_LAN_TOKEN and wrote to .env — open /settings/device-pairing to pair APK / extension.",
       );
       logError({ type: "lan.bearer.token-generated", ts: Date.now() });
     },

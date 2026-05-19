@@ -6,7 +6,7 @@
  * F-050 sink. After rotation every paired APK and extension must re-pair
  * via QR scan (for APK) or options-page paste (for extension) — this
  * endpoint returns 200 once; the UI is responsible for re-rendering
- * /settings/lan-info so the user sees the new QR.
+ * /settings/device-pairing so the user sees the new QR.
  *
  * Auth: cookie-gated. NOT in BEARER_ROUTES — the whole point of rotation
  * is that the old bearer should become worthless immediately, so the

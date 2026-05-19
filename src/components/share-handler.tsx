@@ -180,7 +180,7 @@ export function ShareHandler() {
           const liveToken = await getBearerToken();
           if (!liveToken) {
             alert(
-              "Brain is not paired yet. Open Settings → LAN Info on your Mac and scan the QR.",
+              "Brain is not paired yet. Open Settings → Device Pairing in a browser and scan the QR.",
             );
             router.push("/setup-apk");
             return;

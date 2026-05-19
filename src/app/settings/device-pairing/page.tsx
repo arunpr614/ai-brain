@@ -1,14 +1,11 @@
 /**
- * /settings/lan-info — pair APK + Chrome extension (v0.5.0 T-8 / F-038;
- * pivoted to Cloudflare tunnel T-CF-9).
+ * /settings/device-pairing — pair APK + Chrome extension (v0.5.0 T-8 / F-038;
+ * pivoted to Cloudflare tunnel T-CF-9; renamed from /settings/lan-info in v0.6.1 T-12).
  *
  * Shows the public Brain URL (the Cloudflare named tunnel), the current
  * BRAIN_LAN_TOKEN, a scannable QR code of the setup URI, and a "Rotate
  * token" button. The APK QR scanner reads the QR directly; the extension
  * options page reads the copyable token.
- *
- * Internal directory name kept as `lan-info` to avoid breaking deep links;
- * all user-visible copy is tunnel-aware.
  *
  * Server-rendered so the token never reaches a client bundle at build time
  * — it's only present in the PIN-unlocked response body. Cache-Control:
@@ -26,10 +23,10 @@ import { LanInfoActions } from "./actions-client";
 
 export const dynamic = "force-dynamic";
 
-export default async function LanInfoPage() {
+export default async function DevicePairingPage() {
   const c = await cookies();
   if (!c.get(SESSION_COOKIE)?.value) {
-    redirect("/unlock?next=/settings/lan-info");
+    redirect("/unlock?next=/settings/device-pairing");
   }
   // Touch headers so this page is always rendered per-request; the
   // force-dynamic flag already does this but the call makes the intent

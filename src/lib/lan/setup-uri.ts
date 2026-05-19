@@ -1,7 +1,7 @@
 /**
  * Setup-URI parser (v0.5.0 T-16; pivoted to tunnel schema T-CF-4).
  *
- * The QR on /settings/lan-info encodes a `brain://setup?url=<tunnel>&token=<token>`
+ * The QR on /settings/device-pairing encodes a `brain://setup?url=<tunnel>&token=<token>`
  * URI via `buildSetupUri()` (info.ts). This module parses the decoded QR
  * text back into `{url, token}` with strict validation so the APK never
  * accepts a malformed payload (e.g., a QR from the wrong site, a

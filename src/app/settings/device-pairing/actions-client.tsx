@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { Copy, RefreshCw, Check } from "lucide-react";
 
 /**
- * Client-only affordances for /settings/lan-info:
+ * Client-only affordances for /settings/device-pairing:
  *   - "Copy token" with visual confirmation
  *   - "Rotate token" button posting to /api/settings/rotate-token;
  *     reloads the page on success so the new QR renders server-side.

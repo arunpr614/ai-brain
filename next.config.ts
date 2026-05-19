@@ -41,6 +41,22 @@ const nextConfig: NextConfig = {
       },
     ];
   },
+  // v0.6.1 T-12: route renamed from /settings/lan-info to /settings/device-pairing.
+  // 308 keeps any bookmarked link (or stale extension docs) working.
+  async redirects() {
+    return [
+      {
+        source: "/settings/lan-info",
+        destination: "/settings/device-pairing",
+        permanent: true,
+      },
+      {
+        source: "/api/settings/lan-info",
+        destination: "/api/settings/device-pairing",
+        permanent: true,
+      },
+    ];
+  },
 };
 
 export default nextConfig;

@@ -2,7 +2,7 @@
  * LAN connection-info helpers (v0.5.0 T-8).
  *
  * Single source of truth for the IP/token/QR trio surfaced on
- * /settings/lan-info and consumed by the APK QR scanner + the extension
+ * /settings/device-pairing and consumed by the APK QR scanner + the extension
  * options page. Pure module — the settings page + API route compose it;
  * the rotate endpoint mutates .env via ensureLanToken()'s upsert pattern.
  */
