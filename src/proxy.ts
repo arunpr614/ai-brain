@@ -63,12 +63,18 @@ export function proxy(req: NextRequest) {
   // 3. Bearer-authenticated programmatic access (APK share-handler,
   //    Chrome extension) on allow-listed routes only.
   if (isBearerRoute(pathname)) {
+    // v0.6.1 T-4: capture client IP from Cloudflare for log forensics.
+    // cf-connecting-ip is set by the Cloudflare edge on every request through
+    // the tunnel; x-forwarded-for is the standard fallback.
+    const cf_ip =
+      req.headers.get("cf-connecting-ip") ?? req.headers.get("x-forwarded-for") ?? null;
     const verdict = verifyBearerToken(req.headers.get("authorization"));
     if (!verdict.ok) {
       logError({
         type: `lan.bearer.reject-${verdict.reason}`,
         path: pathname,
         method: req.method,
+        cf_ip,
         ts: Date.now(),
       });
       return unauth(req, pathname);
@@ -81,6 +87,7 @@ export function proxy(req: NextRequest) {
         type: "lan.bearer.reject-server-token-unconfigured",
         path: pathname,
         method: req.method,
+        cf_ip,
         ts: Date.now(),
       });
       return unauth(req, pathname);
@@ -90,6 +97,7 @@ export function proxy(req: NextRequest) {
         type: "lan.ratelimit.triggered",
         path: pathname,
         method: req.method,
+        cf_ip,
         ts: Date.now(),
       });
       return NextResponse.json(

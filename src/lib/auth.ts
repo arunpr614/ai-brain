@@ -115,5 +115,7 @@ export const SESSION_COOKIE_OPTIONS = {
   sameSite: "lax" as const,
   path: "/",
   maxAge: SESSION_TTL_MS / 1000,
-  // Secure left off — v0.1.0 runs on http://localhost. v0.5.0 adds an option for LAN TLS.
+  // v0.6.1 T-2: production runs behind Cloudflare HTTPS only; dev still uses
+  // http://localhost so guard on NODE_ENV.
+  secure: process.env.NODE_ENV === "production",
 };

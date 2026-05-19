@@ -25,6 +25,22 @@ const nextConfig: NextConfig = {
   // blocks /_next/webpack-hmr as a cross-origin dev resource and React never
   // hydrates, leaving buttons visually rendered but event-handler-less.
   allowedDevOrigins: ["brain.arunp.in"],
+  // v0.6.1 T-3: HTTP security headers for the public domain. CSP intentionally
+  // omitted — see plan §1 (deferred to v0.6.3) — because the inline themeScript
+  // in layout.tsx would need nonce wiring before a strict CSP ships.
+  async headers() {
+    return [
+      {
+        source: "/(.*)",
+        headers: [
+          { key: "X-Frame-Options", value: "DENY" },
+          { key: "X-Content-Type-Options", value: "nosniff" },
+          { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
+          { key: "Strict-Transport-Security", value: "max-age=63072000; includeSubDomains" },
+        ],
+      },
+    ];
+  },
 };
 
 export default nextConfig;
