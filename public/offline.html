@@ -126,9 +126,9 @@
       <div class="card">
         <h1>Brain is not reachable</h1>
         <p>
-          The APK could not connect to your Brain server. The most common cause
-          is that your Mac is asleep, off the same Wi-Fi, or the Brain dev
-          server is not running.
+          The app could not reach your Brain server. The most common cause is a
+          temporary internet drop or the Brain server being momentarily
+          unavailable.
         </p>
         <p>
           If you've never opened Brain online on this device, do that first to
@@ -144,9 +144,8 @@
           <a id="rescan" class="button" href="/setup-apk">Re-scan QR</a>
         </div>
         <p class="meta">
-          If retry keeps failing: wake the Mac, confirm <code>npm run
-          dev:lan</code> is running, and that both devices are on the same
-          network.
+          If retry keeps failing: check your internet connection, wait a moment,
+          and try again. If the issue persists, the Brain server may be down.
         </p>
       </div>
     </main>
@@ -216,9 +215,9 @@
             clearTimeout(timer);
             const isAbort = err && (err.name === "AbortError" || (err.message || "").toLowerCase().indexOf("abort") !== -1);
             if (isAbort) {
-              setStatus("Brain did not respond within 2 s. Wake the Mac and retry.", "error");
+              setStatus("Brain did not respond within 2 s. Check your internet and retry.", "error");
             } else {
-              setStatus("Cannot reach Brain (" + (err && err.message ? err.message : "network error") + "). Check Wi-Fi and retry.", "error");
+              setStatus("Cannot reach Brain (" + (err && err.message ? err.message : "network error") + "). Check your internet and retry.", "error");
             }
           } finally {
             retryBtn.disabled = false;

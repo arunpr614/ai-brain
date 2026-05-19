@@ -4,6 +4,7 @@ import { FolderTree, Tags, Wifi } from "lucide-react";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { getJsonSetting } from "@/db/settings";
 import { isTheme, THEME_COOKIE, type Theme } from "@/lib/theme";
+import pkg from "../../../package.json";
 
 interface BackupConfig {
   enabled: boolean;
@@ -93,11 +94,12 @@ export default async function SettingsPage() {
             </dd>
             <dt className="text-[var(--text-secondary)]">Location</dt>
             <dd className="font-mono text-xs text-[var(--text-primary)]">
-              data/backups/
+              /opt/brain/data/backups/
             </dd>
           </dl>
           <p className="mt-3 text-xs text-[var(--text-muted)]">
-            Editing backup settings ships in a later phase. Defaults apply today.
+            Server-side snapshots at <code className="font-mono">/opt/brain/data/backups/</code>.
+            Off-site backup pending (see roadmap v0.6.2).
           </p>
         </div>
       </section>
@@ -126,12 +128,12 @@ export default async function SettingsPage() {
         <div className="rounded-lg border border-[var(--border)] bg-[var(--surface)] p-4 text-sm">
           <dl className="grid grid-cols-[auto_1fr] gap-x-6 gap-y-2">
             <dt className="text-[var(--text-secondary)]">App version</dt>
-            <dd className="font-mono text-[var(--text-primary)]">0.3.0</dd>
+            <dd className="font-mono text-[var(--text-primary)]">{pkg.version}</dd>
             <dt className="text-[var(--text-secondary)]">Mode</dt>
-            <dd className="text-[var(--text-primary)]">Local-only (pre-v1.0.0)</dd>
+            <dd className="text-[var(--text-primary)]">Cloud (Hetzner via Cloudflare)</dd>
             <dt className="text-[var(--text-secondary)]">Storage</dt>
             <dd className="font-mono text-xs text-[var(--text-primary)]">
-              data/brain.sqlite
+              /opt/brain/data/brain.sqlite
             </dd>
           </dl>
         </div>

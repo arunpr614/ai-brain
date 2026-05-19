@@ -22,7 +22,7 @@ const jetbrainsMono = JetBrains_Mono({
 
 export const metadata: Metadata = {
   title: "AI Brain",
-  description: "Local-first personal knowledge app",
+  description: "Personal knowledge base, hosted on Hetzner.",
 };
 
 async function resolveTheme(): Promise<{ pref: Theme; resolved: "light" | "dark" }> {

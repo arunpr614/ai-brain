@@ -14,6 +14,7 @@ import { usePathname } from "next/navigation";
 import { cn } from "@/lib/cn";
 import { useCommandPalette } from "./command-palette";
 import { OutboxBadge } from "./outbox-badge";
+import pkg from "../../package.json";
 
 interface NavItem {
   href: string;
@@ -53,7 +54,7 @@ export function Sidebar() {
         <h1 className="text-sm font-semibold tracking-tight text-[var(--text-primary)]">
           AI Brain
         </h1>
-        <p className="text-xs text-[var(--text-muted)]">v0.1.0 · local</p>
+        <p className="text-xs text-[var(--text-muted)]">v{pkg.version} · cloud</p>
       </div>
 
       <button

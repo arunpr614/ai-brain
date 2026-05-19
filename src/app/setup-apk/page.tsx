@@ -123,7 +123,7 @@ export default function SetupApkPage() {
           </p>
           <p className="mt-1 text-[var(--text-muted)]">{stage.message}</p>
           <p className="mt-2 text-xs text-[var(--text-muted)]">
-            Check that the Mac is awake, Brain is running, and the Cloudflare tunnel is up (look for `cloudflared` in the menu bar).
+            Could not reach Brain. Check your internet connection, wait a moment, and retry.
           </p>
           <button
             type="button"

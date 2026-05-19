@@ -6,7 +6,7 @@ import assert from "node:assert/strict";
 import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { buildSetupUri, getLanIpv4, rotateLanToken } from "./info";
+import { buildSetupUri, rotateLanToken } from "./info";
 
 const ORIGINAL_TOKEN = process.env.BRAIN_LAN_TOKEN;
 
@@ -20,17 +20,6 @@ describe("info/buildSetupUri", () => {
   it("preserves the full token without URL-encoding drops", () => {
     const uri = buildSetupUri("1234567890abcdef".repeat(4));
     assert.match(uri, /token=1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef/);
-  });
-});
-
-describe("info/getLanIpv4", () => {
-  it("returns either null or a dotted-quad IPv4 string", () => {
-    const ip = getLanIpv4();
-    if (ip !== null) {
-      assert.match(ip, /^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$/);
-      // Must not be loopback.
-      assert.notEqual(ip, "127.0.0.1");
-    }
   });
 });
 

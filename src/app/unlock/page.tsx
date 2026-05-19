@@ -23,7 +23,10 @@ export default async function UnlockPage({
       </p>
       <UnlockForm next={next ?? "/"} />
       <p className="mt-6 text-xs text-[var(--text-muted)]">
-        Forgot it? Delete <code className="rounded bg-[var(--surface)] px-1 py-0.5 font-mono">data/brain.sqlite</code> and restart — a new PIN will be set on first run.
+        Forgot it? SSH into your Brain server and remove{" "}
+        <code className="rounded bg-[var(--surface)] px-1 py-0.5 font-mono">/opt/brain/data/brain.sqlite</code>,
+        then restart <code className="rounded bg-[var(--surface)] px-1 py-0.5 font-mono">brain.service</code>.
+        A new PIN can then be set on first run.
       </p>
       <Link href="/" className="sr-only">
         Home

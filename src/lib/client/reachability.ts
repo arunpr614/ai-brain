@@ -131,11 +131,11 @@ export function describeVerdict(v: ReachabilityVerdict): string {
   if (v.ok) return `Connected (${Math.round(v.latencyMs)} ms).`;
   switch (v.reason) {
     case "timeout":
-      return "Brain did not respond within 2 s. Is your Mac awake and on the same Wi-Fi?";
+      return "Brain did not respond within 2 s. Check your internet connection and retry.";
     case "network":
-      return `Cannot reach Brain (${v.message ?? "network error"}). Check Wi-Fi and that Brain is running.`;
+      return `Cannot reach Brain (${v.message ?? "network error"}). Check your internet connection and retry.`;
     case "unauthorized":
-      return "Brain rejected the token. It may have been rotated — re-scan the QR from Brain settings.";
+      return "Brain rejected the token. It may have been rotated — re-pair from Settings → Device Pairing.";
     case "forbidden":
       return "Brain rejected the request origin. Check your pairing and try again.";
     case "server-error":

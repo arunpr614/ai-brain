@@ -34,7 +34,7 @@ const IDLE_INTERVAL_MS = 10_000; // when no work, back off
 // this window. Single-worker personal tool — no need for longer bounds.
 const STALE_CLAIM_MS = 90_000;
 const MAX_ATTEMPTS = 3;
-const OLLAMA_DOWN_BACKOFF_MS = 30_000;
+const LLM_PROVIDER_DOWN_BACKOFF_MS = 30_000;
 
 // F-050 (self-critique A-10): lightweight append-only JSONL sink for
 // enrichment failures so the user has a retrospective trail beyond the
@@ -93,8 +93,8 @@ async function loop(): Promise<void> {
 
     const alive = await getEnrichProvider().isAlive();
     if (!alive) {
-      console.warn(`[enrich] LLM provider unreachable; backing off ${OLLAMA_DOWN_BACKOFF_MS}ms`);
-      await sleep(OLLAMA_DOWN_BACKOFF_MS);
+      console.warn(`[enrich] LLM provider unreachable; backing off ${LLM_PROVIDER_DOWN_BACKOFF_MS}ms`);
+      await sleep(LLM_PROVIDER_DOWN_BACKOFF_MS);
       continue;
     }
 

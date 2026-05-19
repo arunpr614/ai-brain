@@ -6,32 +6,10 @@
  * options page. Pure module — the settings page + API route compose it;
  * the rotate endpoint mutates .env via ensureLanToken()'s upsert pattern.
  */
-import { networkInterfaces } from "node:os";
 import { generateLanToken } from "@/lib/auth/bearer";
 import { BRAIN_TUNNEL_URL } from "@/lib/config/tunnel";
 import * as nodeFs from "node:fs";
 import * as nodePath from "node:path";
-
-/**
- * First non-loopback IPv4 address of this host. Picks the first `en*` or
- * `wl*` interface (macOS/Linux LAN convention); falls back to any non-
- * internal IPv4 if nothing matches. Returns the string form or null when
- * the host has no external interface (offline, sandboxed CI).
- */
-export function getLanIpv4(): string | null {
-  const ifs = networkInterfaces();
-  const addrs: string[] = [];
-  for (const [name, list] of Object.entries(ifs)) {
-    if (!list) continue;
-    for (const a of list) {
-      if (a.family === "IPv4" && !a.internal) {
-        if (name.startsWith("en") || name.startsWith("wl")) return a.address;
-        addrs.push(a.address);
-      }
-    }
-  }
-  return addrs[0] ?? null;
-}
 
 /**
  * Rotate BRAIN_LAN_TOKEN — generate a fresh token, upsert into .env, mutate
