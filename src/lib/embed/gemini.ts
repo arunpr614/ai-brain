@@ -64,16 +64,32 @@ export class GeminiEmbedProvider implements EmbedProvider {
   async embed(inputs: string[], opts: EmbedRequestOptions = {}): Promise<Float32Array[]> {
     if (inputs.length === 0) return [];
 
+    // Serial embedContent loop instead of batchEmbedContents. Free-tier
+    // gemini-embedding-001 throttles batchEmbedContents aggressively (~1
+    // batch/min observed during D-12 cutover); embedContent has a higher
+    // but still real RPM cap. 1.1s inter-call delay = ~55 RPM ceiling,
+    // well under the documented free-tier "100 RPM" for embedContent and
+    // generous enough that backoff retries don't compound the burst.
+    // Single-user volume impact: 44 chunks × 1.1s = 48s per large item,
+    // acceptable for a once-per-month migration cost. Realtime capture
+    // path embeds 1-4 chunks → 0-3s overhead, negligible.
+    // Diagnosed empirically 2026-05-19 during D-12 cutover.
+    const out: Float32Array[] = [];
+    for (let i = 0; i < inputs.length; i++) {
+      if (i > 0) await new Promise((r) => setTimeout(r, 1100));
+      out.push(await this.embedOne(inputs[i], opts));
+    }
+    return out;
+  }
+
+  private async embedOne(text: string, opts: EmbedRequestOptions): Promise<Float32Array> {
     const url = `${this.baseURL}/v1beta/models/${encodeURIComponent(
       this.model,
-    )}:batchEmbedContents?key=${encodeURIComponent(this.apiKey)}`;
+    )}:embedContent?key=${encodeURIComponent(this.apiKey)}`;
 
     const body = {
-      requests: inputs.map((text) => ({
-        model: `models/${this.model}`,
-        content: { parts: [{ text }] },
-        outputDimensionality: EMBED_OUTPUT_DIM,
-      })),
+      content: { parts: [{ text }] },
+      outputDimensionality: EMBED_OUTPUT_DIM,
     };
 
     let res: Response;
@@ -105,35 +121,20 @@ export class GeminiEmbedProvider implements EmbedProvider {
       }
       throw new EmbedError(
         "EMBED_HTTP",
-        `Gemini batchEmbedContents ${res.status}: ${errMsg.slice(0, 200)}`,
+        `Gemini embedContent ${res.status}: ${errMsg.slice(0, 200)}`,
         { status: res.status },
       );
     }
 
-    const data = (await res.json()) as GeminiBatchResponse;
-    const rows = data.embeddings;
-    if (!Array.isArray(rows)) {
+    const data = (await res.json()) as { embedding?: { values?: number[] } };
+    const values = data.embedding?.values;
+    if (!Array.isArray(values) || values.length !== EMBED_OUTPUT_DIM) {
       throw new EmbedError(
         "EMBED_INVALID_RESPONSE",
-        "Gemini response missing `embeddings` array",
+        `Embedding has dim ${values?.length ?? "?"}, expected ${EMBED_OUTPUT_DIM}`,
       );
     }
-    if (rows.length !== inputs.length) {
-      throw new EmbedError(
-        "EMBED_INVALID_RESPONSE",
-        `Expected ${inputs.length} embeddings, got ${rows.length}`,
-      );
-    }
-    return rows.map((row, i) => {
-      const values = row?.values;
-      if (!Array.isArray(values) || values.length !== EMBED_OUTPUT_DIM) {
-        throw new EmbedError(
-          "EMBED_INVALID_RESPONSE",
-          `Embedding ${i} has dim ${values?.length ?? "?"}, expected ${EMBED_OUTPUT_DIM}`,
-        );
-      }
-      return new Float32Array(values);
-    });
+    return new Float32Array(values);
   }
 
   async isAlive(): Promise<boolean> {
