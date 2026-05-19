@@ -41,10 +41,10 @@ testBtn.addEventListener("click", async () => {
   }
   switch (result.reason) {
     case "unauthorized":
-      showStatus("error", "This token doesn't work. Open Brain settings on your Mac, generate a fresh one, and paste it here.");
+      showStatus("error", "This token doesn't work. Open Brain settings in a browser, generate a fresh one, and paste it here.");
       break;
     case "network":
-      showStatus("error", "Can't reach Brain. Is your Mac awake and the tunnel running?");
+      showStatus("error", "Check your internet connection; the server may be temporarily down.");
       break;
     case "server-error":
       showStatus("error", "Brain is reachable but not responding properly. Try again in a minute.");

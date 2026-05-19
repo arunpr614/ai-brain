@@ -66,7 +66,7 @@ function describe(result: CaptureResult): string {
     case "server-error":
       return "Brain had trouble saving this. Try again.";
     case "network":
-      return "Can't reach Brain. Is your Mac awake and the tunnel running?";
+      return "Check your internet connection; the server may be temporarily down.";
     case "inflight":
       return "Already saving this page.";
   }

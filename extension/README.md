@@ -22,7 +22,7 @@ Build artifacts land in `extension/dist/`.
 ## Configure
 
 1. Right-click the Brain icon → **Options** (or Details → Extension options)
-2. Paste your bearer token from `https://brain.arunp.in/settings/lan-info` on the Mac
+2. Paste your bearer token from `https://brain.arunp.in/settings/device-pairing`
 3. Click **Test connection** → expect ✅ PASS
 4. Click **Save**
 
@@ -30,7 +30,7 @@ Build artifacts land in `extension/dist/`.
 
 - **Click the Brain icon** on any page → popup shows title + URL → **Save to Brain**
 - **Right-click any page** → **Save to Brain** from context menu
-- Captures appear in Library on the Mac within ~5 seconds.
+- Captures appear in Library within ~5 seconds.
 
 ## Rebuild after code changes
 

@@ -74,7 +74,7 @@ function renderResult(result: CaptureResult) {
       showStatus("error", "Brain had trouble saving this page. Try again in a few seconds.");
       break;
     case "network":
-      showStatus("error", "Can't reach Brain. Is your Mac awake and the tunnel running?");
+      showStatus("error", "Check your internet connection; the server may be temporarily down.");
       break;
     case "inflight":
       showStatus("error", "Already saving this — give it a moment.");
