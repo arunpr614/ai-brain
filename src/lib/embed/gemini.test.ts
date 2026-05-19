@@ -41,7 +41,7 @@ test("GeminiEmbedProvider.embed: round-trips inputs to 768-dim Float32Arrays", a
   const captured: { value: CapturedBody | null } = { value: null };
   const stub = await stubServer((req, res) => {
     assert.equal(req.method, "POST");
-    assert.match(req.url, /\/v1beta\/models\/text-embedding-004:batchEmbedContents\?key=k-test$/);
+    assert.match(req.url, /\/v1beta\/models\/gemini-embedding-001:batchEmbedContents\?key=k-test$/);
     captured.value = JSON.parse(req.body) as CapturedBody;
     res.setHeader("content-type", "application/json");
     res.end(
@@ -59,7 +59,7 @@ test("GeminiEmbedProvider.embed: round-trips inputs to 768-dim Float32Arrays", a
     assert.equal(out[1].length, EMBED_OUTPUT_DIM);
     assert.ok(captured.value);
     assert.equal(captured.value!.requests?.length, 2);
-    assert.equal(captured.value!.requests?.[0].model, "models/text-embedding-004");
+    assert.equal(captured.value!.requests?.[0].model, "models/gemini-embedding-001");
     assert.equal(captured.value!.requests?.[0].outputDimensionality, EMBED_OUTPUT_DIM);
   } finally {
     await stub.close();
@@ -157,7 +157,7 @@ test("GeminiEmbedProvider.isAlive: 200 → true; 401 → false", async () => {
       res.end("{}");
     } else {
       res.setHeader("content-type", "application/json");
-      res.end('{"name":"models/text-embedding-004"}');
+      res.end('{"name":"models/gemini-embedding-001"}');
     }
   });
   try {
@@ -191,6 +191,6 @@ test("GeminiEmbedProvider.getInfo reports model + dim 768", () => {
   const p = new GeminiEmbedProvider({ apiKey: "k-test", baseURL: "http://x" });
   const info = p.getInfo();
   assert.equal(info.provider, "gemini");
-  assert.equal(info.model, "text-embedding-004");
+  assert.equal(info.model, "gemini-embedding-001");
   assert.equal(info.dim, 768);
 });

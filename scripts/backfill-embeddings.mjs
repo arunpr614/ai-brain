@@ -1,31 +1,44 @@
 #!/usr/bin/env node
 /**
- * Backfill embeddings for already-enriched items — v0.4.0 F-012 / T-16.
+ * Backfill embeddings for already-enriched items.
+ *
+ * Originally v0.4.0 F-012 / T-16 (Ollama-only). Rewritten in v0.6.0 S-13 to
+ * route through the embed factory (createEmbedProvider), so it works against
+ * any provider the EMBED_PROVIDER env var selects (ollama, gemini).
  *
  * What it does:
- *   - Finds every items.enrichment_state='done' row that has zero rows in chunks.
+ *   - Finds every items.enrichment_state='done' row that has zero rows in
+ *     chunks (default), OR every enriched row regardless (--reset, used after
+ *     a provider/dimension swap).
+ *   - With --reset: also wipes existing chunks + chunks_vec for those items
+ *     before re-embedding, so stale vectors from a prior provider go away.
  *   - Runs embedItemWithRetry() per item (chunk → embed → write chunks_vec).
- *   - Idempotent + resumable: the "no chunks" predicate means a second run
- *     skips items already processed. Kill + restart anytime.
- *   - Logs per-item pass/fail to stdout + writes a summary to stderr.
+ *   - Idempotent + resumable in default mode (re-runs skip items that already
+ *     have chunks). --reset is destructive on the chunks side; use carefully.
  *
  * Preflight:
- *   - Checks isOllamaAlive(); bails with exit 2 + `ollama serve` hint if down.
- *   - Checks the embed model is available via a one-string probe; bails with
- *     exit 3 + the exact `ollama pull nomic-embed-text` command if missing.
+ *   - Constructs the configured EmbedProvider via the factory.
+ *   - Sends a one-string probe through .embed() to surface auth/model errors
+ *     before touching any item rows.
  *
  * Flags:
  *   --limit N    only process first N items (default: all)
  *   --dry-run    list targets + counts, don't embed
+ *   --reset      wipe existing chunks/chunks_vec for enriched items, then
+ *                re-embed. REQUIRED after switching embed providers (e.g.,
+ *                v0.6.0 S-13 nomic-embed-text → gemini-embedding-001@768).
  *
  * Run:
+ *   EMBED_PROVIDER=gemini GEMINI_API_KEY=... \
+ *     node --import tsx scripts/backfill-embeddings.mjs --reset
+ *
+ *   # Mac local dev (Ollama, original behavior):
  *   node --import tsx scripts/backfill-embeddings.mjs
- *   node --import tsx scripts/backfill-embeddings.mjs --limit 10 --dry-run
  *
  * Notes:
- *   - Processes items serially. Ollama embed() is single-GPU-queue; parallel
- *     dispatch produces no real speedup and complicates error accounting.
- *   - For a typical ~1k-item library on M1 Pro, budget ~5 minutes.
+ *   - Processes items serially. Embed providers are typically single-queue
+ *     (Ollama GPU, Gemini per-request); parallel dispatch produces no real
+ *     speedup and complicates error accounting.
  */
 
 // Dynamic imports at call sites — matches scripts/smoke-v0.3.1.mjs pattern
@@ -35,21 +48,32 @@
 const args = parseArgs(process.argv.slice(2));
 
 async function preflight() {
-  const { isOllamaAlive } = await import("../src/lib/llm/ollama.ts");
-  const { embed, EmbedError } = await import("../src/lib/embed/client.ts");
-  if (!(await isOllamaAlive())) {
+  const { createEmbedProvider } = await import("../src/lib/embed/factory.ts");
+  const { EmbedError } = await import("../src/lib/embed/client.ts");
+  let provider;
+  try {
+    provider = createEmbedProvider();
+  } catch (err) {
     console.error(
-      "[backfill] Ollama not reachable at http://localhost:11434. Start it with: ollama serve",
+      `[backfill] Could not construct embed provider for EMBED_PROVIDER=${process.env.EMBED_PROVIDER ?? "ollama"}:`,
+      err instanceof Error ? err.message : String(err),
     );
     process.exit(2);
   }
+  const info = provider.getInfo();
+  console.log(`[backfill] embed provider=${info.provider} model=${info.model} dim=${info.dim}`);
   try {
-    // A minimal-cost probe that surfaces EMBED_MODEL_NOT_INSTALLED cleanly.
-    await embed(["probe"]);
+    const probe = await provider.embed(["probe"]);
+    if (probe.length !== 1 || probe[0].length !== info.dim) {
+      console.error(
+        `[backfill] Probe embed shape mismatch: got ${probe.length}×${probe[0]?.length ?? 0}, expected 1×${info.dim}`,
+      );
+      process.exit(4);
+    }
   } catch (err) {
     if (err instanceof EmbedError && err.code === "EMBED_MODEL_NOT_INSTALLED") {
       console.error(
-        `[backfill] Embedding model missing. Run: ${err.pullCommand ?? "ollama pull nomic-embed-text"}`,
+        `[backfill] Embedding model missing. Hint: ${err.pullCommand ?? "ollama pull nomic-embed-text"}`,
       );
       process.exit(3);
     }
@@ -58,16 +82,19 @@ async function preflight() {
   }
 }
 
-async function findTargets(limit) {
+async function findTargets(limit, reset) {
   const { getDb } = await import("../src/db/client.ts");
   const db = getDb();
+  // Default: only enriched items with no chunks (resumable backfill).
+  // --reset: every enriched item, regardless of existing chunks.
+  const predicate = reset ? "" : "AND c.id IS NULL";
   const rows = db
     .prepare(
       `SELECT i.id, i.title
          FROM items i
          LEFT JOIN chunks c ON c.item_id = i.id
         WHERE i.enrichment_state = 'done'
-          AND c.id IS NULL
+          ${predicate}
         GROUP BY i.id
         ORDER BY i.captured_at ASC
         ${limit ? `LIMIT ${Number(limit)}` : ""}`,
@@ -76,11 +103,31 @@ async function findTargets(limit) {
   return rows;
 }
 
+async function wipeChunksFor(itemIds) {
+  const { getDb } = await import("../src/db/client.ts");
+  const db = getDb();
+  const wipe = db.transaction((ids) => {
+    const delVec = db.prepare(
+      `DELETE FROM chunks_vec WHERE rowid IN (SELECT rowid FROM chunks WHERE item_id = ?)`,
+    );
+    const delChunks = db.prepare(`DELETE FROM chunks WHERE item_id = ?`);
+    let v = 0;
+    let c = 0;
+    for (const id of ids) {
+      v += delVec.run(id).changes;
+      c += delChunks.run(id).changes;
+    }
+    return { vec: v, chunks: c };
+  });
+  return wipe(itemIds);
+}
+
 function parseArgs(argv) {
-  const out = { limit: null, dryRun: false };
+  const out = { limit: null, dryRun: false, reset: false };
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i];
     if (a === "--dry-run") out.dryRun = true;
+    else if (a === "--reset") out.reset = true;
     else if (a === "--limit") {
       const n = Number(argv[++i]);
       if (!Number.isFinite(n) || n <= 0) {
@@ -89,7 +136,7 @@ function parseArgs(argv) {
       }
       out.limit = n;
     } else if (a === "--help" || a === "-h") {
-      console.log("Usage: backfill-embeddings.mjs [--limit N] [--dry-run]");
+      console.log("Usage: backfill-embeddings.mjs [--limit N] [--dry-run] [--reset]");
       process.exit(0);
     }
   }
@@ -100,17 +147,28 @@ async function main() {
   const t0 = Date.now();
   await preflight();
 
-  const targets = await findTargets(args.limit);
+  const targets = await findTargets(args.limit, args.reset);
   if (targets.length === 0) {
-    console.log("[backfill] Nothing to do — every enriched item already has chunks.");
+    console.log(
+      args.reset
+        ? "[backfill] Nothing to do — no enriched items found."
+        : "[backfill] Nothing to do — every enriched item already has chunks.",
+    );
     return;
   }
-  console.log(`[backfill] ${targets.length} item(s) to process${args.dryRun ? " (dry run)" : ""}`);
+  console.log(
+    `[backfill] ${targets.length} item(s) to process${args.dryRun ? " (dry run)" : ""}${args.reset ? " (RESET — will wipe existing chunks)" : ""}`,
+  );
 
   if (args.dryRun) {
     for (const t of targets.slice(0, 20)) console.log(`  - ${t.id}  ${t.title}`);
     if (targets.length > 20) console.log(`  ... +${targets.length - 20} more`);
     return;
+  }
+
+  if (args.reset) {
+    const wiped = await wipeChunksFor(targets.map((t) => t.id));
+    console.log(`[backfill] reset wiped ${wiped.chunks} chunk row(s) and ${wiped.vec} vec row(s)`);
   }
 
   const { embedItemWithRetry } = await import("../src/lib/embed/pipeline.ts");

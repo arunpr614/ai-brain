@@ -1,9 +1,15 @@
-// src/lib/embed/gemini.ts — Gemini text-embedding-004 (v0.6.0 B-10).
+// src/lib/embed/gemini.ts — Gemini gemini-embedding-001 @ 768 (v0.6.0 B-10 + S-13).
 //
-// Free-tier provider for v0.6.0 cloud migration. text-embedding-004 is
-// 768-dim by default, matching chunks_vec.
+// gemini-embedding-001 is Matryoshka-trained: outputDimensionality=768
+// produces a usable truncation of its native 3072-dim output, matching the
+// chunks_vec schema with no migration required. Wire-verified from Hetzner
+// 2026-05-19: cosine(cat,feline)=0.75 vs cosine(cat,quantum)=0.48.
 //
-// Endpoint: POST /v1beta/models/text-embedding-004:batchEmbedContents?key=<API_KEY>
+// Replaces text-embedding-004 (locked in v0.6.0 plan §1 #6 on 2026-05-12,
+// retired by Google before 2026-05-19). Spike S-13 selected this as the
+// smallest-delta replacement.
+//
+// Endpoint: POST /v1beta/models/gemini-embedding-001:batchEmbedContents?key=<API_KEY>
 // Request body: {requests: [{model, content: {parts: [{text}]}, outputDimensionality}]}
 // Response:     {embeddings: [{values: number[]}]}
 //
@@ -15,7 +21,7 @@ import { EmbedError } from "./client";
 import { EMBED_OUTPUT_DIM, type EmbedProvider, type EmbedRequestOptions } from "./types";
 
 const DEFAULT_BASE_URL = "https://generativelanguage.googleapis.com";
-const DEFAULT_MODEL = "text-embedding-004";
+const DEFAULT_MODEL = "gemini-embedding-001";
 
 interface GeminiProviderOptions {
   apiKey?: string;
