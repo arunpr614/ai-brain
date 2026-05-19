@@ -57,7 +57,7 @@ src/lib/llm/                     src/lib/embed/
 | Provider | Default model | Dim |
 |---|---|---|
 | `ollama` | `nomic-embed-text` | 768 |
-| `gemini` | `text-embedding-004` | 768 (set via `outputDimensionality`) |
+| `gemini` | `gemini-embedding-001` | 768 (Matryoshka truncation via `outputDimensionality`) |
 
 ## Recipes
 

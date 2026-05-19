@@ -1,5 +1,7 @@
 # v0.6.0 Embedding Strategy
 
+> **⚠ Superseded in part by S-13 on 2026-05-19.** Google retired `text-embedding-004` between this doc's lock date and the D-11 wire smoke. The recommendation is now **`gemini-embedding-001` with `outputDimensionality=768`** (Matryoshka truncation). All cost, dim, and vector-space arguments below remain correct; only the model name changes. See `docs/plans/spikes/v0.6.0-cloud-migration/S-13-embeddings-redecision.md` for the full re-decision and the wire test that selected it. The VM also moved from AWS Lightsail Mumbai to Hetzner CX23 Helsinki (S-6 update); RAM-pressure arguments still apply.
+
 **S-5 output — 2026-05-12**
 **VM locked:** AWS Lightsail Mumbai, 2 GB RAM / 1 vCPU / 60 GB SSD (~$10/mo)
 **AI provider locked:** Claude Haiku 4.5 (enrichment) + Claude Sonnet 4.6 (Ask) — Anthropic has no embeddings API.
