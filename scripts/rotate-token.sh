@@ -1,26 +1,25 @@
 #!/usr/bin/env bash
-# v0.5.0 T-8 / F-037 — rotate BRAIN_LAN_TOKEN from the CLI.
+# v0.5.0 T-8 / F-037 — rotate BRAIN_LAN_TOKEN from the CLI (v0.6.1 T-16: cloud default).
 #
 # Thin wrapper around POST /api/settings/rotate-token. The server owns the
 # .env write so the running process stays in sync with disk; this script
 # exists so an operator can rotate without opening the web UI (e.g., after
 # a suspected token leak they want to close fast).
 #
-# Requires the server to be running AND a valid session cookie — since
-# this is CLI, we use a shared setup: the operator runs `npm run dev:lan`
-# in another terminal, signs in via /unlock, exports the session cookie
-# value as BRAIN_SESSION_COOKIE, and then runs this script.
+# Requires the server to be running AND a valid session cookie. Sign in at
+# https://brain.arunp.in/unlock in a browser, copy the brain-session cookie
+# value, export it as BRAIN_SESSION_COOKIE, and run this script.
 #
 # The QR rendered in the terminal after rotation is a convenience for
 # pairing a fresh APK over a shell (when the web UI isn't handy).
 #
 # Usage:
 #   BRAIN_SESSION_COOKIE=<cookie-value> ./scripts/rotate-token.sh
-#   BRAIN_BASE_URL=http://127.0.0.1:3000 ./scripts/rotate-token.sh
+#   BRAIN_BASE_URL=https://brain.arunp.in ./scripts/rotate-token.sh   # default
 
 set -euo pipefail
 
-BASE_URL="${BRAIN_BASE_URL:-http://127.0.0.1:3000}"
+BASE_URL="${BRAIN_BASE_URL:-https://brain.arunp.in}"
 COOKIE="${BRAIN_SESSION_COOKIE:-}"
 
 if [[ -z "${COOKIE}" ]]; then
@@ -47,13 +46,13 @@ if [[ "${response}" != *'"ok":true'* ]]; then
 fi
 
 echo "[rotate-token] Token rotated. All paired APKs and the Chrome extension must re-pair."
-echo "[rotate-token] Fetching new QR from /api/settings/lan-info for terminal display..."
+echo "[rotate-token] Fetching new QR from /api/settings/device-pairing for terminal display..."
 
 info=$(
   curl --silent --show-error --fail \
     --cookie "brain-session=${COOKIE}" \
-    "${BASE_URL}/api/settings/lan-info" \
-  || { echo "[rotate-token] lan-info fetch failed" >&2; exit 4; }
+    "${BASE_URL}/api/settings/device-pairing" \
+  || { echo "[rotate-token] device-pairing fetch failed" >&2; exit 4; }
 )
 
 # Prefer a server-side QR printed via qrcode-terminal so the operator can

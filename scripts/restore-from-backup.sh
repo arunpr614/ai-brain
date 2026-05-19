@@ -3,7 +3,20 @@
 # backup snapshot. Refuses to run if the Next.js dev/prod server is
 # listening on 127.0.0.1:3000 (which would corrupt the live WAL).
 #
-# Usage:
+# ⚠️  HETZNER-ONLY in cloud mode (v0.6.0+).
+# AI Brain serves from Hetzner since v0.6.0. The live DB lives at
+# /opt/brain/data/brain.sqlite on the Hetzner host, not the local Mac.
+# Run this script over SSH on the Hetzner host, not on the developer Mac.
+# A Mac-local invocation only restores a local-dev sandbox DB and has no
+# effect on the production Brain at brain.arunp.in.
+#
+# Usage (Hetzner, production restore):
+#   ssh hetzner 'sudo systemctl stop brain && \
+#     sudo -u brain /opt/brain/scripts/restore-from-backup.sh \
+#       /opt/brain/data/backups/<snapshot>.sqlite && \
+#     sudo systemctl start brain'
+#
+# Usage (Mac, local-dev sandbox only):
 #   scripts/restore-from-backup.sh data/backups/<snapshot>.sqlite
 #
 # Safety:
@@ -61,7 +74,7 @@ echo ""
 echo "restore complete."
 echo ""
 echo "next steps:"
-echo "  1. npm run dev"
+echo "  1. start brain  (Hetzner: sudo systemctl restart brain | Mac local-dev: npm run dev)"
 echo "  2. unlock with your PIN"
 echo "  3. verify the library page loads"
 echo ""
