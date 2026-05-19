@@ -86,9 +86,13 @@ d12_db_migrate() {
   log "D-12: stopping Hetzner brain.service to swap DB"
   ssh -i "$SSH_KEY" -o BatchMode=yes "$HOST" 'sudo -n systemctl stop brain'
 
-  log "D-12: backing up Hetzner's existing DB"
+  log "D-12: backing up Hetzner's existing DB and clearing stale WAL"
+  # SQLite mounts a DB file together with its sibling -wal and -shm files.
+  # Swapping just .sqlite while the old -wal/-shm linger causes the new file
+  # to be opened with stale WAL pages (corrupted view, e.g. 1 of 8 items).
   ssh -i "$SSH_KEY" -o BatchMode=yes "$HOST" \
     'mv /opt/brain/data/brain.sqlite /opt/brain/data/brain.sqlite.pre-cutover 2>/dev/null || true; \
+     rm -f /opt/brain/data/brain.sqlite-wal /opt/brain/data/brain.sqlite-shm; \
      mv /tmp/brain-cutover.sqlite /opt/brain/data/brain.sqlite; \
      chmod 600 /opt/brain/data/brain.sqlite'
 
