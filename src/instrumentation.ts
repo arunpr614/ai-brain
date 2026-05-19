@@ -50,6 +50,17 @@ export async function register(): Promise<void> {
     // No log spam when the token is already configured; intentional silence.
   }
 
+  // v0.6.1 T-11a: deprecation warning when only the legacy env name is set.
+  // The bearer module dual-reads BRAIN_API_TOKEN ?? BRAIN_LAN_TOKEN; when
+  // only the old name is present, surface a single-line nudge to operators
+  // so the rename can finish in v0.6.2 T-11b. Silent once BRAIN_API_TOKEN
+  // is also defined.
+  if (!process.env.BRAIN_API_TOKEN && process.env.BRAIN_LAN_TOKEN) {
+    console.warn(
+      "[boot] BRAIN_LAN_TOKEN is deprecated; rename to BRAIN_API_TOKEN in /etc/brain/.env (legacy name still works during the v0.6.1 dual-read window).",
+    );
+  }
+
   startBackupScheduler();
   startEnrichmentWorker();
   // v0.6.0 Phase C-4: daily Anthropic Message Batch scheduler. Provider-

@@ -19,7 +19,8 @@
  *     token entropy already makes brute force infeasible (~10^71 years).
  *   - The rate limiter's real job is to cap damage from runaway client
  *     bugs (extension retry loop, misconfigured share target, etc).
- *   - Limit is env-configurable via BRAIN_LAN_RATE_LIMIT (default 30/min).
+ *   - Limit is env-configurable via BRAIN_API_RATE_LIMIT (default 30/min;
+ *     legacy name BRAIN_LAN_RATE_LIMIT is still read as a fallback).
  *
  * Empty/short token guard (REVIEW B-1 / H-1):
  *   - verifyBearerToken refuses any comparison when the server's configured
@@ -40,7 +41,7 @@ export const MIN_TOKEN_LENGTH = 32;
 
 /**
  * Window (ms) and default limit (requests) for the per-token rate limiter.
- * Override the limit via BRAIN_LAN_RATE_LIMIT.
+ * Override the limit via BRAIN_API_RATE_LIMIT (BRAIN_LAN_RATE_LIMIT also accepted as legacy).
  */
 export const RATE_WINDOW_MS = 60_000;
 export const DEFAULT_RATE_LIMIT = 30;
@@ -79,17 +80,21 @@ export function isBearerRoute(pathname: string): boolean {
 }
 
 /**
- * Load BRAIN_LAN_TOKEN from env. If missing OR shorter than MIN_TOKEN_LENGTH,
- * returns null — verification will reject all bearer attempts in that state.
- * The server is intentionally permissive about "no LAN auth configured yet"
- * so pre-T-3 deployments keep working; bearer routes simply reject everything
- * until an operator sets the var.
+ * Load the bearer token from env. Reads BRAIN_API_TOKEN first (the v0.6.1+
+ * canonical name) and falls back to BRAIN_LAN_TOKEN (legacy v0.5.0 name,
+ * deprecated in v0.6.1 T-11a, removal scheduled for v0.6.2 T-11b).
+ *
+ * If both are missing OR shorter than MIN_TOKEN_LENGTH, returns null —
+ * verification rejects every bearer attempt in that state. The server is
+ * intentionally permissive about "no bearer auth configured yet" so pre-T-3
+ * deployments keep working; bearer routes simply reject everything until an
+ * operator sets the var.
  *
  * Callers that need to generate a fresh token should use generateLanToken()
  * and write the result to .env (T-17's rotation script does exactly this).
  */
 export function loadLanToken(): string | null {
-  const raw = process.env.BRAIN_LAN_TOKEN ?? "";
+  const raw = process.env.BRAIN_API_TOKEN ?? process.env.BRAIN_LAN_TOKEN ?? "";
   if (raw.length < MIN_TOKEN_LENGTH) return null;
   return raw;
 }
@@ -192,7 +197,7 @@ export function verifyBearerToken(authHeader: string | null | undefined): Bearer
 const RATE_STATE = new Map<string, number[]>();
 
 function getConfiguredLimit(): number {
-  const raw = process.env.BRAIN_LAN_RATE_LIMIT;
+  const raw = process.env.BRAIN_API_RATE_LIMIT ?? process.env.BRAIN_LAN_RATE_LIMIT;
   if (!raw) return DEFAULT_RATE_LIMIT;
   const n = Number(raw);
   if (!Number.isFinite(n) || n <= 0) return DEFAULT_RATE_LIMIT;
