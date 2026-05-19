@@ -22,7 +22,9 @@ export default async function SetupPage({
       </p>
       <SetupForm next={next ?? "/"} />
       <p className="mt-6 text-xs text-[var(--text-muted)]">
-        The PIN is hashed locally. AI Brain never talks to anything outside your Mac in v0.1.0.
+        Your PIN is hashed on the server. Your library is stored on your Brain
+        server (Hetzner). AI enrichment uses Anthropic and Google APIs &mdash;
+        content you save is sent to those services for processing.
       </p>
     </div>
   );
