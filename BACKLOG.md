@@ -2,17 +2,46 @@
 
 | Field | Value |
 |-------|--------|
-| **Document version** | v7.2-backlog (post lane-collapse) |
-| **Date** | 2026-05-15 |
+| **Document version** | v7.3-backlog (post-cutover; v0.6.1 cleanup phase active) |
+| **Date** | 2026-05-19 |
 | **Owner** | Arun |
 | **Update cadence** | at every phase kickoff; whenever an item is promoted, deferred, or closed |
-| **Revision** | v7.2 — 2026-05-15: Dual-lane phase ended; single-stream resumed on `main`. v0.5.6 (service-worker app shell, offline cold-launch for Library + Inbox + share-target) tagged. Next track: v0.6.0 cloud migration to Hetzner (Phase B = provider-agnostic LLM wrapper). New backlog item: **Ask + Settings offline shell** — out of scope for v0.5.6 by design (Ollama is laptop-only); revisit after Phase B reveals new origin caching strategy. Other v0.6.x candidates remain queued: Augmented Browsing (AUG-1..10), Knowledge Graph View (GRAPH-1..8), library-offline-from-DB (LIBOFF-1..12). v7.1 — 2026-05-12: v0.5.0 + v0.5.1 + v0.5.2 + v0.5.3 all SHIPPED. Two patch-tier features slotted into v0.6.x: Augmented Browsing + Knowledge Graph View. Plans at `docs/plans/v0.6.x-augmented-browsing.md` + `docs/plans/v0.6.x-graph-view.md`. Source: Recall.it v2 audit 2026-05-12 (`docs/research/recall-feature-audit-v2-2026-05-12.md`). §§ below last touched 2026-05-10 for the v0.5.0 pivot and reference superseded state — full backlog rewrite still pending. v7.0 revision history preserved below |
+| **Revision** | v7.3 — 2026-05-19: Mac→Hetzner cutover (v0.6.0) shipped 2026-05-19. New active phase **v0.6.1 Cloud-Cleanup** opened — 20 tasks (T-1..T-20) addressing legacy LAN/Mac strings, 3 security-hygiene gaps, and the false privacy claim at first-run setup. Plan: `docs/plans/v0.6.1-cloud-cleanup.md`. Source audits: `.planning/legacy-feature-audit{,-v2}.md` (revision v2.1 re-rank). New deferred items added to §3 below: **CSP nonce wiring** (→ v0.6.3), **B2 off-site backup** (→ v0.6.2 dedicated phase), **Per-device tokens** (audit A+C — needs design doc first), **enrichment-worker 45-min unreachable-loop bug** (open behavior bug, not legacy-cleanup). Phase 11b (drop `BRAIN_LAN_TOKEN` fallback) deferred to v0.6.2 by design. v7.2 — 2026-05-15: Dual-lane phase ended; single-stream resumed on `main`. v0.5.6 (service-worker app shell, offline cold-launch for Library + Inbox + share-target) tagged. Next track: v0.6.0 cloud migration to Hetzner (Phase B = provider-agnostic LLM wrapper). New backlog item: **Ask + Settings offline shell** — out of scope for v0.5.6 by design (Ollama is laptop-only); revisit after Phase B reveals new origin caching strategy. Other v0.6.x candidates remain queued: Augmented Browsing (AUG-1..10), Knowledge Graph View (GRAPH-1..8), library-offline-from-DB (LIBOFF-1..12). v7.1 — 2026-05-12: v0.5.0 + v0.5.1 + v0.5.2 + v0.5.3 all SHIPPED. Two patch-tier features slotted into v0.6.x: Augmented Browsing + Knowledge Graph View. Plans at `docs/plans/v0.6.x-augmented-browsing.md` + `docs/plans/v0.6.x-graph-view.md`. Source: Recall.it v2 audit 2026-05-12 (`docs/research/recall-feature-audit-v2-2026-05-12.md`). §§ below last touched 2026-05-10 for the v0.5.0 pivot and reference superseded state — full backlog rewrite still pending. v7.0 revision history preserved below |
 
 > Single source of truth for work that is **not in the active phase plan** but is known-needed, nice-to-have, or idea-captured. Items promoted from here land in `BUILD_PLAN.md` under a phase heading. Items closed here get a strikethrough and a closing commit SHA.
 
 ---
 
-## 1. Active phase — v0.5.0 APK + Chrome extension (PIVOTED to Cloudflare Tunnel 2026-05-10)
+## 1. Active phase — v0.6.1 Cloud-Cleanup *(opened 2026-05-19)*
+
+### Current state (as of 2026-05-19)
+
+**v0.6.0 Mac→Hetzner cutover SHIPPED 2026-05-19.** Hetzner brain.service serves `brain.arunp.in` exclusively. RUNNING_LOG entry #44.
+
+**v0.6.1 Cloud-Cleanup is the active phase.** Plan: [`docs/plans/v0.6.1-cloud-cleanup.md`](./docs/plans/v0.6.1-cloud-cleanup.md). 20 tasks ordered by exploit-risk × effort. Source: `.planning/legacy-feature-audit.md` v1 + `.planning/legacy-feature-audit-v2.md` v2.1 (re-ranked).
+
+**Single "do this week" pick:** T-1 — replace the false privacy claim at `src/app/setup/page.tsx:25`. Pure string change, deployed in 15 minutes; the only finding the user reads at first-run trust moment.
+
+**T1 bundle (one PR, ~2–3 h):** T-2 `Secure` cookie · T-3 security headers · T-4 `cf-connecting-ip` log
+
+**T2 bundle (one PR, ~half day):** T-5..T-19 — copy cleanups, route rename, env-var rename, Mac-side script fixes
+
+**Release gate (T-20):** typecheck + lint + smoke green; tag `v0.6.1` on `main`.
+
+**Out of scope here (deferred):**
+- CSP nonce wiring → v0.6.3 (M-L effort, real UI breakage risk)
+- B2 off-site backup → v0.6.2 (dedicated phase; D-18 carry-over)
+- Per-device tokens (audit A+C) → TBD (auth architecture; needs design doc)
+- `tsx` removal from Hetzner runtime → v0.6.3
+- enrichment-worker `isAlive()` 45-min loop fix → open behavior bug, separate
+- Chrome extension URL configurability → only if multi-deployment
+- **Mac-side `better-sqlite3` ABI mismatch** → v0.6.3 (or open-bug). `npm run smoke` and unit tests fail on Mac because the local Node version (v26.0.0, NODE_MODULE_VERSION 147) has no matching `better-sqlite3` prebuilt binary, and `node_modules/better-sqlite3/lib/binding/` is missing. Pre-dates v0.6.1 (carry-over from cutover handover §1.5). Not a regression from any task in this phase. Cloud server is unaffected (Hetzner has its own working bindings). Fix likely requires `npm rebuild better-sqlite3` with matching native build tools, or pinning Node to a version with prebuilt binaries available. **Effort: S–M, depending on whether prebuilts exist for Node 26.** **Risk: low** (Mac dev convenience only; cloud is the source of truth).
+
+---
+
+## 1.archive — Prior phases
+
+### v0.5.0 APK + Chrome extension (PIVOTED to Cloudflare Tunnel 2026-05-10)
 
 ### Current state (as of 2026-05-10)
 

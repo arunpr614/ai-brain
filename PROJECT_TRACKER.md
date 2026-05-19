@@ -1,7 +1,7 @@
 # AI Brain — Project Tracker
 
-**Document version:** v0.9.1-tracker
-**Date:** 2026-05-12
+**Document version:** v0.9.2-tracker
+**Date:** 2026-05-19
 **Owner:** Arun
 **Update cadence:** at phase start, at phase end, and whenever a blocker appears.
 
@@ -24,7 +24,10 @@ Legend: `○` not started · `◐` in progress · `●` complete · `✖` blocke
 | v0.4.0 Ask (RAG) | 0.4.0 | ● | 2026-05-08 | 2026-05-09 | All 21 tasks shipped (T-0..T-19). Chunker + embeddings + vec0 retriever + SSE /api/ask + /ask UI + threads + unified search (fts/semantic/hybrid RRF) + related items + backfill + smoke + SC-7 bench scaffold. 107 unit tests + 29 smoke assertions green. Tag `v0.4.0` on `main`. SC-7 live bench pending user run. |
 | v0.5.0 APK + extension | 0.5.0 | ● | 2026-05-09 | 2026-05-11 | **SHIPPED via Cloudflare named tunnel pivot.** Tunnel live at `https://brain.arunp.in` (launchd-persistent); APK baked with tunnel URL; Chrome extension (popup + context menu + options) E2E tested in Edge 147. T-CF-* 22/25 tasks landed (T-CF-21 WebAuthn deferred to v0.5.1). Gates: 233 unit tests · 3 smoke suites (v0.3.1 + v0.4.0 + v0.5.0) · typecheck clean. Tag `v0.5.0` on `main`. |
 | v0.5.1 YouTube capture | 0.5.1 | ● | 2026-05-11 | 2026-05-12 | **SHIPPED.** Server-side YouTube transcript capture via InnerTube POST + inline XML parser (zero new deps). One new file + one migration; extension/APK untouched — both get YouTube support for free. Body stays pure transcript; enrichment gets channel+duration via composed title. 260 tests (233 → 260, +27); 4 smoke suites; opt-in `smoke:youtube` live-network check. Tag `v0.5.1` on `main`. |
-| v0.6.0 GenPage + clusters | 0.6.0 | ○ | — | — | Blocked by R-CLUSTER |
+| v0.6.0 Mac→Hetzner cutover | 0.6.0 | ● | 2026-05-15 | 2026-05-19 | **SHIPPED 2026-05-19.** D-12 + D-13 + D-14 complete: Hetzner brain.service live (8 items, 81 chunks, 81 vec rows), CNAME flipped to Hetzner tunnel UUID, Mac brain stopped. Two commits: `6c03093` (gemini.ts serial-loop) + `1413f9b` (cutover.sh WAL fix). User-side D-15..D-18 validation pending. |
+| v0.6.1 Cloud-cleanup | 0.6.1 | ◐ | 2026-05-19 | — | **PLAN APPROVED, IN PROGRESS.** 20 tasks (T-1..T-20) addressing legacy LAN/Mac strings, 3 security-hygiene gaps (Secure cookie, security headers, IP logging), false privacy claim at first-run setup. T-1 is "do this week" pick. Plan: [`docs/plans/v0.6.1-cloud-cleanup.md`](./docs/plans/v0.6.1-cloud-cleanup.md). Source audits at `.planning/legacy-feature-audit{,-v2}.md`. |
+| v0.6.2 Off-site backup | 0.6.2 | ○ | — | — | Wires `sqlite3 .backup → gzip → gpg → rclone to B2`. D-18 carry-over from v0.6.0. Also includes Phase 11b (drop `BRAIN_LAN_TOKEN` fallback after v0.6.1 soak). |
+| v0.6.5 GenPage + clusters | 0.6.5 | ○ | — | — | _Renamed from v0.6.0 after cutover took the v0.6.0 slot._ Blocked by R-CLUSTER |
 | v0.7.0 GenLink | 0.7.0 | ○ | — | — | — |
 | v0.8.0 Review (SRS) | 0.8.0 | ○ | — | — | Blocked by R-FSRS |
 | v0.9.0 Flow + proactive | 0.9.0 | ○ | — | — | — |
@@ -33,7 +36,44 @@ Legend: `○` not started · `◐` in progress · `●` complete · `✖` blocke
 
 ---
 
-## 2. Current phase details — v0.4.0 SHIPPED; next v0.5.0 APK + extension
+## 2. Current phase details — v0.6.0 SHIPPED 2026-05-19; v0.6.1 Cloud-cleanup IN PROGRESS
+
+**v0.6.0 closed 2026-05-19** (Mac→Hetzner cutover). RUNNING_LOG entry #44.
+
+**v0.6.1 — Cloud-Cleanup** is the active phase as of 2026-05-19. Plan: [`docs/plans/v0.6.1-cloud-cleanup.md`](./docs/plans/v0.6.1-cloud-cleanup.md). Source: `.planning/legacy-feature-audit.md` + `.planning/legacy-feature-audit-v2.md` (revision v2.1).
+
+### v0.6.1 task tracker
+
+| ID | Task | Status | Tier |
+|---|---|---|---|
+| T-1 | Setup-page false privacy claim → honest copy | ○ | **DO THIS WEEK** |
+| T-2 | `Secure` flag on session cookie | ○ | T1 |
+| T-3 | Security headers (XFO, nosniff, Referrer-Policy, HSTS) | ○ | T1 |
+| T-4 | Log `cf-connecting-ip` in bearer rejections | ○ | T1 |
+| T-5 | Stale version/mode strings | ○ | T2 |
+| T-6 | Unlock-page recovery copy | ○ | T2 |
+| T-7 | Extension "your Mac" copy | ○ | T2 |
+| T-8 | offline.html copy | ○ | T2 |
+| T-9 | reachability `describeVerdict()` strings | ○ | T2 |
+| T-10 | setup-apk verify-error copy | ○ | T2 |
+| T-11 | `BRAIN_LAN_TOKEN` → `BRAIN_API_TOKEN` (Phase 11a) | ○ | T2 |
+| T-12 | `/settings/lan-info` → `/settings/device-pairing` | ○ | T2 |
+| T-13 | Delete dead `getLanIpv4()` | ○ | T2 |
+| T-14 | `OLLAMA_DOWN_BACKOFF_MS` rename | ○ | T2 |
+| T-15 | SwiftBar plugin trim | ○ | T2 |
+| T-16 | `rotate-token.sh` default URL | ○ | T2 |
+| T-17 | `restore-from-backup.sh` Hetzner-only header | ○ | T2 |
+| T-18 | Layout `<meta description>` | ○ | T2 |
+| T-19 | Settings backup-path label | ○ | T2 |
+| T-20 | Smoke + tag `v0.6.1` | ○ | release |
+
+**Critical sequencing:** T-12 must merge before T-7. T-11a before T-20. T-20 last.
+
+**Out of scope here (deferred):** CSP nonces (v0.6.3), B2 off-site backup (v0.6.2), per-device tokens (TBD), `tsx` removal, enrichment-worker 45-min loop.
+
+---
+
+## 2.1 Prior phase details — v0.4.0 / v0.5.x archive
 
 **v0.4.0 closed on 2026-05-09.** All 21 tasks shipped across 7 tracks (T-0..T-19) per [`docs/plans/v0.4.0-ask.md`](./docs/plans/v0.4.0-ask.md) (v1.2). Release commit + tag `v0.4.0` on `main`. Full story in [`RUNNING_LOG.md`](./RUNNING_LOG.md) entries 20–22.
 

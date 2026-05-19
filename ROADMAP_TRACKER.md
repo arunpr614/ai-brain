@@ -1,8 +1,9 @@
 # AI Brain — Roadmap Tracker
 
-**Document version:** v0.9.2-roadmap
-**Date:** 2026-05-12
+**Document version:** v0.9.3-roadmap
+**Date:** 2026-05-19
 **Changelog:**
+- **v0.9.3-roadmap (2026-05-19)** — Inserted new **v0.6.1 Cloud-Cleanup** patch-tier phase after the Mac→Hetzner cutover (v0.6.0) shipped. Phase covers 20 tasks (T-1..T-20) addressing legacy LAN/Mac strings, three security-hygiene gaps (Secure cookie flag, security headers, bearer-rejection IP logging), and the false privacy claim at first-run setup. Source: legacy-feature-audit v1 + v2 (`.planning/legacy-feature-audit.md`, `.planning/legacy-feature-audit-v2.md` revision v2.1). Plan: [`docs/plans/v0.6.1-cloud-cleanup.md`](./docs/plans/v0.6.1-cloud-cleanup.md). Explicitly out-of-scope (queued for v0.6.2/v0.6.3): CSP nonces, B2 off-site backup, per-device tokens, rate-limit raise. T-1 is the "do this week" pick — replace the false privacy claim at `src/app/setup/page.tsx:25`.
 - **v0.9.2-roadmap** — Inserted new **v0.6.x** patch-tier phase for Augmented Browsing (AUG-1..10) + Knowledge Graph View (GRAPH-1..8), both desktop-only by design (APK + viewport guard). Promoted from v0.10.0: `EXP-1` (edges table) → `GRAPH-1`; `EXP-2` (graph viz) → `GRAPH-5..8`. Both struck through at their original locations with forwarding pointers. Detailed plans at `docs/plans/v0.6.x-augmented-browsing.md` and `docs/plans/v0.6.x-graph-view.md`. Source motivation: 2026-05-12 Recall.it v2 audit (`docs/research/recall-feature-audit-v2-2026-05-12.md`, 217 rows) surfaced 36 graph capabilities + 13 augmented-browsing capabilities as competitive gaps where Brain had only thin placeholders.
 - **v0.9.1-roadmap** — v0.5.1 **SHIPPED 2026-05-12**: YouTube video capture. Four-stage plan (research → Stage 4 review → self-critique → plan v1.2). 9 atomic T-YT-* commits. Key design choices: (1) server-side only — extension + APK unchanged, both get YouTube for free via `/api/capture/url`; (2) zero new npm deps — inline InnerTube POST + `<timedtext format="3">` XML parser using `jsdom` already in the project; (3) body stays pure transcript so retrieval chunks are clean, enrichment gets channel + duration via composed title at the LLM-call site; (4) 2h segment cap with honest `transcript_truncated_2h` warning; (5) YouTube icon + human warning labels in Library. Live-smoke `npm run smoke:youtube` passes against `jNQXAC9IVRw` + `dQw4w9WgXcQ`. 260 tests (233 → 260, +27); 4 smoke suites. Tag `v0.5.1` on `main`.
 - v0.9.0-roadmap — v0.5.0 **SHIPPED 2026-05-11** via Cloudflare named-tunnel pivot. Tunnel persistent at `https://brain.arunp.in` via launchd daemon (required plist patch to pass `--config /etc/cloudflared/config.yml tunnel run` — homebrew's `service install` ships a broken plist by default). APK `brain-debug-0.5.0.apk` (7.7 MB) baked with tunnel URL; physical-phone Ask streaming proven over cellular (T-CF-14 F3). Chrome MV3 extension (popup + right-click context menu + options) E2E tested in Edge 147 (T-CF-20 PASS). T-CF-21 WebAuthn deferred to v0.5.1. Known limitation carried to v0.5.1: YouTube saves return 422 because Readability can't extract JS-rendered pages — v0.5.1 adds transcript capture (extension + APK share target). 233 unit tests · 3 smoke suites (v0.3.1 + v0.4.0 + v0.5.0) · typecheck clean. Tag `v0.5.0` on `main`.
@@ -41,7 +42,10 @@ Companion docs:
 | v0.4.0 ✅ | Ask (RAG) | SHIPPED 2026-05-09 — all 21 tasks closed; tag `v0.4.0` | 2.0 | 6.1 |
 | v0.5.0 ✅ | APK + extension | SHIPPED 2026-05-11 — Cloudflare-tunnel pivot; APK + Chrome MV3 ext; tag `v0.5.0` | 1.5 | 7.0 |
 | v0.5.1 ✅ | YouTube capture | SHIPPED 2026-05-12 — server-side InnerTube + inline XML; zero new deps; tag `v0.5.1` | 0.5 | 7.5 |
-| v0.6.0 | GenPage + auto-clusters | AI-written multi-section pages; auto-topic clusters | 2.0 | 9.0 |
+| v0.6.0 ✅ | Mac→Hetzner cutover | SHIPPED 2026-05-19 — `brain.arunp.in` serves from Hetzner; cutover D-12 + D-13 + D-14 complete | 1.0 | 8.5 |
+| v0.6.1 | Cloud-cleanup | Legacy LAN/Mac strings + 3 security-hygiene gaps + false privacy claim — 20 tasks | 0.5 | 9.0 |
+| v0.6.2 | Off-site backup (B2) | sqlite3 .backup → gzip → gpg → rclone to B2; gpg-key escrow | 0.5 | 9.5 |
+| _Note:_ original "v0.6.0 GenPage" slot is now blocked by post-cutover hardening; sequencing for GenPage will be re-decided after v0.6.2. | | | | |
 | v0.7.0 | GenLink | Clickable-word AI sub-pages | 1.0 | 10.0 |
 | v0.8.0 | Review (SRS) | FSRS queue + daily review + streak | 1.0 | 11.0 |
 | v0.9.0 | Flow + proactive | Multi-step journeys + home-page suggestions | 2.0 | 13.0 |
@@ -203,6 +207,39 @@ All 17 work items closed with commit SHAs. Typecheck + lint + build + 24 unit te
 **Exit:** APK installed on Pixel; share URL from Chrome Android via `brain.local` → appears on Mac library in ≤2s. DHCP reassignment does NOT require APK rebuild. First-run token QR scan works. Desktop Chrome extension saves page to localhost. (Stretch: TouchID prompt replaces PIN on web UI.)
 
 **Known v0.5.0 limitation:** Café / public Wi-Fi APK access is NOT supported (see self-critique A-6 / Q5 decision). Home Wi-Fi only in v0.5.0. Tailscale deferred to v0.10.0+ as optional day-2 add.
+
+### v0.6.1 — Cloud-Cleanup *(patch-tier; post-cutover hygiene + truthfulness)*
+
+Inserted 2026-05-19 after the Mac→Hetzner cutover (v0.6.0) shipped. Source: legacy-feature-audit v1 + v2 (`.planning/legacy-feature-audit.md`, `.planning/legacy-feature-audit-v2.md` revision v2.1). Detailed plan: [`docs/plans/v0.6.1-cloud-cleanup.md`](./docs/plans/v0.6.1-cloud-cleanup.md).
+
+| ID | Item | Status | Notes |
+|---|---|---|---|
+| T-1 | Fix false privacy claim at `setup/page.tsx:25` | planned | **DO THIS WEEK** — only string the user reads at first-run trust moment |
+| T-2 | Add `Secure` flag to session cookie (NODE_ENV-guarded) | planned | `auth.ts:113-119`; Cloudflare-mitigated but hygiene HIGH |
+| T-3 | Add HTTP security headers (XFO/nosniff/Referrer-Policy/HSTS) | planned | `next.config.ts` `headers()` block; CSP deferred to v0.6.3 |
+| T-4 | Log `cf-connecting-ip` in bearer rejections | planned | `proxy.ts:70,80` |
+| T-5 | Stale version/mode strings (sidebar, settings) | planned | `v0.1.0 · local` → `v0.6.1 · cloud` |
+| T-6 | Unlock-page recovery instruction | planned | `unlock/page.tsx:26` |
+| T-7 | Extension "your Mac" copy (4 strings) | planned | Sequenced after T-12 |
+| T-8 | `public/offline.html` Mac/Wi-Fi copy | planned | 4 strings |
+| T-9 | `reachability.ts` `describeVerdict()` strings | planned | timeout/network/unauth/forbidden |
+| T-10 | `setup-apk` verify-error copy | planned | drop "menu bar `cloudflared`" |
+| T-11 | `BRAIN_LAN_TOKEN` → `BRAIN_API_TOKEN` (dual-read) | planned | Phase 11a here; Phase 11b in v0.6.2 |
+| T-12 | `/settings/lan-info` → `/settings/device-pairing` | planned | with 308 redirect |
+| T-13 | Delete dead `getLanIpv4()` | planned | zero callers |
+| T-14 | `OLLAMA_DOWN_BACKOFF_MS` → `LLM_PROVIDER_DOWN_BACKOFF_MS` | planned | constant rename |
+| T-15 | SwiftBar plugin trim to single tunnel probe | planned | Mac-side health |
+| T-16 | `rotate-token.sh` default URL → cloud | planned | scripts |
+| T-17 | `restore-from-backup.sh` Hetzner-only header | planned | scripts |
+| T-18 | Layout `<meta description>` truthfulness | planned | `layout.tsx:25` |
+| T-19 | Settings backup-path label honesty | planned | `settings/page.tsx:94` |
+| T-20 | Smoke + tag `v0.6.1` | planned | release gate |
+
+**Out of scope (deferred to v0.6.2 / v0.6.3 / backlog):** CSP nonce wiring, B2 off-site backup, per-device tokens, rate-limit raise, `tsx` removal from Hetzner runtime, `enrichment-worker.ts` 45-min unreachable-loop bug, Chrome extension URL configurability.
+
+**Exit:** all 12 acceptance criteria in `v0.6.1-cloud-cleanup.md §4` pass; tag `v0.6.1` on `main`; `brain.arunp.in/api/health` 200 post-deploy; sidebar reads `v0.6.1 · cloud`; `grep -rn "your Mac\\|v0\\.1\\.0\\|dev:lan" src/ public/ extension/src/` returns only test fixtures.
+
+---
 
 ### v0.6.x — Augmented Browsing + Graph View *(patch-tier, desktop only; Lane L 2026-05-12)*
 
