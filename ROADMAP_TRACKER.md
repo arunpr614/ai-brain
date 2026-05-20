@@ -1,8 +1,9 @@
 # AI Brain — Roadmap Tracker
 
-**Document version:** v0.9.4-roadmap
-**Date:** 2026-05-19
+**Document version:** v0.9.5-roadmap
+**Date:** 2026-05-20
 **Changelog:**
+- **v0.9.5-roadmap (2026-05-20)** — v0.6.1 SHIPPED 2026-05-19 + user-side validated 2026-05-20 (D-15/D-16/D-17/T-2 all PASS). Three bugs surfaced post-validation now slated for v0.6.2: BUG-ANTHROPIC-OVERLOAD (P1), BUG-RETRIEVE-ITEM (confirmed 2026-05-20 via /opt/brain probe — 1-chunk items + generic queries return 0 chunks), BUG-ENRICH-UNREACHABLE-LOOP (root cause = same 529). Lane summary updated with these. **Orphaned-plans audit (2026-05-20):** four `v0.6.x` plans existed without sequencing slots. One (Offline-mode APK) shipped in v0.5.5 + v0.5.6 — plan reclassified as historical. Three remain unscheduled and are now surfaced in §3.5 "Unscheduled but planned" with proposed sequencing for user ratification: AUG (post-v0.7.0 desktop polish), GRAPH (after AUG, same lane), LIBOFF (post-v0.6.2, before v0.7.0 visual refresh).
 - **v0.9.4-roadmap (2026-05-19)** — Inserted new **v0.7.0 Structured Calm Green** visual-refresh phase between v0.6.2 (Off-site backup) and the original v0.7.0 GenLink slot. The original GenLink lane has been renumbered to **v0.7.5**. New phase covers 25 tasks (G-1..G-4 gates + T-1..T-25 execution) adopting the alternative emerald-green / Newsreader / Inter palette specified in [`DESIGN_STRUCTURED_CALM_GREEN.md`](./DESIGN_STRUCTURED_CALM_GREEN.md) (made adoption-ready 2026-05-19). Adoption is **values-only**: variable names in `src/styles/tokens.css` are preserved per the spec's §9.0 Radix-style→M3-style mapping, so no component refactor is needed. Plan: [`docs/plans/v0.7.0-structured-calm-green.md`](./docs/plans/v0.7.0-structured-calm-green.md). Explicit out-of-scope: tertiary-rose wiring (deferred to v0.8.0 SRS), self-hosted Newsreader (deferred to v1.0.0). Hard gates before any code: contrast pass green (already done in spec §2.3), dark-theme finalisation, token-map drift check, tertiary policy decision. **Risk: HIGH** for a mid-roadmap visual swap — this phase ships in its own window, NOT bundled with v0.6.2 or any feature work.
 - **v0.9.3-roadmap (2026-05-19)** — Inserted new **v0.6.1 Cloud-Cleanup** patch-tier phase after the Mac→Hetzner cutover (v0.6.0) shipped. Phase covers 20 tasks (T-1..T-20) addressing legacy LAN/Mac strings, three security-hygiene gaps (Secure cookie flag, security headers, bearer-rejection IP logging), and the false privacy claim at first-run setup. Source: legacy-feature-audit v1 + v2 (`.planning/legacy-feature-audit.md`, `.planning/legacy-feature-audit-v2.md` revision v2.1). Plan: [`docs/plans/v0.6.1-cloud-cleanup.md`](./docs/plans/v0.6.1-cloud-cleanup.md). Explicitly out-of-scope (queued for v0.6.2/v0.6.3): CSP nonces, B2 off-site backup, per-device tokens, rate-limit raise. T-1 is the "do this week" pick — replace the false privacy claim at `src/app/setup/page.tsx:25`.
 - **v0.9.2-roadmap** — Inserted new **v0.6.x** patch-tier phase for Augmented Browsing (AUG-1..10) + Knowledge Graph View (GRAPH-1..8), both desktop-only by design (APK + viewport guard). Promoted from v0.10.0: `EXP-1` (edges table) → `GRAPH-1`; `EXP-2` (graph viz) → `GRAPH-5..8`. Both struck through at their original locations with forwarding pointers. Detailed plans at `docs/plans/v0.6.x-augmented-browsing.md` and `docs/plans/v0.6.x-graph-view.md`. Source motivation: 2026-05-12 Recall.it v2 audit (`docs/research/recall-feature-audit-v2-2026-05-12.md`, 217 rows) surfaced 36 graph capabilities + 13 augmented-browsing capabilities as competitive gaps where Brain had only thin placeholders.
@@ -44,8 +45,8 @@ Companion docs:
 | v0.5.0 ✅ | APK + extension | SHIPPED 2026-05-11 — Cloudflare-tunnel pivot; APK + Chrome MV3 ext; tag `v0.5.0` | 1.5 | 7.0 |
 | v0.5.1 ✅ | YouTube capture | SHIPPED 2026-05-12 — server-side InnerTube + inline XML; zero new deps; tag `v0.5.1` | 0.5 | 7.5 |
 | v0.6.0 ✅ | Mac→Hetzner cutover | SHIPPED 2026-05-19 — `brain.arunp.in` serves from Hetzner; cutover D-12 + D-13 + D-14 complete | 1.0 | 8.5 |
-| v0.6.1 | Cloud-cleanup | Legacy LAN/Mac strings + 3 security-hygiene gaps + false privacy claim — 20 tasks | 0.5 | 9.0 |
-| v0.6.2 | Off-site backup (B2) | sqlite3 .backup → gzip → gpg → rclone to B2; gpg-key escrow | 0.5 | 9.5 |
+| v0.6.1 ✅ | Cloud-cleanup | SHIPPED 2026-05-19 + validated 2026-05-20 — 20 tasks; D-15/D-16/D-17/T-2 PASS; tag `v0.6.1` | 0.5 | 9.0 |
+| v0.6.2 | Off-site backup + retrieval fixes | sqlite3 .backup → B2; T-11b legacy env drop; BUG-ANTHROPIC-OVERLOAD P1; BUG-RETRIEVE-ITEM | 0.5 | 9.5 |
 | _Note:_ original "v0.6.0 GenPage" slot is now blocked by post-cutover hardening; sequencing for GenPage will be re-decided after v0.6.2. | | | | |
 | v0.7.0 | Structured Calm Green visual refresh | Adopt emerald/Newsreader/Inter palette; values-only `tokens.css` swap; 25 tasks (4 gates + 21 exec) | 1.0 | 10.5 |
 | v0.7.5 | GenLink _(was v0.7.0)_ | Clickable-word AI sub-pages | 1.0 | 11.5 |
@@ -403,13 +404,41 @@ Moved out of v0.1.0–v1.0.0 scope. Each has a "reopen trigger" — a concrete s
 
 ---
 
-## 4. Lifecycle board (snapshot — 2026-05-08)
+## 3.5 Unscheduled but planned *(orphan-plan audit 2026-05-20)*
+
+Three feature plans exist with detailed task lists but no sequencing slot. Surfaced here for user ratification before they get a real version slot. **A fourth plan (`v0.6.x-offline-mode-apk.md`) is reclassified as historical — its OFFLINE-* tasks shipped in v0.5.5 + v0.5.6; the plan doc remains for posterity.**
+
+| Plan | Tasks | Status | Proposed slot | Rationale |
+|---|---|---|---|---|
+| [v0.6.x — Augmented Browsing](./docs/plans/v0.6.x-augmented-browsing.md) | AUG-1..7 (~5 commits) | DRAFT v2.0 (2026-05-12) | **v0.7.x or v0.7.5-companion** | Desktop Chrome only; competitive-parity feature from Recall.it audit. Best slotted *after* v0.7.0 visual refresh so the highlight-overlay UI inherits the new palette. Could also bundle with v0.7.5 GenLink as "extension polish" lane. |
+| [v0.6.x — Knowledge Graph View](./docs/plans/v0.6.x-graph-view.md) | GRAPH-1..10 (~10 commits) | DRAFT v2.1 (2026-05-13) | **v0.8.x or v0.10.0** | Desktop only; sigma.js + graphology stack. Pre-execution 3-way library benchmark (sigma vs d3-force vs reagraph at 500 + 2,000 nodes) is a hard gate. Best after v0.8.0 SRS so review-mode benefits from neighborhood navigation. |
+| [v0.6.x — Library-Offline-from-DB](./docs/plans/v0.6.x-library-offline-from-db.md) | LIBOFF-1..12 (~10 commits) | DRAFT (2026-05-15) | **v0.6.3 or v0.6.5** | Replicates library to APK IndexedDB so airplane-mode reads work; companion to v0.5.5 outbox writes. Higher user-value than visual refresh — recommend slotting *before* v0.7.0 if APK offline-reads matters. |
+
+**Recommended sequencing pass:**
 
 ```
-future (5)  →  backlog (0)  →  planned (60+)  →  in-progress (0)  →  shipped (59, through v0.4.0)
+v0.6.2 (backup + retrieval fixes)  ← NEXT
+  ↓
+v0.6.3 (LIBOFF — library offline reads)        ← higher user-value, sequenced before visuals
+  ↓
+v0.7.0 (Structured Calm Green visual refresh)
+  ↓
+v0.7.5 (GenLink) + AUG bundled as "post-refresh extension polish"
+  ↓
+v0.8.0 (SRS) ... GRAPH at v0.8.x or v0.10.0
 ```
 
-v0.4.0 closed 2026-05-09. All 11 planned v0.4.0 features shipped (F-011, F-012, F-013, ASK-1..4, DIG-4, ORG-3, EXP-3); tag `v0.4.0` on `main`. Next active work = v0.5.0 APK + extension (no blockers).
+This is **a recommendation only** — none of the three orphan plans gain a version slot until the user ratifies.
+
+---
+
+## 4. Lifecycle board (snapshot — 2026-05-20)
+
+```
+future (5)  →  backlog (3 orphan plans)  →  planned (60+)  →  in-progress (0)  →  shipped (v0.6.1 cumulative)
+```
+
+v0.6.1 closed 2026-05-19 + validated 2026-05-20. All 20 v0.6.1 tasks shipped (T-1..T-20) + 4 user-side gates passed (D-15, D-16, D-17, T-2). Tag `v0.6.1` on `17e32e0`. Three orphan-plan drafts surfaced for sequencing in §3.5. Next active work = **v0.6.2** (backup + retrieval fixes). Plan not yet drafted.
 
 ---
 

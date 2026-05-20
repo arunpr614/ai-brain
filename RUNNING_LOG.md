@@ -5521,3 +5521,99 @@ Nothing deployed. Working tree state unchanged from #50 except this RUNNING_LOG 
 - **DB:** 9 items / 82 chunks / 82 vec rows.
 - **Tags pushed:** `v0.6.1` on `17e32e0`.
 - **Next milestone:** v0.6.2 — scope decision deferred to tomorrow.
+
+---
+
+## 2026-05-20 16:15 — Entry #52 — Tracker drift fix + BUG-RETRIEVE-ITEM revalidation + orphan-plan audit
+
+**Entry author:** AI agent (Claude Opus 4.7)
+**Session ID:** continuation of #51
+**Triggered by:** user-requested Option 3 — fix tracker drift, run revalidation, sequence orphan plans
+
+### Done
+
+**1. PROJECT_TRACKER drift fixed.** v0.6.1 row was still `◐ in progress` with all 20 T-* tasks `○` despite v0.6.1 having shipped + tagged + been validated. Updated to `●` complete with start/end dates and per-task commit hashes (T-1 → `5a0f2f1`, T-2..T-4 → `7ec050e`, T-5..T-19 bundled across 4 commits, T-11a → `d43b66e`, T-20 → `17e32e0`). Added validation-gates table (D-15/D-16/D-17/T-2 PASS evidence). Section §2 heading rewritten from "v0.6.1 IN PROGRESS" to "v0.6.1 SHIPPED + validated; v0.6.2 NEXT" with v0.6.2 scope shortlist embedded. PROJECT_TRACKER bumped v0.9.3 → v0.9.4-tracker.
+
+**2. BUG-RETRIEVE-ITEM revalidation: BUG CONFIRMED, narrower scope than #48 implied.** Ran 4-config probe + 1-chunk stress probe via `/opt/brain/scripts/spike-retrieve-revalidate.mjs` and `spike-retrieve-1chunk.mjs` (both cleaned up post-test).
+
+**Boundary table from probe:**
+
+| Item chunk count | Generic query at item scope | Specific query at item scope |
+|---|---|---|
+| 1 chunk (Vibe-Coding, Ruben, Growth-Loops) | **0 chunks** (BUG) | 1 chunk at sim 0.91 |
+| 4 chunks (Visual Guide) | 2 chunks at sim 0.83+ (works) | 4 chunks (all returned, works) |
+| 21+ chunks | works | works |
+
+**Root cause confirmed:** `src/lib/retrieve/index.ts:88` does `scanLimit = topK * 4 = 32` library-wide vec0 scan, then post-filters by `item_id` in JS at lines 118–122. With 82 chunks total, a single short item's chunk fails to make the global top-32 for a generic query (which clusters near "longest dense text" in the library — `c3fa6db5` 44-chunk item dominates).
+
+**Severity revised:** narrower than #48's framing. Only triggers on **single-chunk items + generic queries**. Fix sketch unchanged: push `c.item_id = ?` into the JOIN, drop the `topK*4` scanLimit. ~30 min implementation. Justifies the v0.6.2 inclusion but priority is P2, not P1 (BUG-ANTHROPIC-OVERLOAD remains the only P1).
+
+**3. Orphan-plan audit + ROADMAP §3.5.** Four `v0.6.x-*.md` plans existed with no version slot. Audit findings:
+
+- **`v0.6.x-offline-mode-apk.md`** — actually SHIPPED in v0.5.5 + v0.5.6 (commits `4ee2b23`, `46d7c5c`, plus 12 OFFLINE-* feature commits). Reclassified as historical; PROJECT_TRACKER row added with strikethrough + "shipped via lane L" annotation.
+- **`v0.6.x-augmented-browsing.md`** v2.0 — AUG-1..7, ~5 commits, desktop Chrome only. Real, unshipped.
+- **`v0.6.x-graph-view.md`** v2.1 — GRAPH-1..10, sigma.js + graphology, desktop only. Real, unshipped.
+- **`v0.6.x-library-offline-from-db.md`** DRAFT — LIBOFF-1..12, IndexedDB replication for APK offline reads. Real, unshipped.
+
+Added ROADMAP §3.5 "Unscheduled but planned" with proposed sequencing for user ratification:
+
+```
+v0.6.2 (backup + retrieval) → v0.6.3 (LIBOFF) → v0.7.0 (visuals) → v0.7.5+AUG → v0.8.0 (SRS) → ... → GRAPH later
+```
+
+**Rationale:** LIBOFF is the highest-user-value of the three (APK airplane-mode reads); slotting it before the visual refresh gives users a functional gain before a cosmetic one. AUG benefits from the new palette so it slots after v0.7.0. GRAPH is the heaviest plan (10 commits + library benchmark gate) so it slots last. ROADMAP version bumped v0.9.4 → v0.9.5-roadmap.
+
+### Learned
+
+- **Tracker drift compounds silently.** I committed `c613179` two hours ago that *touched* `PROJECT_TRACKER.md` to insert the v0.7.0 row, but did not flip v0.6.1 status. The drift was imported, not introduced by me — but I had a chance to catch it and didn't. Pattern: when editing a file for one purpose, scan adjacent rows for stale state before committing. Cheap insurance.
+- **The BUG-RETRIEVE-ITEM bug is real but narrower than entry #48 made it sound.** Entry #48's "0 chunks for generic queries" was conditional on item-chunk-count ≤ 1. The fix is still right, just less urgent than the framing implied. This is the second time today I've had to walk back a #48 finding (R-EMBED-QUALITY P1 → P2 was the first).
+- **Orphan plans accumulate when execution lanes collapse.** All four `v0.6.x` plans were authored 2026-05-12..15 during the dual-lane (Lane L) workflow. When that lane collapsed 2026-05-15 (per memory `project_ai_brain_dual_lane.md`), the ROADMAP didn't get a clean re-merge; AUG/GRAPH/LIBOFF inherited "v0.6.x" version-prefixes from a moment when the team was producing plans without a sequencer. 3 of 4 still have no slot 5 days later. Worth adding to the "post-lane-collapse hygiene" pattern.
+- **Probe-from-Hetzner pattern needs `sudo cat /etc/brain/.env > /tmp/env-$$.sh` then `set -a; source` in same shell.** Direct `set -a; source /etc/brain/.env` with sudo nesting doesn't propagate. Wrote the working pattern into the spike scripts; future probes can crib from there.
+
+### Deployed / Released
+
+Nothing deployed. Working tree dirty: 3 modified docs (`PROJECT_TRACKER.md`, `ROADMAP_TRACKER.md`, `RUNNING_LOG.md`). No code changes.
+
+### Documents created or updated this period
+
+- ✏️ `PROJECT_TRACKER.md` v0.9.3 → v0.9.4 — v0.6.1 ●; per-task commit hashes; validation-gates table; v0.6.2 scope shortlist; offline-mode-apk plan reclassified as shipped-via-lane-L.
+- ✏️ `ROADMAP_TRACKER.md` v0.9.4 → v0.9.5 — v0.6.1 ✅ row; v0.6.2 row scope expanded; new §3.5 Unscheduled-but-planned section with proposed sequencing; §4 lifecycle board refreshed.
+- ✏️ `RUNNING_LOG.md` — this entry.
+
+### Current remaining bookkeeping
+
+- **Commit decision** — 3 modified files. Single commit makes sense (`docs(trackers): flip v0.6.1 → complete + audit orphan plans + entry #52`). User has not authorised commit yet.
+
+### Open questions / decisions needed
+
+1. **Commit the 3-file tracker update?** (Single commit recommended.)
+2. **Ratify orphan-plan sequencing in §3.5?** — Proposed: LIBOFF before visuals, AUG after, GRAPH last. User can swap any pairing or defer all three to FUT-* if priorities have shifted since 2026-05-12.
+3. **v0.6.2 scope** still owed for tomorrow. Today's revalidation gives a finalised shortlist: D-18 backup + T-11b legacy env drop + BUG-ANTHROPIC-OVERLOAD (P1) + BUG-RETRIEVE-ITEM (P2 single-chunk-only fix). Plan needs drafting before execution.
+
+### Session self-critique
+
+1. **Caught my own commit-`c613179` drift-import.** Self-critique loop helped — the user's "review all the tracked and not implemented items" prompt is what surfaced the v0.6.1 status hadn't flipped. Without that prompt I'd have called the day done with a state-stale tracker.
+2. **The BUG-RETRIEVE-ITEM revalidation took 5 SSH round-trips before it worked** (3 different module-resolution failures: `better-sqlite3` not found, `query.trim is not a function` from wrong-shaped opts, Ollama fallback because env didn't propagate). Each was a learnable, fixable thing — but I should have written the probe locally first and tested against the codebase's actual `retrieve()` signature before SSH'ing it to Hetzner. That's the empirical-evidence-first pattern in reverse: I fired the probe and let the errors steer me, instead of reading the code first.
+3. **The orphan-plan audit was the right thing to do tonight, even though it's the kind of work I usually defer.** It surfaced a fourth plan (offline-mode-apk) that's actually shipped — a clean tracker win — and it gave the next-session a real sequencing question to answer instead of "plans exist somewhere." Worth doing within-session, not deferred.
+4. **I gave a 4-row sequencing recommendation** in ROADMAP §3.5 but framed it as "user-ratified" with explicit "this is a recommendation only." That's the right shape — gives the user a default to react to without locking decisions. Different from the v0.7.0 unilateral renumber from #47.
+5. **Plan drafting for v0.6.2 is the obvious next step but I'm not doing it tonight.** That's the right pacing call (user has been on this for hours, drafting a phase plan needs fresh eyes). But I'm flagging it so it doesn't get lost: tomorrow's first work is `docs/plans/v0.6.2-backup-and-retrieval.md` from the shortlist now in PROJECT_TRACKER §2.
+
+### Action items for the next agent / next turn
+
+1. **[ASK]** Commit decision — single commit OK?
+2. **[ASK]** Ratify ROADMAP §3.5 orphan sequencing or override?
+3. **[DO]** Tomorrow: draft `docs/plans/v0.6.2-backup-and-retrieval.md` covering D-18 + T-11b + BUG-ANTHROPIC-OVERLOAD + BUG-RETRIEVE-ITEM (4 deliverables, ~3-4h estimated). Plan-mode entry recommended.
+4. **[VERIFY]** Before drafting v0.6.2 plan, re-confirm the BUG-ANTHROPIC-OVERLOAD retry policy with one targeted question to user: "1–3 retries with exp backoff vs respect Retry-After header vs both?"
+5. **[REMEMBER]** When editing a tracker file for one row, scan adjacent rows for stale state. Cheap insurance against drift compounding.
+6. **[REMEMBER]** Probe-from-Hetzner pattern: `sudo cat /etc/brain/.env > /tmp/env.sh; cd /opt/brain; set -a; source /tmp/env.sh; set +a; tsx scripts/probe.mjs; rm -f /tmp/env.sh`. Direct nested sudo + source doesn't propagate. Drop scripts in `/opt/brain/scripts/spike-*.mjs` for relative-import resolution; clean up post-test.
+
+### State snapshot
+
+- **Current phase / version:** v0.6.1 SHIPPED + validated. **v0.6.2 NEXT** (backup + retrieval fixes) — plan to be drafted tomorrow.
+- **Working tree (dirty):** 3 modified — `PROJECT_TRACKER.md`, `ROADMAP_TRACKER.md`, `RUNNING_LOG.md`. 1 untracked — `Arun Claude Code Notes AI Brain.md` (personal scratch, ignore).
+- **Hetzner state:** brain.service active. Anthropic intermittently 529 (BUG-ANTHROPIC-OVERLOAD tracked). Probe scripts cleaned up.
+- **DB:** 9 items / 82 chunks / 82 vec rows.
+- **Tags pushed:** `v0.6.1` on `17e32e0` (no new tag).
+- **Tracker versions:** PROJECT_TRACKER v0.9.4 · ROADMAP_TRACKER v0.9.5 · BACKLOG v7.6.
+- **Open carry-overs to v0.6.2:** D-18 backup, T-11b legacy env drop (≥2026-05-26), BUG-ANTHROPIC-OVERLOAD (P1), BUG-RETRIEVE-ITEM (P2, narrower than #48 framed).
+- **Open carry-overs to v0.6.3+:** Mac better-sqlite3 ABI, CSP nonces, `tsx` removal, BUG-ENRICH-UNREACHABLE-LOOP idle log spam.

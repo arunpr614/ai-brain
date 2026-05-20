@@ -1,7 +1,7 @@
 # AI Brain — Project Tracker
 
-**Document version:** v0.9.3-tracker
-**Date:** 2026-05-19
+**Document version:** v0.9.4-tracker
+**Date:** 2026-05-20
 **Owner:** Arun
 **Update cadence:** at phase start, at phase end, and whenever a blocker appears.
 
@@ -25,8 +25,12 @@ Legend: `○` not started · `◐` in progress · `●` complete · `✖` blocke
 | v0.5.0 APK + extension | 0.5.0 | ● | 2026-05-09 | 2026-05-11 | **SHIPPED via Cloudflare named tunnel pivot.** Tunnel live at `https://brain.arunp.in` (launchd-persistent); APK baked with tunnel URL; Chrome extension (popup + context menu + options) E2E tested in Edge 147. T-CF-* 22/25 tasks landed (T-CF-21 WebAuthn deferred to v0.5.1). Gates: 233 unit tests · 3 smoke suites (v0.3.1 + v0.4.0 + v0.5.0) · typecheck clean. Tag `v0.5.0` on `main`. |
 | v0.5.1 YouTube capture | 0.5.1 | ● | 2026-05-11 | 2026-05-12 | **SHIPPED.** Server-side YouTube transcript capture via InnerTube POST + inline XML parser (zero new deps). One new file + one migration; extension/APK untouched — both get YouTube support for free. Body stays pure transcript; enrichment gets channel+duration via composed title. 260 tests (233 → 260, +27); 4 smoke suites; opt-in `smoke:youtube` live-network check. Tag `v0.5.1` on `main`. |
 | v0.6.0 Mac→Hetzner cutover | 0.6.0 | ● | 2026-05-15 | 2026-05-19 | **SHIPPED 2026-05-19.** D-12 + D-13 + D-14 complete: Hetzner brain.service live (8 items, 81 chunks, 81 vec rows), CNAME flipped to Hetzner tunnel UUID, Mac brain stopped. Two commits: `6c03093` (gemini.ts serial-loop) + `1413f9b` (cutover.sh WAL fix). User-side D-15..D-18 validation pending. |
-| v0.6.1 Cloud-cleanup | 0.6.1 | ◐ | 2026-05-19 | — | **PLAN APPROVED, IN PROGRESS.** 20 tasks (T-1..T-20) addressing legacy LAN/Mac strings, 3 security-hygiene gaps (Secure cookie, security headers, IP logging), false privacy claim at first-run setup. T-1 is "do this week" pick. Plan: [`docs/plans/v0.6.1-cloud-cleanup.md`](./docs/plans/v0.6.1-cloud-cleanup.md). Source audits at `.planning/legacy-feature-audit{,-v2}.md`. |
-| v0.6.2 Off-site backup | 0.6.2 | ○ | — | — | Wires `sqlite3 .backup → gzip → gpg → rclone to B2`. D-18 carry-over from v0.6.0. Also includes Phase 11b (drop `BRAIN_LAN_TOKEN` fallback after v0.6.1 soak). |
+| v0.6.1 Cloud-cleanup | 0.6.1 | ● | 2026-05-19 | 2026-05-19 | **SHIPPED 2026-05-19, validated 2026-05-20.** All 20 tasks (T-1..T-20) landed across 6 commits (`5a0f2f1` → `17e32e0`); tag `v0.6.1` on `17e32e0`. User-side validation 2026-05-20: D-15 PASS (APK share), D-16 PASS (cloud Ask), D-17 PASS (overnight batch cron), T-2 PASS (Secure cookie after fresh re-issue). RUNNING_LOG entries #45–#51. |
+| v0.6.2 Off-site backup + retrieval fixes | 0.6.2 | ○ | — | — | **NEXT ACTIVE.** Wires `sqlite3 .backup → gzip → gpg → rclone to B2`. D-18 carry-over from v0.6.0. Also includes Phase 11b (drop `BRAIN_LAN_TOKEN` fallback) and three bugs surfaced post-v0.6.1: BUG-ANTHROPIC-OVERLOAD (P1, retry-on-529), BUG-RETRIEVE-ITEM (confirmed 2026-05-20: 1-chunk items + generic queries return 0 chunks), BUG-ENRICH-UNREACHABLE-LOOP (root cause = same 529, partially fixed by P1). Plan not yet drafted. |
+| v0.6.x Augmented Browsing | 0.6.x | ○ | — | — | Plan: [`docs/plans/v0.6.x-augmented-browsing.md`](./docs/plans/v0.6.x-augmented-browsing.md) v2.0 (AUG-1..7, ~5 commits). Desktop Chrome only, paused since 2026-05-15 lane collapse. Sequencing TBD — currently unscheduled. |
+| v0.6.x Knowledge Graph View | 0.6.x | ○ | — | — | Plan: [`docs/plans/v0.6.x-graph-view.md`](./docs/plans/v0.6.x-graph-view.md) v2.1 (GRAPH-1..10, sigma.js + graphology). Desktop only. Paused since 2026-05-15 lane collapse. Sequencing TBD. |
+| v0.6.x Library-Offline-from-DB | 0.6.x | ○ | — | — | Plan: [`docs/plans/v0.6.x-library-offline-from-db.md`](./docs/plans/v0.6.x-library-offline-from-db.md) DRAFT (LIBOFF-1..12). Replicates library to IndexedDB for full APK offline reads. Companion to v0.5.5 outbox writes (already shipped). Sequencing TBD. |
+| ~~v0.6.x Offline-mode APK~~ | ~~0.6.x~~ | ● | 2026-05-13 | 2026-05-15 | **SHIPPED in v0.5.5 + v0.5.6** (`4ee2b23`, `46d7c5c`). Plan at [`docs/plans/v0.6.x-offline-mode-apk.md`](./docs/plans/v0.6.x-offline-mode-apk.md) v3.0 — OFFLINE-PRE/1A/1B..12 all landed via lane L. /inbox tab is the outbox surface. |
 | v0.6.5 GenPage + clusters | 0.6.5 | ○ | — | — | _Renamed from v0.6.0 after cutover took the v0.6.0 slot._ Blocked by R-CLUSTER |
 | v0.7.0 Structured Calm Green visual refresh | 0.7.0 | ○ | — | — | **NEW** — Adopt alternative design spec (`DESIGN_STRUCTURED_CALM_GREEN.md`, made adoption-ready 2026-05-19). 25 tasks (G-1..G-4 gates + T-1..T-25). Values-only `tokens.css` swap — variable names preserved per spec §9.0 mapping. Plan: [`docs/plans/v0.7.0-structured-calm-green.md`](./docs/plans/v0.7.0-structured-calm-green.md). |
 | v0.7.5 GenLink _(was v0.7.0)_ | 0.7.5 | ○ | — | — | Renumbered after v0.7.0 visual-refresh inserted |
@@ -37,40 +41,44 @@ Legend: `○` not started · `◐` in progress · `●` complete · `✖` blocke
 
 ---
 
-## 2. Current phase details — v0.6.0 SHIPPED 2026-05-19; v0.6.1 Cloud-cleanup IN PROGRESS
+## 2. Current phase details — v0.6.1 SHIPPED 2026-05-19 + validated 2026-05-20; v0.6.2 NEXT
 
 **v0.6.0 closed 2026-05-19** (Mac→Hetzner cutover). RUNNING_LOG entry #44.
 
-**v0.6.1 — Cloud-Cleanup** is the active phase as of 2026-05-19. Plan: [`docs/plans/v0.6.1-cloud-cleanup.md`](./docs/plans/v0.6.1-cloud-cleanup.md). Source: `.planning/legacy-feature-audit.md` + `.planning/legacy-feature-audit-v2.md` (revision v2.1).
+**v0.6.1 closed 2026-05-19** (cloud-cleanup, all 20 tasks). User-side validation closed 2026-05-20. Tag `v0.6.1` on commit `17e32e0`. Plan archived: [`docs/plans/v0.6.1-cloud-cleanup.md`](./docs/plans/v0.6.1-cloud-cleanup.md). RUNNING_LOG entries #45–#51.
 
-### v0.6.1 task tracker
+### v0.6.1 task tracker (final)
 
-| ID | Task | Status | Tier |
+| ID | Task | Status | Commit |
 |---|---|---|---|
-| T-1 | Setup-page false privacy claim → honest copy | ○ | **DO THIS WEEK** |
-| T-2 | `Secure` flag on session cookie | ○ | T1 |
-| T-3 | Security headers (XFO, nosniff, Referrer-Policy, HSTS) | ○ | T1 |
-| T-4 | Log `cf-connecting-ip` in bearer rejections | ○ | T1 |
-| T-5 | Stale version/mode strings | ○ | T2 |
-| T-6 | Unlock-page recovery copy | ○ | T2 |
-| T-7 | Extension "your Mac" copy | ○ | T2 |
-| T-8 | offline.html copy | ○ | T2 |
-| T-9 | reachability `describeVerdict()` strings | ○ | T2 |
-| T-10 | setup-apk verify-error copy | ○ | T2 |
-| T-11 | `BRAIN_LAN_TOKEN` → `BRAIN_API_TOKEN` (Phase 11a) | ○ | T2 |
-| T-12 | `/settings/lan-info` → `/settings/device-pairing` | ○ | T2 |
-| T-13 | Delete dead `getLanIpv4()` | ○ | T2 |
-| T-14 | `OLLAMA_DOWN_BACKOFF_MS` rename | ○ | T2 |
-| T-15 | SwiftBar plugin trim | ○ | T2 |
-| T-16 | `rotate-token.sh` default URL | ○ | T2 |
-| T-17 | `restore-from-backup.sh` Hetzner-only header | ○ | T2 |
-| T-18 | Layout `<meta description>` | ○ | T2 |
-| T-19 | Settings backup-path label | ○ | T2 |
-| T-20 | Smoke + tag `v0.6.1` | ○ | release |
+| T-1 | Setup-page false privacy claim → honest copy | ● | `5a0f2f1` |
+| T-2 | `Secure` flag on session cookie | ● | `7ec050e` |
+| T-3 | Security headers (XFO, nosniff, Referrer-Policy, HSTS) | ● | `7ec050e` |
+| T-4 | Log `cf-connecting-ip` in bearer rejections | ● | `7ec050e` |
+| T-5..T-19 | Copy + dead-code + script cleanup bundle | ● | `11ba880`, `825b179`, `69cc97e`, `ce888b3` |
+| T-11a | `BRAIN_API_TOKEN` dual-read (legacy fallback) | ● | `d43b66e` |
+| T-20 | Smoke + tag `v0.6.1` | ● | `17e32e0` |
 
-**Critical sequencing:** T-12 must merge before T-7. T-11a before T-20. T-20 last.
+**Validation gates (2026-05-20):**
 
-**Out of scope here (deferred):** CSP nonces (v0.6.3), B2 off-site backup (v0.6.2), per-device tokens (TBD), `tsx` removal, enrichment-worker 45-min loop.
+| Gate | Status | Evidence |
+|---|---|---|
+| D-15 APK share-target | ● PASS | RUNNING_LOG #48 — Substack post captured |
+| D-16 cloud Ask end-to-end | ● PASS | RUNNING_LOG #50 — 8 chunks + Anthropic streamed 4.48s |
+| D-17 overnight batch cron | ● PASS | RUNNING_LOG #49 — `[batch-cron] submit tick: nothing to submit` 19:30 UTC |
+| T-2 Secure cookie | ● PASS | RUNNING_LOG #51 — Secure ✓ HttpOnly ✓ SameSite Lax (after fresh re-issue) |
+
+### v0.6.2 — Backup hardening + retrieval fixes (NEXT ACTIVE; plan not yet drafted)
+
+Carry-overs and post-v0.6.1 findings to be planned together:
+
+- **D-18** B2 off-site backup wiring (sqlite3 .backup → gzip → gpg → rclone)
+- **T-11b** drop legacy `BRAIN_LAN_TOKEN` fallback (≥2026-05-26 after one-week soak)
+- **BUG-ANTHROPIC-OVERLOAD** (P1) — retry-on-529 in `src/lib/llm/anthropic.ts:174,210` with exponential backoff
+- **BUG-RETRIEVE-ITEM** — confirmed 2026-05-20 (RUNNING_LOG #52): 1-chunk items + generic queries return 0 chunks. Fix: push `c.item_id = ?` into JOIN at `src/lib/retrieve/index.ts:99-114`, drop `topK*4` scanLimit
+- **BUG-ENRICH-UNREACHABLE-LOOP** — partially closed by BUG-ANTHROPIC-OVERLOAD; remaining work is fixing the misleading log message + idle-path log spam
+
+Out of scope here (deferred): CSP nonces (v0.6.3), per-device tokens (TBD), `tsx` removal (v0.6.3), Mac better-sqlite3 ABI mismatch (v0.6.3).
 
 ---
 
