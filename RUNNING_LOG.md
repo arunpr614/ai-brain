@@ -5617,3 +5617,100 @@ Nothing deployed. Working tree dirty: 3 modified docs (`PROJECT_TRACKER.md`, `RO
 - **Tracker versions:** PROJECT_TRACKER v0.9.4 · ROADMAP_TRACKER v0.9.5 · BACKLOG v7.6.
 - **Open carry-overs to v0.6.2:** D-18 backup, T-11b legacy env drop (≥2026-05-26), BUG-ANTHROPIC-OVERLOAD (P1), BUG-RETRIEVE-ITEM (P2, narrower than #48 framed).
 - **Open carry-overs to v0.6.3+:** Mac better-sqlite3 ABI, CSP nonces, `tsx` removal, BUG-ENRICH-UNREACHABLE-LOOP idle log spam.
+
+---
+
+## 2026-05-20 22:50 — Entry #53 — v0.6.2 plan over-shoot + handover package + session close
+
+**Entry author:** AI agent (Claude Opus 4.7)
+**Session ID:** `e4891e5` (HEAD at entry-write; same as entry #52's commit)
+**Triggered by:** post-#52 work — drafting v0.6.2 plan, self-critique, then handover package for next session
+
+### Planned since last entry
+
+After entry #52 closed today's tracker-reconciliation work, the user said "proceed now" to drafting `docs/plans/v0.6.2-backup-and-retrieval.md`. Plan was: draft v0.6.2 plan + surface ratification asks + commit. After self-critique surfaced the plan was wrong-shaped, the pivot became: stop and create a handover package for the next session.
+
+### Done
+
+- **Drafted `docs/plans/v0.6.2-backup-and-retrieval.md`** — 380 lines, 9 tasks (T-1 Anthropic 529 retry + T-2..T-5 B2 backup + T-6 retrieve JOIN + T-7 enrich log + T-8 T-11b legacy env drop + T-9 release). Mirrored v0.6.1 plan structure. Untracked, NOT committed.
+- **Self-critique surfaced the plan as overweight + bundling unrelated concerns + pre-anchoring decisions.** The four bundled concerns have very different effort profiles (60 min / 2-3 days / 30 min / 30-45 min / 15 min). User hitting an Anthropic 529 right now would wait through B2 provisioning + GPG escrow + runbook before getting their fix shipped — wrong sequencing.
+- **Recommended split-phase approach:** v0.6.1.1 hotfix (T-1 + T-6, ~2h) → v0.6.2 backup-only (D-18 + T-11b) → v0.6.3 hygiene (T-7 + CSP + Mac sqlite ABI). Surfaced as a binary question to the user for next session, not a unilateral decision.
+- **User chose to leave everything to the new session and asked for a handover package.** Invoked the `ai-handover-package` skill.
+- **Created `Handover_docs/Handover_docs_20_05_2026/`** as a delta tranche extending `19_05_2026_19_34_V061_T1_T4_DONE`. 11 files, ~58 KB, zero secret leaks. File index:
+  - `README.md` — navigation + 3-min/15-min/45-min reading paths
+  - `STATUS.md` — one-page truth
+  - `Handover_Implementation_Plan_2026-05-20.md` — M0, first-action sequence for next session
+  - `01_Architecture.md` — delta pointer (no architecture changes)
+  - `02_Systems_and_Integrations.md` — Anthropic 529 evidence + retrieve revalidation
+  - `03_Secrets_and_Configuration.md` — delta pointer + B2 escrow forward-look
+  - `04_Implementation_Roadmap_Consolidated.md` — v0.6.2 split-phase rationale + orphan sequencing
+  - `05_Project_Retrospective.md` — today's learnings + 4 recurring patterns to guardrail
+  - `06_Handover_Current_Status.md` — working-tree state + 4 priority-ordered open asks
+  - `07_Deployment_and_Operations.md` — Hetzner probe pattern (NEW) + health checks
+  - `08_Debugging_and_Incident_Response.md` — cookie-stale lesson + Anthropic 529 investigation flow
+- **Confirmed context-window health is degrading** — earlier user-prompted self-critique surfaced behavioural signs (3-option-menu pattern repeated 6+ times today; PROJECT_TRACKER drift import in `c613179`; 380-line plan over-shoot after explicitly logging "tomorrow" in entry #52 action items). Recommended ending session.
+
+### Learned
+
+- **The "tomorrow with fresh eyes" principle from #52 action item #3 is NOT self-enforcing.** When the user said "proceed now," I complied without flagging the contradiction. A future agent should treat its own logged "defer to next session" notes as commitments, not preferences. If the user overrides, push back once: "you said tomorrow — sure?"
+- **Plan-doc length scales as a quality signal.** v0.6.1's plan: 342 lines / 20 tasks ≈ 17 lines/task. Today's v0.6.2 draft: 380 lines / 9 tasks ≈ 42 lines/task. The padding came from implementation sketches (TypeScript code in the plan), runbook content that belongs in the runbook itself, and decision rationales pre-answering "ASK" questions. **Heuristic for next time: if a plan exceeds ~25 lines per task, it's drifting from "plan" to "executor work disguised as plan."**
+- **Bundling-when-decoupled is a recurring pattern.** Today's v0.6.2 bundled 4 concerns; v0.6.1 also leaned heavy. The DAG itself was the signal — when "T-1 (Anthropic retry — independent of backup work)" appears in a phase plan's DAG, that's the plan telling me the phase is over-bundled. I drew the DAG, saw the answer, ignored it.
+- **Handover quality benefits from leaning on existing skill scaffolding.** The `ai-handover-package` skill produced 11 well-structured files in a clean delta-mode pass; trying to do this from scratch would have taken 2–3× longer with more drift. Worth using the skill, not bypassing it for "lighter" custom output.
+
+### Deployed / Released
+
+Nothing deployed this session. Three commits from earlier today (`6725464`, `c613179`, `e4891e5`) remain local-only on `main`. No push.
+
+### Documents created or updated this period
+
+- ✨ `docs/plans/v0.6.2-backup-and-retrieval.md` — NEW, untracked, 380 lines. **Marked as needs-restructure in handover.** Next session decides delete-or-restructure.
+- ✨ `Handover_docs/Handover_docs_20_05_2026/` — NEW folder with 11 files (README, STATUS, M0 + 8 milestone files).
+- ✏️ `RUNNING_LOG.md` — this entry (#53).
+
+### Current remaining to-do
+
+Per `06_Handover_Current_Status.md` §3, priority-ordered for the next session:
+
+1. **P1 — v0.6.2 phase shape decision** (split into v0.6.1.1 hotfix + v0.6.2 backup-only + v0.6.3 hygiene, vs keep bundled). Blocks all other phase planning.
+2. **P2 — Anthropic 529 retry policy specifics** (only relevant if split path approved).
+3. **P3 — ROADMAP §3.5 orphan-plan sequencing** (3 yes/no decisions: LIBOFF → v0.6.3? AUG → v0.7.5? GRAPH → v0.8.x or v0.10.0?).
+4. **P3 — v0.7.0 phase gates G-3 (tertiary-rose) + G-4 (DESIGN.md archive policy).**
+5. **Commit decision** — should the v0.6.2 draft + handover folder be committed as `docs(handover): close 2026-05-20 session + queue v0.6.2 decisions`? Tonight's recommendation was to leave them untracked until next session decides phase shape; either is defensible.
+
+### Open questions / decisions needed
+
+1. Is the v0.6.2 draft worth keeping as a starting point, or should next session delete-and-redraft from the original BACKLOG-defined scope?
+2. Should the handover folder + v0.6.2 draft be committed before close-of-session, or left untracked for next session to decide?
+
+Both questions are deferred to the next session by user direction ("Leave everything to the new session").
+
+### Session self-critique
+
+This is critique on the post-#52 work specifically (the v0.6.2 plan + handover work).
+
+1. **I drafted the v0.6.2 plan after explicitly logging "tomorrow with fresh eyes" in entry #52 action item #3.** When the user said "proceed now," I should have responded "you said tomorrow earlier — still tomorrow?" instead of complying. The user gets to override their own deferral, but I should make them say it explicitly. This is a recurring pattern: I treat user prompts as override-by-default rather than treating prior commitments as commitments. Worth a memory entry.
+2. **The 380-line plan over-shoot was visible while I was writing it.** I was adding implementation sketches (the `fetchWithRetry` TS code), runbook content (recovery procedure inside the plan instead of in T-4's runbook deliverable), and rationales pre-answering §6 ASK questions. Each addition felt justified locally; the cumulative pattern was "plan-doing-executor's-work." A counter-prompt I should run on every plan: *"if I delete this paragraph, will the executor lack information they need?"* If no, delete it.
+3. **The §6 ASK questions in the v0.6.2 draft were anchored.** "I've sketched 3 attempts × exp backoff... confirm or override" is not a question; it's a default. A real ASK presents trade-offs equivalently. Same family of issue as the v0.7.0 unilateral renumber from #47 — surfacing a decision while pretending to defer it.
+4. **I noticed the over-shoot only after the user prompted "do a self-critique."** Without that prompt, I would have shipped the message presenting the plan as ready-for-ratification instead of as needs-restructure. The user's explicit ask was the safety net; agent self-monitoring failed.
+5. **The session has shipped a lot of work and I kept saying "logical stopping point" prematurely.** Three times today I declared a stopping point that the user rightly pushed back on (each push-back surfaced more real work — tracker drift, BUG-RETRIEVE-ITEM revalidation, orphan-plan audit, v0.6.2 plan over-shoot). Pattern: I default to "we're done" when the agent is fatigued, not when the work is genuinely done.
+6. **Handover package authoring went well, comparatively.** Used the skill's scaffolding directly, kept files focused on deltas, didn't pad. The retrospective in `05_Project_Retrospective.md` is honest about the over-shoot pattern. This was the best-quality work of the post-#52 segment — leaning on a skill's structured output instead of free-writing was the right call.
+
+### Action items for the next agent
+
+1. **[ASK]** v0.6.2 phase shape — split (v0.6.1.1 hotfix + v0.6.2 backup-only + v0.6.3 hygiene) vs keep bundled? Lead with this; blocks all other phase planning. Source: `Handover_docs/Handover_docs_20_05_2026/Handover_Implementation_Plan_2026-05-20.md` §3.
+2. **[DON'T]** Don't redraft the v0.6.2 plan from the existing 380-line draft without the user's split decision. The draft is wrong-shaped; preserving its bones encodes the over-bundle.
+3. **[VERIFY]** Before claiming any v0.6.1.1 retry fix works, run the curl probe from `07_Deployment_and_Operations.md` §3.5 to confirm Anthropic is actually 529-ing. A single 200 doesn't prove the retry path; the bug is intermittent.
+4. **[REMEMBER]** When editing a plan or tracker file, run the "delete this paragraph — would executor lack info?" test on each padding-shaped section. v0.6.2 draft over-shoot started from sentence-level decisions that each felt justified.
+5. **[REMEMBER]** Plan length per task is a quality signal. Target ~15–20 lines/task. v0.6.1's plan was 17 lines/task; today's draft was 42. If a plan crosses 25, audit for executor-work-disguised-as-planning.
+6. **[DON'T]** Don't enumerate 3+ options when asked "what's next?" Lead with one recommendation in one sentence; mention alternatives in at most one follow-up sentence. Treat this as a hard rule — pattern survived 6 corrections today.
+7. **[ASK]** Commit decision for the v0.6.2 draft + the handover folder. Tonight's recommendation was to leave both untracked until the phase-shape decision lands; user can override.
+
+### State snapshot
+
+- **Current phase / version:** v0.6.1 SHIPPED + validated (D-15/D-16/D-17/T-2 PASS). v0.6.2 NEXT — plan drafted but needs restructure decision.
+- **Active trackers:** `RUNNING_LOG.md` (53 entries), `BACKLOG.md` (v7.6), `PROJECT_TRACKER.md` (v0.9.4), `ROADMAP_TRACKER.md` (v0.9.5).
+- **Working tree:** unchanged from #52 + this entry's append. 3 untracked: `Arun Claude Code Notes AI Brain.md`, `Attachments/`, `docs/plans/v0.6.2-backup-and-retrieval.md`. 1 new untracked folder: `Handover_docs/Handover_docs_20_05_2026/` (11 files).
+- **Hetzner state:** unchanged — brain.service active, Anthropic intermittently 529, DB 9 items / 82 chunks / 82 vec rows.
+- **Tags pushed:** `v0.6.1` on `17e32e0` (no new tag).
+- **Three commits today on `main`:** `6725464`, `c613179`, `e4891e5` — local only, not pushed.
+- **Next milestone:** v0.6.2 — phase shape decision pending. Hand-off via `Handover_docs/Handover_docs_20_05_2026/STATUS.md`.
