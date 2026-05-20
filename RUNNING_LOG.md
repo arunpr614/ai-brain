@@ -5714,3 +5714,100 @@ This is critique on the post-#52 work specifically (the v0.6.2 plan + handover w
 - **Tags pushed:** `v0.6.1` on `17e32e0` (no new tag).
 - **Three commits today on `main`:** `6725464`, `c613179`, `e4891e5` — local only, not pushed.
 - **Next milestone:** v0.6.2 — phase shape decision pending. Hand-off via `Handover_docs/Handover_docs_20_05_2026/STATUS.md`.
+
+---
+
+## 2026-05-21 — Entry #54 — v0.6.1.1 hotfix shipped — BUG-ANTHROPIC-OVERLOAD + BUG-RETRIEVE-ITEM
+
+**Entry author:** AI agent (Claude Opus 4.7)
+**Session ID:** new session — picked up from `Handover_docs/Handover_docs_20_05_2026/`
+**Triggered by:** user direction to split v0.6.2 → v0.6.1.1 hotfix + v0.6.2 backup-only + v0.6.3 hygiene; then "draft v0.6.1.1" → "proceed" → "execute" → "deploy"
+
+### Planned since last entry
+
+Per #53 action items + handover M0 §3: split the 380-line v0.6.2 over-bundle into v0.6.1.1 (P1 reliability + P2 correctness, ~2h) before any backup work. Plan, code, test, deploy, verify, tag.
+
+### Done
+
+- **Drafted `docs/plans/v0.6.1.1-hotfix.md`** — 28 lines, hotfix-shaped (not phase-shaped). Two tasks (T-1 retry + T-6 retrieve scope) + T-R release. One ASK (retry budget). Pre-answered the index check: `idx_chunks_item_id` exists at `src/db/migrations/001_initial_schema.sql:48`.
+- **Three self-critique cycles before code.** First plan I wrote tonight was a 122-line v0.6.1-miniaturised over-shape; user prompted self-critique; rewrote at 28 lines. Pattern: when self-critique surfaces over-shoot, fix via deletion not patch.
+- **T-1 implemented in `src/lib/llm/anthropic.ts`** — added `fetchWithOverloadRetry()` private method wrapping `generate()` and `generateStream()`. Retries on `RETRYABLE_STATUS = {429, 503, 529}` and on connection-class fetch errors. Backoff schedule `[500, 1500]` ms, retry-after header honored up to `RETRY_AFTER_CEILING_MS = 3000`. `AbortSignal` aborts both fetch-in-flight and inter-attempt sleep. Batch endpoints `submitBatch`/`pollBatch` intentionally untouched.
+- **T-6 implemented in `src/lib/retrieve/index.ts`** — when `opts.itemId` is set, the inner vec0 MATCH is constrained via `rowid IN (SELECT r.rowid FROM chunks_rowid r JOIN chunks c ON c.id = r.chunk_id WHERE c.item_id = ?)` so KNN ranks within the item before the LIMIT. Un-scoped path preserved verbatim. Removed the post-hoc JS-side `scoped` filter for the item branch. First pass used `c.item_id = ?` in the inner WHERE — wrong, vec0 ranks first then filters; corrected to the `rowid IN (...)` pre-filter idiom.
+- **Tests added.** `anthropic.test.ts` +5: retries on 529→success, exhausts retries on persistent 529, no-retry on 4xx auth, Retry-After honored (delta-seconds), abort-mid-backoff. `retrieve/index.test.ts` +1: 1-chunk item with corpus dominated by other vocabulary, generic query, scoped retrieve returns ≥ 1 chunk.
+- **Local typecheck + lint clean.** `npm run typecheck` passes. ESLint clean on both changed files.
+- **Local test run.** Anthropic 14/14 pass. Retrieve fails on Mac due to known better-sqlite3 ABI issue (logged in memory as v0.6.3 hygiene item) — not a regression.
+- **Version decision: `0.6.2-hotfix.1`.** Plain `0.6.1.1` rejected by semver. User picked the pre-release form so v0.6.2 backup-only ships as `0.6.2`. Sidebar + settings auto-pick-up via `package.json` import (no string changes needed).
+- **Commit `790827e`** — `fix(v0.6.1.1): Anthropic 529 retry + item-scoped retrieve KNN`. 6 files, +412 −49.
+- **Pre-flight baseline.** `/api/health` 401 (alive). Hetzner DB 9 items / 82 chunks (matches handover). Anthropic curl probe 200/200/200 — Anthropic healthy right now, no live 529 observable. `npm install --dry-run` clean (lockfile happy with version bump).
+- **Deploy via interim `scp` path.** Files: `src/lib/llm/anthropic.{ts,test.ts}`, `src/lib/retrieve/index.{ts,test.ts}`, `package.json`. `sudo systemctl restart brain`. Clean restart: `[backup] scheduler started`, `[batch-cron] scheduled submit='30 19 * * *'`, `[enrich] worker starting`, `Ready in 0ms`. No errors in journal.
+- **Post-flight live verification on Hetzner.**
+  - `/api/health` 401 (alive).
+  - DB unchanged (9 items / 82 chunks).
+  - **T-6 spike** via the handover §2.1 probe pattern. Used 1-chunk item `5e755dab8ac1c214ddc32295` (Growth-Loops). All 3 generic queries — "how does growth work", "product strategy", "loops" — returned **1 chunk** (was 0 pre-fix). Bug fixed.
+  - **Un-scoped parity probe** — same queries, no `itemId`. Multi-chunk ranking preserved across `1035317b...` (Skip Podcast, 21 chunks), `c3fa6db5...` (AI Integration, 44 chunks), and the 1-chunk Growth-Loops item where it should rank. No regression.
+  - **Anthropic test suite on Hetzner** — 14/14 pass including all 5 new retry tests. Confirms T-1 retry path is loaded and behaves correctly under stubbed 529 sequences.
+  - **Retrieve test suite on Hetzner** — 9/9 pass including the new T-6 1-chunk repro test.
+  - Spike script cleaned up.
+- **Tag `v0.6.1.1` on `790827e`** — annotated tag with bug-fix summary. Not pushed.
+
+### Learned
+
+- **Vec0 idiom: `rowid IN (...)` pre-filters KNN, `WHERE c.item_id = ?` in the inner ranking does NOT.** First T-6 pass put the column predicate alongside `embedding MATCH ?` in the WHERE; that runs vec0 globally then trims, same root behavior as the previous post-hoc JS filter. The correct approach is the `rowid IN (subquery)` form, which sqlite-vec uses to constrain the KNN before ranking. Caught by re-reading my own SQL and asking "would vec0 actually scope before the LIMIT?"
+- **The pre-flight Anthropic probe matters even when it returns 200s.** I couldn't live-validate the 529 retry path because Anthropic was healthy. But running the probe established a baseline so when 529s return, future agents can compare and confirm the retry is working from journal evidence. Probes that don't surface the bug today still produce useful evidence.
+- **Mac better-sqlite3 ABI failure is now a real friction point.** All 9 retrieve tests fail locally; only Hetzner can validate. Logged in memory and tracked for v0.6.3, but worth flagging that it's blocking same-day TDD on retrieve-touching changes. Mitigation today: run tests on Hetzner via `node --import tsx --test ...` directly. Works fine but adds 30-second SSH round-trips per iteration.
+- **Pre-deploy checklist as silent prerequisites, not asked questions.** I started by asking "do you want me to run pre-checks before deploy?" — that's the same recommendation-overload anti-pattern. After self-critique #2 surfaced this, I just ran them. Result: faster, no decision burden, found the lockfile concern (none) and confirmed baseline state without needing user approval.
+- **Three self-critique cycles in one session is unusual.** Each surfaced a real over-shape: (1) v0.6.1.1 plan at 122 lines, rewrote to 28; (2) deploy-prereq questions instead of action; (3) version-bump unilateral semver invalid. Pattern: when working past 6h, the surface-area of "feels like it should be done thoroughly" expands. Self-critique catches it but only after the work is done. **Real preventative is checking length/shape before writing, not after.**
+
+### Deployed / Released
+
+- Commit `790827e` shipped to Hetzner via `scp` + `systemctl restart brain` at 23:26 IST.
+- Service healthy. Both bugs verified fixed.
+- Tag `v0.6.1.1` on local `main`. Not pushed.
+
+### Documents created or updated this period
+
+- ✨ `docs/plans/v0.6.1.1-hotfix.md` — NEW, 28 lines, committed in `790827e`
+- ✏️ `src/lib/llm/anthropic.ts` — +143 lines (retry helper + parseRetryAfter)
+- ✏️ `src/lib/llm/anthropic.test.ts` — +148 lines (5 new retry tests)
+- ✏️ `src/lib/retrieve/index.ts` — rewrote SQL branch (+50/-30 net)
+- ✏️ `src/lib/retrieve/index.test.ts` — +41 lines (T-6 repro test)
+- ✏️ `package.json` — version `0.6.1` → `0.6.2-hotfix.1`
+- ✏️ `RUNNING_LOG.md` — this entry (#54)
+
+### Current remaining to-do
+
+1. **[DO]** Push `main` to remote — 5 unpushed commits: `6725464`, `c613179`, `e4891e5`, `8c8ade2`, `790827e`. Plus tag `v0.6.1.1`. User authorization needed before push.
+2. **[FOLLOW-UP]** Observe next Anthropic 529 window via journal — confirm retry behavior in production logs. No action needed unless the retry is not behaving.
+3. **[NEXT PHASE]** v0.6.2 backup-only — D-18 B2 off-site backup + T-11b legacy `BRAIN_LAN_TOKEN` drop (gated ≥ 2026-05-26). Plan to be drafted next session.
+4. **[NEXT PHASE]** v0.6.3 hygiene — T-7 enrich log message hygiene, CSP nonces, Mac better-sqlite3 ABI, `tsx` removal from Hetzner runtime.
+
+### Open questions / decisions needed
+
+1. Push to remote tonight, or hold? 5 commits + 1 tag pending. Standard answer is "push after tag" but user hasn't authorized.
+
+### Session self-critique
+
+1. **Three over-shapes caught this session.** Each fixed via self-critique, but the catch was always *after* I'd written the over-shape. Cheaper test before writing: would v0.6.1's plan have this section? If no, drop it. Would I write this for a 30-line PR? If no, drop it.
+2. **The vec0 SQL bug was real and self-caught.** Wrote `c.item_id = ?` in the inner WHERE, re-read the SQL, realized vec0 ranks before AND-filters, fixed to `rowid IN (...)`. Worth noting because the test fixture would have *passed* the wrong implementation on Mac (test failed due to ABI, not SQL). On Hetzner the test would have passed too — only the live spike with off-vocabulary single-chunk items would have caught it. Lesson: test fixtures need to mimic the failure mode, not just exercise the path.
+3. **Deploy went smoothly because pre-flight was silent.** No "do you want me to run X" — just ran the checks, reported baseline as a results table. User answered "execute" once and the whole sequence ran. Compare to plan-drafting where I asked 3 binary questions and re-asked one. Pattern worth keeping: state-gathering is silent, decisions are asked.
+4. **The self-critique→fix loop produced better work than first-draft.** v0.6.1.1 plan went 122 → 28 lines. Deploy prereqs went "ask 4 questions" → "run silently." Both were forced by user prompting "self-critique." The agent's own attempts to self-critique without prompt have been weaker. This suggests user-prompted critique is doing the heavy lifting; the agent doesn't reliably self-trigger.
+
+### Action items for the next agent
+
+1. **[ASK]** Push to remote — yes/no?
+2. **[VERIFY]** Watch journal for next Anthropic 529 — `journalctl -u brain -f | grep -i anthropic` during normal use. Confirm retry visible.
+3. **[DO]** Draft v0.6.2 backup-only plan (D-18 + T-11b only). Original BACKLOG scope. Hotfix shape (~30 lines), not v0.6.1 shape (~340 lines).
+4. **[REMEMBER]** Pre-deploy checklist is silent prerequisites, not asked questions.
+5. **[REMEMBER]** Plan-length test BEFORE writing: "would v0.6.1 plan have this section?" If no, drop. Catches over-shape before re-write.
+6. **[REMEMBER]** Vec0 idiom for scoped KNN: `rowid IN (SELECT ... FROM chunks_rowid JOIN chunks WHERE c.X = ?)`. NOT `WHERE c.X = ?` in the inner ranking — vec0 ranks first then filters.
+
+### State snapshot
+
+- **Current phase / version:** v0.6.1.1 SHIPPED + verified live. v0.6.2 backup-only NEXT.
+- **Working tree:** clean except scratch (`Arun Claude Code Notes AI Brain.md`, `Attachments/`).
+- **Tags:** `v0.6.1` on `17e32e0` (pushed). `v0.6.1.1` on `790827e` (local, not pushed).
+- **5 unpushed commits on `main`:** `6725464`, `c613179`, `e4891e5`, `8c8ade2`, `790827e`.
+- **Hetzner state:** brain.service active. Code at `790827e`. DB unchanged 9 items / 82 chunks / 82 vec rows. Anthropic healthy at session-end.
+- **Tracker versions:** PROJECT_TRACKER v0.9.4, ROADMAP_TRACKER v0.9.5, BACKLOG v7.6 — all need bumping to reflect BUG-ANTHROPIC-OVERLOAD + BUG-RETRIEVE-ITEM resolved. Defer to next session.
+- **Open carry-overs to v0.6.2:** D-18 backup, T-11b legacy env drop (≥ 2026-05-26).
+- **Open carry-overs to v0.6.3:** BUG-ENRICH-UNREACHABLE-LOOP log hygiene, Mac better-sqlite3 ABI, CSP nonces, `tsx` removal.
