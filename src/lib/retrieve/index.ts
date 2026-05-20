@@ -78,46 +78,77 @@ export async function retrieve(
 
   if (topK <= 0) return [];
 
-  // vec0 requires the LIMIT directly on the MATCH — it can't see a LIMIT
-  // that sits on a joined outer query. So we do MATCH in a subquery with
-  // its own LIMIT, then join post-hoc and filter by itemId in JS.
-  //
-  // Over-fetch when itemId is set because the item filter is applied after
-  // the vec0 scan — if every top-k vec0 hit is outside the item, we'd
-  // return fewer than topK. 4× is enough slack for personal-library scale.
-  const scanLimit = opts.itemId ? topK * 4 : topK;
-
   // vec0 returns L2 distance (Euclidean). For unit-normalised vectors (which
   // nomic-embed-text and every reasonable embedding model emits):
   //   cosine_similarity = 1 - (L2²)/2
   // Range: [−1, 1] where 1 = identical, 0 = orthogonal, −1 = opposite.
   // For non-normalised inputs the conversion is approximate; callers should
   // treat similarity as a *relative* ranking signal, not an absolute metric.
-  const rows = db
-    .prepare(
-      `SELECT
-         c.id              AS chunk_id,
-         c.item_id         AS item_id,
-         i.title           AS item_title,
-         c.body            AS body,
-         (1 - (inner.distance * inner.distance) / 2) AS similarity
-       FROM (
-         SELECT rowid, distance
-         FROM chunks_vec
-         WHERE embedding MATCH ?
-         ORDER BY distance
-         LIMIT ?
-       ) AS inner
-       JOIN chunks_rowid r ON r.rowid   = inner.rowid
-       JOIN chunks c        ON c.id     = r.chunk_id
-       JOIN items  i        ON i.id     = c.item_id
-       ORDER BY inner.distance`,
-    )
-    .all(Buffer.from(vec.buffer), BigInt(scanLimit)) as RetrievedChunk[];
+  //
+  // vec0 requires the LIMIT directly on the MATCH — it can't see a LIMIT
+  // that sits on a joined outer query. So we do MATCH in a subquery with
+  // its own LIMIT, then join post-hoc.
+  //
+  // v0.6.1.1 T-6: when itemId is set, restrict the vec0 KNN to that item's
+  // rowids via `rowid IN (...)`. sqlite-vec applies the rowid filter before
+  // ranking, so the top-K is per-item rather than global. The previous
+  // approach ranked globally and filtered post-hoc, which dropped a 1-chunk
+  // item entirely whenever its single chunk missed the global top-K under
+  // generic queries. `idx_chunks_item_id` covers the rowid subquery.
+  const rows = opts.itemId
+    ? (db
+        .prepare(
+          `SELECT
+             c.id              AS chunk_id,
+             c.item_id         AS item_id,
+             i.title           AS item_title,
+             c.body            AS body,
+             (1 - (inner.distance * inner.distance) / 2) AS similarity
+           FROM (
+             SELECT rowid, distance
+             FROM chunks_vec
+             WHERE embedding MATCH ?
+               AND rowid IN (
+                 SELECT r.rowid
+                 FROM chunks_rowid r
+                 JOIN chunks c ON c.id = r.chunk_id
+                 WHERE c.item_id = ?
+               )
+             ORDER BY distance
+             LIMIT ?
+           ) AS inner
+           JOIN chunks_rowid r ON r.rowid = inner.rowid
+           JOIN chunks c        ON c.id    = r.chunk_id
+           JOIN items  i        ON i.id    = c.item_id
+           ORDER BY inner.distance`,
+        )
+        .all(
+          Buffer.from(vec.buffer),
+          opts.itemId,
+          BigInt(topK),
+        ) as RetrievedChunk[])
+    : (db
+        .prepare(
+          `SELECT
+             c.id              AS chunk_id,
+             c.item_id         AS item_id,
+             i.title           AS item_title,
+             c.body            AS body,
+             (1 - (inner.distance * inner.distance) / 2) AS similarity
+           FROM (
+             SELECT rowid, distance
+             FROM chunks_vec
+             WHERE embedding MATCH ?
+             ORDER BY distance
+             LIMIT ?
+           ) AS inner
+           JOIN chunks_rowid r ON r.rowid = inner.rowid
+           JOIN chunks c        ON c.id    = r.chunk_id
+           JOIN items  i        ON i.id    = c.item_id
+           ORDER BY inner.distance`,
+        )
+        .all(Buffer.from(vec.buffer), BigInt(topK)) as RetrievedChunk[]);
 
-  const scoped = opts.itemId
-    ? rows.filter((r) => r.item_id === opts.itemId)
-    : rows;
-  const filtered = scoped.filter((r) => r.similarity >= minSim);
+  const filtered = rows.filter((r) => r.similarity >= minSim);
   return filtered.slice(0, topK);
 }

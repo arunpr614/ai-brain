@@ -385,6 +385,154 @@ test("AnthropicProvider.submitBatch: posts mapped requests; pollBatch returns su
   }
 });
 
+// v0.6.1.1 T-1 — overload retry on /v1/messages.
+
+test("AnthropicProvider.generate: retries on 529 then succeeds", async () => {
+  let calls = 0;
+  const stub = await stubServer((_req, res) => {
+    calls++;
+    if (calls < 3) {
+      res.statusCode = 529;
+      res.setHeader("content-type", "application/json");
+      res.end(JSON.stringify({ error: { type: "overloaded_error" } }));
+      return;
+    }
+    res.setHeader("content-type", "application/json");
+    res.end(
+      JSON.stringify({
+        id: "msg_1",
+        type: "message",
+        role: "assistant",
+        model: "claude-haiku-4-5-20251001",
+        content: [{ type: "text", text: "ok" }],
+        stop_reason: "end_turn",
+        usage: { input_tokens: 1, output_tokens: 1 },
+      }),
+    );
+  });
+  try {
+    const p = new AnthropicProvider({ apiKey: "sk-test", baseURL: stub.baseURL });
+    const out = await p.generate({ prompt: "hi" });
+    assert.equal(out.response, "ok");
+    assert.equal(calls, 3);
+  } finally {
+    await stub.close();
+  }
+});
+
+test("AnthropicProvider.generate: exhausts retries on persistent 529 and surfaces 529 LLMError", async () => {
+  let calls = 0;
+  const stub = await stubServer((_req, res) => {
+    calls++;
+    res.statusCode = 529;
+    res.setHeader("content-type", "application/json");
+    res.end(JSON.stringify({ error: { type: "overloaded_error", message: "still down" } }));
+  });
+  try {
+    const p = new AnthropicProvider({ apiKey: "sk-test", baseURL: stub.baseURL });
+    await assert.rejects(
+      () => p.generate({ prompt: "hi" }),
+      (err) => {
+        assert.ok(err instanceof LLMError);
+        assert.equal((err as LLMError).code, "http");
+        assert.equal((err as LLMError).status, 529);
+        return true;
+      },
+    );
+    assert.equal(calls, 3, "should retry exactly twice (3 attempts total)");
+  } finally {
+    await stub.close();
+  }
+});
+
+test("AnthropicProvider.generate: does NOT retry on 400 / 401", async () => {
+  let calls = 0;
+  const stub = await stubServer((_req, res) => {
+    calls++;
+    res.statusCode = 401;
+    res.setHeader("content-type", "application/json");
+    res.end(JSON.stringify({ error: { type: "authentication_error", message: "bad key" } }));
+  });
+  try {
+    const p = new AnthropicProvider({ apiKey: "sk-test", baseURL: stub.baseURL });
+    await assert.rejects(
+      () => p.generate({ prompt: "hi" }),
+      (err) => {
+        assert.equal((err as LLMError).status, 401);
+        return true;
+      },
+    );
+    assert.equal(calls, 1, "non-retryable status must pass through on first attempt");
+  } finally {
+    await stub.close();
+  }
+});
+
+test("AnthropicProvider.generate: honors Retry-After header (delta-seconds, capped)", async () => {
+  let calls = 0;
+  const stub = await stubServer((_req, res) => {
+    calls++;
+    if (calls === 1) {
+      res.statusCode = 529;
+      res.setHeader("retry-after", "0"); // immediate retry
+      res.setHeader("content-type", "application/json");
+      res.end(JSON.stringify({ error: { type: "overloaded_error" } }));
+      return;
+    }
+    res.setHeader("content-type", "application/json");
+    res.end(
+      JSON.stringify({
+        id: "msg_2",
+        type: "message",
+        role: "assistant",
+        model: "claude-haiku-4-5-20251001",
+        content: [{ type: "text", text: "ok" }],
+        stop_reason: "end_turn",
+        usage: { input_tokens: 1, output_tokens: 1 },
+      }),
+    );
+  });
+  try {
+    const t0 = Date.now();
+    const p = new AnthropicProvider({ apiKey: "sk-test", baseURL: stub.baseURL });
+    const out = await p.generate({ prompt: "hi" });
+    const elapsed = Date.now() - t0;
+    assert.equal(out.response, "ok");
+    assert.equal(calls, 2);
+    assert.ok(
+      elapsed < 400,
+      `Retry-After: 0 should bypass default 500ms backoff; elapsed=${elapsed}ms`,
+    );
+  } finally {
+    await stub.close();
+  }
+});
+
+test("AnthropicProvider.generate: AbortSignal aborts mid-backoff", async () => {
+  let calls = 0;
+  const stub = await stubServer((_req, res) => {
+    calls++;
+    res.statusCode = 529;
+    res.setHeader("content-type", "application/json");
+    res.end(JSON.stringify({ error: { type: "overloaded_error" } }));
+  });
+  try {
+    const p = new AnthropicProvider({ apiKey: "sk-test", baseURL: stub.baseURL });
+    const ac = new AbortController();
+    setTimeout(() => ac.abort(), 50);
+    await assert.rejects(
+      () => p.generate({ prompt: "hi", signal: ac.signal }),
+      (err) => {
+        assert.ok(err instanceof LLMError);
+        return true;
+      },
+    );
+    assert.ok(calls <= 2, `aborted before exhausting retries; calls=${calls}`);
+  } finally {
+    await stub.close();
+  }
+});
+
 test("AnthropicProvider.pollBatch: returns null results while processing", async () => {
   const stub = await stubServer((req, res) => {
     if (req.method === "GET" && req.url.endsWith("/v1/messages/batches/batch_pending")) {

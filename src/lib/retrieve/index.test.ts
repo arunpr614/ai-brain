@@ -138,3 +138,44 @@ test("topK over MAX is silently capped", async () => {
   assert.ok(hits.length >= 1);
   assert.ok(hits.length <= 50, "MAX_TOP_K cap");
 });
+
+// v0.6.1.1 T-6 — item-scoped retrieve must rank within the item, not globally.
+test("itemId scope returns the item's chunks even when none would rank globally", async () => {
+  // Seed many items dominated by one shared vocabulary so a 1-chunk item
+  // with off-vocabulary content would never make a global top-K under a
+  // generic-phrasing query.
+  for (let i = 0; i < 12; i++) {
+    const it = insertCaptured({
+      source_type: "note",
+      title: `Generic note ${i}`,
+      body: "growth product user retention engagement strategy",
+    });
+    await embedItem(it.id, {
+      embedFn: hashedEmbed,
+      chunkOpts: { minTokens: 1, maxTokens: 200 },
+    });
+  }
+
+  const onechunk = insertCaptured({
+    source_type: "note",
+    title: "Solo niche note",
+    body: "ornithology raptor falcon plumage",
+  });
+  await embedItem(onechunk.id, {
+    embedFn: hashedEmbed,
+    chunkOpts: { minTokens: 1, maxTokens: 200 },
+  });
+
+  // Generic query that matches the corpus, NOT the niche item — without
+  // T-6, the niche item's single chunk loses the global ranking and the
+  // post-hoc filter returns 0.
+  const hits = await retrieve("growth strategy", {
+    embedFn: hashedEmbed,
+    itemId: onechunk.id,
+    topK: 5,
+  });
+  assert.ok(hits.length >= 1, "must return the scoped item's chunk(s)");
+  for (const h of hits) {
+    assert.equal(h.item_id, onechunk.id);
+  }
+});

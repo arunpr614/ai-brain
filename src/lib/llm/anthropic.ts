@@ -35,6 +35,14 @@ const DEFAULT_MODEL = process.env.LLM_ENRICH_MODEL ?? "claude-haiku-4-5-20251001
 const DEFAULT_MAX_TOKENS = 1200;
 const ANTHROPIC_VERSION = "2023-06-01";
 
+// v0.6.1.1 T-1: retry overload responses on the single-request paths
+// (generate / generateStream). Anthropic intermittently 529s under load;
+// without retry, the Ask UI hangs. Budget: 3 attempts, ~2s total backoff,
+// honor Retry-After up to a 3s ceiling. Caller AbortSignal aborts mid-backoff.
+const RETRYABLE_STATUS: ReadonlySet<number> = new Set([429, 503, 529]);
+const RETRY_BACKOFF_MS: readonly number[] = [500, 1500];
+const RETRY_AFTER_CEILING_MS = 3000;
+
 interface AnthropicProviderOptions {
   apiKey?: string;
   /** Default model when GenerateOptions.model is unset. */
@@ -152,20 +160,110 @@ export class AnthropicProvider implements LLMProvider {
     return body;
   }
 
+  /**
+   * v0.6.1.1 T-1: fetch wrapper that retries on overload-class responses
+   * (429/503/529) and on fetch-throwing connection errors. Honors
+   * Retry-After (delta-seconds or HTTP-date), capped at RETRY_AFTER_CEILING_MS.
+   * Aborts immediately on caller AbortSignal — both during the fetch itself
+   * and during the inter-attempt delay. Used by generate + generateStream;
+   * batch endpoints intentionally do not retry here.
+   */
+  private async fetchWithOverloadRetry(
+    url: string,
+    init: RequestInit,
+    pathLabel: string,
+  ): Promise<Response> {
+    const signal = init.signal as AbortSignal | undefined;
+    const maxAttempts = RETRY_BACKOFF_MS.length + 1;
+    let lastErr: unknown;
+
+    for (let attempt = 0; attempt < maxAttempts; attempt++) {
+      if (signal?.aborted) {
+        throw wrapFetchError(
+          new DOMException("aborted", "AbortError"),
+          this.baseURL,
+          pathLabel,
+        );
+      }
+
+      let res: Response | undefined;
+      try {
+        res = await fetch(url, init);
+      } catch (err) {
+        lastErr = err;
+        const e = err as Error | undefined;
+        // Abort by caller — never retry.
+        if (e?.name === "AbortError") {
+          throw wrapFetchError(err, this.baseURL, pathLabel);
+        }
+        if (attempt === maxAttempts - 1) {
+          throw wrapFetchError(err, this.baseURL, pathLabel);
+        }
+        try {
+          await this.sleepWithAbort(RETRY_BACKOFF_MS[attempt], signal);
+        } catch (sleepErr) {
+          throw wrapFetchError(sleepErr, this.baseURL, pathLabel);
+        }
+        continue;
+      }
+
+      if (!RETRYABLE_STATUS.has(res.status) || attempt === maxAttempts - 1) {
+        return res;
+      }
+
+      // Drain body so the connection can be reused; ignore errors.
+      await res.text().catch(() => "");
+      const retryAfterMs = parseRetryAfter(res.headers.get("retry-after"));
+      const delay =
+        retryAfterMs !== null
+          ? Math.min(retryAfterMs, RETRY_AFTER_CEILING_MS)
+          : RETRY_BACKOFF_MS[attempt];
+      try {
+        await this.sleepWithAbort(delay, signal);
+      } catch (err) {
+        throw wrapFetchError(err, this.baseURL, pathLabel);
+      }
+    }
+
+    // Unreachable — loop either returns or throws on the last attempt.
+    throw wrapFetchError(lastErr ?? new Error("retry loop exited"), this.baseURL, pathLabel);
+  }
+
+  private sleepWithAbort(ms: number, signal: AbortSignal | undefined): Promise<void> {
+    if (ms <= 0) return Promise.resolve();
+    return new Promise((resolve, reject) => {
+      const t = setTimeout(() => {
+        signal?.removeEventListener("abort", onAbort);
+        resolve();
+      }, ms);
+      const onAbort = () => {
+        clearTimeout(t);
+        reject(new DOMException("aborted", "AbortError"));
+      };
+      if (signal) {
+        if (signal.aborted) {
+          clearTimeout(t);
+          reject(new DOMException("aborted", "AbortError"));
+          return;
+        }
+        signal.addEventListener("abort", onAbort, { once: true });
+      }
+    });
+  }
+
   async generate(opts: GenerateOptions): Promise<GenerateResult> {
     const body = this.buildMessageBody(opts, { stream: false });
     const t0 = Date.now();
-    let res: Response;
-    try {
-      res = await fetch(`${this.baseURL}/v1/messages`, {
+    const res = await this.fetchWithOverloadRetry(
+      `${this.baseURL}/v1/messages`,
+      {
         method: "POST",
         headers: this.headers(),
         body: JSON.stringify(body),
         signal: opts.signal,
-      });
-    } catch (err) {
-      throw wrapFetchError(err, this.baseURL, "/v1/messages");
-    }
+      },
+      "/v1/messages",
+    );
     const wall_ms = Date.now() - t0;
 
     if (!res.ok) {
@@ -195,17 +293,16 @@ export class AnthropicProvider implements LLMProvider {
     let inputTokens = 0;
     let outputTokens = 0;
 
-    let res: Response;
-    try {
-      res = await fetch(`${this.baseURL}/v1/messages`, {
+    const res = await this.fetchWithOverloadRetry(
+      `${this.baseURL}/v1/messages`,
+      {
         method: "POST",
         headers: this.headers(),
         body: JSON.stringify(body),
         signal: opts.signal,
-      });
-    } catch (err) {
-      throw wrapFetchError(err, this.baseURL, "/v1/messages (stream)");
-    }
+      },
+      "/v1/messages (stream)",
+    );
 
     if (!res.ok) {
       const text = await res.text().catch(() => "");
@@ -496,6 +593,24 @@ function stripJsonFence(s: string): string {
   const trimmed = s.trim();
   const fence = trimmed.match(/^```(?:json)?\s*([\s\S]*?)\s*```$/);
   return fence ? fence[1] : trimmed;
+}
+
+/**
+ * Parse HTTP Retry-After header. Accepts delta-seconds ("3") or HTTP-date.
+ * Returns delay in ms, or null if header is absent/unparseable/in the past.
+ */
+function parseRetryAfter(header: string | null): number | null {
+  if (!header) return null;
+  const trimmed = header.trim();
+  if (!trimmed) return null;
+  if (/^\d+(\.\d+)?$/.test(trimmed)) {
+    const seconds = Number(trimmed);
+    return Number.isFinite(seconds) && seconds >= 0 ? seconds * 1000 : null;
+  }
+  const date = Date.parse(trimmed);
+  if (Number.isNaN(date)) return null;
+  const delta = date - Date.now();
+  return delta > 0 ? delta : 0;
 }
 
 function wrapFetchError(err: unknown, base: string, path: string): LLMError {
