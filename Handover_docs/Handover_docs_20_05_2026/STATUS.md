@@ -1,5 +1,9 @@
 # STATUS — 2026-05-20 end of session
 
+> **⚠ SUPERSEDED 2026-05-21** — v0.6.1.1 hotfix shipped (commit `790827e`, tag `v0.6.1.1`). BUG-ANTHROPIC-OVERLOAD + BUG-RETRIEVE-ITEM resolved + verified live on Hetzner. The phase-shape question in §3 is **answered** (split chosen, hotfix executed). v0.6.2 is now backup-only (D-18 + T-11b). v0.6.3 is hygiene tail.
+>
+> Authoritative state: `RUNNING_LOG.md` entry #54 + `PROJECT_TRACKER.md` v0.9.5 + `ROADMAP_TRACKER.md` v0.9.6 + `BACKLOG.md` v7.7. The contents below remain for historical context only.
+
 | Field | Value |
 |-------|-------|
 | **Version** | v6 |

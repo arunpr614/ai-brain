@@ -1,7 +1,7 @@
 # AI Brain — Project Tracker
 
-**Document version:** v0.9.4-tracker
-**Date:** 2026-05-20
+**Document version:** v0.9.5-tracker
+**Date:** 2026-05-21
 **Owner:** Arun
 **Update cadence:** at phase start, at phase end, and whenever a blocker appears.
 
@@ -26,7 +26,8 @@ Legend: `○` not started · `◐` in progress · `●` complete · `✖` blocke
 | v0.5.1 YouTube capture | 0.5.1 | ● | 2026-05-11 | 2026-05-12 | **SHIPPED.** Server-side YouTube transcript capture via InnerTube POST + inline XML parser (zero new deps). One new file + one migration; extension/APK untouched — both get YouTube support for free. Body stays pure transcript; enrichment gets channel+duration via composed title. 260 tests (233 → 260, +27); 4 smoke suites; opt-in `smoke:youtube` live-network check. Tag `v0.5.1` on `main`. |
 | v0.6.0 Mac→Hetzner cutover | 0.6.0 | ● | 2026-05-15 | 2026-05-19 | **SHIPPED 2026-05-19.** D-12 + D-13 + D-14 complete: Hetzner brain.service live (8 items, 81 chunks, 81 vec rows), CNAME flipped to Hetzner tunnel UUID, Mac brain stopped. Two commits: `6c03093` (gemini.ts serial-loop) + `1413f9b` (cutover.sh WAL fix). User-side D-15..D-18 validation pending. |
 | v0.6.1 Cloud-cleanup | 0.6.1 | ● | 2026-05-19 | 2026-05-19 | **SHIPPED 2026-05-19, validated 2026-05-20.** All 20 tasks (T-1..T-20) landed across 6 commits (`5a0f2f1` → `17e32e0`); tag `v0.6.1` on `17e32e0`. User-side validation 2026-05-20: D-15 PASS (APK share), D-16 PASS (cloud Ask), D-17 PASS (overnight batch cron), T-2 PASS (Secure cookie after fresh re-issue). RUNNING_LOG entries #45–#51. |
-| v0.6.2 Off-site backup + retrieval fixes | 0.6.2 | ○ | — | — | **NEXT ACTIVE.** Wires `sqlite3 .backup → gzip → gpg → rclone to B2`. D-18 carry-over from v0.6.0. Also includes Phase 11b (drop `BRAIN_LAN_TOKEN` fallback) and three bugs surfaced post-v0.6.1: BUG-ANTHROPIC-OVERLOAD (P1, retry-on-529), BUG-RETRIEVE-ITEM (confirmed 2026-05-20: 1-chunk items + generic queries return 0 chunks), BUG-ENRICH-UNREACHABLE-LOOP (root cause = same 529, partially fixed by P1). Plan not yet drafted. |
+| v0.6.1.1 Hotfix (Anthropic 529 retry + retrieve scope) | 0.6.2-hotfix.1 | ● | 2026-05-21 | 2026-05-21 | **SHIPPED 2026-05-21.** Tag `v0.6.1.1` on commit `790827e`. Deployed to Hetzner 23:26 IST 2026-05-20. T-1 (Anthropic retry) + T-6 (retrieve item-scope KNN). Verified live: 14/14 anthropic tests, 9/9 retrieve tests on Hetzner; 1-chunk repro returns 1 chunk for 3 generic queries (was 0). RUNNING_LOG entry #54. Plan: [`docs/plans/v0.6.1.1-hotfix.md`](./docs/plans/v0.6.1.1-hotfix.md). |
+| v0.6.2 Off-site backup | 0.6.2 | ○ | — | — | **NEXT ACTIVE.** Wires `sqlite3 .backup → gzip → gpg → rclone to B2`. D-18 carry-over from v0.6.0. Also includes Phase 11b (drop `BRAIN_LAN_TOKEN` fallback, gated ≥ 2026-05-26 for one-week soak). Anthropic + retrieve bugs already shipped in v0.6.1.1. Plan not yet drafted. |
 | v0.6.x Augmented Browsing | 0.6.x | ○ | — | — | Plan: [`docs/plans/v0.6.x-augmented-browsing.md`](./docs/plans/v0.6.x-augmented-browsing.md) v2.0 (AUG-1..7, ~5 commits). Desktop Chrome only, paused since 2026-05-15 lane collapse. Sequencing TBD — currently unscheduled. |
 | v0.6.x Knowledge Graph View | 0.6.x | ○ | — | — | Plan: [`docs/plans/v0.6.x-graph-view.md`](./docs/plans/v0.6.x-graph-view.md) v2.1 (GRAPH-1..10, sigma.js + graphology). Desktop only. Paused since 2026-05-15 lane collapse. Sequencing TBD. |
 | v0.6.x Library-Offline-from-DB | 0.6.x | ○ | — | — | Plan: [`docs/plans/v0.6.x-library-offline-from-db.md`](./docs/plans/v0.6.x-library-offline-from-db.md) DRAFT (LIBOFF-1..12). Replicates library to IndexedDB for full APK offline reads. Companion to v0.5.5 outbox writes (already shipped). Sequencing TBD. |
@@ -68,15 +69,25 @@ Legend: `○` not started · `◐` in progress · `●` complete · `✖` blocke
 | D-17 overnight batch cron | ● PASS | RUNNING_LOG #49 — `[batch-cron] submit tick: nothing to submit` 19:30 UTC |
 | T-2 Secure cookie | ● PASS | RUNNING_LOG #51 — Secure ✓ HttpOnly ✓ SameSite Lax (after fresh re-issue) |
 
-### v0.6.2 — Backup hardening + retrieval fixes (NEXT ACTIVE; plan not yet drafted)
+### v0.6.1.1 — Hotfix SHIPPED 2026-05-21
 
-Carry-overs and post-v0.6.1 findings to be planned together:
+Tag `v0.6.1.1` on commit `790827e`. Plan: [`docs/plans/v0.6.1.1-hotfix.md`](./docs/plans/v0.6.1.1-hotfix.md). RUNNING_LOG entry #54.
+
+| Task | Status | Commit | Notes |
+|------|--------|--------|-------|
+| T-1 Anthropic 529 retry | ● | `790827e` | `fetchWithOverloadRetry()` in `src/lib/llm/anthropic.ts`. Retries on 429/503/529 + connection errors. 3 attempts, 500ms+1500ms backoff, Retry-After honored (cap 3s), AbortSignal aborts mid-backoff. 5 unit tests, 14/14 pass on Hetzner. |
+| T-6 Retrieve item-scope KNN | ● | `790827e` | `rowid IN (SELECT … FROM chunks_rowid JOIN chunks WHERE c.item_id = ?)` pre-filters vec0 KNN. `idx_chunks_item_id` covers subquery. Live spike: 1-chunk item `5e755dab` returns 1 chunk for 3 generic queries (was 0); un-scoped path preserved. |
+| T-R Release | ● | `790827e` | Version `0.6.2-hotfix.1` (semver-valid pre-release). Deployed to Hetzner 23:26 IST 2026-05-20. `/api/health` 200. DB unchanged 9 items / 82 chunks. |
+
+### v0.6.2 — Off-site backup (NEXT ACTIVE; plan not yet drafted)
+
+Carry-overs to be planned:
 
 - **D-18** B2 off-site backup wiring (sqlite3 .backup → gzip → gpg → rclone)
 - **T-11b** drop legacy `BRAIN_LAN_TOKEN` fallback (≥2026-05-26 after one-week soak)
-- **BUG-ANTHROPIC-OVERLOAD** (P1) — retry-on-529 in `src/lib/llm/anthropic.ts:174,210` with exponential backoff
-- **BUG-RETRIEVE-ITEM** — confirmed 2026-05-20 (RUNNING_LOG #52): 1-chunk items + generic queries return 0 chunks. Fix: push `c.item_id = ?` into JOIN at `src/lib/retrieve/index.ts:99-114`, drop `topK*4` scanLimit
-- **BUG-ENRICH-UNREACHABLE-LOOP** — partially closed by BUG-ANTHROPIC-OVERLOAD; remaining work is fixing the misleading log message + idle-path log spam
+- ~~BUG-ANTHROPIC-OVERLOAD~~ — RESOLVED in v0.6.1.1 (`790827e`)
+- ~~BUG-RETRIEVE-ITEM~~ — RESOLVED in v0.6.1.1 (`790827e`)
+- **BUG-ENRICH-UNREACHABLE-LOOP** — mostly absorbed by v0.6.1.1 Anthropic retry. Remaining cosmetic log-message hygiene → **deferred to v0.6.3.**
 
 Out of scope here (deferred): CSP nonces (v0.6.3), per-device tokens (TBD), `tsx` removal (v0.6.3), Mac better-sqlite3 ABI mismatch (v0.6.3).
 
