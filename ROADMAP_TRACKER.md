@@ -1,8 +1,9 @@
 # AI Brain — Roadmap Tracker
 
-**Document version:** v0.9.3-roadmap
+**Document version:** v0.9.4-roadmap
 **Date:** 2026-05-19
 **Changelog:**
+- **v0.9.4-roadmap (2026-05-19)** — Inserted new **v0.7.0 Structured Calm Green** visual-refresh phase between v0.6.2 (Off-site backup) and the original v0.7.0 GenLink slot. The original GenLink lane has been renumbered to **v0.7.5**. New phase covers 25 tasks (G-1..G-4 gates + T-1..T-25 execution) adopting the alternative emerald-green / Newsreader / Inter palette specified in [`DESIGN_STRUCTURED_CALM_GREEN.md`](./DESIGN_STRUCTURED_CALM_GREEN.md) (made adoption-ready 2026-05-19). Adoption is **values-only**: variable names in `src/styles/tokens.css` are preserved per the spec's §9.0 Radix-style→M3-style mapping, so no component refactor is needed. Plan: [`docs/plans/v0.7.0-structured-calm-green.md`](./docs/plans/v0.7.0-structured-calm-green.md). Explicit out-of-scope: tertiary-rose wiring (deferred to v0.8.0 SRS), self-hosted Newsreader (deferred to v1.0.0). Hard gates before any code: contrast pass green (already done in spec §2.3), dark-theme finalisation, token-map drift check, tertiary policy decision. **Risk: HIGH** for a mid-roadmap visual swap — this phase ships in its own window, NOT bundled with v0.6.2 or any feature work.
 - **v0.9.3-roadmap (2026-05-19)** — Inserted new **v0.6.1 Cloud-Cleanup** patch-tier phase after the Mac→Hetzner cutover (v0.6.0) shipped. Phase covers 20 tasks (T-1..T-20) addressing legacy LAN/Mac strings, three security-hygiene gaps (Secure cookie flag, security headers, bearer-rejection IP logging), and the false privacy claim at first-run setup. Source: legacy-feature-audit v1 + v2 (`.planning/legacy-feature-audit.md`, `.planning/legacy-feature-audit-v2.md` revision v2.1). Plan: [`docs/plans/v0.6.1-cloud-cleanup.md`](./docs/plans/v0.6.1-cloud-cleanup.md). Explicitly out-of-scope (queued for v0.6.2/v0.6.3): CSP nonces, B2 off-site backup, per-device tokens, rate-limit raise. T-1 is the "do this week" pick — replace the false privacy claim at `src/app/setup/page.tsx:25`.
 - **v0.9.2-roadmap** — Inserted new **v0.6.x** patch-tier phase for Augmented Browsing (AUG-1..10) + Knowledge Graph View (GRAPH-1..8), both desktop-only by design (APK + viewport guard). Promoted from v0.10.0: `EXP-1` (edges table) → `GRAPH-1`; `EXP-2` (graph viz) → `GRAPH-5..8`. Both struck through at their original locations with forwarding pointers. Detailed plans at `docs/plans/v0.6.x-augmented-browsing.md` and `docs/plans/v0.6.x-graph-view.md`. Source motivation: 2026-05-12 Recall.it v2 audit (`docs/research/recall-feature-audit-v2-2026-05-12.md`, 217 rows) surfaced 36 graph capabilities + 13 augmented-browsing capabilities as competitive gaps where Brain had only thin placeholders.
 - **v0.9.1-roadmap** — v0.5.1 **SHIPPED 2026-05-12**: YouTube video capture. Four-stage plan (research → Stage 4 review → self-critique → plan v1.2). 9 atomic T-YT-* commits. Key design choices: (1) server-side only — extension + APK unchanged, both get YouTube for free via `/api/capture/url`; (2) zero new npm deps — inline InnerTube POST + `<timedtext format="3">` XML parser using `jsdom` already in the project; (3) body stays pure transcript so retrieval chunks are clean, enrichment gets channel + duration via composed title at the LLM-call site; (4) 2h segment cap with honest `transcript_truncated_2h` warning; (5) YouTube icon + human warning labels in Library. Live-smoke `npm run smoke:youtube` passes against `jNQXAC9IVRw` + `dQw4w9WgXcQ`. 260 tests (233 → 260, +27); 4 smoke suites. Tag `v0.5.1` on `main`.
@@ -46,10 +47,11 @@ Companion docs:
 | v0.6.1 | Cloud-cleanup | Legacy LAN/Mac strings + 3 security-hygiene gaps + false privacy claim — 20 tasks | 0.5 | 9.0 |
 | v0.6.2 | Off-site backup (B2) | sqlite3 .backup → gzip → gpg → rclone to B2; gpg-key escrow | 0.5 | 9.5 |
 | _Note:_ original "v0.6.0 GenPage" slot is now blocked by post-cutover hardening; sequencing for GenPage will be re-decided after v0.6.2. | | | | |
-| v0.7.0 | GenLink | Clickable-word AI sub-pages | 1.0 | 10.0 |
-| v0.8.0 | Review (SRS) | FSRS queue + daily review + streak | 1.0 | 11.0 |
-| v0.9.0 | Flow + proactive | Multi-step journeys + home-page suggestions | 2.0 | 13.0 |
-| v0.10.0 | Breadth + graph + Obsidian | YouTube/EPUB/DOCX + graph + Obsidian sync | 2.0 | 15.0 |
+| v0.7.0 | Structured Calm Green visual refresh | Adopt emerald/Newsreader/Inter palette; values-only `tokens.css` swap; 25 tasks (4 gates + 21 exec) | 1.0 | 10.5 |
+| v0.7.5 | GenLink _(was v0.7.0)_ | Clickable-word AI sub-pages | 1.0 | 11.5 |
+| v0.8.0 | Review (SRS) | FSRS queue + daily review + streak | 1.0 | 12.5 |
+| v0.9.0 | Flow + proactive | Multi-step journeys + home-page suggestions | 2.0 | 14.5 |
+| v0.10.0 | Breadth + graph + Obsidian | YouTube/EPUB/DOCX + graph + Obsidian sync | 2.0 | 16.5 |
 | v1.0.0 | Solid-product gate | Decision point: hosting yes/no | — | — |
 
 ---
@@ -284,12 +286,44 @@ Promoted from v0.10.0 (`EXP-1` + `EXP-2`) after 2026-05-12 Recall.it v2 audit su
 
 **Exit:** `product-led growth` → GenPage with 4 sections + 12 citations in ≤2 min. Auto-clusters group items sensibly.
 
-### v0.7.0 — GenLink
+### v0.7.0 — Structured Calm Green visual refresh *(adoption of alternative design spec)*
+
+Plan: [`docs/plans/v0.7.0-structured-calm-green.md`](./docs/plans/v0.7.0-structured-calm-green.md). Spec: [`DESIGN_STRUCTURED_CALM_GREEN.md`](./DESIGN_STRUCTURED_CALM_GREEN.md) (made adoption-ready 2026-05-19). 25 tasks total (4 hard gates + 21 execution).
+
+| ID | Item | Status | Notes |
+|---|---|---|---|
+| G-1 | Re-confirm spec §0 gate (a) light contrast | planned | Read-only verification |
+| G-2 | Drift-check `tokens.css` against spec §9.0 mapping | planned | New tokens since 2026-05-19 need M3 roles |
+| G-3 | Resolve tertiary (rose) policy with user | planned | AskUserQuestion |
+| G-4 | Decide replacement vs co-existence with `DESIGN.md` | planned | AskUserQuestion |
+| T-1 | BEFORE screenshots — 9 pages × 2 themes | planned | Commit to `docs/plans/v0.7.0-structured-calm-green/before-screenshots/` |
+| T-2 | Edit `tokens.css` light-theme values per spec §9.0 | planned | Variable names preserved |
+| T-3 | Add 6 new M3-only tokens (surface-container-high/highest/lowest, inverse-*) | planned | Pure additions |
+| T-4 | Add Newsreader to `src/app/layout.tsx` via `next/font/google` | planned | Wire to `--font-article` |
+| T-5 | Finalise dark-theme palette (gate (b)) | planned | Replaces spec §2.2 DRAFT table |
+| T-6 | Dark-theme contrast pass (extends spec §2.3) | planned | All AA ✓ for normal text |
+| T-7 | Wire dark values into `[data-theme="dark"]` block | planned | |
+| T-8 | Grep hardcoded color literals in `src/` | planned | Should be near-zero hits |
+| T-9 | Grep hardcoded font-family literals in `src/` | planned | |
+| T-10 | Fix any drift surfaced by T-8/T-9 | planned | |
+| T-11..T-19 | Visual sweep across 9 pages | planned | One task per page; AFTER screenshots |
+| T-20 | Keyboard focus pass (2px green outline) | planned | Spec §5.3 non-negotiable |
+| T-21 | Reduced-motion verification | planned | |
+| T-22 | Axe accessibility scan (zero serious/critical) | planned | |
+| T-23 | Update design-doc cross-references | planned | Per G-4 outcome |
+| T-24 | Archive `DESIGN.md` + `DESIGN_SYSTEM.md` (if G-4=replace) | planned | `git mv` to `docs/archive/` |
+| T-25 | Smoke + version bump → 0.7.0 + tag | planned | Standard release wave |
+
+**Out of scope:** tertiary-rose component wiring (→ v0.8.0 SRS); self-hosted Newsreader (→ v1.0.0); citation-chip expansion animation (→ v0.7.x or v0.8.x).
+
+**Exit:** spec status flips `PROPOSED` → `ADOPTED`; `tokens.css` light + dark reflect spec; Newsreader loads on `/items/[id]` headlines; 9 sweep pages × 2 themes pass visual + a11y; tag `v0.7.0` on `main`.
+
+### v0.7.5 — GenLink _(was v0.7.0; renumbered after v0.7.0 visual-refresh inserted)_
 
 | ID | Item | Status | Notes |
 |---|---|---|---|
 | GEN-2 | Noun-phrase extraction per GenPage (cached) | planned | |
-| F-023 | `<GenLink>` component + side-card panel | planned | Per `DESIGN_SYSTEM.md` §8.5 |
+| F-023 | `<GenLink>` component + side-card panel | planned | Per `DESIGN_SYSTEM.md` §8.5 (or its successor) |
 | F-024 | Sub-page generator (retrieve from library; LLM fallback) | planned | |
 | F-025 | Panel cache by `(genpage_id, phrase)` | planned | |
 | F-026 | Recursive GenLinks (breadcrumb stack) | planned | |

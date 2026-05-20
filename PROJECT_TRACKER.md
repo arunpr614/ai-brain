@@ -1,6 +1,6 @@
 # AI Brain — Project Tracker
 
-**Document version:** v0.9.2-tracker
+**Document version:** v0.9.3-tracker
 **Date:** 2026-05-19
 **Owner:** Arun
 **Update cadence:** at phase start, at phase end, and whenever a blocker appears.
@@ -28,7 +28,8 @@ Legend: `○` not started · `◐` in progress · `●` complete · `✖` blocke
 | v0.6.1 Cloud-cleanup | 0.6.1 | ◐ | 2026-05-19 | — | **PLAN APPROVED, IN PROGRESS.** 20 tasks (T-1..T-20) addressing legacy LAN/Mac strings, 3 security-hygiene gaps (Secure cookie, security headers, IP logging), false privacy claim at first-run setup. T-1 is "do this week" pick. Plan: [`docs/plans/v0.6.1-cloud-cleanup.md`](./docs/plans/v0.6.1-cloud-cleanup.md). Source audits at `.planning/legacy-feature-audit{,-v2}.md`. |
 | v0.6.2 Off-site backup | 0.6.2 | ○ | — | — | Wires `sqlite3 .backup → gzip → gpg → rclone to B2`. D-18 carry-over from v0.6.0. Also includes Phase 11b (drop `BRAIN_LAN_TOKEN` fallback after v0.6.1 soak). |
 | v0.6.5 GenPage + clusters | 0.6.5 | ○ | — | — | _Renamed from v0.6.0 after cutover took the v0.6.0 slot._ Blocked by R-CLUSTER |
-| v0.7.0 GenLink | 0.7.0 | ○ | — | — | — |
+| v0.7.0 Structured Calm Green visual refresh | 0.7.0 | ○ | — | — | **NEW** — Adopt alternative design spec (`DESIGN_STRUCTURED_CALM_GREEN.md`, made adoption-ready 2026-05-19). 25 tasks (G-1..G-4 gates + T-1..T-25). Values-only `tokens.css` swap — variable names preserved per spec §9.0 mapping. Plan: [`docs/plans/v0.7.0-structured-calm-green.md`](./docs/plans/v0.7.0-structured-calm-green.md). |
+| v0.7.5 GenLink _(was v0.7.0)_ | 0.7.5 | ○ | — | — | Renumbered after v0.7.0 visual-refresh inserted |
 | v0.8.0 Review (SRS) | 0.8.0 | ○ | — | — | Blocked by R-FSRS |
 | v0.9.0 Flow + proactive | 0.9.0 | ○ | — | — | — |
 | v0.10.0 Breadth + graph + Obsidian | 0.10.0 | ○ | — | — | Blocked by R-YT, R-WHISPER |
