@@ -9,9 +9,23 @@
  *
  * Backups live at data/backups/YYYY-MM-DD_HHMM.sqlite and are pruned
  * to the newest N after each run.
+ *
+ * v0.6.2 (D-18): after each local snapshot, encrypt with gpg and upload
+ * to Backblaze B2 (`B2_BUCKET`). Best-effort, fire-and-forget — failures
+ * are logged but do not affect the local rotation. Disabled silently if
+ * any of B2_KEY_ID / B2_APP_KEY / B2_BUCKET / BACKUP_GPG_RECIPIENT is
+ * missing.
  */
-import { existsSync, mkdirSync, readdirSync, rmSync, statSync } from "node:fs";
-import { join, resolve } from "node:path";
+import {
+  existsSync,
+  mkdirSync,
+  readdirSync,
+  readFileSync,
+  rmSync,
+  statSync,
+} from "node:fs";
+import { execFileSync } from "node:child_process";
+import { basename, join, resolve } from "node:path";
 import { getDb } from "@/db/client";
 import { getJsonSetting, setJsonSetting } from "@/db/settings";
 
@@ -48,6 +62,13 @@ export function runBackupOnce(): string {
   // VACUUM INTO emits a consistent point-in-time copy. Path is single-quoted.
   db.exec(`VACUUM INTO '${dest.replace(/'/g, "''")}'`);
   pruneOldBackups();
+  // Off-site upload is best-effort and fire-and-forget. The local snapshot
+  // is the authoritative backup; off-site is durability insurance only.
+  void uploadOffsite(dest).catch((err) => {
+    console.error(
+      `[backup] off-site upload failed: ${(err as Error).message}`,
+    );
+  });
   return dest;
 }
 
@@ -112,4 +133,109 @@ export function startBackupScheduler(): void {
 
   // Allow clean process exit in dev when Next.js hot-reloads.
   timer.unref?.();
+}
+
+// ---------------------------------------------------------------------------
+// Off-site backup (D-18)
+//
+// `uploadOffsite()` is exported so tests can drive it directly with
+// injected gpg + B2 stubs. The default encrypt + uploader call out to
+// real `gpg` and the `backblaze-b2` SDK respectively.
+// ---------------------------------------------------------------------------
+
+export interface OffsiteUploader {
+  upload(params: {
+    keyId: string;
+    appKey: string;
+    bucket: string;
+    fileName: string;
+    data: Buffer;
+  }): Promise<void>;
+}
+
+export interface OffsiteDeps {
+  encrypt: (src: string, recipient: string) => string;
+  uploader: OffsiteUploader;
+}
+
+const defaultEncrypt = (src: string, recipient: string): string => {
+  const out = `${src}.gpg`;
+  execFileSync(
+    "gpg",
+    [
+      "--batch",
+      "--yes",
+      "--encrypt",
+      "--recipient",
+      recipient,
+      "--output",
+      out,
+      src,
+    ],
+    { stdio: "pipe" },
+  );
+  return out;
+};
+
+const defaultUploader: OffsiteUploader = {
+  async upload({ keyId, appKey, bucket, fileName, data }) {
+    const { default: B2 } = await import("backblaze-b2");
+    const client = new B2({ applicationKeyId: keyId, applicationKey: appKey });
+    await client.authorize();
+    const buckets = await client.listBuckets();
+    const target = buckets.data.buckets.find((b) => b.bucketName === bucket);
+    if (!target) throw new Error(`bucket "${bucket}" not found`);
+    const up = await client.getUploadUrl({ bucketId: target.bucketId });
+    await client.uploadFile({
+      uploadUrl: up.data.uploadUrl,
+      uploadAuthToken: up.data.authorizationToken,
+      fileName,
+      data,
+    });
+  },
+};
+
+export async function uploadOffsite(
+  cleartextPath: string,
+  deps: OffsiteDeps = { encrypt: defaultEncrypt, uploader: defaultUploader },
+): Promise<void> {
+  const env = {
+    keyId: process.env.B2_KEY_ID,
+    appKey: process.env.B2_APP_KEY,
+    bucket: process.env.B2_BUCKET,
+    gpgRecipient: process.env.BACKUP_GPG_RECIPIENT,
+  };
+  const missing = !env.keyId
+    ? "B2_KEY_ID"
+    : !env.appKey
+      ? "B2_APP_KEY"
+      : !env.bucket
+        ? "B2_BUCKET"
+        : !env.gpgRecipient
+          ? "BACKUP_GPG_RECIPIENT"
+          : null;
+  if (missing) {
+    console.log(`[backup] off-site disabled — ${missing}`);
+    return;
+  }
+
+  const encryptedPath = deps.encrypt(cleartextPath, env.gpgRecipient!);
+  try {
+    const data = readFileSync(encryptedPath);
+    await deps.uploader.upload({
+      keyId: env.keyId!,
+      appKey: env.appKey!,
+      bucket: env.bucket!,
+      fileName: basename(encryptedPath),
+      data,
+    });
+    console.log(`[backup] off-site uploaded ${basename(encryptedPath)}`);
+  } finally {
+    try {
+      rmSync(encryptedPath);
+    } catch {
+      // Best effort: if the encrypt step never produced the file, the
+      // upload would have already thrown; nothing to clean up.
+    }
+  }
 }
