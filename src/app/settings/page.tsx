@@ -99,9 +99,7 @@ export default async function SettingsPage() {
           </dl>
           <p className="mt-3 text-xs text-[var(--text-muted)]">
             Server-side snapshots at <code className="font-mono">/opt/brain/data/backups/</code>.
-            Encrypted off-site copies uploaded to Backblaze B2 after each
-            snapshot when <code className="font-mono">B2_*</code> +{" "}
-            <code className="font-mono">BACKUP_GPG_RECIPIENT</code> are set.
+            Off-site backup pending (see roadmap v0.6.2).
           </p>
         </div>
       </section>
