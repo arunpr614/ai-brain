@@ -99,7 +99,7 @@ export default async function SettingsPage() {
           </dl>
           <p className="mt-3 text-xs text-[var(--text-muted)]">
             Server-side snapshots at <code className="font-mono">/opt/brain/data/backups/</code>.
-            Off-site backup pending (see roadmap v0.6.2).
+            Off-site copies (gpg-encrypted) replicate to Backblaze B2 every 6 hours.
           </p>
         </div>
       </section>

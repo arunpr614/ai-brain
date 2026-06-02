@@ -1,0 +1,15 @@
+# v0.6.2 D-18: off-site backup cron job.
+# Deploy to /etc/cron.d/brain-backup on Hetzner (root-owned, mode 644).
+#
+# Cadence: every 6 hours, on the hour. Matches the in-process scheduler
+# in src/lib/backup.ts so on-disk and off-site replicas stay in step.
+# The two are independent — overlap is harmless because each `.backup`
+# call yields its own consistent snapshot.
+#
+# Logs go to /var/log/brain-backup.log; host logrotate handles rotation.
+# stderr is captured too so gpg/rclone failures appear in the log.
+
+SHELL=/bin/bash
+PATH=/usr/local/bin:/usr/bin:/bin
+
+0 */6 * * * brain /opt/brain/scripts/backup-offsite.sh >> /var/log/brain-backup.log 2>&1
