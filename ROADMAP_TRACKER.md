@@ -1,8 +1,9 @@
 # AI Brain — Roadmap Tracker
 
-**Document version:** v0.9.6-roadmap
-**Date:** 2026-05-21
+**Document version:** v0.9.7-roadmap
+**Date:** 2026-06-02
 **Changelog:**
+- **v0.9.7-roadmap (2026-06-02)** — **v0.6.2 Off-site backup SHIPPED.** Tag `v0.6.2` on commit `90b6c61`, pushed to `origin/main`. Cron-driven `sqlite3 .backup → gpg → rclone` to B2 every 6h on Hetzner. T-G escrow complete (GPG private key + revoke cert + passphrase in 1Password). D-18 round-trip smoke PASS — 9 items match between live Hetzner and decrypted B2 blob. SDK-path attempt `a799b16` reverted in `f6208e1` before deploy after locked-design re-discovery (`S-7-MIGRATION-RUNBOOK.md` rclone+cron). No new npm deps. **v0.6.3 hygiene now NEXT** — six carry-overs queued (T-11b legacy env drop, BUG-ENRICH log hygiene, Mac better-sqlite3 ABI, `tsx` removal, CSP nonces, HARDEN-HETZNER-SSH); bundling decision pending (one phase vs split into v0.6.3 dev-hygiene + v0.6.4 security-hardening). T-11b date gate (≥ 2026-05-26) already passed.
 - **v0.9.6-roadmap (2026-05-21)** — **v0.6.1.1 hotfix SHIPPED.** Tag `v0.6.1.1` on commit `790827e`, deployed to Hetzner 23:26 IST 2026-05-20. Two of the three v0.6.2-slated bugs are now resolved: BUG-ANTHROPIC-OVERLOAD (P1) via `fetchWithOverloadRetry()` retrying on 429/503/529 + connection errors; BUG-RETRIEVE-ITEM (P2) via `rowid IN (...)` pre-filter on the vec0 KNN. BUG-ENRICH-UNREACHABLE-LOOP mostly absorbed by the Anthropic retry — only cosmetic log-message hygiene remains for v0.6.3. **v0.6.2 backup-only is now the next phase** (D-18 B2 off-site backup + T-11b legacy `BRAIN_LAN_TOKEN` drop, gated ≥ 2026-05-26). Plan to be drafted next session. **v0.6.3 hygiene** queued: enrich log message, CSP nonces, Mac better-sqlite3 ABI, `tsx` removal from Hetzner runtime. Verification evidence: 14/14 anthropic tests + 9/9 retrieve tests on Hetzner; live spike on 1-chunk item `5e755dab` returned 1 chunk for 3 generic queries (was 0); un-scoped multi-chunk parity preserved. Plan: `docs/plans/v0.6.1.1-hotfix.md` (28 lines, hotfix-shaped). RUNNING_LOG entry #54.
 - **v0.9.5-roadmap (2026-05-20)** — v0.6.1 SHIPPED 2026-05-19 + user-side validated 2026-05-20 (D-15/D-16/D-17/T-2 all PASS). Three bugs surfaced post-validation now slated for v0.6.2: BUG-ANTHROPIC-OVERLOAD (P1), BUG-RETRIEVE-ITEM (confirmed 2026-05-20 via /opt/brain probe — 1-chunk items + generic queries return 0 chunks), BUG-ENRICH-UNREACHABLE-LOOP (root cause = same 529). Lane summary updated with these. **Orphaned-plans audit (2026-05-20):** four `v0.6.x` plans existed without sequencing slots. One (Offline-mode APK) shipped in v0.5.5 + v0.5.6 — plan reclassified as historical. Three remain unscheduled and are now surfaced in §3.5 "Unscheduled but planned" with proposed sequencing for user ratification: AUG (post-v0.7.0 desktop polish), GRAPH (after AUG, same lane), LIBOFF (post-v0.6.2, before v0.7.0 visual refresh).
 - **v0.9.4-roadmap (2026-05-19)** — Inserted new **v0.7.0 Structured Calm Green** visual-refresh phase between v0.6.2 (Off-site backup) and the original v0.7.0 GenLink slot. The original GenLink lane has been renumbered to **v0.7.5**. New phase covers 25 tasks (G-1..G-4 gates + T-1..T-25 execution) adopting the alternative emerald-green / Newsreader / Inter palette specified in [`DESIGN_STRUCTURED_CALM_GREEN.md`](./DESIGN_STRUCTURED_CALM_GREEN.md) (made adoption-ready 2026-05-19). Adoption is **values-only**: variable names in `src/styles/tokens.css` are preserved per the spec's §9.0 Radix-style→M3-style mapping, so no component refactor is needed. Plan: [`docs/plans/v0.7.0-structured-calm-green.md`](./docs/plans/v0.7.0-structured-calm-green.md). Explicit out-of-scope: tertiary-rose wiring (deferred to v0.8.0 SRS), self-hosted Newsreader (deferred to v1.0.0). Hard gates before any code: contrast pass green (already done in spec §2.3), dark-theme finalisation, token-map drift check, tertiary policy decision. **Risk: HIGH** for a mid-roadmap visual swap — this phase ships in its own window, NOT bundled with v0.6.2 or any feature work.
@@ -47,8 +48,10 @@ Companion docs:
 | v0.5.1 ✅ | YouTube capture | SHIPPED 2026-05-12 — server-side InnerTube + inline XML; zero new deps; tag `v0.5.1` | 0.5 | 7.5 |
 | v0.6.0 ✅ | Mac→Hetzner cutover | SHIPPED 2026-05-19 — `brain.arunp.in` serves from Hetzner; cutover D-12 + D-13 + D-14 complete | 1.0 | 8.5 |
 | v0.6.1 ✅ | Cloud-cleanup | SHIPPED 2026-05-19 + validated 2026-05-20 — 20 tasks; D-15/D-16/D-17/T-2 PASS; tag `v0.6.1` | 0.5 | 9.0 |
-| v0.6.2 | Off-site backup + retrieval fixes | sqlite3 .backup → B2; T-11b legacy env drop; BUG-ANTHROPIC-OVERLOAD P1; BUG-RETRIEVE-ITEM | 0.5 | 9.5 |
-| _Note:_ original "v0.6.0 GenPage" slot is now blocked by post-cutover hardening; sequencing for GenPage will be re-decided after v0.6.2. | | | | |
+| v0.6.1.1 ✅ | Hotfix (Anthropic 529 retry + retrieve scope) | SHIPPED 2026-05-21 — tag `v0.6.1.1` on `790827e`; deployed Hetzner 2026-05-20 | 0.1 | 9.1 |
+| v0.6.2 ✅ | Off-site backup | SHIPPED 2026-06-02 — `sqlite3 .backup → gpg → rclone` to B2 every 6h; T-G escrow + D-18 smoke PASS; tag `v0.6.2` on `90b6c61` | 0.4 | 9.5 |
+| v0.6.3 | Hygiene (NEXT) | T-11b env drop · BUG-ENRICH log · Mac better-sqlite3 ABI · `tsx` removal · CSP nonces · HARDEN-HETZNER-SSH | 0.5 | 10.0 |
+| _Note:_ original "v0.6.0 GenPage" slot is now blocked by post-cutover hardening; sequencing for GenPage will be re-decided after v0.6.3. | | | | |
 | v0.7.0 | Structured Calm Green visual refresh | Adopt emerald/Newsreader/Inter palette; values-only `tokens.css` swap; 25 tasks (4 gates + 21 exec) | 1.0 | 10.5 |
 | v0.7.5 | GenLink _(was v0.7.0)_ | Clickable-word AI sub-pages | 1.0 | 11.5 |
 | v0.8.0 | Review (SRS) | FSRS queue + daily review + streak | 1.0 | 12.5 |
@@ -418,9 +421,11 @@ Three feature plans exist with detailed task lists but no sequencing slot. Surfa
 **Recommended sequencing pass:**
 
 ```
-v0.6.2 (backup + retrieval fixes)  ← NEXT
+v0.6.2 (backup) ✅ SHIPPED 2026-06-02
   ↓
-v0.6.3 (LIBOFF — library offline reads)        ← higher user-value, sequenced before visuals
+v0.6.3 (hygiene — T-11b + Mac ABI + log + tsx + CSP + SSH)  ← NEXT
+  ↓
+v0.6.4 or v0.6.5 (LIBOFF — library offline reads)  ← higher user-value, sequenced before visuals
   ↓
 v0.7.0 (Structured Calm Green visual refresh)
   ↓

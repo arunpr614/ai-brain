@@ -2,44 +2,63 @@
 
 | Field | Value |
 |-------|--------|
-| **Document version** | v7.8-backlog (HARDEN-HETZNER-SSH added after public-repo audit) |
-| **Date** | 2026-05-21 |
+| **Document version** | v7.9-backlog (v0.6.2 SHIPPED; v0.6.3 hygiene NEXT) |
+| **Date** | 2026-06-02 |
 | **Owner** | Arun |
 | **Update cadence** | at every phase kickoff; whenever an item is promoted, deferred, or closed |
-| **Revision** | v7.8 — 2026-05-21: **HARDEN-HETZNER-SSH** added (P3, → v0.6.3) after public-repo audit surfaced Hetzner IP/SSH-key-name/username already published across `docs/plans/` and handover folders since 2026-05-19. Audit: sshd is pubkey-only ✅, UFW default-deny ✅, but `PermitRootLogin without-password` + no `fail2ban` + port 22 open to `0.0.0.0/0` make the public IP-disclosure credential-stuffing-friendly. Fix outline: install fail2ban, set `PermitRootLogin no`, tighten `MaxAuthTries`/`LoginGraceTime`, consider home-IP allowlist. v7.7 — 2026-05-21: **v0.6.1.1 hotfix SHIPPED** (commit `790827e`, tag `v0.6.1.1`, deployed Hetzner 23:26 IST 2026-05-20). **BUG-ANTHROPIC-OVERLOAD** (P1) resolved — `src/lib/llm/anthropic.ts` `generate()`/`generateStream()` retry on 429/503/529 + connection errors via `fetchWithOverloadRetry()`; 3 attempts, 500ms+1500ms backoff, `Retry-After` honored (capped 3s), `AbortSignal` aborts mid-backoff. Verified via 14/14 anthropic tests on Hetzner. **BUG-RETRIEVE-ITEM** (P2) resolved — `src/lib/retrieve/index.ts:96-122` item-scoped path now uses `rowid IN (SELECT … FROM chunks_rowid JOIN chunks WHERE c.item_id = ?)` to pre-filter the vec0 KNN; un-scoped path preserved. Verified live: 1-chunk item `5e755dab` returns 1 chunk for 3 generic queries (was 0). **BUG-ENRICH-UNREACHABLE-LOOP** mostly absorbed by Anthropic retry; cosmetic log-message hygiene deferred to v0.6.3. v7.6 — 2026-05-20: D-16 PASSED — content-specific library-wide Ask end-to-end on cloud (8 chunks retrieved, right item at slot 1, Anthropic streamed in 4.48s, HTTP 200). Earlier "stuck on …" state diagnosed: **BUG-ANTHROPIC-OVERLOAD** added — Anthropic API intermittently returns HTTP 529 `overloaded_error`; `src/lib/llm/anthropic.ts:174,210` has no retry on 5xx, only on malformed JSON. Root cause for **BUG-ENRICH-UNREACHABLE-LOOP** also identified (same 529; "unreachable" log message is misleading). **BUG-RETRIEVE-ITEM** marked needs-revalidation — per-item scope was not retested today; the cosine numbers from #48 may have been an artefact of a generic-query embedding rather than a JOIN bug. **R-EMBED-QUALITY** down-scoped to P2 — content-specific queries surface the right item; only generic queries hit Hindi-transcript noise. v7.5 — 2026-05-20: Post-v0.6.1 ship carry-overs logged in §2. New entries: **R-EMBED-QUALITY** (gemini-embedding-001 768-dim mixed-language quality investigation), **BUG-RETRIEVE-ITEM** (per-item Ask 0-chunks bug; fix sketch ready, ≈30 min), **BUG-ENRICH-UNREACHABLE-LOOP** (enrich worker idle-loop observed during D-17 verification). All three target v0.6.2 scope decision (still pending). v7.4 — 2026-05-19: New phase **v0.7.0 Structured Calm Green visual refresh** queued after v0.6.2. Plan: `docs/plans/v0.7.0-structured-calm-green.md`. Spec: `DESIGN_STRUCTURED_CALM_GREEN.md` (made adoption-ready 2026-05-19 — 4 hard gates added, contrast pass complete, token-mapping table added). Original v0.7.0 GenLink renumbered to **v0.7.5**. Deferred from v0.7.0 to other phases: tertiary-rose (→ v0.8.0 SRS); self-hosted Newsreader (→ v1.0.0); citation-chip expansion animation (→ v0.7.x); `surface-dim`/`surface-bright` token use-cases (→ v0.7.1 or delete). v7.3 — 2026-05-19: Mac→Hetzner cutover (v0.6.0) shipped 2026-05-19. New active phase **v0.6.1 Cloud-Cleanup** opened — 20 tasks (T-1..T-20) addressing legacy LAN/Mac strings, 3 security-hygiene gaps, and the false privacy claim at first-run setup. Plan: `docs/plans/v0.6.1-cloud-cleanup.md`. Source audits: `.planning/legacy-feature-audit{,-v2}.md` (revision v2.1 re-rank). New deferred items added to §3 below: **CSP nonce wiring** (→ v0.6.3), **B2 off-site backup** (→ v0.6.2 dedicated phase), **Per-device tokens** (audit A+C — needs design doc first), **enrichment-worker 45-min unreachable-loop bug** (open behavior bug, not legacy-cleanup). Phase 11b (drop `BRAIN_LAN_TOKEN` fallback) deferred to v0.6.2 by design. v7.2 — 2026-05-15: Dual-lane phase ended; single-stream resumed on `main`. v0.5.6 (service-worker app shell, offline cold-launch for Library + Inbox + share-target) tagged. Next track: v0.6.0 cloud migration to Hetzner (Phase B = provider-agnostic LLM wrapper). New backlog item: **Ask + Settings offline shell** — out of scope for v0.5.6 by design (Ollama is laptop-only); revisit after Phase B reveals new origin caching strategy. Other v0.6.x candidates remain queued: Augmented Browsing (AUG-1..10), Knowledge Graph View (GRAPH-1..8), library-offline-from-DB (LIBOFF-1..12). v7.1 — 2026-05-12: v0.5.0 + v0.5.1 + v0.5.2 + v0.5.3 all SHIPPED. Two patch-tier features slotted into v0.6.x: Augmented Browsing + Knowledge Graph View. Plans at `docs/plans/v0.6.x-augmented-browsing.md` + `docs/plans/v0.6.x-graph-view.md`. Source: Recall.it v2 audit 2026-05-12 (`docs/research/recall-feature-audit-v2-2026-05-12.md`). §§ below last touched 2026-05-10 for the v0.5.0 pivot and reference superseded state — full backlog rewrite still pending. v7.0 revision history preserved below |
+| **Revision** | v7.9 — 2026-06-02: **v0.6.2 SHIPPED.** Tag `v0.6.2` on commit `90b6c61`, pushed to `origin/main`. SDK-path attempt `a799b16` reverted in `f6208e1` before deploy after locked design (`S-7-MIGRATION-RUNBOOK.md` rclone+cron) re-discovered. Final implementation: `scripts/backup-offsite.sh` (sqlite3 .backup → gpg --encrypt → rclone copyto B2) on `/etc/cron.d/brain-backup` 6h cadence. rclone v1.74.2 installed on Hetzner; B2 remote `b2` configured against existing `/etc/brain/.env` vars. D-18 smoke PASS (full Mac round-trip: 739,579-byte encrypted blob → `gpg --decrypt` → 5,046,272-byte SQLite → 9 items matches live). T-G escrow: GPG private key + revoke cert + passphrase pasted into 1Password `Brain — secrets`. No new npm deps. v0.6.3 hygiene NEXT (T-11b legacy env drop now unblocked — date gate ≥ 2026-05-26 already passed). v7.8 — 2026-05-21: **HARDEN-HETZNER-SSH** added (P3, → v0.6.3) after public-repo audit surfaced Hetzner IP/SSH-key-name/username already published across `docs/plans/` and handover folders since 2026-05-19. Audit: sshd is pubkey-only ✅, UFW default-deny ✅, but `PermitRootLogin without-password` + no `fail2ban` + port 22 open to `0.0.0.0/0` make the public IP-disclosure credential-stuffing-friendly. Fix outline: install fail2ban, set `PermitRootLogin no`, tighten `MaxAuthTries`/`LoginGraceTime`, consider home-IP allowlist. v7.7 — 2026-05-21: **v0.6.1.1 hotfix SHIPPED** (commit `790827e`, tag `v0.6.1.1`, deployed Hetzner 23:26 IST 2026-05-20). **BUG-ANTHROPIC-OVERLOAD** (P1) resolved — `src/lib/llm/anthropic.ts` `generate()`/`generateStream()` retry on 429/503/529 + connection errors via `fetchWithOverloadRetry()`; 3 attempts, 500ms+1500ms backoff, `Retry-After` honored (capped 3s), `AbortSignal` aborts mid-backoff. Verified via 14/14 anthropic tests on Hetzner. **BUG-RETRIEVE-ITEM** (P2) resolved — `src/lib/retrieve/index.ts:96-122` item-scoped path now uses `rowid IN (SELECT … FROM chunks_rowid JOIN chunks WHERE c.item_id = ?)` to pre-filter the vec0 KNN; un-scoped path preserved. Verified live: 1-chunk item `5e755dab` returns 1 chunk for 3 generic queries (was 0). **BUG-ENRICH-UNREACHABLE-LOOP** mostly absorbed by Anthropic retry; cosmetic log-message hygiene deferred to v0.6.3. v7.6 — 2026-05-20: D-16 PASSED — content-specific library-wide Ask end-to-end on cloud (8 chunks retrieved, right item at slot 1, Anthropic streamed in 4.48s, HTTP 200). Earlier "stuck on …" state diagnosed: **BUG-ANTHROPIC-OVERLOAD** added — Anthropic API intermittently returns HTTP 529 `overloaded_error`; `src/lib/llm/anthropic.ts:174,210` has no retry on 5xx, only on malformed JSON. Root cause for **BUG-ENRICH-UNREACHABLE-LOOP** also identified (same 529; "unreachable" log message is misleading). **BUG-RETRIEVE-ITEM** marked needs-revalidation — per-item scope was not retested today; the cosine numbers from #48 may have been an artefact of a generic-query embedding rather than a JOIN bug. **R-EMBED-QUALITY** down-scoped to P2 — content-specific queries surface the right item; only generic queries hit Hindi-transcript noise. v7.5 — 2026-05-20: Post-v0.6.1 ship carry-overs logged in §2. New entries: **R-EMBED-QUALITY** (gemini-embedding-001 768-dim mixed-language quality investigation), **BUG-RETRIEVE-ITEM** (per-item Ask 0-chunks bug; fix sketch ready, ≈30 min), **BUG-ENRICH-UNREACHABLE-LOOP** (enrich worker idle-loop observed during D-17 verification). All three target v0.6.2 scope decision (still pending). v7.4 — 2026-05-19: New phase **v0.7.0 Structured Calm Green visual refresh** queued after v0.6.2. Plan: `docs/plans/v0.7.0-structured-calm-green.md`. Spec: `DESIGN_STRUCTURED_CALM_GREEN.md` (made adoption-ready 2026-05-19 — 4 hard gates added, contrast pass complete, token-mapping table added). Original v0.7.0 GenLink renumbered to **v0.7.5**. Deferred from v0.7.0 to other phases: tertiary-rose (→ v0.8.0 SRS); self-hosted Newsreader (→ v1.0.0); citation-chip expansion animation (→ v0.7.x); `surface-dim`/`surface-bright` token use-cases (→ v0.7.1 or delete). v7.3 — 2026-05-19: Mac→Hetzner cutover (v0.6.0) shipped 2026-05-19. New active phase **v0.6.1 Cloud-Cleanup** opened — 20 tasks (T-1..T-20) addressing legacy LAN/Mac strings, 3 security-hygiene gaps, and the false privacy claim at first-run setup. Plan: `docs/plans/v0.6.1-cloud-cleanup.md`. Source audits: `.planning/legacy-feature-audit{,-v2}.md` (revision v2.1 re-rank). New deferred items added to §3 below: **CSP nonce wiring** (→ v0.6.3), **B2 off-site backup** (→ v0.6.2 dedicated phase), **Per-device tokens** (audit A+C — needs design doc first), **enrichment-worker 45-min unreachable-loop bug** (open behavior bug, not legacy-cleanup). Phase 11b (drop `BRAIN_LAN_TOKEN` fallback) deferred to v0.6.2 by design. v7.2 — 2026-05-15: Dual-lane phase ended; single-stream resumed on `main`. v0.5.6 (service-worker app shell, offline cold-launch for Library + Inbox + share-target) tagged. Next track: v0.6.0 cloud migration to Hetzner (Phase B = provider-agnostic LLM wrapper). New backlog item: **Ask + Settings offline shell** — out of scope for v0.5.6 by design (Ollama is laptop-only); revisit after Phase B reveals new origin caching strategy. Other v0.6.x candidates remain queued: Augmented Browsing (AUG-1..10), Knowledge Graph View (GRAPH-1..8), library-offline-from-DB (LIBOFF-1..12). v7.1 — 2026-05-12: v0.5.0 + v0.5.1 + v0.5.2 + v0.5.3 all SHIPPED. Two patch-tier features slotted into v0.6.x: Augmented Browsing + Knowledge Graph View. Plans at `docs/plans/v0.6.x-augmented-browsing.md` + `docs/plans/v0.6.x-graph-view.md`. Source: Recall.it v2 audit 2026-05-12 (`docs/research/recall-feature-audit-v2-2026-05-12.md`). §§ below last touched 2026-05-10 for the v0.5.0 pivot and reference superseded state — full backlog rewrite still pending. v7.0 revision history preserved below |
 
 > Single source of truth for work that is **not in the active phase plan** but is known-needed, nice-to-have, or idea-captured. Items promoted from here land in `BUILD_PLAN.md` under a phase heading. Items closed here get a strikethrough and a closing commit SHA.
 
 ---
 
-## 1. Active phase — v0.6.1 Cloud-Cleanup *(opened 2026-05-19)*
+## 1. Active phase — v0.6.3 Hygiene *(NEXT, plan not yet drafted)*
 
-### Current state (as of 2026-05-19)
+### Current state (as of 2026-06-02)
 
-**v0.6.0 Mac→Hetzner cutover SHIPPED 2026-05-19.** Hetzner brain.service serves `brain.arunp.in` exclusively. RUNNING_LOG entry #44.
+**v0.6.2 Off-site backup SHIPPED 2026-06-02.** Tag `v0.6.2` on commit `90b6c61`. Cron-driven `sqlite3 .backup → gpg → rclone` to B2 every 6h. T-G escrow complete (1Password). D-18 round-trip smoke PASS (9 items match between live Hetzner and decrypted B2 blob).
 
-**v0.6.1 Cloud-Cleanup is the active phase.** Plan: [`docs/plans/v0.6.1-cloud-cleanup.md`](./docs/plans/v0.6.1-cloud-cleanup.md). 20 tasks ordered by exploit-risk × effort. Source: `.planning/legacy-feature-audit.md` v1 + `.planning/legacy-feature-audit-v2.md` v2.1 (re-ranked).
+**v0.6.3 Hygiene is queued as the next phase.** Six carry-overs from v0.6.1 + v0.6.2; bundling decision pending (one phase vs split into v0.6.3 dev-hygiene and v0.6.4 security-hardening).
 
-**Single "do this week" pick:** T-1 — replace the false privacy claim at `src/app/setup/page.tsx:25`. Pure string change, deployed in 15 minutes; the only finding the user reads at first-run trust moment.
+| Item | Priority | Source | Effort | Notes |
+|------|----------|--------|--------|-------|
+| T-11b drop legacy `BRAIN_LAN_TOKEN` fallback | P1 | v0.6.1 deferred | S | Date gate ≥ 2026-05-26 already passed. ~5-line patch. |
+| BUG-ENRICH-UNREACHABLE-LOOP log hygiene | P2 | v0.6.1.1 carry-over | XS | Cosmetic — change misleading "unreachable" log message. |
+| Mac `better-sqlite3` ABI mismatch | P2 | v0.6.1 carry-over | S–M | Node 26 NODE_MODULE_VERSION 147 has no prebuilt binding. Cloud unaffected. |
+| `tsx` removal from Hetzner runtime | P3 | v0.6.1 carry-over | M | Compile to JS pre-deploy. |
+| CSP nonces | P2 | v0.6.1 carry-over | M–L | Real UI breakage risk — needs careful per-page audit. |
+| HARDEN-HETZNER-SSH | P3 | v0.6.1.1 audit | S | fail2ban + `PermitRootLogin no` + `MaxAuthTries`/`LoginGraceTime`. |
 
-**T1 bundle (one PR, ~2–3 h):** T-2 `Secure` cookie · T-3 security headers · T-4 `cf-connecting-ip` log
-
-**T2 bundle (one PR, ~half day):** T-5..T-19 — copy cleanups, route rename, env-var rename, Mac-side script fixes
-
-**Release gate (T-20):** typecheck + lint + smoke green; tag `v0.6.1` on `main`.
-
-**Out of scope here (deferred):**
-- CSP nonce wiring → v0.6.3 (M-L effort, real UI breakage risk)
-- B2 off-site backup → v0.6.2 (dedicated phase; D-18 carry-over)
-- Per-device tokens (audit A+C) → TBD (auth architecture; needs design doc)
-- `tsx` removal from Hetzner runtime → v0.6.3
-- enrichment-worker `isAlive()` 45-min loop fix → open behavior bug, separate
-- Chrome extension URL configurability → only if multi-deployment
-- **Mac-side `better-sqlite3` ABI mismatch** → v0.6.3 (or open-bug). `npm run smoke` and unit tests fail on Mac because the local Node version (v26.0.0, NODE_MODULE_VERSION 147) has no matching `better-sqlite3` prebuilt binary, and `node_modules/better-sqlite3/lib/binding/` is missing. Pre-dates v0.6.1 (carry-over from cutover handover §1.5). Not a regression from any task in this phase. Cloud server is unaffected (Hetzner has its own working bindings). Fix likely requires `npm rebuild better-sqlite3` with matching native build tools, or pinning Node to a version with prebuilt binaries available. **Effort: S–M, depending on whether prebuilts exist for Node 26.** **Risk: low** (Mac dev convenience only; cloud is the source of truth).
+**Open follow-ups carrying from v0.6.2:**
+- B2 dashboard 30-day lifecycle rule on `ai-brain-backups-arunpr614` (UI-only; not blocking).
+- Confirm next cron tick fires automatically (~18:00 UTC 2026-06-02).
 
 ---
 
 ## 1.archive — Prior phases
+
+### v0.6.2 Off-site backup *(SHIPPED 2026-06-02)*
+
+Tag `v0.6.2` on commit `90b6c61`. Plan: [`docs/plans/v0.6.2-backup-only.md`](./docs/plans/v0.6.2-backup-only.md).
+
+**Sequence:** SDK-path attempt `a799b16` (committed 2026-05-21, never deployed) → reverted in `f6208e1` after locked design (`docs/plans/spikes/v0.6.0-cloud-migration/S-7-MIGRATION-RUNBOOK.md` rclone+cron) re-discovered → `dce11b4` rclone+cron path → `90b6c61` released after T-G escrow + D-18 smoke green.
+
+**Deployed on Hetzner 2026-06-02:**
+- rclone v1.74.2 installed
+- B2 remote `b2` configured against existing `/etc/brain/.env` (`B2_KEY_ID` + `B2_APPLICATION_KEY`)
+- `/opt/brain/scripts/backup-offsite.sh` (brain:brain 755) — `sqlite3 .backup → gpg --encrypt → rclone copyto`
+- `/etc/cron.d/brain-backup` (root:root 644) — every 6h on the hour as `brain`
+- `/var/log/brain-backup.log` (brain:brain) pre-created
+
+**D-18 smoke PASS (full round-trip):** Manual run uploaded `2026-06-02_0929.sqlite.gpg` (739,579 bytes encrypted) → Mac `rclone cat` byte-exact → `gpg --decrypt` → 5,046,272-byte SQLite → `select count(*) from items` = 9 (matches live Hetzner).
+
+**T-G escrow:** GPG private key + revoke cert + passphrase pasted into 1Password `Brain — secrets`. `/tmp/private.asc` + `/tmp/revoke.asc` secure-deleted with `rm -P`. Two-wall escrow (1Password account + passphrase string). Encryption on Hetzner uses public key only.
+
+No new npm deps (kills the 5-warning audit hit from the SDK path).
+
+### v0.6.1 Cloud-Cleanup *(SHIPPED 2026-05-19, validated 2026-05-20)*
+
+See PROJECT_TRACKER §2 for the full task table. RUNNING_LOG entries #45–#51.
 
 ### v0.5.0 APK + Chrome extension (PIVOTED to Cloudflare Tunnel 2026-05-10)
 

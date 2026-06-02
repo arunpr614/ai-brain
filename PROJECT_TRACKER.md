@@ -1,7 +1,7 @@
 # AI Brain — Project Tracker
 
-**Document version:** v0.9.5-tracker
-**Date:** 2026-05-21
+**Document version:** v0.9.6-tracker
+**Date:** 2026-06-02
 **Owner:** Arun
 **Update cadence:** at phase start, at phase end, and whenever a blocker appears.
 
@@ -27,7 +27,7 @@ Legend: `○` not started · `◐` in progress · `●` complete · `✖` blocke
 | v0.6.0 Mac→Hetzner cutover | 0.6.0 | ● | 2026-05-15 | 2026-05-19 | **SHIPPED 2026-05-19.** D-12 + D-13 + D-14 complete: Hetzner brain.service live (8 items, 81 chunks, 81 vec rows), CNAME flipped to Hetzner tunnel UUID, Mac brain stopped. Two commits: `6c03093` (gemini.ts serial-loop) + `1413f9b` (cutover.sh WAL fix). User-side D-15..D-18 validation pending. |
 | v0.6.1 Cloud-cleanup | 0.6.1 | ● | 2026-05-19 | 2026-05-19 | **SHIPPED 2026-05-19, validated 2026-05-20.** All 20 tasks (T-1..T-20) landed across 6 commits (`5a0f2f1` → `17e32e0`); tag `v0.6.1` on `17e32e0`. User-side validation 2026-05-20: D-15 PASS (APK share), D-16 PASS (cloud Ask), D-17 PASS (overnight batch cron), T-2 PASS (Secure cookie after fresh re-issue). RUNNING_LOG entries #45–#51. |
 | v0.6.1.1 Hotfix (Anthropic 529 retry + retrieve scope) | 0.6.2-hotfix.1 | ● | 2026-05-21 | 2026-05-21 | **SHIPPED 2026-05-21.** Tag `v0.6.1.1` on commit `790827e`. Deployed to Hetzner 23:26 IST 2026-05-20. T-1 (Anthropic retry) + T-6 (retrieve item-scope KNN). Verified live: 14/14 anthropic tests, 9/9 retrieve tests on Hetzner; 1-chunk repro returns 1 chunk for 3 generic queries (was 0). RUNNING_LOG entry #54. Plan: [`docs/plans/v0.6.1.1-hotfix.md`](./docs/plans/v0.6.1.1-hotfix.md). |
-| v0.6.2 Off-site backup | 0.6.2 | ○ | — | — | **NEXT ACTIVE.** Wires `sqlite3 .backup → gzip → gpg → rclone to B2`. D-18 carry-over from v0.6.0. Also includes Phase 11b (drop `BRAIN_LAN_TOKEN` fallback, gated ≥ 2026-05-26 for one-week soak). Anthropic + retrieve bugs already shipped in v0.6.1.1. Plan not yet drafted. |
+| v0.6.2 Off-site backup | 0.6.2 | ● | 2026-06-02 | 2026-06-02 | **SHIPPED 2026-06-02.** Tag `v0.6.2` on commit `90b6c61`. D-18 live: `sqlite3 .backup → gpg → rclone` to B2 bucket `ai-brain-backups-arunpr614` every 6h via `/etc/cron.d/brain-backup` on Hetzner. First off-site blob: `2026-06-02_0929.sqlite.gpg` (739 KB encrypted). Round-trip verified: B2→Mac→`gpg --decrypt`→`sqlite3 'select count(*) from items'` = 9 (matches live). GPG private key + revoke cert + passphrase escrowed in 1Password (T-G two-wall). T-11b legacy `BRAIN_LAN_TOKEN` drop deferred to v0.6.3 (date gate already passed). Plan: [`docs/plans/v0.6.2-backup-only.md`](./docs/plans/v0.6.2-backup-only.md). |
 | v0.6.x Augmented Browsing | 0.6.x | ○ | — | — | Plan: [`docs/plans/v0.6.x-augmented-browsing.md`](./docs/plans/v0.6.x-augmented-browsing.md) v2.0 (AUG-1..7, ~5 commits). Desktop Chrome only, paused since 2026-05-15 lane collapse. Sequencing TBD — currently unscheduled. |
 | v0.6.x Knowledge Graph View | 0.6.x | ○ | — | — | Plan: [`docs/plans/v0.6.x-graph-view.md`](./docs/plans/v0.6.x-graph-view.md) v2.1 (GRAPH-1..10, sigma.js + graphology). Desktop only. Paused since 2026-05-15 lane collapse. Sequencing TBD. |
 | v0.6.x Library-Offline-from-DB | 0.6.x | ○ | — | — | Plan: [`docs/plans/v0.6.x-library-offline-from-db.md`](./docs/plans/v0.6.x-library-offline-from-db.md) DRAFT (LIBOFF-1..12). Replicates library to IndexedDB for full APK offline reads. Companion to v0.5.5 outbox writes (already shipped). Sequencing TBD. |
@@ -42,7 +42,7 @@ Legend: `○` not started · `◐` in progress · `●` complete · `✖` blocke
 
 ---
 
-## 2. Current phase details — v0.6.1 SHIPPED 2026-05-19 + validated 2026-05-20; v0.6.2 NEXT
+## 2. Current phase details — v0.6.2 SHIPPED 2026-06-02; v0.6.3 hygiene NEXT
 
 **v0.6.0 closed 2026-05-19** (Mac→Hetzner cutover). RUNNING_LOG entry #44.
 
@@ -79,17 +79,30 @@ Tag `v0.6.1.1` on commit `790827e`. Plan: [`docs/plans/v0.6.1.1-hotfix.md`](./do
 | T-6 Retrieve item-scope KNN | ● | `790827e` | `rowid IN (SELECT … FROM chunks_rowid JOIN chunks WHERE c.item_id = ?)` pre-filters vec0 KNN. `idx_chunks_item_id` covers subquery. Live spike: 1-chunk item `5e755dab` returns 1 chunk for 3 generic queries (was 0); un-scoped path preserved. |
 | T-R Release | ● | `790827e` | Version `0.6.2-hotfix.1` (semver-valid pre-release). Deployed to Hetzner 23:26 IST 2026-05-20. `/api/health` 200. DB unchanged 9 items / 82 chunks. |
 
-### v0.6.2 — Off-site backup (NEXT ACTIVE; plan not yet drafted)
+### v0.6.2 — Off-site backup SHIPPED 2026-06-02
 
-Carry-overs to be planned:
+Tag `v0.6.2` on commit `90b6c61`. Plan: [`docs/plans/v0.6.2-backup-only.md`](./docs/plans/v0.6.2-backup-only.md). Sequence prior to ship: SDK-path attempt `a799b16` (committed 2026-05-21, never deployed) → reverted in `f6208e1` after locked design (`docs/plans/spikes/v0.6.0-cloud-migration/S-7-MIGRATION-RUNBOOK.md`) re-read → `dce11b4` introduced rclone+cron path → `90b6c61` released after T-G escrow + D-18 smoke green.
 
-- **D-18** B2 off-site backup wiring (sqlite3 .backup → gzip → gpg → rclone)
-- **T-11b** drop legacy `BRAIN_LAN_TOKEN` fallback (≥2026-05-26 after one-week soak)
-- ~~BUG-ANTHROPIC-OVERLOAD~~ — RESOLVED in v0.6.1.1 (`790827e`)
-- ~~BUG-RETRIEVE-ITEM~~ — RESOLVED in v0.6.1.1 (`790827e`)
-- **BUG-ENRICH-UNREACHABLE-LOOP** — mostly absorbed by v0.6.1.1 Anthropic retry. Remaining cosmetic log-message hygiene → **deferred to v0.6.3.**
+| Task | Status | Commit | Notes |
+|------|--------|--------|-------|
+| T-G GPG escrow (private key + revoke cert + passphrase → 1Password) | ● | — | Two-wall escrow (1Password account + passphrase string). Encryption on Hetzner uses public key only. |
+| T-1 `scripts/backup-offsite.sh` + `/etc/cron.d/brain-backup` deployed | ● | `dce11b4` | rclone v1.74.2 installed; B2 remote `b2` configured against existing `/etc/brain/.env` vars (`B2_KEY_ID`, `B2_APPLICATION_KEY`, `B2_BUCKET_NAME`). No new npm deps. |
+| D-18 smoke (full restore round-trip) | ● PASS | — | Manual run uploaded `2026-06-02_0929.sqlite.gpg` (739,579 bytes); Mac fetched via `rclone cat` byte-exact; `gpg --decrypt` → 5,046,272-byte SQLite; `select count(*) from items` = 9 matches live. |
+| T-R release + tag | ● | `90b6c61` | Bumped `package.json` `0.6.2-hotfix.1` → `0.6.2`; tag `v0.6.2`; pushed to `origin/main` + tag. |
 
-Out of scope here (deferred): CSP nonces (v0.6.3), per-device tokens (TBD), `tsx` removal (v0.6.3), Mac better-sqlite3 ABI mismatch (v0.6.3).
+**Carry-overs to v0.6.3:**
+
+- **T-11b** drop legacy `BRAIN_LAN_TOKEN` fallback (date gate ≥ 2026-05-26 already passed; ~5-line patch).
+- **BUG-ENRICH-UNREACHABLE-LOOP** — cosmetic log-message hygiene (mostly absorbed by v0.6.1.1 Anthropic retry).
+- CSP nonce wiring.
+- `tsx` removal from Hetzner runtime.
+- Mac `better-sqlite3` ABI mismatch (Node 26 + missing prebuilt binding).
+- HARDEN-HETZNER-SSH (fail2ban + `PermitRootLogin no` + `MaxAuthTries`/`LoginGraceTime` tightening).
+
+**Open follow-ups (non-blocking):**
+
+- B2 dashboard 30-day lifecycle rule on `ai-brain-backups-arunpr614` (UI-only; no code).
+- Confirm next cron tick fires automatically (~18:00 UTC 2026-06-02 boundary; verify via `tail /var/log/brain-backup.log` on Hetzner).
 
 ---
 
@@ -236,5 +249,6 @@ These aren't measured yet — added to remind future-me:
 - **2026-05-08 (R-VEC)** — R-VEC spike completed GREEN. All four thresholds pass with ≥ 10× headroom at 10k chunks (p50=6.25 ms vs 80 ms, p95=6.88 ms vs 200 ms, build=294 ms vs 30 s, reopen=6.47 ms vs 5 s). 50k tier also healthy (p50=30 ms, p95=36 ms). Caveat: `sqlite-vec` resolved to 0.1.9 despite lockfile pin of 0.1.6 — follow-up F-057 logged. v0.4.0 unblocked; next step = draft `docs/plans/v0.4.0-ask.md`.
 - **2026-05-09 (release)** — v0.4.0 SHIPPED. All 21 tasks closed (T-0..T-19). 107 unit tests + 29 smoke assertions (v0.3.1 + v0.4.0) green. `package.json` 0.3.1 → 0.4.0; tag `v0.4.0` annotated on `main`; 23 commits + tag pushed to `origin/main`. Next lane: v0.5.0 APK + extension — no blockers. SC-7 live bench (first-token + full-answer p95) is a user-side measurement task pending; code paths + preflights verified.
 - **2026-05-11 (pivot execution)** — v0.5.0 Cloudflare-tunnel pivot plan v2.1 shipped + 8 of 15 T-CF-* tasks landed in a single session. Plan v2.0 drafted via gsd-planner agent → cross-AI review produced `v0.5.0-apk-extension-v2-REVIEW.md` with 5 HIGH + 5 MEDIUM findings (bearer vs cookie on `/api/settings/lan-info`, unowned `scripts/smoke-sse.sh` creation, missing `data/test.pdf`, uncoordinated `parseSetupUri` return type, orphan `buildSetupUri` signature change) → all absorbed into v2.1 with inline `(REVIEW ...)` annotations. Executed: T-CF-2 (delete mDNS + bonjour-service dep + simplify share-handler URL to `BRAIN_TUNNEL_URL` constant), T-CF-3 (delete `network_security_config.xml`), T-CF-4..6 (QR schema `url=`+`token=` + single-probe reachability), T-CF-8 (rebuild APK with tunnel URL baked in; 8.9 MB at `data/artifacts/brain-debug-0.4.0.apk`), T-CF-9 (pairing page + API for tunnel), T-CF-10 (README rewrite for cloudflared setup + privacy note), T-CF-12 (grep cleanup + drop `@capacitor/camera` + kill `BRAIN_LAN_MODE`/`dev:lan`/`start:lan`). Tests: 233/233 green throughout. Remaining: T-CF-11 AVD smoke (interactive), T-CF-14 physical Pixel (user-gated), T-CF-15..21 Chrome extension wave, T-CF-22..25 release wave.
+- **2026-06-02 (release)** — v0.6.2 Off-site backup SHIPPED. Tag `v0.6.2` on commit `90b6c61`, pushed to `origin/main` + tag. Locked-design path (rclone+cron, not in-process SDK) per `S-7-MIGRATION-RUNBOOK.md`. SDK-path attempt `a799b16` reverted in `f6208e1` before deploy. Deployed on Hetzner: rclone v1.74.2 installed; B2 remote `b2` configured against existing `/etc/brain/.env` vars; `/opt/brain/scripts/backup-offsite.sh` (brain:brain 755); `/etc/cron.d/brain-backup` (root:root 644, every 6h); `/var/log/brain-backup.log` pre-created. D-18 smoke PASS: manual run uploaded 739,579-byte encrypted blob; Mac round-trip via `rclone cat` + `gpg --decrypt` produced 5,046,272-byte SQLite; `select count(*) from items` = 9 (matches live). T-G escrow: GPG private key + revoke cert + passphrase pasted into 1Password `Brain — secrets`; `/tmp` files secure-deleted with `rm -P`. No new npm deps. v0.6.3 hygiene NEXT (T-11b legacy env drop, BUG-ENRICH log hygiene, Mac better-sqlite3 ABI, `tsx` removal, CSP nonces, HARDEN-HETZNER-SSH).
 
 **Update rule:** every phase transition appends one row here with date + what changed.
