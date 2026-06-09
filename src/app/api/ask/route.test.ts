@@ -1,9 +1,9 @@
 /**
- * T-10 tests — Ollama-offline preflight on /api/ask.
+ * T-10 tests — provider-offline preflight on /api/ask.
  *
  * Setup points OLLAMA_HOST at 127.0.0.1:1 (closed port) so isOllamaAlive()
  * consistently returns false. The route should short-circuit with a
- * 503 + OLLAMA_OFFLINE error frame BEFORE attempting retrieve or stream.
+ * 503 + LLM_PROVIDER_OFFLINE error frame BEFORE attempting retrieve or stream.
  */
 import { test } from "node:test";
 import assert from "node:assert/strict";
@@ -38,7 +38,7 @@ test("returns 401 when no session cookie", async () => {
   assert.match(body, /UNAUTHENTICATED/);
 });
 
-test("returns 503 OLLAMA_OFFLINE when daemon unreachable", async () => {
+test("returns 503 LLM_PROVIDER_OFFLINE when provider unreachable", async () => {
   const req = mockRequest({ question: "what did I save about growth loops?" });
   const res = await POST(req);
   assert.equal(res.status, 503);
@@ -47,8 +47,9 @@ test("returns 503 OLLAMA_OFFLINE when daemon unreachable", async () => {
     /text\/event-stream/,
   );
   const body = await res.text();
+  assert.match(body, /LLM_PROVIDER_OFFLINE/);
   assert.match(body, /OLLAMA_OFFLINE/);
-  assert.match(body, /ollama serve/);
+  assert.match(body, /AI provider/);
 });
 
 test("returns 400 BAD_REQUEST on malformed body", async () => {
