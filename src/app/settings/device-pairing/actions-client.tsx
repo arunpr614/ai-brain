@@ -1,20 +1,134 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Copy, RefreshCw, Check } from "lucide-react";
+import { Check, Copy, Plus, RefreshCw } from "lucide-react";
 
 /**
- * Client-only affordances for /settings/device-pairing:
- *   - "Copy token" with visual confirmation
- *   - "Rotate token" button posting to /api/settings/rotate-token;
- *     reloads the page on success so the new QR renders server-side.
- *
- * The token value is already in the HTML this component receives; no new
- * network call is needed to display it. Rotation is the only reason this
- * needs to be a client component.
+ * Client-only affordances for /settings/device-pairing.
  */
-export function LanInfoActions({ token }: { token: string }) {
+export function AndroidPairingCodeActions() {
+  const [code, setCode] = useState<string | null>(null);
+  const [expiresAt, setExpiresAt] = useState<number | null>(null);
+  const [now, setNow] = useState(() => Date.now());
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (expiresAt === null) return;
+    const id = window.setInterval(() => setNow(Date.now()), 1_000);
+    return () => window.clearInterval(id);
+  }, [expiresAt]);
+
+  async function createCode() {
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await fetch("/api/settings/device-pairing", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+      });
+      const body = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(body.error ?? `HTTP ${res.status}`);
+      setCode(body.code);
+      setExpiresAt(body.expires_at);
+      setNow(Date.now());
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Could not create code");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  const expiryCopy =
+    expiresAt === null
+      ? null
+      : new Date(expiresAt).toLocaleTimeString([], {
+          hour: "numeric",
+          minute: "2-digit",
+        });
+  const secondsRemaining = useMemo(() => {
+    if (expiresAt === null) return null;
+    return Math.max(0, Math.ceil((expiresAt - now) / 1_000));
+  }, [expiresAt, now]);
+  const expired = secondsRemaining === 0;
+  const remainingCopy =
+    secondsRemaining === null ? null : formatRemaining(secondsRemaining);
+
+  return (
+    <div className="rounded-lg border border-[var(--border)] bg-[var(--surface)] p-4">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <h2 className="text-sm font-medium text-[var(--text-primary)]">
+            Android app
+          </h2>
+          <p className="mt-1 text-xs text-[var(--text-muted)]">
+            Generate a temporary code, then enter it in the Android app.
+          </p>
+        </div>
+        <button
+          type="button"
+          onClick={createCode}
+          disabled={loading}
+          className="inline-flex h-9 items-center justify-center gap-1.5 rounded-md border border-[var(--border)] bg-[var(--surface-raised)] px-3 text-sm font-medium text-[var(--text-primary)] transition-colors hover:border-[var(--border-strong)] disabled:opacity-50"
+        >
+          {code ? (
+            <RefreshCw
+              className={`h-4 w-4 ${loading ? "animate-spin" : ""}`}
+              strokeWidth={2}
+            />
+          ) : (
+            <Plus className="h-4 w-4" strokeWidth={2} />
+          )}
+          {loading
+            ? "Generating..."
+            : code
+              ? expired
+                ? "Generate new code"
+                : "Regenerate"
+              : "Add Android device"}
+        </button>
+      </div>
+
+      {code && (
+        <div
+          className={`mt-4 rounded-md border px-4 py-3 ${
+            expired
+              ? "border-[var(--danger)] bg-[var(--surface)]"
+              : "border-[var(--border)] bg-[var(--background)]"
+          }`}
+        >
+          <p className="text-xs uppercase tracking-wide text-[var(--text-muted)]">
+            Pairing code
+          </p>
+          <p
+            className={`mt-1 font-mono text-[32px] font-semibold leading-none ${
+              expired ? "text-[var(--text-muted)]" : "text-[var(--text-primary)]"
+            }`}
+          >
+            {code}
+          </p>
+          <p className="mt-2 text-xs text-[var(--text-muted)]">
+            {expired
+              ? "Expired. Generate a new code."
+              : `Expires in ${remainingCopy}. The code works once.`}
+            {!expired && expiryCopy ? ` Expires at ${expiryCopy}.` : ""}
+          </p>
+        </div>
+      )}
+
+      {error && <p className="mt-3 text-xs text-[var(--danger)]">{error}</p>}
+    </div>
+  );
+}
+
+function formatRemaining(totalSeconds: number): string {
+  const minutes = Math.floor(totalSeconds / 60);
+  const seconds = totalSeconds % 60;
+  return `${minutes}:${String(seconds).padStart(2, "0")}`;
+}
+
+export function DevicePairingActions({ token }: { token: string }) {
   const router = useRouter();
   const [copied, setCopied] = useState(false);
   const [rotating, setRotating] = useState(false);
