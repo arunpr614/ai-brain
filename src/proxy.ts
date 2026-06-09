@@ -2,7 +2,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import {
   checkBearerRateLimit,
   isBearerRoute,
-  loadLanToken,
+  loadApiToken,
   verifyBearerToken,
 } from "@/lib/auth/bearer";
 import { logError } from "@/lib/errors/sink";
@@ -11,13 +11,13 @@ import { logError } from "@/lib/errors/sink";
  * Next.js 16 proxy (formerly middleware) — v0.5.0 T-4.
  *
  * Layered auth check, first-match-wins:
- *   1. Public path (/unlock, /setup, /api/auth/*)  → next()
+ *   1. Public path (/unlock, /setup, /setup-apk, /api/auth/*)  → next()
  *   2. brain-session cookie PRESENT                → next()
  *      (HMAC fully verified downstream in server components / actions /
  *      route handlers; the proxy is a fast presence-check).
  *   3. Path is in BEARER_ROUTES allow-list         → bearer verification:
  *      a. Authorization: Bearer <token> header present
- *      b. Token matches BRAIN_LAN_TOKEN via timingSafeEqual
+ *      b. Token matches BRAIN_API_TOKEN via timingSafeEqual
  *      c. Rate-limit budget available (30 req/min default per token)
  *      → on pass: next()
  *      → on fail: 401 or 429, with structured `lan.bearer.*` log entry
@@ -45,13 +45,31 @@ const SESSION_COOKIE = "brain-session";
 // itself enforces the auth boundary at its fetch handler — caching
 // auth-gated routes happens via runtime stale-while-revalidate using
 // the user's session cookie, never via cache.add at install time.
-const PUBLIC_PATHS = new Set(["/unlock", "/setup", "/offline.html", "/sw.js"]);
+const PUBLIC_PATHS = new Set([
+  "/unlock",
+  "/setup",
+  "/setup-apk",
+  "/offline.html",
+  "/sw.js",
+]);
+
+/**
+ * Declarative list of API routes that must bypass the default-deny auth layer.
+ * Add new public webhook-style or unauthenticated API routes here instead of
+ * adding more ad-hoc `if (pathname === ...)` statements.
+ */
+const PUBLIC_API_ROUTES = new Set([
+  "/api/telegram/webhook",
+  "/api/settings/device-pairing/exchange",
+  // Add future public API routes here (e.g. "/api/some-webhook")
+]);
 
 export function proxy(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
   // 1. Public paths.
   if (pathname.startsWith("/api/auth")) return NextResponse.next();
+  if (PUBLIC_API_ROUTES.has(pathname)) return NextResponse.next();
   if (PUBLIC_PATHS.has(pathname)) return NextResponse.next();
 
   // 2. Session cookie presence → web UI flow (browser, APK WebView nav).
@@ -79,8 +97,8 @@ export function proxy(req: NextRequest) {
       });
       return unauth(req, pathname);
     }
-    const token = loadLanToken();
-    // loadLanToken cannot be null here because verifyBearerToken returned ok.
+    const token = loadApiToken();
+    // loadApiToken cannot be null here because verifyBearerToken returned ok.
     // Narrow explicitly for the rate-limit call.
     if (token === null) {
       logError({

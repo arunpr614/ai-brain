@@ -9,7 +9,7 @@ import { join } from "node:path";
 import { NextRequest } from "next/server";
 import { POST } from "./route";
 
-const ORIGINAL_TOKEN = process.env.BRAIN_LAN_TOKEN;
+const ORIGINAL_TOKEN = process.env.BRAIN_API_TOKEN;
 const ORIGINAL_CWD = process.cwd();
 
 let tmpDir: string | null = null;
@@ -30,8 +30,8 @@ describe("/api/settings/rotate-token", () => {
       rmSync(tmpDir, { recursive: true, force: true });
       tmpDir = null;
     }
-    if (ORIGINAL_TOKEN === undefined) delete process.env.BRAIN_LAN_TOKEN;
-    else process.env.BRAIN_LAN_TOKEN = ORIGINAL_TOKEN;
+    if (ORIGINAL_TOKEN === undefined) delete process.env.BRAIN_API_TOKEN;
+    else process.env.BRAIN_API_TOKEN = ORIGINAL_TOKEN;
   });
 
   it("returns 401 without session cookie", async () => {
@@ -42,21 +42,21 @@ describe("/api/settings/rotate-token", () => {
 
   it("rotates the token on valid auth + updates process.env + writes .env", async () => {
     tmpDir = mkdtempSync(join(tmpdir(), "brain-rotate-route-"));
-    process.chdir(tmpDir); // so rotateLanToken writes into our tmp .env
+    process.chdir(tmpDir); // so rotateApiToken writes into our tmp .env
 
     const before = "a".repeat(64);
-    process.env.BRAIN_LAN_TOKEN = before;
+    process.env.BRAIN_API_TOKEN = before;
 
     const res = await POST(mkReq({ cookie: "stub" }));
     assert.equal(res.status, 200);
     const body = await res.json();
     assert.equal(body.ok, true);
 
-    const after = process.env.BRAIN_LAN_TOKEN!;
+    const after = process.env.BRAIN_API_TOKEN!;
     assert.notEqual(after, before);
     assert.match(after, /^[0-9a-f]{64}$/);
 
     const env = readFileSync(join(tmpDir, ".env"), "utf8");
-    assert.match(env, new RegExp(`^BRAIN_LAN_TOKEN=${after}$`, "m"));
+    assert.match(env, new RegExp(`^BRAIN_API_TOKEN=${after}$`, "m"));
   });
 });

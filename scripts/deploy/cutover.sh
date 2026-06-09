@@ -138,7 +138,7 @@ d13_tunnel_swap() {
   sleep 5  # allow CF edge to converge
   local probe
   probe=$(curl -s -o /dev/null -w '%{http_code}' \
-    -H "Authorization: Bearer $(grep ^BRAIN_LAN_TOKEN= .env | cut -d= -f2)" \
+    -H "Authorization: Bearer $(grep ^BRAIN_API_TOKEN= .env | cut -d= -f2)" \
     https://brain.arunp.in/api/health)
   [[ "$probe" == "200" ]] || die "D-13: brain.arunp.in returned $probe (expected 200)"
   log "D-13: brain.arunp.in → Hetzner serving 200 OK"

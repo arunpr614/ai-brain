@@ -122,7 +122,7 @@ function runMigrations(db: Database.Database): void {
  */
 export interface ItemRow {
   id: string;
-  source_type: "url" | "pdf" | "note" | "youtube" | "podcast" | "epub" | "docx";
+  source_type: "url" | "pdf" | "note" | "youtube" | "podcast" | "epub" | "docx" | "telegram";
   source_url: string | null;
   title: string;
   author: string | null;

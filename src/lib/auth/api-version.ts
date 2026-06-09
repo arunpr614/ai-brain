@@ -1,32 +1,28 @@
 /**
- * Client API version compatibility — v0.6.x offline mode (OFFLINE-6 / plan v3 §5.5).
+ * Client API version compatibility.
  *
- * Protects against the "user queued items offline for a week, server got
- * upgraded with a breaking schema change in the meantime" scenario. The
- * APK sends `X-Brain-Client-Api: <n>` with every outbox POST; if the
+ * The APK sends `X-Brain-Client-Api: <n>` with capture requests; if the
  * server's expected version differs, the route returns 422 with body
- * `{ code: 'version_mismatch', message: ... }`. The outbox classifier
- * (src/lib/outbox/classify.ts) maps that to status='stuck' with reason
- * `version_mismatch`, surfacing actionable copy to the user.
+ * `{ code: 'version_mismatch', message: ... }`.
  *
  * Backward-compatibility default: routes that read this helper accept
  * MISSING headers as compatible (the Chrome extension and pre-OFFLINE-4
  * APK builds don't send it). A header that is PRESENT but does not equal
  * `EXPECTED_CLIENT_API` triggers the 422.
  *
- * The expected version is bumped only when a breaking change to the
- * outbox payload shape requires re-encoding old queue entries. Bumping
- * is intentionally rare — most additive server changes do not need it.
+ * The expected version is bumped only when a breaking client/server
+ * contract changes. Bumping is intentionally rare — most additive server
+ * changes do not need it.
  */
 
 import { NextResponse, type NextRequest } from "next/server";
 
-/** Header name the APK transport.ts sends. Lowercase per HTTP/2 norms. */
+/** Header name the APK sends. Lowercase per HTTP/2 norms. */
 export const CLIENT_API_HEADER = "x-brain-client-api";
 
 /**
  * The server's currently-accepted client API version. Bumped only when a
- * breaking change requires re-encoding outbox entries. Initial: 1.
+ * breaking change requires a client update. Initial: 1.
  */
 export const EXPECTED_CLIENT_API = 1;
 

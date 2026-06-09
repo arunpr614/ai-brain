@@ -22,7 +22,7 @@ import { __resetRateLimiterForTests, DEFAULT_RATE_LIMIT } from "@/lib/auth/beare
 import { proxy } from "./proxy";
 
 const GOOD_TOKEN = "a".repeat(64);
-const ORIGINAL_TOKEN = process.env.BRAIN_LAN_TOKEN;
+const ORIGINAL_TOKEN = process.env.BRAIN_API_TOKEN;
 
 function mkReq(
   pathname: string,
@@ -51,8 +51,20 @@ describe("proxy — public paths", () => {
     assert.notEqual(res.status, 401);
   });
 
+  it("/setup-apk passes without auth", () => {
+    const res = proxy(mkReq("/setup-apk"));
+    assert.notEqual(res.status, 401);
+    assert.notEqual(res.status, 302);
+    assert.notEqual(res.status, 307);
+  });
+
   it("/api/auth/* passes without auth", () => {
     const res = proxy(mkReq("/api/auth/pin"));
+    assert.notEqual(res.status, 401);
+  });
+
+  it("device-pairing exchange API passes without auth", () => {
+    const res = proxy(mkReq("/api/settings/device-pairing/exchange", { method: "POST" }));
     assert.notEqual(res.status, 401);
   });
 
@@ -79,11 +91,11 @@ describe("proxy — session cookie path", () => {
 
 describe("proxy — bearer path (BEARER_ROUTES)", () => {
   before(() => {
-    process.env.BRAIN_LAN_TOKEN = GOOD_TOKEN;
+    process.env.BRAIN_API_TOKEN = GOOD_TOKEN;
   });
   after(() => {
-    if (ORIGINAL_TOKEN === undefined) delete process.env.BRAIN_LAN_TOKEN;
-    else process.env.BRAIN_LAN_TOKEN = ORIGINAL_TOKEN;
+    if (ORIGINAL_TOKEN === undefined) delete process.env.BRAIN_API_TOKEN;
+    else process.env.BRAIN_API_TOKEN = ORIGINAL_TOKEN;
   });
   beforeEach(() => __resetRateLimiterForTests());
   afterEach(() => __resetRateLimiterForTests());
@@ -111,11 +123,11 @@ describe("proxy — bearer path (BEARER_ROUTES)", () => {
     assert.equal(res.status, 401);
   });
 
-  it("empty BRAIN_LAN_TOKEN rejects a bearer-like request (REVIEW B-1/H-1)", () => {
-    delete process.env.BRAIN_LAN_TOKEN;
+  it("empty BRAIN_API_TOKEN rejects a bearer-like request (REVIEW B-1/H-1)", () => {
+    delete process.env.BRAIN_API_TOKEN;
     const res = proxy(mkReq("/api/capture/url", { bearer: GOOD_TOKEN, method: "POST" }));
     assert.equal(res.status, 401);
-    process.env.BRAIN_LAN_TOKEN = GOOD_TOKEN;
+    process.env.BRAIN_API_TOKEN = GOOD_TOKEN;
   });
 
   it("exhausted rate limit returns 429 + Retry-After", () => {
@@ -138,11 +150,11 @@ describe("proxy — unauthenticated fallthrough", () => {
 
   it("non-bearer API path ignores Authorization header", () => {
     // /api/ask is not in BEARER_ROUTES; even a valid-looking bearer must not pass.
-    process.env.BRAIN_LAN_TOKEN = GOOD_TOKEN;
+    process.env.BRAIN_API_TOKEN = GOOD_TOKEN;
     const res = proxy(mkReq("/api/ask", { bearer: GOOD_TOKEN, method: "POST" }));
     assert.equal(res.status, 401);
-    if (ORIGINAL_TOKEN === undefined) delete process.env.BRAIN_LAN_TOKEN;
-    else process.env.BRAIN_LAN_TOKEN = ORIGINAL_TOKEN;
+    if (ORIGINAL_TOKEN === undefined) delete process.env.BRAIN_API_TOKEN;
+    else process.env.BRAIN_API_TOKEN = ORIGINAL_TOKEN;
   });
 
   it("HTML path without cookie redirects to /unlock with next=", () => {

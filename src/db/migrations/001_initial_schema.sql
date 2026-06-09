@@ -15,7 +15,7 @@ CREATE TABLE IF NOT EXISTS settings (
 -- Items = anything captured: URL, PDF, manual note (v0.1.0 only manual).
 CREATE TABLE IF NOT EXISTS items (
   id               TEXT PRIMARY KEY,
-  source_type      TEXT NOT NULL CHECK (source_type IN ('url', 'pdf', 'note', 'youtube', 'podcast', 'epub', 'docx')),
+  source_type      TEXT NOT NULL CHECK (source_type IN ('url', 'pdf', 'note', 'youtube', 'podcast', 'epub', 'docx', 'telegram')),
   source_url       TEXT,
   title            TEXT NOT NULL,
   author           TEXT,

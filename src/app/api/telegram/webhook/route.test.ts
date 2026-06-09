@@ -2,12 +2,15 @@
  * Unit tests for /api/telegram/webhook route handler (v0.6.5).
  *
  * Covers the auth gates (secret-token header + sender allowlist) and
- * the dispatch happy-path. Uses the `__handlePost` test seam to inject
+ * the dispatch happy-path. Uses the handler test seam to inject
  * stubbed dispatch + sendMessage without real DB or Telegram API.
  */
 import assert from "node:assert/strict";
 import { afterEach, beforeEach, describe, it } from "node:test";
-import { __handlePost, type WebhookDeps } from "./route";
+import {
+  handleTelegramWebhookPost,
+  type WebhookDeps,
+} from "@/lib/telegram/webhook-handler";
 import type { TelegramUpdate, TelegramMessage } from "@/lib/telegram/types";
 
 const OWNER_ID = 943125412;
@@ -67,7 +70,7 @@ function ownerUpdate(extra: Partial<TelegramMessage> = {}): TelegramUpdate {
   };
 }
 
-describe("telegram/webhook __handlePost", () => {
+describe("telegram/webhook handleTelegramWebhookPost", () => {
   beforeEach(() => {
     process.env.TELEGRAM_WEBHOOK_SECRET = SECRET;
     process.env.TELEGRAM_OWNER_USER_ID = String(OWNER_ID);
@@ -80,14 +83,17 @@ describe("telegram/webhook __handlePost", () => {
 
   it("returns 401 when secret-token header is missing", async () => {
     const t = buildDeps();
-    const res = await __handlePost(buildRequest(ownerUpdate(), null) as never, t.deps);
+    const res = await handleTelegramWebhookPost(buildRequest(ownerUpdate(), null), t.deps);
     assert.equal(res.status, 401);
     assert.equal(t.dispatchCalls.length, 0);
   });
 
   it("returns 401 when secret-token header is wrong", async () => {
     const t = buildDeps();
-    const res = await __handlePost(buildRequest(ownerUpdate(), "wrong-secret") as never, t.deps);
+    const res = await handleTelegramWebhookPost(
+      buildRequest(ownerUpdate(), "wrong-secret"),
+      t.deps,
+    );
     assert.equal(res.status, 401);
     assert.equal(t.dispatchCalls.length, 0);
   });
@@ -95,7 +101,7 @@ describe("telegram/webhook __handlePost", () => {
   it("returns 503 when TELEGRAM_WEBHOOK_SECRET is not configured", async () => {
     delete process.env.TELEGRAM_WEBHOOK_SECRET;
     const t = buildDeps();
-    const res = await __handlePost(buildRequest(ownerUpdate()) as never, t.deps);
+    const res = await handleTelegramWebhookPost(buildRequest(ownerUpdate()), t.deps);
     assert.equal(res.status, 503);
   });
 
@@ -103,7 +109,7 @@ describe("telegram/webhook __handlePost", () => {
     const t = buildDeps();
     const update = ownerUpdate();
     update.message!.from!.id = 99999999;
-    const res = await __handlePost(buildRequest(update) as never, t.deps);
+    const res = await handleTelegramWebhookPost(buildRequest(update), t.deps);
     assert.equal(res.status, 200);
     assert.equal(t.dispatchCalls.length, 0);
     assert.equal(t.sendCalls.length, 0);
@@ -111,14 +117,17 @@ describe("telegram/webhook __handlePost", () => {
 
   it("returns 200 silent when message is missing (e.g. channel_post)", async () => {
     const t = buildDeps();
-    const res = await __handlePost(buildRequest({ update_id: 1 }) as never, t.deps);
+    const res = await handleTelegramWebhookPost(buildRequest({ update_id: 1 }), t.deps);
     assert.equal(res.status, 200);
     assert.equal(t.dispatchCalls.length, 0);
   });
 
   it("dispatches to handleCaptureMessage on valid owner update", async () => {
     const t = buildDeps();
-    const res = await __handlePost(buildRequest(ownerUpdate({ text: "hello" })) as never, t.deps);
+    const res = await handleTelegramWebhookPost(
+      buildRequest(ownerUpdate({ text: "hello" })),
+      t.deps,
+    );
     assert.equal(res.status, 200);
     assert.equal(t.dispatchCalls.length, 1);
     assert.equal(t.dispatchCalls[0].msg.text, "hello");
@@ -127,7 +136,10 @@ describe("telegram/webhook __handlePost", () => {
 
   it("returns 200 even when dispatch throws — tries to ack failure to user", async () => {
     const t = buildDeps({ dispatchThrows: new Error("boom") });
-    const res = await __handlePost(buildRequest(ownerUpdate({ text: "trigger" })) as never, t.deps);
+    const res = await handleTelegramWebhookPost(
+      buildRequest(ownerUpdate({ text: "trigger" })),
+      t.deps,
+    );
     assert.equal(res.status, 200);
     assert.equal(t.sendCalls.length, 1);
     assert.match(t.sendCalls[0].text, /Capture failed: boom/);
@@ -143,7 +155,7 @@ describe("telegram/webhook __handlePost", () => {
       },
       body: "not-json{{{",
     });
-    const res = await __handlePost(req as never, t.deps);
+    const res = await handleTelegramWebhookPost(req, t.deps);
     assert.equal(res.status, 200);
     assert.equal(t.dispatchCalls.length, 0);
   });
