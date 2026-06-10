@@ -11,7 +11,7 @@
  * Error codes:
  *   UNAUTHENTICATED   — no session cookie
  *   BAD_REQUEST       — body schema / scope/item_id mismatch
- *   OLLAMA_OFFLINE    — daemon unreachable (SC-8, T-10)
+ *   LLM_PROVIDER_OFFLINE — configured generation provider unreachable
  *   RETRIEVE_FAILED   — vec0 query threw
  *   STREAM_FAILED     — generator threw mid-stream (wrapped by toSSEStream)
  */
@@ -63,18 +63,17 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  // T-10 (SC-8): fail fast if the Ask LLM provider isn't reachable. The
-  // generator needs it for streaming. The retrieve step needs the embed
-  // provider (still Ollama-backed at v0.6.0 B-8 — embed wrapper lands in
-  // B-9..B-11). The error code stays OLLAMA_OFFLINE for client/test back-
-  // compat; it now means "the configured Ask provider is unreachable".
+  // Fail fast if the configured Ask LLM provider is not reachable. The
+  // generator needs it for streaming; retrieval has its own embedding
+  // provider path.
   if (!(await getAskProvider().isAlive())) {
     return new Response(
       encodeSSE({
         type: "error",
-        code: "OLLAMA_OFFLINE",
+        code: "LLM_PROVIDER_OFFLINE",
+        legacy_code: "OLLAMA_OFFLINE",
         message:
-          "The Ask LLM provider is unreachable. If running locally, start Ollama with `ollama serve`.",
+          "The Ask AI provider is not reachable right now. Check AI services in Settings.",
       }),
       { status: 503, headers: sseHeaders() },
     );

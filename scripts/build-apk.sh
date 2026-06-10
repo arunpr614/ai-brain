@@ -2,7 +2,7 @@
 # v0.5.0 T-18 / F-017 — one-shot debug-APK build.
 #
 # Usage:  npm run build:apk
-# Output: data/artifacts/brain-debug-<version>.apk
+# Output: data/artifacts/brain-debug-v<android-versionName>-code<android-versionCode>.apk
 #
 # Pipeline:
 #   1. Sanity: typecheck + next build. The APK is a thin WebView shell
@@ -14,10 +14,10 @@
 #      manifests into android/app/. Safe to run repeatedly; idempotent.
 #   3. `./gradlew assembleDebug` inside android/. Android's Gradle plugin
 #      reuses incremental output; cold build ~90s, warm build ~2s.
-#   4. Copy android/app/build/outputs/apk/debug/app-debug.apk →
-#      data/artifacts/brain-debug-<version>.apk. The <version> tag comes
-#      from package.json so a checkout at tag v0.5.0 produces a self-
-#      identifying APK.
+#   4. Copy android/app/build/outputs/apk/debug/brain-debug-v<versionName>-code<versionCode>.apk →
+#      data/artifacts/brain-debug-v<versionName>-code<versionCode>.apk.
+#      The version tag comes from Android's installable version metadata,
+#      so the filename matches what Android reports after installation.
 #
 # Exit non-zero on any failure — `set -euo pipefail` + explicit check on
 # the final APK existence. 3-minute target from the plan is comfortable
@@ -32,21 +32,35 @@ set -euo pipefail
 cd "$(dirname "$0")/.."
 REPO_ROOT="$(pwd)"
 
-# Package version lives in package.json; grep-and-trim avoids requiring
-# `jq` on a fresh machine.
-VERSION="$(grep -E '^\s*"version":' package.json | head -1 | sed -E 's/.*"version":[[:space:]]*"([^"]+)".*/\1/')"
-if [[ -z "$VERSION" ]]; then
-  echo "[build-apk] FAIL: could not read version from package.json" >&2
+ANDROID_BUILD_FILE="$REPO_ROOT/android/app/build.gradle"
+VERSION_NAME="$(grep -E '^\s*versionName[[:space:]]+"' "$ANDROID_BUILD_FILE" | head -1 | sed -E 's/.*versionName[[:space:]]+"([^"]+)".*/\1/')"
+VERSION_CODE="$(grep -E '^\s*versionCode[[:space:]]+[0-9]+' "$ANDROID_BUILD_FILE" | head -1 | sed -E 's/.*versionCode[[:space:]]+([0-9]+).*/\1/')"
+if [[ -z "$VERSION_NAME" || -z "$VERSION_CODE" ]]; then
+  echo "[build-apk] FAIL: could not read Android versionName/versionCode from $ANDROID_BUILD_FILE" >&2
   exit 1
 fi
 
 ARTIFACT_DIR="$REPO_ROOT/data/artifacts"
-ARTIFACT_PATH="$ARTIFACT_DIR/brain-debug-${VERSION}.apk"
-GRADLE_OUTPUT="$REPO_ROOT/android/app/build/outputs/apk/debug/app-debug.apk"
+APK_NAME="brain-debug-v${VERSION_NAME}-code${VERSION_CODE}.apk"
+ARTIFACT_PATH="$ARTIFACT_DIR/$APK_NAME"
+GRADLE_OUTPUT="$REPO_ROOT/android/app/build/outputs/apk/debug/$APK_NAME"
 KEYSTORE_PATH="$REPO_ROOT/android/app/debug.keystore"
 
-echo "[build-apk] version=${VERSION}"
+echo "[build-apk] versionName=${VERSION_NAME}"
+echo "[build-apk] versionCode=${VERSION_CODE}"
 echo "[build-apk] artifact=${ARTIFACT_PATH}"
+
+# APK versioning rule: every newly shared APK should have a fresh Android
+# versionName + versionCode. The output filename includes both values, so
+# an existing artifact at this path means this version was already built.
+# Use ALLOW_REBUILD_SAME_APK_VERSION=1 only for a local throwaway rebuild
+# that will not be handed to a tester/device as a new APK.
+if [[ -f "$ARTIFACT_PATH" && "${ALLOW_REBUILD_SAME_APK_VERSION:-0}" != "1" ]]; then
+  echo "[build-apk] FAIL: $ARTIFACT_PATH already exists." >&2
+  echo "[build-apk]       Bump android/app/build.gradle versionName and versionCode before creating a new APK." >&2
+  echo "[build-apk]       For a local-only rebuild, set ALLOW_REBUILD_SAME_APK_VERSION=1." >&2
+  exit 1
+fi
 
 # v0.5.0 T-19 / F-018 — ensure a project-local debug keystore exists.
 # Signing identity pinned at android/app/debug.keystore so all machines

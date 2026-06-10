@@ -11,6 +11,7 @@ import { validateOrigin } from "@/lib/auth/bearer";
 import { checkClientApiVersion } from "@/lib/auth/api-version";
 import { insertCaptured } from "@/db/items";
 import { isDuplicateShare, shareDedupKey } from "@/lib/capture/dedup";
+import { captureSourceFromTrustedHeader } from "@/lib/capture/source";
 import { logError } from "@/lib/errors/sink";
 import crypto from "node:crypto";
 
@@ -50,6 +51,7 @@ export async function POST(req: NextRequest) {
   }
 
   const { title, body } = parsed.data;
+  const captureSource = captureSourceFromTrustedHeader(req.headers.get("x-brain-capture-source"));
 
   // Dedup on title+body hash — the note has no URL identifier to key off.
   const hash = crypto.createHash("sha256").update(`${title}\n${body}`).digest("hex").slice(0, 32);
@@ -68,8 +70,13 @@ export async function POST(req: NextRequest) {
 
   const item = insertCaptured({
     source_type: "note",
+    capture_source: captureSource,
     title,
     body,
+    source_platform: "note",
+    capture_quality: "user_provided_full_text",
+    extraction_method: "manual_note",
+    extraction_version: "capture-v0.7.5",
   });
 
   return NextResponse.json({ id: item.id, duplicate: false }, { status: 201 });

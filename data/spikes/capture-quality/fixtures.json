@@ -1,0 +1,176 @@
+{
+  "youtube": [
+    {
+      "id": "yt-public-original",
+      "url": "https://www.youtube.com/watch?v=jNQXAC9IVRw",
+      "expected": ["title", "channel", "duration", "transcript_or_no_transcript"]
+    },
+    {
+      "id": "yt-user-reported-1",
+      "url": "https://www.youtube.com/watch?v=1PXH0mRhbwk",
+      "expected": ["title", "channel", "duration", "transcript_or_metadata"]
+    },
+    {
+      "id": "yt-user-reported-2",
+      "url": "https://www.youtube.com/watch?v=Owv503rTqYY",
+      "expected": ["title", "channel", "duration", "transcript_or_metadata"]
+    },
+    {
+      "id": "yt-user-reported-3",
+      "url": "https://www.youtube.com/watch?v=ib74sLgjIBM",
+      "expected": ["title", "channel", "duration", "transcript_or_metadata"]
+    },
+    {
+      "id": "yt-substack-related",
+      "url": "https://www.youtube.com/watch?v=wBBye8L24rs",
+      "expected": ["title", "channel", "duration", "transcript_or_metadata"]
+    }
+  ],
+  "youtube_shorts": [
+    {
+      "id": "short-beginner-guide",
+      "url": "https://www.youtube.com/shorts/8xkEICotpOM",
+      "expected": ["title", "channel", "short_form_metadata"]
+    },
+    {
+      "id": "short-phone-posting",
+      "url": "https://www.youtube.com/shorts/LVZg9AtAGNI",
+      "expected": ["title", "channel", "short_form_metadata"]
+    },
+    {
+      "id": "short-playlist",
+      "url": "https://www.youtube.com/shorts/pbIy8yKL7kQ",
+      "expected": ["title", "channel", "short_form_metadata"]
+    },
+    {
+      "id": "short-name-handle",
+      "url": "https://www.youtube.com/shorts/vLMYeZalGhI",
+      "expected": ["title", "channel", "short_form_metadata"]
+    },
+    {
+      "id": "short-public-service",
+      "url": "https://www.youtube.com/shorts/lR4vIQr-gvU",
+      "expected": ["title", "channel", "short_form_metadata"]
+    }
+  ],
+  "substack": [
+    {
+      "id": "substack-toolkit",
+      "url": "https://simonkjones.substack.com/p/understanding-the-substack-toolkit",
+      "expected": ["title", "author", "published_at", "body"]
+    },
+    {
+      "id": "substack-slow-ai-comments",
+      "url": "https://theslowai.substack.com/p/your-favourite-commenter-might-not-be-writing-their-own-comments",
+      "expected": ["title", "author", "published_at", "body"]
+    },
+    {
+      "id": "substack-post-office-ai",
+      "url": "https://maxread.substack.com/p/what-if-the-post-office-had-its-own",
+      "expected": ["title", "author", "published_at", "body"]
+    },
+    {
+      "id": "substack-quit-chatgpt",
+      "url": "https://ruben.substack.com/p/quit-chatgpt",
+      "expected": ["title", "author", "published_at", "body_or_preview"]
+    },
+    {
+      "id": "substack-ai-freaking-out",
+      "url": "https://statsandsociety.substack.com/p/you-should-absolutely-be-freaking",
+      "expected": ["title", "author", "published_at", "body_or_preview"]
+    },
+    {
+      "id": "substack-paid-example",
+      "url": "https://natesnewsletter.substack.com/p/chatgpt-201-advanced-prompting-made",
+      "expected": ["title", "author", "published_at", "paywall_preview"]
+    },
+    {
+      "id": "substack-chris-best",
+      "url": "https://cb.substack.com/p/noah-smith-v-insane-facebook-ai-slop",
+      "expected": ["title", "author", "published_at", "body_or_preview"]
+    },
+    {
+      "id": "substack-note-url",
+      "url": "https://substack.com/%40ruben/note/c-215217074",
+      "expected": ["title", "author", "note_body_or_metadata"]
+    }
+  ],
+  "linkedin": [
+    {
+      "id": "linkedin-openai-privacy",
+      "url": "https://www.linkedin.com/posts/gregsnapper_openai-privacy-update-left-me-wondering-what-activity-7456401660421017600-F6Vt",
+      "expected": ["title", "description", "canonical_or_metadata"]
+    },
+    {
+      "id": "linkedin-openai-collaboration",
+      "url": "https://www.linkedin.com/posts/juliavillagra_ive-been-at-openai-for-a-year-now-one-of-activity-7289801461096488960-Vulf",
+      "expected": ["title", "description", "canonical_or_metadata"]
+    },
+    {
+      "id": "linkedin-chatgpt-posts",
+      "url": "https://www.linkedin.com/posts/junaidkhalid22_chatgpt-wrote-5-of-my-last-10-linkedin-posts-activity-7332782619996143616-yg57",
+      "expected": ["title", "description", "canonical_or_metadata"]
+    },
+    {
+      "id": "linkedin-atlas-use-cases",
+      "url": "https://www.linkedin.com/posts/david-pawlan-aloa_openai-dropped-atlas-an-agentic-web-browser-activity-7387485787841404929-L3mC",
+      "expected": ["title", "description", "canonical_or_metadata"]
+    },
+    {
+      "id": "linkedin-federal-sales",
+      "url": "https://www.linkedin.com/posts/felipemillon_i-am-ecstatic-to-share-that-i-have-joined-activity-7168599481729425410-VlNE",
+      "expected": ["title", "description", "canonical_or_metadata"]
+    }
+  ],
+  "generic": [
+    {
+      "id": "generic-paul-graham",
+      "url": "https://www.paulgraham.com/greatwork.html",
+      "expected": ["title", "body"]
+    },
+    {
+      "id": "generic-nngroup-heuristics",
+      "url": "https://www.nngroup.com/articles/ten-usability-heuristics/",
+      "expected": ["title", "author", "body"]
+    },
+    {
+      "id": "generic-chrome-activetab",
+      "url": "https://developer.chrome.com/docs/extensions/develop/concepts/activeTab",
+      "expected": ["title", "body"]
+    }
+  ],
+  "js_heavy": [
+    {
+      "id": "js-react-learn",
+      "url": "https://react.dev/learn",
+      "expected": ["title", "body"]
+    },
+    {
+      "id": "js-notion-product",
+      "url": "https://www.notion.com/product",
+      "expected": ["title", "metadata_or_body"]
+    },
+    {
+      "id": "js-airtable-platform",
+      "url": "https://www.airtable.com/platform",
+      "expected": ["title", "metadata_or_body"]
+    }
+  ],
+  "expected_failures": [
+    {
+      "id": "invalid-private-host",
+      "url": "http://127.0.0.1/private",
+      "expected": ["invalid_url"]
+    },
+    {
+      "id": "example-nonarticle",
+      "url": "https://example.com/",
+      "expected": ["unreadable_or_short"]
+    },
+    {
+      "id": "linkedin-login-wall-likely",
+      "url": "https://www.linkedin.com/feed/",
+      "expected": ["metadata_only_or_login_wall"]
+    }
+  ]
+}

@@ -93,7 +93,7 @@ async function loop(): Promise<void> {
 
     const alive = await getEnrichProvider().isAlive();
     if (!alive) {
-      console.warn(`[enrich] LLM provider unreachable; backing off ${LLM_PROVIDER_DOWN_BACKOFF_MS}ms`);
+      console.warn(`[enrich] LLM provider overloaded/backoff; backing off ${LLM_PROVIDER_DOWN_BACKOFF_MS}ms`);
       await sleep(LLM_PROVIDER_DOWN_BACKOFF_MS);
       continue;
     }

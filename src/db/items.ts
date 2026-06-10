@@ -4,8 +4,11 @@
  * source_type lands on the same pipeline (capture → store → search).
  */
 import { getDb, newId, type ItemRow } from "./client";
+import type { CapturePlatform, CaptureQuality } from "@/lib/capture/types";
+import { deleteArtifactsForItem } from "@/lib/capture/artifacts";
 
 export type SourceType = ItemRow["source_type"];
+export type CaptureSource = ItemRow["capture_source"];
 
 export interface CreateNoteInput {
   title: string;
@@ -14,6 +17,7 @@ export interface CreateNoteInput {
 
 export interface InsertCapturedInput {
   source_type: SourceType;
+  capture_source?: CaptureSource;
   title: string;
   body: string;
   source_url?: string | null;
@@ -24,6 +28,13 @@ export interface InsertCapturedInput {
   captured_at?: number;
   /** Duration in seconds for video items (youtube). v0.5.1. */
   duration_seconds?: number | null;
+  source_platform?: CapturePlatform | null;
+  capture_quality?: CaptureQuality | null;
+  extraction_method?: string | null;
+  extraction_version?: string | null;
+  published_at?: number | null;
+  thumbnail_url?: string | null;
+  description?: string | null;
 }
 
 export function insertCaptured(input: InsertCapturedInput): ItemRow {
@@ -33,14 +44,16 @@ export function insertCaptured(input: InsertCapturedInput): ItemRow {
   const totalChars = input.total_chars ?? input.body.length;
   db.prepare(
     `INSERT INTO items (
-        id, source_type, source_url, title, author, body,
+        id, source_type, capture_source, source_url, title, author, body,
         captured_at, total_pages, total_chars, extraction_warning,
-        duration_seconds
+        duration_seconds, source_platform, capture_quality, extraction_method,
+        extraction_version, published_at, thumbnail_url, description
      )
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
   ).run(
     id,
     input.source_type,
+    input.capture_source ?? "web",
     input.source_url ?? null,
     input.title,
     input.author ?? null,
@@ -50,6 +63,13 @@ export function insertCaptured(input: InsertCapturedInput): ItemRow {
     totalChars,
     input.extraction_warning ?? null,
     input.duration_seconds ?? null,
+    input.source_platform ?? null,
+    input.capture_quality ?? null,
+    input.extraction_method ?? null,
+    input.extraction_version ?? null,
+    input.published_at ?? null,
+    input.thumbnail_url ?? null,
+    input.description ?? null,
   );
   return getItem(id)!;
 }
@@ -86,7 +106,63 @@ export function countItems(): number {
 
 export function deleteItem(id: string): void {
   const db = getDb();
+  deleteArtifactsForItem(id);
   db.prepare("DELETE FROM items WHERE id = ?").run(id);
+}
+
+export interface UpdateItemCaptureContentInput {
+  title: string;
+  body: string;
+  author?: string | null;
+  extraction_warning?: string | null;
+  duration_seconds?: number | null;
+  source_platform?: CapturePlatform | null;
+  capture_quality?: CaptureQuality | null;
+  extraction_method?: string | null;
+  extraction_version?: string | null;
+  published_at?: number | null;
+  thumbnail_url?: string | null;
+  description?: string | null;
+}
+
+export function updateItemCaptureContent(
+  id: string,
+  input: UpdateItemCaptureContentInput,
+): ItemRow | null {
+  const db = getDb();
+  db.prepare(
+    `UPDATE items
+     SET title = ?,
+         body = ?,
+         author = ?,
+         extraction_warning = ?,
+         duration_seconds = ?,
+         source_platform = ?,
+         capture_quality = ?,
+         extraction_method = ?,
+         extraction_version = ?,
+         published_at = ?,
+         thumbnail_url = ?,
+         description = ?,
+         total_chars = ?
+     WHERE id = ?`,
+  ).run(
+    input.title,
+    input.body,
+    input.author ?? null,
+    input.extraction_warning ?? null,
+    input.duration_seconds ?? null,
+    input.source_platform ?? null,
+    input.capture_quality ?? null,
+    input.extraction_method ?? null,
+    input.extraction_version ?? null,
+    input.published_at ?? null,
+    input.thumbnail_url ?? null,
+    input.description ?? null,
+    input.body.length,
+    id,
+  );
+  return getItem(id);
 }
 
 /**

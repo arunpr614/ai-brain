@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# v0.5.0 T-8 / F-037 — rotate BRAIN_LAN_TOKEN from the CLI (v0.6.1 T-16: cloud default).
+# v0.5.0 T-8 / F-037 — rotate BRAIN_API_TOKEN from the CLI (v0.6.1 T-16: cloud default).
 #
 # Thin wrapper around POST /api/settings/rotate-token. The server owns the
 # .env write so the running process stays in sync with disk; this script

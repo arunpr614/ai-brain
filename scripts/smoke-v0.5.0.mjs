@@ -85,11 +85,11 @@ async function run() {
 
   // 4) Bearer verification invariants
   await section("bearer rejects missing, malformed, short", async () => {
-    // The module sees a real BRAIN_LAN_TOKEN via .env — set a stable one for
+    // The module sees a real BRAIN_API_TOKEN via .env — set a stable one for
     // assertions so ordering doesn't matter.
-    const priorEnv = process.env.BRAIN_LAN_TOKEN;
+    const priorEnv = process.env.BRAIN_API_TOKEN;
     const okToken = "f".repeat(64);
-    process.env.BRAIN_LAN_TOKEN = okToken;
+    process.env.BRAIN_API_TOKEN = okToken;
     const { verifyBearerToken, tokenFingerprint } = await import(
       "../src/lib/auth/bearer.ts"
     );
@@ -111,8 +111,8 @@ async function run() {
     const good = verifyBearerToken(`Bearer ${okToken}`);
     assert.equal(good.ok, true);
     assert.match(tokenFingerprint(okToken), /^[a-f0-9]{16}$/);
-    if (priorEnv !== undefined) process.env.BRAIN_LAN_TOKEN = priorEnv;
-    else delete process.env.BRAIN_LAN_TOKEN;
+    if (priorEnv !== undefined) process.env.BRAIN_API_TOKEN = priorEnv;
+    else delete process.env.BRAIN_API_TOKEN;
   });
 
   // 5) LAN-era removal gate (SPIKE-002). Excludes *.test.ts — test files

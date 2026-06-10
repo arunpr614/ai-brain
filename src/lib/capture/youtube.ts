@@ -24,6 +24,9 @@
  */
 import { JSDOM } from "jsdom";
 import type { CapturedContent } from "./types";
+import { CAPTURE_EXTRACTION_VERSION } from "./quality";
+import { buildYoutubeBody } from "./youtube-body";
+import { fetchYoutubeDataApiMetadata } from "./youtube-metadata";
 import { canonicalYoutubeUrl } from "./youtube-url";
 // Re-export the pure URL helpers so existing server-side callers
 // (e.g. /api/capture/url) keep their import paths. New client-side
@@ -42,6 +45,9 @@ const INNERTUBE_CLIENT = {
 const MAX_SEGMENTS = 7_200; // ~2 h at 1 s/segment
 const WINDOW_MS = 30_000;
 const FETCH_TIMEOUT_MS = 15_000;
+export const YOUTUBE_ANTIBOT_METADATA_WARNING = "youtube_antibot_metadata_only";
+export const YOUTUBE_TRANSCRIPT_FETCH_METADATA_WARNING =
+  "youtube_transcript_fetch_metadata_only";
 
 export type YoutubeCaptureCode =
   | "no_captions"
@@ -183,12 +189,23 @@ interface InnerTubeCaptionTrack {
   baseUrl?: string;
 }
 interface InnerTubePlayer {
+  playabilityStatus?: {
+    status?: string;
+    reason?: string;
+    messages?: string[];
+  };
   videoDetails?: InnerTubeVideoDetails;
   captions?: {
     playerCaptionsTracklistRenderer?: {
       captionTracks?: InnerTubeCaptionTrack[];
     };
   };
+}
+
+interface YoutubeOEmbedResponse {
+  title?: string;
+  author_name?: string;
+  thumbnail_url?: string;
 }
 
 /**
@@ -199,30 +216,56 @@ interface InnerTubePlayer {
  */
 export async function extractYoutubeVideo(
   videoId: string,
-  _originalUrl: string,
+  originalUrl: string,
 ): Promise<YoutubeExtracted> {
   const player = (await fetchInnerTubePlayer(videoId)) as InnerTubePlayer;
+  const sourcePlatform = isShortUrl(originalUrl) ? "youtube_short" : "youtube";
 
   if (!player.videoDetails) {
+    if (isYoutubeAntiBotChallenge(player)) {
+      const fallback = await fetchYoutubeOEmbed(videoId);
+      if (fallback) {
+        return antiBotMetadataOnlyResult(videoId, fallback, sourcePlatform);
+      }
+      throw new YoutubeCaptureError(
+        "video_unavailable",
+        "YouTube blocked transcript extraction with a sign-in challenge, and metadata fallback failed.",
+      );
+    }
+
+    const reason = playabilityReason(player);
     throw new YoutubeCaptureError(
       "video_unavailable",
-      "Video is private, deleted, or unavailable.",
+      reason
+        ? `Video is unavailable: ${reason}`
+        : "Video is private, deleted, or unavailable.",
     );
   }
 
-  const title =
-    typeof player.videoDetails.title === "string" && player.videoDetails.title
+  const dataApi = await fetchYoutubeDataApiMetadata(videoId);
+  const title = dataApi?.title ??
+    (typeof player.videoDetails.title === "string" && player.videoDetails.title
       ? player.videoDetails.title
-      : videoId;
-  const author =
-    typeof player.videoDetails.author === "string" && player.videoDetails.author
+      : videoId);
+  const author = dataApi?.channelTitle ??
+    (typeof player.videoDetails.author === "string" && player.videoDetails.author
       ? player.videoDetails.author
-      : null;
-  const duration_seconds = parseDurationSeconds(
-    player.videoDetails.lengthSeconds,
-  );
+      : null);
+  const duration_seconds =
+    dataApi?.durationSeconds ?? parseDurationSeconds(player.videoDetails.lengthSeconds);
+  const description = dataApi?.description ?? null;
+  const published_at = dataApi?.publishedAt ? Date.parse(dataApi.publishedAt) : null;
+  const thumbnail_url = dataApi?.thumbnailUrl ?? null;
 
   const canonicalUrl = canonicalYoutubeUrl(videoId);
+  const dataApiArtifact = dataApi
+    ? [{
+        kind: "youtube_data_api_json",
+        content_type: "application/json",
+        suggested_filename: "youtube-data-api.json",
+        body: JSON.stringify(dataApi.raw, null, 2),
+      }]
+    : [];
 
   // Live-stream detection: isLive true OR isLiveContent true with no caption
   // tracks (post-stream VODs eventually get captions; active streams don't).
@@ -236,39 +279,95 @@ export async function extractYoutubeVideo(
   }
 
   if (tracks.length === 0) {
-    return noTranscriptResult(title, author, duration_seconds, canonicalUrl);
+    return noTranscriptResult({
+      title,
+      author,
+      duration_seconds,
+      source_url: canonicalUrl,
+      source_platform: sourcePlatform,
+      description,
+      published_at: Number.isFinite(published_at) ? published_at : null,
+      thumbnail_url,
+      artifacts: dataApiArtifact,
+    });
   }
 
   const baseUrl = tracks[0]?.baseUrl;
   if (!baseUrl) {
-    return noTranscriptResult(title, author, duration_seconds, canonicalUrl);
+    return noTranscriptResult({
+      title,
+      author,
+      duration_seconds,
+      source_url: canonicalUrl,
+      source_platform: sourcePlatform,
+      description,
+      published_at: Number.isFinite(published_at) ? published_at : null,
+      thumbnail_url,
+      artifacts: dataApiArtifact,
+    });
   }
 
   let xmlRes: Response;
   try {
     xmlRes = await fetchWithTimeout(baseUrl, {}, FETCH_TIMEOUT_MS);
   } catch (err) {
-    throw new YoutubeCaptureError(
-      "fetch_failed",
-      `Timed-text fetch failed: ${(err as Error).message}`,
-    );
+    return transcriptFetchMetadataOnlyResult({
+      title,
+      author,
+      duration_seconds,
+      source_url: canonicalUrl,
+      source_platform: sourcePlatform,
+      description,
+      published_at: Number.isFinite(published_at) ? published_at : null,
+      thumbnail_url,
+      artifacts: dataApiArtifact,
+      reason: `Timed-text fetch failed: ${(err as Error).message}`,
+    });
   }
   if (!xmlRes.ok) {
-    throw new YoutubeCaptureError(
-      "fetch_failed",
-      `Timed-text returned ${xmlRes.status}`,
-    );
+    return transcriptFetchMetadataOnlyResult({
+      title,
+      author,
+      duration_seconds,
+      source_url: canonicalUrl,
+      source_platform: sourcePlatform,
+      description,
+      published_at: Number.isFinite(published_at) ? published_at : null,
+      thumbnail_url,
+      artifacts: dataApiArtifact,
+      reason: `Timed-text returned ${xmlRes.status}`,
+    });
   }
   const xml = await xmlRes.text();
 
   const allSegments = parseTimedTextXml(xml);
   if (allSegments.length === 0) {
-    return noTranscriptResult(title, author, duration_seconds, canonicalUrl);
+    return noTranscriptResult({
+      title,
+      author,
+      duration_seconds,
+      source_url: canonicalUrl,
+      source_platform: sourcePlatform,
+      description,
+      published_at: Number.isFinite(published_at) ? published_at : null,
+      thumbnail_url,
+      artifacts: dataApiArtifact,
+    });
   }
 
   const truncated = allSegments.length > MAX_SEGMENTS;
   const segments = truncated ? allSegments.slice(0, MAX_SEGMENTS) : allSegments;
-  const body = formatTranscriptBody(segments);
+  const transcript = formatTranscriptBody(segments);
+  const body = buildYoutubeBody({
+    title,
+    channel: author,
+    publishedAt: Number.isFinite(published_at) ? published_at : null,
+    durationSeconds: duration_seconds,
+    sourceUrl: canonicalUrl,
+    description,
+    transcript,
+    captureQuality: "metadata_plus_transcript",
+  });
 
   return {
     title,
@@ -277,6 +376,22 @@ export async function extractYoutubeVideo(
     source_url: canonicalUrl,
     body,
     extraction_warning: truncated ? "transcript_truncated_2h" : null,
+    source_platform: sourcePlatform,
+    capture_quality: "metadata_plus_transcript",
+    extraction_method: "youtube_innertube_timedtext",
+    extraction_version: CAPTURE_EXTRACTION_VERSION,
+    published_at: Number.isFinite(published_at) ? published_at : null,
+    thumbnail_url,
+    description,
+    artifacts: [
+      ...dataApiArtifact,
+      {
+        kind: "youtube_timedtext_xml",
+        content_type: "application/xml",
+        suggested_filename: "youtube-timedtext.xml",
+        body: xml,
+      },
+    ],
   };
 }
 
@@ -286,18 +401,176 @@ function parseDurationSeconds(raw: string | undefined): number | null {
   return Number.isFinite(n) && n >= 0 ? n : null;
 }
 
-function noTranscriptResult(
+function playabilityReason(player: InnerTubePlayer): string | null {
+  const reason = player.playabilityStatus?.reason?.trim();
+  if (reason) return reason;
+  const messages = player.playabilityStatus?.messages
+    ?.map((message) => message.trim())
+    .filter(Boolean);
+  return messages && messages.length > 0 ? messages.join(" ") : null;
+}
+
+function isYoutubeAntiBotChallenge(player: InnerTubePlayer): boolean {
+  if (player.playabilityStatus?.status !== "LOGIN_REQUIRED") return false;
+  const reason = playabilityReason(player)?.toLowerCase() ?? "";
+  return reason.includes("not a bot") || reason.includes("sign in to confirm");
+}
+
+function youtubeOEmbedUrl(videoId: string): string {
+  const url = new URL("https://www.youtube.com/oembed");
+  url.searchParams.set("format", "json");
+  url.searchParams.set("url", canonicalYoutubeUrl(videoId));
+  return url.toString();
+}
+
+async function fetchYoutubeOEmbed(
+  videoId: string,
+): Promise<YoutubeOEmbedResponse | null> {
+  let res: Response;
+  try {
+    res = await fetchWithTimeout(youtubeOEmbedUrl(videoId), {}, FETCH_TIMEOUT_MS);
+  } catch {
+    return null;
+  }
+  if (!res.ok) return null;
+
+  let parsed: unknown;
+  try {
+    parsed = (await res.json()) as unknown;
+  } catch {
+    return null;
+  }
+  if (!parsed || typeof parsed !== "object") return null;
+  const candidate = parsed as YoutubeOEmbedResponse;
+  return typeof candidate.title === "string" && candidate.title.trim()
+    ? candidate
+    : null;
+}
+
+function noTranscriptResult(input: {
   title: string,
   author: string | null,
   duration_seconds: number | null,
   source_url: string,
+  source_platform: "youtube" | "youtube_short",
+  description: string | null,
+  published_at: number | null,
+  thumbnail_url: string | null,
+  artifacts?: YoutubeExtracted["artifacts"],
+}): YoutubeExtracted {
+  return {
+    title: input.title,
+    author: input.author,
+    duration_seconds: input.duration_seconds,
+    source_url: input.source_url,
+    body: buildYoutubeBody({
+      title: input.title,
+      channel: input.author,
+      publishedAt: input.published_at,
+      durationSeconds: input.duration_seconds,
+      sourceUrl: input.source_url,
+      description: input.description,
+      transcript: null,
+      captureQuality: "metadata_only",
+    }),
+    extraction_warning: "no_transcript",
+    source_platform: input.source_platform,
+    capture_quality: "metadata_only",
+    extraction_method: "youtube_innertube_timedtext",
+    extraction_version: CAPTURE_EXTRACTION_VERSION,
+    published_at: input.published_at,
+    thumbnail_url: input.thumbnail_url,
+    description: input.description,
+    artifacts: input.artifacts,
+  };
+}
+
+function transcriptFetchMetadataOnlyResult(input: {
+  title: string,
+  author: string | null,
+  duration_seconds: number | null,
+  source_url: string,
+  source_platform: "youtube" | "youtube_short",
+  description: string | null,
+  published_at: number | null,
+  thumbnail_url: string | null,
+  artifacts?: YoutubeExtracted["artifacts"],
+  reason: string,
+}): YoutubeExtracted {
+  return {
+    title: input.title,
+    author: input.author,
+    duration_seconds: input.duration_seconds,
+    source_url: input.source_url,
+    body: buildYoutubeBody({
+      title: input.title,
+      channel: input.author,
+      publishedAt: input.published_at,
+      durationSeconds: input.duration_seconds,
+      sourceUrl: input.source_url,
+      description: input.description,
+      transcript: `[Transcript unavailable: ${input.reason}]`,
+      captureQuality: "metadata_only",
+    }),
+    extraction_warning: YOUTUBE_TRANSCRIPT_FETCH_METADATA_WARNING,
+    source_platform: input.source_platform,
+    capture_quality: "metadata_only",
+    extraction_method: "youtube_innertube_timedtext",
+    extraction_version: CAPTURE_EXTRACTION_VERSION,
+    published_at: input.published_at,
+    thumbnail_url: input.thumbnail_url,
+    description: input.description,
+    artifacts: input.artifacts,
+  };
+}
+
+function antiBotMetadataOnlyResult(
+  videoId: string,
+  oembed: YoutubeOEmbedResponse,
+  source_platform: "youtube" | "youtube_short",
 ): YoutubeExtracted {
+  const title = oembed.title?.trim() || videoId;
+  const author = oembed.author_name?.trim() || null;
+  const sourceUrl = canonicalYoutubeUrl(videoId);
   return {
     title,
     author,
-    duration_seconds,
-    source_url,
-    body: "[No transcript available for this video]",
-    extraction_warning: "no_transcript",
+    duration_seconds: null,
+    source_url: sourceUrl,
+    body: buildYoutubeBody({
+      title,
+      channel: author,
+      publishedAt: null,
+      durationSeconds: null,
+      sourceUrl,
+      description: null,
+      transcript:
+        "[Transcript unavailable: YouTube blocked Brain's server transcript request with an anti-bot sign-in check.]",
+      captureQuality: "metadata_only",
+    }),
+    extraction_warning: YOUTUBE_ANTIBOT_METADATA_WARNING,
+    source_platform,
+    capture_quality: "metadata_only",
+    extraction_method: "youtube_oembed_metadata",
+    extraction_version: CAPTURE_EXTRACTION_VERSION,
+    published_at: null,
+    thumbnail_url: oembed.thumbnail_url?.trim() || null,
+    description: null,
+    artifacts: [
+      {
+        kind: "youtube_oembed_json",
+        content_type: "application/json",
+        suggested_filename: "youtube-oembed.json",
+        body: JSON.stringify(oembed, null, 2),
+      },
+    ],
   };
+}
+
+function isShortUrl(url: string): boolean {
+  try {
+    return new URL(url).pathname.startsWith("/shorts/");
+  } catch {
+    return /youtube\.com\/shorts\//i.test(url);
+  }
 }

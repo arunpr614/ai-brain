@@ -4,7 +4,8 @@
  * GET ?q=<query>&mode=fts|semantic|hybrid[&limit=N]
  *
  * Session cookie required. Semantic + hybrid modes embed the query via
- * Ollama, so a 503 is returned when the daemon is unreachable.
+ * the configured embedding provider, so a 503 is returned when that
+ * provider is unreachable.
  */
 import { type NextRequest, NextResponse } from "next/server";
 import { SESSION_COOKIE } from "@/lib/auth";
@@ -37,9 +38,10 @@ export async function GET(req: NextRequest) {
   if ((mode === "semantic" || mode === "hybrid") && !(await getEmbedProvider().isAlive())) {
     return NextResponse.json(
       {
-        error: "OLLAMA_OFFLINE",
+        error: "EMBED_PROVIDER_OFFLINE",
+        legacy_error: "OLLAMA_OFFLINE",
         message:
-          "The embed provider is unreachable. If running locally, start Ollama with `ollama serve`.",
+          "Semantic indexing is not reachable right now. Check AI services in Settings.",
       },
       { status: 503 },
     );

@@ -15,7 +15,7 @@ export type AskFrame =
   | { type: "token"; text: string }
   | { type: "citation"; chunk_id: string }
   | { type: "done"; usage?: { input_tokens: number; output_tokens: number } }
-  | { type: "error"; code: string; message: string };
+  | { type: "error"; code: string; message: string; legacy_code?: string };
 
 export function encodeSSE(frame: AskFrame): string {
   return `data: ${JSON.stringify(frame)}\n\n`;

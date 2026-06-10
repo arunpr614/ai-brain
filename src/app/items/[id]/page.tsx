@@ -14,6 +14,8 @@ import {
 import { listChunksForItem } from "@/db/chunks";
 import { getItem } from "@/db/items";
 import { listTagsForItem } from "@/db/tags";
+import { getItemProcessingStatus, type ItemProcessingStatus } from "@/lib/items/status";
+import { improvementHint, platformLabel, qualityLabel } from "@/lib/capture/quality";
 import { findRelatedItems } from "@/lib/related";
 
 function parseQuotes(raw: string | null): string[] {
@@ -24,6 +26,18 @@ function parseQuotes(raw: string | null): string[] {
   } catch {
     return [];
   }
+}
+
+function extractionWarningMessage(code: string): string {
+  if (code === "youtube_antibot_metadata_only") {
+    return "Transcript extraction was blocked by YouTube's sign-in check. This video was saved with metadata only.";
+  }
+  if (code === "youtube_transcript_fetch_metadata_only") {
+    return "Transcript fetching failed after video metadata was found. This video was saved with metadata only.";
+  }
+  if (code === "no_transcript") return "No transcript was available for this video.";
+  if (code === "transcript_truncated_2h") return "Transcript was truncated at 2 hours.";
+  return code;
 }
 
 export default async function ItemDetailPage({
@@ -47,6 +61,10 @@ export default async function ItemDetailPage({
     item.enrichment_state === "done" && (item.summary || quotes.length > 0);
   const hasAnyCollections =
     attachedCollections.length > 0 || availableCollections.length > 0;
+  const processingStatus = getItemProcessingStatus(item.id);
+  const platform = platformLabel(item.source_platform, item.source_type);
+  const quality = qualityLabel(item.capture_quality);
+  const hint = improvementHint(item.source_platform, item.capture_quality);
 
   // T-12: when arriving via an Ask citation chip, resolve the chunk body so
   // we can render a highlight panel with an anchor the scroll-to-hash hook
@@ -100,8 +118,11 @@ export default async function ItemDetailPage({
                 initialState={item.enrichment_state}
               />
             </div>
+            <ItemProcessingBadge status={processingStatus} />
             <p className="mt-2 font-sans text-xs text-[var(--text-secondary)]">
-              <span className="uppercase tracking-wide">{item.source_type}</span>
+              <span>{platform}</span>
+              <span className="mx-2 text-[var(--text-muted)]">·</span>
+              <span>{quality}</span>
               {item.author && (
                 <>
                   <span className="mx-2 text-[var(--text-muted)]">·</span>
@@ -140,7 +161,7 @@ export default async function ItemDetailPage({
 
             {item.extraction_warning && (
               <p className="mt-3 inline-flex items-center gap-1.5 rounded-md border border-[var(--warning)] bg-[var(--surface)] px-2 py-1 font-sans text-xs text-[var(--warning)]">
-                ⚠ {item.extraction_warning}
+                ⚠ {extractionWarningMessage(item.extraction_warning)}
               </p>
             )}
           </header>
@@ -194,6 +215,52 @@ export default async function ItemDetailPage({
           {/* T-15 (EXP-3): related items by semantic similarity. Hidden
               when the item has no embeddings yet. */}
           <RelatedItems items={related} />
+
+          <div className="rounded-lg border border-[var(--border)] bg-[var(--surface)] p-5">
+            <p className="mb-2 text-[11px] font-medium uppercase tracking-wider text-[var(--text-muted)]">
+              Capture
+            </p>
+            <dl className="flex flex-col gap-2 text-xs text-[var(--text-secondary)]">
+              <div className="flex justify-between gap-3">
+                <dt>Platform</dt>
+                <dd className="text-right text-[var(--text-primary)]">{platform}</dd>
+              </div>
+              <div className="flex justify-between gap-3">
+                <dt>Quality</dt>
+                <dd className="text-right text-[var(--text-primary)]">{quality}</dd>
+              </div>
+              {item.extraction_method && (
+                <div className="flex justify-between gap-3">
+                  <dt>Method</dt>
+                  <dd className="text-right text-[var(--text-primary)]">{item.extraction_method}</dd>
+                </div>
+              )}
+              {item.capture_source && (
+                <div className="flex justify-between gap-3">
+                  <dt>Via</dt>
+                  <dd className="text-right text-[var(--text-primary)]">{item.capture_source}</dd>
+                </div>
+              )}
+              {item.published_at && (
+                <div className="flex justify-between gap-3">
+                  <dt>Published</dt>
+                  <dd className="text-right text-[var(--text-primary)]">
+                    {new Date(item.published_at).toLocaleDateString()}
+                  </dd>
+                </div>
+              )}
+            </dl>
+            {item.description && (
+              <p className="mt-3 border-t border-[var(--border)] pt-3 text-xs leading-relaxed text-[var(--text-secondary)]">
+                {item.description}
+              </p>
+            )}
+            {hint && (
+              <p className="mt-3 rounded-md border border-[var(--border)] bg-[var(--surface-raised)] px-3 py-2 text-xs leading-relaxed text-[var(--text-secondary)]">
+                {hint}
+              </p>
+            )}
+          </div>
 
           {/* F-301: Collections editor — always visible so the user can
               attach/detach without waiting for enrichment to finish. */}
@@ -264,7 +331,7 @@ export default async function ItemDetailPage({
               )}
 
               <p className="text-[11px] text-[var(--text-muted)]">
-                Auto-generated by Ollama (local).
+                AI-generated summary.
               </p>
             </div>
           ) : (
@@ -276,6 +343,23 @@ export default async function ItemDetailPage({
   );
 }
 
+function ItemProcessingBadge({ status }: { status: ItemProcessingStatus }) {
+  const tone =
+    status.state === "semantic_indexing_ready"
+      ? "border-[var(--success)] text-[var(--success)]"
+      : status.state === "semantic_indexing_failed"
+        ? "border-[var(--danger)] text-[var(--danger)]"
+        : "border-[var(--border)] text-[var(--text-secondary)]";
+  return (
+    <p
+      title={status.detail}
+      className={`mt-3 inline-flex max-w-full items-center rounded-md border bg-[var(--surface)] px-2 py-1 font-sans text-xs ${tone}`}
+    >
+      {status.label}
+    </p>
+  );
+}
+
 function DigestPlaceholder({
   state,
 }: {
@@ -283,7 +367,7 @@ function DigestPlaceholder({
 }) {
   const copy =
     state === "error"
-      ? "Enrichment failed. Check the Ollama server log."
+      ? "AI enrichment failed. Check provider status in Settings."
       : state === "running"
         ? "AI digest will appear here once the enrichment worker finishes."
         : "AI digest will appear here once the enrichment worker picks this item up.";

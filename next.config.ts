@@ -7,6 +7,13 @@ const projectRoot = dirname(fileURLToPath(import.meta.url));
 const nextConfig: NextConfig = {
   // Self-contained production bundle for Hetzner deploy (no node_modules needed).
   output: "standalone",
+  // Runtime state must never be copied into the standalone deploy artifact.
+  // Next's file tracer can be over-broad when server code references
+  // process.cwd()/data paths; keep databases, backups, APK artifacts, and
+  // spike outputs out of production bundles.
+  outputFileTracingExcludes: {
+    "/*": ["./data", "./data/**/*"],
+  },
   // Pin workspace root so Turbopack stops guessing against ancestor lockfiles.
   turbopack: {
     root: projectRoot,

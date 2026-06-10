@@ -18,14 +18,13 @@
 #   🟡 yellow  — tunnel returns HTTP 401/403 (auth issue; rotate token)
 #   🔴 red     — anything else (000 / 5xx / 4xx other than 401/403)
 #
-# Bearer token: read from BRAIN_API_TOKEN in env, or fall back to
-# BRAIN_LAN_TOKEN (legacy name; v0.6.1 T-11). If neither is present the
-# probe runs anonymously and you'll see yellow.
+# Bearer token: read from BRAIN_API_TOKEN in env. If it is not present,
+# the probe runs anonymously and you'll see yellow.
 
 CURL="/usr/bin/curl"
 TUNNEL_HEALTH_URL="https://brain.arunp.in/api/health"
 
-TOKEN="${BRAIN_API_TOKEN:-${BRAIN_LAN_TOKEN:-}}"
+TOKEN="${BRAIN_API_TOKEN:-}"
 
 if [ -n "$TOKEN" ]; then
   code=$("$CURL" -s -o /dev/null -m 5 -w "%{http_code}" \

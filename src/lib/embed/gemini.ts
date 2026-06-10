@@ -31,10 +31,6 @@ interface GeminiProviderOptions {
   baseURL?: string;
 }
 
-interface GeminiBatchResponse {
-  embeddings?: Array<{ values?: number[] }>;
-}
-
 interface GeminiErrorBody {
   error?: { code?: number; message?: string; status?: string };
 }

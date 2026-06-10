@@ -28,37 +28,26 @@ export async function register(): Promise<void> {
   const { startEnrichmentBatchCron } = await import(
     "@/lib/queue/enrichment-batch-cron"
   );
-  const { ensureLanToken } = await import("@/lib/auth/bearer");
+  const { ensureApiToken } = await import("@/lib/auth/bearer");
   const { logError } = await import("@/lib/errors/sink");
 
   // Touching getDb() warms the connection + runs migrations.
   getDb();
 
-  // v0.5.0 T-4: auto-generate BRAIN_LAN_TOKEN on first boot if absent.
+  // v0.5.0 T-4: auto-generate BRAIN_API_TOKEN on first boot if absent.
   // Writes the value back to .env at the repo root so it survives restarts.
   // The log line is the operator's signal that they should open Settings →
   // Device Pairing and scan the QR onto their APK/extension.
-  const generated = ensureLanToken({
+  const generated = ensureApiToken({
     onGenerate: () => {
       console.log(
-        "[boot] Generated BRAIN_LAN_TOKEN and wrote to .env — open /settings/device-pairing to pair APK / extension.",
+        "[boot] Generated BRAIN_API_TOKEN and wrote to .env — open /settings/device-pairing to pair APK / extension.",
       );
       logError({ type: "lan.bearer.token-generated", ts: Date.now() });
     },
   });
   if (!generated) {
     // No log spam when the token is already configured; intentional silence.
-  }
-
-  // v0.6.1 T-11a: deprecation warning when only the legacy env name is set.
-  // The bearer module dual-reads BRAIN_API_TOKEN ?? BRAIN_LAN_TOKEN; when
-  // only the old name is present, surface a single-line nudge to operators
-  // so the rename can finish in v0.6.2 T-11b. Silent once BRAIN_API_TOKEN
-  // is also defined.
-  if (!process.env.BRAIN_API_TOKEN && process.env.BRAIN_LAN_TOKEN) {
-    console.warn(
-      "[boot] BRAIN_LAN_TOKEN is deprecated; rename to BRAIN_API_TOKEN in /etc/brain/.env (legacy name still works during the v0.6.1 dual-read window).",
-    );
   }
 
   startBackupScheduler();

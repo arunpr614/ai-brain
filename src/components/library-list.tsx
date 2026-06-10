@@ -11,6 +11,7 @@ import {
 } from "@/app/actions";
 import type { CollectionRow } from "@/db/collections";
 import type { ItemRow } from "@/db/client";
+import { platformLabel, qualityLabel } from "@/lib/capture/quality";
 import { ItemEnrichmentWatch } from "./item-enrichment-watch";
 
 /**
@@ -45,6 +46,8 @@ function formatRelative(ts: number): string {
 function warningLabel(code: string): string {
   if (code === "no_transcript") return "⚠ no transcript";
   if (code === "transcript_truncated_2h") return "⚠ truncated at 2h";
+  if (code === "youtube_antibot_metadata_only") return "⚠ metadata only";
+  if (code === "youtube_transcript_fetch_metadata_only") return "⚠ metadata only";
   return "⚠ warning";
 }
 
@@ -202,7 +205,9 @@ export function LibraryList({
                       </span>
                     </div>
                     <div className="mt-1 flex items-center gap-2 text-xs text-[var(--text-secondary)]">
-                      <span className="uppercase tracking-wide">{it.source_type}</span>
+                      <span>{platformLabel(it.source_platform, it.source_type)}</span>
+                      <span className="text-[var(--text-muted)]">·</span>
+                      <span>{qualityLabel(it.capture_quality)}</span>
                       <span className="text-[var(--text-muted)]">·</span>
                       <span>{formatRelative(it.captured_at)}</span>
                       {it.total_chars !== null && (

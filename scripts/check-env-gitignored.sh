@@ -45,4 +45,15 @@ if git check-ignore -q .env.example 2>/dev/null; then
   fail ".env.example is gitignored but should be committed"
 fi
 
+# 5. Telegram secrets must not appear in tracked files.
+if git grep -InE '[0-9]{6,}:[A-Za-z0-9_-]{20,}' -- ':!package-lock.json' >/dev/null 2>&1; then
+  fail "possible Telegram bot token found in tracked files"
+fi
+if git grep -InE 'api\.telegram\.org/bot[0-9]{6,}:[A-Za-z0-9_-]+' >/dev/null 2>&1; then
+  fail "possible Telegram Bot API URL with embedded token found in tracked files"
+fi
+if git grep -InE '^TELEGRAM_BOT_TOKEN=[^[:space:]<$#]+' -- ':!.env.example' >/dev/null 2>&1; then
+  fail "non-placeholder TELEGRAM_BOT_TOKEN assignment found in tracked files"
+fi
+
 echo "[check-env] ok — .env is gitignored, .env.example is committed-tracked"

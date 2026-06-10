@@ -32,6 +32,7 @@ import { capturePdfAction } from "@/app/capture-actions";
 import { SESSION_COOKIE } from "@/lib/auth";
 import { validateOrigin } from "@/lib/auth/bearer";
 import { checkClientApiVersion } from "@/lib/auth/api-version";
+import { captureSourceFromTrustedHeader } from "@/lib/capture/source";
 import { logError } from "@/lib/errors/sink";
 
 export const runtime = "nodejs";
@@ -104,7 +105,10 @@ export async function POST(req: NextRequest) {
     // Re-wrap the File into FormData that shape-matches the legacy action.
     const innerForm = new FormData();
     innerForm.set("pdf", file);
-    const { id } = await capturePdfAction(innerForm);
+    const captureSource = hasBearer
+      ? captureSourceFromTrustedHeader(req.headers.get("x-brain-capture-source"))
+      : "web";
+    const { id } = await capturePdfAction(innerForm, { capture_source: captureSource });
     return NextResponse.json({ id, sha256: serverSha }, { status: 201 });
   } catch (err) {
     const message = err instanceof Error ? err.message : "Upload failed";

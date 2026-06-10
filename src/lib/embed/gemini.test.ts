@@ -37,16 +37,19 @@ function fakeRow(): number[] {
 }
 
 test("GeminiEmbedProvider.embed: round-trips inputs to 768-dim Float32Arrays", async () => {
-  type CapturedBody = { requests?: Array<{ model: string; outputDimensionality: number }> };
-  const captured: { value: CapturedBody | null } = { value: null };
+  type CapturedBody = {
+    content?: { parts?: Array<{ text?: string }> };
+    outputDimensionality?: number;
+  };
+  const captured: CapturedBody[] = [];
   const stub = await stubServer((req, res) => {
     assert.equal(req.method, "POST");
-    assert.match(req.url, /\/v1beta\/models\/gemini-embedding-001:batchEmbedContents\?key=k-test$/);
-    captured.value = JSON.parse(req.body) as CapturedBody;
+    assert.match(req.url, /\/v1beta\/models\/gemini-embedding-001:embedContent\?key=k-test$/);
+    captured.push(JSON.parse(req.body) as CapturedBody);
     res.setHeader("content-type", "application/json");
     res.end(
       JSON.stringify({
-        embeddings: [{ values: fakeRow() }, { values: fakeRow() }],
+        embedding: { values: fakeRow() },
       }),
     );
   });
@@ -57,10 +60,11 @@ test("GeminiEmbedProvider.embed: round-trips inputs to 768-dim Float32Arrays", a
     assert.ok(out[0] instanceof Float32Array);
     assert.equal(out[0].length, EMBED_OUTPUT_DIM);
     assert.equal(out[1].length, EMBED_OUTPUT_DIM);
-    assert.ok(captured.value);
-    assert.equal(captured.value!.requests?.length, 2);
-    assert.equal(captured.value!.requests?.[0].model, "models/gemini-embedding-001");
-    assert.equal(captured.value!.requests?.[0].outputDimensionality, EMBED_OUTPUT_DIM);
+    assert.equal(captured.length, 2);
+    assert.equal(captured[0].content?.parts?.[0]?.text, "hello");
+    assert.equal(captured[1].content?.parts?.[0]?.text, "world");
+    assert.equal(captured[0].outputDimensionality, EMBED_OUTPUT_DIM);
+    assert.equal(captured[1].outputDimensionality, EMBED_OUTPUT_DIM);
   } finally {
     await stub.close();
   }
@@ -105,15 +109,15 @@ test("GeminiEmbedProvider.embed: HTTP errors wrap to EmbedError(EMBED_HTTP)", as
   }
 });
 
-test("GeminiEmbedProvider.embed: count mismatch → EMBED_INVALID_RESPONSE", async () => {
+test("GeminiEmbedProvider.embed: invalid embedding shape → EMBED_INVALID_RESPONSE", async () => {
   const stub = await stubServer((_req, res) => {
     res.setHeader("content-type", "application/json");
-    res.end(JSON.stringify({ embeddings: [{ values: fakeRow() }] }));
+    res.end(JSON.stringify({ embedding: { values: fakeRow().slice(0, EMBED_OUTPUT_DIM - 1) } }));
   });
   try {
     const p = new GeminiEmbedProvider({ apiKey: "k-test", baseURL: stub.baseURL });
     await assert.rejects(
-      () => p.embed(["a", "b"]),
+      () => p.embed(["a"]),
       (err) => {
         assert.ok(err instanceof EmbedError);
         assert.equal((err as EmbedError).code, "EMBED_INVALID_RESPONSE");
@@ -130,7 +134,7 @@ test("GeminiEmbedProvider.embed: dim mismatch → EMBED_INVALID_RESPONSE (no sil
     res.setHeader("content-type", "application/json");
     res.end(
       JSON.stringify({
-        embeddings: [{ values: new Array(1024).fill(0) }],
+        embedding: { values: new Array(1024).fill(0) },
       }),
     );
   });

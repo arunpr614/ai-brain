@@ -3,7 +3,7 @@
  *
  * Covers SC-7 (bearer rejects: empty, short, mismatch, missing header) +
  * SC-8 (rate limiter: 30/min default, token-fingerprint keyed,
- * BRAIN_LAN_RATE_LIMIT override). Purely env + in-process state; no DB
+ * BRAIN_API_RATE_LIMIT override). Purely env + in-process state; no DB
  * needed, so no side-effect setup file.
  */
 import assert from "node:assert/strict";
@@ -15,25 +15,25 @@ import {
   RATE_WINDOW_MS,
   __resetRateLimiterForTests,
   checkBearerRateLimit,
-  generateLanToken,
+  generateApiToken,
   isBearerRoute,
-  loadLanToken,
+  loadApiToken,
   tokenFingerprint,
   validateOrigin,
   verifyBearerToken,
 } from "./bearer";
 
-const ORIGINAL_TOKEN = process.env.BRAIN_LAN_TOKEN;
-const ORIGINAL_LIMIT = process.env.BRAIN_LAN_RATE_LIMIT;
+const ORIGINAL_TOKEN = process.env.BRAIN_API_TOKEN;
+const ORIGINAL_LIMIT = process.env.BRAIN_API_RATE_LIMIT;
 
 function setToken(v: string | undefined): void {
-  if (v === undefined) delete process.env.BRAIN_LAN_TOKEN;
-  else process.env.BRAIN_LAN_TOKEN = v;
+  if (v === undefined) delete process.env.BRAIN_API_TOKEN;
+  else process.env.BRAIN_API_TOKEN = v;
 }
 
 function setLimit(v: string | undefined): void {
-  if (v === undefined) delete process.env.BRAIN_LAN_RATE_LIMIT;
-  else process.env.BRAIN_LAN_RATE_LIMIT = v;
+  if (v === undefined) delete process.env.BRAIN_API_RATE_LIMIT;
+  else process.env.BRAIN_API_RATE_LIMIT = v;
 }
 
 describe("auth/bearer — constants + helpers", () => {
@@ -54,8 +54,8 @@ describe("auth/bearer — constants + helpers", () => {
     assert.equal(RATE_WINDOW_MS, 60_000);
   });
 
-  it("generateLanToken returns 64 hex chars (32 bytes = 256 bits)", () => {
-    const t = generateLanToken();
+  it("generateApiToken returns 64 hex chars (32 bytes = 256 bits)", () => {
+    const t = generateApiToken();
     assert.match(t, /^[0-9a-f]{64}$/);
   });
 
@@ -88,28 +88,28 @@ describe("auth/bearer — constants + helpers", () => {
   });
 });
 
-describe("auth/bearer — loadLanToken", () => {
+describe("auth/bearer — loadApiToken", () => {
   afterEach(() => setToken(ORIGINAL_TOKEN));
 
-  it("returns null when BRAIN_LAN_TOKEN is unset", () => {
+  it("returns null when BRAIN_API_TOKEN is unset", () => {
     setToken(undefined);
-    assert.equal(loadLanToken(), null);
+    assert.equal(loadApiToken(), null);
   });
 
-  it("returns null when BRAIN_LAN_TOKEN is empty", () => {
+  it("returns null when BRAIN_API_TOKEN is empty", () => {
     setToken("");
-    assert.equal(loadLanToken(), null);
+    assert.equal(loadApiToken(), null);
   });
 
-  it("returns null when BRAIN_LAN_TOKEN is shorter than MIN_TOKEN_LENGTH", () => {
+  it("returns null when BRAIN_API_TOKEN is shorter than MIN_TOKEN_LENGTH", () => {
     setToken("short");
-    assert.equal(loadLanToken(), null);
+    assert.equal(loadApiToken(), null);
   });
 
   it("returns the token when >= MIN_TOKEN_LENGTH", () => {
     const t = "a".repeat(MIN_TOKEN_LENGTH);
     setToken(t);
-    assert.equal(loadLanToken(), t);
+    assert.equal(loadApiToken(), t);
   });
 });
 
@@ -136,7 +136,7 @@ describe("auth/bearer — verifyBearerToken (SC-7)", () => {
     assert.deepEqual(verifyBearerToken("Bearer "), { ok: false, reason: "malformed-header" });
   });
 
-  it("rejects with server-token-unconfigured when BRAIN_LAN_TOKEN is unset", () => {
+  it("rejects with server-token-unconfigured when BRAIN_API_TOKEN is unset", () => {
     setToken(undefined);
     assert.deepEqual(verifyBearerToken(`Bearer ${GOOD}`), {
       ok: false,
@@ -144,7 +144,7 @@ describe("auth/bearer — verifyBearerToken (SC-7)", () => {
     });
   });
 
-  it("rejects with server-token-too-short when BRAIN_LAN_TOKEN is < 32 chars (REVIEW B-1/H-1)", () => {
+  it("rejects with server-token-too-short when BRAIN_API_TOKEN is < 32 chars (REVIEW B-1/H-1)", () => {
     setToken("short");
     assert.deepEqual(verifyBearerToken(`Bearer ${GOOD}`), {
       ok: false,
@@ -228,7 +228,7 @@ describe("auth/bearer — checkBearerRateLimit (SC-8)", () => {
     assert.equal(checkBearerRateLimit(T2, t + DEFAULT_RATE_LIMIT), true);
   });
 
-  it("respects BRAIN_LAN_RATE_LIMIT env override", () => {
+  it("respects BRAIN_API_RATE_LIMIT env override", () => {
     setLimit("5");
     const t = Date.now();
     for (let i = 0; i < 5; i++) {

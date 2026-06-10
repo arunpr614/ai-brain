@@ -3,23 +3,21 @@
  *
  * Why this exists: Capacitor's APK is a thin WebView pointed at
  * server.url=https://brain.arunp.in. With no SW, cold-start offline =
- * net::ERR_INTERNET_DISCONNECTED — the share-handler / outbox code never
- * loads, so the entire v0.6.x offline-mode feature is unreachable on the
- * device. This SW caches the app shell + visited pages + Next static
- * chunks so the WebView can hydrate offline and the outbox path runs.
+ * net::ERR_INTERNET_DISCONNECTED. This SW caches the app shell + visited
+ * pages + Next static chunks so the WebView can hydrate predictably.
  *
  * Plan: docs/plans/v0.5.6-app-shell-sw.md (SHELL-1).
  *
  * Strategy by route family:
  *   - precache URLs (/offline.html, /favicon.ico) → installed at SW
  *     activation; auth-public so cache.add never rejects on a redirect
- *   - shell runtime URLs (/, /inbox, /share-target, /capture) → not
+ *   - shell runtime URLs (/, /share-target, /capture) → not
  *     precached (middleware redirects unauthenticated SW fetches);
  *     populated lazily into shell-v1 on first authenticated visit
  *     via stale-while-revalidate
  *   - other HTML pages (/items/:id) → stale-while-revalidate into pages-v1 (fills lazily)
  *   - /_next/static/** → cache-first into static-v1 (Next hashes filenames)
- *   - /api/** → network-only (outbox handles transient errors; SW must NOT proxy)
+ *   - /api/** → network-only (capture handles transient errors; SW must NOT proxy)
  *   - everything else → network-first → fall through to /offline.html on HTML accept
  *
  * Bump SHELL_CACHE / STATIC_CACHE / PAGES_CACHE version when entries
@@ -34,12 +32,12 @@
 // (c) skip caching of RSC requests entirely (they're prefetch streams,
 //     not consumable as standalone HTML)
 // activate handler purges all v1+v2 entries automatically.
-const SHELL_CACHE = "brain-shell-v3";
-const STATIC_CACHE = "brain-static-v3";
-const PAGES_CACHE = "brain-pages-v3";
+const SHELL_CACHE = "brain-shell-v4";
+const STATIC_CACHE = "brain-static-v4";
+const PAGES_CACHE = "brain-pages-v4";
 const KNOWN_CACHES = [SHELL_CACHE, STATIC_CACHE, PAGES_CACHE];
 
-// Precache only auth-public, static URLs. Protected routes (/, /inbox,
+// Precache only auth-public, static URLs. Protected routes (/,
 // /share-target, /capture) are middleware-gated — they redirect to
 // /unlock when the SW fetches them without the user's session cookie,
 // which makes cache.add reject. Those routes are populated lazily into
@@ -63,9 +61,9 @@ const PAGES_PATTERN = /^\/items\/[^/]+(?:\/|$)/;
 
 // Routes whose HTML we still serve stale-while-revalidate from
 // SHELL_CACHE (populated lazily on first visit). cache hits here let
-// offline cold-launch render the library / share-target / inbox
+// offline cold-launch render the library / share-target
 // chrome even though we don't precache them at install time.
-const SHELL_RUNTIME_PATHS = ["/", "/inbox", "/share-target", "/capture"];
+const SHELL_RUNTIME_PATHS = ["/", "/share-target", "/capture"];
 
 function isShellUrl(pathname) {
   if (PRECACHE_URLS.includes(pathname)) return true;
@@ -105,7 +103,6 @@ self.addEventListener("install", (event) => {
           } catch (err) {
             // Non-fatal — install continues with whatever cached.
             // Self-log via console for chrome://inspect debugging.
-            // eslint-disable-next-line no-console
             console.warn("[brain-sw] precache failed:", url, err?.message);
           }
         }),

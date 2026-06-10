@@ -43,7 +43,7 @@ PRAGMA legacy_alter_table = ON;
 
 CREATE TABLE items_new (
   id                 TEXT PRIMARY KEY,
-  source_type        TEXT NOT NULL CHECK (source_type IN ('url', 'pdf', 'note', 'youtube', 'podcast', 'epub', 'docx')),
+  source_type        TEXT NOT NULL CHECK (source_type IN ('url', 'pdf', 'note', 'youtube', 'podcast', 'epub', 'docx', 'telegram')),
   source_url         TEXT,
   title              TEXT NOT NULL,
   author             TEXT,
