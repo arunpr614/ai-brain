@@ -71,13 +71,13 @@ export function improvementHint(
   quality: string | null | undefined,
 ): string | null {
   if (quality === "metadata_only" && (platform === "youtube" || platform === "youtube_short")) {
-    return "Retry later or add a note if the video has no transcript.";
+    return "Add the transcript or your notes to upgrade this capture.";
   }
   if (quality === "metadata_only" && platform === "linkedin") {
     return "Paste the post text with the link to upgrade this capture.";
   }
   if (quality === "paywall_preview" && platform === "substack") {
-    return "Attach or paste the newsletter email body to save the full post.";
+    return "Full Substack text requires the newsletter email body. This item remains a preview until email-body capture is added.";
   }
   return null;
 }

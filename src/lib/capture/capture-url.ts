@@ -1,4 +1,5 @@
 import type { SourceType } from "@/db/items";
+import type { ItemRow } from "@/db/client";
 import { extractArticleFromUrl } from "./url";
 import { extractYoutubeVideo } from "./youtube";
 import { detectCapturePlatform, type PlatformDetection } from "./platform";
@@ -6,10 +7,13 @@ import { extractSubstackFromUrl } from "./substack";
 import { captureLinkedInUserText, extractLinkedInMetadataFromUrl } from "./linkedin";
 import type { CapturedContent } from "./types";
 import { CAPTURE_EXTRACTION_VERSION } from "./quality";
+import { buildYoutubeUserTextCapture } from "./youtube-user-text";
+import { meaningfulUserText as extractMeaningfulUserText } from "./user-provided";
 
 export interface ExtractUrlCaptureInput {
   url: string;
   userText?: string | null;
+  existingItem?: ItemRow | null;
 }
 
 export interface ExtractUrlCaptureResult {
@@ -23,13 +27,21 @@ export async function extractUrlCapture(
 ): Promise<ExtractUrlCaptureResult> {
   const detection = detectCapturePlatform(input.url);
   let content: CapturedContent;
+  const pasted = meaningfulUserText(input.userText, input.url, detection.canonicalUrl);
 
-  if (detection.videoId) {
+  if (detection.videoId && pasted) {
+    content = await buildYoutubeUserTextCapture({
+      canonicalUrl: detection.canonicalUrl,
+      platform: detection.platform === "youtube_short" ? "youtube_short" : "youtube",
+      videoId: detection.videoId,
+      userText: pasted,
+      existingItem: input.existingItem,
+    });
+  } else if (detection.videoId) {
     content = await extractYoutubeVideo(detection.videoId, input.url);
   } else if (detection.platform === "substack") {
     content = await extractSubstackFromUrl(detection.canonicalUrl);
   } else if (detection.platform === "linkedin") {
-    const pasted = meaningfulUserText(input.userText, input.url);
     content = pasted
       ? captureLinkedInUserText(detection.canonicalUrl, pasted)
       : await extractLinkedInMetadataFromUrl(detection.canonicalUrl);
@@ -52,29 +64,14 @@ export async function extractUrlCapture(
   };
 }
 
-export function meaningfulUserText(text: string | null | undefined, url: string): string | null {
-  const cleaned = removeUrl(text ?? "", url)
-    .replace(/\r\n/g, "\n")
-    .split("\n")
-    .map((line) => line.replace(/[ \t]+/g, " ").trim())
-    .join("\n")
-    .replace(/\n{3,}/g, "\n\n")
-    .trim();
-  const wordCount = cleaned.split(/\s+/).filter(Boolean).length;
-  return wordCount >= 8 ? cleaned : null;
-}
-
-function removeUrl(text: string, url: string): string {
-  if (!text) return "";
-  const escaped = escapeRegExp(url);
-  let without = text.replace(new RegExp(escaped, "gi"), " ");
+export function meaningfulUserText(
+  text: string | null | undefined,
+  url: string,
+  canonicalUrl?: string | null,
+): string | null {
   try {
-    const canonical = detectCapturePlatform(url).canonicalUrl;
-    without = without.replace(new RegExp(escapeRegExp(canonical), "gi"), " ");
-  } catch {}
-  return without;
-}
-
-function escapeRegExp(value: string): string {
-  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    return extractMeaningfulUserText(text, url, canonicalUrl ?? detectCapturePlatform(url).canonicalUrl);
+  } catch {
+    return extractMeaningfulUserText(text, url);
+  }
 }

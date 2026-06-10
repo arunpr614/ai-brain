@@ -16,7 +16,9 @@ import { getItem } from "@/db/items";
 import { listTagsForItem } from "@/db/tags";
 import { getItemProcessingStatus, type ItemProcessingStatus } from "@/lib/items/status";
 import { improvementHint, platformLabel, qualityLabel } from "@/lib/capture/quality";
+import { canUpgradeWithPastedText } from "@/lib/capture/upgrade-policy";
 import { findRelatedItems } from "@/lib/related";
+import { UpgradeTextForm } from "./upgrade-text-form";
 
 function parseQuotes(raw: string | null): string[] {
   if (!raw) return [];
@@ -65,6 +67,7 @@ export default async function ItemDetailPage({
   const platform = platformLabel(item.source_platform, item.source_type);
   const quality = qualityLabel(item.capture_quality);
   const hint = improvementHint(item.source_platform, item.capture_quality);
+  const canUpgradeWithText = canUpgradeWithPastedText(item);
 
   // T-12: when arriving via an Ask citation chip, resolve the chunk body so
   // we can render a highlight panel with an anchor the scroll-to-hash hook
@@ -260,6 +263,7 @@ export default async function ItemDetailPage({
                 {hint}
               </p>
             )}
+            {canUpgradeWithText && <UpgradeTextForm itemId={item.id} />}
           </div>
 
           {/* F-301: Collections editor — always visible so the user can

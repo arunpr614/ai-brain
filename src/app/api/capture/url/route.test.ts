@@ -125,4 +125,128 @@ This is the complete post body with enough useful words to save as user provided
     assert.match(updated.body, /It keeps a bullet/);
     assert.match(updated.body, /https:\/\/example\.com\/context/);
   });
+
+  it("upgrades an existing YouTube metadata-only item with pasted transcript text", async () => {
+    const canonical = "https://www.youtube.com/watch?v=abc12345678";
+    const existing = insertCaptured({
+      source_type: "youtube",
+      title: "Saved YouTube metadata",
+      body: "old metadata body",
+      author: "Saved Channel",
+      source_url: canonical,
+      source_platform: "youtube",
+      capture_quality: "metadata_only",
+      extraction_method: "youtube_oembed_metadata",
+      extraction_version: "capture-v0.7.5",
+      duration_seconds: 321,
+      thumbnail_url: "https://i.ytimg.com/example.jpg",
+      description: "Saved description",
+    });
+
+    const res = await POST(mkReq({
+      url: "https://youtu.be/abc12345678",
+      note: `https://youtu.be/abc12345678
+
+[00:01] This transcript text has enough useful words to upgrade the existing weak capture.
+
+- Keep this bullet
+- Keep this secondary URL https://example.com/context`,
+    }));
+
+    assert.equal(res.status, 200);
+    const body = await res.json();
+    assert.equal(body.action, "upgraded");
+    assert.equal(body.id, existing.id);
+    const rowsForUrl = getDb()
+      .prepare("SELECT COUNT(*) AS count FROM items WHERE source_url = ?")
+      .get(canonical) as { count: number };
+    assert.equal(rowsForUrl.count, 1);
+
+    const updated = getItem(existing.id)!;
+    assert.equal(updated.title, "Saved YouTube metadata");
+    assert.equal(updated.author, "Saved Channel");
+    assert.equal(updated.duration_seconds, 321);
+    assert.equal(updated.thumbnail_url, "https://i.ytimg.com/example.jpg");
+    assert.equal(updated.capture_quality, "user_provided_full_text");
+    assert.equal(updated.extraction_method, "youtube_user_provided_text");
+    assert.equal(updated.enrichment_state, "pending");
+    assert.equal(updated.batch_id, null);
+    assert.match(updated.body, /Provided by: user paste/);
+    assert.match(updated.body, /Keep this bullet/);
+    assert.match(updated.body, /https:\/\/example\.com\/context/);
+    assert.doesNotMatch(updated.body, /youtu\.be\/abc12345678/);
+  });
+
+  it("creates a new YouTube item from pasted text without requiring transcript extraction", async () => {
+    const oldKey = process.env.YOUTUBE_DATA_API_KEY;
+    process.env.YOUTUBE_DATA_API_KEY = "";
+    try {
+      const res = await POST(mkReq({
+        url: "https://youtu.be/newtext1234",
+        note: `https://youtu.be/newtext1234
+
+These pasted notes have enough words to become the remembered content for this new YouTube capture.`,
+      }));
+
+      assert.equal(res.status, 201);
+      const body = await res.json();
+      assert.equal(body.action, "created");
+      const item = getItem(body.id)!;
+      assert.equal(item.source_type, "youtube");
+      assert.equal(item.source_url, "https://www.youtube.com/watch?v=newtext1234");
+      assert.equal(item.capture_quality, "user_provided_full_text");
+      assert.equal(item.extraction_method, "youtube_user_provided_text");
+      assert.match(item.body, /Provided by: user paste/);
+      assert.match(item.body, /remembered content for this new YouTube capture/);
+    } finally {
+      if (oldKey === undefined) delete process.env.YOUTUBE_DATA_API_KEY;
+      else process.env.YOUTUBE_DATA_API_KEY = oldKey;
+    }
+  });
+
+  it("rejects too-short pasted text without overwriting a weak item", async () => {
+    const url = "https://www.linkedin.com/posts/short-text";
+    const existing = insertCaptured({
+      source_type: "url",
+      title: "LinkedIn link",
+      body: "Preview only",
+      source_url: url,
+      source_platform: "linkedin",
+      capture_quality: "metadata_only",
+      extraction_method: "linkedin_opengraph",
+      extraction_version: "capture-v0.7.5",
+    });
+
+    const res = await POST(mkReq({ url, note: `${url}\ntoo short` }));
+
+    assert.equal(res.status, 422);
+    const body = await res.json();
+    assert.equal(body.action, "rejected_too_short");
+    assert.equal(getItem(existing.id)?.body, "Preview only");
+  });
+
+  it("does not overwrite an existing strong capture with pasted text", async () => {
+    const url = "https://www.youtube.com/watch?v=strong12345";
+    const existing = insertCaptured({
+      source_type: "youtube",
+      title: "Strong YouTube",
+      body: "existing transcript body",
+      source_url: url,
+      source_platform: "youtube",
+      capture_quality: "metadata_plus_transcript",
+      extraction_method: "youtube_innertube_timedtext",
+      extraction_version: "capture-v0.7.5",
+    });
+
+    const res = await POST(mkReq({
+      url,
+      note: `${url}\nThese are extra notes with enough words but should not overwrite a strong capture.`,
+    }));
+
+    assert.equal(res.status, 200);
+    const body = await res.json();
+    assert.equal(body.action, "duplicate");
+    assert.equal(body.itemId, existing.id);
+    assert.equal(getItem(existing.id)?.body, "existing transcript body");
+  });
 });

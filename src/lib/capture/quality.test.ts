@@ -12,7 +12,7 @@ describe("capture quality labels", () => {
 
   it("suggests repair hints for weak captures", () => {
     assert.match(improvementHint("linkedin", "metadata_only") ?? "", /Paste the post text/);
-    assert.match(improvementHint("substack", "paywall_preview") ?? "", /newsletter email/);
+    assert.match(improvementHint("substack", "paywall_preview") ?? "", /email-body capture/);
     assert.equal(improvementHint("generic_article", "full_text"), null);
   });
 });
