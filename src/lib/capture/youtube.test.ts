@@ -19,6 +19,7 @@ import {
   formatTranscriptBody,
   msToTimestamp,
   YoutubeCaptureError,
+  YOUTUBE_ANTIBOT_METADATA_WARNING,
   type TranscriptSegment,
 } from "./youtube";
 
@@ -81,6 +82,17 @@ function queueTimedTextResponse(xml: string, status = 200) {
       new Response(xml, {
         status,
         headers: { "content-type": "application/xml" },
+      }),
+  });
+}
+
+function queueOEmbedResponse(body: unknown, status = 200) {
+  queue.push({
+    match: (url) => url.includes("youtube.com/oembed"),
+    respond: () =>
+      new Response(JSON.stringify(body), {
+        status,
+        headers: { "content-type": "application/json" },
       }),
   });
 }
@@ -266,7 +278,11 @@ describe("extractYoutubeVideo — happy path (case 4)", () => {
       "https://www.youtube.com/watch?v=jNQXAC9IVRw",
     );
     assert.equal(result.extraction_warning, null);
-    assert.match(result.body, /^\[0:01\] All right, so here we are/);
+    assert.equal(result.source_platform, "youtube");
+    assert.equal(result.capture_quality, "metadata_plus_transcript");
+    assert.match(result.body, /^Title: Me at the zoo/);
+    assert.match(result.body, /Capture quality: metadata_plus_transcript/);
+    assert.match(result.body, /Transcript:\n\[0:01\] All right, so here we are/);
     assert.match(result.body, /\[0:16\] and that's pretty much all there is to/);
   });
 });
@@ -291,7 +307,9 @@ describe("extractYoutubeVideo — no_captions (case 5)", () => {
       "https://youtu.be/noCapsxxxxx",
     );
     assert.equal(result.extraction_warning, "no_transcript");
-    assert.equal(result.body, "[No transcript available for this video]");
+    assert.equal(result.capture_quality, "metadata_only");
+    assert.match(result.body, /^Title: Silent short/);
+    assert.match(result.body, /Transcript:\n\[No transcript available for this video\]/);
     assert.equal(result.title, "Silent short");
   });
 });
@@ -304,11 +322,67 @@ describe("extractYoutubeVideo — video_unavailable (case 6)", () => {
   afterEach(() => restoreFetchMock());
 
   it("throws YoutubeCaptureError when videoDetails missing", async () => {
-    queuePlayerResponse({ playabilityStatus: { status: "ERROR" } });
+    queuePlayerResponse({
+      playabilityStatus: { status: "ERROR", reason: "Video unavailable" },
+    });
     await assert.rejects(
       () => extractYoutubeVideo("privatexxxx", "https://youtu.be/privatexxxx"),
       (err: unknown) =>
-        err instanceof YoutubeCaptureError && err.code === "video_unavailable",
+        err instanceof YoutubeCaptureError &&
+        err.code === "video_unavailable" &&
+        /Video unavailable/.test(err.message),
+    );
+  });
+});
+
+describe("extractYoutubeVideo — anti-bot metadata fallback", () => {
+  beforeEach(() => installFetchMock());
+  afterEach(() => restoreFetchMock());
+
+  it("saves metadata-only content when InnerTube requires anti-bot sign-in and oEmbed succeeds", async () => {
+    queuePlayerResponse({
+      playabilityStatus: {
+        status: "LOGIN_REQUIRED",
+        reason: "Sign in to confirm you're not a bot",
+      },
+    });
+    queueOEmbedResponse({
+      title: "Public video from oEmbed",
+      author_name: "Helpful Channel",
+    });
+
+    const result = await extractYoutubeVideo(
+      "antibotxxxx",
+      "https://youtu.be/antibotxxxx",
+    );
+
+    assert.equal(result.title, "Public video from oEmbed");
+    assert.equal(result.author, "Helpful Channel");
+    assert.equal(result.duration_seconds, null);
+    assert.equal(
+      result.source_url,
+      "https://www.youtube.com/watch?v=antibotxxxx",
+    );
+    assert.equal(result.extraction_warning, YOUTUBE_ANTIBOT_METADATA_WARNING);
+    assert.match(result.body, /Transcript unavailable/);
+    assert.match(result.body, /anti-bot sign-in check/);
+  });
+
+  it("still fails when anti-bot sign-in blocks InnerTube and oEmbed cannot prove a public video", async () => {
+    queuePlayerResponse({
+      playabilityStatus: {
+        status: "LOGIN_REQUIRED",
+        reason: "Sign in to confirm you're not a bot",
+      },
+    });
+    queueOEmbedResponse({ error: "not found" }, 404);
+
+    await assert.rejects(
+      () => extractYoutubeVideo("blockedxxxx", "https://youtu.be/blockedxxxx"),
+      (err: unknown) =>
+        err instanceof YoutubeCaptureError &&
+        err.code === "video_unavailable" &&
+        /metadata fallback failed/.test(err.message),
     );
   });
 });
@@ -416,6 +490,8 @@ describe("extractYoutubeVideo — zero-segment guard (case 10)", () => {
       "https://youtu.be/emptycapxxx",
     );
     assert.equal(result.extraction_warning, "no_transcript");
-    assert.equal(result.body, "[No transcript available for this video]");
+    assert.equal(result.capture_quality, "metadata_only");
+    assert.match(result.body, /^Title: Empty caps/);
+    assert.match(result.body, /Transcript:\n\[No transcript available for this video\]/);
   });
 });

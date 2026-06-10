@@ -1,9 +1,9 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { rmSync } from "node:fs";
+import { TEST_DB_DIR } from "@/lib/embed/pipeline.test.setup";
 import { getDb } from "@/db/client";
 import { insertCaptured } from "@/db/items";
-import { TEST_DB_DIR } from "@/lib/embed/pipeline.test.setup";
 import { getItemProcessingStatus } from "./status";
 
 test.after(() => {

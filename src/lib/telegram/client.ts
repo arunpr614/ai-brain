@@ -17,6 +17,15 @@ import type {
 
 const TELEGRAM_API_BASE = "https://api.telegram.org";
 const TELEGRAM_FILE_BASE = "https://api.telegram.org/file";
+let apiTimeoutMs = 10_000;
+let fileTimeoutMs = 30_000;
+
+export class TelegramTimeoutError extends Error {
+  constructor(operation: string, timeoutMs: number) {
+    super(`${operation} timed out after ${timeoutMs}ms`);
+    this.name = "TelegramTimeoutError";
+  }
+}
 
 function token(): string {
   const t = process.env.TELEGRAM_BOT_TOKEN;
@@ -31,12 +40,32 @@ interface TelegramApiResponse<T> {
   description?: string;
 }
 
+async function fetchWithTimeout(
+  url: string,
+  init: RequestInit,
+  operation: string,
+  timeoutMs: number,
+): Promise<Response> {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    return await fetch(url, { ...init, signal: controller.signal });
+  } catch (err) {
+    if ((err as Error).name === "AbortError") {
+      throw new TelegramTimeoutError(operation, timeoutMs);
+    }
+    throw err;
+  } finally {
+    clearTimeout(timeout);
+  }
+}
+
 async function call<T>(method: string, body: unknown): Promise<T> {
-  const res = await fetch(`${TELEGRAM_API_BASE}/bot${token()}/${method}`, {
+  const res = await fetchWithTimeout(`${TELEGRAM_API_BASE}/bot${token()}/${method}`, {
     method: "POST",
     headers: { "content-type": "application/json" },
     body: JSON.stringify(body),
-  });
+  }, `telegram.${method}`, apiTimeoutMs);
   const json = (await res.json()) as TelegramApiResponse<T>;
   if (!json.ok || json.result === undefined) {
     throw new Error(
@@ -80,9 +109,19 @@ export async function getFile(fileId: string): Promise<TelegramFile> {
 }
 
 export async function downloadFile(filePath: string): Promise<ArrayBuffer> {
-  const res = await fetch(`${TELEGRAM_FILE_BASE}/bot${token()}/${filePath}`);
+  const res = await fetchWithTimeout(
+    `${TELEGRAM_FILE_BASE}/bot${token()}/${filePath}`,
+    {},
+    "telegram.downloadFile",
+    fileTimeoutMs,
+  );
   if (!res.ok) {
     throw new Error(`telegram.downloadFile failed: ${res.status} ${res.statusText}`);
   }
   return res.arrayBuffer();
+}
+
+export function __setTelegramTimeoutsForTests(apiMs: number, fileMs: number): void {
+  apiTimeoutMs = apiMs;
+  fileTimeoutMs = fileMs;
 }

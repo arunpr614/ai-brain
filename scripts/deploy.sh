@@ -106,9 +106,10 @@ npm run check:ai-providers -- $(ai_provider_check_args)
 log "3. Build standalone artifact"
 rm -rf .next
 npm run build
+npm run check:build-artifacts
 
 log "4. Sync artifact to Hetzner"
-rsync -az --delete .next/standalone/ "${SSH_HOST}:${REMOTE_DIR}/"
+rsync -az --delete --exclude '/data/' .next/standalone/ "${SSH_HOST}:${REMOTE_DIR}/"
 rsync -az --delete .next/static/ "${SSH_HOST}:${REMOTE_DIR}/.next/static/"
 rsync -az --delete public/ "${SSH_HOST}:${REMOTE_DIR}/public/"
 ssh "${SSH_HOST}" "mkdir -p '${REMOTE_DIR}/scripts'"

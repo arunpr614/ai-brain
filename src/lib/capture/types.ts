@@ -10,6 +10,33 @@
  * `excerpt` and `html_length` on top of these required fields). That's
  * fine — the route + insert path only reads the fields declared here.
  */
+export type CapturePlatform =
+  | "youtube"
+  | "youtube_short"
+  | "substack"
+  | "linkedin"
+  | "generic_article"
+  | "pdf"
+  | "note";
+
+export type CaptureQuality =
+  | "full_text"
+  | "transcript"
+  | "metadata_plus_transcript"
+  | "metadata_only"
+  | "paywall_preview"
+  | "user_provided_full_text"
+  | "client_dom"
+  | "email_body"
+  | "failed";
+
+export interface CaptureArtifactCandidate {
+  kind: string;
+  content_type: string;
+  body: string | Uint8Array;
+  suggested_filename: string;
+}
+
 export interface CapturedContent {
   title: string;
   body: string;
@@ -19,4 +46,12 @@ export interface CapturedContent {
   /** Present for YouTube items; absent for articles. Null allowed for videos
    *  whose duration wasn't in the InnerTube response. */
   duration_seconds?: number | null;
+  source_platform?: CapturePlatform | null;
+  capture_quality?: CaptureQuality | null;
+  extraction_method?: string | null;
+  extraction_version?: string | null;
+  published_at?: number | null;
+  thumbnail_url?: string | null;
+  description?: string | null;
+  artifacts?: CaptureArtifactCandidate[];
 }

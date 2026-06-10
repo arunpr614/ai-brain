@@ -14,13 +14,16 @@
  */
 import { Readability } from "@mozilla/readability";
 import { JSDOM } from "jsdom";
+import { assertPublicHttpUrl, UrlSafetyError } from "./url-safety";
+import { CAPTURE_EXTRACTION_VERSION } from "./quality";
+import type { CapturedContent } from "./types";
 
 const TIMEOUT_MS = 15_000;
 const MAX_BODY_BYTES = 5 * 1024 * 1024;
 const USER_AGENT =
   "Mozilla/5.0 (Macintosh; Intel Mac OS X 14_0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Safari/537.36 AI-Brain/0.2";
 
-export interface ExtractedArticle {
+export interface ExtractedArticle extends CapturedContent {
   title: string;
   author: string | null;
   body: string;
@@ -44,6 +47,14 @@ export class UrlCaptureError extends Error {
 
 export async function extractArticleFromUrl(input: string): Promise<ExtractedArticle> {
   const url = normalizeUrl(input);
+  try {
+    await assertPublicHttpUrl(url);
+  } catch (err) {
+    if (err instanceof UrlSafetyError) {
+      throw new UrlCaptureError("invalid_url", err.message);
+    }
+    throw err;
+  }
   const html = await fetchWithCaps(url);
 
   const dom = new JSDOM(html, { url });
@@ -70,6 +81,11 @@ export async function extractArticleFromUrl(input: string): Promise<ExtractedArt
     source_url: url,
     html_length: html.length,
     extraction_warning: body.length < 500 ? "short_article" : null,
+    source_platform: "generic_article",
+    capture_quality: "full_text",
+    extraction_method: "readability",
+    extraction_version: CAPTURE_EXTRACTION_VERSION,
+    description: excerpt,
   };
 }
 

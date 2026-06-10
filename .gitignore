@@ -83,6 +83,8 @@ vault/
 # Debug
 .turbo/
 tmp/
+telegram-bot-commands*.txt
+*telegram*provision*.txt
 
 # SwiftBar plugin folder — user-local runtime directory. The actual
 # plugin script is tracked under scripts/swiftbar/; anything that

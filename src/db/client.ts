@@ -123,6 +123,7 @@ function runMigrations(db: Database.Database): void {
 export interface ItemRow {
   id: string;
   source_type: "url" | "pdf" | "note" | "youtube" | "podcast" | "epub" | "docx" | "telegram";
+  capture_source: "web" | "android" | "extension" | "telegram" | "system" | "unknown";
   source_url: string | null;
   title: string;
   author: string | null;
@@ -144,11 +145,45 @@ export interface ItemRow {
   total_chars: number | null;
   /** Duration in seconds for video items (youtube). Null for non-video types. Added v0.5.1 (migration 007). */
   duration_seconds: number | null;
+  /** Platform-specific label for capture quality UX. Added v0.7.5 (migration 013). */
+  source_platform?: string | null;
+  capture_quality?: string | null;
+  extraction_method?: string | null;
+  extraction_version?: string | null;
+  published_at?: number | null;
+  thumbnail_url?: string | null;
+  description?: string | null;
   /**
    * Anthropic Message Batch id (e.g. `msgbatch_...`) when this item has been
    * submitted to a daily batch. Null otherwise. Added v0.6.0 (migration 008).
    */
   batch_id: string | null;
+}
+
+export interface CaptureArtifactRow {
+  id: string;
+  item_id: string;
+  kind: string;
+  path: string | null;
+  relative_path: string | null;
+  content_type: string | null;
+  sha256: string | null;
+  size_bytes: number | null;
+  truncated: number;
+  write_status: "ok" | "failed" | "skipped";
+  error_message: string | null;
+  created_at: number;
+}
+
+export interface CaptureMetadataCacheRow {
+  id: string;
+  platform: string;
+  cache_key: string;
+  payload_json: string;
+  status: string;
+  expires_at: number;
+  created_at: number;
+  updated_at: number;
 }
 
 export interface SettingRow {

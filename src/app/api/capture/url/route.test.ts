@@ -15,7 +15,8 @@ import { NextRequest } from "next/server";
 import { TEST_DB_DIR } from "./route.test.setup";
 import { POST } from "./route";
 import { __resetDedupForTests } from "@/lib/capture/dedup";
-import { insertCaptured } from "@/db/items";
+import { getDb } from "@/db/client";
+import { getItem, insertCaptured } from "@/db/items";
 
 function mkReq(
   body: unknown,
@@ -85,5 +86,43 @@ describe("/api/capture/url", () => {
     const d2 = await r2.json();
     assert.equal(d2.duplicate, true);
     assert.equal(d2.reason, "window");
+  });
+
+  it("upgrades an existing LinkedIn metadata-only item when pasted text is provided", async () => {
+    const url = "https://www.linkedin.com/posts/example";
+    const existing = insertCaptured({
+      source_type: "url",
+      title: "LinkedIn link",
+      body: "Preview only",
+      source_url: url,
+      source_platform: "linkedin",
+      capture_quality: "metadata_only",
+      extraction_method: "linkedin_opengraph",
+      extraction_version: "capture-v0.7.5",
+    });
+
+    const res = await POST(mkReq({
+      url,
+      note: `${url}
+
+This is the complete post body with enough useful words to save as user provided full text.
+
+- It keeps a bullet.
+- It keeps this secondary link https://example.com/context`,
+    }));
+
+    assert.equal(res.status, 200);
+    const body = await res.json();
+    assert.equal(body.action, "upgraded");
+    assert.equal(body.id, existing.id);
+    const rowsForUrl = getDb()
+      .prepare("SELECT COUNT(*) AS count FROM items WHERE source_url = ?")
+      .get(url) as { count: number };
+    assert.equal(rowsForUrl.count, 1);
+
+    const updated = getItem(existing.id)!;
+    assert.equal(updated.capture_quality, "user_provided_full_text");
+    assert.match(updated.body, /It keeps a bullet/);
+    assert.match(updated.body, /https:\/\/example\.com\/context/);
   });
 });

@@ -3,8 +3,9 @@
  * v0.5.1 T-YT-10 — real-network smoke against live YouTube.
  *
  * Opt-in. NOT part of `npm run smoke`. Run on demand via
- * `npm run smoke:youtube`. Fails if YouTube's InnerTube or timedtext
- * responses drift in a way that breaks our extractor.
+ * `npm run smoke:youtube`. Fails if YouTube's InnerTube response drifts in a
+ * way that prevents saving. Timedtext failures are acceptable only when the
+ * extractor returns an honest metadata-only fallback.
  *
  * Three fixture videos:
  *   - Me at the zoo (jNQXAC9IVRw) — 19s, has auto-captions
@@ -16,6 +17,7 @@ import assert from "node:assert/strict";
 const { extractYoutubeVideo } = await import("../src/lib/capture/youtube.ts");
 
 let failures = 0;
+const qualityWarnings = [];
 async function section(name, fn) {
   const t0 = Date.now();
   try {
@@ -27,7 +29,7 @@ async function section(name, fn) {
   }
 }
 
-await section("Me at the zoo — title + author + transcript", async () => {
+await section("Me at the zoo — title + author + transcript or metadata fallback", async () => {
   const result = await extractYoutubeVideo(
     "jNQXAC9IVRw",
     "https://youtu.be/jNQXAC9IVRw",
@@ -35,9 +37,18 @@ await section("Me at the zoo — title + author + transcript", async () => {
   assert.equal(result.title, "Me at the zoo");
   assert.equal(result.author, "jawed");
   assert.equal(result.duration_seconds, 19);
-  assert.equal(result.extraction_warning, null);
-  assert.match(result.body, /elephants/i);
-  assert.match(result.body, /^\[0:0\d\]/m, "at least one [0:0X] timestamp line");
+  if (result.capture_quality === "metadata_only") {
+    qualityWarnings.push({
+      fixture: "jNQXAC9IVRw",
+      reason: result.extraction_warning ?? "metadata_only",
+    });
+    assert.match(result.extraction_warning ?? "", /metadata_only/);
+    assert.match(result.body, /Transcript unavailable/i);
+  } else {
+    assert.equal(result.extraction_warning, null);
+    assert.match(result.body, /elephants/i);
+    assert.match(result.body, /^\[0:0\d\]/m, "at least one [0:0X] timestamp line");
+  }
 });
 
 await section("Rickroll — has captions, reasonable length", async () => {
@@ -59,5 +70,12 @@ await section("Rickroll — has captions, reasonable length", async () => {
 if (failures > 0) {
   console.error(`\n[smoke:youtube] ${failures} FAILED`);
   process.exit(1);
+}
+if (qualityWarnings.length > 0) {
+  console.warn("\n[smoke:youtube] save reliability passed, but transcript quality warning(s) were observed:");
+  for (const warning of qualityWarnings) {
+    console.warn(`  WARN ${warning.fixture}: ${warning.reason}`);
+  }
+  console.warn("[smoke:youtube] run npm run smoke:youtube:quality for the release quality gate");
 }
 console.log("\n[smoke:youtube] all checks passed");

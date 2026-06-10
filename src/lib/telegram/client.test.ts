@@ -6,7 +6,14 @@
  */
 import assert from "node:assert/strict";
 import { afterEach, beforeEach, describe, it } from "node:test";
-import { downloadFile, editMessageText, getFile, sendMessage } from "./client";
+import {
+  __setTelegramTimeoutsForTests,
+  downloadFile,
+  editMessageText,
+  getFile,
+  sendMessage,
+  TelegramTimeoutError,
+} from "./client";
 
 const ORIGINAL_FETCH = globalThis.fetch;
 const ORIGINAL_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
@@ -51,6 +58,7 @@ describe("telegram/client", () => {
     } else {
       process.env.TELEGRAM_BOT_TOKEN = ORIGINAL_TOKEN;
     }
+    __setTelegramTimeoutsForTests(10_000, 30_000);
   });
 
   it("sendMessage posts to /sendMessage and unwraps result", async () => {
@@ -100,5 +108,18 @@ describe("telegram/client", () => {
   it("throws if TELEGRAM_BOT_TOKEN is not set", async () => {
     delete process.env.TELEGRAM_BOT_TOKEN;
     await assert.rejects(() => sendMessage(1, "hi"), /TELEGRAM_BOT_TOKEN not set/);
+  });
+
+  it("sendMessage aborts on timeout", async () => {
+    __setTelegramTimeoutsForTests(5, 30_000);
+    globalThis.fetch = (async (_input: string | URL | Request, init?: RequestInit) => {
+      return await new Promise<Response>((_resolve, reject) => {
+        init?.signal?.addEventListener("abort", () => {
+          reject(new DOMException("aborted", "AbortError"));
+        });
+      });
+    }) as typeof fetch;
+
+    await assert.rejects(() => sendMessage(1, "slow"), TelegramTimeoutError);
   });
 });

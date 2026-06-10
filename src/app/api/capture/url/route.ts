@@ -18,16 +18,15 @@ import { NextResponse, type NextRequest } from "next/server";
 import { z } from "zod";
 import { validateOrigin } from "@/lib/auth/bearer";
 import { checkClientApiVersion } from "@/lib/auth/api-version";
-import { findItemByUrl, insertCaptured } from "@/db/items";
-import { extractArticleFromUrl, UrlCaptureError } from "@/lib/capture/url";
-import {
-  extractVideoId,
-  canonicalYoutubeUrl,
-  extractYoutubeVideo,
-  YoutubeCaptureError,
-} from "@/lib/capture/youtube";
-import type { CapturedContent } from "@/lib/capture/types";
+import { findItemByUrl, insertCaptured, updateItemCaptureContent } from "@/db/items";
+import type { ItemRow } from "@/db/client";
+import { UrlCaptureError } from "@/lib/capture/url";
+import { YoutubeCaptureError } from "@/lib/capture/youtube";
+import { extractUrlCapture, meaningfulUserText } from "@/lib/capture/capture-url";
+import { detectCapturePlatform } from "@/lib/capture/platform";
 import { isDuplicateShare, shareDedupKey } from "@/lib/capture/dedup";
+import { captureSourceFromTrustedHeader } from "@/lib/capture/source";
+import { saveCaptureArtifacts } from "@/lib/capture/artifacts";
 import { logError } from "@/lib/errors/sink";
 
 export const runtime = "nodejs";
@@ -66,14 +65,12 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const { url: rawUrl } = parsed.data;
+  const { url: rawUrl, note } = parsed.data;
+  const captureSource = captureSourceFromTrustedHeader(req.headers.get("x-brain-capture-source"));
 
-  // v0.5.1: YouTube-aware URL normalization BEFORE dedup so variants
-  // (youtu.be/X, watch?v=X, shorts/X, etc.) collide as one library item.
-  // shareDedupKey's first arg stays "url" — it identifies the payload
-  // shape (we're passing a URL), not the source_type of the final item.
-  const videoId = extractVideoId(rawUrl);
-  const url = videoId ? canonicalYoutubeUrl(videoId) : rawUrl;
+  const detection = detectCapturePlatform(rawUrl);
+  const url = detection.canonicalUrl;
+  const userText = meaningfulUserText(note, rawUrl);
 
   // Server-side dedup (F-041 defense-in-depth). Catches APK double-fire
   // even if the client-side dedup window was skipped (hot reload, etc.).
@@ -93,20 +90,16 @@ export async function POST(req: NextRequest) {
 
   // Historical-duplicate check (URL already in library from a past capture).
   const existing = findItemByUrl(url);
-  if (existing) {
+  if (existing && !userText) {
     return NextResponse.json(
       { duplicate: true, itemId: existing.id, reason: "exists" },
       { status: 200 },
     );
   }
 
-  // Extractor dispatch. Both return CapturedContent — route never narrows
-  // the union because insertCaptured accepts the shared base type.
-  let content: CapturedContent;
+  let extracted;
   try {
-    content = videoId
-      ? await extractYoutubeVideo(videoId, rawUrl)
-      : await extractArticleFromUrl(url);
+    extracted = await extractUrlCapture({ url: rawUrl, userText: note });
   } catch (err) {
     if (err instanceof UrlCaptureError || err instanceof YoutubeCaptureError) {
       logError({
@@ -122,16 +115,74 @@ export async function POST(req: NextRequest) {
     }
     throw err;
   }
+  const { content } = extracted;
+
+  if (existing && shouldUpgradeWeakCapture(existing, content.capture_quality)) {
+    const item = updateItemCaptureContent(existing.id, {
+      title: content.title,
+      body: content.body,
+      author: content.author,
+      extraction_warning: content.extraction_warning,
+      duration_seconds: content.duration_seconds ?? null,
+      source_platform: content.source_platform ?? extracted.detection.platform,
+      capture_quality: content.capture_quality ?? null,
+      extraction_method: content.extraction_method ?? null,
+      extraction_version: content.extraction_version ?? null,
+      published_at: content.published_at ?? null,
+      thumbnail_url: content.thumbnail_url ?? null,
+      description: content.description ?? null,
+    });
+    try {
+      await saveCaptureArtifacts(existing.id, content.artifacts);
+    } catch (err) {
+      logError({
+        type: "capture.artifact-save-failed",
+        item_id: existing.id,
+        message: (err as Error).message,
+        ts: Date.now(),
+      });
+    }
+    return NextResponse.json(
+      { id: item?.id ?? existing.id, duplicate: false, action: "upgraded" },
+      { status: 200 },
+    );
+  }
 
   const item = insertCaptured({
-    source_type: videoId ? "youtube" : "url",
+    source_type: extracted.source_type,
+    capture_source: captureSource,
     title: content.title,
     body: content.body,
     author: content.author,
     source_url: content.source_url,
     extraction_warning: content.extraction_warning,
     duration_seconds: content.duration_seconds ?? null,
+    source_platform: content.source_platform ?? extracted.detection.platform,
+    capture_quality: content.capture_quality ?? null,
+    extraction_method: content.extraction_method ?? null,
+    extraction_version: content.extraction_version ?? null,
+    published_at: content.published_at ?? null,
+    thumbnail_url: content.thumbnail_url ?? null,
+    description: content.description ?? null,
   });
+  try {
+    await saveCaptureArtifacts(item.id, content.artifacts);
+  } catch (err) {
+    logError({
+      type: "capture.artifact-save-failed",
+      item_id: item.id,
+      message: (err as Error).message,
+      ts: Date.now(),
+    });
+  }
 
-  return NextResponse.json({ id: item.id, duplicate: false }, { status: 201 });
+  return NextResponse.json({ id: item.id, duplicate: false, action: "created" }, { status: 201 });
+}
+
+function shouldUpgradeWeakCapture(
+  existing: ItemRow,
+  incomingQuality: string | null | undefined,
+): boolean {
+  return existing.capture_quality === "metadata_only" &&
+    incomingQuality === "user_provided_full_text";
 }

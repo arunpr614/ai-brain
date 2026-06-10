@@ -9,6 +9,7 @@ import assert from "node:assert/strict";
 import { rmSync } from "node:fs";
 import { TEST_DB_DIR } from "./items.test.setup";
 import { insertCaptured, searchItems } from "./items";
+import { insertCaptureArtifact, listCaptureArtifactsForItem } from "./capture-artifacts";
 
 test.after(() => {
   try {
@@ -64,4 +65,33 @@ test("query with embedded double quotes is escaped, not rejected", () => {
   // Injection attempt — embedded quote should be doubled, not closing the phrase.
   const hits2 = searchItems('hello" OR 1=1 --');
   assert.ok(Array.isArray(hits2));
+});
+
+test("insertCaptured persists capture quality metadata and artifact rows", () => {
+  const item = insertCaptured({
+    source_type: "url",
+    title: "LinkedIn capture",
+    body: "Body",
+    source_url: "https://www.linkedin.com/posts/example",
+    source_platform: "linkedin",
+    capture_quality: "metadata_only",
+    extraction_method: "linkedin_opengraph",
+    extraction_version: "capture-v0.7.5",
+    description: "Preview",
+  });
+  assert.equal(item.source_platform, "linkedin");
+  assert.equal(item.capture_quality, "metadata_only");
+  assert.equal(item.extraction_method, "linkedin_opengraph");
+
+  insertCaptureArtifact({
+    item_id: item.id,
+    kind: "metadata_json",
+    path: "/tmp/fake.json",
+    content_type: "application/json",
+    sha256: "abc",
+    size_bytes: 2,
+  });
+  const artifacts = listCaptureArtifactsForItem(item.id);
+  assert.equal(artifacts.length, 1);
+  assert.equal(artifacts[0]?.kind, "metadata_json");
 });

@@ -26,8 +26,13 @@ function itemToMarkdown(item: ItemRow, tags: { name: string }[]): string {
   const lines: string[] = ["---"];
   lines.push(`title: ${yamlString(item.title)}`);
   lines.push(`source_type: ${item.source_type}`);
+  if (item.source_platform) lines.push(`source_platform: ${item.source_platform}`);
+  if (item.capture_quality) lines.push(`capture_quality: ${item.capture_quality}`);
+  if (item.extraction_method) lines.push(`extraction_method: ${yamlString(item.extraction_method)}`);
   if (item.source_url) lines.push(`source_url: ${item.source_url}`);
   if (item.author) lines.push(`author: ${yamlString(item.author)}`);
+  if (item.published_at) lines.push(`published: ${new Date(item.published_at).toISOString()}`);
+  if (item.thumbnail_url) lines.push(`thumbnail_url: ${item.thumbnail_url}`);
   lines.push(`captured: ${new Date(item.captured_at).toISOString()}`);
   lines.push(`brain_id: ${item.id}`);
   if (item.category) lines.push(`category: ${yamlString(item.category)}`);
