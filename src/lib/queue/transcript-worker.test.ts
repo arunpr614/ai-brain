@@ -9,10 +9,20 @@ import {
   claimNextTranscriptJob,
   enqueueTranscriptJobForItem,
   getTranscriptJobForItem,
+  ignoreTranscriptJob,
   listTranscriptAttemptsForItem,
   type TranscriptJobRow,
 } from "../../db/transcript-jobs";
-import { runTranscriptJobSafelyForTests } from "./transcript-worker";
+import {
+  claimNextTranscriptJobForTests,
+  nextTranscriptRetryAt,
+  nextTranscriptRetryAtForResult,
+  runTranscriptJobSafelyForTests,
+} from "./transcript-worker";
+import {
+  clearYoutubeTimedTextProviderHealthForTests,
+  setYoutubeTimedTextProviderHealthForTests,
+} from "../capture/youtube-transcript/provider-health";
 
 function insertWeakYoutubeItem(title: string) {
   const item = insertCaptured({
@@ -43,6 +53,45 @@ describe("transcript recovery worker", () => {
     try {
       rmSync(TEST_DB_DIR, { recursive: true, force: true });
     } catch {}
+  });
+
+  it("does not claim jobs while YouTube timed-text cooldown is active", () => {
+    const item = insertWeakYoutubeItem("Cooldown YouTube");
+    const now = Date.now();
+    setYoutubeTimedTextProviderHealthForTests({
+      cooldownUntil: now + 60_000,
+      failureCount: 1,
+      lastFailureCode: "timedtext_http_429",
+      lastStatusCode: 429,
+    });
+
+    const result = claimNextTranscriptJobForTests(now, {
+      logCooldown: false,
+    });
+
+    assert.equal(result.job, null);
+    assert.equal(result.cooldownActive, true);
+    const job = getTranscriptJobForItem(item.id);
+    assert.equal(job?.state, "pending");
+    assert.equal(job?.attempts, 0);
+    ignoreTranscriptJob(item.id);
+    clearYoutubeTimedTextProviderHealthForTests();
+  });
+
+  it("uses provider cooldown as the retry floor for throttled results", () => {
+    const now = Date.now();
+    const cooldownUntil = now + 50 * 60_000;
+
+    const throttledRetryAt = nextTranscriptRetryAtForResult(
+      { errorCode: "timedtext_http_429", statusCode: 429 },
+      1,
+      now,
+      cooldownUntil,
+    );
+    const genericRetryAt = nextTranscriptRetryAt(1, now);
+
+    assert.equal(throttledRetryAt, cooldownUntil);
+    assert.ok(throttledRetryAt > genericRetryAt);
   });
 
   it("marks a thrown job retryable and records a worker_exception attempt", async () => {

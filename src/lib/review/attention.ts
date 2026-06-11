@@ -281,7 +281,12 @@ function transcriptJobDetail(signals: ReviewSignals): string {
     const when = signals.transcriptJobNextRunAt
       ? ` Next retry: ${new Date(signals.transcriptJobNextRunAt).toLocaleString()}.`
       : "";
-    return `Transcript recovery hit a retryable issue${attempts}.${when}`;
+    const reason = signals.transcriptJobLastErrorMessage
+      ? ` Last result: ${signals.transcriptJobLastErrorMessage}`
+      : signals.transcriptJobLastErrorCode
+        ? ` Last result: ${signals.transcriptJobLastErrorCode}.`
+        : "";
+    return `Transcript recovery hit a retryable issue${attempts}.${reason}${when}`;
   }
   if (signals.transcriptJobState === "manual_needed") {
     const reason = signals.transcriptJobLastErrorMessage
