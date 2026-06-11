@@ -11,10 +11,10 @@ export function UpgradeTextForm({ itemId }: { itemId: string }) {
   );
 
   return (
-    <form action={action} className="mt-4 border-t border-[var(--border)] pt-4">
+    <form id="upgrade-text" action={action} className="mt-4 border-t border-[var(--border)] pt-4">
       <input type="hidden" name="item_id" value={itemId} />
       <label
-        htmlFor="upgrade-text"
+        htmlFor="upgrade-text-input"
         className="text-xs font-medium text-[var(--text-primary)]"
       >
         Transcript or notes
@@ -23,7 +23,7 @@ export function UpgradeTextForm({ itemId }: { itemId: string }) {
         Paste the content you want Brain to remember for this item.
       </p>
       <textarea
-        id="upgrade-text"
+        id="upgrade-text-input"
         name="text"
         maxLength={100_000}
         rows={7}
