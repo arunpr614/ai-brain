@@ -35,6 +35,14 @@ const USER_TEXT_UPGRADE_PLATFORMS = new Set<string>([
   "linkedin",
 ]);
 
+const SELECTED_TEXT_UPGRADE_PLATFORMS = new Set<string>([
+  "youtube",
+  "youtube_short",
+  "linkedin",
+  "substack",
+  "generic_article",
+]);
+
 export function classifyCaptureUpgrade(
   existing: Pick<ItemRow, "source_platform" | "source_type" | "capture_quality"> | null,
   incoming: IncomingCaptureUpgrade,
@@ -60,6 +68,14 @@ export function classifyCaptureUpgrade(
     USER_TEXT_UPGRADE_PLATFORMS.has(platform)
   ) {
     return { action: "upgrade", reason: "weak_capture_user_text" };
+  }
+
+  if (
+    (existingQuality === "metadata_only" || existingQuality === "paywall_preview") &&
+    incomingQuality === "client_dom" &&
+    SELECTED_TEXT_UPGRADE_PLATFORMS.has(platform)
+  ) {
+    return { action: "upgrade", reason: "weak_capture_selected_text" };
   }
 
   if (FULL_TEXT_QUALITIES.has(String(existingQuality))) {

@@ -20,11 +20,14 @@ import { getItem, insertCaptured } from "@/db/items";
 
 function mkReq(
   body: unknown,
-  opts: { origin?: string | null; rawBody?: string } = {},
+  opts: { origin?: string | null; rawBody?: string; captureSource?: string } = {},
 ): NextRequest {
   const headers = new Headers({ "content-type": "application/json" });
   if (opts.origin !== null && opts.origin !== undefined) {
     headers.set("origin", opts.origin);
+  }
+  if (opts.captureSource) {
+    headers.set("x-brain-capture-source", opts.captureSource);
   }
   return new NextRequest("http://localhost/api/capture/url", {
     method: "POST",
@@ -202,6 +205,81 @@ These pasted notes have enough words to become the remembered content for this n
       if (oldKey === undefined) delete process.env.YOUTUBE_DATA_API_KEY;
       else process.env.YOUTUBE_DATA_API_KEY = oldKey;
     }
+  });
+
+  it("creates a browser selected-text capture without fetching the page", async () => {
+    const url = "https://example.com/selected-article";
+    const res = await POST(
+      mkReq(
+        {
+          url,
+          title: "Selected article",
+          selected_text:
+            "This selected passage has enough useful words to save as the remembered browser capture.",
+        },
+        { captureSource: "extension" },
+      ),
+    );
+
+    assert.equal(res.status, 201);
+    const body = await res.json();
+    assert.equal(body.action, "created");
+
+    const item = getItem(body.id)!;
+    assert.equal(item.source_url, url);
+    assert.equal(item.capture_source, "extension");
+    assert.equal(item.capture_quality, "client_dom");
+    assert.equal(item.extraction_method, "browser_selected_text");
+    assert.match(item.body, /Provided by: browser selection/);
+    assert.match(item.body, /Selected text:/);
+    assert.match(item.body, /remembered browser capture/);
+  });
+
+  it("upgrades an existing Substack preview with selected browser text", async () => {
+    const url = "https://example.substack.com/p/paid-preview";
+    const existing = insertCaptured({
+      source_type: "url",
+      title: "Substack preview",
+      body: "Preview only",
+      source_url: url,
+      source_platform: "substack",
+      capture_quality: "paywall_preview",
+      extraction_method: "substack_readability",
+      extraction_version: "capture-v0.7.5",
+    });
+
+    const res = await POST(
+      mkReq({
+        url,
+        title: "Full Substack selection",
+        selected_text:
+          "This selected Substack article text has enough words to upgrade the existing preview capture safely.",
+      }),
+    );
+
+    assert.equal(res.status, 200);
+    const body = await res.json();
+    assert.equal(body.action, "upgraded");
+    assert.equal(body.id, existing.id);
+    const updated = getItem(existing.id)!;
+    assert.equal(updated.capture_quality, "client_dom");
+    assert.equal(updated.extraction_method, "browser_selected_text");
+    assert.equal(updated.enrichment_state, "pending");
+    assert.match(updated.body, /This selected Substack article text/);
+  });
+
+  it("rejects too-short selected text without creating an item", async () => {
+    const url = "https://example.com/short-selection";
+    const res = await POST(mkReq({ url, selected_text: "too short" }));
+
+    assert.equal(res.status, 422);
+    const body = await res.json();
+    assert.equal(body.action, "rejected_too_short");
+    assert.equal(body.error, "text_too_short");
+    const rowsForUrl = getDb()
+      .prepare("SELECT COUNT(*) AS count FROM items WHERE source_url = ?")
+      .get(url) as { count: number };
+    assert.equal(rowsForUrl.count, 0);
   });
 
   it("rejects too-short pasted text without overwriting a weak item", async () => {

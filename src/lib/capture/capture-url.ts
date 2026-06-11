@@ -9,10 +9,13 @@ import type { CapturedContent } from "./types";
 import { CAPTURE_EXTRACTION_VERSION } from "./quality";
 import { buildYoutubeUserTextCapture } from "./youtube-user-text";
 import { meaningfulUserText as extractMeaningfulUserText } from "./user-provided";
+import { buildBrowserSelectedTextCapture } from "./selected-text";
 
 export interface ExtractUrlCaptureInput {
   url: string;
   userText?: string | null;
+  userTextSource?: "paste" | "selected_text";
+  title?: string | null;
   existingItem?: ItemRow | null;
 }
 
@@ -29,7 +32,15 @@ export async function extractUrlCapture(
   let content: CapturedContent;
   const pasted = meaningfulUserText(input.userText, input.url, detection.canonicalUrl);
 
-  if (detection.videoId && pasted) {
+  if (input.userTextSource === "selected_text" && pasted) {
+    content = buildBrowserSelectedTextCapture({
+      canonicalUrl: detection.canonicalUrl,
+      platform: detection.platform,
+      selectedText: pasted,
+      title: input.title,
+      existingItem: input.existingItem,
+    });
+  } else if (detection.videoId && pasted) {
     content = await buildYoutubeUserTextCapture({
       canonicalUrl: detection.canonicalUrl,
       platform: detection.platform === "youtube_short" ? "youtube_short" : "youtube",

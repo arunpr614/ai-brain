@@ -89,4 +89,33 @@ describe("capture upgrade policy", () => {
     assert.equal(canUpgradeWithPastedText(item({ source_platform: "substack", capture_quality: "paywall_preview" })), false);
     assert.equal(canUpgradeWithPastedText(item({ source_platform: "youtube", capture_quality: "metadata_plus_transcript" })), false);
   });
+
+  it("selected browser text can upgrade weak web captures", () => {
+    assert.deepEqual(
+      classifyCaptureUpgrade(
+        item({ source_platform: "substack", capture_quality: "paywall_preview" }),
+        { platform: "substack", quality: "client_dom", hasMeaningfulText: true, hasUserText: true },
+      ),
+      { action: "upgrade", reason: "weak_capture_selected_text" },
+    );
+    assert.deepEqual(
+      classifyCaptureUpgrade(
+        item({ source_platform: "generic_article", capture_quality: "metadata_only" }),
+        {
+          platform: "generic_article",
+          quality: "client_dom",
+          hasMeaningfulText: true,
+          hasUserText: true,
+        },
+      ),
+      { action: "upgrade", reason: "weak_capture_selected_text" },
+    );
+    assert.equal(
+      classifyCaptureUpgrade(
+        item({ source_platform: "substack", capture_quality: "full_text" }),
+        { platform: "substack", quality: "client_dom", hasMeaningfulText: true, hasUserText: true },
+      ).action,
+      "duplicate",
+    );
+  });
 });

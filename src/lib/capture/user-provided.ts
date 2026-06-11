@@ -18,6 +18,8 @@ export interface UserProvidedBodyInput {
   sourceUrl: string;
   text: string;
   captureQuality?: CaptureQuality;
+  providedBy?: string;
+  bodyHeading?: string;
 }
 
 export function analyzeUserProvidedText(
@@ -53,9 +55,9 @@ export function buildUserProvidedBody(input: UserProvidedBodyInput): string {
     `Source: ${platformLabel(input.platform)}`,
     `URL: ${input.sourceUrl}`,
     `Capture quality: ${quality}`,
-    "Provided by: user paste",
+    `Provided by: ${input.providedBy ?? "user paste"}`,
     "",
-    "Pasted text:",
+    `${input.bodyHeading ?? "Pasted text"}:`,
     input.text.trim(),
   ].join("\n");
 }

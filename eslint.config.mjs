@@ -19,6 +19,8 @@ const eslintConfig = defineConfig([
     // and produces spurious warnings; android/ is already .gitignored for
     // build artefacts but ESLint's default globs walk it anyway.
     "android/**",
+    // Chrome extension bundle output; source lives under extension/src.
+    "extension/dist/**",
   ]),
 ]);
 

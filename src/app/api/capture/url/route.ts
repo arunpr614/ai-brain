@@ -38,6 +38,7 @@ const CaptureUrlBody = z.object({
   url: z.string().url().max(2048),
   title: z.string().max(500).optional(),
   note: z.string().max(100_000).optional(),
+  selected_text: z.string().max(100_000).optional(),
 });
 
 export async function POST(req: NextRequest) {
@@ -67,14 +68,38 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const { url: rawUrl, note } = parsed.data;
+  const { url: rawUrl, note, selected_text: selectedText } = parsed.data;
   const captureSource = captureSourceFromTrustedHeader(req.headers.get("x-brain-capture-source"));
 
   const detection = detectCapturePlatform(rawUrl);
   const url = detection.canonicalUrl;
-  const userTextAnalysis = analyzeUserProvidedText(note, rawUrl, url);
+  const isSelectedTextCapture = typeof selectedText === "string" && selectedText.trim().length > 0;
+  const userTextSource = isSelectedTextCapture ? "selected_text" : "paste";
+  const userTextInput = isSelectedTextCapture ? selectedText : note;
+  const userTextAnalysis = analyzeUserProvidedText(userTextInput, rawUrl, url);
   const userText = userTextAnalysis.isMeaningful ? userTextAnalysis.text : null;
   const hasUserText = userTextAnalysis.text.length > 0;
+
+  if (isSelectedTextCapture && !userText) {
+    logCaptureDecision("capture.selected_text.rejected", {
+      platform: detection.platform,
+      source_url: url,
+      action: "rejected_too_short",
+      reason: userTextAnalysis.tooLong ? "selected_text_too_long" : "selected_text_too_short",
+      text_chars: userTextAnalysis.charCount,
+      text_words: userTextAnalysis.wordCount,
+    });
+    return NextResponse.json(
+      {
+        error: userTextAnalysis.tooLong ? "text_too_long" : "text_too_short",
+        action: "rejected_too_short",
+        message: userTextAnalysis.tooLong
+          ? "Selected text is too long."
+          : "Select at least 8 words to save this passage.",
+      },
+      { status: 422 },
+    );
+  }
 
   // Server-side dedup (F-041 defense-in-depth). Catches APK double-fire
   // even if the client-side dedup window was skipped (hot reload, etc.).
@@ -131,9 +156,10 @@ export async function POST(req: NextRequest) {
     );
   }
   if (existing && userText) {
+    const incomingQuality = isSelectedTextCapture ? "client_dom" : "user_provided_full_text";
     const preDecision = classifyCaptureUpgrade(existing, {
       platform: detection.platform,
-      quality: "user_provided_full_text",
+      quality: incomingQuality,
       hasMeaningfulText: true,
       hasUserText: true,
     });
@@ -170,7 +196,13 @@ export async function POST(req: NextRequest) {
 
   let extracted;
   try {
-    extracted = await extractUrlCapture({ url: rawUrl, userText: note, existingItem: existing });
+    extracted = await extractUrlCapture({
+      url: rawUrl,
+      userText: userTextInput,
+      userTextSource,
+      title: parsed.data.title,
+      existingItem: existing,
+    });
   } catch (err) {
     if (err instanceof UrlCaptureError || err instanceof YoutubeCaptureError) {
       logError({
