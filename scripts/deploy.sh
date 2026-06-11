@@ -173,7 +173,11 @@ rsync -az --delete --exclude '/data/' .next/standalone/ "${SSH_HOST}:${REMOTE_DI
 rsync -az --delete .next/static/ "${SSH_HOST}:${REMOTE_DIR}/.next/static/"
 rsync -az --delete public/ "${SSH_HOST}:${REMOTE_DIR}/public/"
 ssh "${SSH_HOST}" "mkdir -p '${REMOTE_DIR}/scripts'"
-rsync -az scripts/check-ai-providers.mjs scripts/backfill-embeddings-prod.mjs "${SSH_HOST}:${REMOTE_DIR}/scripts/"
+rsync -az \
+  scripts/check-ai-providers.mjs \
+  scripts/backfill-embeddings-prod.mjs \
+  scripts/backfill-youtube-transcripts-prod.mjs \
+  "${SSH_HOST}:${REMOTE_DIR}/scripts/"
 
 log "5. Repair remote native dependencies"
 repair_remote_native_deps
