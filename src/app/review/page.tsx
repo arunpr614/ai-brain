@@ -2,9 +2,12 @@ import {
   AlertTriangle,
   ArrowUpRight,
   CheckCircle2,
+  Clock3,
+  EyeOff,
   ExternalLink,
   FileText,
   Link2,
+  RotateCcw,
   SearchX,
   Trash2,
 } from "lucide-react";
@@ -17,7 +20,11 @@ import {
   type ReviewReason,
   type ReviewReasonCode,
 } from "@/lib/review/attention";
-import { deleteReviewItemAction } from "./actions";
+import {
+  deleteReviewItemAction,
+  ignoreTranscriptJobAction,
+  retryTranscriptJobAction,
+} from "./actions";
 
 function formatRelative(ts: number): string {
   const diff = Date.now() - ts;
@@ -41,6 +48,9 @@ function sourceHost(url: string | null): string {
 }
 
 function reasonTone(code: ReviewReasonCode): string {
+  if (code === "transcript_recovery") {
+    return "border-[var(--accent-9)] text-[var(--accent-11)]";
+  }
   if (code === "add_text" || code === "substack_preview" || code === "metadata_only") {
     return "border-[var(--warning)] text-[var(--warning)]";
   }
@@ -51,6 +61,9 @@ function reasonTone(code: ReviewReasonCode): string {
 }
 
 function primaryAction(item: ReviewItem, reason: ReviewReason): { href: string; label: string; external: boolean } {
+  if (reason.code === "transcript_recovery" && item.transcript_job_state === "manual_needed") {
+    return { href: `/items/${item.id}#upgrade-text`, label: reason.actionLabel, external: false };
+  }
   if (reason.code === "add_text") {
     return { href: `/items/${item.id}#upgrade-text`, label: reason.actionLabel, external: false };
   }
@@ -60,9 +73,16 @@ function primaryAction(item: ReviewItem, reason: ReviewReason): { href: string; 
   return { href: `/items/${item.id}`, label: reason.actionLabel, external: false };
 }
 
-export default function ReviewPage() {
-  const items = listAttentionItems({ limit: 300 });
+export default async function ReviewPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ focus?: string }>;
+}) {
+  const { focus } = await searchParams;
+  const focusId = typeof focus === "string" && focus.trim().length > 0 ? focus : null;
+  const items = focusReviewItem(listAttentionItems({ limit: 300 }), focusId);
   const summary = summarizeAttentionItems(items);
+  const transcriptRecovery = summary.transcript_recovery;
   const textUpgrades = summary.add_text + summary.substack_preview + summary.metadata_only;
   const failures = summary.capture_failed + summary.summary_failed + summary.semantic_failed;
   const searchIssues = summary.semantic_missing;
@@ -88,7 +108,8 @@ export default function ReviewPage() {
         </Link>
       </header>
 
-      <section className="mb-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4" aria-label="Review summary">
+      <section className="mb-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-5" aria-label="Review summary">
+        <SummaryStat icon={Clock3} label="Transcripts" value={transcriptRecovery} />
         <SummaryStat icon={FileText} label="Need text" value={textUpgrades} />
         <SummaryStat icon={AlertTriangle} label="Failures" value={failures} />
         <SummaryStat icon={SearchX} label="Search gaps" value={searchIssues} />
@@ -100,12 +121,17 @@ export default function ReviewPage() {
       ) : (
         <ol className="flex flex-col gap-3">
           {items.map((item) => (
-            <ReviewRow key={item.id} item={item} />
+            <ReviewRow key={item.id} item={item} focused={item.id === focusId} />
           ))}
         </ol>
       )}
     </div>
   );
+}
+
+function focusReviewItem(items: ReviewItem[], focusId: string | null): ReviewItem[] {
+  if (!focusId || !items.some((item) => item.id === focusId)) return items;
+  return [...items].sort((a, b) => Number(b.id === focusId) - Number(a.id === focusId));
 }
 
 function SummaryStat({
@@ -130,12 +156,19 @@ function SummaryStat({
   );
 }
 
-function ReviewRow({ item }: { item: ReviewItem }) {
+function ReviewRow({ item, focused }: { item: ReviewItem; focused: boolean }) {
   const primary = item.attention_reasons[0];
   const action = primary ? primaryAction(item, primary) : null;
 
   return (
-    <li className="rounded-lg border border-[var(--border)] bg-[var(--surface)] p-4">
+    <li
+      id={`review-item-${item.id}`}
+      className={`rounded-lg border p-4 ${
+        focused
+          ? "border-[var(--accent-9)] bg-[var(--surface-raised)]"
+          : "border-[var(--border)] bg-[var(--surface)]"
+      }`}
+    >
       <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-2">
@@ -221,6 +254,33 @@ function ReviewRow({ item }: { item: ReviewItem }) {
               <ExternalLink className="h-3.5 w-3.5" strokeWidth={2} />
             </a>
           )}
+
+          {item.transcript_job_state &&
+            item.transcript_job_state !== "done" &&
+            item.transcript_job_state !== "ignored" && (
+              <>
+                <form action={retryTranscriptJobAction}>
+                  <input type="hidden" name="item_id" value={item.id} />
+                  <button
+                    type="submit"
+                    className="inline-flex h-8 items-center gap-2 rounded-md border border-[var(--border)] bg-transparent px-3 text-sm font-medium text-[var(--text-secondary)] transition-colors hover:border-[var(--border-strong)] hover:text-[var(--text-primary)]"
+                  >
+                    <RotateCcw className="h-3.5 w-3.5" strokeWidth={2} />
+                    Retry
+                  </button>
+                </form>
+                <form action={ignoreTranscriptJobAction}>
+                  <input type="hidden" name="item_id" value={item.id} />
+                  <button
+                    type="submit"
+                    className="inline-flex h-8 items-center gap-2 rounded-md border border-[var(--border)] bg-transparent px-3 text-sm font-medium text-[var(--text-secondary)] transition-colors hover:border-[var(--border-strong)] hover:text-[var(--text-primary)]"
+                  >
+                    <EyeOff className="h-3.5 w-3.5" strokeWidth={2} />
+                    Ignore
+                  </button>
+                </form>
+              </>
+            )}
 
           <form action={deleteReviewItemAction}>
             <input type="hidden" name="item_id" value={item.id} />

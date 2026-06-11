@@ -1,4 +1,5 @@
 import { getDb, type ItemRow } from "./client";
+import { recordManualTranscriptResolutionForItem } from "./transcript-jobs";
 import { saveCaptureArtifacts } from "@/lib/capture/artifacts";
 import type { CapturedContent } from "@/lib/capture/types";
 import { logError } from "@/lib/errors/sink";
@@ -143,5 +144,21 @@ export async function upgradeItemCaptureContent(
     derived_state_reset: true,
     ts: Date.now(),
   });
+  const isYoutube =
+    input.content.source_platform === "youtube" ||
+    input.content.source_platform === "youtube_short" ||
+    input.platform === "youtube" ||
+    input.platform === "youtube_short";
+  const isManualYoutubeUpgrade =
+    isYoutube &&
+    (input.content.extraction_method === "youtube_user_provided_text" ||
+      input.content.capture_quality === "user_provided_full_text");
+  if (isManualYoutubeUpgrade) {
+    recordManualTranscriptResolutionForItem({
+      itemId: input.itemId,
+      provider: "manual_user_text",
+      transcriptChars: input.content.body.length,
+    });
+  }
   return updated ?? null;
 }

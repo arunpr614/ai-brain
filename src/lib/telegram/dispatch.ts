@@ -26,6 +26,10 @@ import {
   insertCaptured as realInsertCaptured,
 } from "@/db/items";
 import { upgradeItemCaptureContent as realUpgradeItemCaptureContent } from "@/db/item-upgrades";
+import {
+  enqueueTranscriptJobForItem as realEnqueueTranscriptJobForItem,
+  isYoutubeTranscriptRecoveryCandidate,
+} from "@/db/transcript-jobs";
 import { findTelegramDocumentByUniqueId as realFindTelegramDocumentByUniqueId } from "@/db/telegram-updates";
 import { saveCaptureArtifacts as realSaveCaptureArtifacts } from "@/lib/capture/artifacts";
 import { extractUrlCapture as realExtractUrlCapture } from "@/lib/capture/capture-url";
@@ -60,6 +64,7 @@ export interface DispatchDeps {
   isDuplicateShare: typeof realIsDuplicateShare;
   insertCaptured: typeof realInsertCaptured;
   upgradeItemCaptureContent: typeof realUpgradeItemCaptureContent;
+  enqueueTranscriptJobForItem: typeof realEnqueueTranscriptJobForItem;
   saveCaptureArtifacts: typeof realSaveCaptureArtifacts;
   extractUrlCapture: typeof realExtractUrlCapture;
   extractPdf: typeof realExtractPdf;
@@ -75,6 +80,7 @@ const defaultDeps: DispatchDeps = {
   isDuplicateShare: realIsDuplicateShare,
   insertCaptured: realInsertCaptured,
   upgradeItemCaptureContent: realUpgradeItemCaptureContent,
+  enqueueTranscriptJobForItem: realEnqueueTranscriptJobForItem,
   saveCaptureArtifacts: realSaveCaptureArtifacts,
   extractUrlCapture: realExtractUrlCapture,
   extractPdf: realExtractPdf,
@@ -82,6 +88,11 @@ const defaultDeps: DispatchDeps = {
 
 function itemUrl(id: string): string {
   return `${PUBLIC_BASE_URL}/items/${id}`;
+}
+
+function reviewUrl(itemId?: string): string {
+  if (!itemId) return `${PUBLIC_BASE_URL}/review`;
+  return `${PUBLIC_BASE_URL}/review?focus=${encodeURIComponent(itemId)}`;
 }
 
 export type TelegramCaptureResult =
@@ -189,6 +200,18 @@ async function captureUrl(
 
   const existing = deps.findItemByUrl(url);
   if (existing && !hasUserText) {
+    if (isYoutubeTranscriptRecoveryCandidate(existing)) {
+      deps.enqueueTranscriptJobForItem(existing, { reset: true, priority: 20 });
+      await deps.sendMessage(
+        chatId,
+        `↩️ Already captured: ${existing.title || "(untitled)"}\nI queued transcript recovery again. Track it in Review:\n${reviewUrl(existing.id)}\n${itemUrl(existing.id)}`,
+      );
+      return {
+        status: "duplicate",
+        itemId: existing.id,
+        reason: "transcript-recovery-queued",
+      };
+    }
     await deps.sendMessage(
       chatId,
       `↩️ Already captured: ${existing.title || "(untitled)"}\n${itemUrl(existing.id)}`,
@@ -369,6 +392,10 @@ async function captureUrl(
       text_chars: content.body.length,
     });
 
+    if (isYoutubeTranscriptRecoveryCandidate(item)) {
+      deps.enqueueTranscriptJobForItem(item, { priority: 20 });
+    }
+
     const ackMessage = captureAckMessage(item.title, item.id, content.capture_quality, content.source_platform);
 
     await deps.sendMessage(chatId, ackMessage).catch((err) => {
@@ -404,7 +431,7 @@ function captureAckMessage(
   const link = itemUrl(id);
   if (platform === "youtube" || platform === "youtube_short") {
     if (quality === "metadata_only") {
-      return `Saved the YouTube link, but I could not read the transcript. To upgrade this item, send the same link again with the transcript or your notes pasted below it.\n${link}`;
+      return `Saved the YouTube link, but I could not read the transcript yet. I queued transcript recovery; track it in Review:\n${reviewUrl(id)}\n${link}`;
     }
     if (quality === "user_provided_full_text") {
       return `✅ Saved YouTube text: ${title || "(untitled)"}\n${link}`;

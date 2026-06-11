@@ -10,6 +10,7 @@ import { insertCaptured, getItem, searchItems } from "./items";
 import { listCaptureArtifactsForItem } from "./capture-artifacts";
 import { attachTagToItem, listTagsForItem, upsertTag } from "./tags";
 import { upgradeItemCaptureContent } from "./item-upgrades";
+import { getTranscriptJobForItem, listTranscriptAttemptsForItem } from "./transcript-jobs";
 import { pollAllInFlightBatches } from "@/lib/queue/enrichment-batch";
 
 describe("item capture upgrades", () => {
@@ -131,6 +132,14 @@ describe("item capture upgrades", () => {
       listCaptureArtifactsForItem(item.id).some((artifact) => artifact.kind === "pre_upgrade_item_json"),
       true,
     );
+    const transcriptJob = getTranscriptJobForItem(item.id);
+    assert.equal(transcriptJob?.state, "done");
+    assert.equal(transcriptJob?.last_provider, "manual_user_text");
+    assert.ok((transcriptJob?.last_attempt_id ?? 0) > 0);
+    const transcriptAttempts = listTranscriptAttemptsForItem(item.id);
+    assert.equal(transcriptAttempts.length, 1);
+    assert.equal(transcriptAttempts[0]?.provider, "manual_user_text");
+    assert.equal(transcriptAttempts[0]?.state, "success");
 
     let pollCount = 0;
     await pollAllInFlightBatches({

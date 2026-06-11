@@ -1,7 +1,8 @@
-import { ArrowLeft, Download, ExternalLink, MessageSquare, Quote, Trash2 } from "lucide-react";
+import { ArrowLeft, Download, ExternalLink, EyeOff, MessageSquare, Quote, RotateCcw, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { deleteItemAction } from "@/app/actions";
+import { ignoreTranscriptJobAction, retryTranscriptJobAction } from "@/app/review/actions";
 import { CollectionEditor } from "@/components/collection-editor";
 import { ItemEnrichmentWatch } from "@/components/item-enrichment-watch";
 import { RelatedItems } from "@/components/related-items";
@@ -13,6 +14,12 @@ import {
 } from "@/db/collections";
 import { listChunksForItem } from "@/db/chunks";
 import { getItem } from "@/db/items";
+import {
+  getTranscriptJobForItem,
+  listTranscriptAttemptsForItem,
+  type TranscriptAttemptRow,
+  type TranscriptJobRow,
+} from "@/db/transcript-jobs";
 import { listTagsForItem } from "@/db/tags";
 import { getItemProcessingStatus, type ItemProcessingStatus } from "@/lib/items/status";
 import { improvementHint, platformLabel, qualityLabel } from "@/lib/capture/quality";
@@ -68,6 +75,10 @@ export default async function ItemDetailPage({
   const quality = qualityLabel(item.capture_quality);
   const hint = improvementHint(item.source_platform, item.capture_quality);
   const canUpgradeWithText = canUpgradeWithPastedText(item);
+  const transcriptJob = getTranscriptJobForItem(item.id);
+  const transcriptAttempts = transcriptJob
+    ? listTranscriptAttemptsForItem(item.id).slice(0, 3)
+    : [];
 
   // T-12: when arriving via an Ask citation chip, resolve the chunk body so
   // we can render a highlight panel with an anchor the scroll-to-hash hook
@@ -263,6 +274,13 @@ export default async function ItemDetailPage({
                 {hint}
               </p>
             )}
+            {transcriptJob && (
+              <TranscriptRecoveryPanel
+                job={transcriptJob}
+                attempts={transcriptAttempts}
+                itemId={item.id}
+              />
+            )}
             {canUpgradeWithText && <UpgradeTextForm itemId={item.id} />}
           </div>
 
@@ -345,6 +363,108 @@ export default async function ItemDetailPage({
       </div>
     </div>
   );
+}
+
+function TranscriptRecoveryPanel({
+  job,
+  attempts,
+  itemId,
+}: {
+  job: TranscriptJobRow;
+  attempts: TranscriptAttemptRow[];
+  itemId: string;
+}) {
+  const active = job.state !== "done" && job.state !== "ignored";
+  return (
+    <div className="mt-4 border-t border-[var(--border)] pt-4">
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <p className="text-xs font-medium text-[var(--text-primary)]">
+            Transcript recovery
+          </p>
+          <p className="mt-1 text-xs leading-relaxed text-[var(--text-secondary)]">
+            {transcriptJobDetail(job)}
+          </p>
+        </div>
+        <span className="shrink-0 rounded-md border border-[var(--border)] px-2 py-1 text-[11px] text-[var(--text-secondary)]">
+          {transcriptJobLabel(job.state)}
+        </span>
+      </div>
+
+      {active && (
+        <div className="mt-3 flex flex-wrap gap-2">
+          <form action={retryTranscriptJobAction}>
+            <input type="hidden" name="item_id" value={itemId} />
+            <button
+              type="submit"
+              className="inline-flex h-8 items-center gap-2 rounded-md border border-[var(--border)] bg-transparent px-3 text-xs font-medium text-[var(--text-secondary)] transition-colors hover:border-[var(--border-strong)] hover:text-[var(--text-primary)]"
+            >
+              <RotateCcw className="h-3.5 w-3.5" strokeWidth={2} />
+              Retry
+            </button>
+          </form>
+          <form action={ignoreTranscriptJobAction}>
+            <input type="hidden" name="item_id" value={itemId} />
+            <button
+              type="submit"
+              className="inline-flex h-8 items-center gap-2 rounded-md border border-[var(--border)] bg-transparent px-3 text-xs font-medium text-[var(--text-secondary)] transition-colors hover:border-[var(--border-strong)] hover:text-[var(--text-primary)]"
+            >
+              <EyeOff className="h-3.5 w-3.5" strokeWidth={2} />
+              Ignore
+            </button>
+          </form>
+        </div>
+      )}
+
+      {attempts.length > 0 && (
+        <ol className="mt-3 flex flex-col gap-2">
+          {attempts.map((attempt) => (
+            <li key={attempt.id} className="text-[11px] leading-relaxed text-[var(--text-secondary)]">
+              <span className="font-medium text-[var(--text-primary)]">{attempt.provider}</span>
+              <span className="mx-1 text-[var(--text-muted)]">·</span>
+              {attempt.state.replace(/_/g, " ")}
+              {attempt.error_code && (
+                <>
+                  <span className="mx-1 text-[var(--text-muted)]">·</span>
+                  {attempt.error_code}
+                </>
+              )}
+              <span className="mx-1 text-[var(--text-muted)]">·</span>
+              {formatAttemptTime(attempt.created_at)}
+            </li>
+          ))}
+        </ol>
+      )}
+    </div>
+  );
+}
+
+function transcriptJobLabel(state: TranscriptJobRow["state"]): string {
+  if (state === "pending") return "Queued";
+  if (state === "running") return "Running";
+  if (state === "retryable_error") return "Retrying";
+  if (state === "manual_needed") return "Needs help";
+  if (state === "ignored") return "Ignored";
+  return "Recovered";
+}
+
+function transcriptJobDetail(job: TranscriptJobRow): string {
+  if (job.state === "done") return "A transcript or pasted text has been saved for this item.";
+  if (job.state === "ignored") return "Automatic recovery is ignored for this item.";
+  if (job.state === "pending") return "Brain will try to recover the transcript in the background.";
+  if (job.state === "running") return "Brain is trying to recover the transcript now.";
+  if (job.state === "retryable_error") {
+    return job.next_run_at
+      ? `A retry is scheduled for ${new Date(job.next_run_at).toLocaleString()}.`
+      : "A retry is scheduled.";
+  }
+  return job.last_error_message
+    ? `Automatic recovery needs help. Last result: ${job.last_error_message}`
+    : "Automatic recovery needs help. Paste a transcript or notes below.";
+}
+
+function formatAttemptTime(ts: number): string {
+  return new Date(ts).toLocaleString();
 }
 
 function ItemProcessingBadge({ status }: { status: ItemProcessingStatus }) {

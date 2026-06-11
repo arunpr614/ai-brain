@@ -20,6 +20,10 @@ import { validateOrigin } from "@/lib/auth/bearer";
 import { checkClientApiVersion } from "@/lib/auth/api-version";
 import { findItemByUrl, insertCaptured } from "@/db/items";
 import { upgradeItemCaptureContent } from "@/db/item-upgrades";
+import {
+  enqueueTranscriptJobForItem,
+  isYoutubeTranscriptRecoveryCandidate,
+} from "@/db/transcript-jobs";
 import { UrlCaptureError } from "@/lib/capture/url";
 import { YoutubeCaptureError } from "@/lib/capture/youtube";
 import { extractUrlCapture } from "@/lib/capture/capture-url";
@@ -40,6 +44,10 @@ const CaptureUrlBody = z.object({
   note: z.string().max(100_000).optional(),
   selected_text: z.string().max(100_000).optional(),
 });
+
+function reviewPath(itemId: string): string {
+  return `/review?focus=${encodeURIComponent(itemId)}`;
+}
 
 export async function POST(req: NextRequest) {
   if (!validateOrigin(req.headers.get("origin"))) {
@@ -120,6 +128,26 @@ export async function POST(req: NextRequest) {
   // Historical-duplicate check (URL already in library from a past capture).
   const existing = findItemByUrl(url);
   if (existing && !hasUserText) {
+    if (isYoutubeTranscriptRecoveryCandidate(existing)) {
+      enqueueTranscriptJobForItem(existing, { reset: true, priority: 20 });
+      logCaptureDecision("capture.transcript_recovery.queued", {
+        item_id: existing.id,
+        platform: existing.source_platform ?? detection.platform,
+        source_url: url,
+        action: "transcript_recovery_queued",
+        reason: "duplicate_metadata_only_youtube",
+      });
+      return NextResponse.json(
+        {
+          duplicate: true,
+          itemId: existing.id,
+          reason: "transcript-recovery-queued",
+          action: "transcript_recovery_queued",
+          reviewPath: reviewPath(existing.id),
+        },
+        { status: 200 },
+      );
+    }
     logCaptureDecision("capture.duplicate", {
       item_id: existing.id,
       platform: existing.source_platform ?? detection.platform,
@@ -299,6 +327,10 @@ export async function POST(req: NextRequest) {
     action: "created",
     text_chars: content.body.length,
   });
+
+  if (isYoutubeTranscriptRecoveryCandidate(item)) {
+    enqueueTranscriptJobForItem(item, { priority: 20 });
+  }
 
   return NextResponse.json({ id: item.id, duplicate: false, action: "created" }, { status: 201 });
 }

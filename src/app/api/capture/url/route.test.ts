@@ -17,6 +17,7 @@ import { POST } from "./route";
 import { __resetDedupForTests } from "@/lib/capture/dedup";
 import { getDb } from "@/db/client";
 import { getItem, insertCaptured } from "@/db/items";
+import { getTranscriptJobForItem, listTranscriptAttemptsForItem } from "@/db/transcript-jobs";
 
 function mkReq(
   body: unknown,
@@ -178,6 +179,46 @@ This is the complete post body with enough useful words to save as user provided
     assert.match(updated.body, /Keep this bullet/);
     assert.match(updated.body, /https:\/\/example\.com\/context/);
     assert.doesNotMatch(updated.body, /youtu\.be\/abc12345678/);
+
+    const job = getTranscriptJobForItem(existing.id);
+    assert.equal(job?.state, "done");
+    assert.equal(job?.last_provider, "manual_user_text");
+    assert.ok((job?.last_attempt_id ?? 0) > 0);
+    const attempts = listTranscriptAttemptsForItem(existing.id);
+    assert.equal(attempts.length, 1);
+    assert.equal(attempts[0]?.provider, "manual_user_text");
+    assert.equal(attempts[0]?.state, "success");
+    assert.equal(attempts[0]?.retryable, 0);
+  });
+
+  it("queues transcript recovery when the same weak YouTube URL is posted again", async () => {
+    const canonical = "https://www.youtube.com/watch?v=dupe1234567";
+    const existing = insertCaptured({
+      source_type: "youtube",
+      title: "Duplicate weak YouTube",
+      body: "metadata only",
+      source_url: canonical,
+      source_platform: "youtube",
+      capture_quality: "metadata_only",
+      extraction_method: "youtube_oembed_metadata",
+      extraction_warning: "youtube_antibot_metadata_only",
+    });
+
+    __resetDedupForTests();
+    const res = await POST(mkReq({ url: "https://youtu.be/dupe1234567" }));
+
+    assert.equal(res.status, 200);
+    const body = await res.json();
+    assert.equal(body.duplicate, true);
+    assert.equal(body.itemId, existing.id);
+    assert.equal(body.reason, "transcript-recovery-queued");
+    assert.equal(body.action, "transcript_recovery_queued");
+    assert.equal(body.reviewPath, `/review?focus=${existing.id}`);
+
+    const job = getTranscriptJobForItem(existing.id);
+    assert.equal(job?.state, "pending");
+    assert.equal(job?.video_id, "dupe1234567");
+    assert.ok((job?.priority ?? 0) >= 20);
   });
 
   it("creates a new YouTube item from pasted text without requiring transcript extraction", async () => {

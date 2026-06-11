@@ -33,6 +33,17 @@ function buildDeps(overrides: Partial<DispatchDeps> = {}) {
   const inserted: InsertedItem[] = [];
   const updated: InsertedItem[] = [];
   let urlExtractCalls = 0;
+  let transcriptJobEnqueues = 0;
+  const transcriptJobEnqueueInputs: Array<{
+    itemId: string;
+    options: Parameters<DispatchDeps["enqueueTranscriptJobForItem"]>[1];
+  }> = [];
+
+  const enqueueTranscriptJobForItem: DispatchDeps["enqueueTranscriptJobForItem"] = (item, options) => {
+    transcriptJobEnqueues++;
+    transcriptJobEnqueueInputs.push({ itemId: item.id, options });
+    return null;
+  };
 
   const deps: DispatchDeps = {
     sendMessage: async (chatId, text) => {
@@ -123,6 +134,7 @@ function buildDeps(overrides: Partial<DispatchDeps> = {}) {
         batch_id: null,
       };
     }) as DispatchDeps["upgradeItemCaptureContent"],
+    enqueueTranscriptJobForItem,
     saveCaptureArtifacts: async () => [],
     extractUrlCapture: (async () => {
       urlExtractCalls++;
@@ -164,6 +176,8 @@ function buildDeps(overrides: Partial<DispatchDeps> = {}) {
     inserted,
     updated,
     urlExtractCalls: () => urlExtractCalls,
+    transcriptJobEnqueues: () => transcriptJobEnqueues,
+    transcriptJobEnqueueInputs: () => transcriptJobEnqueueInputs,
   };
 }
 
@@ -236,8 +250,10 @@ describe("telegram/dispatch.handleCaptureMessage", () => {
     assert.equal(t.inserted.length, 1);
     assert.equal(t.inserted[0].source_type, "youtube");
     assert.equal(t.inserted[0].capture_source, "telegram");
-    assert.match(t.sent[0].text, /Saved the YouTube link, but I could not read the transcript/);
-    assert.match(t.sent[0].text, /send the same link again with the transcript or your notes pasted below it/);
+    assert.equal(t.transcriptJobEnqueues(), 1);
+    assert.match(t.sent[0].text, /Saved the YouTube link, but I could not read the transcript yet/);
+    assert.match(t.sent[0].text, /queued transcript recovery/);
+    assert.match(t.sent[0].text, /brain\.arunp\.in\/review\?focus=abc123/);
     assert.match(t.sent[0].text, /brain\.arunp\.in\/items\/abc123/);
   });
 
@@ -451,6 +467,59 @@ describe("telegram/dispatch.handleCaptureMessage", () => {
       reason: "url-exists",
     });
     assert.match(t.sent[0].text, /↩️ Already captured:.*Old Capture/);
+  });
+
+  it("requeues transcript recovery when the same weak YouTube URL is shared again", async () => {
+    const existing = {
+      id: "existing-weak-youtube",
+      source_type: "youtube" as const,
+      capture_source: "telegram" as const,
+      title: "Weak YouTube capture",
+      body: "Preview",
+      author: "Channel",
+      source_url: "https://www.youtube.com/watch?v=abc12345678",
+      summary: null,
+      quotes: null,
+      category: null,
+      captured_at: 0,
+      enriched_at: null,
+      enrichment_state: "pending" as const,
+      total_pages: null,
+      total_chars: 7,
+      extraction_warning: "youtube_antibot_metadata_only",
+      duration_seconds: null,
+      source_platform: "youtube",
+      capture_quality: "metadata_only",
+      extraction_method: "youtube_oembed_metadata",
+      extraction_version: "capture-v0.7.5",
+      published_at: null,
+      thumbnail_url: null,
+      description: null,
+      batch_id: null,
+    };
+    const t = buildDeps({
+      findItemByUrl: (() => existing) as unknown as DispatchDeps["findItemByUrl"],
+    });
+
+    const result = await handleCaptureMessage(
+      msg({ text: "https://youtu.be/abc12345678" }),
+      t.deps,
+    );
+
+    assert.equal(t.inserted.length, 0);
+    assert.equal(t.urlExtractCalls(), 0);
+    assert.deepEqual(result, {
+      status: "duplicate",
+      itemId: "existing-weak-youtube",
+      reason: "transcript-recovery-queued",
+    });
+    assert.equal(t.transcriptJobEnqueues(), 1);
+    assert.deepEqual(t.transcriptJobEnqueueInputs(), [
+      { itemId: "existing-weak-youtube", options: { reset: true, priority: 20 } },
+    ]);
+    assert.match(t.sent[0].text, /queued transcript recovery again/);
+    assert.match(t.sent[0].text, /brain\.arunp\.in\/review\?focus=existing-weak-youtube/);
+    assert.match(t.sent[0].text, /brain\.arunp\.in\/items\/existing-weak-youtube/);
   });
 
   it("routes plain text (no URL) to note capture", async () => {

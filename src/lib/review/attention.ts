@@ -8,6 +8,7 @@ import {
 } from "@/lib/capture/upgrade-policy";
 
 export type ReviewReasonCode =
+  | "transcript_recovery"
   | "add_text"
   | "substack_preview"
   | "metadata_only"
@@ -29,6 +30,12 @@ export interface ReviewSignals {
   duplicateCount?: number;
   chunkCount?: number;
   embeddingState?: string | null;
+  transcriptJobState?: string | null;
+  transcriptJobAttempts?: number | null;
+  transcriptJobMaxAttempts?: number | null;
+  transcriptJobNextRunAt?: number | null;
+  transcriptJobLastErrorCode?: string | null;
+  transcriptJobLastErrorMessage?: string | null;
 }
 
 export type ReviewItem = ItemRow & {
@@ -36,12 +43,26 @@ export type ReviewItem = ItemRow & {
   duplicate_count: number;
   chunk_count: number;
   embedding_state: string | null;
+  transcript_job_id?: number | null;
+  transcript_job_state?: string | null;
+  transcript_job_attempts?: number | null;
+  transcript_job_max_attempts?: number | null;
+  transcript_job_next_run_at?: number | null;
+  transcript_job_last_error_code?: string | null;
+  transcript_job_last_error_message?: string | null;
 };
 
 type ReviewItemRow = ItemRow & {
   duplicate_count: number;
   chunk_count: number;
   embedding_state: string | null;
+  transcript_job_id: number | null;
+  transcript_job_state: string | null;
+  transcript_job_attempts: number | null;
+  transcript_job_max_attempts: number | null;
+  transcript_job_next_run_at: number | null;
+  transcript_job_last_error_code: string | null;
+  transcript_job_last_error_message: string | null;
 };
 
 export function buildAttentionReasons(
@@ -58,6 +79,20 @@ export function buildAttentionReasons(
 ): ReviewReason[] {
   const reasons: ReviewReason[] = [];
   const platform = platformLabel(item.source_platform, item.source_type);
+
+  if (
+    signals.transcriptJobState &&
+    signals.transcriptJobState !== "done" &&
+    signals.transcriptJobState !== "ignored"
+  ) {
+    reasons.push({
+      code: "transcript_recovery",
+      label: transcriptJobLabel(signals.transcriptJobState),
+      detail: transcriptJobDetail(signals),
+      actionLabel: signals.transcriptJobState === "manual_needed" ? "Add text" : "Review item",
+      priority: 5,
+    });
+  }
 
   if (canUpgradeWithPastedText(item)) {
     reasons.push({
@@ -153,6 +188,13 @@ export function listAttentionItems(options: { limit?: number } = {}): ReviewItem
   const rows = getDb()
     .prepare(
       `SELECT i.*,
+              tj.id AS transcript_job_id,
+              tj.state AS transcript_job_state,
+              tj.attempts AS transcript_job_attempts,
+              tj.max_attempts AS transcript_job_max_attempts,
+              tj.next_run_at AS transcript_job_next_run_at,
+              tj.last_error_code AS transcript_job_last_error_code,
+              tj.last_error_message AS transcript_job_last_error_message,
               CASE
                 WHEN i.source_url IS NULL THEN 0
                 ELSE (
@@ -174,6 +216,7 @@ export function listAttentionItems(options: { limit?: number } = {}): ReviewItem
                  LIMIT 1
               ) AS embedding_state
          FROM items i
+         LEFT JOIN transcript_jobs tj ON tj.item_id = i.id
         ORDER BY i.captured_at DESC
         LIMIT ?`,
     )
@@ -186,6 +229,12 @@ export function listAttentionItems(options: { limit?: number } = {}): ReviewItem
         duplicateCount: row.duplicate_count,
         chunkCount: row.chunk_count,
         embeddingState: row.embedding_state,
+        transcriptJobState: row.transcript_job_state,
+        transcriptJobAttempts: row.transcript_job_attempts,
+        transcriptJobMaxAttempts: row.transcript_job_max_attempts,
+        transcriptJobNextRunAt: row.transcript_job_next_run_at,
+        transcriptJobLastErrorCode: row.transcript_job_last_error_code,
+        transcriptJobLastErrorMessage: row.transcript_job_last_error_message,
       }),
     }))
     .filter((row) => row.attention_reasons.length > 0);
@@ -193,6 +242,7 @@ export function listAttentionItems(options: { limit?: number } = {}): ReviewItem
 
 export function summarizeAttentionItems(items: ReviewItem[]): Record<ReviewReasonCode, number> {
   const counts = {
+    transcript_recovery: 0,
     add_text: 0,
     substack_preview: 0,
     metadata_only: 0,
@@ -209,4 +259,40 @@ export function summarizeAttentionItems(items: ReviewItem[]): Record<ReviewReaso
     }
   }
   return counts;
+}
+
+function transcriptJobLabel(state: string): string {
+  if (state === "pending") return "Transcript queued";
+  if (state === "running") return "Transcript running";
+  if (state === "retryable_error") return "Transcript retrying";
+  if (state === "manual_needed") return "Transcript needs help";
+  return "Transcript recovery";
+}
+
+function transcriptJobDetail(signals: ReviewSignals): string {
+  const attempts = formatAttempts(signals.transcriptJobAttempts, signals.transcriptJobMaxAttempts);
+  if (signals.transcriptJobState === "pending") {
+    return `Brain will retry transcript recovery in the background${attempts}.`;
+  }
+  if (signals.transcriptJobState === "running") {
+    return `Brain is trying to recover the transcript now${attempts}.`;
+  }
+  if (signals.transcriptJobState === "retryable_error") {
+    const when = signals.transcriptJobNextRunAt
+      ? ` Next retry: ${new Date(signals.transcriptJobNextRunAt).toLocaleString()}.`
+      : "";
+    return `Transcript recovery hit a retryable issue${attempts}.${when}`;
+  }
+  if (signals.transcriptJobState === "manual_needed") {
+    const reason = signals.transcriptJobLastErrorMessage
+      ? ` Last result: ${signals.transcriptJobLastErrorMessage}`
+      : "";
+    return `Automatic transcript recovery needs manual help${attempts}.${reason}`;
+  }
+  return "Transcript recovery is active for this YouTube item.";
+}
+
+function formatAttempts(attempts?: number | null, maxAttempts?: number | null): string {
+  if (!attempts || !maxAttempts) return "";
+  return ` (${attempts}/${maxAttempts} attempts)`;
 }

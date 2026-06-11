@@ -187,6 +187,12 @@ interface InnerTubeVideoDetails {
 }
 interface InnerTubeCaptionTrack {
   baseUrl?: string;
+  languageCode?: string;
+  kind?: string;
+  name?: {
+    simpleText?: string;
+    runs?: Array<{ text?: string }>;
+  };
 }
 interface InnerTubePlayer {
   playabilityStatus?: {
@@ -292,8 +298,22 @@ export async function extractYoutubeVideo(
     });
   }
 
-  const baseUrl = tracks[0]?.baseUrl;
-  if (!baseUrl) {
+  const timedText = await fetchFirstTimedText(tracks);
+  if (timedText.error) {
+    return transcriptFetchMetadataOnlyResult({
+      title,
+      author,
+      duration_seconds,
+      source_url: canonicalUrl,
+      source_platform: sourcePlatform,
+      description,
+      published_at: Number.isFinite(published_at) ? published_at : null,
+      thumbnail_url,
+      artifacts: dataApiArtifact,
+      reason: timedText.error,
+    });
+  }
+  if (!timedText.xml) {
     return noTranscriptResult({
       title,
       author,
@@ -306,39 +326,7 @@ export async function extractYoutubeVideo(
       artifacts: dataApiArtifact,
     });
   }
-
-  let xmlRes: Response;
-  try {
-    xmlRes = await fetchWithTimeout(baseUrl, {}, FETCH_TIMEOUT_MS);
-  } catch (err) {
-    return transcriptFetchMetadataOnlyResult({
-      title,
-      author,
-      duration_seconds,
-      source_url: canonicalUrl,
-      source_platform: sourcePlatform,
-      description,
-      published_at: Number.isFinite(published_at) ? published_at : null,
-      thumbnail_url,
-      artifacts: dataApiArtifact,
-      reason: `Timed-text fetch failed: ${(err as Error).message}`,
-    });
-  }
-  if (!xmlRes.ok) {
-    return transcriptFetchMetadataOnlyResult({
-      title,
-      author,
-      duration_seconds,
-      source_url: canonicalUrl,
-      source_platform: sourcePlatform,
-      description,
-      published_at: Number.isFinite(published_at) ? published_at : null,
-      thumbnail_url,
-      artifacts: dataApiArtifact,
-      reason: `Timed-text returned ${xmlRes.status}`,
-    });
-  }
-  const xml = await xmlRes.text();
+  const xml = timedText.xml;
 
   const allSegments = parseTimedTextXml(xml);
   if (allSegments.length === 0) {
@@ -388,11 +376,68 @@ export async function extractYoutubeVideo(
       {
         kind: "youtube_timedtext_xml",
         content_type: "application/xml",
-        suggested_filename: "youtube-timedtext.xml",
+        suggested_filename: timedText.track?.languageCode
+          ? `youtube-timedtext-${timedText.track.languageCode}.xml`
+          : "youtube-timedtext.xml",
         body: xml,
       },
     ],
   };
+}
+
+async function fetchFirstTimedText(
+  tracks: InnerTubeCaptionTrack[],
+): Promise<{
+  xml: string | null;
+  track: InnerTubeCaptionTrack | null;
+  error: string | null;
+}> {
+  const ranked = rankCaptionTracks(tracks).filter((track) => Boolean(track.baseUrl));
+  if (ranked.length === 0) {
+    return { xml: null, track: null, error: null };
+  }
+
+  let lastError: string | null = null;
+  for (const track of ranked) {
+    try {
+      const res = await fetchWithTimeout(track.baseUrl!, {}, FETCH_TIMEOUT_MS);
+      if (!res.ok) {
+        lastError = `Timed-text returned ${res.status}`;
+        continue;
+      }
+      return { xml: await res.text(), track, error: null };
+    } catch (err) {
+      lastError = `Timed-text fetch failed: ${(err as Error).message}`;
+    }
+  }
+
+  return { xml: null, track: ranked[0] ?? null, error: lastError };
+}
+
+function rankCaptionTracks(tracks: InnerTubeCaptionTrack[]): InnerTubeCaptionTrack[] {
+  return [...tracks].sort((a, b) => captionTrackScore(a) - captionTrackScore(b));
+}
+
+function captionTrackScore(track: InnerTubeCaptionTrack): number {
+  let score = 0;
+  if (!track.baseUrl) score += 1_000;
+  const language = track.languageCode?.toLowerCase() ?? "";
+  if (language === "en") score += 0;
+  else if (language.startsWith("en-")) score += 1;
+  else score += 20;
+  if (track.kind === "asr") score += 4;
+  const label = captionTrackLabel(track).toLowerCase();
+  if (label.includes("auto")) score += 2;
+  if (label.includes("english")) score -= 1;
+  return score;
+}
+
+function captionTrackLabel(track: InnerTubeCaptionTrack): string {
+  if (track.name?.simpleText) return track.name.simpleText;
+  if (track.name?.runs) {
+    return track.name.runs.map((run) => run.text ?? "").join("");
+  }
+  return "";
 }
 
 function parseDurationSeconds(raw: string | undefined): number | null {
