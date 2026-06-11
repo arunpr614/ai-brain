@@ -466,15 +466,30 @@ export function markTranscriptJobRetryable(
   attemptId: number | null,
   nextRunAt: number,
   error: { code: string; message: string; provider?: string | null },
+  options: { preserveRetryWindow?: boolean } = {},
 ): void {
   const now = Date.now();
+  const preserveRetryWindow = options.preserveRetryWindow ? 1 : 0;
   getDb()
     .prepare(
       `UPDATE transcript_jobs
-          SET state = CASE WHEN attempts >= max_attempts THEN 'manual_needed' ELSE 'retryable_error' END,
+          SET state = CASE
+                WHEN ? = 1 OR attempts < max_attempts THEN 'retryable_error'
+                ELSE 'manual_needed'
+              END,
+              max_attempts = CASE
+                WHEN ? = 1 THEN MAX(max_attempts, attempts + 3)
+                ELSE max_attempts
+              END,
               claimed_at = NULL,
-              next_run_at = CASE WHEN attempts >= max_attempts THEN NULL ELSE ? END,
-              completed_at = CASE WHEN attempts >= max_attempts THEN ? ELSE NULL END,
+              next_run_at = CASE
+                WHEN ? = 1 OR attempts < max_attempts THEN ?
+                ELSE NULL
+              END,
+              completed_at = CASE
+                WHEN ? = 1 OR attempts < max_attempts THEN NULL
+                ELSE ?
+              END,
               last_attempt_id = COALESCE(?, last_attempt_id),
               last_provider = ?,
               last_error_code = ?,
@@ -483,7 +498,11 @@ export function markTranscriptJobRetryable(
         WHERE id = ?`,
     )
     .run(
+      preserveRetryWindow,
+      preserveRetryWindow,
+      preserveRetryWindow,
       nextRunAt,
+      preserveRetryWindow,
       now,
       attemptId,
       error.provider ?? null,

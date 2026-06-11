@@ -13,6 +13,7 @@ import {
   getTranscriptJobForItem,
   ignoreTranscriptJob,
   listTranscriptAttemptsForItem,
+  markTranscriptJobRetryable,
   recordManualTranscriptResolutionForItem,
   recordTranscriptAttempt,
   retryTranscriptJobNow,
@@ -173,5 +174,42 @@ describe("transcript recovery jobs", () => {
     });
     assert.equal(repeated?.state, "done");
     assert.equal(listTranscriptAttemptsForItem(item.id).length, 1);
+  });
+
+  it("can preserve retry capacity for provider throttling", () => {
+    const item = insertCaptured({
+      source_type: "youtube",
+      capture_source: "web",
+      source_url: "https://www.youtube.com/watch?v=throttle123",
+      title: "Throttle YouTube",
+      body: "metadata only",
+      source_platform: "youtube",
+      capture_quality: "metadata_only",
+      extraction_method: "youtube_innertube_timedtext",
+      extraction_warning: "youtube_transcript_fetch_metadata_only",
+    });
+    enqueueTranscriptJobForItem(item, { reset: true, priority: 30 });
+    getDb()
+      .prepare("UPDATE transcript_jobs SET attempts = 5, max_attempts = 5 WHERE item_id = ?")
+      .run(item.id);
+    const job = getTranscriptJobForItem(item.id)!;
+
+    markTranscriptJobRetryable(
+      job.id,
+      null,
+      Date.now() + 60_000,
+      {
+        provider: "youtube_innertube_timedtext",
+        code: "timedtext_http_429",
+        message: "Timed-text returned 429.",
+      },
+      { preserveRetryWindow: true },
+    );
+
+    const updated = getTranscriptJobForItem(item.id);
+    assert.equal(updated?.state, "retryable_error");
+    assert.equal(updated?.attempts, 5);
+    assert.ok((updated?.max_attempts ?? 0) > 5);
+    assert.ok((updated?.next_run_at ?? 0) > Date.now());
   });
 });

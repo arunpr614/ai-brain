@@ -84,6 +84,28 @@ test("review reasons include duplicate and processing/indexing problems", () => 
   );
 });
 
+test("retryable transcript recovery reasons show the provider result", () => {
+  const reasons = buildAttentionReasons(
+    item({
+      source_type: "youtube",
+      source_platform: "youtube",
+      capture_quality: "metadata_only",
+      total_chars: 180,
+    }),
+    {
+      transcriptJobState: "retryable_error",
+      transcriptJobAttempts: 1,
+      transcriptJobMaxAttempts: 5,
+      transcriptJobNextRunAt: Date.now() + 60_000,
+      transcriptJobLastErrorMessage: "Timed-text returned 429.",
+    },
+  );
+
+  const transcriptReason = reasons.find((reason) => reason.code === "transcript_recovery");
+  assert.match(transcriptReason?.detail ?? "", /Timed-text returned 429/);
+  assert.match(transcriptReason?.detail ?? "", /Next retry/);
+});
+
 test("full-text done items without chunks are flagged as missing semantic search", () => {
   const reasons = buildAttentionReasons(
     item({

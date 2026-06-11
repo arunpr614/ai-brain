@@ -35,6 +35,7 @@
     "smoke:batch": "node --import tsx scripts/smoke-batch.ts",
     "backfill:embeddings": "node --import tsx scripts/backfill-embeddings.mjs",
     "backfill:embeddings:prod": "node scripts/backfill-embeddings-prod.mjs",
+    "backfill:youtube-transcripts": "node --import tsx scripts/backfill-youtube-transcripts.ts",
     "check:ai-providers": "node scripts/check-ai-providers.mjs",
     "bench:ask": "node --import tsx scripts/bench-ask.mjs"
   },
