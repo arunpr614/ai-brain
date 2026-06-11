@@ -29,7 +29,8 @@ Build artifacts land in `extension/dist/`.
 ## Use
 
 - **Click the Brain icon** on any page → popup shows title + URL → **Save to Brain**
-- **Right-click any page** → **Save to Brain** from context menu
+- **Right-click any page** → **Save this page to Brain**
+- **Select text, then right-click** → **Save selected text to Brain**
 - Captures appear in Library within ~5 seconds.
 
 ## Rebuild after code changes

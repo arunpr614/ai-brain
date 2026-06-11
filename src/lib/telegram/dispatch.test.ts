@@ -33,6 +33,17 @@ function buildDeps(overrides: Partial<DispatchDeps> = {}) {
   const inserted: InsertedItem[] = [];
   const updated: InsertedItem[] = [];
   let urlExtractCalls = 0;
+  let transcriptJobEnqueues = 0;
+  const transcriptJobEnqueueInputs: Array<{
+    itemId: string;
+    options: Parameters<DispatchDeps["enqueueTranscriptJobForItem"]>[1];
+  }> = [];
+
+  const enqueueTranscriptJobForItem: DispatchDeps["enqueueTranscriptJobForItem"] = (item, options) => {
+    transcriptJobEnqueues++;
+    transcriptJobEnqueueInputs.push({ itemId: item.id, options });
+    return null;
+  };
 
   const deps: DispatchDeps = {
     sendMessage: async (chatId, text) => {
@@ -86,23 +97,23 @@ function buildDeps(overrides: Partial<DispatchDeps> = {}) {
         batch_id: null,
       };
     }) as unknown as DispatchDeps["insertCaptured"],
-    updateItemCaptureContent: ((id: string, input: { title: string; body: string; author?: string | null; extraction_warning?: string | null; duration_seconds?: number | null; source_platform?: string | null; capture_quality?: string | null; extraction_method?: string | null; extraction_version?: string | null; published_at?: number | null; thumbnail_url?: string | null; description?: string | null }) => {
+    upgradeItemCaptureContent: (async ({ itemId, content }: Parameters<DispatchDeps["upgradeItemCaptureContent"]>[0]) => {
       updated.push({
         source_type: "url",
         capture_source: "telegram",
-        title: input.title,
-        body: input.body,
-        source_platform: input.source_platform ?? null,
-        capture_quality: input.capture_quality ?? null,
+        title: content.title,
+        body: content.body,
+        source_platform: content.source_platform ?? null,
+        capture_quality: content.capture_quality ?? null,
       });
       return {
-        id,
+        id: itemId,
         source_type: "url" as const,
         capture_source: "telegram" as const,
-        title: input.title,
-        body: input.body,
-        author: input.author ?? null,
-        source_url: "https://www.linkedin.com/posts/example",
+        title: content.title,
+        body: content.body,
+        author: content.author ?? null,
+        source_url: content.source_url,
         summary: null,
         quotes: null,
         category: null,
@@ -110,19 +121,20 @@ function buildDeps(overrides: Partial<DispatchDeps> = {}) {
         enriched_at: null,
         enrichment_state: "pending" as const,
         total_pages: null,
-        total_chars: input.body.length,
-        extraction_warning: input.extraction_warning ?? null,
-        duration_seconds: input.duration_seconds ?? null,
-        source_platform: input.source_platform ?? null,
-        capture_quality: input.capture_quality ?? null,
-        extraction_method: input.extraction_method ?? null,
-        extraction_version: input.extraction_version ?? null,
-        published_at: input.published_at ?? null,
-        thumbnail_url: input.thumbnail_url ?? null,
-        description: input.description ?? null,
+        total_chars: content.body.length,
+        extraction_warning: content.extraction_warning ?? null,
+        duration_seconds: content.duration_seconds ?? null,
+        source_platform: content.source_platform ?? null,
+        capture_quality: content.capture_quality ?? null,
+        extraction_method: content.extraction_method ?? null,
+        extraction_version: content.extraction_version ?? null,
+        published_at: content.published_at ?? null,
+        thumbnail_url: content.thumbnail_url ?? null,
+        description: content.description ?? null,
         batch_id: null,
       };
-    }) as unknown as DispatchDeps["updateItemCaptureContent"],
+    }) as DispatchDeps["upgradeItemCaptureContent"],
+    enqueueTranscriptJobForItem,
     saveCaptureArtifacts: async () => [],
     extractUrlCapture: (async () => {
       urlExtractCalls++;
@@ -164,6 +176,8 @@ function buildDeps(overrides: Partial<DispatchDeps> = {}) {
     inserted,
     updated,
     urlExtractCalls: () => urlExtractCalls,
+    transcriptJobEnqueues: () => transcriptJobEnqueues,
+    transcriptJobEnqueueInputs: () => transcriptJobEnqueueInputs,
   };
 }
 
@@ -236,8 +250,10 @@ describe("telegram/dispatch.handleCaptureMessage", () => {
     assert.equal(t.inserted.length, 1);
     assert.equal(t.inserted[0].source_type, "youtube");
     assert.equal(t.inserted[0].capture_source, "telegram");
-    assert.match(t.sent[0].text, /Saved YouTube link as metadata only/);
-    assert.match(t.sent[0].text, /Transcript extraction was blocked or unavailable/);
+    assert.equal(t.transcriptJobEnqueues(), 1);
+    assert.match(t.sent[0].text, /Saved the YouTube link, but I could not read the transcript yet/);
+    assert.match(t.sent[0].text, /queued transcript recovery/);
+    assert.match(t.sent[0].text, /brain\.arunp\.in\/review\?focus=abc123/);
     assert.match(t.sent[0].text, /brain\.arunp\.in\/items\/abc123/);
   });
 
@@ -339,7 +355,74 @@ describe("telegram/dispatch.handleCaptureMessage", () => {
     assert.equal(t.inserted.length, 0);
     assert.equal(t.updated.length, 1);
     assert.equal(t.updated[0].capture_quality, "user_provided_full_text");
-    assert.match(t.sent[0].text, /Updated existing capture/);
+    assert.match(t.sent[0].text, /Updated the existing LinkedIn item with your pasted text/);
+  });
+
+  it("upgrades an existing YouTube metadata-only capture when pasted text is provided", async () => {
+    const existing = {
+      id: "existing-youtube",
+      source_type: "youtube" as const,
+      capture_source: "telegram" as const,
+      title: "YouTube preview",
+      body: "Preview",
+      author: "Channel",
+      source_url: "https://www.youtube.com/watch?v=abc12345678",
+      summary: null,
+      quotes: null,
+      category: null,
+      captured_at: 0,
+      enriched_at: null,
+      enrichment_state: "pending" as const,
+      total_pages: null,
+      total_chars: 7,
+      extraction_warning: "youtube_antibot_metadata_only",
+      duration_seconds: null,
+      source_platform: "youtube",
+      capture_quality: "metadata_only",
+      extraction_method: "youtube_oembed_metadata",
+      extraction_version: "capture-v0.7.5",
+      published_at: null,
+      thumbnail_url: null,
+      description: null,
+      batch_id: null,
+    };
+    const t = buildDeps({
+      findItemByUrl: (() => existing) as unknown as DispatchDeps["findItemByUrl"],
+      extractUrlCapture: async () => ({
+        detection: {
+          platform: "youtube",
+          canonicalUrl: "https://www.youtube.com/watch?v=abc12345678",
+          videoId: "abc12345678",
+          sourceType: "youtube",
+        },
+        source_type: "youtube",
+        content: {
+          title: "YouTube preview",
+          body: "Title: YouTube preview\n\nProvided by: user paste\n\nPasted text:\nComplete transcript text",
+          author: "Channel",
+          source_url: "https://www.youtube.com/watch?v=abc12345678",
+          extraction_warning: null,
+          duration_seconds: null,
+          source_platform: "youtube",
+          capture_quality: "user_provided_full_text",
+          extraction_method: "youtube_user_provided_text",
+          extraction_version: "capture-v0.7.5",
+        },
+      }),
+    });
+
+    const result = await handleCaptureMessage(
+      msg({
+        text: "https://youtu.be/abc12345678 This transcript text has enough words to upgrade the weak existing capture.",
+      }),
+      t.deps,
+    );
+
+    assert.deepEqual(result, { status: "captured", itemId: "existing-youtube", source: "youtube" });
+    assert.equal(t.inserted.length, 0);
+    assert.equal(t.updated.length, 1);
+    assert.equal(t.updated[0].capture_quality, "user_provided_full_text");
+    assert.match(t.sent[0].text, /Updated the existing YouTube item with your pasted text/);
   });
 
   it("replies 'already captured' on duplicate URL without inserting", async () => {
@@ -384,6 +467,59 @@ describe("telegram/dispatch.handleCaptureMessage", () => {
       reason: "url-exists",
     });
     assert.match(t.sent[0].text, /↩️ Already captured:.*Old Capture/);
+  });
+
+  it("requeues transcript recovery when the same weak YouTube URL is shared again", async () => {
+    const existing = {
+      id: "existing-weak-youtube",
+      source_type: "youtube" as const,
+      capture_source: "telegram" as const,
+      title: "Weak YouTube capture",
+      body: "Preview",
+      author: "Channel",
+      source_url: "https://www.youtube.com/watch?v=abc12345678",
+      summary: null,
+      quotes: null,
+      category: null,
+      captured_at: 0,
+      enriched_at: null,
+      enrichment_state: "pending" as const,
+      total_pages: null,
+      total_chars: 7,
+      extraction_warning: "youtube_antibot_metadata_only",
+      duration_seconds: null,
+      source_platform: "youtube",
+      capture_quality: "metadata_only",
+      extraction_method: "youtube_oembed_metadata",
+      extraction_version: "capture-v0.7.5",
+      published_at: null,
+      thumbnail_url: null,
+      description: null,
+      batch_id: null,
+    };
+    const t = buildDeps({
+      findItemByUrl: (() => existing) as unknown as DispatchDeps["findItemByUrl"],
+    });
+
+    const result = await handleCaptureMessage(
+      msg({ text: "https://youtu.be/abc12345678" }),
+      t.deps,
+    );
+
+    assert.equal(t.inserted.length, 0);
+    assert.equal(t.urlExtractCalls(), 0);
+    assert.deepEqual(result, {
+      status: "duplicate",
+      itemId: "existing-weak-youtube",
+      reason: "transcript-recovery-queued",
+    });
+    assert.equal(t.transcriptJobEnqueues(), 1);
+    assert.deepEqual(t.transcriptJobEnqueueInputs(), [
+      { itemId: "existing-weak-youtube", options: { reset: true, priority: 20 } },
+    ]);
+    assert.match(t.sent[0].text, /queued transcript recovery again/);
+    assert.match(t.sent[0].text, /brain\.arunp\.in\/review\?focus=existing-weak-youtube/);
+    assert.match(t.sent[0].text, /brain\.arunp\.in\/items\/existing-weak-youtube/);
   });
 
   it("routes plain text (no URL) to note capture", async () => {

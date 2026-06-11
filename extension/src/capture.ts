@@ -16,6 +16,7 @@ export type CaptureInput = {
   url: string;
   title?: string;
   note?: string;
+  selectedText?: string;
 };
 
 export type CaptureResult =
@@ -76,11 +77,13 @@ export async function captureUrl(input: CaptureInput): Promise<CaptureResult> {
       headers: {
         "content-type": "application/json",
         authorization: `Bearer ${token}`,
+        "x-brain-capture-source": "extension",
       },
       body: JSON.stringify({
         url: input.url,
         title: input.title,
         note: input.note,
+        selected_text: input.selectedText,
       }),
     });
   } catch (err) {

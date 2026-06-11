@@ -20,6 +20,8 @@ const KIND_CAPS: Record<string, number> = {
   metadata_json: 128 * 1024,
   rss_entry_json: 512 * 1024,
   user_text: 256 * 1024,
+  user_provided_text: 256 * 1024,
+  pre_upgrade_item_json: 256 * 1024,
 };
 
 const DEFAULT_CAP = 256 * 1024;
@@ -173,4 +175,3 @@ function safeExtension(filename: string, contentType: string): string {
   if (contentType.includes("text")) return ".txt";
   return ".bin";
 }
-

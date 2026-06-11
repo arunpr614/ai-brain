@@ -1,7 +1,7 @@
 "use client";
 
 import { Command } from "cmdk";
-import { FileText, Globe, Library, Search, Settings, StickyNote } from "lucide-react";
+import { BookOpen, FileText, Globe, Library, Search, Settings, StickyNote } from "lucide-react";
 import { useRouter } from "next/navigation";
 import {
   createContext,
@@ -84,6 +84,9 @@ export function CommandPaletteProvider({ children }: { children: React.ReactNode
                 </PaletteItem>
                 <PaletteItem icon={Settings} onSelect={() => go("/settings")}>
                   Go to Settings
+                </PaletteItem>
+                <PaletteItem icon={BookOpen} onSelect={() => go("/review")}>
+                  Go to Review
                 </PaletteItem>
               </Command.Group>
 

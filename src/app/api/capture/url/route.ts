@@ -18,16 +18,22 @@ import { NextResponse, type NextRequest } from "next/server";
 import { z } from "zod";
 import { validateOrigin } from "@/lib/auth/bearer";
 import { checkClientApiVersion } from "@/lib/auth/api-version";
-import { findItemByUrl, insertCaptured, updateItemCaptureContent } from "@/db/items";
-import type { ItemRow } from "@/db/client";
+import { findItemByUrl, insertCaptured } from "@/db/items";
+import { upgradeItemCaptureContent } from "@/db/item-upgrades";
+import {
+  enqueueTranscriptJobForItem,
+  isYoutubeTranscriptRecoveryCandidate,
+} from "@/db/transcript-jobs";
 import { UrlCaptureError } from "@/lib/capture/url";
 import { YoutubeCaptureError } from "@/lib/capture/youtube";
-import { extractUrlCapture, meaningfulUserText } from "@/lib/capture/capture-url";
+import { extractUrlCapture } from "@/lib/capture/capture-url";
 import { detectCapturePlatform } from "@/lib/capture/platform";
 import { isDuplicateShare, shareDedupKey } from "@/lib/capture/dedup";
 import { captureSourceFromTrustedHeader } from "@/lib/capture/source";
 import { saveCaptureArtifacts } from "@/lib/capture/artifacts";
 import { logError } from "@/lib/errors/sink";
+import { classifyCaptureUpgrade } from "@/lib/capture/upgrade-policy";
+import { analyzeUserProvidedText } from "@/lib/capture/user-provided";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -35,8 +41,13 @@ export const dynamic = "force-dynamic";
 const CaptureUrlBody = z.object({
   url: z.string().url().max(2048),
   title: z.string().max(500).optional(),
-  note: z.string().max(10_000).optional(),
+  note: z.string().max(100_000).optional(),
+  selected_text: z.string().max(100_000).optional(),
 });
+
+function reviewPath(itemId: string): string {
+  return `/review?focus=${encodeURIComponent(itemId)}`;
+}
 
 export async function POST(req: NextRequest) {
   if (!validateOrigin(req.headers.get("origin"))) {
@@ -65,16 +76,42 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const { url: rawUrl, note } = parsed.data;
+  const { url: rawUrl, note, selected_text: selectedText } = parsed.data;
   const captureSource = captureSourceFromTrustedHeader(req.headers.get("x-brain-capture-source"));
 
   const detection = detectCapturePlatform(rawUrl);
   const url = detection.canonicalUrl;
-  const userText = meaningfulUserText(note, rawUrl);
+  const isSelectedTextCapture = typeof selectedText === "string" && selectedText.trim().length > 0;
+  const userTextSource = isSelectedTextCapture ? "selected_text" : "paste";
+  const userTextInput = isSelectedTextCapture ? selectedText : note;
+  const userTextAnalysis = analyzeUserProvidedText(userTextInput, rawUrl, url);
+  const userText = userTextAnalysis.isMeaningful ? userTextAnalysis.text : null;
+  const hasUserText = userTextAnalysis.text.length > 0;
+
+  if (isSelectedTextCapture && !userText) {
+    logCaptureDecision("capture.selected_text.rejected", {
+      platform: detection.platform,
+      source_url: url,
+      action: "rejected_too_short",
+      reason: userTextAnalysis.tooLong ? "selected_text_too_long" : "selected_text_too_short",
+      text_chars: userTextAnalysis.charCount,
+      text_words: userTextAnalysis.wordCount,
+    });
+    return NextResponse.json(
+      {
+        error: userTextAnalysis.tooLong ? "text_too_long" : "text_too_short",
+        action: "rejected_too_short",
+        message: userTextAnalysis.tooLong
+          ? "Selected text is too long."
+          : "Select at least 8 words to save this passage.",
+      },
+      { status: 422 },
+    );
+  }
 
   // Server-side dedup (F-041 defense-in-depth). Catches APK double-fire
   // even if the client-side dedup window was skipped (hot reload, etc.).
-  if (isDuplicateShare(shareDedupKey("url", url))) {
+  if (!userText && isDuplicateShare(shareDedupKey("url", url))) {
     logError({
       type: "share.intent.duplicate",
       source: "server",
@@ -83,23 +120,117 @@ export async function POST(req: NextRequest) {
     });
     const existing = findItemByUrl(url);
     return NextResponse.json(
-      { duplicate: true, itemId: existing?.id ?? null, reason: "window" },
+      { duplicate: true, itemId: existing?.id ?? null, reason: "window", action: "duplicate" },
       { status: 200 },
     );
   }
 
   // Historical-duplicate check (URL already in library from a past capture).
   const existing = findItemByUrl(url);
-  if (existing && !userText) {
+  if (existing && !hasUserText) {
+    if (isYoutubeTranscriptRecoveryCandidate(existing)) {
+      enqueueTranscriptJobForItem(existing, { reset: true, priority: 20 });
+      logCaptureDecision("capture.transcript_recovery.queued", {
+        item_id: existing.id,
+        platform: existing.source_platform ?? detection.platform,
+        source_url: url,
+        action: "transcript_recovery_queued",
+        reason: "duplicate_metadata_only_youtube",
+      });
+      return NextResponse.json(
+        {
+          duplicate: true,
+          itemId: existing.id,
+          reason: "transcript-recovery-queued",
+          action: "transcript_recovery_queued",
+          reviewPath: reviewPath(existing.id),
+        },
+        { status: 200 },
+      );
+    }
+    logCaptureDecision("capture.duplicate", {
+      item_id: existing.id,
+      platform: existing.source_platform ?? detection.platform,
+      source_url: url,
+      action: "duplicate",
+      reason: "exists",
+    });
     return NextResponse.json(
-      { duplicate: true, itemId: existing.id, reason: "exists" },
+      { duplicate: true, itemId: existing.id, reason: "exists", action: "duplicate" },
       { status: 200 },
     );
+  }
+  if (existing && hasUserText && !userText) {
+    logCaptureDecision("capture.upgrade.rejected", {
+      item_id: existing.id,
+      platform: existing.source_platform ?? detection.platform,
+      source_url: url,
+      old_quality: existing.capture_quality ?? null,
+      action: "rejected_too_short",
+      reason: userTextAnalysis.tooLong ? "user_text_too_long" : "user_text_too_short",
+      text_chars: userTextAnalysis.charCount,
+      text_words: userTextAnalysis.wordCount,
+    });
+    return NextResponse.json(
+      {
+        error: userTextAnalysis.tooLong ? "text_too_long" : "text_too_short",
+        action: "rejected_too_short",
+        message: userTextAnalysis.tooLong
+          ? "Pasted text is too long."
+          : "Paste at least 8 words after the link to upgrade this item.",
+        itemId: existing.id,
+      },
+      { status: 422 },
+    );
+  }
+  if (existing && userText) {
+    const incomingQuality = isSelectedTextCapture ? "client_dom" : "user_provided_full_text";
+    const preDecision = classifyCaptureUpgrade(existing, {
+      platform: detection.platform,
+      quality: incomingQuality,
+      hasMeaningfulText: true,
+      hasUserText: true,
+    });
+    if (preDecision.action !== "upgrade") {
+      logCaptureDecision(
+        preDecision.action === "unsupported" ? "capture.upgrade.rejected" : "capture.duplicate",
+        {
+          item_id: existing.id,
+          platform: existing.source_platform ?? detection.platform,
+          source_url: url,
+          old_quality: existing.capture_quality ?? null,
+          action: preDecision.action,
+          reason: preDecision.reason,
+          text_chars: userTextAnalysis.charCount,
+          text_words: userTextAnalysis.wordCount,
+        },
+      );
+      return NextResponse.json(
+        { duplicate: true, itemId: existing.id, reason: preDecision.reason, action: "duplicate" },
+        { status: 200 },
+      );
+    }
+    logCaptureDecision("capture.upgrade.started", {
+      item_id: existing.id,
+      platform: existing.source_platform ?? detection.platform,
+      source_url: url,
+      old_quality: existing.capture_quality ?? null,
+      action: "upgrade",
+      reason: preDecision.reason,
+      text_chars: userTextAnalysis.charCount,
+      text_words: userTextAnalysis.wordCount,
+    });
   }
 
   let extracted;
   try {
-    extracted = await extractUrlCapture({ url: rawUrl, userText: note });
+    extracted = await extractUrlCapture({
+      url: rawUrl,
+      userText: userTextInput,
+      userTextSource,
+      title: parsed.data.title,
+      existingItem: existing,
+    });
   } catch (err) {
     if (err instanceof UrlCaptureError || err instanceof YoutubeCaptureError) {
       logError({
@@ -117,31 +248,43 @@ export async function POST(req: NextRequest) {
   }
   const { content } = extracted;
 
-  if (existing && shouldUpgradeWeakCapture(existing, content.capture_quality)) {
-    const item = updateItemCaptureContent(existing.id, {
-      title: content.title,
-      body: content.body,
-      author: content.author,
-      extraction_warning: content.extraction_warning,
-      duration_seconds: content.duration_seconds ?? null,
-      source_platform: content.source_platform ?? extracted.detection.platform,
-      capture_quality: content.capture_quality ?? null,
-      extraction_method: content.extraction_method ?? null,
-      extraction_version: content.extraction_version ?? null,
-      published_at: content.published_at ?? null,
-      thumbnail_url: content.thumbnail_url ?? null,
-      description: content.description ?? null,
+  if (existing) {
+    const decision = classifyCaptureUpgrade(existing, {
+      platform: content.source_platform ?? extracted.detection.platform,
+      quality: content.capture_quality ?? null,
+      hasMeaningfulText: Boolean(userText),
+      hasUserText,
     });
-    try {
-      await saveCaptureArtifacts(existing.id, content.artifacts);
-    } catch (err) {
-      logError({
-        type: "capture.artifact-save-failed",
-        item_id: existing.id,
-        message: (err as Error).message,
-        ts: Date.now(),
-      });
+    if (decision.action !== "upgrade") {
+      logCaptureDecision(
+        decision.action === "unsupported" || decision.action === "rejected_too_short"
+          ? "capture.upgrade.rejected"
+          : "capture.duplicate",
+        {
+          item_id: existing.id,
+          platform: existing.source_platform ?? content.source_platform ?? extracted.detection.platform,
+          source_url: url,
+          old_quality: existing.capture_quality ?? null,
+          new_quality: content.capture_quality ?? null,
+          action: decision.action,
+          reason: decision.reason,
+          text_chars: userTextAnalysis.charCount,
+          text_words: userTextAnalysis.wordCount,
+        },
+      );
+      return NextResponse.json(
+        { duplicate: true, itemId: existing.id, reason: decision.reason, action: "duplicate" },
+        { status: 200 },
+      );
     }
+    const item = await upgradeItemCaptureContent({
+      itemId: existing.id,
+      content: {
+        ...content,
+        source_platform: content.source_platform ?? extracted.detection.platform,
+      },
+      platform: extracted.detection.platform,
+    });
     return NextResponse.json(
       { id: item?.id ?? existing.id, duplicate: false, action: "upgraded" },
       { status: 200 },
@@ -175,14 +318,27 @@ export async function POST(req: NextRequest) {
       ts: Date.now(),
     });
   }
+  logCaptureDecision("capture.created", {
+    item_id: item.id,
+    platform: content.source_platform ?? extracted.detection.platform,
+    source_url: content.source_url,
+    new_quality: content.capture_quality ?? null,
+    extraction_method: content.extraction_method ?? null,
+    action: "created",
+    text_chars: content.body.length,
+  });
+
+  if (isYoutubeTranscriptRecoveryCandidate(item)) {
+    enqueueTranscriptJobForItem(item, { priority: 20 });
+  }
 
   return NextResponse.json({ id: item.id, duplicate: false, action: "created" }, { status: 201 });
 }
 
-function shouldUpgradeWeakCapture(
-  existing: ItemRow,
-  incomingQuality: string | null | undefined,
-): boolean {
-  return existing.capture_quality === "metadata_only" &&
-    incomingQuality === "user_provided_full_text";
+function logCaptureDecision(type: string, fields: Record<string, unknown>): void {
+  logError({
+    type,
+    ...fields,
+    ts: Date.now(),
+  });
 }

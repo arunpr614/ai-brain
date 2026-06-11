@@ -24,16 +24,22 @@ import crypto from "node:crypto";
 import {
   findItemByUrl as realFindItemByUrl,
   insertCaptured as realInsertCaptured,
-  updateItemCaptureContent as realUpdateItemCaptureContent,
 } from "@/db/items";
+import { upgradeItemCaptureContent as realUpgradeItemCaptureContent } from "@/db/item-upgrades";
+import {
+  enqueueTranscriptJobForItem as realEnqueueTranscriptJobForItem,
+  isYoutubeTranscriptRecoveryCandidate,
+} from "@/db/transcript-jobs";
 import { findTelegramDocumentByUniqueId as realFindTelegramDocumentByUniqueId } from "@/db/telegram-updates";
 import { saveCaptureArtifacts as realSaveCaptureArtifacts } from "@/lib/capture/artifacts";
-import { extractUrlCapture as realExtractUrlCapture, meaningfulUserText } from "@/lib/capture/capture-url";
+import { extractUrlCapture as realExtractUrlCapture } from "@/lib/capture/capture-url";
 import { isDuplicateShare as realIsDuplicateShare, shareDedupKey } from "@/lib/capture/dedup";
 import { extractPdf as realExtractPdf, PdfCaptureError } from "@/lib/capture/pdf";
 import { UrlCaptureError } from "@/lib/capture/url";
 import { YoutubeCaptureError } from "@/lib/capture/youtube";
 import { detectCapturePlatform } from "@/lib/capture/platform";
+import { classifyCaptureUpgrade } from "@/lib/capture/upgrade-policy";
+import { analyzeUserProvidedText } from "@/lib/capture/user-provided";
 import { logError } from "@/lib/errors/sink";
 import {
   downloadFile as realDownloadFile,
@@ -57,7 +63,8 @@ export interface DispatchDeps {
   findTelegramDocumentByUniqueId: typeof realFindTelegramDocumentByUniqueId;
   isDuplicateShare: typeof realIsDuplicateShare;
   insertCaptured: typeof realInsertCaptured;
-  updateItemCaptureContent: typeof realUpdateItemCaptureContent;
+  upgradeItemCaptureContent: typeof realUpgradeItemCaptureContent;
+  enqueueTranscriptJobForItem: typeof realEnqueueTranscriptJobForItem;
   saveCaptureArtifacts: typeof realSaveCaptureArtifacts;
   extractUrlCapture: typeof realExtractUrlCapture;
   extractPdf: typeof realExtractPdf;
@@ -72,7 +79,8 @@ const defaultDeps: DispatchDeps = {
   findTelegramDocumentByUniqueId: realFindTelegramDocumentByUniqueId,
   isDuplicateShare: realIsDuplicateShare,
   insertCaptured: realInsertCaptured,
-  updateItemCaptureContent: realUpdateItemCaptureContent,
+  upgradeItemCaptureContent: realUpgradeItemCaptureContent,
+  enqueueTranscriptJobForItem: realEnqueueTranscriptJobForItem,
   saveCaptureArtifacts: realSaveCaptureArtifacts,
   extractUrlCapture: realExtractUrlCapture,
   extractPdf: realExtractPdf,
@@ -80,6 +88,11 @@ const defaultDeps: DispatchDeps = {
 
 function itemUrl(id: string): string {
   return `${PUBLIC_BASE_URL}/items/${id}`;
+}
+
+function reviewUrl(itemId?: string): string {
+  if (!itemId) return `${PUBLIC_BASE_URL}/review`;
+  return `${PUBLIC_BASE_URL}/review?focus=${encodeURIComponent(itemId)}`;
 }
 
 export type TelegramCaptureResult =
@@ -181,47 +194,157 @@ async function captureUrl(
 ): Promise<TelegramCaptureResult> {
   const detection = detectCapturePlatform(rawUrl);
   const url = detection.canonicalUrl;
-  const userText = meaningfulUserText(fullText, rawUrl);
+  const userTextAnalysis = analyzeUserProvidedText(fullText, rawUrl, url);
+  const userText = userTextAnalysis.isMeaningful ? userTextAnalysis.text : null;
+  const hasUserText = userTextAnalysis.text.length > 0;
 
   const existing = deps.findItemByUrl(url);
-  if (existing && !userText) {
+  if (existing && !hasUserText) {
+    if (isYoutubeTranscriptRecoveryCandidate(existing)) {
+      deps.enqueueTranscriptJobForItem(existing, { reset: true, priority: 20 });
+      await deps.sendMessage(
+        chatId,
+        `↩️ Already captured: ${existing.title || "(untitled)"}\nI queued transcript recovery again. Track it in Review:\n${reviewUrl(existing.id)}\n${itemUrl(existing.id)}`,
+      );
+      return {
+        status: "duplicate",
+        itemId: existing.id,
+        reason: "transcript-recovery-queued",
+      };
+    }
     await deps.sendMessage(
       chatId,
       `↩️ Already captured: ${existing.title || "(untitled)"}\n${itemUrl(existing.id)}`,
     );
     return { status: "duplicate", itemId: existing.id, reason: "url-exists" };
   }
-
-  try {
-    const extracted = await deps.extractUrlCapture({ url: rawUrl, userText: fullText });
-    const { content } = extracted;
-
-    if (existing && shouldUpgradeWeakCapture(existing.capture_quality, content.capture_quality)) {
-      const item = deps.updateItemCaptureContent(existing.id, {
-        title: content.title,
-        body: content.body,
-        author: content.author,
-        extraction_warning: content.extraction_warning,
-        duration_seconds: extracted.source_type === "youtube" ? content.duration_seconds ?? null : null,
-        source_platform: content.source_platform ?? extracted.detection.platform,
-        capture_quality: content.capture_quality ?? null,
-        extraction_method: content.extraction_method ?? null,
-        extraction_version: content.extraction_version ?? null,
-        published_at: content.published_at ?? null,
-        thumbnail_url: content.thumbnail_url ?? null,
-        description: content.description ?? null,
-      }) ?? existing;
-      try {
-        await deps.saveCaptureArtifacts(existing.id, content.artifacts);
-      } catch (err) {
+  if (existing && hasUserText && !userText) {
+    logCaptureDecision("capture.upgrade.rejected", {
+      item_id: existing.id,
+      platform: existing.source_platform ?? detection.platform,
+      source_url: url,
+      old_quality: existing.capture_quality ?? null,
+      action: "rejected_too_short",
+      reason: userTextAnalysis.tooLong ? "user_text_too_long" : "user_text_too_short",
+      text_chars: userTextAnalysis.charCount,
+      text_words: userTextAnalysis.wordCount,
+    });
+    await deps.sendMessage(
+      chatId,
+      userTextAnalysis.tooLong
+        ? `That paste is too long. Send a shorter transcript or notes block.\n${itemUrl(existing.id)}`
+        : `Paste at least 8 words after the link to upgrade this item.\n${itemUrl(existing.id)}`,
+    ).catch((err) => {
+      logError({
+        type: "telegram.ack.failed",
+        item_id: existing.id,
+        message: (err as Error).message,
+        ts: Date.now(),
+      });
+    });
+    return {
+      status: "failed",
+      reason: userTextAnalysis.tooLong ? "user-text-too-long" : "user-text-too-short",
+      retryable: false,
+    };
+  }
+  if (existing && userText) {
+    const preDecision = classifyCaptureUpgrade(existing, {
+      platform: detection.platform,
+      quality: "user_provided_full_text",
+      hasMeaningfulText: true,
+      hasUserText: true,
+    });
+    if (preDecision.action !== "upgrade") {
+      logCaptureDecision(
+        preDecision.action === "unsupported" ? "capture.upgrade.rejected" : "capture.duplicate",
+        {
+          item_id: existing.id,
+          platform: existing.source_platform ?? detection.platform,
+          source_url: url,
+          old_quality: existing.capture_quality ?? null,
+          action: preDecision.action,
+          reason: preDecision.reason,
+          text_chars: userTextAnalysis.charCount,
+          text_words: userTextAnalysis.wordCount,
+        },
+      );
+      await deps.sendMessage(
+        chatId,
+        `↩️ Already captured: ${existing.title || "(untitled)"}\n${itemUrl(existing.id)}`,
+      ).catch((err) => {
         logError({
-          type: "capture.artifact-save-failed",
+          type: "telegram.ack.failed",
           item_id: existing.id,
           message: (err as Error).message,
           ts: Date.now(),
         });
+      });
+      return { status: "duplicate", itemId: existing.id, reason: preDecision.reason };
+    }
+    logCaptureDecision("capture.upgrade.started", {
+      item_id: existing.id,
+      platform: existing.source_platform ?? detection.platform,
+      source_url: url,
+      old_quality: existing.capture_quality ?? null,
+      action: "upgrade",
+      reason: preDecision.reason,
+      text_chars: userTextAnalysis.charCount,
+      text_words: userTextAnalysis.wordCount,
+    });
+  }
+
+  try {
+    const extracted = await deps.extractUrlCapture({ url: rawUrl, userText: fullText, existingItem: existing });
+    const { content } = extracted;
+
+    if (existing) {
+      const decision = classifyCaptureUpgrade(existing, {
+        platform: content.source_platform ?? extracted.detection.platform,
+        quality: content.capture_quality ?? null,
+        hasMeaningfulText: Boolean(userText),
+        hasUserText,
+      });
+      if (decision.action !== "upgrade") {
+        logCaptureDecision(
+          decision.action === "unsupported" || decision.action === "rejected_too_short"
+            ? "capture.upgrade.rejected"
+            : "capture.duplicate",
+          {
+            item_id: existing.id,
+            platform: existing.source_platform ?? content.source_platform ?? extracted.detection.platform,
+            source_url: url,
+            old_quality: existing.capture_quality ?? null,
+            new_quality: content.capture_quality ?? null,
+            action: decision.action,
+            reason: decision.reason,
+            text_chars: userTextAnalysis.charCount,
+            text_words: userTextAnalysis.wordCount,
+          },
+        );
+        await deps.sendMessage(
+          chatId,
+          `↩️ Already captured: ${existing.title || "(untitled)"}\n${itemUrl(existing.id)}`,
+        ).catch((err) => {
+          logError({
+            type: "telegram.ack.failed",
+            item_id: existing.id,
+            message: (err as Error).message,
+            ts: Date.now(),
+          });
+        });
+        return { status: "duplicate", itemId: existing.id, reason: decision.reason };
       }
-      await deps.sendMessage(chatId, `✅ Updated existing capture: ${item.title || "(untitled)"}\n${itemUrl(item.id)}`).catch((err) => {
+      const item = await deps.upgradeItemCaptureContent({
+        itemId: existing.id,
+        content: {
+          ...content,
+          source_platform: content.source_platform ?? extracted.detection.platform,
+          duration_seconds: extracted.source_type === "youtube" ? content.duration_seconds ?? null : null,
+        },
+        platform: extracted.detection.platform,
+      }) ?? existing;
+      await deps.sendMessage(chatId, upgradeAckMessage(item.id, content.source_platform ?? extracted.detection.platform)).catch((err) => {
         logError({
           type: "telegram.ack.failed",
           item_id: item.id,
@@ -259,6 +382,19 @@ async function captureUrl(
         ts: Date.now(),
       });
     }
+    logCaptureDecision("capture.created", {
+      item_id: item.id,
+      platform: content.source_platform ?? extracted.detection.platform,
+      source_url: content.source_url,
+      new_quality: content.capture_quality ?? null,
+      extraction_method: content.extraction_method ?? null,
+      action: "created",
+      text_chars: content.body.length,
+    });
+
+    if (isYoutubeTranscriptRecoveryCandidate(item)) {
+      deps.enqueueTranscriptJobForItem(item, { priority: 20 });
+    }
 
     const ackMessage = captureAckMessage(item.title, item.id, content.capture_quality, content.source_platform);
 
@@ -286,14 +422,6 @@ async function captureUrl(
   }
 }
 
-function shouldUpgradeWeakCapture(
-  existingQuality: string | null | undefined,
-  incomingQuality: string | null | undefined,
-): boolean {
-  return existingQuality === "metadata_only" &&
-    incomingQuality === "user_provided_full_text";
-}
-
 function captureAckMessage(
   title: string,
   id: string,
@@ -303,12 +431,15 @@ function captureAckMessage(
   const link = itemUrl(id);
   if (platform === "youtube" || platform === "youtube_short") {
     if (quality === "metadata_only") {
-      return `✅ Saved YouTube link as metadata only: ${title || "(untitled)"}\nTranscript extraction was blocked or unavailable.\n${link}`;
+      return `Saved the YouTube link, but I could not read the transcript yet. I queued transcript recovery; track it in Review:\n${reviewUrl(id)}\n${link}`;
+    }
+    if (quality === "user_provided_full_text") {
+      return `✅ Saved YouTube text: ${title || "(untitled)"}\n${link}`;
     }
   }
   if (platform === "linkedin") {
     if (quality === "metadata_only") {
-      return `✅ Saved LinkedIn link as metadata only: ${title || "(untitled)"}\nFor full text, paste the post text with the link.\n${link}`;
+      return `Saved the LinkedIn link as a preview. To upgrade it, send the same link again with the post text pasted below it.\n${link}`;
     }
     if (quality === "user_provided_full_text") {
       return `✅ Saved LinkedIn post text: ${title || "(untitled)"}\n${link}`;
@@ -318,6 +449,25 @@ function captureAckMessage(
     return `✅ Saved Substack preview: ${title || "(untitled)"}\nFull text was not available from the public page.\n${link}`;
   }
   return `✅ Captured: ${title || "(untitled)"}\n${link}`;
+}
+
+function upgradeAckMessage(itemId: string, platform: string | null | undefined): string {
+  const link = itemUrl(itemId);
+  if (platform === "youtube" || platform === "youtube_short") {
+    return `Updated the existing YouTube item with your pasted text.\n${link}`;
+  }
+  if (platform === "linkedin") {
+    return `Updated the existing LinkedIn item with your pasted text.\n${link}`;
+  }
+  return `Updated the existing item with your pasted text.\n${link}`;
+}
+
+function logCaptureDecision(type: string, fields: Record<string, unknown>): void {
+  logError({
+    type,
+    ...fields,
+    ts: Date.now(),
+  });
 }
 
 async function captureNote(

@@ -12,6 +12,7 @@ import {
 import type { CollectionRow } from "@/db/collections";
 import type { ItemRow } from "@/db/client";
 import { platformLabel, qualityLabel } from "@/lib/capture/quality";
+import { isFullTextCapture, isNeedsUpgrade } from "@/lib/capture/upgrade-policy";
 import { ItemEnrichmentWatch } from "./item-enrichment-watch";
 
 /**
@@ -58,6 +59,8 @@ function SourceIcon({ type }: { type: string }) {
   return <StickyNote className="h-4 w-4" strokeWidth={2} />;
 }
 
+type LibraryFilter = "all" | "needs-upgrade" | "full-text" | "metadata-only";
+
 export function LibraryList({
   items,
   collections,
@@ -67,6 +70,7 @@ export function LibraryList({
 }) {
   const router = useRouter();
   const [selectedIds, setSelectedIds] = useState<Set<string>>(() => new Set());
+  const [filter, setFilter] = useState<LibraryFilter>("all");
   const [flash, setFlash] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
 
@@ -156,11 +160,25 @@ export function LibraryList({
   }, [flash]);
 
   const anySelected = selectedIds.size > 0;
+  const filteredItems = items.filter((item) => matchesFilter(item, filter));
 
   return (
     <>
+      <LibraryFilterBar
+        active={filter}
+        counts={{
+          all: items.length,
+          needsUpgrade: items.filter((item) => matchesFilter(item, "needs-upgrade")).length,
+          fullText: items.filter((item) => matchesFilter(item, "full-text")).length,
+          metadataOnly: items.filter((item) => matchesFilter(item, "metadata-only")).length,
+        }}
+        onChange={(next) => {
+          setFilter(next);
+          clear();
+        }}
+      />
       <ul className="flex flex-col gap-3">
-        {items.map((it) => {
+        {filteredItems.map((it) => {
           const checked = selectedIds.has(it.id);
           return (
             <li key={it.id} className="group/row">
@@ -236,6 +254,12 @@ export function LibraryList({
         })}
       </ul>
 
+      {filteredItems.length === 0 && (
+        <p className="rounded-lg border border-[var(--border)] bg-[var(--surface)] px-4 py-8 text-center text-sm text-[var(--text-secondary)]">
+          No items match this filter.
+        </p>
+      )}
+
       {anySelected && (
         <BulkBar
           count={selectedIds.size}
@@ -257,6 +281,64 @@ export function LibraryList({
         </div>
       )}
     </>
+  );
+}
+
+function matchesFilter(item: ItemRow, filter: LibraryFilter): boolean {
+  if (filter === "all") return true;
+  if (filter === "needs-upgrade") return isNeedsUpgrade(item);
+  if (filter === "full-text") return isFullTextCapture(item);
+  return item.capture_quality === "metadata_only";
+}
+
+function LibraryFilterBar({
+  active,
+  counts,
+  onChange,
+}: {
+  active: LibraryFilter;
+  counts: {
+    all: number;
+    needsUpgrade: number;
+    fullText: number;
+    metadataOnly: number;
+  };
+  onChange: (filter: LibraryFilter) => void;
+}) {
+  const options: Array<{ id: LibraryFilter; label: string; count: number }> = [
+    { id: "all", label: "All", count: counts.all },
+    { id: "needs-upgrade", label: "Needs upgrade", count: counts.needsUpgrade },
+    { id: "full-text", label: "Full text", count: counts.fullText },
+    { id: "metadata-only", label: "Metadata only", count: counts.metadataOnly },
+  ];
+
+  return (
+    <div
+      role="tablist"
+      aria-label="Library filter"
+      className="mb-4 flex flex-wrap gap-2"
+    >
+      {options.map((option) => {
+        const selected = option.id === active;
+        return (
+          <button
+            key={option.id}
+            type="button"
+            role="tab"
+            aria-selected={selected}
+            onClick={() => onChange(option.id)}
+            className={`inline-flex h-8 items-center gap-2 rounded-md border px-3 text-xs font-medium transition-colors ${
+              selected
+                ? "border-[var(--accent-9)] bg-[var(--accent-3)] text-[var(--accent-11)]"
+                : "border-[var(--border)] bg-transparent text-[var(--text-secondary)] hover:border-[var(--border-strong)] hover:text-[var(--text-primary)]"
+            }`}
+          >
+            <span>{option.label}</span>
+            <span className="text-[var(--text-muted)]">{option.count}</span>
+          </button>
+        );
+      })}
+    </div>
   );
 }
 

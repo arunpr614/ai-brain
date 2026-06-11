@@ -9,6 +9,7 @@ import { captureUrl, type CaptureResult } from "./capture";
 
 const MENU_LINK = "brain-save-link";
 const MENU_PAGE = "brain-save-page";
+const MENU_SELECTION = "brain-save-selection";
 
 chrome.runtime.onInstalled.addListener(() => {
   // Two separate menu entries so the label always matches what will
@@ -25,7 +26,12 @@ chrome.runtime.onInstalled.addListener(() => {
   chrome.contextMenus.create({
     id: MENU_PAGE,
     title: "Save this page to Brain",
-    contexts: ["page", "image", "selection"],
+    contexts: ["page", "image"],
+  });
+  chrome.contextMenus.create({
+    id: MENU_SELECTION,
+    title: "Save selected text to Brain",
+    contexts: ["selection"],
   });
 });
 
@@ -39,6 +45,9 @@ chrome.contextMenus.onClicked.addListener(async (info, tab) => {
   } else if (info.menuItemId === MENU_PAGE) {
     url = (info.pageUrl ?? tab?.url ?? "").trim();
     title = tab?.title ?? undefined;
+  } else if (info.menuItemId === MENU_SELECTION) {
+    url = (info.pageUrl ?? tab?.url ?? "").trim();
+    title = tab?.title ?? undefined;
   } else {
     return;
   }
@@ -48,13 +57,21 @@ chrome.contextMenus.onClicked.addListener(async (info, tab) => {
     return;
   }
 
-  const result = await captureUrl({ url, title });
-  await notify("Save to Brain", describe(result));
+  const selectedText =
+    info.menuItemId === MENU_SELECTION ? (info.selectionText ?? "").trim() : undefined;
+  if (info.menuItemId === MENU_SELECTION && !selectedText) {
+    await notify("Save to Brain", "No selected text to save here.");
+    return;
+  }
+
+  const result = await captureUrl({ url, title, selectedText });
+  await notify("Save to Brain", describe(result, info.menuItemId === MENU_SELECTION));
 });
 
-function describe(result: CaptureResult): string {
+function describe(result: CaptureResult, selectedTextCapture = false): string {
   if (result.ok) {
-    return result.duplicate ? "Already in your library." : "Saved to Brain.";
+    if (result.duplicate) return "Already in your library.";
+    return selectedTextCapture ? "Selected text saved to Brain." : "Saved to Brain.";
   }
   switch (result.reason) {
     case "no-token":

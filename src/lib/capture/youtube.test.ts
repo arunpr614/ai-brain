@@ -20,6 +20,7 @@ import {
   msToTimestamp,
   YoutubeCaptureError,
   YOUTUBE_ANTIBOT_METADATA_WARNING,
+  YOUTUBE_TRANSCRIPT_FETCH_METADATA_WARNING,
   type TranscriptSegment,
 } from "./youtube";
 
@@ -86,6 +87,17 @@ function queueTimedTextResponse(xml: string, status = 200) {
   });
 }
 
+function queueTimedTextResponseForUrl(urlPart: string, xml: string, status = 200) {
+  queue.push({
+    match: (url) => url.includes("/api/timedtext") && url.includes(urlPart),
+    respond: () =>
+      new Response(xml, {
+        status,
+        headers: { "content-type": "application/xml" },
+      }),
+  });
+}
+
 function queueOEmbedResponse(body: unknown, status = 200) {
   queue.push({
     match: (url) => url.includes("youtube.com/oembed"),
@@ -121,6 +133,25 @@ function playerWithTracks(opts: {
       author: opts.author ?? "Test channel",
       lengthSeconds: opts.lengthSeconds ?? "60",
       isLive: opts.isLive ?? false,
+    },
+    captions: { playerCaptionsTracklistRenderer: { captionTracks: tracks } },
+  };
+}
+
+function playerWithCaptionTracks(
+  tracks: Array<{
+    baseUrl: string;
+    languageCode?: string;
+    kind?: string;
+    name?: { simpleText?: string; runs?: Array<{ text?: string }> };
+  }>,
+) {
+  return {
+    videoDetails: {
+      title: "Test video",
+      author: "Test channel",
+      lengthSeconds: "60",
+      isLive: false,
     },
     captions: { playerCaptionsTracklistRenderer: { captionTracks: tracks } },
   };
@@ -383,6 +414,67 @@ describe("extractYoutubeVideo — anti-bot metadata fallback", () => {
         err instanceof YoutubeCaptureError &&
         err.code === "video_unavailable" &&
         /metadata fallback failed/.test(err.message),
+    );
+  });
+});
+
+describe("extractYoutubeVideo — timed-text metadata fallback", () => {
+  beforeEach(() => installFetchMock());
+  afterEach(() => restoreFetchMock());
+
+  it("keeps timed-text HTTP failures retryable instead of treating them as no transcript", async () => {
+    queuePlayerResponse(
+      playerWithTracks({
+        title: "Rate-limited captions",
+        author: "Retry Channel",
+      }),
+    );
+    queueTimedTextResponse("too many requests", 429);
+
+    const result = await extractYoutubeVideo(
+      "ratelimitcc",
+      "https://youtu.be/ratelimitcc",
+    );
+
+    assert.equal(result.extraction_warning, YOUTUBE_TRANSCRIPT_FETCH_METADATA_WARNING);
+    assert.equal(result.capture_quality, "metadata_only");
+    assert.match(result.body, /Timed-text returned 429/);
+  });
+
+  it("falls back to the next caption track when the preferred track fails", async () => {
+    const manualTrackUrl =
+      "https://www.youtube.com/api/timedtext?v=fallback111&lang=en&track=manual";
+    const autoTrackUrl =
+      "https://www.youtube.com/api/timedtext?v=fallback111&lang=en&track=auto";
+    queuePlayerResponse(
+      playerWithCaptionTracks([
+        {
+          baseUrl: manualTrackUrl,
+          languageCode: "en",
+          name: { simpleText: "English" },
+        },
+        {
+          baseUrl: autoTrackUrl,
+          languageCode: "en",
+          kind: "asr",
+          name: { simpleText: "English auto-generated" },
+        },
+      ]),
+    );
+    queueTimedTextResponseForUrl("track=manual", "rate limited", 429);
+    queueTimedTextResponseForUrl("track=auto", XML_FIXTURE);
+
+    const result = await extractYoutubeVideo(
+      "fallback111",
+      "https://youtu.be/fallback111",
+    );
+
+    assert.equal(result.capture_quality, "metadata_plus_transcript");
+    assert.equal(result.extraction_warning, null);
+    assert.match(result.body, /in front of the elephants/);
+    assert.equal(
+      result.artifacts?.some((artifact) => artifact.kind === "youtube_timedtext_xml"),
+      true,
     );
   });
 });
