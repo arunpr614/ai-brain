@@ -222,6 +222,10 @@ This is the complete post body with enough useful words to save as user provided
     assert.equal(body.reason, "transcript-recovery-queued");
     assert.equal(body.action, "transcript_recovery_queued");
     assert.equal(body.reviewPath, `/review?focus=${existing.id}`);
+    assert.equal(body.capture_result.state, "duplicate_existing");
+    assert.equal(body.capture_result.itemId, existing.id);
+    assert.equal(body.capture_result.existingItemId, existing.id);
+    assert.equal(body.capture_result.recommendedAction, "open_existing");
 
     const job = getTranscriptJobForItem(existing.id);
     assert.equal(job?.state, "pending");

@@ -67,6 +67,7 @@ Current PR-ready integration branch: `codex/ai-brain-ux-v2-main-ready` based on 
 | UX v2 code staging tranches | Codex | Approved local code committed; release blocked | `UX_V2_CODE_STAGING_REVIEW_2026-06-14.md`; PRD-06/10/14/15/16 approved code staged from the index; staged-index typecheck, lint, full tests, build, focused tests, and APK script syntax check passed | Passed for staged code; release gates remain | Not deployed |
 | UX v2 release-candidate commit | Codex | Local commit created; release blocked | Commit `ef0b2e2`; `UX_V2_RELEASE_COMMIT_REVIEW_2026-06-14.md`; `git diff HEAD^..HEAD --check` passed | No P0/P1/P2 findings; push/PR/deploy not performed | Not deployed |
 | UX v2 main-based integration branch | Codex | Draft PR open; release blocked | Branch `codex/ai-brain-ux-v2-main-ready`; commits `e596b9a`, `9bd4ad7`, `95a98bd`; PR [#6](https://github.com/arunpr614/ai-brain/pull/6); `UX_V2_PR_READINESS_AND_MAIN_INTEGRATION_2026-06-14.md`; `git diff --check origin/main...HEAD`, typecheck, full tests, lint, build, and APK script syntax passed | PR open/draft/mergeable; no status checks reported yet | Not deployed |
+| UX v2 PR #6 review pass | Codex | Complete; P3 test gap fixed | `UX_V2_PR6_REVIEW_2026-06-14.md`; added transcript-recovery `capture_result` assertions in `src/app/api/capture/url/route.test.ts`; focused URL route test and typecheck passed | No P0/P1/P2 findings; one P3 coverage issue fixed | Not deployed |
 
 ## First Implementation Slice: PRD-06-FU
 
@@ -236,6 +237,7 @@ Latest PRD-14 validation:
 - Code staging review saved at `UX_v2/execution/UX_V2_CODE_STAGING_REVIEW_2026-06-14.md`; PRD-06/10/14/15/16 approved local code and an append-only `RUNNING_LOG.md` reconstruction for entries #81-#107 were staged and validated from a staged-index checkout. Roadmap, broader branding assets, APK version metadata, the non-append running-log working-tree rewrite, and working-tree-only unapproved topics/focus/library-filter deltas remain unstaged.
 - Release-candidate commit `ef0b2e2` created and reviewed in `UX_v2/execution/UX_V2_RELEASE_COMMIT_REVIEW_2026-06-14.md`; no P0/P1/P2 findings. Push/PR/deploy were not performed.
 - Main-based integration branch `codex/ai-brain-ux-v2-main-ready` created from `origin/main` `2b4db9540d0b76ee6d3aa2a9da5f788b69a8d02a`; original conflicts in `src/app/api/capture/url/route.ts` and `src/app/items/[id]/page.tsx` were resolved, validation passed, and `UX_v2/execution/UX_V2_PR_READINESS_AND_MAIN_INTEGRATION_2026-06-14.md` was saved. Draft PR [#6](https://github.com/arunpr614/ai-brain/pull/6) is open and mergeable. Production deploy was not performed.
+- PR #6 review saved at `UX_v2/execution/UX_V2_PR6_REVIEW_2026-06-14.md`; no P0/P1/P2 findings. One P3 test-coverage gap was fixed by asserting the transcript-recovery duplicate response's UX v2 `capture_result` payload.
 - Baseline defects are documented; they are not release-approved deferrals.
 
 ## Latest Deploy State

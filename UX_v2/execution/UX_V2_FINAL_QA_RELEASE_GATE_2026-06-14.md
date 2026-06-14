@@ -1,7 +1,7 @@
 # UX v2 Final QA And Release Gate
 
 Created: 2026-06-14 11:42 IST
-Updated: 2026-06-14 14:32 IST
+Updated: 2026-06-14 14:37 IST
 Owner: Codex lead integrator
 Scope: Approved `UX_v2/UX_Final_Plan` execution status after PRD-06, PRD-10 limited repair, PRD-14 informational trust copy, PRD-15 entry/offline checks, and PRD-16 QA evidence work
 
@@ -9,7 +9,7 @@ Scope: Approved `UX_v2/UX_Final_Plan` execution status after PRD-06, PRD-10 limi
 
 No-go for production/live release.
 
-The implemented web/shared slices are locally validated, Android emulator validation is now partially executed against the latest local Gradle APK output, an operator release approval packet exists, an open-decisions approval packet turns remaining product choices into explicit deferral or follow-up options, a release-candidate change manifest now maps the dirty worktree, a scoped integration review has passed after one P2 repair-action error-copy fix, `UX_v2/execution/**` is committed as evidence, the approved PRD-06/10/14/15/16 local code bundle was validated from a staged-index checkout, and local release-candidate commit `ef0b2e2` exists. A clean `main`-based integration branch `codex/ai-brain-ux-v2-main-ready` now also exists with conflicts resolved against `origin/main` `2b4db9540d0b76ee6d3aa2a9da5f788b69a8d02a`, and integrated-branch typecheck, full tests, lint, build, and APK script syntax checks passed. Draft PR [#6](https://github.com/arunpr614/ai-brain/pull/6) is open, draft, and mergeable as of 2026-06-14 14:32 IST, with no status checks reported yet. A PRD-15 fix now makes clean first-launch offline load the bundled branded fallback instead of Android WebView's native DNS error page. The release gate still cannot pass because the installed Android shell loads current live web assets from `https://brain.arunp.in`, which still show stale `AI Brain` / `Brain` copy in online/share paths; post-online cached offline behavior needs live/staging retest; pairing/token validation is blocked; publishing a new shared APK is blocked by the duplicate-version artifact guard; several product decisions remain open; and explicit user release approval has not been granted.
+The implemented web/shared slices are locally validated, Android emulator validation is now partially executed against the latest local Gradle APK output, an operator release approval packet exists, an open-decisions approval packet turns remaining product choices into explicit deferral or follow-up options, a release-candidate change manifest now maps the dirty worktree, a scoped integration review has passed after one P2 repair-action error-copy fix, `UX_v2/execution/**` is committed as evidence, the approved PRD-06/10/14/15/16 local code bundle was validated from a staged-index checkout, and local release-candidate commit `ef0b2e2` exists. A clean `main`-based integration branch `codex/ai-brain-ux-v2-main-ready` now also exists with conflicts resolved against `origin/main` `2b4db9540d0b76ee6d3aa2a9da5f788b69a8d02a`, and integrated-branch typecheck, full tests, lint, build, and APK script syntax checks passed. Draft PR [#6](https://github.com/arunpr614/ai-brain/pull/6) is open, draft, and mergeable as of 2026-06-14 14:32 IST, with no status checks reported yet. PR #6 review found no P0/P1/P2 issues; one P3 transcript-recovery `capture_result` test gap was fixed and focused URL route tests plus typecheck passed. A PRD-15 fix now makes clean first-launch offline load the bundled branded fallback instead of Android WebView's native DNS error page. The release gate still cannot pass because the installed Android shell loads current live web assets from `https://brain.arunp.in`, which still show stale `AI Brain` / `Brain` copy in online/share paths; post-online cached offline behavior needs live/staging retest; pairing/token validation is blocked; publishing a new shared APK is blocked by the duplicate-version artifact guard; several product decisions remain open; and explicit user release approval has not been granted.
 
 ## Implemented Scope
 
@@ -58,6 +58,7 @@ Latest post-implementation commands:
 | Staged code tranche checks | Pass | `UX_V2_CODE_STAGING_REVIEW_2026-06-14.md`; staged-index `npm run typecheck`, focused PRD-06/10/14/15 tests, `npm run lint`, `npm test` (445 tests, 65 suites), `npm run build`, and `bash -n scripts/build-apk.sh` passed after staging approved PRD-06/10/14/15/16 code |
 | Release commit review | Pass | `UX_V2_RELEASE_COMMIT_REVIEW_2026-06-14.md`; commit `ef0b2e2`; `git diff HEAD^..HEAD --check` passed; no P0/P1/P2 findings |
 | Main-based integration branch validation | Pass | `UX_V2_PR_READINESS_AND_MAIN_INTEGRATION_2026-06-14.md`; `git diff --check origin/main...HEAD`, `npm run typecheck`, `npm test` (503 tests, 76 suites), `npm run lint`, `npm run build`, and `bash -n scripts/build-apk.sh` passed on branch `codex/ai-brain-ux-v2-main-ready` |
+| PR #6 review validation | Pass | `UX_V2_PR6_REVIEW_2026-06-14.md`; no P0/P1/P2 findings; P3 test coverage fixed; `node --import tsx --test src/app/api/capture/url/route.test.ts` passed 13 tests; `npm run typecheck` passed |
 
 ## Browser / UX Smoke
 
@@ -112,6 +113,7 @@ Latest post-implementation commands:
 | P0/P1 findings fixed | Pass: none open |
 | P2 findings fixed or deferred | Pass: PRD-06 P2 fixed; integration-review P2 repair-action error-copy leak fixed; none open |
 | P3 findings handled | Pass: documented/fixed in PRD-10 and PRD-14 |
+| PR #6 review findings handled | Pass: no P0/P1/P2 findings; one P3 test gap fixed |
 | Web build/test pass | Pass |
 | Android mandatory checks pass | Failed/blocked |
 | APK build/install evidence | Partial: latest local Gradle APK output builds/installs/opens/relaunches on emulator; runtime UX release checks blocked |
