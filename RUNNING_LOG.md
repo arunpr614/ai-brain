@@ -7330,3 +7330,48 @@ Closed the PRD-10 code-splitting blocker for the approved local slice by staging
 - Product decision deferrals/approvals remain open.
 - Release approval packet still needs explicit deploy/APK approval, release owner, staging/smoke or accepted skip, production backup, rollback source, pairing validation path, post-deploy smoke owner, and APK publication decision.
 - Android live/staging pairing/share/post-online-offline evidence remains blocked until web/offline assets are deployed to a target with approval and a pairing-token path exists.
+
+## Entry #108 - 2026-06-14 14:14 IST - UX v2 local release-candidate commit created and reviewed
+
+### Summary
+
+Created a local release-candidate commit from the staged approved UX v2 bundle and saved a post-commit review report. No production/live deploy, push, PR, or shared APK publication was attempted.
+
+### Done
+
+- Created commit:
+  - `ef0b2e2 feat(ux-v2): stage approved local release candidate`
+- Confirmed the commit includes the approved PRD-06/10/14/15/16 local code bundle, UX v2 execution evidence, Android evidence, and append-only root running-log reconstruction for entries #81-#107.
+- Ran `git diff HEAD^..HEAD --check`; it passed.
+- Saved release-commit review:
+  - `UX_v2/execution/UX_V2_RELEASE_COMMIT_REVIEW_2026-06-14.md`
+- Updated:
+  - `UX_v2/execution/UX_V2_EXECUTION_TRACKER.md`
+  - `UX_v2/execution/UX_V2_FINAL_QA_RELEASE_GATE_2026-06-14.md`
+  - `UX_v2/execution/UX_V2_COMPLETION_AUDIT_2026-06-14.md`
+  - `UX_v2/execution/UX_V2_RELEASE_CANDIDATE_CHANGE_MANIFEST_2026-06-14.md`
+
+### Validation
+
+- `git diff HEAD^..HEAD --check` passed.
+- Previous staged-index validation remains the release-candidate validation basis:
+  - typecheck passed;
+  - lint passed with two existing unused-disable warnings;
+  - full tests passed: 445 tests, 65 suites;
+  - build passed with the known `unpdf` warning;
+  - APK script syntax check passed.
+
+### Release state
+
+- Production/live not deployed.
+- Branch not pushed.
+- Pull request not created.
+- Shared APK artifact not overwritten.
+- Release verdict remains no-go.
+
+### Remaining release blockers
+
+- Product decision deferrals/approvals remain open.
+- Release approval packet still needs explicit deploy/APK approval, release owner, staging/smoke or accepted skip, production backup, rollback source, pairing validation path, post-deploy smoke owner, and APK publication decision.
+- Android live/staging pairing/share/post-online-offline evidence remains blocked until web/offline assets are deployed to a target with approval and a pairing-token path exists.
+- Working tree still contains unrelated and decision-gated deltas; do not deploy or commit the dirty tree wholesale.
