@@ -1,16 +1,16 @@
 # UX v2 Completion Audit
 
 Created: 2026-06-14 11:45 IST
-Updated: 2026-06-14 14:14 IST
+Updated: 2026-06-14 14:27 IST
 Auditor: Codex lead integrator
-Branch: `codex/ai-brain-ux-v2-execution`
+Branch: original candidate `codex/ai-brain-ux-v2-execution`; current PR-ready integration branch `codex/ai-brain-ux-v2-main-ready`
 Baseline HEAD: `c33166e4c9b9a3af86165b1b83aaea355174ccd7`
 
 ## Audit Verdict
 
 The goal is **not complete**.
 
-Approved local web/shared slices are implemented, validated, and committed locally in `ef0b2e2`. The normal `npm run build:apk` pipeline now validates typecheck, Next build, Capacitor sync, and Gradle with Java 21 before stopping at the same-version shared-artifact publication guard. Android emulator validation is partially executed against the latest local Gradle APK output, PRD-15 entry/session/pairing copy is fixed locally, PRD-15 clean first-launch offline fallback is fixed locally through Capacitor `server.errorPath`, a release approval packet now documents the deploy/backup/rollback/smoke approval gate, an open-decisions approval packet now documents the accept/defer path for D-001 through D-014, a release-candidate change manifest now maps the dirty worktree for selective staging, a scoped integration review passed after one P2 repair-action error-copy fix, `UX_v2/execution/**` is committed as evidence, and the approved PRD-06/10/14/15/16 local code bundle was validated from a staged-index checkout. The full end-to-end objective remains blocked by Android runtime loading stale live web assets in online/share paths, post-online cached offline retest, pairing/token access, shared APK publication/version decision, open product decisions, production backup/staging/release-owner requirements, and missing explicit user approval for production/live release.
+Approved local web/shared slices are implemented, validated, and committed locally in `ef0b2e2`. A clean `main`-based integration branch `codex/ai-brain-ux-v2-main-ready` now also exists on `origin/main` `2b4db9540d0b76ee6d3aa2a9da5f788b69a8d02a`; it resolves the original conflicts in `src/app/api/capture/url/route.ts` and `src/app/items/[id]/page.tsx`, preserves both the current YouTube transcript-recovery work and UX v2 result/repair surfaces, and passes typecheck, full tests, lint, build, and APK script syntax checks. The normal `npm run build:apk` pipeline now validates typecheck, Next build, Capacitor sync, and Gradle with Java 21 before stopping at the same-version shared-artifact publication guard. Android emulator validation is partially executed against the latest local Gradle APK output, PRD-15 entry/session/pairing copy is fixed locally, PRD-15 clean first-launch offline fallback is fixed locally through Capacitor `server.errorPath`, a release approval packet now documents the deploy/backup/rollback/smoke approval gate, an open-decisions approval packet now documents the accept/defer path for D-001 through D-014, a release-candidate change manifest now maps the dirty worktree for selective staging, a scoped integration review passed after one P2 repair-action error-copy fix, `UX_v2/execution/**` is committed as evidence, and the approved PRD-06/10/14/15/16 local code bundle was validated from a staged-index checkout. The full end-to-end objective remains blocked by Android runtime loading stale live web assets in online/share paths, post-online cached offline retest, pairing/token access, shared APK publication/version decision, open product decisions, production backup/staging/release-owner requirements, and missing explicit user approval for production/live release.
 
 Production/live has **not** been deployed.
 
@@ -32,7 +32,7 @@ Production/live has **not** been deployed.
 | Maintain tracker with phases, milestones, tasks, owners, blockers, tests, review state, deploy state | Achieved for current scope | `UX_v2/execution/UX_V2_EXECUTION_TRACKER.md` | Keep updating if more work resumes. |
 | Update running log at milestones, blockers, decisions, reviews, QA, release steps | Achieved for current scope | `RUNNING_LOG.md` entries #81-#107; append-only reconstruction staged | Keep appending if more work resumes. |
 | Audit first: read final plan and inspect architecture/setup | Achieved | `UX_V2_BASELINE_AND_AUDIT.md`; tracker baseline rows | No current gap. |
-| Create reproducible baseline before coding | Achieved | Branch `codex/ai-brain-ux-v2-execution`; baseline HEAD `c33166e4...`; local release-candidate HEAD `ef0b2e2`; baseline docs; `UX_V2_RELEASE_CANDIDATE_CHANGE_MANIFEST_2026-06-14.md`; `UX_V2_SELECTIVE_STAGING_REVIEW_2026-06-14.md` | Worktree remains large and dirty from pre-existing changes. |
+| Create reproducible baseline before coding | Achieved | Branch `codex/ai-brain-ux-v2-execution`; baseline HEAD `c33166e4...`; local release-candidate HEAD `ef0b2e2`; clean integration branch `codex/ai-brain-ux-v2-main-ready`; baseline docs; `UX_V2_RELEASE_CANDIDATE_CHANGE_MANIFEST_2026-06-14.md`; `UX_V2_SELECTIVE_STAGING_REVIEW_2026-06-14.md`; `UX_V2_PR_READINESS_AND_MAIN_INTEGRATION_2026-06-14.md` | Original project worktree remains large and dirty from pre-existing changes; clean integration branch is not pushed. |
 | Compare app to UX_Final_Plan and create execution baseline | Achieved | `UX_V2_BASELINE_AND_AUDIT.md`; `UX_V2_EXECUTION_TRACKER.md` | No current gap. |
 | Implement only confirmed UX_Final_Plan items | Achieved for implemented slices | PRD-06, PRD-10 limited, PRD-14 evidence/review reports | Gated items were documented and not coded. |
 | Missing/inferred features require PRD/review/plan and user approval before coding | Preserved | Open blocker table; final QA report | No unapproved missing feature was coded. |
@@ -96,6 +96,7 @@ Production/live has **not** been deployed.
 | Selective staging review | Complete: `UX_V2_SELECTIVE_STAGING_REVIEW_2026-06-14.md` documents that `UX_v2/execution/**` is evidence-safe and staged; approved-only PRD-10 split and append-only `RUNNING_LOG.md` reconstruction are staged, while the working tree still contains unapproved topics/focus/library-filter deltas and a non-append running-log rewrite |
 | Code staging review | Pass for approved staged bundle: `UX_V2_CODE_STAGING_REVIEW_2026-06-14.md` documents staged PRD-06/10/14/15/16 code and staged-index typecheck/lint/full-test/build validation |
 | Release commit review | Pass: `UX_V2_RELEASE_COMMIT_REVIEW_2026-06-14.md` documents commit `ef0b2e2`, `git diff HEAD^..HEAD --check`, no P0/P1/P2 findings, and no push/deploy |
+| Main-based PR integration | Pass locally: `UX_V2_PR_READINESS_AND_MAIN_INTEGRATION_2026-06-14.md` documents branch `codex/ai-brain-ux-v2-main-ready`, conflict resolution, `git diff --check origin/main...HEAD`, typecheck, full tests (503 tests, 76 suites), lint, build, and APK script syntax checks |
 
 ## Release State
 
@@ -108,7 +109,7 @@ Production/live has **not** been deployed.
 | Staging/smoke verification | Not performed |
 | Release owner | Not confirmed |
 | Rollback plan | Partial: release packet documents rollback requirements; previous deploy source/artifact, production backup, and owner confirmation still missing |
-| Release commit hygiene | Pass for local commit: evidence bundle and approved PRD-06/10/14/15/16 code are committed in `ef0b2e2` and reviewed; push/PR/release not performed |
+| Release commit hygiene | Pass for local commit and clean integration branch: original candidate `ef0b2e2` is reviewed; `codex/ai-brain-ux-v2-main-ready` is conflict-resolved on current `main`; push/PR/release not performed |
 | Post-deploy smoke checklist | Not executed |
 
 ## Required To Finish Goal
@@ -118,5 +119,5 @@ Production/live has **not** been deployed.
 3. Provide a pairing code/token validation path and run paired Android relaunch/share/capture checks.
 4. Resolve APK publication by either bumping `versionName`/`versionCode` or explicitly allowing same-version artifact publication after the now-validated `npm run build:apk` pipeline.
 5. Rerun Android offline checks after a successful online visit once live/staging UX v2 assets are deployed and the WebView cache is cleared.
-6. Use local commit `ef0b2e2` or a reviewed successor as the release source; do not commit the entire dirty worktree, working-tree-only topics/focus/library-filter deltas, or replace the append-only `RUNNING_LOG.md` reconstruction with the non-append working-tree diff.
+6. Use clean integration branch `codex/ai-brain-ux-v2-main-ready` as the preferred PR/release-candidate source; do not commit the entire dirty original worktree, working-tree-only topics/focus/library-filter deltas, or replace the append-only `RUNNING_LOG.md` reconstruction with the non-append working-tree diff.
 7. If release is desired, complete production DB backup, staging smoke, rollback/release owner confirmation, post-deploy smoke checklist, and obtain explicit user approval before deploying.

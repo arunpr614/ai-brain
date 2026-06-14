@@ -13,9 +13,11 @@ This packet turns the current UX v2 release gate into an operator-ready approval
 
 | Item | Current value |
 | --- | --- |
-| Branch | `codex/ai-brain-ux-v2-execution` |
+| Branch | Original candidate: `codex/ai-brain-ux-v2-execution`; current PR-ready integration branch: `codex/ai-brain-ux-v2-main-ready` |
+| Integration base | `origin/main` at `2b4db9540d0b76ee6d3aa2a9da5f788b69a8d02a` |
+| Integration commits | `e596b9a feat(ux-v2): stage approved local release candidate`; `9bd4ad7 docs(ux-v2): record release candidate commit review` |
 | Baseline HEAD | `c33166e4c9b9a3af86165b1b83aaea355174ccd7` |
-| Worktree | Dirty with substantial pre-existing and UX v2 changes; not staged/committed as a release commit |
+| Worktree | Original project worktree remains dirty; clean integration worktree is `/private/tmp/ai-brain-ux-v2-main-ready` |
 | Web deploy target in script | `https://brain.arunp.in` |
 | SSH target default | `brain` |
 | Remote app dir default | `/opt/brain` |
@@ -26,6 +28,7 @@ This packet turns the current UX v2 release gate into an operator-ready approval
 | Current local Gradle APK SHA-256 | `4d37853615c3b4aee26ab6827dc884a2a0eef77e2e1a30a4737c945b0b678245` |
 | Shared APK artifact | `data/artifacts/brain-debug-v1.0.2-code3.apk`, SHA-256 `6ac0bad378c3b214c1b3d32517be685ed1e079054c41fff371fe65fbc6e1753f` |
 | Release candidate change manifest | `UX_v2/execution/UX_V2_RELEASE_CANDIDATE_CHANGE_MANIFEST_2026-06-14.md` |
+| PR readiness report | `UX_v2/execution/UX_V2_PR_READINESS_AND_MAIN_INTEGRATION_2026-06-14.md` |
 
 ## Sources Inspected
 
@@ -50,6 +53,7 @@ This packet turns the current UX v2 release gate into an operator-ready approval
 | Android APK build validation | `npm run build:apk` validates typecheck, Next build, Capacitor sync, and Gradle before stopping at the same-version shared-artifact guard |
 | Android emulator mechanics | Latest local Gradle APK installs, opens, relaunches, receives text share intents, and shows the bundled AI Memory offline fallback on clean first offline launch |
 | Data safety for implemented local slices | PRD-06 has no migration; PRD-10 repair is transactional and preserves manual organization metadata; PRD-14/15 copy/fallback work has no schema migration |
+| Main-based PR branch | `codex/ai-brain-ux-v2-main-ready` resolves the current `main` conflicts and passed typecheck, full tests, lint, build, and APK script syntax |
 
 ## Release Blockers
 
@@ -65,7 +69,7 @@ Do not deploy production/live while any P0 row is open.
 | P0 | Android online/share UX v2 validation | Blocked by stale live assets | Deploy approved web/offline assets to staging/live, then rerun Android online launch, share, and post-online offline checks |
 | P0 | Android pairing/token validation | Blocked by missing authenticated pairing-code path | Generate/provide a pairing code and run token save, relaunch, paired share, and capture-result checks |
 | P0 | Shared APK publication | Blocked by same-version artifact guard | Bump `versionName`/`versionCode` or explicitly approve same-version publication |
-| P0 | Release commit hygiene | No single release commit/staged set; manifest documents dirty-tree scope | Use `UX_V2_RELEASE_CANDIDATE_CHANGE_MANIFEST_2026-06-14.md` for selective staging/review, then commit or explicitly approve deploying from the current dirty worktree |
+| P0 | Release commit hygiene | Clean local integration branch exists, but it is not pushed and no PR exists | Use `codex/ai-brain-ux-v2-main-ready` as the reviewed source for draft PR/release-candidate review; do not deploy from the dirty original worktree |
 | P1 | Product decisions D-001..D-014 | Still open | Use `UX_V2_OPEN_DECISIONS_APPROVAL_PACKET_2026-06-14.md` to defer explicitly or approve PRD-specific follow-up work; do not silently include gated behavior |
 
 ## Recommended Approval Decision
@@ -85,7 +89,7 @@ All rows must be filled by the release owner before production deploy.
 | --- | --- | --- |
 | Release owner | Name and contact path | Open |
 | Approval sentence | "I approve deploying UX v2 to production/live" | Open |
-| Release commit or accepted dirty state | Commit SHA or explicit dirty-worktree approval | Open |
+| Release commit or accepted dirty state | Recommended source is branch `codex/ai-brain-ux-v2-main-ready` at current HEAD after docs commit; dirty original worktree is not approved | Open |
 | Staging target | Host/base URL or accepted skip rationale | Open |
 | Backup snapshot path | Production path under `/opt/brain/data/backups/` | Open |
 | Backup integrity | `PRAGMA integrity_check` result and item count | Open |

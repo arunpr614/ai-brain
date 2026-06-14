@@ -4,6 +4,7 @@ Created: 2026-06-14 10:53 IST
 Lead integrator: Codex
 Approved scope authority: `UX_v2/UX_Final_Plan`
 Execution branch: `codex/ai-brain-ux-v2-execution`
+Current PR-ready integration branch: `codex/ai-brain-ux-v2-main-ready` based on `origin/main` `2b4db9540d0b76ee6d3aa2a9da5f788b69a8d02a`
 
 ## Operating Rules
 
@@ -30,6 +31,7 @@ Execution branch: `codex/ai-brain-ux-v2-execution`
 | 5 | PRD-13 Android share result | Codex | Blocked | `UX_Final_Plan/trackers/prd_tracker.md`; `ANDROID_RUNTIME_CHECK_2026-06-14.md` | PRD-06 dependency is satisfied, but full Android share result validation is blocked by stale live assets and missing pairing token. |
 | 6 | PRD-14/15 trust, entry, offline | Arun/Product + Codex | Partial complete; decision-gated | `PRD_14_CODE_REVIEW_2026-06-14.md`; `PRD_15_ENTRY_OFFLINE_CODE_REVIEW_2026-06-14.md`; `PRD_15_ENTRY_SESSION_COPY_REVIEW_2026-06-14.md`; `ANDROID_RUNTIME_CHECK_2026-06-14.md` | PRD-14 informational trust copy, PRD-15 entry/session/pairing copy, and PRD-15 clean first-launch offline fallback complete locally. D-007/D-008/D-013 remain open. |
 | 7 | PRD-16 QA evidence and release gate | Codex | Complete for local/emulator scope; release blocked | `UX_V2_FINAL_QA_RELEASE_GATE_2026-06-14.md`; `ANDROID_RUNTIME_CHECK_2026-06-14.md`; `UX_V2_RELEASE_APPROVAL_PACKET_2026-06-14.md`; `UX_V2_INTEGRATION_REVIEW_2026-06-14.md` | Android clean first-launch offline fallback passes locally; online/share still load stale live assets; pairing/token, production backup, staging smoke, and release approval still missing. |
+| 7 | Main-based PR integration branch | Codex | Complete locally; not pushed | `UX_V2_PR_READINESS_AND_MAIN_INTEGRATION_2026-06-14.md`; branch `codex/ai-brain-ux-v2-main-ready`; commits `e596b9a`, `9bd4ad7` | Original candidate conflicted with current `origin/main` in URL capture and item detail; conflicts resolved on clean integration branch. Production release remains no-go. |
 | 7 | Production/live release | Arun + Codex | Not approved | none | Explicit user approval required. |
 
 ## Current Task Board
@@ -64,6 +66,7 @@ Execution branch: `codex/ai-brain-ux-v2-execution`
 | UX v2 selective staging review | Codex | Complete; evidence staged | `UX_V2_SELECTIVE_STAGING_REVIEW_2026-06-14.md`; identifies `UX_v2/execution/**` as evidence-safe and blocks whole-file staging for mixed code/log paths | Release commit still requires patch splitting or clean reconstruction | Not deployed |
 | UX v2 code staging tranches | Codex | Approved local code committed; release blocked | `UX_V2_CODE_STAGING_REVIEW_2026-06-14.md`; PRD-06/10/14/15/16 approved code staged from the index; staged-index typecheck, lint, full tests, build, focused tests, and APK script syntax check passed | Passed for staged code; release gates remain | Not deployed |
 | UX v2 release-candidate commit | Codex | Local commit created; release blocked | Commit `ef0b2e2`; `UX_V2_RELEASE_COMMIT_REVIEW_2026-06-14.md`; `git diff HEAD^..HEAD --check` passed | No P0/P1/P2 findings; push/PR/deploy not performed | Not deployed |
+| UX v2 main-based integration branch | Codex | Clean local branch created; release blocked | Branch `codex/ai-brain-ux-v2-main-ready`; commits `e596b9a`, `9bd4ad7`; `UX_V2_PR_READINESS_AND_MAIN_INTEGRATION_2026-06-14.md`; `git diff --check origin/main...HEAD`, typecheck, full tests, lint, build, and APK script syntax passed | PR-ready locally; branch not pushed; no PR created | Not deployed |
 
 ## First Implementation Slice: PRD-06-FU
 
@@ -232,6 +235,7 @@ Latest PRD-14 validation:
 - Selective staging review saved at `UX_v2/execution/UX_V2_SELECTIVE_STAGING_REVIEW_2026-06-14.md`; `UX_v2/execution/**` was staged as evidence-only after staged whitespace checks passed, but whole-file staging remains blocked for mixed PRD-10 and root-log paths.
 - Code staging review saved at `UX_v2/execution/UX_V2_CODE_STAGING_REVIEW_2026-06-14.md`; PRD-06/10/14/15/16 approved local code and an append-only `RUNNING_LOG.md` reconstruction for entries #81-#107 were staged and validated from a staged-index checkout. Roadmap, broader branding assets, APK version metadata, the non-append running-log working-tree rewrite, and working-tree-only unapproved topics/focus/library-filter deltas remain unstaged.
 - Release-candidate commit `ef0b2e2` created and reviewed in `UX_v2/execution/UX_V2_RELEASE_COMMIT_REVIEW_2026-06-14.md`; no P0/P1/P2 findings. Push/PR/deploy were not performed.
+- Main-based integration branch `codex/ai-brain-ux-v2-main-ready` created from `origin/main` `2b4db9540d0b76ee6d3aa2a9da5f788b69a8d02a`; original conflicts in `src/app/api/capture/url/route.ts` and `src/app/items/[id]/page.tsx` were resolved, validation passed, and `UX_v2/execution/UX_V2_PR_READINESS_AND_MAIN_INTEGRATION_2026-06-14.md` was saved. Push/PR/deploy were not performed.
 - Baseline defects are documented; they are not release-approved deferrals.
 
 ## Latest Deploy State
@@ -241,4 +245,5 @@ Latest PRD-14 validation:
 - Production/live: not touched.
 - APK: `npm run build:apk` now validates typecheck, Next build, Capacitor sync, and Gradle before stopping at the same-version publication guard. Current Gradle output `android/app/build/outputs/apk/debug/brain-debug-v1.0.2-code3.apk` has SHA-256 `4d37853615c3b4aee26ab6827dc884a2a0eef77e2e1a30a4737c945b0b678245`; shared `data/artifacts/brain-debug-v1.0.2-code3.apk` was not overwritten and remains SHA-256 `6ac0bad378c3b214c1b3d32517be685ed1e079054c41fff371fe65fbc6e1753f`. Static metadata/signature checks passed; the current Gradle output was installed on the emulator and passed install/open/relaunch, text share intent delivery, and clean first-launch offline fallback checks. Release still needs live/staging asset, pairing, post-online offline, and artifact-publication decisions.
 - Release approval: not granted; approval packet is ready at `UX_v2/execution/UX_V2_RELEASE_APPROVAL_PACKET_2026-06-14.md`.
+- PR readiness: clean local integration branch `codex/ai-brain-ux-v2-main-ready` is ready to push/open as a draft PR from a source-control and automated-validation standpoint; branch was not pushed and no PR was created.
 - Release verdict: no-go until Android runtime UX v2/live asset validation, pairing/token validation, APK shared-artifact decision, product decision deferrals/approvals, production backup, staging smoke, rollback confirmation, release owner, and explicit user approval are complete.

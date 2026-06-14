@@ -7375,3 +7375,58 @@ Created a local release-candidate commit from the staged approved UX v2 bundle a
 - Release approval packet still needs explicit deploy/APK approval, release owner, staging/smoke or accepted skip, production backup, rollback source, pairing validation path, post-deploy smoke owner, and APK publication decision.
 - Android live/staging pairing/share/post-online-offline evidence remains blocked until web/offline assets are deployed to a target with approval and a pairing-token path exists.
 - Working tree still contains unrelated and decision-gated deltas; do not deploy or commit the dirty tree wholesale.
+
+## Entry #109 - 2026-06-14 14:27 IST - UX v2 main-based integration branch created and validated
+
+### Summary
+
+Created a clean branch from current `origin/main`, resolved the UX v2 release-candidate merge conflicts, and validated the integrated branch. Production/live was not deployed, the branch was not pushed, and no pull request was created.
+
+### Done
+
+- Created integration branch:
+  - `codex/ai-brain-ux-v2-main-ready`
+- Base:
+  - `origin/main` `2b4db9540d0b76ee6d3aa2a9da5f788b69a8d02a`
+- Cherry-picked the UX v2 release-candidate commits onto current `main`.
+- Resolved conflicts in:
+  - `src/app/api/capture/url/route.ts`
+  - `src/app/items/[id]/page.tsx`
+- Preserved current `main` YouTube transcript-recovery behavior and UX v2 capture-result/repair UI behavior.
+- Created integrated commits:
+  - `e596b9a feat(ux-v2): stage approved local release candidate`
+  - `9bd4ad7 docs(ux-v2): record release candidate commit review`
+- Saved:
+  - `UX_v2/execution/UX_V2_PR_READINESS_AND_MAIN_INTEGRATION_2026-06-14.md`
+- Updated:
+  - `UX_v2/execution/UX_V2_EXECUTION_TRACKER.md`
+  - `UX_v2/execution/UX_V2_FINAL_QA_RELEASE_GATE_2026-06-14.md`
+  - `UX_v2/execution/UX_V2_COMPLETION_AUDIT_2026-06-14.md`
+  - `UX_v2/execution/UX_V2_RELEASE_APPROVAL_PACKET_2026-06-14.md`
+
+### Validation
+
+- `git diff --check origin/main...HEAD` passed.
+- `npm run typecheck` passed.
+- `npm test` passed: 503 tests, 76 suites.
+- `npm run lint` passed with the existing unused-disable warnings in `src/lib/client/register-sw.ts` and `src/lib/queue/enrichment-batch-cron.ts`.
+- `npm run build` passed with the known `unpdf` warning.
+- `bash -n scripts/build-apk.sh` passed.
+
+### Release state
+
+- Production/live not deployed.
+- Branch not pushed.
+- Pull request not created.
+- Shared APK artifact not overwritten.
+- Release verdict remains no-go.
+
+### Remaining release blockers
+
+- Explicit production/live approval has not been granted.
+- Production DB backup, staging/smoke, release owner, rollback source/command, and post-deploy smoke owner remain open.
+- Android online/share UX v2 validation still needs deployed UX v2 web/offline assets.
+- Android pairing/token validation remains blocked by missing authenticated pairing-code path.
+- Post-online cached offline Android retest remains blocked until staging/live deployment approval.
+- APK publication remains blocked by same-version artifact guard unless version is bumped or same-version publication is explicitly approved.
+- Product decisions D-001 through D-014 still need explicit deferral acceptance or follow-up implementation approval.
