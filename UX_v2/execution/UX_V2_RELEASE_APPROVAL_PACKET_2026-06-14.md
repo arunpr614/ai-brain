@@ -16,6 +16,7 @@ This packet turns the current UX v2 release gate into an operator-ready approval
 | Branch | Original candidate: `codex/ai-brain-ux-v2-execution`; current PR-ready integration branch: `codex/ai-brain-ux-v2-main-ready` |
 | Integration base | `origin/main` at `2b4db9540d0b76ee6d3aa2a9da5f788b69a8d02a` |
 | Integration commits | `e596b9a feat(ux-v2): stage approved local release candidate`; `9bd4ad7 docs(ux-v2): record release candidate commit review` |
+| Draft PR | [#6 UX v2 approved local release candidate](https://github.com/arunpr614/ai-brain/pull/6), open/draft/mergeable as of 2026-06-14 14:32 IST |
 | Baseline HEAD | `c33166e4c9b9a3af86165b1b83aaea355174ccd7` |
 | Worktree | Original project worktree remains dirty; clean integration worktree is `/private/tmp/ai-brain-ux-v2-main-ready` |
 | Web deploy target in script | `https://brain.arunp.in` |
@@ -89,7 +90,7 @@ All rows must be filled by the release owner before production deploy.
 | --- | --- | --- |
 | Release owner | Name and contact path | Open |
 | Approval sentence | "I approve deploying UX v2 to production/live" | Open |
-| Release commit or accepted dirty state | Recommended source is branch `codex/ai-brain-ux-v2-main-ready` at current HEAD after docs commit; dirty original worktree is not approved | Open |
+| Release commit or accepted dirty state | Recommended source is draft PR [#6](https://github.com/arunpr614/ai-brain/pull/6) / branch `codex/ai-brain-ux-v2-main-ready`; dirty original worktree is not approved | Open |
 | Staging target | Host/base URL or accepted skip rationale | Open |
 | Backup snapshot path | Production path under `/opt/brain/data/backups/` | Open |
 | Backup integrity | `PRAGMA integrity_check` result and item count | Open |

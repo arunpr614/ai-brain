@@ -1,14 +1,15 @@
 # UX v2 PR Readiness And Main Integration
 
 Created: 2026-06-14 14:27 IST
+Updated: 2026-06-14 14:32 IST
 Owner: Codex lead integrator
-Status: PR-ready locally; production/live release remains no-go
+Status: Draft PR open; production/live release remains no-go
 
 ## Summary
 
 Created a clean `main`-based integration branch for the UX v2 approved release-candidate bundle, resolved the two merge conflicts against current `origin/main`, and reran validation on the integrated branch.
 
-Production/live was not deployed. The branch was not pushed and no pull request was created.
+Production/live was not deployed. The branch was pushed and a draft pull request was created for review only.
 
 ## Branch Snapshot
 
@@ -22,6 +23,8 @@ Production/live was not deployed. The branch was not pushed and no pull request 
 | Original local candidate branch | `codex/ai-brain-ux-v2-execution` |
 | Original local feature commit | `ef0b2e2 feat(ux-v2): stage approved local release candidate` |
 | Original local review-doc commit | `37c8285 docs(ux-v2): record release candidate commit review` |
+| Draft PR | [#6 UX v2 approved local release candidate](https://github.com/arunpr614/ai-brain/pull/6) |
+| PR state at 2026-06-14 14:32 IST | Open, draft, mergeable, no status checks reported yet |
 
 ## Integration Work
 
@@ -51,21 +54,21 @@ Resolution performed on the clean integration branch:
 
 ## PR Readiness Verdict
 
-The local integration branch is ready to push or open as a draft PR from a source-control and automated-validation standpoint.
+The local integration branch has been pushed and opened as a draft PR from a source-control and automated-validation standpoint.
 
-Recommended PR source:
+PR source:
 
 ```text
 codex/ai-brain-ux-v2-main-ready
 ```
 
-Recommended PR target:
+PR target:
 
 ```text
 main
 ```
 
-Recommended PR status:
+PR status:
 
 ```text
 Draft until release blockers are resolved or accepted as deploy-ready blockers.
@@ -92,4 +95,4 @@ Remaining release blockers are unchanged:
 
 - The original project worktree and branch were not rebased or cleaned.
 - The large dirty worktree in the original project folder remains out of scope for deployment.
-- The clean integration branch includes only the reviewed UX v2 candidate commits plus this follow-up documentation once committed.
+- The clean integration branch includes only the reviewed UX v2 candidate commits plus follow-up readiness documentation.
