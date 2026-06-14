@@ -1,10 +1,25 @@
 import Link from "next/link";
 import { cookies } from "next/headers";
 import type { ReactNode } from "react";
-import { Activity, FolderTree, SearchCheck, Sparkles, Tags, Wifi } from "lucide-react";
+import {
+  Activity,
+  FolderTree,
+  SearchCheck,
+  Shield,
+  Sparkles,
+  Tags,
+  Wifi,
+  WifiOff,
+} from "lucide-react";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { getJsonSetting } from "@/db/settings";
 import { getProviderStatusReport, type ProviderStatus } from "@/lib/providers/status";
+import {
+  BACKUP_TRUST_COPY,
+  OFFLINE_TRUST_COPY,
+  PRIVACY_TRUST_COPY,
+  PROVIDER_TRUST_COPY,
+} from "@/lib/settings/trust-copy";
 import { isTheme, THEME_COOKIE, type Theme } from "@/lib/theme";
 import pkg from "../../../package.json";
 
@@ -101,8 +116,7 @@ export default async function SettingsPage() {
             </dd>
           </dl>
           <p className="mt-3 text-xs text-[var(--text-muted)]">
-            Server-side snapshots at <code className="font-mono">/opt/brain/data/backups/</code>.
-            Off-site copies (gpg-encrypted) replicate to Backblaze B2 every 6 hours.
+            {BACKUP_TRUST_COPY.detail}
           </p>
         </div>
       </section>
@@ -115,22 +129,60 @@ export default async function SettingsPage() {
           <div className="grid gap-3 sm:grid-cols-2">
             <ProviderStatusRow
               icon={<Sparkles className="h-4 w-4" strokeWidth={2} />}
-              title="Claude generation"
+              title={PROVIDER_TRUST_COPY.llmTitle}
               status={providerStatus.llm}
-              okCopy="Claude generation is available."
+              okCopy={PROVIDER_TRUST_COPY.llmOk}
             />
             <ProviderStatusRow
               icon={<SearchCheck className="h-4 w-4" strokeWidth={2} />}
-              title="Gemini semantic indexing"
+              title={PROVIDER_TRUST_COPY.embedTitle}
               status={providerStatus.embed}
-              okCopy="Gemini semantic indexing is available."
+              okCopy={PROVIDER_TRUST_COPY.embedOk}
             />
           </div>
           <p className="mt-3 text-xs leading-relaxed text-[var(--text-muted)]">
-            Claude receives prompts for Ask and summaries. Gemini receives text chunks for semantic indexing.
-            Saved content remains in Brain storage.
+            {PROVIDER_TRUST_COPY.storage}
           </p>
         </div>
+      </section>
+
+      <section className="mb-10">
+        <h2 className="mb-3 text-sm font-medium uppercase tracking-wide text-[var(--text-secondary)]">
+          Data & Privacy
+        </h2>
+        <TrustInfoPanel
+          icon={<Shield className="h-4 w-4" strokeWidth={2} />}
+          title={PRIVACY_TRUST_COPY.title}
+          badge={PRIVACY_TRUST_COPY.badge}
+        >
+          <p className="text-sm leading-6 text-[var(--text-secondary)]">
+            {PRIVACY_TRUST_COPY.detail}
+          </p>
+          <div className="mt-3 flex flex-wrap items-center gap-2">
+            <button
+              type="button"
+              disabled
+              className="inline-flex h-8 cursor-not-allowed items-center rounded-md border border-[var(--border)] px-3 text-sm font-medium text-[var(--text-muted)] opacity-70"
+            >
+              Manage privacy controls
+            </button>
+          </div>
+        </TrustInfoPanel>
+      </section>
+
+      <section className="mb-10">
+        <h2 className="mb-3 text-sm font-medium uppercase tracking-wide text-[var(--text-secondary)]">
+          Offline
+        </h2>
+        <TrustInfoPanel
+          icon={<WifiOff className="h-4 w-4" strokeWidth={2} />}
+          title={OFFLINE_TRUST_COPY.title}
+          badge={OFFLINE_TRUST_COPY.badge}
+        >
+          <p className="text-sm leading-6 text-[var(--text-secondary)]">
+            {OFFLINE_TRUST_COPY.detail}
+          </p>
+        </TrustInfoPanel>
       </section>
 
       <section className="mb-10">
@@ -167,6 +219,33 @@ export default async function SettingsPage() {
           </dl>
         </div>
       </section>
+    </div>
+  );
+}
+
+function TrustInfoPanel({
+  icon,
+  title,
+  badge,
+  children,
+}: {
+  icon: ReactNode;
+  title: string;
+  badge: string;
+  children: ReactNode;
+}) {
+  return (
+    <div className="rounded-lg border border-[var(--border)] bg-[var(--surface)] p-4">
+      <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
+        <div className="flex items-center gap-2 text-sm font-medium text-[var(--text-primary)]">
+          <span className="text-[var(--text-muted)]">{icon}</span>
+          <span>{title}</span>
+        </div>
+        <span className="shrink-0 rounded-full border border-[var(--warning)] px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.08em] text-[var(--warning)]">
+          {badge}
+        </span>
+      </div>
+      {children}
     </div>
   );
 }

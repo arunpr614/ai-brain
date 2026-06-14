@@ -10,6 +10,15 @@ import { deleteArtifactsForItem } from "@/lib/capture/artifacts";
 export type SourceType = ItemRow["source_type"];
 export type CaptureSource = ItemRow["capture_source"];
 
+function needsUpgradeClause(): string {
+  return `(capture_quality IN ('metadata_only', 'paywall_preview', 'failed')
+          OR extraction_warning IN (
+            'youtube_antibot_metadata_only',
+            'youtube_transcript_fetch_metadata_only',
+            'no_transcript'
+          ))`;
+}
+
 export interface CreateNoteInput {
   title: string;
   body: string;
@@ -96,11 +105,34 @@ export function listItems(options: { limit?: number; offset?: number } = {}): It
     .all(limit, offset) as ItemRow[];
 }
 
+export function listNeedsUpgradeItems(
+  options: { limit?: number; offset?: number } = {},
+): ItemRow[] {
+  const { limit = 100, offset = 0 } = options;
+  const db = getDb();
+  return db
+    .prepare(
+      `SELECT * FROM items
+       WHERE ${needsUpgradeClause()}
+       ORDER BY captured_at DESC
+       LIMIT ? OFFSET ?`,
+    )
+    .all(limit, offset) as ItemRow[];
+}
+
 export function countItems(): number {
   const db = getDb();
   const row = db.prepare("SELECT COUNT(*) as n FROM items").get() as {
     n: number;
   };
+  return row.n;
+}
+
+export function countNeedsUpgradeItems(): number {
+  const db = getDb();
+  const row = db
+    .prepare(`SELECT COUNT(*) as n FROM items WHERE ${needsUpgradeClause()}`)
+    .get() as { n: number };
   return row.n;
 }
 

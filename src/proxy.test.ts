@@ -163,5 +163,6 @@ describe("proxy — unauthenticated fallthrough", () => {
     const loc = res.headers.get("location") ?? "";
     assert.match(loc, /\/unlock/);
     assert.match(loc, /next=%2Fitems%2Fabc/);
+    assert.match(loc, /reason=session-expired/);
   });
 });

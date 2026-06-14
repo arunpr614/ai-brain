@@ -57,6 +57,10 @@ describe("/api/capture/note", () => {
     const data = await res.json();
     assert.match(data.id, /./);
     assert.equal(data.duplicate, false);
+    assert.equal(data.capture_result.state, "created_full_text");
+    assert.equal(data.capture_result.itemId, data.id);
+    assert.equal(data.capture_result.sourcePlatform, "note");
+    assert.equal(data.capture_result.quality, "user_provided_full_text");
   });
 
   it("deduplicates an identical title+body within the 2s window", async () => {
@@ -67,5 +71,8 @@ describe("/api/capture/note", () => {
     const data = await second.json();
     assert.equal(data.duplicate, true);
     assert.equal(data.reason, "window");
+    assert.equal(data.capture_result.state, "duplicate_existing");
+    assert.equal(data.capture_result.itemId, null);
+    assert.equal(data.capture_result.recommendedAction, "open_existing");
   });
 });

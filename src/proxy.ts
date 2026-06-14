@@ -143,6 +143,7 @@ function unauth(req: NextRequest, pathname: string) {
   const url = req.nextUrl.clone();
   url.pathname = "/unlock";
   url.searchParams.set("next", pathname);
+  url.searchParams.set("reason", "session-expired");
   return NextResponse.redirect(url);
 }
 

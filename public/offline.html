@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Brain — offline</title>
+    <title>AI Memory — offline</title>
     <style>
       /*
        * Self-contained: this page is served from /public/offline.html and must
@@ -124,28 +124,27 @@
   <body>
     <main>
       <div class="card">
-        <h1>Brain is not reachable</h1>
+        <h1>AI Memory needs the server</h1>
         <p>
-          The app could not reach your Brain server. The most common cause is a
-          temporary internet drop or the Brain server being momentarily
-          unavailable.
+          The app could not reach your AI Memory server. This fallback page can
+          load from the device cache, but Ask, capture, export, and sync require
+          server access.
         </p>
         <p>
-          If you've never opened Brain online on this device, do that first to
-          enable offline mode — the offline shell needs one online visit to
-          install.
+          There is no offline capture queue in this version. If this is a new
+          device, open AI Memory online once so the fallback page can be cached.
         </p>
         <div id="status" class="status" role="status" aria-live="polite">
           Tap <strong>Retry</strong> to test the connection.
         </div>
         <div class="actions">
           <button id="retry" class="primary" type="button">Retry</button>
-          <a class="button" href="/">Library</a>
-          <a id="rescan" class="button" href="/setup-apk">Re-scan QR</a>
+          <a id="library" class="button" href="/">Library</a>
+          <a id="pair" class="button" href="/setup-apk">Pair device</a>
         </div>
         <p class="meta">
           If retry keeps failing: check your internet connection, wait a moment,
-          and try again. If the issue persists, the Brain server may be down.
+          and try again. If the issue persists, the AI Memory server may be down.
         </p>
       </div>
     </main>
@@ -164,13 +163,28 @@
        * bundled plugin imports from a static /public page. We probe the
        * current origin without auth — the proxy responds 401 if the
        * server is up but the token path is wanted, which is enough signal
-       * to distinguish "Brain up" from "Brain down / unreachable". The
+       * to distinguish "AI Memory up" from "AI Memory down / unreachable". The
        * richer bearer-authed probe runs from share-handler.tsx using the
        * canonical reachability.ts module.
        */
       (function () {
         const statusEl = document.getElementById("status");
         const retryBtn = document.getElementById("retry");
+        const libraryLink = document.getElementById("library");
+        const pairLink = document.getElementById("pair");
+        // Keep in sync with capacitor.config.ts server.url for Android errorPath fallback.
+        const primaryServerOrigin = "https://brain.arunp.in";
+        const capacitorLocalOrigins = {
+          "https://localhost": true,
+          "http://localhost": true,
+        };
+
+        function appUrl(path) {
+          const origin = capacitorLocalOrigins[window.location.origin]
+            ? primaryServerOrigin
+            : window.location.origin;
+          return new URL(path, origin).toString();
+        }
 
         function setStatus(text, cls) {
           statusEl.className = "status" + (cls ? " " + cls : "");
@@ -180,7 +194,7 @@
         async function probe() {
           retryBtn.disabled = true;
           setStatus('<span class="spinner"></span> Testing connection...');
-          const base = window.location.origin;
+          const base = appUrl("/");
           const controller = new AbortController();
           const timer = setTimeout(function () { controller.abort(); }, 2000);
           const started = (performance && performance.now) ? performance.now() : Date.now();
@@ -194,36 +208,38 @@
             clearTimeout(timer);
             if (res.status === 200) {
               setStatus("Connected (" + elapsed + " ms). Redirecting…", "ok");
-              setTimeout(function () { window.location.href = "/"; }, 400);
+              setTimeout(function () { window.location.href = appUrl("/"); }, 400);
               return;
             }
             if (res.status === 401) {
-              // 401 here means Brain IS up but the cookie/bearer is absent —
+              // 401 here means AI Memory IS up but the cookie/bearer is absent —
               // which is exactly the "server reachable, go pair" case. The
               // main app will route to /unlock or /setup-apk from the root
               // navigation, so send the user there.
-              setStatus("Brain is running but not paired with this device. Redirecting to setup…", "ok");
-              setTimeout(function () { window.location.href = "/"; }, 600);
+              setStatus("AI Memory is running but not paired with this device. Redirecting to setup…", "ok");
+              setTimeout(function () { window.location.href = appUrl("/"); }, 600);
               return;
             }
             if (res.status === 403) {
-              setStatus("Brain rejected the origin. Tap <strong>Re-scan QR</strong> to re-pair.", "error");
+              setStatus("AI Memory rejected the origin. Tap <strong>Pair device</strong> to set up access again.", "error");
             } else {
-              setStatus("Brain returned HTTP " + res.status + ". Check the server log and retry.", "error");
+              setStatus("AI Memory returned HTTP " + res.status + ". Check the server log and retry.", "error");
             }
           } catch (err) {
             clearTimeout(timer);
             const isAbort = err && (err.name === "AbortError" || (err.message || "").toLowerCase().indexOf("abort") !== -1);
             if (isAbort) {
-              setStatus("Brain did not respond within 2 s. Check your internet and retry.", "error");
+              setStatus("AI Memory did not respond within 2 s. Check your internet and retry.", "error");
             } else {
-              setStatus("Cannot reach Brain (" + (err && err.message ? err.message : "network error") + "). Check your internet and retry.", "error");
+              setStatus("Cannot reach AI Memory (" + (err && err.message ? err.message : "network error") + "). Check your internet and retry.", "error");
             }
           } finally {
             retryBtn.disabled = false;
           }
         }
 
+        libraryLink.setAttribute("href", appUrl("/"));
+        pairLink.setAttribute("href", appUrl("/setup-apk"));
         retryBtn.addEventListener("click", probe);
         // Initial auto-probe on arrival so the user sees status immediately.
         probe();

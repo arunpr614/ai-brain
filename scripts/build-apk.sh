@@ -50,16 +50,43 @@ echo "[build-apk] versionName=${VERSION_NAME}"
 echo "[build-apk] versionCode=${VERSION_CODE}"
 echo "[build-apk] artifact=${ARTIFACT_PATH}"
 
-# APK versioning rule: every newly shared APK should have a fresh Android
-# versionName + versionCode. The output filename includes both values, so
-# an existing artifact at this path means this version was already built.
-# Use ALLOW_REBUILD_SAME_APK_VERSION=1 only for a local throwaway rebuild
-# that will not be handed to a tester/device as a new APK.
-if [[ -f "$ARTIFACT_PATH" && "${ALLOW_REBUILD_SAME_APK_VERSION:-0}" != "1" ]]; then
-  echo "[build-apk] FAIL: $ARTIFACT_PATH already exists." >&2
-  echo "[build-apk]       Bump android/app/build.gradle versionName and versionCode before creating a new APK." >&2
-  echo "[build-apk]       For a local-only rebuild, set ALLOW_REBUILD_SAME_APK_VERSION=1." >&2
-  exit 1
+is_java21_home() {
+  local candidate="$1"
+  [[ -x "$candidate/bin/java" ]] || return 1
+  "$candidate/bin/java" -version 2>&1 | grep -Eq 'version "21(\.|")'
+}
+
+# Android Gradle requires Java 21. Respect an explicit JAVA_HOME first, then
+# try the macOS Java locator and common Homebrew locations used on Apple
+# Silicon / Intel Macs. This keeps `npm run build:apk` reproducible without
+# requiring callers to remember the long Homebrew OpenJDK path.
+if [[ -n "${JAVA_HOME:-}" ]] && ! is_java21_home "$JAVA_HOME"; then
+  echo "[build-apk]         JAVA_HOME is not Java 21; searching for Java 21"
+  unset JAVA_HOME
+fi
+
+if [[ -z "${JAVA_HOME:-}" ]]; then
+  if [[ -x /usr/libexec/java_home ]]; then
+    JAVA_HOME_CANDIDATE="$(/usr/libexec/java_home -v 21 2>/dev/null || true)"
+    if [[ -n "$JAVA_HOME_CANDIDATE" ]] && is_java21_home "$JAVA_HOME_CANDIDATE"; then
+      export JAVA_HOME="$JAVA_HOME_CANDIDATE"
+    fi
+  fi
+fi
+
+if [[ -z "${JAVA_HOME:-}" ]]; then
+  for JAVA_HOME_CANDIDATE in \
+    /opt/homebrew/opt/openjdk@21/libexec/openjdk.jdk/Contents/Home \
+    /usr/local/opt/openjdk@21/libexec/openjdk.jdk/Contents/Home; do
+    if is_java21_home "$JAVA_HOME_CANDIDATE"; then
+      export JAVA_HOME="$JAVA_HOME_CANDIDATE"
+      break
+    fi
+  done
+fi
+
+if [[ -n "${JAVA_HOME:-}" ]]; then
+  echo "[build-apk] javaHome=${JAVA_HOME}"
 fi
 
 # v0.5.0 T-19 / F-018 — ensure a project-local debug keystore exists.
@@ -128,6 +155,23 @@ fi
 
 echo "[build-apk] step 4/5  copy APK to data/artifacts"
 mkdir -p "$ARTIFACT_DIR"
+
+# APK versioning rule: every newly shared APK should have a fresh Android
+# versionName + versionCode. The output filename includes both values, so
+# an existing artifact at this path means this version was already built.
+# Keep this guard at the publication step, after typecheck/build/cap sync/
+# Gradle, so release-gate validation can still exercise the generated Android
+# assets without overwriting the shared APK artifact.
+# Use ALLOW_REBUILD_SAME_APK_VERSION=1 only for a local throwaway rebuild
+# that will not be handed to a tester/device as a new APK.
+if [[ -f "$ARTIFACT_PATH" && "${ALLOW_REBUILD_SAME_APK_VERSION:-0}" != "1" ]]; then
+  echo "[build-apk] FAIL: $ARTIFACT_PATH already exists." >&2
+  echo "[build-apk]       Build validation passed, but shared artifact publication is blocked." >&2
+  echo "[build-apk]       Bump android/app/build.gradle versionName and versionCode before creating a new APK." >&2
+  echo "[build-apk]       For a local-only rebuild, set ALLOW_REBUILD_SAME_APK_VERSION=1." >&2
+  exit 1
+fi
+
 cp "$GRADLE_OUTPUT" "$ARTIFACT_PATH"
 
 APK_SIZE_BYTES="$(wc -c < "$ARTIFACT_PATH")"
