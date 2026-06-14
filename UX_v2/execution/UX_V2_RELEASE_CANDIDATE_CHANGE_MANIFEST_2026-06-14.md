@@ -76,7 +76,7 @@ Log:
 - `UX_v2/execution/**` is safe to stage as evidence-only.
 - Approved-only index staging is complete for the mixed PRD-10 files. The working tree still contains broader unapproved deltas in those paths, so future commits must use the staged index or a clean reconstruction, not whole-file working-tree staging.
 - `RUNNING_LOG.md` is staged through an append-only reconstruction of UX v2 entries #81-#107. The working-tree whole-file rewrite is still not safe to stage.
-- A release code commit requires patch splitting or clean reconstruction before production release can be considered.
+- Local release-candidate commit `ef0b2e2` contains the approved staged bundle. Production release still requires live/staging Android validation, pairing/token validation, APK artifact/version decision, backup/staging/rollback/owner checks, product decision deferrals/approvals, and explicit user approval.
 
 `UX_v2/execution/**` was staged as evidence after staged whitespace checks passed. PRD-06/10/14/15/16 approved local code and an append-only `RUNNING_LOG.md` reconstruction were then staged and validated from a staged-index checkout; see `UX_v2/execution/UX_V2_CODE_STAGING_REVIEW_2026-06-14.md`. Roadmap, versioning, broader asset files, the non-append running-log working-tree rewrite, and working-tree-only unapproved topics/focus/library-filter deltas remain unstaged.
 
@@ -281,7 +281,7 @@ Staging guidance:
 
 ## Release-Hygiene Blockers Remaining
 
-- No release commit exists.
+- Local release-candidate commit `ef0b2e2` exists; no push, PR, or deploy has been performed.
 - No staging target or production deploy approval exists.
 - No product decision deferral/approval has been granted.
 - No APK version bump or same-version publication approval exists.

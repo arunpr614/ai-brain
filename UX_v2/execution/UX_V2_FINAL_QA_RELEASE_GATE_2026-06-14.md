@@ -1,7 +1,7 @@
 # UX v2 Final QA And Release Gate
 
 Created: 2026-06-14 11:42 IST
-Updated: 2026-06-14 14:08 IST
+Updated: 2026-06-14 14:14 IST
 Owner: Codex lead integrator
 Scope: Approved `UX_v2/UX_Final_Plan` execution status after PRD-06, PRD-10 limited repair, PRD-14 informational trust copy, PRD-15 entry/offline checks, and PRD-16 QA evidence work
 
@@ -9,7 +9,7 @@ Scope: Approved `UX_v2/UX_Final_Plan` execution status after PRD-06, PRD-10 limi
 
 No-go for production/live release.
 
-The implemented web/shared slices are locally validated, Android emulator validation is now partially executed against the latest local Gradle APK output, an operator release approval packet exists, an open-decisions approval packet turns remaining product choices into explicit deferral or follow-up options, a release-candidate change manifest now maps the dirty worktree, a scoped integration review has passed after one P2 repair-action error-copy fix, `UX_v2/execution/**` is staged as evidence-only, and the approved PRD-06/10/14/15/16 local code bundle is staged and validated from a staged-index checkout. A PRD-15 fix now makes clean first-launch offline load the bundled branded fallback instead of Android WebView's native DNS error page. The release gate still cannot pass because the installed Android shell loads current live web assets from `https://brain.arunp.in`, which still show stale `AI Brain` / `Brain` copy in online/share paths; post-online cached offline behavior needs live/staging retest; pairing/token validation is blocked; publishing a new shared APK is blocked by the duplicate-version artifact guard; several product decisions remain open; no release code commit exists; and explicit user release approval has not been granted.
+The implemented web/shared slices are locally validated, Android emulator validation is now partially executed against the latest local Gradle APK output, an operator release approval packet exists, an open-decisions approval packet turns remaining product choices into explicit deferral or follow-up options, a release-candidate change manifest now maps the dirty worktree, a scoped integration review has passed after one P2 repair-action error-copy fix, `UX_v2/execution/**` is committed as evidence, the approved PRD-06/10/14/15/16 local code bundle was validated from a staged-index checkout, and local release-candidate commit `ef0b2e2` exists. A PRD-15 fix now makes clean first-launch offline load the bundled branded fallback instead of Android WebView's native DNS error page. The release gate still cannot pass because the installed Android shell loads current live web assets from `https://brain.arunp.in`, which still show stale `AI Brain` / `Brain` copy in online/share paths; post-online cached offline behavior needs live/staging retest; pairing/token validation is blocked; publishing a new shared APK is blocked by the duplicate-version artifact guard; several product decisions remain open; and explicit user release approval has not been granted.
 
 ## Implemented Scope
 
@@ -21,6 +21,7 @@ The implemented web/shared slices are locally validated, Android emulator valida
 | PRD-15 entry/session/offline states | Complete locally for entry copy, session recovery, pairing copy, and branded Android first-launch fallback | `PRD_15_ENTRY_SESSION_COPY_REVIEW_2026-06-14.md`, `PRD_15_ENTRY_OFFLINE_CODE_REVIEW_2026-06-14.md`, `ANDROID_RUNTIME_CHECK_2026-06-14.md` |
 | Android APK static/runtime checks | Static metadata passes; runtime release blocked | `ANDROID_APK_STATIC_CHECK_2026-06-14.md`, `ANDROID_RUNTIME_CHECK_2026-06-14.md` |
 | PRD-16 QA evidence gate | Complete for current local scope; release blocked | This report, `PRD_16_BUILD_APK_PIPELINE_REVIEW_2026-06-14.md`, `UX_V2_RELEASE_APPROVAL_PACKET_2026-06-14.md`, `UX_V2_OPEN_DECISIONS_APPROVAL_PACKET_2026-06-14.md`, `UX_V2_RELEASE_CANDIDATE_CHANGE_MANIFEST_2026-06-14.md`, `UX_V2_INTEGRATION_REVIEW_2026-06-14.md`, `UX_V2_SELECTIVE_STAGING_REVIEW_2026-06-14.md`, `UX_V2_CODE_STAGING_REVIEW_2026-06-14.md` |
+| Release-candidate commit | Created locally; release blocked | Commit `ef0b2e2`, `UX_V2_RELEASE_COMMIT_REVIEW_2026-06-14.md`; push/PR/deploy not performed |
 
 ## Explicitly Not Implemented
 
@@ -54,6 +55,7 @@ Latest post-implementation commands:
 | Shared APK artifact | Blocked / not overwritten | `data/artifacts/brain-debug-v1.0.2-code3.apk`; SHA-256 `6ac0bad378c3b214c1b3d32517be685ed1e079054c41fff371fe65fbc6e1753f`; versionName 1.0.2/versionCode 3 must be bumped or explicit same-version publication approved |
 | Scoped integration review checks | Pass | `UX_V2_INTEGRATION_REVIEW_2026-06-14.md`; focused capture/repair/proxy/API tests, `npm run typecheck`, and `bash -n scripts/build-apk.sh` passed after the P2 repair-action fix |
 | Staged code tranche checks | Pass | `UX_V2_CODE_STAGING_REVIEW_2026-06-14.md`; staged-index `npm run typecheck`, focused PRD-06/10/14/15 tests, `npm run lint`, `npm test` (445 tests, 65 suites), `npm run build`, and `bash -n scripts/build-apk.sh` passed after staging approved PRD-06/10/14/15/16 code |
+| Release commit review | Pass | `UX_V2_RELEASE_COMMIT_REVIEW_2026-06-14.md`; commit `ef0b2e2`; `git diff HEAD^..HEAD --check` passed; no P0/P1/P2 findings |
 
 ## Browser / UX Smoke
 
@@ -85,7 +87,7 @@ Latest post-implementation commands:
 | Scripted shared APK artifact | Validation pass; publication blocked | `npm run build:apk` now runs typecheck/build/cap sync/Gradle successfully, then refuses to overwrite existing `data/artifacts/brain-debug-v1.0.2-code3.apk`; bump version or explicitly allow same-version publication |
 | Release approval packet | Complete; approval still blocked | `UX_V2_RELEASE_APPROVAL_PACKET_2026-06-14.md` records deploy command, backup plan, rollback plan, post-deploy smoke checklist, APK publication decision, and explicit approval prompt |
 | Open decisions approval packet | Complete; decisions still open | `UX_V2_OPEN_DECISIONS_APPROVAL_PACKET_2026-06-14.md` maps D-001..D-014 to recommended release deferrals or follow-up implementation tracks |
-| Release candidate change manifest | Evidence and approved code staged; release commit still pending | `UX_V2_RELEASE_CANDIDATE_CHANGE_MANIFEST_2026-06-14.md` documents evidence/code/mixed/unapproved file groups; staged-index validation passed |
+| Release candidate change manifest | Evidence and approved code committed locally | `UX_V2_RELEASE_CANDIDATE_CHANGE_MANIFEST_2026-06-14.md` documents evidence/code/mixed/unapproved file groups; staged-index validation passed; commit `ef0b2e2` exists |
 | Selective staging review | Complete; approved code and append-only log staged | `UX_V2_SELECTIVE_STAGING_REVIEW_2026-06-14.md` identifies mixed code paths plus the non-append `RUNNING_LOG.md` working-tree diff; approved-only PRD-10 split and an append-only log reconstruction are staged in the index |
 
 ## Data Safety
@@ -114,7 +116,7 @@ Latest post-implementation commands:
 | Production DB backup | Not done |
 | Staging/smoke verification | Not done |
 | Rollback plan | Partial: release packet documents required rollback confirmation; previous deploy source/artifact and backup still must be confirmed |
-| Release commit hygiene | Partial: evidence bundle and approved PRD-06/10/14/15/16 code are staged and staged-index validated; release commit/review still not created |
+| Release commit hygiene | Pass for local commit: `ef0b2e2` created from approved staged bundle and reviewed; push/PR/release not performed |
 | Explicit user release approval | Not granted |
 | Product decision deferrals/approvals | Not granted |
 | Production/live deploy | Not performed |
@@ -123,7 +125,6 @@ Latest post-implementation commands:
 
 1. Deploy UX v2 web/offline assets to a staging/live target only after explicit approval, then rerun Android launch/share/post-online-offline/pairing validation against that target.
 2. Provide or generate an authenticated Android pairing code so token save, relaunch, share capture, and paired/offline paths can be validated.
-3. Create/review a release code commit from the staged approved bundle; do not replace the staged append-only `RUNNING_LOG.md` reconstruction with the working-tree whole-file rewrite, and do not include working-tree-only topics/focus/library-filter deltas.
-4. Decide whether to bump `android/app/build.gradle` versionName/versionCode or explicitly allow same-version APK publication so `npm run build:apk` can copy the already-validated Gradle output into `data/artifacts`.
-5. Close or explicitly defer D-001 through D-014 using `UX_V2_OPEN_DECISIONS_APPROVAL_PACKET_2026-06-14.md` before implementing gated PRD rows or accepting deploy-ready status.
-6. Before any production release: perform production DB backup, staging/smoke verification, rollback confirmation, release-owner confirmation, post-deploy smoke checklist, and explicit user approval.
+3. Decide whether to bump `android/app/build.gradle` versionName/versionCode or explicitly allow same-version APK publication so `npm run build:apk` can copy the already-validated Gradle output into `data/artifacts`.
+4. Close or explicitly defer D-001 through D-014 using `UX_V2_OPEN_DECISIONS_APPROVAL_PACKET_2026-06-14.md` before implementing gated PRD rows or accepting deploy-ready status.
+5. Before any production release: perform production DB backup, staging/smoke verification, rollback confirmation, release-owner confirmation, post-deploy smoke checklist, and explicit user approval.
