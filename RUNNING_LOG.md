@@ -7526,3 +7526,63 @@ Pushed the clean main-based UX v2 integration branch and opened a draft pull req
 - Post-online cached offline Android retest remains blocked until staging/live deployment approval.
 - APK publication remains blocked by same-version artifact guard unless version is bumped or same-version publication is explicitly approved.
 - Product decisions D-001 through D-014 still need explicit deferral acceptance or follow-up implementation approval.
+
+---
+
+## Entry #112 - 2026-06-14 14:44 IST - UX v2 PR #6 full validation refreshed
+
+### Summary
+
+Refreshed the clean PR branch validation after the P3 transcript-recovery coverage fix and updated the release evidence docs. No production/live deploy, shared APK publication, or Android retest was performed.
+
+### Done
+
+- Confirmed draft PR #6 state before the documentation refresh:
+  - PR URL: `https://github.com/arunpr614/ai-brain/pull/6`
+  - State: open
+  - Draft: yes
+  - Mergeable: yes
+  - Status checks: none reported
+  - Validated code head: `75b38896d43d30b16deaf024ba8541cff0fe9820`
+- Ran a full validation refresh on the clean PR worktree `/private/tmp/ai-brain-ux-v2-main-ready` at 2026-06-14 14:42 IST.
+- The first validation wrapper had a shell-wrapper error after the checks completed (`status` is read-only in zsh), so the validation was rerun under Bash and exited 0.
+- Removed the temporary `node_modules` symlink after validation; the clean PR worktree did not retain dependency artifacts.
+- Updated evidence docs to record the validation refresh and fix stale source-hygiene wording:
+  - `UX_v2/execution/UX_V2_EXECUTION_TRACKER.md`
+  - `UX_v2/execution/UX_V2_FINAL_QA_RELEASE_GATE_2026-06-14.md`
+  - `UX_v2/execution/UX_V2_PR6_REVIEW_2026-06-14.md`
+  - `UX_v2/execution/UX_V2_PR_READINESS_AND_MAIN_INTEGRATION_2026-06-14.md`
+  - `UX_v2/execution/UX_V2_COMPLETION_AUDIT_2026-06-14.md`
+  - `UX_v2/execution/UX_V2_RELEASE_APPROVAL_PACKET_2026-06-14.md`
+
+### Validation
+
+- `git diff --check origin/main...HEAD` passed.
+- `npm run typecheck` passed.
+- `npm run lint` passed with the known unused-disable warnings in `src/lib/client/register-sw.ts` and `src/lib/queue/enrichment-batch-cron.ts`.
+- `npm test` passed: 503 tests, 76 suites, 0 failures.
+- `npm run build` passed with the known `unpdf` warning.
+- `bash -n scripts/build-apk.sh` passed.
+
+### Release state
+
+- Production/live not deployed.
+- Shared APK artifact not overwritten.
+- PR #6 remains draft.
+- Release verdict remains no-go.
+
+### Remaining release blockers
+
+- Explicit production/live approval has not been granted.
+- Production DB backup, staging/smoke, release owner, rollback source/command, and post-deploy smoke owner remain open.
+- Android online/share UX v2 validation still needs deployed UX v2 web/offline assets.
+- Android pairing/token validation remains blocked by missing authenticated pairing-code path.
+- Post-online cached offline Android retest remains blocked until staging/live deployment approval.
+- APK publication remains blocked by same-version artifact guard unless version is bumped or same-version publication is explicitly approved.
+- Product decisions D-001 through D-014 still need explicit deferral acceptance or follow-up implementation approval.
+
+### Action items for the next agent
+
+1. Treat `codex/ai-brain-ux-v2-main-ready` and PR #6 as the clean release-candidate source; do not deploy from the dirty original project worktree.
+2. If only documentation changes are committed after this entry, note that the validated code head remains `75b3889`.
+3. Do not deploy production/live without the approval packet values: explicit approval, release owner, backup path/integrity, staging or accepted skip, rollback source, pairing validation path, APK publication decision, and post-deploy smoke owner.

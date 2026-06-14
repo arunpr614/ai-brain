@@ -1,6 +1,7 @@
 # UX v2 Release Approval Packet
 
 Created: 2026-06-14 13:16 IST
+Updated: 2026-06-14 14:42 IST
 Owner: Codex lead integrator
 Release verdict: **NO-GO until approval blockers below are resolved**
 Production/live status: **not deployed**
@@ -15,8 +16,9 @@ This packet turns the current UX v2 release gate into an operator-ready approval
 | --- | --- |
 | Branch | Original candidate: `codex/ai-brain-ux-v2-execution`; current PR-ready integration branch: `codex/ai-brain-ux-v2-main-ready` |
 | Integration base | `origin/main` at `2b4db9540d0b76ee6d3aa2a9da5f788b69a8d02a` |
-| Integration commits | `e596b9a feat(ux-v2): stage approved local release candidate`; `9bd4ad7 docs(ux-v2): record release candidate commit review` |
-| Draft PR | [#6 UX v2 approved local release candidate](https://github.com/arunpr614/ai-brain/pull/6), open/draft/mergeable as of 2026-06-14 14:32 IST |
+| Integration commits | `e596b9a feat(ux-v2): stage approved local release candidate`; `9bd4ad7 docs(ux-v2): record release candidate commit review`; `95a98bd docs(ux-v2): record main integration readiness`; `921f8cc docs(ux-v2): record draft pr state`; `75b3889 test(ux-v2): cover transcript recovery result payload` |
+| Draft PR | [#6 UX v2 approved local release candidate](https://github.com/arunpr614/ai-brain/pull/6), open/draft/mergeable as of 2026-06-14 14:42 IST |
+| Validated code head | `75b38896d43d30b16deaf024ba8541cff0fe9820` |
 | Baseline HEAD | `c33166e4c9b9a3af86165b1b83aaea355174ccd7` |
 | Worktree | Original project worktree remains dirty; clean integration worktree is `/private/tmp/ai-brain-ux-v2-main-ready` |
 | Web deploy target in script | `https://brain.arunp.in` |
@@ -55,6 +57,7 @@ This packet turns the current UX v2 release gate into an operator-ready approval
 | Android emulator mechanics | Latest local Gradle APK installs, opens, relaunches, receives text share intents, and shows the bundled AI Memory offline fallback on clean first offline launch |
 | Data safety for implemented local slices | PRD-06 has no migration; PRD-10 repair is transactional and preserves manual organization metadata; PRD-14/15 copy/fallback work has no schema migration |
 | Main-based PR branch | `codex/ai-brain-ux-v2-main-ready` resolves the current `main` conflicts and passed typecheck, full tests, lint, build, and APK script syntax |
+| PR-head validation refresh | 2026-06-14 14:42 IST on validated code head `75b3889`: `git diff --check origin/main...HEAD`, `npm run typecheck`, `npm run lint`, `npm test` (503 tests, 76 suites), `npm run build`, and `bash -n scripts/build-apk.sh` passed |
 
 ## Release Blockers
 
@@ -70,7 +73,7 @@ Do not deploy production/live while any P0 row is open.
 | P0 | Android online/share UX v2 validation | Blocked by stale live assets | Deploy approved web/offline assets to staging/live, then rerun Android online launch, share, and post-online offline checks |
 | P0 | Android pairing/token validation | Blocked by missing authenticated pairing-code path | Generate/provide a pairing code and run token save, relaunch, paired share, and capture-result checks |
 | P0 | Shared APK publication | Blocked by same-version artifact guard | Bump `versionName`/`versionCode` or explicitly approve same-version publication |
-| P0 | Release commit hygiene | Clean local integration branch exists, but it is not pushed and no PR exists | Use `codex/ai-brain-ux-v2-main-ready` as the reviewed source for draft PR/release-candidate review; do not deploy from the dirty original worktree |
+| P0 | Release commit hygiene | Clean integration branch is pushed as draft PR #6 and validated; original project worktree remains dirty | Use draft PR #6 / `codex/ai-brain-ux-v2-main-ready` as the release source after approval; do not deploy from the dirty original worktree |
 | P1 | Product decisions D-001..D-014 | Still open | Use `UX_V2_OPEN_DECISIONS_APPROVAL_PACKET_2026-06-14.md` to defer explicitly or approve PRD-specific follow-up work; do not silently include gated behavior |
 
 ## Recommended Approval Decision
