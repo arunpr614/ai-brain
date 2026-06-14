@@ -6,8 +6,8 @@ describe("capture quality labels", () => {
   it("renders human labels for platform and quality", () => {
     assert.equal(platformLabel("youtube_short"), "YouTube Short");
     assert.equal(platformLabel("linkedin"), "LinkedIn");
-    assert.equal(qualityLabel("metadata_plus_transcript"), "metadata + transcript");
-    assert.equal(qualityLabel("user_provided_full_text"), "pasted text");
+    assert.equal(qualityLabel("metadata_plus_transcript"), "Transcript");
+    assert.equal(qualityLabel("user_provided_full_text"), "Full text");
   });
 
   it("suggests repair hints for weak captures", () => {

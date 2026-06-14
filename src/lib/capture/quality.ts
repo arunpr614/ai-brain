@@ -5,25 +5,25 @@ export const CAPTURE_EXTRACTION_VERSION = "capture-v0.7.5";
 export function qualityLabel(quality: string | null | undefined): string {
   switch (quality) {
     case "metadata_plus_transcript":
-      return "metadata + transcript";
+      return "Transcript";
     case "metadata_only":
-      return "metadata only";
+      return "Metadata only";
     case "paywall_preview":
-      return "preview only";
+      return "Preview only";
     case "user_provided_full_text":
-      return "pasted text";
+      return "Full text";
     case "client_dom":
-      return "browser capture";
+      return "Browser capture";
     case "email_body":
-      return "email body";
+      return "Email body";
     case "full_text":
-      return "full text";
+      return "Full text";
     case "transcript":
-      return "transcript";
+      return "Transcript";
     case "failed":
-      return "failed";
+      return "Needs upgrade";
     default:
-      return "captured";
+      return "Captured";
   }
 }
 
@@ -78,6 +78,37 @@ export function improvementHint(
   }
   if (quality === "paywall_preview" && platform === "substack") {
     return "Attach or paste the newsletter email body to save the full post.";
+  }
+  return null;
+}
+
+export function isLimitedCaptureQuality(quality: string | null | undefined): boolean {
+  return quality === "metadata_only" || quality === "paywall_preview" || quality === "failed";
+}
+
+export function needsUpgradeReason(input: {
+  source_platform?: string | null;
+  capture_quality?: string | null;
+  extraction_warning?: string | null;
+}): string | null {
+  if (input.capture_quality === "failed") return "Extraction failed";
+  if (input.capture_quality === "paywall_preview") return "Preview only";
+  if (input.capture_quality === "metadata_only" && input.source_platform === "linkedin") {
+    return "Needs pasted post text";
+  }
+  if (
+    input.capture_quality === "metadata_only" &&
+    (input.source_platform === "youtube" || input.source_platform === "youtube_short")
+  ) {
+    return "Needs transcript";
+  }
+  if (input.capture_quality === "metadata_only") return "Needs readable text";
+  if (input.extraction_warning === "no_transcript") return "No transcript available";
+  if (input.extraction_warning === "youtube_antibot_metadata_only") {
+    return "Transcript blocked";
+  }
+  if (input.extraction_warning === "youtube_transcript_fetch_metadata_only") {
+    return "Transcript fetch failed";
   }
   return null;
 }

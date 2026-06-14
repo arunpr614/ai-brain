@@ -27,6 +27,11 @@ import { detectCapturePlatform } from "@/lib/capture/platform";
 import { isDuplicateShare, shareDedupKey } from "@/lib/capture/dedup";
 import { captureSourceFromTrustedHeader } from "@/lib/capture/source";
 import { saveCaptureArtifacts } from "@/lib/capture/artifacts";
+import {
+  toCaptureResultPayload,
+  toDuplicateCaptureResultPayload,
+  toFailedCaptureResultPayload,
+} from "@/lib/capture/result";
 import { logError } from "@/lib/errors/sink";
 
 export const runtime = "nodejs";
@@ -83,7 +88,15 @@ export async function POST(req: NextRequest) {
     });
     const existing = findItemByUrl(url);
     return NextResponse.json(
-      { duplicate: true, itemId: existing?.id ?? null, reason: "window" },
+      {
+        duplicate: true,
+        itemId: existing?.id ?? null,
+        reason: "window",
+        capture_result: toDuplicateCaptureResultPayload(existing, {
+          sourcePlatform: detection.platform,
+          capturedVia: captureSource,
+        }),
+      },
       { status: 200 },
     );
   }
@@ -92,7 +105,12 @@ export async function POST(req: NextRequest) {
   const existing = findItemByUrl(url);
   if (existing && !userText) {
     return NextResponse.json(
-      { duplicate: true, itemId: existing.id, reason: "exists" },
+      {
+        duplicate: true,
+        itemId: existing.id,
+        reason: "exists",
+        capture_result: toDuplicateCaptureResultPayload(existing),
+      },
       { status: 200 },
     );
   }
@@ -109,7 +127,16 @@ export async function POST(req: NextRequest) {
         ts: Date.now(),
       });
       return NextResponse.json(
-        { error: "capture_failed", message: err.message, code: err instanceof YoutubeCaptureError ? err.code : undefined },
+        {
+          error: "capture_failed",
+          message: err.message,
+          code: err instanceof YoutubeCaptureError ? err.code : undefined,
+          capture_result: toFailedCaptureResultPayload(err.message, {
+            sourcePlatform: detection.platform,
+            capturedVia: captureSource,
+            warningCode: err instanceof YoutubeCaptureError ? err.code : null,
+          }),
+        },
         { status: 422 },
       );
     }
@@ -132,18 +159,29 @@ export async function POST(req: NextRequest) {
       thumbnail_url: content.thumbnail_url ?? null,
       description: content.description ?? null,
     });
+    const savedItem = item ?? existing;
+    let artifactError: string | null = null;
     try {
       await saveCaptureArtifacts(existing.id, content.artifacts);
     } catch (err) {
+      artifactError = (err as Error).message;
       logError({
         type: "capture.artifact-save-failed",
         item_id: existing.id,
-        message: (err as Error).message,
+        message: artifactError,
         ts: Date.now(),
       });
     }
     return NextResponse.json(
-      { id: item?.id ?? existing.id, duplicate: false, action: "upgraded" },
+      {
+        id: savedItem.id,
+        duplicate: false,
+        action: "upgraded",
+        capture_result: toCaptureResultPayload(savedItem, {
+          state: artifactError ? "error_with_saved_item" : "updated_existing",
+          errorMessage: artifactError,
+        }),
+      },
       { status: 200 },
     );
   }
@@ -165,18 +203,31 @@ export async function POST(req: NextRequest) {
     thumbnail_url: content.thumbnail_url ?? null,
     description: content.description ?? null,
   });
+  let artifactError: string | null = null;
   try {
     await saveCaptureArtifacts(item.id, content.artifacts);
   } catch (err) {
+    artifactError = (err as Error).message;
     logError({
       type: "capture.artifact-save-failed",
       item_id: item.id,
-      message: (err as Error).message,
+      message: artifactError,
       ts: Date.now(),
     });
   }
 
-  return NextResponse.json({ id: item.id, duplicate: false, action: "created" }, { status: 201 });
+  return NextResponse.json(
+    {
+      id: item.id,
+      duplicate: false,
+      action: "created",
+      capture_result: toCaptureResultPayload(item, {
+        state: artifactError ? "error_with_saved_item" : undefined,
+        errorMessage: artifactError,
+      }),
+    },
+    { status: 201 },
+  );
 }
 
 function shouldUpgradeWeakCapture(

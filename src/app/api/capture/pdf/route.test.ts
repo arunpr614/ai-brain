@@ -111,6 +111,9 @@ describe("/api/capture/pdf — v0.5.0 T-13 extensions", () => {
     assert.equal(data.error, "sha256_mismatch");
     assert.equal(data.expected, "0".repeat(64));
     assert.equal(data.actual, sha256Hex(bytes));
+    assert.equal(data.capture_result.state, "failed_without_saved_item");
+    assert.equal(data.capture_result.sourcePlatform, "pdf");
+    assert.equal(data.capture_result.recommendedAction, "retry");
   });
 
   it("accepts a matching X-Expected-SHA256 header (passes to extractor; 400 expected from non-PDF bytes)", async () => {
@@ -129,5 +132,7 @@ describe("/api/capture/pdf — v0.5.0 T-13 extensions", () => {
     assert.equal(res.status, 400);
     const data = await res.json();
     assert.notEqual(data.error, "sha256_mismatch");
+    assert.equal(data.capture_result.state, "failed_without_saved_item");
+    assert.equal(data.capture_result.sourcePlatform, "pdf");
   });
 });

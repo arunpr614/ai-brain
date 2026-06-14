@@ -79,6 +79,9 @@ describe("/api/capture/url", () => {
     assert.equal(d1.duplicate, true);
     // First call: dedup miss, historical hit → reason:'exists'.
     assert.equal(d1.reason, "exists");
+    assert.equal(d1.capture_result.state, "duplicate_existing");
+    assert.equal(d1.capture_result.itemId, d1.itemId);
+    assert.equal(d1.capture_result.existingItemId, d1.itemId);
 
     // Second call within 2s: dedup fires first → reason:'window'.
     const r2 = await POST(mkReq({ url }));
@@ -86,6 +89,8 @@ describe("/api/capture/url", () => {
     const d2 = await r2.json();
     assert.equal(d2.duplicate, true);
     assert.equal(d2.reason, "window");
+    assert.equal(d2.capture_result.state, "duplicate_existing");
+    assert.equal(d2.capture_result.recommendedAction, "open_existing");
   });
 
   it("upgrades an existing LinkedIn metadata-only item when pasted text is provided", async () => {
@@ -115,6 +120,9 @@ This is the complete post body with enough useful words to save as user provided
     const body = await res.json();
     assert.equal(body.action, "upgraded");
     assert.equal(body.id, existing.id);
+    assert.equal(body.capture_result.state, "updated_existing");
+    assert.equal(body.capture_result.itemId, existing.id);
+    assert.match(body.capture_result.message, /No duplicate was created/);
     const rowsForUrl = getDb()
       .prepare("SELECT COUNT(*) AS count FROM items WHERE source_url = ?")
       .get(url) as { count: number };

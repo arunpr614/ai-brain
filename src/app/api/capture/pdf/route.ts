@@ -29,10 +29,15 @@
 import crypto from "node:crypto";
 import { NextResponse, type NextRequest } from "next/server";
 import { capturePdfAction } from "@/app/capture-actions";
+import { getItem } from "@/db/items";
 import { SESSION_COOKIE } from "@/lib/auth";
 import { validateOrigin } from "@/lib/auth/bearer";
 import { checkClientApiVersion } from "@/lib/auth/api-version";
 import { captureSourceFromTrustedHeader } from "@/lib/capture/source";
+import {
+  toCaptureResultPayload,
+  toFailedCaptureResultPayload,
+} from "@/lib/capture/result";
 import { logError } from "@/lib/errors/sink";
 
 export const runtime = "nodejs";
@@ -96,7 +101,18 @@ export async function POST(req: NextRequest) {
       ts: Date.now(),
     });
     return NextResponse.json(
-      { error: "sha256_mismatch", expected, actual: serverSha },
+      {
+        error: "sha256_mismatch",
+        expected,
+        actual: serverSha,
+        capture_result: toFailedCaptureResultPayload("PDF upload was corrupted in transit.", {
+          sourcePlatform: "pdf",
+          capturedVia: hasBearer
+            ? captureSourceFromTrustedHeader(req.headers.get("x-brain-capture-source"))
+            : "web",
+          warningCode: "sha256_mismatch",
+        }),
+      },
       { status: 422 },
     );
   }
@@ -109,7 +125,21 @@ export async function POST(req: NextRequest) {
       ? captureSourceFromTrustedHeader(req.headers.get("x-brain-capture-source"))
       : "web";
     const { id } = await capturePdfAction(innerForm, { capture_source: captureSource });
-    return NextResponse.json({ id, sha256: serverSha }, { status: 201 });
+    const item = getItem(id);
+    return NextResponse.json(
+      {
+        id,
+        sha256: serverSha,
+        capture_result: item
+          ? toCaptureResultPayload(item)
+          : toFailedCaptureResultPayload("PDF saved but could not be reloaded for result details.", {
+              itemId: id,
+              sourcePlatform: "pdf",
+              capturedVia: captureSource,
+            }),
+      },
+      { status: 201 },
+    );
   } catch (err) {
     const message = err instanceof Error ? err.message : "Upload failed";
     logError({
@@ -118,6 +148,17 @@ export async function POST(req: NextRequest) {
       size: bytes.byteLength,
       ts: Date.now(),
     });
-    return NextResponse.json({ error: message }, { status: 400 });
+    return NextResponse.json(
+      {
+        error: message,
+        capture_result: toFailedCaptureResultPayload(message, {
+          sourcePlatform: "pdf",
+          capturedVia: hasBearer
+            ? captureSourceFromTrustedHeader(req.headers.get("x-brain-capture-source"))
+            : "web",
+        }),
+      },
+      { status: 400 },
+    );
   }
 }
