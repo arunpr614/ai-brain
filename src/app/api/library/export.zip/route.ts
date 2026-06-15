@@ -80,7 +80,7 @@ export async function GET(req: NextRequest) {
   // Top-level README so the zip is self-describing when opened.
   zip.file(
     "README.md",
-    `# AI Brain — Library export\n\nGenerated ${new Date().toISOString()}\n\n${items.length} item${items.length === 1 ? "" : "s"}, grouped by source type.\n\nEach \`.md\` file has YAML frontmatter compatible with Obsidian.\n`,
+    `# AI Memory — Library export\n\nGenerated ${new Date().toISOString()}\n\n${items.length} item${items.length === 1 ? "" : "s"}, grouped by source type.\n\nEach \`.md\` file has YAML frontmatter compatible with Obsidian.\n`,
   );
 
   const buf = await zip.generateAsync({ type: "uint8array", compression: "DEFLATE" });

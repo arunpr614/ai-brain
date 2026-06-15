@@ -96,7 +96,7 @@ function UrlPanel({ prefilled }: { prefilled: string }) {
           autoFocus
         />
         <p className="mt-1.5 text-xs text-[var(--text-muted)]">
-          Paste a public article URL. AI Brain fetches, extracts clean text, and saves.
+          Paste a public article URL. AI Memory fetches, extracts clean text, and saves.
         </p>
       </div>
 
