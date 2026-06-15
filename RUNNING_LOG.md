@@ -7586,3 +7586,67 @@ Refreshed the clean PR branch validation after the P3 transcript-recovery covera
 1. Treat `codex/ai-brain-ux-v2-main-ready` and PR #6 as the clean release-candidate source; do not deploy from the dirty original project worktree.
 2. If only documentation changes are committed after this entry, note that the validated code head remains `75b3889`.
 3. Do not deploy production/live without the approval packet values: explicit approval, release owner, backup path/integrity, staging or accepted skip, rollback source, pairing validation path, APK publication decision, and post-deploy smoke owner.
+
+---
+
+## Entry #113 - 2026-06-15 11:05 IST - UX v2 PR #6 current head revalidated after pause
+
+### Summary
+
+Resumed the UX v2 goal after the user pause, recreated the clean PR worktree because `/private/tmp/ai-brain-ux-v2-main-ready` had been cleaned up, and refreshed validation on current PR head `70d6cc8`. No production/live deploy, shared APK publication, Android retest, or product-code change was performed.
+
+### Done
+
+- Recreated clean PR worktree:
+  - Worktree: `/private/tmp/ai-brain-ux-v2-main-ready`
+  - Branch: `codex/ai-brain-ux-v2-main-ready`
+  - Head before this evidence update: `70d6cc8c180a6f0d3c695cba1640f108ced60310`
+- Confirmed original project worktree remains dirty and was not used as the release source.
+- Confirmed PR #6 state at 2026-06-15 11:05 IST:
+  - PR URL: `https://github.com/arunpr614/ai-brain/pull/6`
+  - State: open
+  - Draft: yes
+  - Mergeable: yes
+  - Status checks: none reported
+- Updated:
+  - `UX_v2/execution/UX_V2_EXECUTION_TRACKER.md`
+  - `UX_v2/execution/UX_V2_FINAL_QA_RELEASE_GATE_2026-06-14.md`
+  - `UX_v2/execution/UX_V2_PR6_REVIEW_2026-06-14.md`
+  - `UX_v2/execution/UX_V2_PR_READINESS_AND_MAIN_INTEGRATION_2026-06-14.md`
+  - `UX_v2/execution/UX_V2_COMPLETION_AUDIT_2026-06-14.md`
+  - `UX_v2/execution/UX_V2_RELEASE_APPROVAL_PACKET_2026-06-14.md`
+
+### Validation
+
+- `git diff --check origin/main...HEAD` passed.
+- `npm run typecheck` passed.
+- `npm run lint` passed with the known unused-disable warnings in `src/lib/client/register-sw.ts` and `src/lib/queue/enrichment-batch-cron.ts`.
+- Initial sandboxed `npm test` failed: 474 pass, 29 fail. All failures were provider tests trying to bind local HTTP mock servers and reporting `listen EPERM: operation not permitted 127.0.0.1`.
+- Reran `npm test` outside the sandbox with approval; it passed: 503 tests, 76 suites, 0 failures.
+- Initial sandboxed `npm run build` failed because restricted network could not resolve `fonts.googleapis.com` for Next font fetching.
+- Reran `npm run build` with network approval; it passed with the known `unpdf` warning.
+- `bash -n scripts/build-apk.sh` passed.
+- Removed the temporary `node_modules` symlink after validation; no dependency artifact remained in the clean PR worktree.
+
+### Release state
+
+- Production/live not deployed.
+- Shared APK artifact not overwritten.
+- PR #6 remains draft.
+- Release verdict remains no-go.
+
+### Remaining release blockers
+
+- Explicit production/live approval has not been granted.
+- Production DB backup, staging/smoke, release owner, rollback source/command, and post-deploy smoke owner remain open.
+- Android online/share UX v2 validation still needs deployed UX v2 web/offline assets.
+- Android pairing/token validation remains blocked by missing authenticated pairing-code path.
+- Post-online cached offline Android retest remains blocked until staging/live deployment approval.
+- APK publication remains blocked by same-version artifact guard unless version is bumped or same-version publication is explicitly approved.
+- Product decisions D-001 through D-014 still need explicit deferral acceptance or follow-up implementation approval.
+
+### Action items for the next agent
+
+1. Treat PR #6 and `codex/ai-brain-ux-v2-main-ready` as the clean release-candidate source; keep the original dirty project worktree out of release.
+2. If this evidence update is committed, note that it is documentation-only after validating app head `70d6cc8`.
+3. Do not deploy production/live or publish APK artifacts without the release approval packet values and explicit user approval.

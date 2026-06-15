@@ -1,13 +1,14 @@
 # UX v2 PR #6 Review
 
 Created: 2026-06-14 14:37 IST
-Updated: 2026-06-14 14:42 IST
+Updated: 2026-06-15 11:05 IST
 Reviewer: Codex lead integrator
 PR: [#6 UX v2 approved local release candidate](https://github.com/arunpr614/ai-brain/pull/6)
 Branch: `codex/ai-brain-ux-v2-main-ready`
 Base reviewed: `origin/main` `2b4db9540d0b76ee6d3aa2a9da5f788b69a8d02a`
 Head reviewed before fix: `921f8ccedf5ab50e74136b97fb747e7cabe8f02d`
 Validated code head after fix: `75b38896d43d30b16deaf024ba8541cff0fe9820`
+Current validated PR head: `70d6cc8c180a6f0d3c695cba1640f108ced60310`
 
 ## Verdict
 
@@ -69,6 +70,15 @@ Full PR-head validation refresh at 2026-06-14 14:42 IST on validated code head `
 - `npm run lint` passed with the known unused-disable warnings in `src/lib/client/register-sw.ts` and `src/lib/queue/enrichment-batch-cron.ts`.
 - `npm test` passed: 503 tests, 76 suites, 0 failures.
 - `npm run build` passed with the known `unpdf` warning.
+- `bash -n scripts/build-apk.sh` passed.
+
+Current PR-head validation refresh at 2026-06-15 11:05 IST on head `70d6cc8`:
+
+- `git diff --check origin/main...HEAD` passed.
+- `npm run typecheck` passed.
+- `npm run lint` passed with the known unused-disable warnings in `src/lib/client/register-sw.ts` and `src/lib/queue/enrichment-batch-cron.ts`.
+- `npm test` passed: 503 tests, 76 suites, 0 failures, after rerunning outside the sandbox because provider tests use local HTTP mock servers and the sandbox produced `listen EPERM: operation not permitted 127.0.0.1`.
+- `npm run build` passed with the known `unpdf` warning, after rerunning with network access because restricted network produced `getaddrinfo ENOTFOUND fonts.googleapis.com` for Next font fetching.
 - `bash -n scripts/build-apk.sh` passed.
 
 ## Release Gate

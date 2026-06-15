@@ -1,7 +1,7 @@
 # UX v2 Release Approval Packet
 
 Created: 2026-06-14 13:16 IST
-Updated: 2026-06-14 14:42 IST
+Updated: 2026-06-15 11:05 IST
 Owner: Codex lead integrator
 Release verdict: **NO-GO until approval blockers below are resolved**
 Production/live status: **not deployed**
@@ -16,9 +16,9 @@ This packet turns the current UX v2 release gate into an operator-ready approval
 | --- | --- |
 | Branch | Original candidate: `codex/ai-brain-ux-v2-execution`; current PR-ready integration branch: `codex/ai-brain-ux-v2-main-ready` |
 | Integration base | `origin/main` at `2b4db9540d0b76ee6d3aa2a9da5f788b69a8d02a` |
-| Integration commits | `e596b9a feat(ux-v2): stage approved local release candidate`; `9bd4ad7 docs(ux-v2): record release candidate commit review`; `95a98bd docs(ux-v2): record main integration readiness`; `921f8cc docs(ux-v2): record draft pr state`; `75b3889 test(ux-v2): cover transcript recovery result payload` |
-| Draft PR | [#6 UX v2 approved local release candidate](https://github.com/arunpr614/ai-brain/pull/6), open/draft/mergeable as of 2026-06-14 14:42 IST |
-| Validated code head | `75b38896d43d30b16deaf024ba8541cff0fe9820` |
+| Integration commits | `e596b9a feat(ux-v2): stage approved local release candidate`; `9bd4ad7 docs(ux-v2): record release candidate commit review`; `95a98bd docs(ux-v2): record main integration readiness`; `921f8cc docs(ux-v2): record draft pr state`; `75b3889 test(ux-v2): cover transcript recovery result payload`; `70d6cc8 docs(ux-v2): record pr validation refresh` |
+| Draft PR | [#6 UX v2 approved local release candidate](https://github.com/arunpr614/ai-brain/pull/6), open/draft/mergeable as of 2026-06-15 11:05 IST |
+| Validated code head | `70d6cc8c180a6f0d3c695cba1640f108ced60310` |
 | Baseline HEAD | `c33166e4c9b9a3af86165b1b83aaea355174ccd7` |
 | Worktree | Original project worktree remains dirty; clean integration worktree is `/private/tmp/ai-brain-ux-v2-main-ready` |
 | Web deploy target in script | `https://brain.arunp.in` |
@@ -58,6 +58,7 @@ This packet turns the current UX v2 release gate into an operator-ready approval
 | Data safety for implemented local slices | PRD-06 has no migration; PRD-10 repair is transactional and preserves manual organization metadata; PRD-14/15 copy/fallback work has no schema migration |
 | Main-based PR branch | `codex/ai-brain-ux-v2-main-ready` resolves the current `main` conflicts and passed typecheck, full tests, lint, build, and APK script syntax |
 | PR-head validation refresh | 2026-06-14 14:42 IST on validated code head `75b3889`: `git diff --check origin/main...HEAD`, `npm run typecheck`, `npm run lint`, `npm test` (503 tests, 76 suites), `npm run build`, and `bash -n scripts/build-apk.sh` passed |
+| Current PR-head validation refresh | 2026-06-15 11:05 IST on head `70d6cc8`: `git diff --check origin/main...HEAD`, typecheck, lint, full tests (503 tests, 76 suites), build, and APK script syntax passed. Sandbox-only failures were documented and cleared by rerunning local HTTP mock tests and font-fetching build with the needed permissions. |
 
 ## Release Blockers
 
