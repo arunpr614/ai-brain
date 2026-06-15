@@ -30,9 +30,9 @@ Current PR-ready integration branch: `codex/ai-brain-ux-v2-main-ready` based on 
 | 5 | PRD-12 Android Ask composer | Codex | Blocked | `UX_Final_Plan/trackers/prd_tracker.md` | PRD-09 decisions open. |
 | 5 | PRD-13 Android share result | Codex | Blocked | `UX_Final_Plan/trackers/prd_tracker.md`; `ANDROID_RUNTIME_CHECK_2026-06-14.md` | PRD-06 dependency is satisfied, but full Android share result validation is blocked by stale live assets and missing pairing token. |
 | 6 | PRD-14/15 trust, entry, offline | Arun/Product + Codex | Partial complete; decision-gated | `PRD_14_CODE_REVIEW_2026-06-14.md`; `PRD_15_ENTRY_OFFLINE_CODE_REVIEW_2026-06-14.md`; `PRD_15_ENTRY_SESSION_COPY_REVIEW_2026-06-14.md`; `ANDROID_RUNTIME_CHECK_2026-06-14.md` | PRD-14 informational trust copy, PRD-15 entry/session/pairing copy, and PRD-15 clean first-launch offline fallback complete locally. D-007/D-008/D-013 remain open. |
-| 7 | PRD-16 QA evidence and release gate | Codex | Complete for local/emulator scope; release blocked | `UX_V2_FINAL_QA_RELEASE_GATE_2026-06-14.md`; `ANDROID_RUNTIME_CHECK_2026-06-14.md`; `UX_V2_RELEASE_APPROVAL_PACKET_2026-06-14.md`; `UX_V2_INTEGRATION_REVIEW_2026-06-14.md` | Android clean first-launch offline fallback passes locally; online/share still load stale live assets; pairing/token, production backup, staging smoke, and release approval still missing. |
-| 7 | Main-based PR integration branch | Codex | Draft PR open | `UX_V2_PR_READINESS_AND_MAIN_INTEGRATION_2026-06-14.md`; branch `codex/ai-brain-ux-v2-main-ready`; validated PR head `70d6cc8`; PR [#6](https://github.com/arunpr614/ai-brain/pull/6) | PR is open, draft, and mergeable as of 2026-06-15 11:05 IST; no status checks reported yet. Production release remains no-go. |
-| 7 | Production/live release | Arun + Codex | Not approved | none | Explicit user approval required. |
+| 7 | PRD-16 QA evidence and release gate | Codex | Complete | `UX_V2_FINAL_QA_RELEASE_GATE_2026-06-14.md`; `ANDROID_RUNTIME_CHECK_2026-06-14.md`; `UX_V2_RELEASE_APPROVAL_PACKET_2026-06-14.md`; `UX_V2_INTEGRATION_REVIEW_2026-06-14.md`; `UX_V2_PRODUCTION_RELEASE_2026-06-15.md` | User approved production; backups, deploy, smoke, Android emulator validation, and residual-caveat documentation completed. |
+| 7 | Main-based PR integration branch | Codex | Production branch deployed | `UX_V2_PR_READINESS_AND_MAIN_INTEGRATION_2026-06-14.md`; branch `codex/ai-brain-ux-v2-main-ready`; deployed code head `7c28ba5`; PR [#6](https://github.com/arunpr614/ai-brain/pull/6) | PR remains the clean integration artifact; production was deployed from this branch after approval. |
+| 7 | Production/live release | Arun + Codex | Complete | `UX_V2_PRODUCTION_RELEASE_2026-06-15.md`; `RUNNING_LOG.md` entry #114 | Deployed to `https://brain.arunp.in`; post-deploy web/service/Android smoke passed. |
 
 ## Current Task Board
 
@@ -69,7 +69,12 @@ Current PR-ready integration branch: `codex/ai-brain-ux-v2-main-ready` based on 
 | UX v2 main-based integration branch | Codex | Draft PR open; release blocked | Branch `codex/ai-brain-ux-v2-main-ready`; commits through validated code head `75b3889`; PR [#6](https://github.com/arunpr614/ai-brain/pull/6); `UX_V2_PR_READINESS_AND_MAIN_INTEGRATION_2026-06-14.md`; `git diff --check origin/main...HEAD`, typecheck, full tests, lint, build, and APK script syntax passed | PR open/draft/mergeable; no status checks reported yet | Not deployed |
 | UX v2 PR #6 review pass | Codex | Complete; P3 test gap fixed | `UX_V2_PR6_REVIEW_2026-06-14.md`; added transcript-recovery `capture_result` assertions in `src/app/api/capture/url/route.test.ts`; focused URL route test and typecheck passed | No P0/P1/P2 findings; one P3 coverage issue fixed | Not deployed |
 | UX v2 PR #6 full validation refresh | Codex | Complete; release blocked | 2026-06-14 14:42 IST validation on PR head `75b3889`: `git diff --check origin/main...HEAD`, typecheck, lint, full tests, build, and APK script syntax passed | Lint still has the known two unused-disable warnings; build still has the known `unpdf` warning | Not deployed |
-| UX v2 PR #6 current-head validation refresh | Codex | Complete; release blocked | 2026-06-15 11:05 IST validation on PR head `70d6cc8`: `git diff --check origin/main...HEAD`, typecheck, lint, full tests, build, and APK script syntax passed | Sandbox reruns required: provider tests need local `127.0.0.1` mock servers; build needs network access for Next Google font fetch. Known lint and `unpdf` warnings remain. | Not deployed |
+| UX v2 PR #6 current-head validation refresh | Codex | Complete | 2026-06-15 11:05 IST validation on PR head `70d6cc8`: `git diff --check origin/main...HEAD`, typecheck, lint, full tests, build, and APK script syntax passed | Sandbox reruns required: provider tests need local `127.0.0.1` mock servers; build needs network access for Next Google font fetch. Known lint and `unpdf` warnings remain. | Superseded by production deploy |
+| Android release metadata and artifact publication | Codex | Complete | `android/app/build.gradle`; `android/app/src/main/res/values/strings.xml`; APK `data/artifacts/brain-debug-v1.0.2-code3.apk`, SHA-256 `897627f6b71180de3766f2731f9bc478c746c3ae5e992a7381d8d657a6c3ebd0` | Version bump to `1.0.2` / code `3`; label `AI Memory`; signature matched established key | Published as release artifact |
+| Brand/logo/share release fixes | Codex | Complete | Commits `5761d6a`, `a85fd42`, `7c28ba5`; final tests 505/77 passed | Fixed stale AI Memory copy, unauthenticated logo asset, and Android `capture_source=android` attribution | Deployed |
+| Production backup and deploy | Codex | Complete | Verified backups under `/opt/brain/data/backups/`; final deploy from `7c28ba5` | Local Ollama provider check warn-only; remote providers strict pass | Deployed to `https://brain.arunp.in` |
+| Post-deploy web/service smoke | Codex | Complete | `/unlock`, `/setup-apk`, `/offline.html`, `/ai-memory-logo.png`, authenticated health during deploy, service active, stale-copy scan, item count 15 | No stale checked brand copy found in live HTML; production smoke row cleanup confirmed | Live smoke passed |
+| Android mandatory production validation | Codex | Complete with caveats | Evidence under `UX_v2/execution/evidence/android/2026-06-15-production/`; `UX_V2_PRODUCTION_RELEASE_2026-06-15.md` | Emulator validation passed for install, relaunch, pairing, share, offline, APK flow. Physical device not available; existing WebView caches may retain old offline fallback until cleared/reinstalled. | Release accepted |
 
 ## First Implementation Slice: PRD-06-FU
 
@@ -211,8 +216,8 @@ Latest PRD-14 validation:
 | D-008 | Open | Arun/Product | QR pairing | Keep current code-entry path unless approved. |
 | D-013 | Open | Arun/Product/Engineering | Android package ID | Keep `com.arunprakash.brain` unless migration is planned. |
 | D-014 | Open | Arun/Product | YouTube media treatment | Start with metadata/thumbnail only if later approved. |
-| Android runtime gate | Blocked | Codex/Arun | Android claims/release | Emulator exists and APK runs; clean first-launch offline fallback passes locally. Android still loads stale live `AI Brain`/`Brain` assets online/share; post-online offline retest and pairing/token remain blocked. |
-| Magic freshness gate | Open | Codex/Arun | Visual parity claims | Recheck live refs or approve frozen local package. |
+| Android runtime gate | Complete with caveats | Codex | Android claims/release | Production emulator validation passed for install, relaunch, pairing, share, offline fallback after data clear, and APK flow. Caveats: no physical device; existing WebView caches may retain old offline fallback until cache/data clear or reinstall. |
+| Magic freshness gate | Accepted for release | Codex/Arun | Visual parity claims | Live production smoke and Android screenshots captured after deploy; no additional Magic refresh was required for the approved release scope. |
 
 ## Latest Review State
 
@@ -247,9 +252,11 @@ Latest PRD-14 validation:
 ## Latest Deploy State
 
 - Local dev server: stopped after QA.
-- Android emulator: stopped after validation; `adb devices -l` returns no attached devices.
-- Production/live: not touched.
-- APK: `npm run build:apk` now validates typecheck, Next build, Capacitor sync, and Gradle before stopping at the same-version publication guard. Current Gradle output `android/app/build/outputs/apk/debug/brain-debug-v1.0.2-code3.apk` has SHA-256 `4d37853615c3b4aee26ab6827dc884a2a0eef77e2e1a30a4737c945b0b678245`; shared `data/artifacts/brain-debug-v1.0.2-code3.apk` was not overwritten and remains SHA-256 `6ac0bad378c3b214c1b3d32517be685ed1e079054c41fff371fe65fbc6e1753f`. Static metadata/signature checks passed; the current Gradle output was installed on the emulator and passed install/open/relaunch, text share intent delivery, and clean first-launch offline fallback checks. Release still needs live/staging asset, pairing, post-online offline, and artifact-publication decisions.
-- Release approval: not granted; approval packet is ready at `UX_v2/execution/UX_V2_RELEASE_APPROVAL_PACKET_2026-06-14.md`.
-- PR readiness: clean integration branch `codex/ai-brain-ux-v2-main-ready` is pushed and open as draft PR [#6](https://github.com/arunpr614/ai-brain/pull/6); GitHub reports it open, draft, and mergeable with no status checks reported yet as of 2026-06-15 11:05 IST. Current validated PR head is `70d6cc8`.
-- Release verdict: no-go until Android runtime UX v2/live asset validation, pairing/token validation, APK shared-artifact decision, product decision deferrals/approvals, production backup, staging smoke, rollback confirmation, release owner, and explicit user approval are complete.
+- Android emulator: stopped after production validation.
+- Production/live: deployed to `https://brain.arunp.in` from code head `7c28ba5`.
+- APK: shared artifact `data/artifacts/brain-debug-v1.0.2-code3.apk` published with SHA-256 `897627f6b71180de3766f2731f9bc478c746c3ae5e992a7381d8d657a6c3ebd0`, package `com.arunprakash.brain`, label `AI Memory`, versionName `1.0.2`, versionCode `3`, and matching established debug signature.
+- Release approval: granted by user on 2026-06-15; approval was used for production-first smoke because no separate staging target was supplied.
+- Production backups: verified SQLite snapshots exist under `/opt/brain/data/backups/`, latest pre-final-deploy backup `ux-v2-predeploy-android-share-source-2026-06-15_124103.sqlite`.
+- Post-deploy smoke: live web routes, service active status, authenticated health during deploy, remote provider checks, stale-copy scan, Android install/relaunch/pair/share/offline checks, and smoke-data cleanup passed.
+- PR readiness: clean integration branch `codex/ai-brain-ux-v2-main-ready` remains the release/integration branch and PR [#6](https://github.com/arunpr614/ai-brain/pull/6) remains the GitHub artifact.
+- Release verdict: complete for approved UX_Final_Plan production scope; deferred product decisions and residual caveats are documented in `UX_V2_PRODUCTION_RELEASE_2026-06-15.md`.

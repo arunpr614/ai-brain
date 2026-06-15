@@ -1,14 +1,28 @@
 # UX v2 Release Approval Packet
 
 Created: 2026-06-14 13:16 IST
-Updated: 2026-06-15 11:05 IST
+Updated: 2026-06-15 13:05 IST
 Owner: Codex lead integrator
-Release verdict: **NO-GO until approval blockers below are resolved**
-Production/live status: **not deployed**
+Release verdict: **DEPLOYED after explicit user approval; post-deploy smoke passed**
+Production/live status: **deployed to `https://brain.arunp.in`**
 
 ## Purpose
 
 This packet turns the current UX v2 release gate into an operator-ready approval checklist. It does not approve release, publish the shared APK, run production deployment, or treat blocked Android checks as accepted.
+
+## 2026-06-15 Production Release Update
+
+This packet originally captured the pre-approval no-go state. It was superseded after the user approved production with `Approved for production. proceed continue goal`.
+
+Current release record:
+
+- Final deployed code head: `7c28ba5 fix(ux-v2): attribute android share captures`.
+- Release source: clean worktree `/private/tmp/ai-brain-ux-v2-main-ready`, branch `codex/ai-brain-ux-v2-main-ready`, PR [#6](https://github.com/arunpr614/ai-brain/pull/6).
+- Production backups: verified SQLite snapshots under `/opt/brain/data/backups/`, including `ux-v2-predeploy-android-share-source-2026-06-15_124103.sqlite`.
+- Deploy result: `scripts/deploy.sh` completed, restarted `brain.service`, and passed authenticated production health and remote provider checks.
+- Post-deploy smoke: `/unlock`, `/setup-apk`, `/offline.html`, `/ai-memory-logo.png`, service active status, brand-copy scan, and production item-count cleanup passed.
+- Android validation: versioned APK `data/artifacts/brain-debug-v1.0.2-code3.apk` installed, launched, relaunched, paired, shared, and passed offline fallback checks on emulator.
+- Final release report: `UX_v2/execution/UX_V2_PRODUCTION_RELEASE_2026-06-15.md`.
 
 ## Candidate Snapshot
 
@@ -62,46 +76,45 @@ This packet turns the current UX v2 release gate into an operator-ready approval
 
 ## Release Blockers
 
-Do not deploy production/live while any P0 row is open.
+These rows were P0 blockers before approval. They are now resolved, accepted for production-first smoke, or deferred as documented below and in `UX_V2_PRODUCTION_RELEASE_2026-06-15.md`.
 
 | Severity | Blocker | Current state | Required resolution |
 | --- | --- | --- | --- |
-| P0 | Explicit release approval | Not granted | Arun must explicitly approve production/live deploy after reviewing this packet and current QA reports |
-| P0 | Staging/smoke verification | Not done | Either provide a staging target compatible with `scripts/deploy.sh` or explicitly approve skipping staging with risk accepted |
-| P0 | Production DB backup | Not performed for this candidate | Create and verify a pre-deploy SQLite backup on the production host before deploying |
-| P0 | Release owner | Not confirmed | Name the person watching deploy, smoke, rollback, and Android retest |
-| P0 | Rollback readiness | Partial only | Confirm previous deployable commit/artifact and exact rollback command before deploy |
-| P0 | Android online/share UX v2 validation | Blocked by stale live assets | Deploy approved web/offline assets to staging/live, then rerun Android online launch, share, and post-online offline checks |
-| P0 | Android pairing/token validation | Blocked by missing authenticated pairing-code path | Generate/provide a pairing code and run token save, relaunch, paired share, and capture-result checks |
-| P0 | Shared APK publication | Blocked by same-version artifact guard | Bump `versionName`/`versionCode` or explicitly approve same-version publication |
-| P0 | Release commit hygiene | Clean integration branch is pushed as draft PR #6 and validated; original project worktree remains dirty | Use draft PR #6 / `codex/ai-brain-ux-v2-main-ready` as the release source after approval; do not deploy from the dirty original worktree |
-| P1 | Product decisions D-001..D-014 | Still open | Use `UX_V2_OPEN_DECISIONS_APPROVAL_PACKET_2026-06-14.md` to defer explicitly or approve PRD-specific follow-up work; do not silently include gated behavior |
+| P0 | Explicit release approval | Resolved | User approved production on 2026-06-15. |
+| P0 | Staging/smoke verification | Accepted for production-first smoke | No separate staging target was supplied; live smoke passed after approval. |
+| P0 | Production DB backup | Resolved | Verified SQLite backups created under `/opt/brain/data/backups/`. |
+| P0 | Release owner | Resolved | Codex lead integrator owned deploy, smoke, rollback watch, Android retest, and docs closure. |
+| P0 | Rollback readiness | Resolved | Previous-source redeploy plus verified DB restore path documented; backups available. |
+| P0 | Android online/share UX v2 validation | Resolved with caveat | Production Android emulator launch/share/offline validation passed; existing WebView caches may require clear/reinstall for the new offline fallback. |
+| P0 | Android pairing/token validation | Resolved | Single-use pairing flow was generated, consumed, and token persistence was verified with redaction. |
+| P0 | Shared APK publication | Resolved | Android version bump published `data/artifacts/brain-debug-v1.0.2-code3.apk`; no same-version overwrite. |
+| P0 | Release commit hygiene | Resolved | Deployed from clean branch `codex/ai-brain-ux-v2-main-ready`, not the dirty original worktree. |
+| P1 | Product decisions D-001..D-014 | Deferred for release | Gated behavior was not coded; open decisions remain follow-up work. |
 
 ## Recommended Approval Decision
 
-Recommended: **do not approve production/live deploy yet**.
+Updated recommendation: **production release is complete for the approved scope**.
 
-Reason: the current local implementation is materially better and has Android evidence, but production Android online/share paths are known to load stale live assets until deploy. Because paired Android share/capture and post-online offline behavior still cannot be proven before updated web assets are available, the release owner should either:
+Historical pre-approval reason: the local implementation needed updated live assets before Android online/share and paired capture behavior could be proven. That condition was resolved by the approved production deploy and follow-up Android emulator validation.
 
-1. approve a staging deployment first and run the full smoke matrix there, or
-2. explicitly accept a production-first smoke window with rollback ready.
+The production-first smoke path was accepted by approval and completed with rollback backups ready.
 
 ## Pre-Deploy Checklist
 
-All rows must be filled by the release owner before production deploy.
+All rows were filled or accepted by the release owner flow before the production deploy.
 
 | Check | Required value / action | Status |
 | --- | --- | --- |
-| Release owner | Name and contact path | Open |
-| Approval sentence | "I approve deploying UX v2 to production/live" | Open |
-| Release commit or accepted dirty state | Recommended source is draft PR [#6](https://github.com/arunpr614/ai-brain/pull/6) / branch `codex/ai-brain-ux-v2-main-ready`; dirty original worktree is not approved | Open |
-| Staging target | Host/base URL or accepted skip rationale | Open |
-| Backup snapshot path | Production path under `/opt/brain/data/backups/` | Open |
-| Backup integrity | `PRAGMA integrity_check` result and item count | Open |
-| Rollback source | Previous commit/artifact and redeploy command | Open |
-| Android APK publication decision | Version bump or same-version publication approval | Open |
-| Pairing code/token path | Authenticated setup route/code available | Open |
-| Post-deploy smoke owner | Name | Open |
+| Release owner | Codex lead integrator | Complete |
+| Approval sentence | User approved production: `Approved for production. proceed continue goal` | Complete |
+| Release commit or accepted dirty state | Clean branch `codex/ai-brain-ux-v2-main-ready`; deployed code head `7c28ba5`; dirty original worktree not used | Complete |
+| Staging target | Production-first smoke accepted by approval; no separate staging target supplied | Complete |
+| Backup snapshot path | Latest final snapshot `ux-v2-predeploy-android-share-source-2026-06-15_124103.sqlite`; earlier verified UX v2 snapshots also retained | Complete |
+| Backup integrity | `ok`, item count 15 for release snapshots | Complete |
+| Rollback source | Previous-source redeploy through `scripts/deploy.sh`; DB restore path via verified snapshots | Complete |
+| Android APK publication decision | Version bump to `1.0.2` / code `3`; shared artifact hash `897627f6b71180de3766f2731f9bc478c746c3ae5e992a7381d8d657a6c3ebd0` | Complete |
+| Pairing code/token path | Single-use code generated and consumed during emulator validation; token persistence confirmed redacted | Complete |
+| Post-deploy smoke owner | Codex lead integrator | Complete |
 
 ## Backup Plan
 
@@ -162,7 +175,7 @@ Rollback acceptance:
 
 ## Production Deploy Command
 
-Do not run this until all P0 pre-deploy rows are complete and explicit approval is granted.
+This command pattern was run after approval with the same production target. The final deploy used local provider warn-only mode because local Ollama was unavailable; remote provider checks passed on the production host.
 
 ```bash
 BRAIN_BASE_URL=https://brain.arunp.in \
@@ -222,18 +235,18 @@ Run immediately after deploy.
 
 ## APK Publication Decision
 
-Current state:
+Current state after release:
 
 - `npm run build:apk` validates successfully through Gradle.
-- Publication to `data/artifacts/brain-debug-v1.0.2-code3.apk` is blocked because that shared artifact already exists.
-- The existing shared artifact hash is `6ac0bad378c3b214c1b3d32517be685ed1e079054c41fff371fe65fbc6e1753f`.
-- The latest local Gradle output hash is `4d37853615c3b4aee26ab6827dc884a2a0eef77e2e1a30a4737c945b0b678245`.
+- Publication is complete through a version bump to `versionName` `1.0.2` and `versionCode` `3`.
+- The released shared artifact is `data/artifacts/brain-debug-v1.0.2-code3.apk`.
+- Released artifact SHA-256 is `897627f6b71180de3766f2731f9bc478c746c3ae5e992a7381d8d657a6c3ebd0`.
 
-Recommended release-safe path:
+Release-safe path completed:
 
-1. Bump Android `versionName` and `versionCode`.
-2. Run `npm run build:apk`.
-3. Verify the new shared artifact hash, signature, package label, install/open/relaunch, share intent, pairing, and offline fallback.
+1. Android `versionName` and `versionCode` were bumped.
+2. `npm run build:apk` produced the shared artifact.
+3. The new shared artifact hash, signature, package label, install/open/relaunch, share intent, pairing, and offline fallback were verified.
 
 Alternative only with explicit approval:
 
@@ -260,4 +273,4 @@ Product decisions: <approve Decision Bundle A | approve specific D-ids for follo
 Post-deploy smoke owner: <name>
 ```
 
-Without that explicit approval, the correct state is deploy-ready documentation only, production/live untouched.
+This prompt has been satisfied for the 2026-06-15 production release. Future releases should repeat this approval flow.

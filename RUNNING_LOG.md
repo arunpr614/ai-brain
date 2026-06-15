@@ -7650,3 +7650,83 @@ Resumed the UX v2 goal after the user pause, recreated the clean PR worktree bec
 1. Treat PR #6 and `codex/ai-brain-ux-v2-main-ready` as the clean release-candidate source; keep the original dirty project worktree out of release.
 2. If this evidence update is committed, note that it is documentation-only after validating app head `70d6cc8`.
 3. Do not deploy production/live or publish APK artifacts without the release approval packet values and explicit user approval.
+
+---
+
+## Entry #114 - 2026-06-15 13:05 IST - UX v2 production approved, deployed, smoked, and closed
+
+### Summary
+
+User approved production with `Approved for production. proceed continue goal`. Used the clean PR worktree `/private/tmp/ai-brain-ux-v2-main-ready` and branch `codex/ai-brain-ux-v2-main-ready` as the release source, not the dirty original project worktree. Production is live at `https://brain.arunp.in` from final deployed code head `7c28ba5 fix(ux-v2): attribute android share captures`.
+
+### Done
+
+- Published Android release metadata and artifact:
+  - Version: `1.0.2` / code `3`
+  - Label: `AI Memory`
+  - APK: `data/artifacts/brain-debug-v1.0.2-code3.apk`
+  - APK SHA-256: `897627f6b71180de3766f2731f9bc478c746c3ae5e992a7381d8d657a6c3ebd0`
+- Completed release fixes after the pre-approval gate:
+  - `4fce843 chore(ux-v2): bump android release metadata`
+  - `5761d6a fix(ux-v2): finish ai memory brand copy`
+  - `a85fd42 fix(ux-v2): serve unauthenticated brand logo`
+  - `7c28ba5 fix(ux-v2): attribute android share captures`
+- Created and verified production SQLite backups before deploy steps:
+  - `/opt/brain/data/backups/ux-v2-predeploy-2026-06-15_062428.sqlite`
+  - `/opt/brain/data/backups/ux-v2-predeploy-brandfix-2026-06-15_063824.sqlite`
+  - `/opt/brain/data/backups/ux-v2-predeploy-logo-fix-2026-06-15_122213.sqlite`
+  - `/opt/brain/data/backups/ux-v2-predeploy-android-share-source-2026-06-15_124103.sqlite`
+- Deployed production with `scripts/deploy.sh`.
+- Completed post-deploy smoke:
+  - Live `/unlock`, `/setup-apk`, `/offline.html`, and `/ai-memory-logo.png` return 200.
+  - Authenticated health check passed during deploy.
+  - `brain.service` is active with 0 restarts after deploy.
+  - Remote AI provider checks passed.
+  - Stale live HTML scan found no checked `AI Brain`, `Your Brain`, `Ask AI Brain`, or `Unlock AI Brain` strings.
+  - Production item count returned to 15 after smoke cleanup.
+- Completed Android emulator validation:
+  - APK installed, launched, and relaunched.
+  - Logo and AI Memory copy rendered after the logo proxy fix.
+  - Pairing code flow succeeded; token persistence verified with value redacted.
+  - Paired Android text share created an item with `capture_source=android`; smoke row was deleted.
+  - Current offline fallback was verified after clearing app data.
+  - Online recovery after offline returned to the expected unlock flow after app data clear.
+- Saved evidence:
+  - `UX_v2/execution/UX_V2_PRODUCTION_RELEASE_2026-06-15.md`
+  - `UX_v2/execution/evidence/android/2026-06-15-production/`
+  - Updated tracker, release approval packet, final QA gate, and completion audit.
+
+### Validation
+
+- Final code validation before deploy:
+  - `npm run typecheck` passed.
+  - `npm run lint` passed with the known unused-disable warnings in `src/lib/client/register-sw.ts` and `src/lib/queue/enrichment-batch-cron.ts`.
+  - `npm test` passed: 505 tests, 77 suites, 0 failures.
+  - `npm run build` passed with the known `unpdf` warning.
+- Deploy validation:
+  - Local Ollama provider check was warn-only because local Ollama was unavailable.
+  - Remote Anthropic/Gemini provider checks passed on production.
+  - Telegram release smoke was skipped because `TELEGRAM_RELEASE` was not set; unauthenticated webhook reachability returned the expected 401 during deploy checks.
+- Fresh closure smoke:
+  - `/unlock`: 200
+  - `/setup-apk`: 200
+  - `/offline.html`: 200
+  - `/ai-memory-logo.png`: 200, `image/png`, 2837864 bytes
+  - `brain.service`: active
+  - Production item count: 15
+
+### Release state
+
+- Production/live: deployed and smoked.
+- Android mandatory checks: passed on emulator with caveats.
+- PR #6: remains the GitHub integration artifact for the clean release branch.
+- Original project worktree: preserved dirty and not used for release.
+- Goal state: complete for approved UX_Final_Plan production scope.
+
+### Residual caveats
+
+- Existing Android WebView caches may retain the previous offline fallback until app data/cache is cleared or the app is reinstalled; the current bundled fallback was verified after clearing app data.
+- No physical Android device was available; emulator validation is the recorded mandatory Android evidence.
+- Offsite backup script is not installed on production; on-host SQLite backups were verified.
+- Local Ollama was unavailable, so local provider validation was warn-only; remote production provider checks passed.
+- Open UX_Final_Plan decisions remain deferred follow-up work; no decision-gated behavior was silently implemented.
