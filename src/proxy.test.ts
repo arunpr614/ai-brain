@@ -58,6 +58,13 @@ describe("proxy — public paths", () => {
     assert.notEqual(res.status, 307);
   });
 
+  it("/ai-memory-logo.png passes without auth for unauthenticated brand screens", () => {
+    const res = proxy(mkReq("/ai-memory-logo.png"));
+    assert.notEqual(res.status, 401);
+    assert.notEqual(res.status, 302);
+    assert.notEqual(res.status, 307);
+  });
+
   it("/api/auth/* passes without auth", () => {
     const res = proxy(mkReq("/api/auth/pin"));
     assert.notEqual(res.status, 401);

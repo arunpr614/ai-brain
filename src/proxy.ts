@@ -49,6 +49,7 @@ const PUBLIC_PATHS = new Set([
   "/unlock",
   "/setup",
   "/setup-apk",
+  "/ai-memory-logo.png",
   "/offline.html",
   "/sw.js",
 ]);
