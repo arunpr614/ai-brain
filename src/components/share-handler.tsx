@@ -31,6 +31,19 @@ interface ParsedCaptureResponse {
   result: CaptureResultPayload | null;
 }
 
+export const ANDROID_CAPTURE_SOURCE = "android";
+
+export function buildAndroidCaptureHeaders(
+  token: string,
+  extra: Record<string, string> = {},
+): Record<string, string> {
+  return {
+    ...extra,
+    authorization: `Bearer ${token}`,
+    "x-brain-capture-source": ANDROID_CAPTURE_SOURCE,
+  };
+}
+
 declare global {
   interface Window {
     Capacitor?: CapacitorGlobal;
@@ -193,10 +206,9 @@ async function postJson(
   try {
     res = await fetch(url, {
       method: "POST",
-      headers: {
+      headers: buildAndroidCaptureHeaders(token, {
         "content-type": "application/json",
-        authorization: `Bearer ${token}`,
-      },
+      }),
       body: JSON.stringify(body),
     });
   } catch (err) {
@@ -275,10 +287,9 @@ async function capturePdf(
   try {
     res = await fetch(`${base}/api/capture/pdf`, {
       method: "POST",
-      headers: {
-        authorization: `Bearer ${token}`,
+      headers: buildAndroidCaptureHeaders(token, {
         "x-expected-sha256": expected,
-      },
+      }),
       body: form,
     });
   } catch (err) {
