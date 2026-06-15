@@ -1,6 +1,7 @@
 "use client";
 
 import { X } from "lucide-react";
+import Link from "next/link";
 import type { CollectionRow } from "@/db/collections";
 import {
   attachCollectionAction,
@@ -24,15 +25,19 @@ export function CollectionEditor({
     <div className="flex flex-col gap-2">
       <div className="flex flex-wrap gap-1.5">
         {attached.map((c) => (
-          <form
+          <span
             key={c.id}
-            action={detachCollectionAction}
-            className="inline-flex items-center gap-1"
+            className="inline-flex items-center gap-1 rounded-sm border border-[var(--border-strong)] bg-[var(--surface-raised)] px-2 py-0.5 text-xs text-[var(--text-primary)]"
           >
-            <input type="hidden" name="item_id" value={itemId} />
-            <input type="hidden" name="collection_id" value={c.id} />
-            <span className="inline-flex items-center gap-1 rounded-sm border border-[var(--border-strong)] bg-[var(--surface-raised)] px-2 py-0.5 text-xs text-[var(--text-primary)]">
+            <Link
+              href={`/collections/${c.id}`}
+              className="hover:text-[var(--accent-11)] hover:underline"
+            >
               {c.name}
+            </Link>
+            <form action={detachCollectionAction} className="inline-flex">
+              <input type="hidden" name="item_id" value={itemId} />
+              <input type="hidden" name="collection_id" value={c.id} />
               <button
                 type="submit"
                 aria-label={`Remove from ${c.name}`}
@@ -40,8 +45,8 @@ export function CollectionEditor({
               >
                 <X className="h-3 w-3" strokeWidth={2} />
               </button>
-            </span>
-          </form>
+            </form>
+          </span>
         ))}
         {attached.length === 0 && (
           <span className="text-xs text-[var(--text-muted)]">No collections yet.</span>

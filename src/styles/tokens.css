@@ -1,7 +1,6 @@
-/* AI Brain — design tokens
+/* AI Memory — prism-memory design tokens
  * Single source of truth. Every color/space/radius/shadow/motion value
- * referenced in components MUST come from here. See DESIGN.md for the
- * full specification.
+ * referenced in components MUST come from here.
  *
  * Themes:
  *   - :root                         → light theme (default)
@@ -11,38 +10,72 @@
  */
 
 :root {
-  /* Accent — Radix Indigo */
-  --accent-9: #3e63dd;
-  --accent-10: #3a5ccc;
-  --accent-11: #3a5bc7;
-  --accent-3: #f0f4ff;
+  /* Prism memory palette */
+  --ink-950: #14213D;
+  --ink-800: #24344F;
+  --surface-base: #FBFCFE;
+  --panel: #FFFFFF;
+  --line: #D7DFEA;
+  --muted: #667085;
+  --ruby: #E63B6F;
+  --coral: #F26A4F;
+  --amber: #F6B73C;
+  --citrine: #F7E463;
+  --lime: #A7D957;
+  --teal: #18A999;
+  --cyan: #42C7E8;
+  --azure: #2F80ED;
+  --violet: #7E5BEF;
+  --magenta: #C64ACB;
+
+  /* Primary action and focus */
+  --accent-9: var(--ink-950);
+  --accent-10: var(--ink-800);
+  --accent-11: var(--ink-950);
+  --accent-7: #A9B8CD;
+  --accent-3: #EEF4FF;
   --on-accent: #ffffff;
 
-  /* Neutral — Radix Slate */
-  --bg: #fbfcfd;
-  --surface: #f8f9fa;
+  /* Neutral structure */
+  --bg: var(--surface-base);
+  --background: var(--surface-base);
+  --surface: var(--panel);
   --surface-raised: #ffffff;
-  --border: #d7dbdf;
-  --border-strong: #b9bbc6;
-  --text-primary: #1c2024;
-  --text-secondary: #60646c;
-  --text-muted: #8b8d98;
+  --border: var(--line);
+  --border-strong: #A9B8CD;
+  --text-primary: var(--ink-950);
+  --text-secondary: var(--ink-800);
+  --text-muted: var(--muted);
 
   /* Semantic (reserved — only when the meaning matches) */
-  --success: #2a7e3b;
-  --warning: #ab6400;
-  --danger: #ce2c31;
-  --info: #00749e;
+  --success: var(--teal);
+  --warning: #A66A00;
+  --danger: var(--ruby);
+  --info: var(--azure);
+
+  /* Source quality */
+  --quality-full-text: var(--teal);
+  --quality-transcript: var(--cyan);
+  --quality-preview: var(--amber);
+  --quality-metadata: var(--coral);
+  --quality-needs-upgrade: var(--ruby);
+
+  /* Ask scope */
+  --scope-all: var(--ink-950);
+  --scope-item: var(--azure);
+  --scope-selected: var(--violet);
+  --scope-group: var(--magenta);
+  --scope-high-quality: var(--teal);
 
   /* Highlight (user text highlights) */
-  --highlight: #fff3b0;
+  --highlight: #FFF4A3;
 
   /* Radius */
   --radius-xs: 4px;
   --radius-sm: 6px;
   --radius-md: 8px;
-  --radius-lg: 12px;
-  --radius-xl: 16px;
+  --radius-lg: 10px;
+  --radius-xl: 12px;
   --radius-full: 9999px;
 
   /* Spacing (4px base) */
@@ -60,9 +93,9 @@
   --space-20: 96px;
 
   /* Elevation — only three tiers; only for floating layers */
-  --shadow-sm: 0 1px 2px rgb(15 18 25 / 0.06);
-  --shadow-md: 0 6px 24px rgb(15 18 25 / 0.08);
-  --shadow-lg: 0 16px 48px rgb(15 18 25 / 0.12);
+  --shadow-sm: 0 1px 2px rgb(20 33 61 / 0.05);
+  --shadow-md: 0 8px 24px rgb(20 33 61 / 0.08);
+  --shadow-lg: 0 18px 48px rgb(20 33 61 / 0.12);
 
   /* Motion */
   --duration-fast: 80ms;
@@ -83,25 +116,34 @@
 }
 
 :root[data-theme="dark"] {
-  --accent-9: #5472e4;
-  --accent-10: #6983eb;
-  --accent-11: #9eb1ff;
-  --accent-3: #182449;
+  --ink-950: #F4F7FB;
+  --ink-800: #D8E0EC;
+  --surface-base: #101825;
+  --panel: #162235;
+  --line: #2B3B52;
+  --muted: #96A4B7;
+
+  --accent-9: #F4F7FB;
+  --accent-10: #D8E0EC;
+  --accent-11: #D8E0EC;
+  --accent-7: #52647C;
+  --accent-3: #22334E;
   --on-accent: #ffffff;
 
-  --bg: #111113;
-  --surface: #18191b;
-  --surface-raised: #1d1e20;
-  --border: #2b2d30;
-  --border-strong: #43484e;
-  --text-primary: #edeef0;
-  --text-secondary: #9ba1a6;
-  --text-muted: #60646c;
+  --bg: var(--surface-base);
+  --background: var(--surface-base);
+  --surface: var(--panel);
+  --surface-raised: #1B2A40;
+  --border: var(--line);
+  --border-strong: #52647C;
+  --text-primary: var(--ink-950);
+  --text-secondary: var(--ink-800);
+  --text-muted: var(--muted);
 
-  --success: #63c174;
+  --success: #4DD7C8;
   --warning: #f1a10d;
-  --danger: #ff6369;
-  --info: #7ce2fe;
+  --danger: #FF6D98;
+  --info: #7CCFFD;
   --highlight: #4a3f10;
 
   --shadow-sm: 0 1px 2px rgb(0 0 0 / 0.4);

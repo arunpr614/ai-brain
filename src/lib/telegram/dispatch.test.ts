@@ -228,7 +228,7 @@ describe("telegram/dispatch.handleCaptureMessage", () => {
         source_type: "youtube",
         content: {
           title: "Public video from oEmbed",
-          body: "[Transcript unavailable: YouTube blocked Brain's server transcript request with an anti-bot sign-in check.]",
+          body: "[Transcript unavailable: YouTube blocked AI Memory's server transcript request with an anti-bot sign-in check.]",
           author: "Helpful Channel",
           source_url: "https://www.youtube.com/watch?v=abc12345678",
           extraction_warning: "youtube_antibot_metadata_only",

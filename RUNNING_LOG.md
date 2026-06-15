@@ -7730,3 +7730,62 @@ User approved production with `Approved for production. proceed continue goal`. 
 - Offsite backup script is not installed on production; on-host SQLite backups were verified.
 - Local Ollama was unavailable, so local provider validation was warn-only; remote production provider checks passed.
 - Open UX_Final_Plan decisions remain deferred follow-up work; no decision-gated behavior was silently implemented.
+
+---
+
+## Entry #115 - 2026-06-15 16:40 IST - Magic Patterns UX v2 resume implemented locally, release gates pending
+
+### Summary
+
+Resumed from the 2026-06-15 production handover on the clean release worktree `/private/tmp/ai-brain-ux-v2-main-ready`. Created branch `codex/ai-brain-ux-v2-magic-patterns` from evidence commit `2c146699b68da083ec83d777c25413ec97250645` and implemented the approved Magic Patterns web/responsive WebView UI candidate without using the dirty original worktree as the release source.
+
+### Done
+
+- Re-opened Magic Patterns references:
+  - Mobile editor `d5w3fb6rzxdeht7urnye5r`, artifact `d7eeaec6-0272-40fa-a7ca-4de7871182e7`
+  - Desktop editor `fhbeo46qahq5fkjfseckxx`, artifact `f3312489-9172-4c3f-bcf8-2352ece9d417`
+- Implemented local UI candidate:
+  - Desktop/mobile shell refresh with AI Memory branding, collapsible desktop rail, route-aware mobile bottom nav, More route, Pair Device link, and Needs Upgrade badge.
+  - `/library` route with source/quality/tag filters, mobile filter sheet, bulk select, and Ask selected.
+  - Item detail/focus refresh with topics, collections/tags, related items, repair affordance, Ask item, and focus mode hiding shell chrome.
+  - Ask scope support for selected/tag/topic/collection item sets, plus richer scope/citation/history surfaces where already approved.
+  - Topic storage/UI with additive migration `018_topics.sql`, `src/db/topics.ts`, topic detail route, and enrichment-derived topic assignment.
+  - Collection detail route aligned with scoped Ask.
+  - Public web icons and manifest for AI Memory branding.
+- Preserved open decision boundaries:
+  - D-001/D-002/D-003 Ask attachment/high-quality/history persistence deferred.
+  - D-004 mark-good-enough deferred.
+  - D-005 native Android item tabs deferred.
+  - D-006 raised Capture on More deferred.
+  - D-007 active offline controls/queues deferred.
+  - D-008 QR pairing deferred.
+  - D-009/D-010 transcript ops/fallback deferred.
+  - D-011 product analytics deferred.
+  - D-012 extension redesign deferred.
+  - D-013 Android package-ID migration deferred.
+  - D-014 embedded YouTube media/player deferred.
+- Captured browser QA screenshots under:
+  - `UX_v2/execution/evidence/screenshots/2026-06-15-magic-patterns/`
+  - `UX_v2/execution/evidence/screenshots/2026-06-15-magic-patterns-seeded/`
+- Added release matrix:
+  - `UX_v2/execution/UX_V2_MAGIC_PATTERNS_IMPLEMENTATION_MATRIX_2026-06-15.md`
+- Updated tracker:
+  - `UX_v2/execution/UX_V2_EXECUTION_TRACKER.md`
+
+### Validation
+
+- `npm run typecheck` passed.
+- `npm run lint` passed with the known unused-disable warnings in `src/lib/client/register-sw.ts` and `src/lib/queue/enrichment-batch-cron.ts`.
+- `npm test` passed: 515 tests, 77 suites, 0 failures.
+- `npm run build` passed with the known `unpdf` warning.
+- Browser QA passed on empty and seeded local states; all checked routes returned 200 with no captured page/console errors.
+- Focus mode retest confirmed the shell is hidden for `/items/[id]?mode=focus`.
+
+### Release state
+
+- Web Magic Patterns candidate: implemented locally.
+- Android UX v2 claim: pending deployed-asset validation inside the APK/WebView.
+- Production deploy: not started yet in this resumed pass.
+- Production backup/restore: plan documented; actual predeploy backup still required.
+- Code review: in progress; no P0/P1 found so far.
+- Deploy gate: still blocked until final diff review, production backup, deploy access/script run, post-deploy smoke, and Android runtime validation complete.

@@ -20,7 +20,7 @@ export function UpgradeTextForm({ itemId }: { itemId: string }) {
         Transcript or notes
       </label>
       <p className="mt-1 text-xs leading-relaxed text-[var(--text-secondary)]">
-        Paste the content you want Brain to remember for this item.
+        Paste the content you want AI Memory to remember for this item.
       </p>
       <textarea
         id="upgrade-text-input"

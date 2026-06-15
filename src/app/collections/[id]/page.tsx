@@ -1,4 +1,4 @@
-import { ArrowLeft, FileText, Globe, StickyNote } from "lucide-react";
+import { ArrowLeft, FileText, Globe, MessageSquare, StickyNote } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getCollection, listItemsInCollection } from "@/db/collections";
@@ -37,18 +37,34 @@ export default async function CollectionDetailPage({
         All collections
       </Link>
 
-      <header className="mb-6">
-        <h1 className="text-[30px] font-semibold tracking-[-0.01em] text-[var(--text-primary)]">
-          {collection.name}
-        </h1>
-        <p className="mt-1 text-sm text-[var(--text-secondary)]">
-          {items.length} item{items.length === 1 ? "" : "s"}
-          {collection.kind === "auto" && (
-            <span className="ml-2 rounded-sm border border-[var(--border)] px-1.5 py-0.5 text-[11px] uppercase tracking-wide text-[var(--text-muted)]">
-              auto
-            </span>
+      <header className="mb-6 flex flex-col gap-4 border-b border-[var(--border)] pb-6 sm:flex-row sm:items-start sm:justify-between">
+        <div>
+          <h1 className="text-[30px] font-semibold tracking-[-0.01em] text-[var(--text-primary)]">
+            {collection.name}
+          </h1>
+          <p className="mt-1 text-sm text-[var(--text-secondary)]">
+            {items.length} item{items.length === 1 ? "" : "s"}
+            {collection.kind === "auto" && (
+              <span className="ml-2 rounded-sm border border-[var(--border)] px-1.5 py-0.5 text-[11px] uppercase tracking-wide text-[var(--text-muted)]">
+                auto
+              </span>
+            )}
+          </p>
+          {collection.description && (
+            <p className="mt-3 max-w-[68ch] text-sm leading-relaxed text-[var(--text-secondary)]">
+              {collection.description}
+            </p>
           )}
-        </p>
+        </div>
+        {items.length > 0 && (
+          <Link
+            href={`/ask?scope=collection&collection=${collection.id}`}
+            className="inline-flex h-9 shrink-0 items-center gap-2 rounded-md bg-[var(--accent-9)] px-4 text-sm font-medium text-[var(--on-accent)] hover:bg-[var(--accent-10)]"
+          >
+            <MessageSquare className="h-4 w-4" strokeWidth={2} />
+            Ask collection
+          </Link>
+        )}
       </header>
 
       {items.length === 0 ? (

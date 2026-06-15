@@ -260,3 +260,50 @@ Latest PRD-14 validation:
 - Post-deploy smoke: live web routes, service active status, authenticated health during deploy, remote provider checks, stale-copy scan, Android install/relaunch/pair/share/offline checks, and smoke-data cleanup passed.
 - PR readiness: clean integration branch `codex/ai-brain-ux-v2-main-ready` remains the release/integration branch and PR [#6](https://github.com/arunpr614/ai-brain/pull/6) remains the GitHub artifact.
 - Release verdict: complete for approved UX_Final_Plan production scope; deferred product decisions and residual caveats are documented in `UX_V2_PRODUCTION_RELEASE_2026-06-15.md`.
+
+## 2026-06-15 Magic Patterns Resume Tracker
+
+User goal: resume from the production handover, implement the new web and Android WebView UI/UX from the approved plan plus Magic Patterns, finish QA/release readiness, and deploy autonomously if gates pass.
+
+Updated operating note: this goal explicitly says to notify Arun before/after deploy but not wait for approval. Production deploy is still blocked by the hard gates: no failing tests, no unresolved P0/P1, verified backup/restore, rollback documented, deploy access confirmed, no unknown data risk, no unvalidated critical UX, no unsafe same-version APK overwrite, no silent D-001..D-014 assumptions.
+
+| Phase | Task | Owner | Status | Evidence | Blockers / Notes |
+| --- | --- | --- | --- | --- | --- |
+| 0 | Reconstruct handover and release source | Codex | Complete | Handover read; clean worktree `/private/tmp/ai-brain-ux-v2-main-ready`; base `2c14669` | Original project worktree preserved dirty and not used as release source. |
+| 1 | Create isolated implementation branch | Codex | Complete | Branch `codex/ai-brain-ux-v2-magic-patterns` | Based on production evidence commit, not original dirty branch. |
+| 1 | Re-open Magic Patterns references | Codex | Complete | MP1 artifact `d7eeaec6-0272-40fa-a7ca-4de7871182e7`; MP2 artifact `f3312489-9172-4c3f-bcf8-2352ece9d417` | No generation/publishing performed. |
+| 2 | UX/release matrix | Codex | Complete | `UX_V2_MAGIC_PATTERNS_IMPLEMENTATION_MATRIX_2026-06-15.md` | Distinguishes implemented UI from D-001..D-014 deferrals. |
+| 3 | Web shell/library/item/Ask/topic/collection UI | Codex | Complete locally | Routes/components in current branch; browser screenshots under `2026-06-15-magic-patterns*` | Production deploy and live smoke pending. |
+| 3 | Android WebView UI assets | Codex | Complete locally, runtime pending | Browser mobile screenshots captured | Do not claim Android UX v2 until APK loads deployed assets after deploy. |
+| 3 | Topics storage/UI | Codex | Complete locally | `018_topics.sql`, `src/db/topics.ts`, topic route/tests | Additive migration; production backup required before deploy. |
+| 4 | Validation refresh | Codex | Complete locally | `npm run typecheck`; `npm run lint`; `npm test` 515/77; `npm run build` | Lint has two known unused-disable warnings; build has known `unpdf` warning. |
+| 4 | Code review | Codex | In progress | Focused review found no P0/P1 so far; `git diff --check` cleanup underway | Must finish before deploy. |
+| 5 | Backup/restore gate | Codex | Pending | Plan documented in Magic Patterns matrix | Actual production backup and integrity check required before deploy. |
+| 5 | Deploy access and script gate | Codex | Pending | Prior deploy path `scripts/deploy.sh` | Must inspect/run only after final local gates pass. |
+| 5 | Post-deploy web smoke | Codex | Pending | Checklist: `/unlock`, `/library`, `/ask`, `/needs-upgrade`, `/more`, `/settings/device-pairing`, `/offline.html`, service health | Hard gate after deploy. |
+| 5 | Android deployed-asset validation | Codex | Pending | Needs emulator/APK load after deploy | Pairing/share/offline/relaunch validation required or explicitly documented nonblocking. |
+
+### Magic Patterns Screen Status
+
+| Screen group | Web status | Android WebView status | Validation | Decision state |
+| --- | --- | --- | --- | --- |
+| Shell/nav | Implemented locally | Implemented locally via responsive shell | Desktop/mobile screenshots | D-006 raised Capture deferred. |
+| Library | Implemented locally | Implemented locally | Seeded desktop/mobile screenshots | No open decision. |
+| Needs Upgrade/Repair | Shipped previously, retained | Shipped previously, retained | Weak item screenshots; repair tests | D-004 deferred. |
+| Item detail/focus | Implemented locally | Implemented locally as responsive route | Focus retest confirms nav hidden | D-005 tabs and D-014 YouTube player deferred. |
+| Ask | Implemented locally within approved scope | Implemented locally as responsive route | Ask API/retrieval tests; screenshots | D-001/D-002/D-003 deferred. |
+| Capture/share | Capture shipped previously; share-specific route deferred | Existing share API retained; dedicated share result deferred | Prior Android share evidence; new runtime pending | PRD-13/multi-PDF/offline queue deferred. |
+| More/settings/privacy/offline | Informational UI retained/refreshed | More route added/refreshed | More screenshots | D-007 active offline, D-008 QR, D-011 analytics deferred. |
+| Login/unlock/pair | Existing shipped flow retained | Existing shipped flow retained | Pair route screenshots; Android runtime pending | D-008 QR and D-013 package migration deferred. |
+| Topic/collection | Implemented locally | Implemented locally as responsive routes | Topic/collection screenshots and tests | No native-only work. |
+
+### Current Release Gate
+
+Status before production deploy: **not yet deployable** until code review, actual production backup, deploy-script access, and Android post-deploy validation complete.
+
+Current local green checks:
+
+- `npm run typecheck` passed.
+- `npm run lint` passed with known warnings in `src/lib/client/register-sw.ts` and `src/lib/queue/enrichment-batch-cron.ts`.
+- `npm test` passed: 515 tests, 77 suites, 0 failures.
+- `npm run build` passed with the known `unpdf` warning.

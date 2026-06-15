@@ -2,15 +2,16 @@
  * /api/ask — RAG chat endpoint.
  *
  * POST body:
- *   { question: string, scope?: "library" | "item", item_id?: string,
- *     thread_id?: string, top_k?: number, min_similarity?: number }
+ *   { question: string, scope?: "library" | "item" | "items",
+ *     item_id?: string, item_ids?: string[], thread_id?: string,
+ *     top_k?: number, min_similarity?: number }
  *
  * Response: text/event-stream with frames:
  *   retrieve | token | citation | done | error
  *
  * Error codes:
  *   UNAUTHENTICATED   — no session cookie
- *   BAD_REQUEST       — body schema / scope/item_id mismatch
+ *   BAD_REQUEST       — body schema / scope mismatch
  *   LLM_PROVIDER_OFFLINE — configured generation provider unreachable
  *   RETRIEVE_FAILED   — vec0 query threw
  *   STREAM_FAILED     — generator threw mid-stream (wrapped by toSSEStream)
@@ -29,8 +30,9 @@ export const dynamic = "force-dynamic";
 
 const BodySchema = z.object({
   question: z.string().min(1).max(2000),
-  scope: z.enum(["library", "item"]).default("library"),
+  scope: z.enum(["library", "item", "items"]).default("library"),
   item_id: z.string().optional(),
+  item_ids: z.array(z.string().min(1)).max(50).optional(),
   thread_id: z.string().optional(),
   top_k: z.number().int().min(1).max(50).default(8),
   min_similarity: z.number().min(-1).max(1).optional(),
@@ -59,6 +61,13 @@ export async function POST(req: NextRequest) {
   if (parsed.scope === "item" && !parsed.item_id) {
     return new Response(
       encodeSSE({ type: "error", code: "BAD_REQUEST", message: "scope=item requires item_id" }),
+      { status: 400, headers: sseHeaders() },
+    );
+  }
+
+  if (parsed.scope === "items" && (!parsed.item_ids || parsed.item_ids.length === 0)) {
+    return new Response(
+      encodeSSE({ type: "error", code: "BAD_REQUEST", message: "scope=items requires item_ids" }),
       { status: 400, headers: sseHeaders() },
     );
   }
@@ -99,6 +108,7 @@ export async function POST(req: NextRequest) {
     chunks = await retrieve(parsed.question, {
       topK: parsed.top_k,
       itemId: parsed.scope === "item" ? parsed.item_id : undefined,
+      itemIds: parsed.scope === "items" ? parsed.item_ids : undefined,
       minSimilarity: parsed.min_similarity,
     });
   } catch (err) {
@@ -113,6 +123,10 @@ export async function POST(req: NextRequest) {
     chunk_id: c.chunk_id,
     item_id: c.item_id,
     item_title: c.item_title,
+    item_source_type: c.item_source_type,
+    item_source_platform: c.item_source_platform,
+    item_capture_quality: c.item_capture_quality,
+    item_extraction_warning: c.item_extraction_warning,
     similarity: c.similarity,
   }));
 

@@ -67,3 +67,23 @@ test("returns 400 when scope=item but item_id missing", async () => {
   const body = await res.text();
   assert.match(body, /item_id/);
 });
+
+test("returns 400 when scope=items but item_ids missing", async () => {
+  const req = mockRequest({ question: "q", scope: "items" });
+  const res = await POST(req);
+  assert.equal(res.status, 400);
+  const body = await res.text();
+  assert.match(body, /item_ids/);
+});
+
+test("returns 400 when scope=items has too many ids", async () => {
+  const req = mockRequest({
+    question: "q",
+    scope: "items",
+    item_ids: Array.from({ length: 51 }, (_, index) => `item-${index}`),
+  });
+  const res = await POST(req);
+  assert.equal(res.status, 400);
+  const body = await res.text();
+  assert.match(body, /BAD_REQUEST/);
+});

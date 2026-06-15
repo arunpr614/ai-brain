@@ -41,6 +41,15 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+body:has([data-focus-mode="true"]) aside,
+body:has([data-focus-mode="true"]) nav[aria-label="Primary mobile"] {
+  display: none;
+}
+
+body:has([data-focus-mode="true"]) main {
+  padding-bottom: 0;
+}
+
 :where(a, button, [role="button"], input, textarea, select, [tabindex]:not([tabindex="-1"])):focus-visible {
   outline: 2px solid var(--accent-9);
   outline-offset: 2px;

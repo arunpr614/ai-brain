@@ -1,6 +1,14 @@
 "use client";
 
-import { FileText, Globe, StickyNote, Trash2, Video, X } from "lucide-react";
+import {
+  FileText,
+  Globe,
+  MessageCircle,
+  StickyNote,
+  Trash2,
+  Video,
+  X,
+} from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState, useTransition } from "react";
@@ -11,17 +19,19 @@ import {
 } from "@/app/actions";
 import type { CollectionRow } from "@/db/collections";
 import type { ItemRow } from "@/db/client";
-import { platformLabel, qualityLabel } from "@/lib/capture/quality";
-import { isFullTextCapture, isNeedsUpgrade } from "@/lib/capture/upgrade-policy";
+import {
+  isLimitedCaptureQuality,
+  platformLabel,
+  qualityLabel,
+} from "@/lib/capture/quality";
 import { ItemEnrichmentWatch } from "./item-enrichment-watch";
 
 /**
  * F-207 library bulk-select UI.
  *
  * Selection state (Set<string> of ids) is local to this client component.
- * Checkboxes render next to each row but are only visible when any item
- * is selected OR the row is hovered — keeps the default "clean library"
- * feel from v0.1.0.
+ * Checkboxes render next to each row. They stay visible on small screens
+ * and appear on hover once there is enough room for a cleaner list view.
  *
  * The floating BulkBar appears once selectedIds.size > 0 and offers three
  * actions: Tag, Add to collection, Delete. All three go through the server
@@ -59,7 +69,37 @@ function SourceIcon({ type }: { type: string }) {
   return <StickyNote className="h-4 w-4" strokeWidth={2} />;
 }
 
-type LibraryFilter = "all" | "needs-upgrade" | "full-text" | "metadata-only";
+function captureSourceLabel(source: string | null | undefined): string {
+  switch (source) {
+    case "android":
+      return "Android";
+    case "extension":
+      return "Extension";
+    case "telegram":
+      return "Telegram";
+    case "system":
+      return "System";
+    case "web":
+      return "Web";
+    default:
+      return "Unknown";
+  }
+}
+
+function QualityBadge({ quality }: { quality: string | null | undefined }) {
+  const limited = isLimitedCaptureQuality(quality);
+  return (
+    <span
+      className={`rounded-full border px-2 py-0.5 text-[11px] font-medium ${
+        limited
+          ? "border-[var(--quality-needs-upgrade)] bg-[var(--surface-raised)] text-[var(--quality-needs-upgrade)]"
+          : "border-[var(--border)] bg-[var(--surface-raised)] text-[var(--text-secondary)]"
+      }`}
+    >
+      {qualityLabel(quality)}
+    </span>
+  );
+}
 
 export function LibraryList({
   items,
@@ -70,7 +110,6 @@ export function LibraryList({
 }) {
   const router = useRouter();
   const [selectedIds, setSelectedIds] = useState<Set<string>>(() => new Set());
-  const [filter, setFilter] = useState<LibraryFilter>("all");
   const [flash, setFlash] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
 
@@ -152,6 +191,15 @@ export function LibraryList({
     });
   }, [selectedIds, clear, router]);
 
+  const handleAskSelected = useCallback(() => {
+    const ids = Array.from(selectedIds);
+    if (ids.length === 0 || ids.length > 50) return;
+    const params = new URLSearchParams();
+    params.set("scope", "selected");
+    params.set("ids", ids.join(","));
+    router.push(`/ask?${params.toString()}`);
+  }, [selectedIds, router]);
+
   // Auto-dismiss flash after 3s.
   useEffect(() => {
     if (!flash) return;
@@ -160,25 +208,11 @@ export function LibraryList({
   }, [flash]);
 
   const anySelected = selectedIds.size > 0;
-  const filteredItems = items.filter((item) => matchesFilter(item, filter));
 
   return (
     <>
-      <LibraryFilterBar
-        active={filter}
-        counts={{
-          all: items.length,
-          needsUpgrade: items.filter((item) => matchesFilter(item, "needs-upgrade")).length,
-          fullText: items.filter((item) => matchesFilter(item, "full-text")).length,
-          metadataOnly: items.filter((item) => matchesFilter(item, "metadata-only")).length,
-        }}
-        onChange={(next) => {
-          setFilter(next);
-          clear();
-        }}
-      />
       <ul className="flex flex-col gap-3">
-        {filteredItems.map((it) => {
+        {items.map((it) => {
           const checked = selectedIds.has(it.id);
           return (
             <li key={it.id} className="group/row">
@@ -191,7 +225,9 @@ export function LibraryList({
               >
                 <label
                   className={`mt-0.5 shrink-0 cursor-pointer ${
-                    anySelected ? "opacity-100" : "opacity-0 group-hover/row:opacity-100"
+                    anySelected
+                      ? "opacity-100"
+                      : "opacity-100 sm:opacity-0 sm:group-hover/row:opacity-100"
                   } transition-opacity`}
                   onClick={(e) => e.stopPropagation()}
                 >
@@ -222,10 +258,12 @@ export function LibraryList({
                         />
                       </span>
                     </div>
-                    <div className="mt-1 flex items-center gap-2 text-xs text-[var(--text-secondary)]">
+                    <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-[var(--text-secondary)]">
                       <span>{platformLabel(it.source_platform, it.source_type)}</span>
                       <span className="text-[var(--text-muted)]">·</span>
-                      <span>{qualityLabel(it.capture_quality)}</span>
+                      <span>via {captureSourceLabel(it.capture_source)}</span>
+                      <span className="text-[var(--text-muted)]">·</span>
+                      <QualityBadge quality={it.capture_quality} />
                       <span className="text-[var(--text-muted)]">·</span>
                       <span>{formatRelative(it.captured_at)}</span>
                       {it.total_chars !== null && (
@@ -254,12 +292,6 @@ export function LibraryList({
         })}
       </ul>
 
-      {filteredItems.length === 0 && (
-        <p className="rounded-lg border border-[var(--border)] bg-[var(--surface)] px-4 py-8 text-center text-sm text-[var(--text-secondary)]">
-          No items match this filter.
-        </p>
-      )}
-
       {anySelected && (
         <BulkBar
           count={selectedIds.size}
@@ -267,6 +299,7 @@ export function LibraryList({
           disabled={isPending}
           onTag={handleBulkTag}
           onAddToCollection={handleBulkCollection}
+          onAskSelected={handleAskSelected}
           onDelete={handleBulkDelete}
           onClear={clear}
         />
@@ -284,70 +317,13 @@ export function LibraryList({
   );
 }
 
-function matchesFilter(item: ItemRow, filter: LibraryFilter): boolean {
-  if (filter === "all") return true;
-  if (filter === "needs-upgrade") return isNeedsUpgrade(item);
-  if (filter === "full-text") return isFullTextCapture(item);
-  return item.capture_quality === "metadata_only";
-}
-
-function LibraryFilterBar({
-  active,
-  counts,
-  onChange,
-}: {
-  active: LibraryFilter;
-  counts: {
-    all: number;
-    needsUpgrade: number;
-    fullText: number;
-    metadataOnly: number;
-  };
-  onChange: (filter: LibraryFilter) => void;
-}) {
-  const options: Array<{ id: LibraryFilter; label: string; count: number }> = [
-    { id: "all", label: "All", count: counts.all },
-    { id: "needs-upgrade", label: "Needs upgrade", count: counts.needsUpgrade },
-    { id: "full-text", label: "Full text", count: counts.fullText },
-    { id: "metadata-only", label: "Metadata only", count: counts.metadataOnly },
-  ];
-
-  return (
-    <div
-      role="tablist"
-      aria-label="Library filter"
-      className="mb-4 flex flex-wrap gap-2"
-    >
-      {options.map((option) => {
-        const selected = option.id === active;
-        return (
-          <button
-            key={option.id}
-            type="button"
-            role="tab"
-            aria-selected={selected}
-            onClick={() => onChange(option.id)}
-            className={`inline-flex h-8 items-center gap-2 rounded-md border px-3 text-xs font-medium transition-colors ${
-              selected
-                ? "border-[var(--accent-9)] bg-[var(--accent-3)] text-[var(--accent-11)]"
-                : "border-[var(--border)] bg-transparent text-[var(--text-secondary)] hover:border-[var(--border-strong)] hover:text-[var(--text-primary)]"
-            }`}
-          >
-            <span>{option.label}</span>
-            <span className="text-[var(--text-muted)]">{option.count}</span>
-          </button>
-        );
-      })}
-    </div>
-  );
-}
-
 function BulkBar({
   count,
   collections,
   disabled,
   onTag,
   onAddToCollection,
+  onAskSelected,
   onDelete,
   onClear,
 }: {
@@ -356,20 +332,37 @@ function BulkBar({
   disabled: boolean;
   onTag: (tagName: string) => void;
   onAddToCollection: (collectionId: string) => void;
+  onAskSelected: () => void;
   onDelete: () => void;
   onClear: () => void;
 }) {
   const [tagValue, setTagValue] = useState("");
+  const askDisabled = disabled || count > 50;
 
   return (
     <div
       role="toolbar"
       aria-label="Bulk actions"
-      className="fixed bottom-6 left-1/2 z-40 flex -translate-x-1/2 items-center gap-3 rounded-full border border-[var(--border-strong)] bg-[var(--surface-raised)] px-4 py-2 shadow-lg"
+      className="fixed bottom-24 left-1/2 z-40 flex max-w-[calc(100vw-2rem)] -translate-x-1/2 flex-wrap items-center justify-center gap-3 rounded-lg border border-[var(--border-strong)] bg-[var(--surface-raised)] px-4 py-2 shadow-lg md:bottom-6 md:rounded-full"
     >
       <span className="text-sm font-medium text-[var(--text-primary)]">
         {count} selected
       </span>
+
+      <button
+        type="button"
+        onClick={onAskSelected}
+        disabled={askDisabled}
+        title={
+          count > 50
+            ? "Ask up to 50 selected sources at a time"
+            : "Ask selected sources"
+        }
+        className="inline-flex h-7 items-center gap-1 rounded-sm bg-[var(--accent-9)] px-2 text-xs font-medium text-[var(--on-accent)] hover:bg-[var(--accent-10)] disabled:opacity-50"
+      >
+        <MessageCircle className="h-3 w-3" strokeWidth={2} />
+        Ask
+      </button>
 
       <form
         onSubmit={(e) => {

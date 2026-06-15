@@ -272,10 +272,10 @@ function transcriptJobLabel(state: string): string {
 function transcriptJobDetail(signals: ReviewSignals): string {
   const attempts = formatAttempts(signals.transcriptJobAttempts, signals.transcriptJobMaxAttempts);
   if (signals.transcriptJobState === "pending") {
-    return `Brain will retry transcript recovery in the background${attempts}.`;
+    return `AI Memory will retry transcript recovery in the background${attempts}.`;
   }
   if (signals.transcriptJobState === "running") {
-    return `Brain is trying to recover the transcript now${attempts}.`;
+    return `AI Memory is trying to recover the transcript now${attempts}.`;
   }
   if (signals.transcriptJobState === "retryable_error") {
     const when = signals.transcriptJobNextRunAt

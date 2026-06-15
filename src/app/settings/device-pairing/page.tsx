@@ -41,7 +41,7 @@ export default async function DevicePairingPage() {
         Device pairing
       </h1>
       <p className="mb-8 text-sm text-[var(--text-secondary)]">
-        Your AI Memory server is accessible at{" "}
+        AI Memory is accessible at{" "}
         <code className="font-mono text-[var(--text-primary)]">{BRAIN_TUNNEL_URL}</code>{" "}
         via the Cloudflare tunnel. Pair Android with a short-lived code, or use
         the advanced token flow for the Chrome extension.

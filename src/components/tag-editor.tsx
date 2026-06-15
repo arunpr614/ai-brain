@@ -1,6 +1,7 @@
 "use client";
 
 import { X } from "lucide-react";
+import Link from "next/link";
 import { useRef } from "react";
 import {
   addTagToItemAction,
@@ -34,22 +35,24 @@ export function TagEditor({
         {tags.map((t) => {
           const isManual = t.kind === "manual";
           return (
-            <form
+            <span
               key={t.id}
-              action={removeTagFromItemAction}
-              className="inline-flex items-center gap-1"
+              className={`inline-flex items-center gap-1 rounded-sm px-2 py-0.5 text-xs ${
+                isManual
+                  ? "border border-[var(--border-strong)] bg-[var(--surface-raised)] text-[var(--text-primary)]"
+                  : "border border-[var(--border)] bg-[var(--surface-raised)] text-[var(--text-secondary)]"
+              }`}
+              title={isManual ? "Manual tag" : "Auto-generated tag"}
             >
-              <input type="hidden" name="item_id" value={itemId} />
-              <input type="hidden" name="tag_id" value={t.id} />
-              <span
-                className={`inline-flex items-center gap-1 rounded-sm px-2 py-0.5 text-xs ${
-                  isManual
-                    ? "border border-[var(--border-strong)] bg-[var(--surface-raised)] text-[var(--text-primary)]"
-                    : "border border-[var(--border)] bg-[var(--surface-raised)] text-[var(--text-secondary)]"
-                }`}
-                title={isManual ? "Manual tag" : "Auto-generated tag"}
+              <Link
+                href={`/library?tag=${encodeURIComponent(t.name)}`}
+                className="hover:text-[var(--accent-11)] hover:underline"
               >
                 {t.name}
+              </Link>
+              <form action={removeTagFromItemAction} className="inline-flex">
+                <input type="hidden" name="item_id" value={itemId} />
+                <input type="hidden" name="tag_id" value={t.id} />
                 <button
                   type="submit"
                   aria-label={`Remove tag ${t.name}`}
@@ -57,8 +60,8 @@ export function TagEditor({
                 >
                   <X className="h-3 w-3" strokeWidth={2} />
                 </button>
-              </span>
-            </form>
+              </form>
+            </span>
           );
         })}
         {tags.length === 0 && (

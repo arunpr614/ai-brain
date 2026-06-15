@@ -6,17 +6,17 @@ import {
   CirclePlus,
   Download,
   ExternalLink,
-  EyeOff,
   FileText,
+  Maximize2,
   MessageSquare,
+  Minimize2,
   Quote,
-  RotateCcw,
+  Sparkles,
   Trash2,
 } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { deleteItemAction } from "@/app/actions";
-import { ignoreTranscriptJobAction, retryTranscriptJobAction } from "@/app/review/actions";
 import { CollectionEditor } from "@/components/collection-editor";
 import { ItemEnrichmentWatch } from "@/components/item-enrichment-watch";
 import { RelatedItems } from "@/components/related-items";
@@ -29,13 +29,8 @@ import {
 import { listChunksForItem } from "@/db/chunks";
 import type { ItemRow } from "@/db/client";
 import { getItem } from "@/db/items";
-import {
-  getTranscriptJobForItem,
-  listTranscriptAttemptsForItem,
-  type TranscriptAttemptRow,
-  type TranscriptJobRow,
-} from "@/db/transcript-jobs";
 import { listTagsForItem } from "@/db/tags";
+import { listTopicsForItem, type ItemTopicRow } from "@/db/topics";
 import { getItemProcessingStatus, type ItemProcessingStatus } from "@/lib/items/status";
 import {
   improvementHint,
@@ -50,9 +45,7 @@ import {
   type CaptureResultPayload,
   type CaptureResultState,
 } from "@/lib/capture/result";
-import { canUpgradeWithPastedText } from "@/lib/capture/upgrade-policy";
 import { findRelatedItems } from "@/lib/related";
-import { UpgradeTextForm } from "./upgrade-text-form";
 
 function parseQuotes(raw: string | null): string[] {
   if (!raw) return [];
@@ -115,18 +108,20 @@ export default async function ItemDetailPage({
   params: Promise<{ id: string }>;
   searchParams: Promise<{
     highlight?: string;
+    mode?: string;
     capture?: string;
     capture_state?: string;
     repair?: string;
   }>;
 }) {
   const { id } = await params;
-  const { highlight, capture, capture_state, repair } = await searchParams;
+  const { highlight, mode, capture, capture_state, repair } = await searchParams;
   const item = getItem(id);
   if (!item) notFound();
 
   const captured = new Date(item.captured_at).toLocaleString();
-  const tags = listTagsForItem(item.id);
+  const tags = listTagsForItem(item.id).filter((tag) => tag.kind === "manual");
+  const topics = listTopicsForItem(item.id);
   const attachedCollections = listCollectionsForItem(item.id);
   const availableCollections = listCollections("manual");
   const quotes = parseQuotes(item.quotes);
@@ -138,11 +133,6 @@ export default async function ItemDetailPage({
   const platform = platformLabel(item.source_platform, item.source_type);
   const quality = qualityLabel(item.capture_quality);
   const hint = improvementHint(item.source_platform, item.capture_quality);
-  const canUpgradeWithText = canUpgradeWithPastedText(item);
-  const transcriptJob = getTranscriptJobForItem(item.id);
-  const transcriptAttempts = transcriptJob
-    ? listTranscriptAttemptsForItem(item.id).slice(0, 3)
-    : [];
   const upgradeReason = needsUpgradeReason({
     source_platform: item.source_platform,
     capture_quality: item.capture_quality,
@@ -173,11 +163,24 @@ export default async function ItemDetailPage({
   // and RelatedItems component renders nothing in that case.
   const related = findRelatedItems(item.id, { limit: 5 });
 
+  if (mode === "focus") {
+    return (
+      <FocusReadMode
+        item={item}
+        captured={captured}
+        platform={platform}
+        quality={quality}
+        limitedQuality={limitedQuality}
+        upgradeReason={upgradeReason}
+      />
+    );
+  }
+
   return (
     <div className="mx-auto max-w-[1180px] px-8 py-10">
       <ScrollToHash />
       <Link
-        href="/"
+        href="/library"
         className="mb-6 inline-flex items-center gap-1.5 text-sm text-[var(--text-secondary)] transition-colors hover:text-[var(--text-primary)]"
       >
         <ArrowLeft className="h-3.5 w-3.5" strokeWidth={2} />
@@ -265,6 +268,13 @@ export default async function ItemDetailPage({
 
           <footer className="mt-12 flex flex-wrap items-center gap-3 border-t border-[var(--border)] pt-6">
             <Link
+              href={`/items/${item.id}?mode=focus`}
+              className="inline-flex h-8 items-center gap-2 rounded-md border border-[var(--border)] bg-transparent px-3 font-sans text-sm font-medium text-[var(--text-secondary)] transition-colors hover:border-[var(--border-strong)] hover:text-[var(--text-primary)]"
+            >
+              <Maximize2 className="h-3.5 w-3.5" strokeWidth={2} />
+              Focus mode
+            </Link>
+            <Link
               href={`/items/${item.id}/ask`}
               className="inline-flex h-8 items-center gap-2 rounded-md border border-[var(--border)] bg-transparent px-3 font-sans text-sm font-medium text-[var(--text-secondary)] transition-colors hover:border-[var(--border-strong)] hover:text-[var(--text-primary)]"
             >
@@ -306,6 +316,8 @@ export default async function ItemDetailPage({
             </p>
             <TagEditor itemId={item.id} tags={tags} />
           </div>
+
+          <IncludedTopicsPanel topics={topics} />
 
           {/* T-15 (EXP-3): related items by semantic similarity. Hidden
               when the item has no embeddings yet. */}
@@ -355,14 +367,6 @@ export default async function ItemDetailPage({
                 {hint}
               </p>
             )}
-            {transcriptJob && (
-              <TranscriptRecoveryPanel
-                job={transcriptJob}
-                attempts={transcriptAttempts}
-                itemId={item.id}
-              />
-            )}
-            {canUpgradeWithText && <UpgradeTextForm itemId={item.id} />}
           </div>
 
           {/* F-301: Collections editor — always visible so the user can
@@ -442,80 +446,6 @@ export default async function ItemDetailPage({
           )}
         </aside>
       </div>
-    </div>
-  );
-}
-
-function TranscriptRecoveryPanel({
-  job,
-  attempts,
-  itemId,
-}: {
-  job: TranscriptJobRow;
-  attempts: TranscriptAttemptRow[];
-  itemId: string;
-}) {
-  const active = job.state !== "done" && job.state !== "ignored";
-  return (
-    <div className="mt-4 border-t border-[var(--border)] pt-4">
-      <div className="flex items-start justify-between gap-3">
-        <div>
-          <p className="text-xs font-medium text-[var(--text-primary)]">
-            Transcript recovery
-          </p>
-          <p className="mt-1 text-xs leading-relaxed text-[var(--text-secondary)]">
-            {transcriptJobDetail(job)}
-          </p>
-        </div>
-        <span className="shrink-0 rounded-md border border-[var(--border)] px-2 py-1 text-[11px] text-[var(--text-secondary)]">
-          {transcriptJobLabel(job.state)}
-        </span>
-      </div>
-
-      {active && (
-        <div className="mt-3 flex flex-wrap gap-2">
-          <form action={retryTranscriptJobAction}>
-            <input type="hidden" name="item_id" value={itemId} />
-            <button
-              type="submit"
-              className="inline-flex h-8 items-center gap-2 rounded-md border border-[var(--border)] bg-transparent px-3 text-xs font-medium text-[var(--text-secondary)] transition-colors hover:border-[var(--border-strong)] hover:text-[var(--text-primary)]"
-            >
-              <RotateCcw className="h-3.5 w-3.5" strokeWidth={2} />
-              Retry
-            </button>
-          </form>
-          <form action={ignoreTranscriptJobAction}>
-            <input type="hidden" name="item_id" value={itemId} />
-            <button
-              type="submit"
-              className="inline-flex h-8 items-center gap-2 rounded-md border border-[var(--border)] bg-transparent px-3 text-xs font-medium text-[var(--text-secondary)] transition-colors hover:border-[var(--border-strong)] hover:text-[var(--text-primary)]"
-            >
-              <EyeOff className="h-3.5 w-3.5" strokeWidth={2} />
-              Ignore
-            </button>
-          </form>
-        </div>
-      )}
-
-      {attempts.length > 0 && (
-        <ol className="mt-3 flex flex-col gap-2">
-          {attempts.map((attempt) => (
-            <li key={attempt.id} className="text-[11px] leading-relaxed text-[var(--text-secondary)]">
-              <span className="font-medium text-[var(--text-primary)]">{attempt.provider}</span>
-              <span className="mx-1 text-[var(--text-muted)]">·</span>
-              {attempt.state.replace(/_/g, " ")}
-              {attempt.error_code && (
-                <>
-                  <span className="mx-1 text-[var(--text-muted)]">·</span>
-                  {attempt.error_code}
-                </>
-              )}
-              <span className="mx-1 text-[var(--text-muted)]">·</span>
-              {formatAttemptTime(attempt.created_at)}
-            </li>
-          ))}
-        </ol>
-      )}
     </div>
   );
 }
@@ -769,32 +699,147 @@ function SourceTrustStrip({
   );
 }
 
-function transcriptJobLabel(state: TranscriptJobRow["state"]): string {
-  if (state === "pending") return "Queued";
-  if (state === "running") return "Running";
-  if (state === "retryable_error") return "Retrying";
-  if (state === "manual_needed") return "Needs help";
-  if (state === "ignored") return "Ignored";
-  return "Recovered";
+function IncludedTopicsPanel({ topics }: { topics: ItemTopicRow[] }) {
+  return (
+    <div className="rounded-lg border border-[var(--border)] bg-[var(--surface)] p-5">
+      <div className="mb-2 flex items-center justify-between gap-3">
+        <p className="text-[11px] font-medium uppercase tracking-wider text-[var(--text-muted)]">
+          Included Topics
+        </p>
+        <span className="rounded-sm border border-[var(--border)] px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wide text-[var(--text-muted)]">
+          AI
+        </span>
+      </div>
+      {topics.length > 0 ? (
+        <>
+          <div className="flex flex-wrap gap-1.5">
+            {topics.map((topic) => (
+              <Link
+                key={topic.id}
+                href={`/topics/${topic.slug}`}
+                title={topic.evidence ?? `View ${topic.name}`}
+                className="inline-flex max-w-full items-center gap-1 rounded-md border border-[var(--border)] bg-[var(--surface-raised)] px-2.5 py-1 text-xs font-medium text-[var(--text-primary)] hover:border-[var(--border-strong)] hover:bg-[var(--surface)]"
+              >
+                <Sparkles
+                  className="h-3 w-3 shrink-0 text-[var(--accent-11)]"
+                  strokeWidth={2}
+                />
+                <span className="truncate">{topic.name}</span>
+              </Link>
+            ))}
+          </div>
+          <p className="mt-3 text-xs text-[var(--text-muted)]">
+            AI-detected from this source.
+          </p>
+        </>
+      ) : (
+        <p className="text-xs text-[var(--text-muted)]">
+          No included topics yet.
+        </p>
+      )}
+    </div>
+  );
 }
 
-function transcriptJobDetail(job: TranscriptJobRow): string {
-  if (job.state === "done") return "A transcript or pasted text has been saved for this item.";
-  if (job.state === "ignored") return "Automatic recovery is ignored for this item.";
-  if (job.state === "pending") return "Brain will try to recover the transcript in the background.";
-  if (job.state === "running") return "Brain is trying to recover the transcript now.";
-  if (job.state === "retryable_error") {
-    return job.next_run_at
-      ? `A retry is scheduled for ${new Date(job.next_run_at).toLocaleString()}.`
-      : "A retry is scheduled.";
-  }
-  return job.last_error_message
-    ? `Automatic recovery needs help. Last result: ${job.last_error_message}`
-    : "Automatic recovery needs help. Paste a transcript or notes below.";
-}
+function FocusReadMode({
+  item,
+  captured,
+  platform,
+  quality,
+  limitedQuality,
+  upgradeReason,
+}: {
+  item: ItemRow;
+  captured: string;
+  platform: string;
+  quality: string;
+  limitedQuality: boolean;
+  upgradeReason: string | null;
+}) {
+  const bodyIsThin = item.body.trim().length < 160;
+  return (
+    <div
+      data-focus-mode="true"
+      className="mx-auto max-w-[820px] px-6 py-8 md:px-8 md:py-10"
+    >
+      <div className="mb-6 flex flex-wrap items-center justify-between gap-3 border-b border-[var(--border)] pb-4">
+        <Link
+          href={`/items/${item.id}`}
+          className="inline-flex items-center gap-1.5 text-sm text-[var(--text-secondary)] transition-colors hover:text-[var(--text-primary)]"
+        >
+          <Minimize2 className="h-3.5 w-3.5" strokeWidth={2} />
+          Exit focus
+        </Link>
+        <div className="flex items-center gap-2">
+          <Link
+            href={`/items/${item.id}/ask`}
+            className="inline-flex h-8 items-center gap-2 rounded-md border border-[var(--border)] px-3 text-sm font-medium text-[var(--text-secondary)] hover:border-[var(--border-strong)] hover:text-[var(--text-primary)]"
+          >
+            <MessageSquare className="h-3.5 w-3.5" strokeWidth={2} />
+            Ask
+          </Link>
+          {item.source_url && (
+            <a
+              href={item.source_url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex h-8 items-center gap-2 rounded-md border border-[var(--border)] px-3 text-sm font-medium text-[var(--text-secondary)] hover:border-[var(--border-strong)] hover:text-[var(--text-primary)]"
+            >
+              <ExternalLink className="h-3.5 w-3.5" strokeWidth={2} />
+              Source
+            </a>
+          )}
+        </div>
+      </div>
 
-function formatAttemptTime(ts: number): string {
-  return new Date(ts).toLocaleString();
+      <article className="article">
+        <header className="mb-7">
+          <h1 className="font-sans text-[30px] font-semibold leading-[1.25] tracking-[-0.01em] text-[var(--text-primary)]">
+            {item.title}
+          </h1>
+          <SourceTrustStrip
+            item={item}
+            captured={captured}
+            platform={platform}
+            quality={quality}
+            limitedQuality={limitedQuality}
+          />
+        </header>
+
+        {(upgradeReason || (limitedQuality && bodyIsThin)) && (
+          <div className="mb-7 rounded-lg border border-[var(--quality-needs-upgrade)] bg-[var(--surface)] p-4 font-sans text-sm">
+            <p className="font-medium text-[var(--quality-needs-upgrade)]">
+              {upgradeReason ?? "This source may need more readable text."}
+            </p>
+            <p className="mt-1 text-[var(--text-secondary)]">
+              Focus mode is showing the saved content, but this source may answer
+              better after adding text or a transcript.
+            </p>
+            <div className="mt-3 flex flex-wrap gap-2">
+              <Link
+                href={`/items/${item.id}/repair`}
+                className="inline-flex h-8 items-center rounded-md bg-[var(--accent-9)] px-3 text-sm font-medium text-[var(--on-accent)] hover:bg-[var(--accent-10)]"
+              >
+                Add text
+              </Link>
+              {item.source_url && (
+                <a
+                  href={item.source_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex h-8 items-center rounded-md border border-[var(--border)] px-3 text-sm font-medium text-[var(--text-primary)] hover:bg-[var(--surface-raised)]"
+                >
+                  Source
+                </a>
+              )}
+            </div>
+          </div>
+        )}
+
+        <div className="whitespace-pre-wrap">{item.body}</div>
+      </article>
+    </div>
+  );
 }
 
 function ItemProcessingBadge({ status }: { status: ItemProcessingStatus }) {

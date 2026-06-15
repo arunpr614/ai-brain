@@ -7,6 +7,7 @@ import { getDb } from "@/db/client";
 import { attachItemToCollection } from "@/db/collections";
 import { createNote, deleteItem } from "@/db/items";
 import { attachTagToItem, upsertTag } from "@/db/tags";
+import { toCaptureResultPayload } from "@/lib/capture/result";
 
 const NoteInput = z.object({
   title: z.string().trim().min(1, "Title is required").max(200),
@@ -28,13 +29,17 @@ export async function createNoteAction(
   }
   const item = createNote(parsed.data);
   revalidatePath("/");
-  redirect(`/items/${item.id}`);
+  revalidatePath("/library");
+  revalidatePath("/needs-upgrade");
+  const result = toCaptureResultPayload(item);
+  redirect(`/items/${item.id}?capture_state=${result.state}`);
 }
 
 export async function deleteItemAction(id: string): Promise<void> {
   deleteItem(id);
   revalidatePath("/");
-  redirect("/");
+  revalidatePath("/library");
+  redirect("/library");
 }
 
 // --- F-207 bulk operations (v0.3.1) ----------------------------------------
@@ -66,6 +71,8 @@ function revalidateBulkPaths(): void {
     }
   };
   safe("/");
+  safe("/library");
+  safe("/needs-upgrade");
   // Wildcard collection paths — `layout` so the list of items inside a
   // collection re-renders.
   safe("/collections/[id]", "layout");

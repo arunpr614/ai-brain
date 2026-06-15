@@ -47,7 +47,7 @@ export default function NeedsUpgradePage() {
   return (
     <div className="mx-auto max-w-[980px] px-8 py-10">
       <Link
-        href="/"
+        href="/library"
         className="mb-6 inline-flex items-center gap-1.5 text-sm text-[var(--text-secondary)] transition-colors hover:text-[var(--text-primary)]"
       >
         <ArrowLeft className="h-3.5 w-3.5" strokeWidth={2} />
