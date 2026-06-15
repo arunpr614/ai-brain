@@ -7789,3 +7789,56 @@ Resumed from the 2026-06-15 production handover on the clean release worktree `/
 - Production backup/restore: plan documented; actual predeploy backup still required.
 - Code review: in progress; no P0/P1 found so far.
 - Deploy gate: still blocked until final diff review, production backup, deploy access/script run, post-deploy smoke, and Android runtime validation complete.
+
+---
+
+## Entry #116 - 2026-06-15 17:18 IST - Magic Patterns UX v2 deployed, smoked, and closed
+
+### Summary
+
+Completed the resumed Magic Patterns UX v2 goal from the clean release worktree `/private/tmp/ai-brain-ux-v2-main-ready` on branch `codex/ai-brain-ux-v2-magic-patterns`. Production is live at `https://brain.arunp.in` from release commit `3bead0cc4dbad3ba870bd55517057b6b8d7955e9` with the approved web/responsive Android WebView UI, without silently closing D-001 through D-014.
+
+### Done
+
+- Deployed the Magic Patterns UI candidate:
+  - Web/mobile shell refresh with AI Memory identity, bottom nav, More route, Pair Device link, Needs Upgrade badge, and collapsible desktop sidebar.
+  - `/library` route with filters, mobile filter sheet, bulk select, and Ask selected.
+  - Item detail/focus refresh with topics, collections/tags, related items, repair affordance, Ask item, and shell-free focus mode.
+  - Ask selected/tag/topic/collection scopes and approved scope/citation/history UI.
+  - Additive topics schema/UI via `018_topics.sql`, topic repository, topic route, and enrichment-derived topics.
+  - Collection detail route with scoped Ask.
+  - AI Memory web icons and manifest.
+- Created verified production backup before deploy:
+  - `/opt/brain/data/backups/ux-v2-magic-patterns-predeploy-2026-06-15_143927.sqlite`
+  - Integrity `ok`; item count `15`; size `4030464` bytes.
+- Deployed with `scripts/deploy.sh`; deploy reran typecheck, lint, tests, env checks, build, artifact check, sync, service restart, authenticated health, and remote AI provider checks.
+- Completed live web smoke for `/unlock`, `/setup-apk`, `/offline.html`, `/ai-memory-logo.png`, `/library`, `/ask`, `/capture`, `/needs-upgrade`, `/more`, and `/settings/device-pairing`.
+- Verified production service active with 0 restarts and DB integrity `ok`; production item count returned to `15` after smoke cleanup.
+- Completed Android emulator validation with existing APK `data/artifacts/brain-debug-v1.0.2-code3.apk`:
+  - Install, fresh launch, relaunch.
+  - Deployed `Unlock AI Memory` shell and Magic Patterns bottom nav loaded inside the APK.
+  - Pairing code exchange and token persistence passed with token redacted.
+  - Paired Android URL share created an Android-attributed item; smoke row was deleted.
+  - Offline fallback after data clear and online relaunch passed.
+- Saved final evidence:
+  - `UX_v2/execution/UX_V2_MAGIC_PATTERNS_PRODUCTION_RELEASE_2026-06-15.md`
+  - `UX_v2/execution/UX_V2_MAGIC_PATTERNS_IMPLEMENTATION_MATRIX_2026-06-15.md`
+  - `UX_v2/execution/evidence/android/2026-06-15-magic-patterns/`
+
+### Validation
+
+- `npm run typecheck` passed.
+- `npm run lint` passed with the known unused-disable warnings in `src/lib/client/register-sw.ts` and `src/lib/queue/enrichment-batch-cron.ts`.
+- `npm test` passed: 515 tests, 77 suites, 0 failures.
+- `npm run build` passed with the known `unpdf` warning.
+- Deploy script completed successfully; remote Anthropic/Gemini provider checks passed.
+- Live stale-copy scan found no checked `AI Brain`, `Your Brain`, `Ask AI Brain`, or `Unlock AI Brain` strings on the refreshed routes.
+- Android runtime evidence saved under `UX_v2/execution/evidence/android/2026-06-15-magic-patterns/`.
+
+### Release state
+
+- Production/live: deployed and smoked.
+- Android UX v2 claim: valid for the deployed WebView shell and deployed responsive assets. Protected authenticated Android routes were not directly navigated in the APK because the WebView CDP page socket repeatedly reset and no PIN was supplied; browser mobile screenshots cover responsive protected routes, and Android pairing/share/offline runtime checks passed.
+- APK publication: no new APK was published and no same-version artifact was overwritten.
+- D-001 through D-014: still explicitly deferred/nonblocking as recorded in the Magic Patterns release note.
+- Goal state: complete for confirmed PLAN plus Magic Patterns scope.
