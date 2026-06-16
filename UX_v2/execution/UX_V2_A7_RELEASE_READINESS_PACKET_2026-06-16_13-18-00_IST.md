@@ -1,14 +1,14 @@
 # UX v2 A7 Release Readiness Packet
 
 Created: 2026-06-16 13:18:00 IST
-Updated: 2026-06-17 00:50:00 IST after A30 Android accessibility-order audit
-Final release status: `web_production_deployed_a30_android_1_0_5_ax_accessibility_residual_publication_gated`
+Updated: 2026-06-17 01:15:00 IST after A31 APK publication authorization packet
+Final release status: `web_production_deployed_a31_android_1_0_5_publication_decision_packet_ready_publication_gated`
 Production deploy authorized: Completed
 APK publication authorized: No
 
 ## Summary
 
-The UX v2 web experience is deployed to production. A11 created a verified predeploy backup, ran the deploy script, passed production route smoke, passed remote provider checks, and completed a redacted live Ask SSE proof. A12 superseded the prior Android `1.0.3/code4` candidate with `1.0.4/code5` after finding and fixing Capacitor bridge token logging, then captured authenticated Android routes, pairing, native note-share success with cleanup, offline fallback/recovery, keyboard smoke, and bounded TalkBack launch smoke. A21 found a remaining private SSR session P1 after A20; A22 fixed the class and passed full validation. A23 final staged review returned go, the source candidate was committed as `0655f51`, and A24 patched the postdeploy Next.js dependency security advisory, committed `f9de485`, and redeployed production with a clean remote production audit. A25 committed and deployed `c17f07a` so URL/note share failures render truthful source-specific failures. A26 committed `8577751`, built/installed Android `1.0.5/code6`, and proved native share-target logs are count-only rather than raw payload logs. A27 proved production server/API URL capture success with a deterministic full-text IANA fixture and cleaned it from production. A28 restored Android tooling and proved native user-facing URL-share success, but found `capture_source=unknown`. A29 fixed Android capture-source attribution for native URL/note/PDF share requests, deployed production, reran native URL share, verified `capture_source=android`, and cleaned the fixture. A30 passed a 10-screen Android WebView platform accessibility-order audit with redacted evidence, but did not capture human-heard TalkBack speech. Android remains a validated debug candidate, not an externally published APK. Final APK publication is still blocked by explicit APK publication authorization and target, plus Arun accepting A30 residual AX-only risk or requesting a true spoken TalkBack audit.
+The UX v2 web experience is deployed to production. A11 created a verified predeploy backup, ran the deploy script, passed production route smoke, passed remote provider checks, and completed a redacted live Ask SSE proof. A12 superseded the prior Android `1.0.3/code4` candidate with `1.0.4/code5` after finding and fixing Capacitor bridge token logging, then captured authenticated Android routes, pairing, native note-share success with cleanup, offline fallback/recovery, keyboard smoke, and bounded TalkBack launch smoke. A21 found a remaining private SSR session P1 after A20; A22 fixed the class and passed full validation. A23 final staged review returned go, the source candidate was committed as `0655f51`, and A24 patched the postdeploy Next.js dependency security advisory, committed `f9de485`, and redeployed production with a clean remote production audit. A25 committed and deployed `c17f07a` so URL/note share failures render truthful source-specific failures. A26 committed `8577751`, built/installed Android `1.0.5/code6`, and proved native share-target logs are count-only rather than raw payload logs. A27 proved production server/API URL capture success with a deterministic full-text IANA fixture and cleaned it from production. A28 restored Android tooling and proved native user-facing URL-share success, but found `capture_source=unknown`. A29 fixed Android capture-source attribution for native URL/note/PDF share requests, deployed production, reran native URL share, verified `capture_source=android`, and cleaned the fixture. A30 passed a 10-screen Android WebView platform accessibility-order audit with redacted evidence, but did not capture human-heard TalkBack speech. A31 verified the current debug APK artifact and created an owner-ready publication authorization packet with default-deny publication, signing, distribution, accessibility-risk, artifact/version, install/rollback, and repository decisions. Android remains a validated debug candidate, not an externally published APK. Final APK publication is still blocked by explicit APK publication authorization and target, plus Arun accepting A30 residual AX-only risk or requesting a true spoken TalkBack audit.
 
 ## Gate Table
 
@@ -32,13 +32,13 @@ The UX v2 web experience is deployed to production. A11 created a verified prede
 | Dependency security audit | passed | A24 local `npm audit` and `npm audit --omit=dev` reported 0 vulnerabilities; remote `/opt/brain` reports `next: 16.2.9` and remote `npm audit --omit=dev` reports 0 vulnerabilities. |
 | Observability | passed with residual warning | Service active, `NRestarts=0`, startup logs clean. Background enrichment/backoff and transcript cooldown warnings remain residual worker/queue observability risk. |
 | Android runtime | native URL-share and platform AX accessibility-order proof captured; publication gated | Fresh APK `1.0.5/code6` built, installed, and launched on emulator after A26; authenticated routes, pairing token persistence, native note share with cleanup, offline/recovery, keyboard smoke, bounded TalkBack launch smoke, honest URL-failure UI, native share-target log hygiene, A29 native URL-share success with `capture_source=android`, and A30 10-screen platform AX accessibility-order proof are captured across A12/A25/A26/A28/A29/A30. |
-| APK publication | blocked | Candidate exists, but publication is not authorized until explicit distribution decision and owner acceptance of A30 residual AX-only accessibility risk, or a true spoken TalkBack audit, are complete. |
-| Final release status | web_production_deployed_a30_android_1_0_5_ax_accessibility_residual_publication_gated | Web production is deployed; Android debug candidate `1.0.5/code6` is validated for native URL-share success, share-target log hygiene, and platform AX accessibility order; final goal completion remains blocked by APK publication authorization and the accessibility residual-risk decision. |
+| APK publication | authorization packet ready; publication blocked | A31 created `UX_V2_A31_APK_PUBLICATION_AUTHORIZATION_PACKET_2026-06-17_01-15-00_IST.md` and freshly verified the debug APK artifact. Publication is still not authorized until explicit distribution, signing, accessibility-risk, artifact/version, and install/rollback decisions are complete. |
+| Final release status | web_production_deployed_a31_android_1_0_5_publication_decision_packet_ready_publication_gated | Web production is deployed; Android debug candidate `1.0.5/code6` is validated for native URL-share success, share-target log hygiene, and platform AX accessibility order; A31 owner decision packet is ready; final goal completion remains blocked by APK publication authorization and the accessibility residual-risk decision. |
 
 ## Integrated PM Sidecar Findings
 
 - Completed: web integrated QA, A8/A9 remediation, production deploy/live smoke, production live Ask/provider proof, fresh APK build/install/locked launch, authenticated Android runtime slices, native note share, stale-cache/offline recovery, Android keyboard smoke, honest URL-failure UI, and native share-target log hygiene.
-- Remaining blockers: APK publication authorization/signing/distribution target, full TalkBack spoken-order audit if required, URL-share success decision, and optional push/PR ownership decision.
+- Remaining blockers: APK publication authorization/signing/distribution target, A30 accessibility residual-risk acceptance or full TalkBack spoken-order audit, install/rollback posture, and optional push/PR ownership decision.
 - Tracker stale rows needed reconciliation; A7 updates the master tracker and milestone tracker accordingly.
 - Recommended next milestones: tracker reconciliation/freeze, Android runtime/APK evidence, final release candidate gate.
 
@@ -209,13 +209,22 @@ The UX v2 web experience is deployed to production. A11 created a verified prede
 - A30 retained only redacted accessibility-order evidence in `UX_v2/execution/UX_V2_A30_ANDROID_TALKBACK_AX_SUMMARY_2026-06-17_00-50-00_IST.json`.
 - TalkBack service enable/restore probe passed, but no reliable human-heard/audio transcript was captured. Verdict is `platform_ax_equivalent_passed_with_residual_risk`, not `talkback_spoken_passed`.
 
+## Integrated A31 APK Publication Authorization Findings
+
+- A31 completed its PRD/review/plan/review cycle and created `UX_v2/execution/UX_V2_A31_APK_PUBLICATION_AUTHORIZATION_PACKET_2026-06-17_01-15-00_IST.md`.
+- A31 freshly verified `data/artifacts/brain-debug-v1.0.5-code6.apk`: size `7856717` bytes and SHA-256 `e7539f1afb8b730b0c5f5808724d960df20a6db9fadc943b90c73ac9979298b7`.
+- A31 confirmed `android/app/build.gradle` still reports `versionName "1.0.5"` and `versionCode 6`.
+- A31 keeps all owner decisions default-deny: publication `not_authorized`, distribution target `not_selected`, signing mode `not_selected`, accessibility risk `not_accepted`, and repository action `not_selected`.
+- A31 status is `apk_publication_authorization_packet_ready`; APK publication remains `apk_publication_authorization_missing`.
+
 ## Release Blockers To Clear Next
 
-1. Obtain explicit APK publication authorization and distribution/signing decision for `1.0.5/code6` or a later candidate.
-2. Decide whether A30's AX-equivalent accessibility-order audit is acceptable for publication, or require a true human-heard/audio-video TalkBack audit.
-3. Optional: decide whether to push branch `codex/ai-brain-ux-v2-execution` or create a PR after A29 source/documentation commit.
-4. Preserve A29 native URL-share proof and A30 AX-equivalent accessibility proof as emulator debug APK evidence; do not overclaim signed publication coverage from either.
-5. Produce final release packet only after APK publication authorization and remaining Android decisions are closed.
+1. Review the A31 authorization packet and obtain explicit APK publication approval or rejection for `1.0.5/code6` or a later candidate.
+2. Select distribution target, signing mode, signing authority, artifact/version, and install/rollback posture.
+3. Decide whether A30's AX-equivalent accessibility-order audit is acceptable for the selected channel, or require a true human-heard/audio-video TalkBack audit.
+4. Optional: decide whether to push branch `codex/ai-brain-ux-v2-execution` or create a PR.
+5. Preserve A29 native URL-share proof and A30 AX-equivalent accessibility proof as emulator debug APK evidence; do not overclaim signed/public distribution coverage from either.
+6. Produce final release packet only after APK publication authorization and remaining Android decisions are closed.
 
 ## Running Log Draft
 
