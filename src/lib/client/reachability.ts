@@ -131,16 +131,16 @@ export function describeVerdict(v: ReachabilityVerdict): string {
   if (v.ok) return `Connected (${Math.round(v.latencyMs)} ms).`;
   switch (v.reason) {
     case "timeout":
-      return "Brain did not respond within 2 s. Check your internet connection and retry.";
+      return "AI Memory did not respond within 2 s. Check your internet connection and retry.";
     case "network":
-      return `Cannot reach Brain (${v.message ?? "network error"}). Check your internet connection and retry.`;
+      return `Cannot reach AI Memory (${v.message ?? "network error"}). Check your internet connection and retry.`;
     case "unauthorized":
-      return "Brain rejected the token. It may have been rotated — re-pair from Settings → Device Pairing.";
+      return "AI Memory rejected the token. It may have been rotated — re-pair from Settings → Device Pairing.";
     case "forbidden":
-      return "Brain rejected the request origin. Check your pairing and try again.";
+      return "AI Memory rejected the request origin. Check your pairing and try again.";
     case "server-error":
-      return `Brain returned an error (HTTP ${v.status}). Check the Brain error log.`;
+      return `AI Memory returned an error (HTTP ${v.status}). Check the AI Memory error log.`;
     case "unexpected-status":
-      return `Brain returned an unexpected status (HTTP ${v.status}).`;
+      return `AI Memory returned an unexpected status (HTTP ${v.status}).`;
   }
 }

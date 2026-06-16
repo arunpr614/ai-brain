@@ -1,5 +1,5 @@
 /*
- * Service worker registration for the Brain app shell (v0.5.6).
+ * Service worker registration for the AI Memory app shell (v0.5.6).
  *
  * Plan: docs/plans/v0.5.6-app-shell-sw.md SHELL-2.
  *
@@ -49,7 +49,6 @@ export function registerAppShellSW(): void {
       // SW registration is best-effort; failures don't block the app.
       // The app continues to work online; offline cold-start falls
       // back to Capacitor's bundled offline.html.
-      // eslint-disable-next-line no-console
-      console.warn("[brain-sw] registration failed", err);
+      console.warn("[ai-memory-sw] registration failed", err);
     });
 }

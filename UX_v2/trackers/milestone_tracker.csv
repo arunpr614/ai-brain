@@ -1,0 +1,12 @@
+milestone,phase,status,dependencies,exit_gate
+M0.1 Planning package accepted,Phase 0,Ready for review,This package,"Arun confirms roadmap or edits priorities"
+M1.1 PRD-11-SHELL mobile smoke,Phase 1,Pending,"Dev server Browser viewport","Library Ask Capture More mobile behavior verified"
+M1.2 Static checks rerun,Phase 1,Pending,"Current worktree","Typecheck lint focused tests pass or failures documented"
+M2.1 Capture result contract,Phase 2,Planned,"PRD-06-FU package","All result states represented in API and UI"
+M2.2 Ask context and scope contract,Phase 2,Planned,"PRD-09-FU package","Attached and high-quality scopes behave truthfully"
+M3.1 Repair workflow,Phase 3,Planned,"PRD-10 package","Weak item can be repaired and derived state reset"
+M4.1 Android Ask composer,Phase 4,Planned,"PRD-09-FU PRD-12","Add context history sheet composer QA pass"
+M4.2 Android share result flow,Phase 4,Planned,"PRD-06-FU PRD-13","Share result states render without alerts-only UX"
+M5.1 Trust settings offline finish,Phase 5,Planned,"PRD-14 PRD-15","No privacy overclaims entry states verified"
+M6.1 Ops scope decision,Phase 6,Decision needed,Arun,"OPS-01/OPS-02 in or out of UX v2"
+M7.1 QA evidence package,Phase 7,Planned,"All feature work","Acceptance checklist has evidence and owners"

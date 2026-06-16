@@ -52,7 +52,7 @@ See `BUILD_PLAN.md` §15 for exact versions, intent filters, Ollama env vars, an
 | `PROJECT_CLOSURE.md` | Historical — this project was closed, then reopened on 2026-05-07. |
 | `docs/research/` | Research spike outputs (R-LLM, R-CAP, R-PDF, R-AUTH). |
 
-## Android APK (v0.5.0)
+## Android APK
 
 The APK is a thin Capacitor WebView that points at the live Next.js
 server on your Mac through a Cloudflare named tunnel
@@ -144,13 +144,12 @@ export PATH="$HOME/Library/Android/sdk/platform-tools:$PATH"
 
 1. On your Mac, `npm run dev` and `cloudflared tunnel run brain`. Verify
    both are up: `curl https://brain.arunp.in/api/health` should reply.
-2. Open **Settings → Device pairing** in the web UI. The page shows the
-   tunnel URL + QR code.
-3. Launch the APK on your phone; unlock with PIN; go to the QR scanner
-   (`/setup-apk`) and scan the Mac's screen. The APK stores the bearer
-   token in Capacitor Preferences and routes back to the Library. The
-   URL is a compile-time constant in the APK so the QR only carries
-   the token.
+2. Open **Settings → Device pairing** in the web UI and use
+   **Add Android device** to generate a temporary Android code.
+3. Launch the APK on your phone or emulator. On **Pair AI Memory**
+   (`/setup-apk`), enter the code from the web UI. The APK exchanges
+   the one-time code for the bearer token, stores it in Capacitor
+   Preferences, verifies the tunnel, and routes back to the Library.
 
 Rotate the bearer token any time from **Settings → Device pairing →
 Rotate token**; all paired devices must re-pair after a rotation.
@@ -215,7 +214,8 @@ the old keystore (Android enforces same-signer for in-place upgrades).
 **If both backups are lost:** `adb uninstall com.arunprakash.brain` on
 every paired device, then reinstall a fresh APK. Local app storage
 (Capacitor Preferences: `brain_token`) is wiped by uninstall, so
-you'll need to re-scan the setup QR.
+you'll need to generate a new Android code from **Settings → Device
+pairing** and enter it in the APK setup screen.
 
 ## Versioning
 

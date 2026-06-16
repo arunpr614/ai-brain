@@ -32,6 +32,13 @@ export async function captureUrlAction(
     return { status: "error", error: parsed.error.issues[0]?.message ?? "Invalid input" };
   }
 
+  if (!parsed.data.allow_duplicate) {
+    const existing = findItemByUrl(parsed.data.url);
+    if (existing) {
+      return { status: "duplicate", itemId: existing.id, url: parsed.data.url };
+    }
+  }
+
   let extracted;
   try {
     extracted = await extractUrlCapture({ url: parsed.data.url });

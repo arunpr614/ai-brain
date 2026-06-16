@@ -44,6 +44,7 @@ const config: CapacitorConfig = {
   appId: "com.arunprakash.brain",
   appName: "AI Memory",
   webDir: "public",
+  loggingBehavior: "none",
   server: {
     url: "https://brain.arunp.in",
     androidScheme: "https",

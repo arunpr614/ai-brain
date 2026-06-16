@@ -15,6 +15,7 @@ import {
   searchItems,
 } from "@/db/items";
 import { attachTagToItem, listTagsForItem, upsertTag } from "@/db/tags";
+import { listTopicsForItem, replaceTopicsForItem } from "@/db/topics";
 import { EMBED_DIM } from "@/lib/embed/client";
 import { retrieve } from "@/lib/retrieve";
 import {
@@ -68,6 +69,8 @@ test("repairItemWithText updates weak content and resets stale derived state", a
   attachTagToItem(item.id, autoTag.id);
   const collection = createCollection("Watch later");
   attachItemToCollection(item.id, collection.id);
+  replaceTopicsForItem(item.id, ["Old Topic"]);
+
   db.prepare(
     `UPDATE items
      SET summary = 'old summary',
@@ -115,7 +118,7 @@ test("repairItemWithText updates weak content and resets stale derived state", a
   assert.equal(result.removedChunks, 1);
   assert.equal(result.removedVectors, 1);
   assert.equal(result.removedAutoTags, 1);
-  assert.equal(result.removedTopics, 0);
+  assert.equal(result.removedTopics, 1);
   assert.equal(result.removedEmbeddingJobs, 1);
 
   const repaired = getItem(item.id)!;
@@ -138,6 +141,7 @@ test("repairItemWithText updates weak content and resets stale derived state", a
 
   assert.deepEqual(listTagsForItem(item.id).map((tag) => tag.name), ["keep-me"]);
   assert.deepEqual(listCollectionsForItem(item.id).map((row) => row.id), [collection.id]);
+  assert.deepEqual(listTopicsForItem(item.id), []);
 
   const counts = {
     chunks: db.prepare("SELECT COUNT(*) AS n FROM chunks WHERE item_id = ?").get(item.id) as { n: number },

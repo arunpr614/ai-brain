@@ -46,7 +46,6 @@ export const SUBMIT_CRON = "30 19 * * *";
 export const POLL_CRON = "*/5 * * * *";
 
 declare global {
-  // eslint-disable-next-line no-var
   var __brainBatchCron:
     | {
         registered: boolean;

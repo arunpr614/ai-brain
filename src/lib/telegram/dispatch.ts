@@ -163,7 +163,7 @@ async function handleCommand(
   if (command === "/start" || command === "/help") {
     await deps.sendMessage(
       chatId,
-      "Send me a link, plain-text note, or PDF and I will save it to Brain.",
+      "Send me a link, plain-text note, or PDF and I will save it to AI Memory.",
     );
     return;
   }

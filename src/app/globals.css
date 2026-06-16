@@ -15,6 +15,13 @@
   --color-accent-text: var(--accent-11);
   --color-accent-subtle: var(--accent-3);
   --color-on-accent: var(--on-accent);
+  --color-action-primary-bg: var(--action-primary-bg);
+  --color-action-primary-bg-hover: var(--action-primary-bg-hover);
+  --color-action-primary-fg: var(--action-primary-fg);
+  --color-action-primary-border: var(--action-primary-border);
+  --color-control-selected-bg: var(--control-selected-bg);
+  --color-control-selected-fg: var(--control-selected-fg);
+  --color-control-selected-border: var(--control-selected-border);
   --color-success: var(--success);
   --color-warning: var(--warning);
   --color-danger: var(--danger);
@@ -41,14 +48,14 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-:where(a, button, [role="button"], input, textarea, select, [tabindex]:not([tabindex="-1"])):focus-visible {
-  outline: 2px solid var(--accent-9);
-  outline-offset: 2px;
-  border-radius: var(--radius-sm);
+:where(a, button, input, textarea, select):focus:not(:focus-visible) {
+  outline: none;
 }
 
-:where(a, button, input, textarea, select):focus {
-  outline: none;
+:where(a, button, [role="button"], input, textarea, select, [tabindex]:not([tabindex="-1"])):focus-visible {
+  outline: 2px solid var(--action-primary-focus);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
 }
 
 ::selection {

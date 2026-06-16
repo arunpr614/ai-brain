@@ -8,7 +8,7 @@
  * provider is unreachable.
  */
 import { type NextRequest, NextResponse } from "next/server";
-import { SESSION_COOKIE } from "@/lib/auth";
+import { verifySessionCookie } from "@/lib/auth";
 import { getEmbedProvider } from "@/lib/embed/factory";
 import { searchUnified, type SearchMode } from "@/lib/search";
 
@@ -18,7 +18,7 @@ export const dynamic = "force-dynamic";
 const VALID_MODES = new Set<SearchMode>(["fts", "semantic", "hybrid"]);
 
 export async function GET(req: NextRequest) {
-  if (!req.cookies.get(SESSION_COOKIE)?.value) {
+  if (!verifySessionCookie(req.cookies)) {
     return NextResponse.json({ error: "unauthenticated" }, { status: 401 });
   }
   const { searchParams } = new URL(req.url);

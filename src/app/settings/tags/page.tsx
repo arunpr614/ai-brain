@@ -1,4 +1,6 @@
 import Link from "next/link";
+import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
 import { ArrowLeft, Sparkles, Trash2 } from "lucide-react";
 import {
   deleteTagAction,
@@ -6,8 +8,14 @@ import {
   renameTagAction,
 } from "@/app/taxonomy-actions";
 import { countItemsForTag, listAllTags } from "@/db/tags";
+import { verifySessionCookie } from "@/lib/auth";
 
-export default function TagsSettingsPage() {
+export default async function TagsSettingsPage() {
+  const c = await cookies();
+  if (!verifySessionCookie(c)) {
+    redirect("/unlock?next=%2Fsettings%2Ftags");
+  }
+
   const tags = listAllTags();
 
   return (
@@ -49,7 +57,7 @@ export default function TagsSettingsPage() {
                   <input
                     name="name"
                     defaultValue={t.name}
-                    className="flex-1 rounded-sm border border-transparent bg-transparent px-1 py-0.5 font-mono text-xs text-[var(--text-primary)] hover:border-[var(--border)] focus:border-[var(--accent-9)]"
+                    className="flex-1 rounded-sm border border-transparent bg-transparent px-1 py-0.5 font-mono text-xs text-[var(--text-primary)] hover:border-[var(--border)] focus:border-[var(--action-primary-focus)]"
                   />
                   <button
                     type="submit"

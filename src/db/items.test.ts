@@ -9,12 +9,16 @@ import assert from "node:assert/strict";
 import { rmSync } from "node:fs";
 import { TEST_DB_DIR } from "./items.test.setup";
 import {
+  countItems,
   countNeedsUpgradeItems,
+  getItemsByIds,
   insertCaptured,
+  listItems,
   listNeedsUpgradeItems,
   searchItems,
 } from "./items";
 import { insertCaptureArtifact, listCaptureArtifactsForItem } from "./capture-artifacts";
+import { attachTagToItem, upsertTag } from "./tags";
 
 test.after(() => {
   try {
@@ -101,7 +105,6 @@ test("insertCaptured persists capture quality metadata and artifact rows", () =>
   assert.equal(artifacts[0]?.kind, "metadata_json");
 });
 
-
 test("listNeedsUpgradeItems returns weak captures without full-text items", () => {
   const weak = insertCaptured({
     source_type: "youtube",
@@ -130,4 +133,86 @@ test("listNeedsUpgradeItems returns weak captures without full-text items", () =
   assert.equal(ids.has(weak.id), true);
   assert.equal(ids.has(preview.id), true);
   assert.ok(countNeedsUpgradeItems() >= 2);
+});
+
+test("listItems filters by source and quality groups", () => {
+  const youtube = insertCaptured({
+    source_type: "youtube",
+    title: "Filter test transcript",
+    body: "Transcript body",
+    source_platform: "youtube",
+    capture_quality: "transcript",
+  });
+  const note = insertCaptured({
+    source_type: "note",
+    title: "Filter test note",
+    body: "Full note",
+    source_platform: "note",
+    capture_quality: "user_provided_full_text",
+  });
+  const weakArticle = insertCaptured({
+    source_type: "url",
+    title: "Filter test weak article",
+    body: "Metadata only",
+    source_platform: "linkedin",
+    capture_quality: "metadata_only",
+  });
+
+  const youtubeIds = new Set(
+    listItems({ source: "youtube", limit: 200 }).map((item) => item.id),
+  );
+  assert.equal(youtubeIds.has(youtube.id), true);
+  assert.equal(youtubeIds.has(note.id), false);
+
+  const fullTextIds = new Set(
+    listItems({ quality: "full_text", limit: 200 }).map((item) => item.id),
+  );
+  assert.equal(fullTextIds.has(note.id), true);
+  assert.equal(fullTextIds.has(weakArticle.id), false);
+
+  const needsUpgradeIds = new Set(
+    listItems({ quality: "needs_upgrade", limit: 200 }).map((item) => item.id),
+  );
+  assert.equal(needsUpgradeIds.has(weakArticle.id), true);
+  assert.ok(countItems({ quality: "needs_upgrade" }) >= 1);
+});
+
+test("listItems and countItems filter by manual tag", () => {
+  const tagged = insertCaptured({
+    source_type: "note",
+    title: "Tagged library item",
+    body: "Tag filter body",
+  });
+  const untagged = insertCaptured({
+    source_type: "note",
+    title: "Untagged library item",
+    body: "No tag filter body",
+  });
+  const tag = upsertTag("UX Research", "manual");
+  attachTagToItem(tagged.id, tag.id);
+
+  const ids = new Set(
+    listItems({ tag: "ux research", limit: 200 }).map((item) => item.id),
+  );
+  assert.equal(ids.has(tagged.id), true);
+  assert.equal(ids.has(untagged.id), false);
+  assert.ok(countItems({ tag: "ux-research" }) >= 1);
+});
+
+test("getItemsByIds returns existing items in requested order", () => {
+  const first = insertCaptured({
+    source_type: "note",
+    title: "Ordered first",
+    body: "One",
+  });
+  const second = insertCaptured({
+    source_type: "note",
+    title: "Ordered second",
+    body: "Two",
+  });
+
+  assert.deepEqual(
+    getItemsByIds([second.id, "missing", first.id]).map((item) => item.id),
+    [second.id, first.id],
+  );
 });

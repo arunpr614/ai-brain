@@ -4,31 +4,20 @@ import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { isDuplicateShare, shareDedupKey } from "@/lib/capture/dedup";
 import {
-  isCaptureResultPayload,
-  type CaptureResultPayload,
-} from "@/lib/capture/result";
+  classifyNativeSharePayload,
+  mapCaptureFailureToShareResult,
+  mapCaptureResponseToShareResult,
+  resultForPreflight,
+  sanitizeShareLogMessage,
+  storeShareResult,
+  type NativeSharePayload,
+} from "@/lib/android-share/result";
 import { BRAIN_TUNNEL_URL } from "@/lib/config/tunnel";
 
-interface SharePayload {
-  title?: string;
-  texts?: string[];
-  files?: Array<{ uri?: string; mimeType?: string; name?: string }>;
-}
+type SharePayload = NativeSharePayload;
 
 interface CapacitorGlobal {
   isNativePlatform: () => boolean;
-}
-
-interface LegacyCaptureResponse {
-  id?: string;
-  duplicate?: boolean;
-  itemId?: string | null;
-  capture_result?: unknown;
-}
-
-interface ParsedCaptureResponse {
-  itemId: string | null;
-  result: CaptureResultPayload | null;
 }
 
 declare global {
@@ -47,42 +36,18 @@ async function getBearerToken(): Promise<string | null> {
   }
 }
 
-function looksLikeUrl(s: string): boolean {
-  try {
-    const u = new URL(s.trim());
-    return u.protocol === "http:" || u.protocol === "https:";
-  } catch {
-    return false;
-  }
-}
-
 function hashPayload(p: SharePayload): string {
   const text = (p.texts ?? []).join("\n");
   const files = (p.files ?? []).map((f) => `${f.name}:${f.uri}`).join("|");
   return `${p.title ?? ""}::${text}::${files}`;
 }
 
-function parseCaptureResponse(data: unknown): ParsedCaptureResponse {
-  if (!data || typeof data !== "object") return { itemId: null, result: null };
-  const legacy = data as LegacyCaptureResponse;
-  const result = isCaptureResultPayload(legacy.capture_result)
-    ? legacy.capture_result
-    : null;
-  const itemId =
-    result?.itemId ??
-    result?.existingItemId ??
-    (legacy.duplicate && legacy.itemId ? legacy.itemId : legacy.id) ??
-    null;
-  return { itemId, result };
-}
-
-function pushCaptureResult(
+function pushShareResult(
   router: ReturnType<typeof useRouter>,
-  parsed: ParsedCaptureResponse,
+  payload: Parameters<typeof storeShareResult>[1],
 ): void {
-  if (!parsed.itemId) return;
-  const state = parsed.result?.state;
-  router.push(state ? `/items/${parsed.itemId}?capture_state=${state}` : `/items/${parsed.itemId}`);
+  const key = storeShareResult(window.sessionStorage, payload);
+  router.push(`/capture/share-result?key=${encodeURIComponent(key)}`);
 }
 
 export function ShareHandler() {
@@ -114,40 +79,41 @@ export function ShareHandler() {
             return;
           }
 
+          const classification = classifyNativeSharePayload(payload);
           const liveToken = await getBearerToken();
-          if (!liveToken) {
-            alert(
-              "AI Memory is not paired yet. Open Device pairing in the web app and enter the Android code.",
-            );
-            router.push("/setup-apk");
+          const preflight = resultForPreflight(classification, Boolean(liveToken));
+          if (preflight) {
+            pushShareResult(router, preflight);
             return;
           }
+          if (!liveToken) return;
 
-          const firstText = payload.texts?.[0]?.trim() ?? "";
-          const firstFile = payload.files?.[0];
-
-          if (firstFile && firstFile.mimeType === "application/pdf") {
-            await capturePdf(BRAIN_TUNNEL_URL, liveToken, firstFile, router);
-            return;
+          switch (classification.kind) {
+            case "pdf":
+              await capturePdf(BRAIN_TUNNEL_URL, liveToken, classification.file, router);
+              return;
+            case "url":
+              await captureUrl(
+                BRAIN_TUNNEL_URL,
+                liveToken,
+                classification.url,
+                classification.title,
+                router,
+              );
+              return;
+            case "note":
+              await captureNote(
+                BRAIN_TUNNEL_URL,
+                liveToken,
+                classification.title,
+                classification.body,
+                router,
+              );
+              return;
+            case "multi_pdf":
+            case "unsupported":
+              return;
           }
-
-          if (firstText && looksLikeUrl(firstText)) {
-            await captureUrl(BRAIN_TUNNEL_URL, liveToken, firstText, payload.title, router);
-            return;
-          }
-
-          const body = (payload.texts ?? []).join("\n").trim();
-          if (!body) {
-            alert("Share ignored. No text or supported file was found.");
-            return;
-          }
-          await captureNote(
-            BRAIN_TUNNEL_URL,
-            liveToken,
-            payload.title ?? "Shared note",
-            body,
-            router,
-          );
         },
       );
 
@@ -222,11 +188,14 @@ async function captureUrl(
 ): Promise<void> {
   const res = await postJson(`${base}/api/capture/url`, token, { url, title });
   if (res.ok) {
-    pushCaptureResult(router, parseCaptureResponse(res.data));
+    pushShareResult(router, mapCaptureResponseToShareResult(res.data, "url"));
     return;
   }
-  await reportClientError("share.http.capture-failed", `POST /api/capture/url ${res.status}`);
-  alert("Could not save to cloud. Try again when online.");
+  await reportClientError(
+    "share.http.capture-failed",
+    sanitizeShareLogMessage("url_capture_failed", res.status),
+  );
+  pushShareResult(router, mapCaptureFailureToShareResult("url"));
 }
 
 async function captureNote(
@@ -238,11 +207,14 @@ async function captureNote(
 ): Promise<void> {
   const res = await postJson(`${base}/api/capture/note`, token, { title, body });
   if (res.ok) {
-    pushCaptureResult(router, parseCaptureResponse(res.data));
+    pushShareResult(router, mapCaptureResponseToShareResult(res.data, "note"));
     return;
   }
-  await reportClientError("share.http.capture-failed", `POST /api/capture/note ${res.status}`);
-  alert("Could not save to cloud. Try again when online.");
+  await reportClientError(
+    "share.http.capture-failed",
+    sanitizeShareLogMessage("note_capture_failed", res.status),
+  );
+  pushShareResult(router, mapCaptureFailureToShareResult("note"));
 }
 
 async function capturePdf(
@@ -253,17 +225,19 @@ async function capturePdf(
 ): Promise<void> {
   const { uri, name } = shared;
   if (!uri) {
-    alert("PDF share missing file URI. Cannot upload.");
+    pushShareResult(router, mapCaptureFailureToShareResult("pdf_missing_uri"));
     return;
   }
 
   let blob: Blob;
   try {
     blob = await readSharedPdfAsBlob(uri);
-  } catch (err) {
-    const msg = err instanceof Error ? err.message : "unknown";
-    await reportClientError("share.pdf.read-failed", `read(${uri}) ${msg}`);
-    alert("Could not save to cloud. Try again when online.");
+  } catch {
+    await reportClientError(
+      "share.pdf.read-failed",
+      sanitizeShareLogMessage("pdf_read_failed"),
+    );
+    pushShareResult(router, mapCaptureFailureToShareResult("pdf_read"));
     return;
   }
 
@@ -281,31 +255,35 @@ async function capturePdf(
       },
       body: form,
     });
-  } catch (err) {
-    const msg = err instanceof Error ? err.message : "network error";
-    await reportClientError("share.pdf.upload-failed", `POST /api/capture/pdf ${msg}`);
-    alert("Could not save to cloud. Try again when online.");
+  } catch {
+    await reportClientError(
+      "share.pdf.upload-failed",
+      sanitizeShareLogMessage("pdf_upload_failed"),
+    );
+    pushShareResult(router, mapCaptureFailureToShareResult("pdf_upload"));
     return;
   }
 
   if (res.ok) {
     const data = await res.json().catch(() => ({}));
-    pushCaptureResult(router, parseCaptureResponse(data));
+    pushShareResult(router, mapCaptureResponseToShareResult(data, "pdf"));
     return;
   }
 
   if (res.status === 422) {
-    const data = (await res.json().catch(() => ({}))) as { expected?: string; actual?: string };
     await reportClientError(
       "share.pdf.sha256-mismatch",
-      `expected=${data.expected ?? "?"} actual=${data.actual ?? "?"}`,
+      sanitizeShareLogMessage("pdf_checksum_failed"),
     );
-    alert("PDF upload corrupted in transit. Please retry.");
+    pushShareResult(router, mapCaptureFailureToShareResult("pdf_checksum"));
     return;
   }
 
-  await reportClientError("share.http.capture-failed", `POST /api/capture/pdf ${res.status}`);
-  alert("Could not save to cloud. Try again when online.");
+  await reportClientError(
+    "share.http.capture-failed",
+    sanitizeShareLogMessage("pdf_upload_failed", res.status),
+  );
+  pushShareResult(router, mapCaptureFailureToShareResult("pdf_upload"));
 }
 
 async function sha256Hex(blob: Blob): Promise<string> {

@@ -16,7 +16,7 @@ export default async function UnlockPage({
   const showSessionNote = reason === "session-expired";
 
   return (
-    <div className="mx-auto flex min-h-screen max-w-[420px] flex-col items-center justify-center px-8">
+    <div className="mx-auto flex min-h-[calc(100svh-3.5rem)] max-w-[440px] flex-col px-5 pb-28 pt-10 md:min-h-screen md:justify-center md:px-8 md:py-12">
       <Image
         src="/ai-memory-logo.png"
         alt=""
@@ -25,24 +25,27 @@ export default async function UnlockPage({
         className="mb-5 rounded-xl"
         unoptimized
       />
-      <h1 className="text-[24px] font-semibold tracking-[-0.01em] text-[var(--text-primary)]">
+      <h1 className="text-2xl font-semibold text-[var(--text-primary)]">
         Unlock AI Memory
       </h1>
       <p className="mt-2 text-sm text-[var(--text-secondary)]">
         Enter your PIN to continue.
       </p>
       {showSessionNote && (
-        <div className="mt-5 rounded-md border border-[var(--border)] bg-[var(--surface)] px-3 py-2 text-sm text-[var(--text-secondary)]">
-          Your session expired, or this device is not unlocked yet. Unlock to
-          return to the page you requested.
+        <div
+          role="status"
+          className="mt-5 rounded-md border border-[var(--border)] bg-[var(--surface)] px-3 py-2 text-sm text-[var(--text-secondary)]"
+        >
+          <p className="font-medium text-[var(--text-primary)]">Session expired</p>
+          <p className="mt-1">
+            Unlock this device again to return to the page you requested.
+          </p>
         </div>
       )}
       <UnlockForm next={next ?? "/"} />
       <p className="mt-6 text-xs text-[var(--text-muted)]">
-        Forgot it? SSH into your AI Memory server and remove{" "}
-        <code className="rounded bg-[var(--surface)] px-1 py-0.5 font-mono">/opt/brain/data/brain.sqlite</code>,
-        then restart <code className="rounded bg-[var(--surface)] px-1 py-0.5 font-mono">brain.service</code>.
-        A new PIN can then be set on first run.
+        Forgot your PIN? Reset requires access to the AI Memory server. After a
+        server reset, you can create a new PIN on first run.
       </p>
       <Link href="/library" className="sr-only">
         Home

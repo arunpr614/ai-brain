@@ -27,5 +27,5 @@ export const OFFLINE_TRUST_COPY = {
 
 export const BACKUP_TRUST_COPY = {
   detail:
-    "Server-side snapshots use the configured AI Memory backup job. Confirm backup status before relying on a restore.",
+    "Internal server snapshots are created by the configured AI Memory job. Restore is not managed from Settings and must be verified before relying on recovery.",
 } as const;

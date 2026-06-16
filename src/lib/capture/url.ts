@@ -4,7 +4,7 @@
  * Config (hard-coded for v0.2.0; exposed in Settings later):
  *   - timeout_ms: 15000
  *   - max_body_bytes: 5 * 1024 * 1024 (5 MB)
- *   - user_agent: Mozilla-ish + AI Brain tag
+ *   - user_agent: Mozilla-ish + AI Memory tag
  *
  * Out of scope for v0.2.0:
  *   - JS-heavy sites requiring Playwright (revisit v0.10.0 if real sites fail)
@@ -21,7 +21,7 @@ import type { CapturedContent } from "./types";
 const TIMEOUT_MS = 15_000;
 const MAX_BODY_BYTES = 5 * 1024 * 1024;
 const USER_AGENT =
-  "Mozilla/5.0 (Macintosh; Intel Mac OS X 14_0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Safari/537.36 AI-Brain/0.2";
+  "Mozilla/5.0 (Macintosh; Intel Mac OS X 14_0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Safari/537.36 AI-Memory/0.2";
 
 export interface ExtractedArticle extends CapturedContent {
   title: string;

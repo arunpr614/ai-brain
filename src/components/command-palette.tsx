@@ -79,7 +79,7 @@ export function CommandPaletteProvider({ children }: { children: React.ReactNode
               </Command.Empty>
 
               <Command.Group heading="Navigate">
-                <PaletteItem icon={Library} onSelect={() => go("/")}>
+                <PaletteItem icon={Library} onSelect={() => go("/library")}>
                   Go to Library
                 </PaletteItem>
                 <PaletteItem icon={Settings} onSelect={() => go("/settings")}>
@@ -124,7 +124,7 @@ function PaletteItem({
   return (
     <Command.Item
       onSelect={onSelect}
-      className="flex cursor-pointer items-center gap-3 rounded-md px-3 py-2 text-sm text-[var(--text-primary)] aria-selected:bg-[var(--accent-3)] aria-selected:text-[var(--accent-11)]"
+      className="flex cursor-pointer items-center gap-3 rounded-md px-3 py-2 text-sm text-[var(--text-primary)] aria-selected:bg-[var(--control-selected-bg)] aria-selected:text-[var(--control-selected-fg)]"
     >
       <Icon className="h-4 w-4" strokeWidth={2} />
       {children}

@@ -9,6 +9,7 @@
  */
 import { getDb, type ItemRow } from "@/db/client";
 import { attachTagToItem, clearAutoTagsForItem, upsertTag } from "@/db/tags";
+import { replaceTopicsForItem } from "@/db/topics";
 import { getEnrichProvider } from "@/lib/llm/factory";
 import { LLMError } from "@/lib/llm/errors";
 import {
@@ -159,9 +160,12 @@ export async function enrichItem(item_id: string): Promise<EnrichmentResult> {
   // so the worker doesn't burn GPU on notes like "todo: call dentist".
   if (item.body.trim().length < 200) {
     const db = getDb();
-    db.prepare(
-      "UPDATE items SET enrichment_state = 'done', enriched_at = unixepoch() * 1000 WHERE id = ?",
-    ).run(item_id);
+    db.transaction(() => {
+      db.prepare(
+        "UPDATE items SET enrichment_state = 'done', enriched_at = unixepoch() * 1000 WHERE id = ?",
+      ).run(item_id);
+      replaceTopicsForItem(item_id, []);
+    })();
     return {
       ok: true,
       item_id,
@@ -240,6 +244,9 @@ export async function enrichItem(item_id: string): Promise<EnrichmentResult> {
       const row = upsertTag(name, "auto");
       attachTagToItem(item_id, row.id);
     }
+    replaceTopicsForItem(item_id, output.tags, {
+      evidence: `Detected during enrichment for ${output.category}.`,
+    });
   });
   tx();
 

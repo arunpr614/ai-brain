@@ -6,6 +6,10 @@ import { Sidebar } from "@/components/sidebar";
 import { CommandPaletteProvider } from "@/components/command-palette";
 import { ShareHandler } from "@/components/share-handler";
 import { SWBootstrap } from "@/components/sw-bootstrap";
+import { ThemeBootstrap } from "@/components/theme-bootstrap";
+import { countNeedsUpgradeItems } from "@/db/items";
+import { SESSION_COOKIE, verifySessionToken } from "@/lib/auth";
+import { resolvePrivateShellCounts } from "@/lib/shell/private-counts";
 import { isTheme, THEME_COOKIE, type Theme } from "@/lib/theme";
 
 const inter = Inter({
@@ -21,45 +25,61 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "AI Brain",
-  description: "Personal knowledge base, hosted on Hetzner.",
+  title: {
+    default: "AI Memory",
+    template: "%s · AI Memory",
+  },
+  applicationName: "AI Memory",
+  description: "Private source-grounded memory for saved knowledge.",
+  manifest: "/manifest.webmanifest",
+  icons: {
+    icon: [
+      { url: "/favicon-16x16.png", sizes: "16x16", type: "image/png" },
+      { url: "/favicon-32x32.png", sizes: "32x32", type: "image/png" },
+      { url: "/favicon-48x48.png", sizes: "48x48", type: "image/png" },
+    ],
+    apple: [{ url: "/apple-touch-icon.png", sizes: "180x180", type: "image/png" }],
+  },
 };
 
-async function resolveTheme(): Promise<{ pref: Theme; resolved: "light" | "dark" }> {
-  const c = await cookies();
+function resolveThemeFromCookieStore(c: Awaited<ReturnType<typeof cookies>>): {
+  pref: Theme;
+  resolved: "light" | "dark";
+} {
   const raw = c.get(THEME_COOKIE)?.value;
   const pref: Theme = isTheme(raw) ? raw : "system";
   const resolved = pref === "dark" ? "dark" : "light";
   return { pref, resolved };
 }
 
-const themeScript = `(function(){try{var m=document.cookie.match(/${THEME_COOKIE}=([^;]+)/);var p=m?m[1]:'system';if(p==='system'){var d=window.matchMedia('(prefers-color-scheme: dark)').matches;document.documentElement.dataset.theme=d?'dark':'light';}else{document.documentElement.dataset.theme=p;}}catch(e){}})();`;
-
 export default async function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
-  const { pref, resolved } = await resolveTheme();
+  const c = await cookies();
+  const { pref, resolved } = resolveThemeFromCookieStore(c);
+  const { needsUpgradeCount } = resolvePrivateShellCounts({
+    sessionToken: c.get(SESSION_COOKIE)?.value,
+    verifySession: verifySessionToken,
+    countNeedsUpgrade: countNeedsUpgradeItems,
+  });
 
   return (
     <html
       lang="en"
       data-theme={resolved}
       className={`${inter.variable} ${jetbrainsMono.variable}`}
-      // The `themeScript` below reconciles `data-theme` to the client's
-      // real preference BEFORE React hydrates, so the server's guess
-      // ("light" or the stored cookie) and the actual browser attribute
-      // may legitimately differ. Tell React it's OK.
+      // ThemeBootstrap reconciles `data-theme` to the client's real preference
+      // after hydration. The server still honors explicit theme cookies.
       suppressHydrationWarning
     >
-      <head>
-        <script dangerouslySetInnerHTML={{ __html: themeScript }} />
-      </head>
+      <head />
       <body>
         <CommandPaletteProvider>
+          <ThemeBootstrap />
           <SWBootstrap />
           <ShareHandler />
           <div className="flex min-h-full">
-            <Sidebar />
+            <Sidebar needsUpgradeCount={needsUpgradeCount} />
             {/*
               v0.5.0 T-15 / F-019 — bottom padding on mobile keeps the
               content clear of the fixed bottom-nav (see sidebar.tsx).

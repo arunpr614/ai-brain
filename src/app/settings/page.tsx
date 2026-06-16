@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
 import type { ReactNode } from "react";
 import {
   Activity,
@@ -13,6 +14,7 @@ import {
 } from "lucide-react";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { getJsonSetting } from "@/db/settings";
+import { verifySessionCookie } from "@/lib/auth";
 import { getProviderStatusReport, type ProviderStatus } from "@/lib/providers/status";
 import {
   BACKUP_TRUST_COPY,
@@ -37,6 +39,10 @@ const BACKUP_DEFAULTS: BackupConfig = {
 
 export default async function SettingsPage() {
   const c = await cookies();
+  if (!verifySessionCookie(c)) {
+    redirect("/unlock?next=/settings");
+  }
+
   const raw = c.get(THEME_COOKIE)?.value;
   const themePref: Theme = isTheme(raw) ? raw : "system";
   const backup = getJsonSetting<BackupConfig>("backup", BACKUP_DEFAULTS);
@@ -94,13 +100,13 @@ export default async function SettingsPage() {
 
       <section className="mb-10">
         <h2 className="mb-3 text-sm font-medium uppercase tracking-wide text-[var(--text-secondary)]">
-          Backups
+          Internal snapshots
         </h2>
         <div className="rounded-lg border border-[var(--border)] bg-[var(--surface)] p-4">
           <dl className="grid grid-cols-[auto_1fr] gap-x-6 gap-y-2 text-sm">
             <dt className="text-[var(--text-secondary)]">Status</dt>
             <dd className="text-[var(--text-primary)]">
-              {backup.enabled ? "Enabled" : "Disabled"}
+              {backup.enabled ? "Configured" : "Not configured"}
             </dd>
             <dt className="text-[var(--text-secondary)]">Interval</dt>
             <dd className="text-[var(--text-primary)]">
@@ -110,7 +116,7 @@ export default async function SettingsPage() {
             <dd className="text-[var(--text-primary)]">
               Last {backup.retention_count} snapshots
             </dd>
-            <dt className="text-[var(--text-secondary)]">Location</dt>
+            <dt className="text-[var(--text-secondary)]">Server path</dt>
             <dd className="font-mono text-xs text-[var(--text-primary)]">
               /opt/brain/data/backups/
             </dd>
@@ -162,7 +168,7 @@ export default async function SettingsPage() {
             <button
               type="button"
               disabled
-              className="inline-flex h-8 cursor-not-allowed items-center rounded-md border border-[var(--border)] px-3 text-sm font-medium text-[var(--text-muted)] opacity-70"
+              className="inline-flex h-11 cursor-not-allowed items-center rounded-md border border-[var(--border)] px-3 text-sm font-medium text-[var(--text-muted)] opacity-70 md:h-8"
             >
               Manage privacy controls
             </button>
@@ -195,7 +201,7 @@ export default async function SettingsPage() {
           </p>
           <a
             href="/api/library/export.zip"
-            className="inline-flex h-8 items-center gap-2 rounded-md bg-[var(--accent-9)] px-3 text-sm font-medium text-[var(--on-accent)] hover:bg-[var(--accent-10)]"
+            className="inline-flex h-11 items-center gap-2 rounded-md bg-[var(--action-primary-bg)] px-3 text-sm font-medium text-[var(--action-primary-fg)] hover:bg-[var(--action-primary-bg-hover)] md:h-8"
           >
             Download library.zip
           </a>

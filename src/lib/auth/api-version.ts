@@ -46,7 +46,7 @@ export function checkClientApiVersion(req: NextRequest): NextResponse | null {
   return NextResponse.json(
     {
       code: "version_mismatch",
-      message: "Update Brain to sync these items.",
+      message: "Update AI Memory to sync these items.",
       expected: EXPECTED_CLIENT_API,
       received: raw,
     },

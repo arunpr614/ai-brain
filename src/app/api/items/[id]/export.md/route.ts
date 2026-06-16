@@ -1,6 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { getItem } from "@/db/items";
-import { SESSION_COOKIE } from "@/lib/auth";
+import { verifySessionCookie } from "@/lib/auth";
 
 export const runtime = "nodejs";
 
@@ -15,7 +15,7 @@ export async function GET(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ) {
-  if (!req.cookies.get(SESSION_COOKIE)?.value) {
+  if (!verifySessionCookie(req.cookies)) {
     return NextResponse.json({ error: "unauthenticated" }, { status: 401 });
   }
   const { id } = await params;

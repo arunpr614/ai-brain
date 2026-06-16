@@ -30,8 +30,8 @@ import crypto from "node:crypto";
 import { NextResponse, type NextRequest } from "next/server";
 import { capturePdfAction } from "@/app/capture-actions";
 import { getItem } from "@/db/items";
-import { SESSION_COOKIE } from "@/lib/auth";
-import { validateOrigin } from "@/lib/auth/bearer";
+import { verifySessionCookie } from "@/lib/auth";
+import { validateOrigin, verifyBearerToken } from "@/lib/auth/bearer";
 import { checkClientApiVersion } from "@/lib/auth/api-version";
 import { captureSourceFromTrustedHeader } from "@/lib/capture/source";
 import {
@@ -47,11 +47,13 @@ const AUTHENTICATED_ERROR_STATUS = 401;
 
 export async function POST(req: NextRequest) {
   // Cookie path (web form, existing v0.2.0 behaviour)
-  const hasCookie = Boolean(req.cookies.get(SESSION_COOKIE)?.value);
+  const hasCookie = verifySessionCookie(req.cookies);
 
   // Bearer path (APK share-handler, Chrome extension). The proxy has
-  // already verified the token; we only re-check Origin here.
-  const hasBearer = (req.headers.get("authorization") ?? "").startsWith("Bearer ");
+  // already rate-limited valid tokens; the handler re-validates the token
+  // without consuming rate-limit budget so direct invocation cannot bypass
+  // auth with a forged session cookie.
+  const hasBearer = verifyBearerToken(req.headers.get("authorization")).ok;
 
   if (!hasCookie && !hasBearer) {
     return NextResponse.json(

@@ -14,7 +14,7 @@ export default async function SetupPage({
   }
 
   return (
-    <div className="mx-auto flex min-h-screen max-w-[420px] flex-col items-center justify-center px-8">
+    <div className="mx-auto flex min-h-[calc(100svh-3.5rem)] max-w-[440px] flex-col px-5 pb-28 pt-10 md:min-h-screen md:justify-center md:px-8 md:py-12">
       <Image
         src="/ai-memory-logo.png"
         alt=""
@@ -23,7 +23,7 @@ export default async function SetupPage({
         className="mb-5 rounded-xl"
         unoptimized
       />
-      <h1 className="text-[24px] font-semibold tracking-[-0.01em] text-[var(--text-primary)]">
+      <h1 className="text-2xl font-semibold text-[var(--text-primary)]">
         Welcome to AI Memory
       </h1>
       <p className="mt-2 text-sm text-[var(--text-secondary)]">
@@ -31,9 +31,9 @@ export default async function SetupPage({
       </p>
       <SetupForm next={next ?? "/"} />
       <p className="mt-6 text-xs text-[var(--text-muted)]">
-        Your PIN is hashed on the server. Your library is stored on your AI Memory
-        server (Hetzner). AI enrichment uses Anthropic and Google APIs &mdash;
-        content you save is sent to those services for processing.
+        Your PIN is hashed on the AI Memory server. Saved content stays in your
+        private library; enrichment may send saved content to configured AI
+        providers for processing.
       </p>
     </div>
   );

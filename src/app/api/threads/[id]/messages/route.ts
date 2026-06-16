@@ -8,7 +8,7 @@
  */
 import { type NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-import { SESSION_COOKIE } from "@/lib/auth";
+import { verifySessionCookie } from "@/lib/auth";
 import { appendMessage, getThread, listMessages } from "@/db/chat";
 
 export const runtime = "nodejs";
@@ -22,7 +22,7 @@ export async function GET(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ) {
-  if (!req.cookies.get(SESSION_COOKIE)?.value) return unauthed();
+  if (!verifySessionCookie(req.cookies)) return unauthed();
   const { id } = await params;
   if (!getThread(id)) return NextResponse.json({ error: "not found" }, { status: 404 });
   const messages = listMessages(id);
@@ -48,7 +48,7 @@ export async function POST(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ) {
-  if (!req.cookies.get(SESSION_COOKIE)?.value) return unauthed();
+  if (!verifySessionCookie(req.cookies)) return unauthed();
   const { id } = await params;
   if (!getThread(id)) return NextResponse.json({ error: "not found" }, { status: 404 });
   let body;

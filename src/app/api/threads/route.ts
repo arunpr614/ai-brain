@@ -3,7 +3,7 @@
  */
 import { type NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-import { SESSION_COOKIE } from "@/lib/auth";
+import { verifySessionCookie } from "@/lib/auth";
 import { createThread, listThreads } from "@/db/chat";
 
 export const runtime = "nodejs";
@@ -14,7 +14,7 @@ function unauthed(): Response {
 }
 
 export async function GET(req: NextRequest) {
-  if (!req.cookies.get(SESSION_COOKIE)?.value) return unauthed();
+  if (!verifySessionCookie(req.cookies)) return unauthed();
   const { searchParams } = new URL(req.url);
   const scope = searchParams.get("scope");
   const item_id = searchParams.get("item_id") ?? undefined;
@@ -35,7 +35,7 @@ const CreateBody = z.object({
 });
 
 export async function POST(req: NextRequest) {
-  if (!req.cookies.get(SESSION_COOKIE)?.value) return unauthed();
+  if (!verifySessionCookie(req.cookies)) return unauthed();
   let body;
   try {
     body = CreateBody.parse(await req.json());

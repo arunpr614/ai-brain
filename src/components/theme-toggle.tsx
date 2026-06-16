@@ -55,10 +55,10 @@ export function ThemeToggle({ initial }: { initial: Theme }) {
           aria-label={`${label} theme`}
           onClick={() => onSelect(value)}
           className={cn(
-            "flex h-7 w-7 items-center justify-center rounded-sm transition-colors",
+            "flex h-11 w-11 items-center justify-center rounded-sm transition-colors md:h-7 md:w-7",
             "hover:bg-[var(--surface)]",
             theme === value &&
-              "bg-[var(--accent-3)] text-[var(--accent-11)]",
+              "bg-[var(--control-selected-bg)] text-[var(--control-selected-fg)]",
           )}
           title={label}
         >

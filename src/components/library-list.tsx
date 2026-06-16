@@ -1,31 +1,40 @@
 "use client";
 
-import { FileText, Globe, StickyNote, Trash2, Video, X } from "lucide-react";
+import {
+  FileText,
+  Globe,
+  MessageCircle,
+  StickyNote,
+  Video,
+  X,
+} from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState, useTransition } from "react";
 import {
   bulkAttachCollectionAction,
-  bulkDeleteItemsAction,
   bulkTagItemsAction,
 } from "@/app/actions";
 import type { CollectionRow } from "@/db/collections";
 import type { ItemRow } from "@/db/client";
-import { platformLabel, qualityLabel } from "@/lib/capture/quality";
+import {
+  isLimitedCaptureQuality,
+  platformLabel,
+  qualityLabel,
+} from "@/lib/capture/quality";
+import { getAskSelectedActionState } from "@/lib/library/selected-actions";
 import { ItemEnrichmentWatch } from "./item-enrichment-watch";
 
 /**
  * F-207 library bulk-select UI.
  *
  * Selection state (Set<string> of ids) is local to this client component.
- * Checkboxes render next to each row but are only visible when any item
- * is selected OR the row is hovered — keeps the default "clean library"
- * feel from v0.1.0.
+ * Checkboxes render next to each row. They stay visible on small screens
+ * and appear on hover once there is enough room for a cleaner list view.
  *
- * The floating BulkBar appears once selectedIds.size > 0 and offers three
- * actions: Tag, Add to collection, Delete. All three go through the server
- * actions in src/app/actions.ts and use useTransition() for back-pressure
- * (F-053).
+ * The floating BulkBar appears once selectedIds.size > 0 and offers Ask,
+ * Tag, and Add to collection. Mutating actions go through the server actions
+ * in src/app/actions.ts and use useTransition() for back-pressure (F-053).
  */
 
 function formatRelative(ts: number): string {
@@ -58,6 +67,38 @@ function SourceIcon({ type }: { type: string }) {
   return <StickyNote className="h-4 w-4" strokeWidth={2} />;
 }
 
+function captureSourceLabel(source: string | null | undefined): string {
+  switch (source) {
+    case "android":
+      return "Android";
+    case "extension":
+      return "Extension";
+    case "telegram":
+      return "Telegram";
+    case "system":
+      return "System";
+    case "web":
+      return "Web";
+    default:
+      return "Unknown";
+  }
+}
+
+function QualityBadge({ quality }: { quality: string | null | undefined }) {
+  const limited = isLimitedCaptureQuality(quality);
+  return (
+    <span
+      className={`rounded-full border px-2 py-0.5 text-[11px] font-medium ${
+        limited
+          ? "border-[var(--quality-needs-upgrade)] bg-[var(--surface-raised)] text-[var(--quality-needs-upgrade)]"
+          : "border-[var(--border)] bg-[var(--surface-raised)] text-[var(--text-secondary)]"
+      }`}
+    >
+      {qualityLabel(quality)}
+    </span>
+  );
+}
+
 export function LibraryList({
   items,
   collections,
@@ -71,6 +112,9 @@ export function LibraryList({
   const [isPending, startTransition] = useTransition();
 
   const clear = useCallback(() => setSelectedIds(new Set()), []);
+  const showFlash = useCallback((message: string) => {
+    setFlash(message);
+  }, []);
 
   const toggle = useCallback((id: string) => {
     setSelectedIds((prev) => {
@@ -97,17 +141,16 @@ export function LibraryList({
       startTransition(async () => {
         const res = await bulkTagItemsAction(ids, tagName);
         if (res.ok) {
-          setFlash(
-            `Tagged ${res.count} ${res.count === 1 ? "item" : "items"} with “${tagName}”.`,
+          showFlash(
+            `Applied tag to ${res.count} selected ${res.count === 1 ? "item" : "items"}.`,
           );
           clear();
-          router.refresh();
         } else {
-          setFlash(`Error: ${res.error}`);
+          showFlash(`Error: ${res.error}`);
         }
       });
     },
-    [selectedIds, clear, router],
+    [selectedIds, clear, showFlash],
   );
 
   const handleBulkCollection = useCallback(
@@ -117,36 +160,26 @@ export function LibraryList({
       startTransition(async () => {
         const res = await bulkAttachCollectionAction(ids, collectionId);
         if (res.ok) {
-          setFlash(
-            `Added ${res.count} ${res.count === 1 ? "item" : "items"} to “${c?.name ?? "collection"}”.`,
+          showFlash(
+            `Added ${res.count} selected ${res.count === 1 ? "item" : "items"} to “${c?.name ?? "collection"}”.`,
           );
           clear();
-          router.refresh();
         } else {
-          setFlash(`Error: ${res.error}`);
+          showFlash(`Error: ${res.error}`);
         }
       });
     },
-    [selectedIds, collections, clear, router],
+    [selectedIds, collections, clear, showFlash],
   );
 
-  const handleBulkDelete = useCallback(() => {
+  const handleAskSelected = useCallback(() => {
     const ids = Array.from(selectedIds);
-    const n = ids.length;
-    if (!window.confirm(`Delete ${n} ${n === 1 ? "item" : "items"}? This cannot be undone.`)) {
-      return;
-    }
-    startTransition(async () => {
-      const res = await bulkDeleteItemsAction(ids);
-      if (res.ok) {
-        setFlash(`Deleted ${res.count} ${res.count === 1 ? "item" : "items"}.`);
-        clear();
-        router.refresh();
-      } else {
-        setFlash(`Error: ${res.error}`);
-      }
-    });
-  }, [selectedIds, clear, router]);
+    if (ids.length === 0 || ids.length > 50) return;
+    const params = new URLSearchParams();
+    params.set("scope", "selected");
+    params.set("ids", ids.join(","));
+    router.push(`/ask?${params.toString()}`);
+  }, [selectedIds, router]);
 
   // Auto-dismiss flash after 3s.
   useEffect(() => {
@@ -167,13 +200,15 @@ export function LibraryList({
               <div
                 className={`flex items-start gap-3 rounded-lg border bg-[var(--surface)] p-4 transition-colors duration-[var(--duration-fast)] ${
                   checked
-                    ? "border-[var(--accent-9)] bg-[var(--surface-raised)]"
+                    ? "border-[var(--control-selected-border)] bg-[var(--control-selected-bg)]"
                     : "border-[var(--border)] hover:border-[var(--border-strong)] hover:bg-[var(--surface-raised)]"
                 }`}
               >
                 <label
-                  className={`mt-0.5 shrink-0 cursor-pointer ${
-                    anySelected ? "opacity-100" : "opacity-0 group-hover/row:opacity-100"
+                  className={`inline-flex h-11 w-11 shrink-0 cursor-pointer items-start justify-center pt-1 ${
+                    anySelected
+                      ? "opacity-100"
+                      : "opacity-100 sm:opacity-0 sm:group-hover/row:opacity-100"
                   } transition-opacity`}
                   onClick={(e) => e.stopPropagation()}
                 >
@@ -194,7 +229,7 @@ export function LibraryList({
                   </span>
                   <div className="min-w-0 flex-1">
                     <div className="flex items-start justify-between gap-3">
-                      <h2 className="truncate text-[18px] font-medium leading-[1.55] text-[var(--text-primary)]">
+                      <h2 className="break-words text-[18px] font-medium leading-[1.55] text-[var(--text-primary)]">
                         {it.title}
                       </h2>
                       <span className="shrink-0">
@@ -204,10 +239,12 @@ export function LibraryList({
                         />
                       </span>
                     </div>
-                    <div className="mt-1 flex items-center gap-2 text-xs text-[var(--text-secondary)]">
+                    <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-[var(--text-secondary)]">
                       <span>{platformLabel(it.source_platform, it.source_type)}</span>
                       <span className="text-[var(--text-muted)]">·</span>
-                      <span>{qualityLabel(it.capture_quality)}</span>
+                      <span>via {captureSourceLabel(it.capture_source)}</span>
+                      <span className="text-[var(--text-muted)]">·</span>
+                      <QualityBadge quality={it.capture_quality} />
                       <span className="text-[var(--text-muted)]">·</span>
                       <span>{formatRelative(it.captured_at)}</span>
                       {it.total_chars !== null && (
@@ -243,7 +280,7 @@ export function LibraryList({
           disabled={isPending}
           onTag={handleBulkTag}
           onAddToCollection={handleBulkCollection}
-          onDelete={handleBulkDelete}
+          onAskSelected={handleAskSelected}
           onClear={clear}
         />
       )}
@@ -266,7 +303,7 @@ function BulkBar({
   disabled,
   onTag,
   onAddToCollection,
-  onDelete,
+  onAskSelected,
   onClear,
 }: {
   count: number;
@@ -274,96 +311,130 @@ function BulkBar({
   disabled: boolean;
   onTag: (tagName: string) => void;
   onAddToCollection: (collectionId: string) => void;
-  onDelete: () => void;
+  onAskSelected: () => void;
   onClear: () => void;
 }) {
   const [tagValue, setTagValue] = useState("");
+  const askState = getAskSelectedActionState(count);
+  const askDisabled = disabled || askState.disabled;
 
   return (
-    <div
-      role="toolbar"
-      aria-label="Bulk actions"
-      className="fixed bottom-6 left-1/2 z-40 flex -translate-x-1/2 items-center gap-3 rounded-full border border-[var(--border-strong)] bg-[var(--surface-raised)] px-4 py-2 shadow-lg"
-    >
-      <span className="text-sm font-medium text-[var(--text-primary)]">
-        {count} selected
-      </span>
-
-      <form
-        onSubmit={(e) => {
-          e.preventDefault();
-          const name = tagValue.trim();
-          if (!name) return;
-          onTag(name);
-          setTagValue("");
-        }}
-        className="flex items-center gap-1"
+    <>
+      <div
+        role="toolbar"
+        aria-label="Selected source actions"
+        className="fixed inset-x-3 bottom-[calc(4.75rem+env(safe-area-inset-bottom))] z-40 flex items-center gap-2 rounded-lg border border-[var(--border-strong)] bg-[var(--surface-raised)] px-3 py-2 shadow-lg md:hidden"
       >
-        <input
-          type="text"
-          value={tagValue}
-          onChange={(e) => setTagValue(e.target.value)}
-          placeholder="tag name"
-          maxLength={60}
-          disabled={disabled}
-          className="h-7 w-28 rounded-sm border border-[var(--border)] bg-[var(--surface)] px-2 text-xs text-[var(--text-primary)] placeholder:text-[var(--text-muted)] disabled:opacity-50"
-        />
+        <span className="min-w-0 flex-1 truncate text-sm font-medium text-[var(--text-primary)]">
+          {count} selected
+        </span>
         <button
-          type="submit"
-          disabled={disabled || !tagValue.trim()}
-          className="h-7 rounded-sm bg-[var(--accent-9)] px-2 text-xs font-medium text-[var(--on-accent)] hover:bg-[var(--accent-10)] disabled:opacity-50"
+          type="button"
+          onClick={onAskSelected}
+          disabled={askDisabled}
+          title={askState.title}
+          className="inline-flex h-9 shrink-0 items-center gap-1.5 rounded-md bg-[var(--action-primary-bg)] px-3 text-sm font-medium text-[var(--action-primary-fg)] hover:bg-[var(--action-primary-bg-hover)] disabled:opacity-50"
         >
-          Tag
+          <MessageCircle className="h-4 w-4" strokeWidth={2} />
+          {askState.label}
         </button>
-      </form>
-
-      <div className="flex items-center gap-1">
-        <select
-          defaultValue=""
-          disabled={disabled || collections.length === 0}
-          onChange={(e) => {
-            if (e.target.value) {
-              onAddToCollection(e.target.value);
-              e.currentTarget.value = "";
-            }
-          }}
-          className="h-7 rounded-sm border border-[var(--border)] bg-[var(--surface)] px-2 text-xs text-[var(--text-primary)] disabled:opacity-50"
-          title={
-            collections.length === 0
-              ? "Create a collection in Settings first"
-              : "Add selected items to a collection"
-          }
+        <button
+          type="button"
+          aria-label="Clear selection"
+          onClick={onClear}
+          disabled={disabled}
+          className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-md border border-[var(--border)] text-[var(--text-secondary)] hover:bg-[var(--surface)] hover:text-[var(--text-primary)] disabled:opacity-50"
         >
-          <option value="" disabled>
-            + collection
-          </option>
-          {collections.map((c) => (
-            <option key={c.id} value={c.id}>
-              {c.name}
-            </option>
-          ))}
-        </select>
+          <X className="h-4 w-4" strokeWidth={2} />
+        </button>
       </div>
 
-      <button
-        type="button"
-        onClick={onDelete}
-        disabled={disabled}
-        className="inline-flex h-7 items-center gap-1 rounded-sm border border-[var(--danger)] bg-transparent px-2 text-xs font-medium text-[var(--danger)] hover:bg-[var(--surface)] disabled:opacity-50"
+      <div
+        role="toolbar"
+        aria-label="Bulk actions"
+        className="fixed bottom-6 left-1/2 z-40 hidden max-w-[calc(100vw-2rem)] -translate-x-1/2 flex-wrap items-center justify-center gap-3 rounded-full border border-[var(--border-strong)] bg-[var(--surface-raised)] px-4 py-2 shadow-lg md:flex"
       >
-        <Trash2 className="h-3 w-3" strokeWidth={2} />
-        Delete
-      </button>
+        <span className="text-sm font-medium text-[var(--text-primary)]">
+          {count} selected
+        </span>
 
-      <button
-        type="button"
-        aria-label="Clear selection"
-        onClick={onClear}
-        disabled={disabled}
-        className="rounded-full p-1 text-[var(--text-secondary)] hover:bg-[var(--surface)] hover:text-[var(--text-primary)] disabled:opacity-50"
-      >
-        <X className="h-3.5 w-3.5" strokeWidth={2} />
-      </button>
-    </div>
+        <button
+          type="button"
+          onClick={onAskSelected}
+          disabled={askDisabled}
+          title={askState.title}
+          className="inline-flex h-7 items-center gap-1 rounded-sm bg-[var(--action-primary-bg)] px-2 text-xs font-medium text-[var(--action-primary-fg)] hover:bg-[var(--action-primary-bg-hover)] disabled:opacity-50"
+        >
+          <MessageCircle className="h-3 w-3" strokeWidth={2} />
+          {askState.label}
+        </button>
+
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            const name = tagValue.trim();
+            if (!name) return;
+            onTag(name);
+            setTagValue("");
+          }}
+          className="flex items-center gap-1"
+        >
+          <input
+            type="text"
+            value={tagValue}
+            onChange={(e) => setTagValue(e.target.value)}
+            placeholder="tag name"
+            maxLength={60}
+            disabled={disabled}
+            className="h-7 w-28 rounded-sm border border-[var(--border)] bg-[var(--surface)] px-2 text-xs text-[var(--text-primary)] placeholder:text-[var(--text-muted)] disabled:opacity-50"
+          />
+          <button
+            type="submit"
+            disabled={disabled || !tagValue.trim()}
+            className="h-7 rounded-sm bg-[var(--action-primary-bg)] px-2 text-xs font-medium text-[var(--action-primary-fg)] hover:bg-[var(--action-primary-bg-hover)] disabled:opacity-50"
+          >
+            Tag
+          </button>
+        </form>
+
+        <div className="flex items-center gap-1">
+          <select
+            defaultValue=""
+            disabled={disabled || collections.length === 0}
+            onChange={(e) => {
+              if (e.target.value) {
+                onAddToCollection(e.target.value);
+                e.currentTarget.value = "";
+              }
+            }}
+            className="h-7 rounded-sm border border-[var(--border)] bg-[var(--surface)] px-2 text-xs text-[var(--text-primary)] disabled:opacity-50"
+            title={
+              collections.length === 0
+                ? "Create a collection in Settings first"
+                : "Add selected items to a collection"
+            }
+          >
+            <option value="" disabled>
+              + collection
+            </option>
+            {collections.map((c) => (
+              <option key={c.id} value={c.id}>
+                {c.name}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <button
+          type="button"
+          aria-label="Clear selection"
+          onClick={onClear}
+          disabled={disabled}
+          className="rounded-full p-1 text-[var(--text-secondary)] hover:bg-[var(--surface)] hover:text-[var(--text-primary)] disabled:opacity-50"
+        >
+          <X className="h-3.5 w-3.5" strokeWidth={2} />
+        </button>
+      </div>
+    </>
   );
 }

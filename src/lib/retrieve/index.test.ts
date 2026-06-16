@@ -89,6 +89,7 @@ test("returns topK chunks ranked by similarity", async () => {
     hits.every((h) => typeof h.similarity === "number"),
     "similarity populated",
   );
+  assert.equal(hits[0].item_source_type, "note");
 });
 
 test("retrieve is deterministic across repeated calls", async () => {
@@ -113,6 +114,29 @@ test("itemId scope restricts results to a single item", async () => {
   assert.ok(hits.length >= 1);
   for (const h of hits) {
     assert.equal(h.item_id, reactItem.id);
+  }
+});
+
+test("itemIds scope restricts results to selected items", async () => {
+  const growthItem = getDb()
+    .prepare("SELECT id FROM items WHERE title = ?")
+    .get("Growth loops") as { id: string };
+  const reactItem = getDb()
+    .prepare("SELECT id FROM items WHERE title = ?")
+    .get("React hooks") as { id: string };
+
+  const hits = await retrieve("growth component", {
+    embedFn: hashedEmbed,
+    itemIds: [growthItem.id, reactItem.id],
+    topK: 10,
+  });
+
+  assert.ok(hits.length >= 1);
+  for (const h of hits) {
+    assert.ok(
+      h.item_id === growthItem.id || h.item_id === reactItem.id,
+      "hit must come from selected items",
+    );
   }
 });
 

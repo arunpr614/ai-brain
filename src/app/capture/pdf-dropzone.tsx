@@ -4,10 +4,13 @@ import { FileText, Loader2, Upload } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useRef, useState } from "react";
 import { cn } from "@/lib/cn";
+import type { CaptureResultPayload } from "@/lib/capture/result";
+import { getPdfFileValidationError } from "./pdf-file-validation";
 
 interface UploadResponse {
   id?: string;
   error?: string;
+  capture_result?: CaptureResultPayload;
 }
 
 export function PdfDropzone() {
@@ -35,7 +38,8 @@ export function PdfDropzone() {
         setError(data.error ?? `Upload failed (${res.status})`);
         return;
       }
-      router.push(`/items/${data.id}`);
+      const state = data.capture_result?.state ?? "created_full_text";
+      router.push(`/items/${data.id}?capture_state=${state}`);
     } catch (e) {
       setStatus("error");
       setError((e as Error).message);
@@ -46,11 +50,12 @@ export function PdfDropzone() {
     e.preventDefault();
     setDragging(false);
     const file = e.dataTransfer.files[0];
-    if (file && file.type === "application/pdf") {
+    const validationError = file ? getPdfFileValidationError(file) : null;
+    if (file && !validationError) {
       void upload(file);
     } else if (file) {
       setStatus("error");
-      setError("Only PDF files are supported.");
+      setError(validationError);
     }
   }
 
@@ -70,9 +75,9 @@ export function PdfDropzone() {
           if (e.key === "Enter" || e.key === " ") inputRef.current?.click();
         }}
         className={cn(
-          "flex cursor-pointer flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed p-12 text-center transition-colors",
+          "flex min-h-48 cursor-pointer flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed p-8 text-center transition-colors md:p-12",
           dragging
-            ? "border-[var(--accent-9)] bg-[var(--accent-3)]"
+            ? "border-[var(--control-selected-border)] bg-[var(--control-selected-bg)]"
             : "border-[var(--border)] bg-[var(--surface)] hover:border-[var(--border-strong)]",
         )}
       >
@@ -107,7 +112,14 @@ export function PdfDropzone() {
           className="hidden"
           onChange={(e) => {
             const file = e.target.files?.[0];
-            if (file) void upload(file);
+            if (!file) return;
+            const validationError = getPdfFileValidationError(file);
+            if (validationError) {
+              setStatus("error");
+              setError(validationError);
+              return;
+            }
+            void upload(file);
           }}
         />
       </div>

@@ -5,6 +5,7 @@ import {
   loadApiToken,
   verifyBearerToken,
 } from "@/lib/auth/bearer";
+import { verifySessionCookie } from "@/lib/auth";
 import { logError } from "@/lib/errors/sink";
 
 /**
@@ -12,9 +13,9 @@ import { logError } from "@/lib/errors/sink";
  *
  * Layered auth check, first-match-wins:
  *   1. Public path (/unlock, /setup, /setup-apk, /api/auth/*)  → next()
- *   2. brain-session cookie PRESENT                → next()
- *      (HMAC fully verified downstream in server components / actions /
- *      route handlers; the proxy is a fast presence-check).
+ *   2. brain-session cookie valid                  → next()
+ *      (HMAC verification happens here so forged cookie strings cannot
+ *      bypass bearer-only or private HTML gates).
  *   3. Path is in BEARER_ROUTES allow-list         → bearer verification:
  *      a. Authorization: Bearer <token> header present
  *      b. Token matches BRAIN_API_TOKEN via timingSafeEqual
@@ -30,7 +31,6 @@ import { logError } from "@/lib/errors/sink";
  * runtime could not use `node:crypto`. That constraint no longer applies;
  * bearer verification runs in-proxy.
  */
-const SESSION_COOKIE = "brain-session";
 // /offline.html (v0.5.0 T-14 / F-020) is served from /public as a static
 // fallback and must render BEFORE auth — the whole point is that the
 // server might be up but the device isn't paired, or the server might be
@@ -49,8 +49,17 @@ const PUBLIC_PATHS = new Set([
   "/unlock",
   "/setup",
   "/setup-apk",
+  "/capture/share-result",
   "/offline.html",
   "/sw.js",
+  "/ai-memory-logo.png",
+  "/apple-touch-icon.png",
+  "/favicon-16x16.png",
+  "/favicon-32x32.png",
+  "/favicon-48x48.png",
+  "/manifest.webmanifest",
+  "/web-app-icon-192.png",
+  "/web-app-icon-512.png",
 ]);
 
 /**
@@ -72,9 +81,8 @@ export function proxy(req: NextRequest) {
   if (PUBLIC_API_ROUTES.has(pathname)) return NextResponse.next();
   if (PUBLIC_PATHS.has(pathname)) return NextResponse.next();
 
-  // 2. Session cookie presence → web UI flow (browser, APK WebView nav).
-  const sessionToken = req.cookies.get(SESSION_COOKIE)?.value;
-  if (sessionToken) {
+  // 2. Valid session cookie → web UI flow (browser, APK WebView nav).
+  if (verifySessionCookie(req.cookies)) {
     return NextResponse.next();
   }
 

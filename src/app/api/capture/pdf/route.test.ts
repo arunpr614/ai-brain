@@ -8,13 +8,21 @@
  */
 import "./route.test.setup";
 
-import { after, describe, it } from "node:test";
+import { after, before, describe, it } from "node:test";
 import assert from "node:assert/strict";
 import crypto from "node:crypto";
 import { rmSync } from "node:fs";
 import { NextRequest } from "next/server";
 import { TEST_DB_DIR } from "./route.test.setup";
 import { POST } from "./route";
+import { issueSessionToken, setPin } from "@/lib/auth";
+
+const GOOD_TOKEN = "a".repeat(64);
+const ORIGINAL_TOKEN = process.env.BRAIN_API_TOKEN;
+
+function signedSessionCookie(): string {
+  return issueSessionToken();
+}
 
 function mkPdfRequest(opts: {
   body?: FormData | string;
@@ -48,7 +56,14 @@ function sha256Hex(bytes: Uint8Array): string {
 }
 
 describe("/api/capture/pdf — v0.5.0 T-13 extensions", () => {
+  before(() => {
+    setPin("1234");
+    process.env.BRAIN_API_TOKEN = GOOD_TOKEN;
+  });
+
   after(() => {
+    if (ORIGINAL_TOKEN === undefined) delete process.env.BRAIN_API_TOKEN;
+    else process.env.BRAIN_API_TOKEN = ORIGINAL_TOKEN;
     try {
       rmSync(TEST_DB_DIR, { recursive: true, force: true });
     } catch {}
@@ -61,13 +76,20 @@ describe("/api/capture/pdf — v0.5.0 T-13 extensions", () => {
     assert.equal(res.status, 401);
   });
 
+  it("returns 401 with a forged session cookie and no bearer", async () => {
+    const fd = new FormData();
+    fd.append("pdf", new File([makePdfLikeBytes().buffer.slice(0) as ArrayBuffer], "x.pdf", { type: "application/pdf" }));
+    const res = await POST(mkPdfRequest({ body: fd, cookie: "stub" }));
+    assert.equal(res.status, 401);
+  });
+
   it("rejects bearer path with disallowed Origin (403)", async () => {
     const fd = new FormData();
     fd.append("pdf", new File([makePdfLikeBytes().buffer.slice(0) as ArrayBuffer], "x.pdf", { type: "application/pdf" }));
     const res = await POST(
       mkPdfRequest({
         body: fd,
-        bearer: "a".repeat(64),
+        bearer: GOOD_TOKEN,
         origin: "http://evil.example",
       }),
     );
@@ -78,7 +100,7 @@ describe("/api/capture/pdf — v0.5.0 T-13 extensions", () => {
     const res = await POST(
       mkPdfRequest({
         body: "not-multipart",
-        cookie: "stub",
+        cookie: signedSessionCookie(),
       }),
     );
     assert.equal(res.status, 400);
@@ -89,7 +111,7 @@ describe("/api/capture/pdf — v0.5.0 T-13 extensions", () => {
   it("rejects missing pdf field with 400 missing_pdf_field", async () => {
     const fd = new FormData();
     fd.append("wrong_field", new File([new Uint8Array(8)], "x.bin"));
-    const res = await POST(mkPdfRequest({ body: fd, cookie: "stub" }));
+    const res = await POST(mkPdfRequest({ body: fd, cookie: signedSessionCookie() }));
     assert.equal(res.status, 400);
     const data = await res.json();
     assert.equal(data.error, "missing_pdf_field");
@@ -102,7 +124,7 @@ describe("/api/capture/pdf — v0.5.0 T-13 extensions", () => {
     const res = await POST(
       mkPdfRequest({
         body: fd,
-        cookie: "stub",
+        cookie: signedSessionCookie(),
         expectedSha: "0".repeat(64), // deliberately wrong
       }),
     );
@@ -123,7 +145,7 @@ describe("/api/capture/pdf — v0.5.0 T-13 extensions", () => {
     const res = await POST(
       mkPdfRequest({
         body: fd,
-        cookie: "stub",
+        cookie: signedSessionCookie(),
         expectedSha: sha256Hex(bytes),
       }),
     );
