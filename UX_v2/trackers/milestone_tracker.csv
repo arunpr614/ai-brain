@@ -10,3 +10,5 @@ M4.2 Android share result flow,Phase 4,Planned,"PRD-06-FU PRD-13","Share result 
 M5.1 Trust settings offline finish,Phase 5,Planned,"PRD-14 PRD-15","No privacy overclaims entry states verified"
 M6.1 Ops scope decision,Phase 6,Decision needed,Arun,"OPS-01/OPS-02 in or out of UX v2"
 M7.1 QA evidence package,Phase 7,Planned,"All feature work","Acceptance checklist has evidence and owners"
+M7.15 A25 Android URL-share result honesty,Phase 7,"Source committed and production deployed; APK runtime proof advanced","A24 deployed source A25 PRD v2 A25 implementation plan v2","A25 source commit c17f07a deployed; URL/note-specific failure states verified; native raw share payload logging found and handed to A26"
+M7.16 A26 Android share-target log hygiene,Phase 7,"Debug APK candidate validated; publication gated","A25 runtime log finding A26 PRD v2 A26 implementation plan v2","A26 APK 1.0.5/code6 built installed and log-scan clean; APK publication TalkBack spoken-order and URL-share success gates remain open"
