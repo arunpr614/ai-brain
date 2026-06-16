@@ -1,8 +1,11 @@
 # AI Brain — Roadmap Tracker
 
-**Document version:** v0.9.7-roadmap
-**Date:** 2026-06-02
+**Document version:** v0.9.10-roadmap
+**Date:** 2026-06-17
 **Changelog:**
+- **v0.9.10-roadmap (2026-06-17)** — **UX v2 release-gate status supersedes older APK roadmap notes.** Current release status is `web_production_deployed_a31_android_1_0_5_publication_decision_packet_ready_publication_gated`. The latest validated Android debug candidate is `data/artifacts/brain-debug-v1.0.5-code6.apk`, package `com.arunprakash.brain`, versionName `1.0.5`, versionCode `6`, SHA-256 `e7539f1afb8b730b0c5f5808724d960df20a6db9fadc943b90c73ac9979298b7`. Web UX v2 is deployed to production; Android debug APK runtime evidence now covers authenticated routes, pairing, note share, URL-share success with `capture_source=android`, log hygiene, offline/recovery, keyboard smoke, and A30 platform accessibility order. APK publication is **not authorized**. The active gate is Arun's owner decision from `UX_v2/execution/UX_V2_A31_APK_PUBLICATION_AUTHORIZATION_PACKET_2026-06-17_01-15-00_IST.md`: publication approval, distribution target, signing mode, accessibility residual-risk decision or true TalkBack audit, artifact/version, and install/rollback posture. The v0.9.8/v0.9.9 APK rows remain historical, not current release truth. This is a status-only reconciliation, not a new product phase; no `BUILD_PLAN.md` phase mirror is required.
+- **v0.9.9-roadmap (2026-06-10)** — **Historical APK verification refreshed after handover.** At that time the verified Android artifact was `data/artifacts/brain-debug-v1.0.2-code3.apk`: package `com.arunprakash.brain`, versionName `1.0.2`, versionCode `3`, server URL `https://brain.arunp.in`, SHA-256 `6ac0bad378c3b214c1b3d32517be685ed1e079054c41fff371fe65fbc6e1753f`, signer SHA-256 `7d4580091b1c222cc004b6e195b267dcb4ef4ec200e0c803125d2cbc38cda94a` matching `v1.0.1-code2`. Production provider-status still reports Claude and Gemini as `ok`. Android tooling was present, but no phone was connected; this entry is superseded by v0.9.10 for current APK guidance.
+- **v0.9.8-roadmap (2026-06-09)** — **v0.7.2 provider guardrails deployed to production.** Clean release worktree `codex/v0.7.2-release-verify` deployed commit `6a892ea` to Hetzner at 22:37 IST. Production health PASS; provider-status PASS (`anthropic` Claude text provider ok, `gemini` semantic indexing provider ok); item detail production smoke PASS (`Semantic indexing ready` visible on a real indexed item). APK metadata verified for `data/artifacts/brain-debug-v1.0.1-code2.apk`: package `com.arunprakash.brain`, versionName `1.0.1`, versionCode `2`, server URL `https://brain.arunp.in`, SHA-256 `3aed7a1d11e032f8fd62a28b0dc96ef6b30a389bb644c3d27eacfcaee4a5ce92`. Physical phone install still needed manual/device smoke because `adb` was not available in that Codex runtime. At that time Library Offline Reads was suggested after Android smoke; v0.9.10 supersedes that sequencing until UX v2 publication decisions close.
 - **v0.9.7-roadmap (2026-06-02)** — **v0.6.2 Off-site backup SHIPPED.** Tag `v0.6.2` on commit `90b6c61`, pushed to `origin/main`. Cron-driven `sqlite3 .backup → gpg → rclone` to B2 every 6h on Hetzner. T-G escrow complete (GPG private key + revoke cert + passphrase in 1Password). D-18 round-trip smoke PASS — 9 items match between live Hetzner and decrypted B2 blob. SDK-path attempt `a799b16` reverted in `f6208e1` before deploy after locked-design re-discovery (`S-7-MIGRATION-RUNBOOK.md` rclone+cron). No new npm deps. **v0.6.3 hygiene now NEXT** — six carry-overs queued (T-11b legacy env drop, BUG-ENRICH log hygiene, Mac better-sqlite3 ABI, `tsx` removal, CSP nonces, HARDEN-HETZNER-SSH); bundling decision pending (one phase vs split into v0.6.3 dev-hygiene + v0.6.4 security-hardening). T-11b date gate (≥ 2026-05-26) already passed.
 - **v0.9.6-roadmap (2026-05-21)** — **v0.6.1.1 hotfix SHIPPED.** Tag `v0.6.1.1` on commit `790827e`, deployed to Hetzner 23:26 IST 2026-05-20. Two of the three v0.6.2-slated bugs are now resolved: BUG-ANTHROPIC-OVERLOAD (P1) via `fetchWithOverloadRetry()` retrying on 429/503/529 + connection errors; BUG-RETRIEVE-ITEM (P2) via `rowid IN (...)` pre-filter on the vec0 KNN. BUG-ENRICH-UNREACHABLE-LOOP mostly absorbed by the Anthropic retry — only cosmetic log-message hygiene remains for v0.6.3. **v0.6.2 backup-only is now the next phase** (D-18 B2 off-site backup + T-11b legacy `BRAIN_LAN_TOKEN` drop, gated ≥ 2026-05-26). Plan to be drafted next session. **v0.6.3 hygiene** queued: enrich log message, CSP nonces, Mac better-sqlite3 ABI, `tsx` removal from Hetzner runtime. Verification evidence: 14/14 anthropic tests + 9/9 retrieve tests on Hetzner; live spike on 1-chunk item `5e755dab` returned 1 chunk for 3 generic queries (was 0); un-scoped multi-chunk parity preserved. Plan: `docs/plans/v0.6.1.1-hotfix.md` (28 lines, hotfix-shaped). RUNNING_LOG entry #54.
 - **v0.9.5-roadmap (2026-05-20)** — v0.6.1 SHIPPED 2026-05-19 + user-side validated 2026-05-20 (D-15/D-16/D-17/T-2 all PASS). Three bugs surfaced post-validation now slated for v0.6.2: BUG-ANTHROPIC-OVERLOAD (P1), BUG-RETRIEVE-ITEM (confirmed 2026-05-20 via /opt/brain probe — 1-chunk items + generic queries return 0 chunks), BUG-ENRICH-UNREACHABLE-LOOP (root cause = same 529). Lane summary updated with these. **Orphaned-plans audit (2026-05-20):** four `v0.6.x` plans existed without sequencing slots. One (Offline-mode APK) shipped in v0.5.5 + v0.5.6 — plan reclassified as historical. Three remain unscheduled and are now surfaced in §3.5 "Unscheduled but planned" with proposed sequencing for user ratification: AUG (post-v0.7.0 desktop polish), GRAPH (after AUG, same lane), LIBOFF (post-v0.6.2, before v0.7.0 visual refresh).
@@ -53,10 +56,13 @@ Companion docs:
 | v0.6.3 | Hygiene (NEXT) | T-11b env drop · BUG-ENRICH log · Mac better-sqlite3 ABI · `tsx` removal · CSP nonces · HARDEN-HETZNER-SSH | 0.5 | 10.0 |
 | _Note:_ original "v0.6.0 GenPage" slot is now blocked by post-cutover hardening; sequencing for GenPage will be re-decided after v0.6.3. | | | | |
 | v0.7.0 | Structured Calm Green visual refresh | Adopt emerald/Newsreader/Inter palette; values-only `tokens.css` swap; 25 tasks (4 gates + 21 exec) | 1.0 | 10.5 |
-| v0.7.5 | GenLink _(was v0.7.0)_ | Clickable-word AI sub-pages | 1.0 | 11.5 |
-| v0.8.0 | Review (SRS) | FSRS queue + daily review + streak | 1.0 | 12.5 |
-| v0.9.0 | Flow + proactive | Multi-step journeys + home-page suggestions | 2.0 | 14.5 |
-| v0.10.0 | Breadth + graph + Obsidian | YouTube/EPUB/DOCX + graph + Obsidian sync | 2.0 | 16.5 |
+| v0.7.2 ✅ | Provider guardrails + historical APK verification | DEPLOYED 2026-06-09 — Claude/Gemini provider status and semantic indexing visibility live in production; historical APK `brain-debug-v1.0.2-code3.apk` metadata/signing verified at that time; superseded by UX v2 `1.0.5/code6` status | 0.2 | 10.7 |
+| UX v2 release gate | Current status overlay, not a product phase | Web production deployed; Android debug candidate `1.0.5/code6` validated; A31 publication decision packet ready; APK publication/signing/distribution blocked until Arun responds | — | — |
+| v0.7.x | Library Offline Reads from DB (deferred until UX v2 publication gate closes) | Make Android Library item-detail reads work from the on-device store; supersedes the historical WorkManager/offline outbox lane | 1.0 | 11.7 |
+| v0.7.5 | GenLink _(was v0.7.0)_ | Clickable-word AI sub-pages | 1.0 | 12.7 |
+| v0.8.0 | Review (SRS) | FSRS queue + daily review + streak | 1.0 | 13.7 |
+| v0.9.0 | Flow + proactive | Multi-step journeys + home-page suggestions | 2.0 | 15.7 |
+| v0.10.0 | Breadth + graph + Obsidian | YouTube/EPUB/DOCX + graph + Obsidian sync | 2.0 | 17.7 |
 | v1.0.0 | Solid-product gate | Decision point: hosting yes/no | — | — |
 
 ---
@@ -191,6 +197,8 @@ All 17 work items closed with commit SHAs. Typecheck + lint + build + 24 unit te
 **Exit:** ✅ Streamed answers with citation chips on `/ask` and `/items/[id]/ask`; 107 unit tests + 29 smoke assertions green; tag `v0.4.0` annotated on `main`.
 
 ### v0.5.0 — APK + extension *(scope expanded per self-critique)*
+
+> **A32 status note (2026-06-17):** This section is a historical pre-Cloudflare/LAN roadmap snapshot. Do not use `brain.local`, LAN token, or v0.5.0 planned rows as current APK release guidance. Current Android release status is captured by UX v2 A31: debug candidate `1.0.5/code6` is validated but APK publication is gated by owner authorization, signing/distribution, accessibility residual-risk, artifact/version, and install/rollback decisions.
 
 | ID | Item | Status | Notes |
 |---|---|---|---|
@@ -421,6 +429,8 @@ Three feature plans exist with detailed task lists but no sequencing slot. Surfa
 **Recommended sequencing pass:**
 
 ```
+UX v2 release gate (current) — A31 packet ready; wait for Arun publication/signing/accessibility decision
+  ↓
 v0.6.2 (backup) ✅ SHIPPED 2026-06-02
   ↓
 v0.6.3 (hygiene — T-11b + Mac ABI + log + tsx + CSP + SSH)  ← NEXT
@@ -438,13 +448,13 @@ This is **a recommendation only** — none of the three orphan plans gain a vers
 
 ---
 
-## 4. Lifecycle board (snapshot — 2026-05-20)
+## 4. Lifecycle board (snapshot — 2026-06-17)
 
 ```
-future (5)  →  backlog (3 orphan plans)  →  planned (60+)  →  in-progress (0)  →  shipped (v0.6.1 cumulative)
+future (5)  →  backlog (3 orphan plans)  →  planned (60+)  →  in-progress (UX v2 release gate)  →  shipped (web UX v2 production)
 ```
 
-v0.6.1 closed 2026-05-19 + validated 2026-05-20. All 20 v0.6.1 tasks shipped (T-1..T-20) + 4 user-side gates passed (D-15, D-16, D-17, T-2). Tag `v0.6.1` on `17e32e0`. Three orphan-plan drafts surfaced for sequencing in §3.5. Next active work = **v0.6.2** (backup + retrieval fixes). Plan not yet drafted.
+Current active work is UX v2 release closure. Web UX v2 is deployed to production and Android debug candidate `1.0.5/code6` is validated, but APK publication remains blocked until Arun completes the A31 owner decision packet. Older roadmap sequencing below this note is historical unless explicitly superseded by the current UX v2 release packets.
 
 ---
 
