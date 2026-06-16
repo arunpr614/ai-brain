@@ -1,0 +1,78 @@
+{
+  "created": "2026-06-16 23:59:00 IST",
+  "scope": "production_server_api_url_capture_success_proof",
+  "fixtureUrl": "https://www.iana.org/help/example-domains?ai_brain_qa=a27-20260616-2355",
+  "localExtractionPreflight": {
+    "ok": true,
+    "title": "Example Domains",
+    "bodyLength": 757,
+    "captureQuality": "full_text"
+  },
+  "localTokenAttempt": {
+    "httpStatus": 401,
+    "ok": false,
+    "interpretation": "local .env token is not the active production bearer token"
+  },
+  "productionCapture": {
+    "executionHost": "brain",
+    "httpStatus": 201,
+    "ok": true,
+    "action": "created",
+    "duplicate": false,
+    "itemId": "9232287b1433c93c3ac4e8cb",
+    "captureResultState": "created_full_text",
+    "captureResultQuality": "full_text",
+    "sourcePlatform": "generic_article",
+    "capturedVia": "android",
+    "recommendedAction": "open_item",
+    "message": "Saved with readable text. This source is ready for search and Ask."
+  },
+  "productionDbVerificationAfterCapture": {
+    "items": 1,
+    "item": {
+      "id": "9232287b1433c93c3ac4e8cb",
+      "sourceUrl": "https://www.iana.org/help/example-domains?ai_brain_qa=a27-20260616-2355",
+      "title": "Reserved Example Domains for Documentation",
+      "sourceType": "url",
+      "captureSource": "android",
+      "sourcePlatform": "generic_article",
+      "captureQuality": "full_text",
+      "extractionMethod": "readability",
+      "totalChars": 757
+    },
+    "relatedRows": {
+      "chunks": 0,
+      "embeddingJobs": 1,
+      "enrichmentJobs": 1,
+      "captureArtifacts": 0,
+      "itemTags": 6,
+      "itemTopics": 6,
+      "itemCollections": 0
+    }
+  },
+  "cleanup": {
+    "method": "sqlite delete from items by exact source_url with PRAGMA foreign_keys=ON",
+    "postCleanupCounts": {
+      "items": 0,
+      "chunks": 0,
+      "embeddingJobs": 0,
+      "enrichmentJobs": 0,
+      "captureArtifacts": 0,
+      "itemTags": 0,
+      "itemTopics": 0,
+      "itemCollections": 0
+    },
+    "delayedRecheckCounts": {
+      "items": 0,
+      "embeddingJobs": 0,
+      "enrichmentJobs": 0,
+      "itemTags": 0,
+      "itemTopics": 0
+    }
+  },
+  "verdict": {
+    "serverUrlCaptureSuccess": "proven",
+    "nativeAndroidUrlShareSuccess": "not_proven_android_tooling_unavailable",
+    "apkPublication": "not_authorized"
+  }
+}
