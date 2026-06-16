@@ -5,13 +5,13 @@ Owner: PM sidecar
 Scope: documentation and tracking only. No app code changed.
 Project folder: `/Users/arun.prakash/Documents/arunvault/arun-cursor/Initiatives/Arun_AI_Projects/ai-brain/phase2`
 Current branch observed: `codex/ai-brain-ux-v2-execution`
-Last updated: 2026-06-17 00:29:00 IST after A28/A29 native Android URL-share proof and attribution fix
+Last updated: 2026-06-17 00:50:00 IST after A30 Android accessibility-order audit
 
 ## Current Verdict
 
-The web UX v2 revamp is production deployed and smoke-tested. A23 was committed as `0655f51`; the first deploy succeeded but exposed dependency audit warnings. A24 patched the Next.js security advisory and nested production dependency advisories, committed `f9de485`, redeployed production, verified remote `next: 16.2.9`, remote production audit 0 vulnerabilities, service active, and live public/private unauthenticated smoke. A25 then fixed the misleading URL-share failure result, committed `c17f07a`, redeployed production, and verified live smoke plus deployed-bundle copy/mapping. A26 patched native Android share-target log hygiene in the build pipeline, committed `8577751`, built/installed debug APK `1.0.5/code6`, and passed redacted logcat scan. A27 proved production server/API URL capture success with a deterministic IANA fixture and cleaned it from production. A28 restored Android tooling, proved the real native Android URL-share path shows saved success, and found that the item was stored with `capture_source=unknown`. A29 fixed Android capture-source attribution for native URL/note/PDF share requests, deployed production, reran a cold native URL share, verified `capture_source=android`, and cleaned the fixture from production. Live Ask/provider proof passed after an immediate rerun of the remote provider check.
+The web UX v2 revamp is production deployed and smoke-tested. A23 was committed as `0655f51`; the first deploy succeeded but exposed dependency audit warnings. A24 patched the Next.js security advisory and nested production dependency advisories, committed `f9de485`, redeployed production, verified remote `next: 16.2.9`, remote production audit 0 vulnerabilities, service active, and live public/private unauthenticated smoke. A25 then fixed the misleading URL-share failure result, committed `c17f07a`, redeployed production, and verified live smoke plus deployed-bundle copy/mapping. A26 patched native Android share-target log hygiene in the build pipeline, committed `8577751`, built/installed debug APK `1.0.5/code6`, and passed redacted logcat scan. A27 proved production server/API URL capture success with a deterministic IANA fixture and cleaned it from production. A28 restored Android tooling, proved the real native Android URL-share path shows saved success, and found that the item was stored with `capture_source=unknown`. A29 fixed Android capture-source attribution for native URL/note/PDF share requests, deployed production, reran a cold native URL share, verified `capture_source=android`, and cleaned the fixture from production. A30 passed a 10-screen Android WebView accessibility-order audit at the `platform_ax_equivalent_passed_with_residual_risk` tier, with redacted evidence and no private-content leakage in the retained summary. Live Ask/provider proof passed after an immediate rerun of the remote provider check.
 
-The full delivery is not complete. A21 found one remaining security/privacy P1 after A20; A22 fixed it by moving the shared proxy, PDF upload, and scanned private SSR pages to signed-session verification and passed full validation. A23 final staged review returned go and the release candidate was committed. A24 fixed the postdeploy dependency security blocker. A25/A26 close URL-failure honesty and native raw payload logging for the Android debug candidate. A27 closes server/API URL capture success. A28/A29 close native Android URL-share success for the emulator debug APK path. APK publication is still blocked by explicit publication/distribution authorization and any required full TalkBack spoken-order audit.
+The full delivery is not complete. A21 found one remaining security/privacy P1 after A20; A22 fixed it by moving the shared proxy, PDF upload, and scanned private SSR pages to signed-session verification and passed full validation. A23 final staged review returned go and the release candidate was committed. A24 fixed the postdeploy dependency security blocker. A25/A26 close URL-failure honesty and native raw payload logging for the Android debug candidate. A27 closes server/API URL capture success. A28/A29 close native Android URL-share success for the emulator debug APK path. A30 closes the "no accessibility-order audit exists" gap but does not prove human-heard TalkBack speech. APK publication is still blocked by explicit publication/distribution authorization and owner acceptance of A30 residual AX-only risk or a true spoken TalkBack audit.
 
 ## Evidence Inspected
 
@@ -93,6 +93,7 @@ Legend: `Done` means the artifact/evidence exists. `Partial` means evidence exis
 | A27 production URL capture success proof | Done | Done | Done | Done | Done | Done | Done | Passed for server/API; native pending before A28 | Production `/api/capture/url` saved deterministic IANA fixture as `created_full_text`, DB verification passed, and cleanup returned fixture plus related rows to zero; native Android share-intent proof was handled in A28/A29 | [A27 QA](../execution/UX_V2_A27_URL_CAPTURE_SUCCESS_PROOF_QA_2026-06-16_23-59-00_IST.md), [A27 PM update](UX_V2_PROJECT_TRACKER_UPDATE_2026-06-16_23-59-00_IST.md) |
 | A28 native Android URL-share proof | Done | Done | Done | Done | Done | Done | Done | Partial; user success metadata blocked | A28 restored Android tooling, verified APK `1.0.5/code6`, ran real native URL share, proved saved UI and full-text production item, found `capture_source=unknown`, cleaned fixture, and passed log hygiene | [A28 QA](../execution/UX_V2_A28_NATIVE_ANDROID_URL_SHARE_SUCCESS_QA_2026-06-17_00-29-00_IST.md), [A28/A29 PM update](UX_V2_PROJECT_TRACKER_UPDATE_2026-06-17_00-29-00_IST.md) |
 | A29 Android capture-source attribution | Done | Done | Done | Done | Done | Done | Done | Passed and deployed | A29 added Android capture-source headers for native URL/note/PDF share requests, passed validation, deployed production, reran cold native URL share, verified `capture_source=android`, cleaned fixture, and passed log hygiene | [A29 QA](../execution/UX_V2_A29_ANDROID_CAPTURE_SOURCE_ATTRIBUTION_QA_2026-06-17_00-29-00_IST.md), [A28/A29 PM update](UX_V2_PROJECT_TRACKER_UPDATE_2026-06-17_00-29-00_IST.md) |
+| A30 Android accessibility-order audit | Done | Done | Done | Done | Done | Done | Done | Platform AX equivalent passed with residual risk | A30 passed 10/10 scoped Android WebView accessibility-order screens through `Accessibility.getFullAXTree`; true human-heard TalkBack speech was not captured, so publication needs owner acceptance of residual risk or a spoken audit | [A30 QA](../execution/UX_V2_A30_ANDROID_TALKBACK_SPOKEN_ORDER_QA_2026-06-17_00-50-00_IST.md), [A30 PM update](UX_V2_PROJECT_TRACKER_UPDATE_2026-06-17_00-50-00_IST.md) |
 
 ## Deployment Gates
 
@@ -204,11 +205,20 @@ PM sidecar Hilbert identified stale tracker rows during A17. Current interpretat
 - A29 deployed production, reran a cold native URL share, verified `capture_source=android`, `capture_quality=full_text`, and `extraction_method=readability`, then cleaned the fixture and related rows to zero.
 - A29 does not publish, sign, upload, or authorize APK distribution.
 
+## A30 Reconciliation Notes
+
+- A30 completed the PRD/review/plan/review cycle before execution.
+- A30 verified installed APK `1.0.5/code6` and passed 10/10 Android WebView accessibility-order screens using Chrome DevTools `Accessibility.getFullAXTree`.
+- A30's retained JSON summary redacts private item/title/source content and raw item IDs.
+- A30 also ran a bounded TalkBack enable/restore probe; TalkBack could be enabled and settings restored, but logcat did not provide a reliable spoken-label transcript.
+- Current accessibility verdict is `platform_ax_equivalent_passed_with_residual_risk`, not `talkback_spoken_passed`.
+- APK publication remains blocked until Arun authorizes publication/signing/distribution and either accepts A30's residual AX-only risk or requests a true human-heard/audio-video TalkBack audit.
+
 ## Highest-Risk Gaps
 
 | Risk | Severity | Current evidence | Required close |
 | --- | --- | --- | --- |
-| Full TalkBack spoken-order audit is not captured | High | A12 enabled TalkBack for bounded launch smoke and restored settings; no spoken-order capture exists. | Run manual or tool-supported TalkBack label/order audit if required for APK publication. |
+| True human-heard TalkBack spoken output is not captured | Medium | A30 passed 10/10 Android WebView platform accessibility-order screens with redacted AX-tree evidence; TalkBack enable/restore probe passed, but no reliable spoken transcript/audio was captured. | Arun must accept the AX-equivalent residual risk for publication or request a human-heard/audio-video TalkBack audit. |
 | Native Android URL-share production attribution regresses | Medium | A29 proved emulator debug APK native URL share saves full text with `capture_source=android` after deployment and cleanup. | Keep A29 header regression tests and rerun native proof if share-handler request code changes again. |
 | APK publication is not authorized | High | A7/A11/A12/A25/A26 all block publication. | Get explicit publication authorization, signing/distribution target, and final owner approval for `1.0.5/code6` or a later candidate. |
 | Broad dirty worktree creates release ownership risk | High | A14 created the attribution map; A18 staged accepted paths; A20/A22 added exact blocker-fix supplements. | Release owner must stage exact accepted paths and rerun final staged review before final commit, PR, or closure. |
@@ -217,10 +227,10 @@ PM sidecar Hilbert identified stale tracker rows during A17. Current interpretat
 
 ## Next Required Gate
 
-Use A29 evidence for the latest web and Android candidate status before any APK publication or full-goal completion claim:
+Use A30 evidence for the latest web and Android candidate status before any APK publication or full-goal completion claim:
 
 1. Keep `android_publication_authorization_missing` open until the user names and authorizes a distribution target.
-2. Keep `talkback_spoken_order_not_captured` open unless a full spoken-order audit is captured or explicitly accepted as a release risk.
+2. Treat `talkback_spoken_order_not_captured` as superseded by A30's `platform_ax_equivalent_passed_with_residual_risk`; keep publication blocked unless Arun accepts that residual risk or a true spoken TalkBack audit is captured.
 3. Treat `server_url_capture_success` and `native_android_url_share_success` as proven for the emulator debug APK path after A29; do not generalize this to APK publication or signed distribution.
 4. Do not stage broad directories, root `RUNNING_LOG.md`, heavy evidence, ignored APK outputs, `assets/`, or `data/artifacts` without explicit owner decision.
 5. Optional: decide whether to push branch `codex/ai-brain-ux-v2-execution` or create a PR after A29 documentation/source commit.
