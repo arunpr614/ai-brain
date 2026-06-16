@@ -43,6 +43,8 @@ const STATE_ICONS: Record<AndroidShareResultState, LucideIcon> = {
   unsupported_share: AlertTriangle,
   missing_token: LinkIcon,
   server_unreachable: AlertTriangle,
+  url_capture_failed: AlertTriangle,
+  note_capture_failed: AlertTriangle,
   pdf_missing_uri: FileWarning,
   pdf_read_failed: FileWarning,
   pdf_checksum_failed: FileWarning,
@@ -212,6 +214,16 @@ function copyForState(payload: AndroidShareResultPayload) {
         title: "Could not reach AI Memory",
         body: "Nothing was saved. Check the server connection, then try sharing again.",
       };
+    case "url_capture_failed":
+      return {
+        title: "Link could not be saved",
+        body: "AI Memory reached the server, but this link could not be captured. Try Capture manually or share a different source.",
+      };
+    case "note_capture_failed":
+      return {
+        title: "Note could not be saved",
+        body: "AI Memory reached the server, but this note could not be saved. Try Capture manually.",
+      };
     case "pdf_missing_uri":
       return {
         title: "PDF was not available",
@@ -268,6 +280,8 @@ function isFixtureState(value: string): value is AndroidShareResultState {
     "unsupported_share",
     "missing_token",
     "server_unreachable",
+    "url_capture_failed",
+    "note_capture_failed",
     "pdf_missing_uri",
     "pdf_read_failed",
     "pdf_checksum_failed",
@@ -279,6 +293,7 @@ function isFixtureState(value: string): value is AndroidShareResultState {
 
 function fixtureSourceKind(state: AndroidShareResultState) {
   if (state.startsWith("pdf_") || state === "multi_pdf_rejected") return "pdf";
+  if (state === "note_capture_failed") return "note";
   if (state === "unsupported_share" || state === "missing_token" || state === "expired_result") {
     return "unknown";
   }

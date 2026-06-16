@@ -12,6 +12,8 @@ export type AndroidShareResultState =
   | "unsupported_share"
   | "missing_token"
   | "server_unreachable"
+  | "url_capture_failed"
+  | "note_capture_failed"
   | "pdf_missing_uri"
   | "pdf_read_failed"
   | "pdf_checksum_failed"
@@ -72,6 +74,8 @@ const STATES: readonly AndroidShareResultState[] = [
   "unsupported_share",
   "missing_token",
   "server_unreachable",
+  "url_capture_failed",
+  "note_capture_failed",
   "pdf_missing_uri",
   "pdf_read_failed",
   "pdf_checksum_failed",
@@ -192,6 +196,16 @@ export function mapCaptureResponseToShareResult(
     errorCode: "malformed_capture_response",
     now,
   });
+}
+
+export function mapNonOkCaptureResponseToShareResult(
+  data: unknown,
+  sourceKind: Extract<AndroidShareSourceKind, "url" | "note">,
+  now = Date.now(),
+): AndroidShareResultPayload | null {
+  const parsed = parseCaptureResponse(data);
+  if (!parsed.result || parsed.result.state !== "failed_without_saved_item") return null;
+  return mapCaptureResultPayload(parsed.result, sourceKind, now);
 }
 
 export function mapCaptureFailureToShareResult(
@@ -321,6 +335,8 @@ export function shareResultActions(payload: AndroidShareResultPayload): ShareRes
     case "unsupported_share":
       return ["capture", "done"];
     case "server_unreachable":
+    case "url_capture_failed":
+    case "note_capture_failed":
     case "pdf_missing_uri":
     case "pdf_read_failed":
     case "pdf_checksum_failed":
@@ -380,7 +396,7 @@ function mapCaptureResultPayload(
       return createShareResultPayload({
         ...base,
         state: failureStateForSource(sourceKind),
-        errorCode: "failed_without_saved_item",
+        errorCode: failureStateForSource(sourceKind),
       });
   }
 }
@@ -452,12 +468,15 @@ function sanitizePayload(payload: AndroidShareResultPayload): AndroidShareResult
 function failureStateForSource(
   sourceKind: Exclude<AndroidShareSourceKind, "unknown">,
 ): AndroidShareResultState {
-  return sourceKind === "pdf" ? "pdf_upload_failed" : "server_unreachable";
+  if (sourceKind === "pdf") return "pdf_upload_failed";
+  return sourceKind === "note" ? "note_capture_failed" : "url_capture_failed";
 }
 
 function isRetryGuidanceState(state: AndroidShareResultState): boolean {
   return [
     "server_unreachable",
+    "url_capture_failed",
+    "note_capture_failed",
     "pdf_missing_uri",
     "pdf_read_failed",
     "pdf_checksum_failed",

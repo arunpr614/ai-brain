@@ -6,6 +6,7 @@ import { isDuplicateShare, shareDedupKey } from "@/lib/capture/dedup";
 import {
   classifyNativeSharePayload,
   mapCaptureFailureToShareResult,
+  mapNonOkCaptureResponseToShareResult,
   mapCaptureResponseToShareResult,
   resultForPreflight,
   sanitizeShareLogMessage,
@@ -191,6 +192,15 @@ async function captureUrl(
     pushShareResult(router, mapCaptureResponseToShareResult(res.data, "url"));
     return;
   }
+  const typedFailure = mapNonOkCaptureResponseToShareResult(res.data, "url");
+  if (typedFailure) {
+    await reportClientError(
+      "share.http.capture-failed",
+      sanitizeShareLogMessage(typedFailure.errorCode ?? "url_capture_failed", res.status),
+    );
+    pushShareResult(router, typedFailure);
+    return;
+  }
   await reportClientError(
     "share.http.capture-failed",
     sanitizeShareLogMessage("url_capture_failed", res.status),
@@ -208,6 +218,15 @@ async function captureNote(
   const res = await postJson(`${base}/api/capture/note`, token, { title, body });
   if (res.ok) {
     pushShareResult(router, mapCaptureResponseToShareResult(res.data, "note"));
+    return;
+  }
+  const typedFailure = mapNonOkCaptureResponseToShareResult(res.data, "note");
+  if (typedFailure) {
+    await reportClientError(
+      "share.http.capture-failed",
+      sanitizeShareLogMessage(typedFailure.errorCode ?? "note_capture_failed", res.status),
+    );
+    pushShareResult(router, typedFailure);
     return;
   }
   await reportClientError(

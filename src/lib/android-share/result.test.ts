@@ -7,6 +7,7 @@ import {
   loadShareResult,
   mapCaptureFailureToShareResult,
   mapCaptureResponseToShareResult,
+  mapNonOkCaptureResponseToShareResult,
   resultForPreflight,
   sanitizeShareLogMessage,
   shareResultActions,
@@ -156,9 +157,37 @@ describe("capture response mapping", () => {
     );
     assert.equal(mapCaptureResponseToShareResult({}, "url", NOW).state, "server_unreachable");
     assert.equal(
+      mapCaptureResponseToShareResult(captureResult("failed_without_saved_item"), "url", NOW)
+        .state,
+      "url_capture_failed",
+    );
+    assert.equal(
+      mapCaptureResponseToShareResult(captureResult("failed_without_saved_item"), "note", NOW)
+        .state,
+      "note_capture_failed",
+    );
+    assert.equal(
       mapCaptureResponseToShareResult(captureResult("failed_without_saved_item"), "pdf", NOW)
         .state,
       "pdf_upload_failed",
+    );
+  });
+
+  it("maps typed non-OK capture failures without trusting malformed responses", () => {
+    const failed = captureResult("failed_without_saved_item");
+    failed.capture_result.message =
+      "Failed to capture https://private.example/token/" + "a".repeat(64);
+    const url = mapNonOkCaptureResponseToShareResult(failed, "url", NOW);
+    const note = mapNonOkCaptureResponseToShareResult(failed, "note", NOW);
+
+    assert.equal(url?.state, "url_capture_failed");
+    assert.equal(url?.errorCode, "url_capture_failed");
+    assert.equal(note?.state, "note_capture_failed");
+    assert.equal(note?.errorCode, "note_capture_failed");
+    assert.equal(mapNonOkCaptureResponseToShareResult({}, "url", NOW), null);
+    assert.equal(
+      mapNonOkCaptureResponseToShareResult(captureResult("created_full_text"), "url", NOW),
+      null,
     );
   });
 });
@@ -166,6 +195,16 @@ describe("capture response mapping", () => {
 describe("failure mapping, storage, actions, and redaction", () => {
   it("maps failures to stable result states", () => {
     assert.equal(mapCaptureFailureToShareResult("url", NOW).state, "server_unreachable");
+    assert.deepEqual(
+      shareResultActions(
+        createShareResultPayload({
+          state: "url_capture_failed",
+          sourceKind: "url",
+          now: NOW,
+        }),
+      ),
+      ["capture", "done"],
+    );
     assert.equal(mapCaptureFailureToShareResult("pdf_read", NOW).state, "pdf_read_failed");
     assert.equal(
       mapCaptureFailureToShareResult("pdf_checksum", NOW).state,
