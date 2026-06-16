@@ -5,13 +5,13 @@ Owner: PM sidecar
 Scope: documentation and tracking only. No app code changed.
 Project folder: `/Users/arun.prakash/Documents/arunvault/arun-cursor/Initiatives/Arun_AI_Projects/ai-brain/phase2`
 Current branch observed: `codex/ai-brain-ux-v2-execution`
-Last updated: 2026-06-16 21:46:00 IST after A23 post-A22 final staged review
+Last updated: 2026-06-16 23:10:00 IST after A24 dependency security hotfix redeploy
 
 ## Current Verdict
 
-The web UX v2 revamp is production deployed and smoke-tested according to A11 evidence. Live Ask/provider proof passed on production in A11, superseding the local A10 blocker. A12 rebuilt the Android debug APK as `1.0.4/code5`, installed it on the emulator, fixed Capacitor bridge token logging, and captured authenticated runtime, native note-share, pairing, offline/recovery, keyboard, and bounded TalkBack launch evidence.
+The web UX v2 revamp is production deployed and smoke-tested. A23 was committed as `0655f51`; the first deploy succeeded but exposed dependency audit warnings. A24 patched the Next.js security advisory and nested production dependency advisories, committed `f9de485`, redeployed production, verified remote `next: 16.2.9`, remote production audit 0 vulnerabilities, service active, and live public/private unauthenticated smoke. Live Ask/provider proof passed after an immediate rerun of the remote provider check.
 
-The full delivery is not complete. A21 found one remaining security/privacy P1 after A20; A22 fixed it by moving the shared proxy, PDF upload, and scanned private SSR pages to signed-session verification and passed full validation. A23 final staged review returned go for commit consideration only. APK publication is still blocked by explicit publication/distribution authorization and any required full TalkBack spoken-order audit. A URL-share success fixture is also still a decision point because the A12 `example.com` URL fixture failed while native note share passed and was cleaned up.
+The full delivery is not complete. A21 found one remaining security/privacy P1 after A20; A22 fixed it by moving the shared proxy, PDF upload, and scanned private SSR pages to signed-session verification and passed full validation. A23 final staged review returned go and the release candidate was committed. A24 fixed the postdeploy dependency security blocker. APK publication is still blocked by explicit publication/distribution authorization and any required full TalkBack spoken-order audit. A URL-share success fixture is also still a decision point because the A12 `example.com` URL fixture failed while native note share passed and was cleaned up.
 
 ## Evidence Inspected
 
@@ -44,7 +44,7 @@ Magic Patterns changed: no. Published: no. Artifact source files were not re-rea
 | M3 | Web feature implementation and local QA | Done locally | Web QA reports in `../execution/WEB_EXPERIENCE_REVAMP_*_QA_*.md` | None identified for web-local scope. |
 | M4 | Android feature implementation and browser/mobile QA | Done locally for A1-A5 plus share result; runtime partial | A1-A6 QA reports and A11 APK launch evidence | Authenticated APK route, native share, pairing persistence, stale-cache/offline, keyboard/TalkBack. |
 | M5 | Release review and remediation | Partial | [A7 release packet](../execution/UX_V2_A7_RELEASE_READINESS_PACKET_2026-06-16_13-18-00_IST.md), A8/A9/A10/A11 docs | Final ownership/commit review remains blocked by broad dirty worktree. |
-| M6 | Web production deploy and live smoke | Done | [A11 QA](../execution/UX_V2_A11_PRODUCTION_DEPLOY_AND_ANDROID_RUNTIME_QA_2026-06-16_14-18-00_IST.md) | Monitor residual worker/queue warnings. |
+| M6 | Web production deploy and live smoke | Done, hotfixed in A24 | [A11 QA](../execution/UX_V2_A11_PRODUCTION_DEPLOY_AND_ANDROID_RUNTIME_QA_2026-06-16_14-18-00_IST.md), [A24 QA](../execution/UX_V2_A24_DEPENDENCY_SECURITY_HOTFIX_QA_2026-06-16_23-10-00_IST.md) | Monitor residual worker/queue warnings. |
 | M7 | APK candidate validation | Advanced partial | [A11 QA](../execution/UX_V2_A11_PRODUCTION_DEPLOY_AND_ANDROID_RUNTIME_QA_2026-06-16_14-18-00_IST.md), [A12 QA](../execution/UX_V2_A12_ANDROID_PUBLICATION_GATE_QA_2026-06-16_18-59-00_IST.md) | APK publication is blocked by final ownership/publication decisions and optional full TalkBack audit. |
 | M8 | Closure and handover | In progress, not complete | [production Android handover](../../Handover_docs/AI_MEMORY_UX_V2_PRODUCTION_ANDROID_HANDOVER_2026-06-16_15-04-24_IST.md) | Clear Android no-go gates and final ownership review. |
 
@@ -87,20 +87,21 @@ Legend: `Done` means the artifact/evidence exists. `Partial` means evidence exis
 | A21 final post-A20 staged review | Done | Done | Done | Done | Done | Done | Review complete | Request changes | Security/privacy found remaining private SSR cookie-presence P1; A22 fix/revalidation required before commit consideration | [A21 review](../execution/UX_V2_A21_FINAL_POST_A20_STAGED_REVIEW_2026-06-16_21-20-00_IST.md), [A21 PM update](UX_V2_PROJECT_TRACKER_UPDATE_2026-06-16_21-20-00_IST.md) |
 | A22 private SSR/proxy session hardening | Done | Done | Done | Done | Done | Done | Done | Passed | Proxy, PDF upload, and scanned private SSR pages now require signed-session verification; full validation passed, and post-A22 final staged review remains required | [A22 QA](../execution/UX_V2_A22_PRIVATE_SSR_SESSION_HARDENING_QA_2026-06-16_21-35-00_IST.md), [A22 PM update](UX_V2_PROJECT_TRACKER_UPDATE_2026-06-16_21-35-00_IST.md) |
 | A23 post-A22 final staged review | Done | Done | Done | Done | Done | Done | Review complete | GO for commit consideration only | Security/privacy, product/Ask, and public/governance lanes found no P0/P1 blockers in the staged candidate; publication/deploy gates remain closed | [A23 review](../execution/UX_V2_A23_POST_A22_FINAL_STAGED_REVIEW_2026-06-16_21-46-00_IST.md), [A23 PM update](UX_V2_PROJECT_TRACKER_UPDATE_2026-06-16_21-46-00_IST.md) |
+| A24 dependency security hotfix | Done | Done | Done | Done | Done | Done | Done | Passed | Patched Next.js/nested production dependency advisories, committed `f9de485`, redeployed production, remote production audit clean, service active, live smoke passed; Android publication remains gated | [A24 QA](../execution/UX_V2_A24_DEPENDENCY_SECURITY_HOTFIX_QA_2026-06-16_23-10-00_IST.md), [A24 PM update](UX_V2_PROJECT_TRACKER_UPDATE_2026-06-16_23-10-00_IST.md) |
 
 ## Deployment Gates
 
 | Gate | Status | Evidence / note |
 | --- | --- | --- |
 | Production backup before A11 deploy | Done | Backup `/opt/brain/data/backups/web-revamp-predeploy-20260616-140305.sqlite`, integrity `ok`, count `28`, size `4476928` bytes per [A11 QA](../execution/UX_V2_A11_PRODUCTION_DEPLOY_AND_ANDROID_RUNTIME_QA_2026-06-16_14-18-00_IST.md). |
-| Production deploy | Done for web | `BRAIN_AI_PROVIDER_WARN_ONLY=1 bash scripts/deploy.sh` passed per A11. |
-| Live web smoke | Done | `/unlock`, `/setup-apk`, `/offline.html`, logo, manifest, protected `/library` redirect, Telegram webhook 401 all matched A11 expectations. |
-| Live Ask/provider proof | Done on production | A11 remote provider checks and live Ask SSE proof passed. A10 local proof remains blocked. |
+| Production deploy | Done for web; hotfixed in A24 | `BRAIN_AI_PROVIDER_WARN_ONLY=1 bash scripts/deploy.sh` passed per A11 and again after A24 commit `f9de485`. |
+| Live web smoke | Done | `/unlock`, `/setup-apk`, `/offline.html`, logo, manifest, protected `/library` redirect, Telegram webhook 401 matched A11 expectations; A24 repeated `/unlock`, protected `/library` redirect, unauthenticated `/api/ask` 401, and Telegram webhook 401. |
+| Live Ask/provider proof | Done on production | A11 remote provider checks and live Ask SSE proof passed. A24 deploy saw one transient Ask provider timeout under warn-only, then an immediate rerun passed enrichment, Ask, and embedding. A10 local proof remains blocked. |
 | Observability | Done with residual warning | Service active, `NRestarts=0`; background enrichment/backoff and transcript cooldown warnings remain residual worker/queue risk. |
 | Fresh APK candidate build/install/launch | Advanced partial | `brain-debug-v1.0.4-code5.apk` built, installed, launched; locked shell privacy, authenticated routes, pairing, native note share, offline/recovery, and token-log hygiene passed. |
 | APK publication | Blocked | Final ownership review, explicit publication/distribution authorization, and any required full TalkBack spoken-order audit remain open. |
-| Final ownership/commit review | GO for commit consideration only | A14 created a dirty-worktree attribution map; A18 staged and validated the accepted candidate; A19 and A21 blockers were fixed by A20/A22; A23 final staged review found no P0/P1 blockers. Commit/PR still requires explicit owner decision. |
-| Running log closure | Active | Root running log has append-only milestone entries through A20 before A21/A22 closeout. Continue append-only updates at milestones and keep the log unstaged unless explicitly approved. |
+| Final ownership/commit review | Source hotfix committed; PR/push optional | A14 created a dirty-worktree attribution map; A18 staged and validated the accepted candidate; A19 and A21 blockers were fixed by A20/A22; A23 final staged review found no P0/P1 blockers; A23 committed `0655f51`; A24 committed `f9de485`. |
+| Running log closure | Active | Root running log has append-only milestone entries through A24. Continue append-only updates at milestones and keep the log unstaged unless explicitly approved. |
 
 ## Reconciled Conflicts
 
@@ -160,7 +161,16 @@ PM sidecar Hilbert identified stale tracker rows during A17. Current interpretat
 - A23 completed the final post-A22 staged review across security/privacy, product/Ask, and public/governance lanes.
 - All three lanes returned go for commit consideration; no P0/P1 blockers remain in the staged candidate.
 - Staged hygiene checks passed before A23 docs were added: 312 staged paths, whitespace clean, no root running log/heavy evidence/APK artifacts/secrets, and no remaining source cookie-presence auth pattern.
-- A23 does not commit, push, create a PR, deploy, publish, sign, upload, or authorize APK distribution.
+- A23 enabled source commit `0655f51`; it did not publish, sign, upload, or authorize APK distribution.
+
+## A24 Reconciliation Notes
+
+- A24 was created because the first post-A23 production deploy succeeded but exposed dependency audit warnings.
+- A24 patched `next`/`eslint-config-next` to `16.2.9`, overrode `postcss` to `8.5.14`, updated `tar` to `7.5.16`, and applied safe dev-tool audit fixes.
+- Local full audit and production-only audit now report 0 vulnerabilities.
+- A24 validation passed: typecheck, lint, 563 tests across 78 suites, production build with the known `unpdf` warning, env check, build-artifact check, and APK packaging.
+- Source hotfix commit `f9de485` was deployed to production. Remote `/opt/brain` reports `next: 16.2.9`, remote `npm audit --omit=dev` reports 0 vulnerabilities, and service state is active.
+- A24 does not publish, sign, upload, or authorize APK distribution.
 
 ## Highest-Risk Gaps
 
@@ -170,19 +180,17 @@ PM sidecar Hilbert identified stale tracker rows during A17. Current interpretat
 | URL-share success fixture is unresolved | Medium | Native note share passed and cleaned; `example.com` URL fixture reached paired flow but failed capture. | Decide whether note share is sufficient or run a dedicated URL success fixture with cleanup. |
 | APK publication is not authorized | High | A7/A11 both block publication. | Complete A12-style publication gate and get explicit publication authorization. |
 | Broad dirty worktree creates release ownership risk | High | A14 created the attribution map; A18 staged accepted paths; A20/A22 added exact blocker-fix supplements. | Release owner must stage exact accepted paths and rerun final staged review before final commit, PR, or closure. |
-| Running-log continuity | Low | Root running log has active append-only milestone entries through A20 before A21/A22 closeout. | Continue append-only milestone entries and keep root `RUNNING_LOG.md` unstaged unless explicitly approved. |
+| Running-log continuity | Low | Root running log has active append-only milestone entries through A24. | Continue append-only milestone entries and keep root `RUNNING_LOG.md` unstaged unless explicitly approved. |
 | Magic Patterns source not fully re-read in this PM pass | Medium | MCP status/file inventory checked; browser page shell generic. | For any new A12/UI work, re-read exact artifact/source files or use existing snapshots before coding. |
 
 ## Next Required Gate
 
-Use the current staged candidate plus A23 review evidence for owner commit consideration before any APK publication or full-goal completion claim:
+Use A24 deployment evidence for web production status before any APK publication or full-goal completion claim:
 
-1. Review the current staged index exactly; it now includes A20/A21/A22/A23 source/test/governance supplements.
-2. Do not stage broad directories, category labels, root `RUNNING_LOG.md`, heavy evidence, ignored APK outputs, `assets/`, or `data/artifacts`.
-3. Keep heavy evidence folders out unless a retention decision is made.
-4. If any additional files are staged, rerun staged-index checks and final review; lint should remain warning-free.
-5. Keep `android_publication_authorization_missing` open until the user names and authorizes a distribution target.
-6. Keep `talkback_spoken_order_not_captured` open unless a full spoken-order audit is captured or explicitly accepted as a release risk.
-7. Keep `url_share_success_not_proven` open unless a deterministic, cleanable URL fixture passes or the release owner accepts native note share as sufficient.
+1. Keep `android_publication_authorization_missing` open until the user names and authorizes a distribution target.
+2. Keep `talkback_spoken_order_not_captured` open unless a full spoken-order audit is captured or explicitly accepted as a release risk.
+3. Keep `url_share_success_not_proven` open unless a deterministic, cleanable URL fixture passes or the release owner accepts native note share as sufficient.
+4. Do not stage broad directories, root `RUNNING_LOG.md`, heavy evidence, ignored APK outputs, `assets/`, or `data/artifacts` without explicit owner decision.
+5. Optional: decide whether to push branch `codex/ai-brain-ux-v2-execution` or create a PR after A24 documentation commit.
 
-No APK publication or full-goal completion should be recorded until release-owner acceptance, publication authorization, and remaining A13/A14 no-go decisions are complete with evidence.
+No APK publication or full-goal completion should be recorded until publication authorization and remaining Android no-go decisions are complete with evidence.
