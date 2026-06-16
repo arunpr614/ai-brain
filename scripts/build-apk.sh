@@ -10,11 +10,14 @@
 #      not bundled into the APK — but `next build` is still our strongest
 #      pre-flight signal (route collisions, dynamic config errors, strict
 #      TS failures that `tsc --noEmit` alone can miss).
-#   2. `npx cap sync android` — copies capacitor.config.json + plugin
+#   2. `node scripts/patch-capgo-share-target-privacy.mjs` — patches the
+#      Capgo share-target Android plugin so native logcat never receives raw
+#      shared URLs, text, filenames, or URI payload JSON.
+#   3. `npx cap sync android` — copies capacitor.config.json + plugin
 #      manifests into android/app/. Safe to run repeatedly; idempotent.
-#   3. `./gradlew assembleDebug` inside android/. Android's Gradle plugin
+#   4. `./gradlew assembleDebug` inside android/. Android's Gradle plugin
 #      reuses incremental output; cold build ~90s, warm build ~2s.
-#   4. Copy android/app/build/outputs/apk/debug/brain-debug-v<versionName>-code<versionCode>.apk →
+#   5. Copy android/app/build/outputs/apk/debug/brain-debug-v<versionName>-code<versionCode>.apk →
 #      data/artifacts/brain-debug-v<versionName>-code<versionCode>.apk.
 #      The version tag comes from Android's installable version metadata,
 #      so the filename matches what Android reports after installation.
@@ -140,10 +143,13 @@ echo "[build-apk] step 1/5  typecheck + next build"
 npx tsc --noEmit
 npm run build
 
-echo "[build-apk] step 2/5  capacitor sync"
+echo "[build-apk] step 2/6  patch share-target privacy"
+node scripts/patch-capgo-share-target-privacy.mjs
+
+echo "[build-apk] step 3/6  capacitor sync"
 npx cap sync android
 
-echo "[build-apk] step 3/5  gradle assembleDebug"
+echo "[build-apk] step 4/6  gradle assembleDebug"
 cd "$REPO_ROOT/android"
 ./gradlew assembleDebug
 cd "$REPO_ROOT"
@@ -153,7 +159,7 @@ if [[ ! -f "$GRADLE_OUTPUT" ]]; then
   exit 1
 fi
 
-echo "[build-apk] step 4/5  copy APK to data/artifacts"
+echo "[build-apk] step 5/6  copy APK to data/artifacts"
 mkdir -p "$ARTIFACT_DIR"
 
 # APK versioning rule: every newly shared APK should have a fresh Android
