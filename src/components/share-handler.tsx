@@ -13,6 +13,10 @@ import {
   storeShareResult,
   type NativeSharePayload,
 } from "@/lib/android-share/result";
+import {
+  androidJsonCaptureHeaders,
+  androidPdfCaptureHeaders,
+} from "@/lib/android-share/request";
 import { BRAIN_TUNNEL_URL } from "@/lib/config/tunnel";
 
 type SharePayload = NativeSharePayload;
@@ -160,10 +164,7 @@ async function postJson(
   try {
     res = await fetch(url, {
       method: "POST",
-      headers: {
-        "content-type": "application/json",
-        authorization: `Bearer ${token}`,
-      },
+      headers: androidJsonCaptureHeaders(token),
       body: JSON.stringify(body),
     });
   } catch (err) {
@@ -268,10 +269,7 @@ async function capturePdf(
   try {
     res = await fetch(`${base}/api/capture/pdf`, {
       method: "POST",
-      headers: {
-        authorization: `Bearer ${token}`,
-        "x-expected-sha256": expected,
-      },
+      headers: androidPdfCaptureHeaders(token, expected),
       body: form,
     });
   } catch {

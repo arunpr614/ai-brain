@@ -1,14 +1,14 @@
 # UX v2 A7 Release Readiness Packet
 
 Created: 2026-06-16 13:18:00 IST
-Updated: 2026-06-16 23:59:00 IST after A27 production URL capture success proof
-Final release status: `web_production_deployed_a25_android_1_0_5_server_url_success_native_url_pending_publication_gated`
+Updated: 2026-06-17 00:29:00 IST after A28/A29 native Android URL-share proof and attribution fix
+Final release status: `web_production_deployed_a29_android_1_0_5_native_url_success_publication_gated`
 Production deploy authorized: Completed
 APK publication authorized: No
 
 ## Summary
 
-The UX v2 web experience is deployed to production. A11 created a verified predeploy backup, ran the deploy script, passed production route smoke, passed remote provider checks, and completed a redacted live Ask SSE proof. A12 superseded the prior Android `1.0.3/code4` candidate with `1.0.4/code5` after finding and fixing Capacitor bridge token logging, then captured authenticated Android routes, pairing, native note-share success with cleanup, offline fallback/recovery, keyboard smoke, and bounded TalkBack launch smoke. A21 found a remaining private SSR session P1 after A20; A22 fixed the class and passed full validation. A23 final staged review returned go, the source candidate was committed as `0655f51`, and A24 patched the postdeploy Next.js dependency security advisory, committed `f9de485`, and redeployed production with a clean remote production audit. A25 committed and deployed `c17f07a` so URL/note share failures render truthful source-specific failures. A26 committed `8577751`, built/installed Android `1.0.5/code6`, and proved native share-target logs are count-only rather than raw payload logs. A27 proved production server/API URL capture success with a deterministic full-text IANA fixture and cleaned it from production. Android remains a validated debug candidate, not an externally published APK. Final APK publication is still blocked by explicit APK publication authorization and target, full TalkBack spoken-order audit if required, and native Android URL-share success proof or release-owner acceptance of the server/API proof.
+The UX v2 web experience is deployed to production. A11 created a verified predeploy backup, ran the deploy script, passed production route smoke, passed remote provider checks, and completed a redacted live Ask SSE proof. A12 superseded the prior Android `1.0.3/code4` candidate with `1.0.4/code5` after finding and fixing Capacitor bridge token logging, then captured authenticated Android routes, pairing, native note-share success with cleanup, offline fallback/recovery, keyboard smoke, and bounded TalkBack launch smoke. A21 found a remaining private SSR session P1 after A20; A22 fixed the class and passed full validation. A23 final staged review returned go, the source candidate was committed as `0655f51`, and A24 patched the postdeploy Next.js dependency security advisory, committed `f9de485`, and redeployed production with a clean remote production audit. A25 committed and deployed `c17f07a` so URL/note share failures render truthful source-specific failures. A26 committed `8577751`, built/installed Android `1.0.5/code6`, and proved native share-target logs are count-only rather than raw payload logs. A27 proved production server/API URL capture success with a deterministic full-text IANA fixture and cleaned it from production. A28 restored Android tooling and proved native user-facing URL-share success, but found `capture_source=unknown`. A29 fixed Android capture-source attribution for native URL/note/PDF share requests, deployed production, reran native URL share, verified `capture_source=android`, and cleaned the fixture. Android remains a validated debug candidate, not an externally published APK. Final APK publication is still blocked by explicit APK publication authorization and target, plus full TalkBack spoken-order audit if required.
 
 ## Gate Table
 
@@ -27,11 +27,11 @@ The UX v2 web experience is deployed to production. A11 created a verified prede
 | Live Ask/provider proof | passed | A11 remote provider check passed; live Ask returned 200 SSE, retrieve chunks, token output, done frame, and no errors. A24 deploy saw one transient remote Ask provider timeout under warn-only; immediate rerun passed enrichment, Ask, and embedding. Raw answer/session/source details were not persisted. |
 | Backup | passed | Predeploy backup `/opt/brain/data/backups/web-revamp-predeploy-20260616-140305.sqlite`; integrity `ok`, item count `28`, size `4476928` bytes. |
 | Rollback | documented | Backup path and restore runbook are recorded; no rollback was executed because deploy smoke passed. |
-| Production deploy | passed | `BRAIN_AI_PROVIDER_WARN_ONLY=1 bash scripts/deploy.sh` completed and health-checked production in A11, again after A24 source hotfix commit `f9de485`, and again after A25 source commit `c17f07a`. A26 is APK/build-pipeline only and was not web-deployed. |
+| Production deploy | passed | `BRAIN_AI_PROVIDER_WARN_ONLY=1 bash scripts/deploy.sh` completed and health-checked production in A11, again after A24 source hotfix commit `f9de485`, again after A25 source commit `c17f07a`, and again after A29 Android capture-source attribution. A26 is APK/build-pipeline only and was not web-deployed. |
 | Live smoke | passed | `/unlock`, `/setup-apk`, `/offline.html`, logo, manifest, protected `/library` redirect, and Telegram webhook 401 all matched expectations in A11. A24 repeated `/unlock` 200, protected `/library` 307 redirect, unauthenticated `/api/ask` 401, and Telegram webhook 401. A25 repeated `/unlock` 200, protected `/library` 307, unauthenticated `/api/ask` 401, and remote deployed-bundle proof for `url_capture_failed`. |
 | Dependency security audit | passed | A24 local `npm audit` and `npm audit --omit=dev` reported 0 vulnerabilities; remote `/opt/brain` reports `next: 16.2.9` and remote `npm audit --omit=dev` reports 0 vulnerabilities. |
 | Observability | passed with residual warning | Service active, `NRestarts=0`, startup logs clean. Background enrichment/backoff and transcript cooldown warnings remain residual worker/queue observability risk. |
-| Android runtime | advanced partial | Fresh APK `1.0.5/code6` built, installed, and launched on emulator after A26; authenticated routes, pairing token persistence, native note share with cleanup, offline/recovery, keyboard smoke, bounded TalkBack launch smoke, honest URL-failure UI, and native share-target log hygiene are captured across A12/A25/A26. A27 proves production server/API URL capture success and cleanup, but native Android URL-share success still needs device/emulator proof. |
+| Android runtime | native URL-share success proven; publication gated | Fresh APK `1.0.5/code6` built, installed, and launched on emulator after A26; authenticated routes, pairing token persistence, native note share with cleanup, offline/recovery, keyboard smoke, bounded TalkBack launch smoke, honest URL-failure UI, native share-target log hygiene, and A29 native URL-share success with `capture_source=android` are captured across A12/A25/A26/A28/A29. |
 | APK publication | blocked | Candidate exists, but publication is not authorized until explicit distribution decision and any required full TalkBack spoken-order audit are complete. |
 | Final release status | web_production_deployed_a25_android_1_0_5_server_url_success_native_url_pending_publication_gated | Web production is deployed with A25 URL-failure honesty; Android debug candidate `1.0.5/code6` is validated for share-target log hygiene; A27 proves production server/API URL capture success; final goal completion remains blocked by native URL-share proof/acceptance and APK publication gates. |
 
@@ -188,14 +188,25 @@ The UX v2 web experience is deployed to production. A11 created a verified prede
 - A27 production capture from host `brain` returned `201`, `action=created`, `capture_result.state=created_full_text`, `quality=full_text`, and `capturedVia=android`.
 - A27 verified the production item row and related rows, then cleaned the exact fixture with SQLite foreign keys enabled.
 - A27 immediate and delayed cleanup checks returned zero for fixture and related rows.
-- A27 does not prove native Android URL-share success because Android tooling was unavailable.
+- A27 by itself did not prove native Android URL-share success because Android tooling was unavailable in that resumed environment; A28/A29 supersede that native-share gap.
+
+## Integrated A28/A29 Native URL Share Findings
+
+- A28 completed its PRD/review/plan/review cycle and restored Android tooling via Homebrew command-line tools and AVD `Brain_API_36`.
+- A28 verified installed APK `1.0.5/code6`, ran a real native `ACTION_SEND` URL share, captured saved-result UI, and found the production item as full-text.
+- A28 found a metadata blocker: the native item stored `capture_source=unknown`; the fixture and related rows were cleaned to zero.
+- A29 completed its PRD/review/plan/review cycle, added Android capture-source request helpers, covered them with focused tests, and updated the native share handler for URL/note/PDF requests.
+- A29 validation passed: focused 3 tests, typecheck, lint, full tests 567/79, production build with known `unpdf` warning, env check, and build-artifact check.
+- A29 deployed production with `BRAIN_AI_PROVIDER_WARN_ONLY=1 bash scripts/deploy.sh`; remote health/provider checks passed and remote install reported 0 vulnerabilities.
+- A29 force-stopped the Android app, reran a cold native URL share, verified saved UI and production `capture_source=android`, then cleaned the fixture and related rows to zero.
+- A29 does not publish, sign, upload, or authorize APK distribution.
 
 ## Release Blockers To Clear Next
 
 1. Obtain explicit APK publication authorization and distribution/signing decision for `1.0.5/code6` or a later candidate.
 2. Run full TalkBack spoken-order audit if it is required beyond the A12 bounded launch smoke.
-3. Restore Android tooling or use a physical device to prove native Android URL-share success, or obtain release-owner acceptance that A27 server/API URL success plus A12 native note share is sufficient.
-4. Optional: decide whether to push branch `codex/ai-brain-ux-v2-execution` or create a PR after A25/A26 documentation commit.
+3. Optional: decide whether to push branch `codex/ai-brain-ux-v2-execution` or create a PR after A29 source/documentation commit.
+4. Preserve A29 native URL-share proof as emulator debug APK evidence; do not overclaim signed publication coverage from it.
 5. Produce final release packet only after APK publication authorization and remaining Android decisions are closed.
 
 ## Running Log Draft
