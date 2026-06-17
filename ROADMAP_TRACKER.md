@@ -1,8 +1,9 @@
 # AI Brain — Roadmap Tracker
 
-**Document version:** v0.9.10-roadmap
+**Document version:** v0.9.11-roadmap
 **Date:** 2026-06-17
 **Changelog:**
+- **v0.9.11-roadmap (2026-06-17)** — **UX v2 A34 private sideload debug APK ready.** Current release status is `web_production_deployed_a34_android_1_0_6_private_sideload_debug_apk_ready`. Fresh private debug APK `data/artifacts/brain-debug-v1.0.6-code7.apk`, package `com.arunprakash.brain`, versionName `1.0.6`, versionCode `7`, SHA-256 `17030972de432b5448a8898a19b1cc06645c24a943e931daa2e7c355f5fb2c37`, size `7856713` bytes. Built with the existing debug keystore, fresh install passed on emulator `Brain_API_36`, and A30 AX-equivalent residual risk is accepted for private sideload only. No upload, public distribution, release signing, Google Play submission, or public accessibility approval was performed. The APK binary is local/ignored; source/docs are ready for branch push.
 - **v0.9.10-roadmap (2026-06-17)** — **UX v2 release-gate status supersedes older APK roadmap notes.** Current release status is `web_production_deployed_a31_android_1_0_5_publication_decision_packet_ready_publication_gated`. The latest validated Android debug candidate is `data/artifacts/brain-debug-v1.0.5-code6.apk`, package `com.arunprakash.brain`, versionName `1.0.5`, versionCode `6`, SHA-256 `e7539f1afb8b730b0c5f5808724d960df20a6db9fadc943b90c73ac9979298b7`. Web UX v2 is deployed to production; Android debug APK runtime evidence now covers authenticated routes, pairing, note share, URL-share success with `capture_source=android`, log hygiene, offline/recovery, keyboard smoke, and A30 platform accessibility order. APK publication is **not authorized**. The active gate is Arun's owner decision from `UX_v2/execution/UX_V2_A31_APK_PUBLICATION_AUTHORIZATION_PACKET_2026-06-17_01-15-00_IST.md`: publication approval, distribution target, signing mode, accessibility residual-risk decision or true TalkBack audit, artifact/version, and install/rollback posture. The v0.9.8/v0.9.9 APK rows remain historical, not current release truth. This is a status-only reconciliation, not a new product phase; no `BUILD_PLAN.md` phase mirror is required.
 - **v0.9.9-roadmap (2026-06-10)** — **Historical APK verification refreshed after handover.** At that time the verified Android artifact was `data/artifacts/brain-debug-v1.0.2-code3.apk`: package `com.arunprakash.brain`, versionName `1.0.2`, versionCode `3`, server URL `https://brain.arunp.in`, SHA-256 `6ac0bad378c3b214c1b3d32517be685ed1e079054c41fff371fe65fbc6e1753f`, signer SHA-256 `7d4580091b1c222cc004b6e195b267dcb4ef4ec200e0c803125d2cbc38cda94a` matching `v1.0.1-code2`. Production provider-status still reports Claude and Gemini as `ok`. Android tooling was present, but no phone was connected; this entry is superseded by v0.9.10 for current APK guidance.
 - **v0.9.8-roadmap (2026-06-09)** — **v0.7.2 provider guardrails deployed to production.** Clean release worktree `codex/v0.7.2-release-verify` deployed commit `6a892ea` to Hetzner at 22:37 IST. Production health PASS; provider-status PASS (`anthropic` Claude text provider ok, `gemini` semantic indexing provider ok); item detail production smoke PASS (`Semantic indexing ready` visible on a real indexed item). APK metadata verified for `data/artifacts/brain-debug-v1.0.1-code2.apk`: package `com.arunprakash.brain`, versionName `1.0.1`, versionCode `2`, server URL `https://brain.arunp.in`, SHA-256 `3aed7a1d11e032f8fd62a28b0dc96ef6b30a389bb644c3d27eacfcaee4a5ce92`. Physical phone install still needed manual/device smoke because `adb` was not available in that Codex runtime. At that time Library Offline Reads was suggested after Android smoke; v0.9.10 supersedes that sequencing until UX v2 publication decisions close.
@@ -57,7 +58,7 @@ Companion docs:
 | _Note:_ original "v0.6.0 GenPage" slot is now blocked by post-cutover hardening; sequencing for GenPage will be re-decided after v0.6.3. | | | | |
 | v0.7.0 | Structured Calm Green visual refresh | Adopt emerald/Newsreader/Inter palette; values-only `tokens.css` swap; 25 tasks (4 gates + 21 exec) | 1.0 | 10.5 |
 | v0.7.2 ✅ | Provider guardrails + historical APK verification | DEPLOYED 2026-06-09 — Claude/Gemini provider status and semantic indexing visibility live in production; historical APK `brain-debug-v1.0.2-code3.apk` metadata/signing verified at that time; superseded by UX v2 `1.0.5/code6` status | 0.2 | 10.7 |
-| UX v2 release gate | Current status overlay, not a product phase | Web production deployed; Android debug candidate `1.0.5/code6` validated; A31 publication decision packet ready; APK publication/signing/distribution blocked until Arun responds | — | — |
+| UX v2 release gate | Current status overlay, not a product phase | Web production deployed; Android debug APK `1.0.6/code7` built for private sideload, fresh-installed on emulator, and documented with checksum/install notes; public/store distribution remains unauthorized | — | — |
 | v0.7.x | Library Offline Reads from DB (deferred until UX v2 publication gate closes) | Make Android Library item-detail reads work from the on-device store; supersedes the historical WorkManager/offline outbox lane | 1.0 | 11.7 |
 | v0.7.5 | GenLink _(was v0.7.0)_ | Clickable-word AI sub-pages | 1.0 | 12.7 |
 | v0.8.0 | Review (SRS) | FSRS queue + daily review + streak | 1.0 | 13.7 |
@@ -429,7 +430,7 @@ Three feature plans exist with detailed task lists but no sequencing slot. Surfa
 **Recommended sequencing pass:**
 
 ```
-UX v2 release gate (current) — A31 packet ready; wait for Arun publication/signing/accessibility decision
+UX v2 release gate (current) — A34 private sideload debug APK `1.0.6/code7` ready locally; public/store distribution remains unauthorized
   ↓
 v0.6.2 (backup) ✅ SHIPPED 2026-06-02
   ↓
@@ -454,7 +455,7 @@ This is **a recommendation only** — none of the three orphan plans gain a vers
 future (5)  →  backlog (3 orphan plans)  →  planned (60+)  →  in-progress (UX v2 release gate)  →  shipped (web UX v2 production)
 ```
 
-Current active work is UX v2 release closure. Web UX v2 is deployed to production and Android debug candidate `1.0.5/code6` is validated, but APK publication remains blocked until Arun completes the A31 owner decision packet. Older roadmap sequencing below this note is historical unless explicitly superseded by the current UX v2 release packets.
+Current active work is UX v2 release closure. Web UX v2 is deployed to production and Android debug APK `1.0.6/code7` is ready locally for Arun's private sideload using a fresh install. This is not a public/store release: no upload, external distribution, release signing, Google Play submission, or true spoken TalkBack audit was completed. Older roadmap sequencing below this note is historical unless explicitly superseded by the current UX v2 release packets.
 
 ---
 
