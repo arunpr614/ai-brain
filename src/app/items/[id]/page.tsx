@@ -1,4 +1,18 @@
-import { ArrowLeft, Download, ExternalLink, EyeOff, MessageSquare, Quote, RotateCcw, Trash2 } from "lucide-react";
+import {
+  ArrowLeft,
+  AlertTriangle,
+  BookOpen,
+  CheckCircle2,
+  CirclePlus,
+  Download,
+  ExternalLink,
+  EyeOff,
+  FileText,
+  MessageSquare,
+  Quote,
+  RotateCcw,
+  Trash2,
+} from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { deleteItemAction } from "@/app/actions";
@@ -13,6 +27,7 @@ import {
   listCollectionsForItem,
 } from "@/db/collections";
 import { listChunksForItem } from "@/db/chunks";
+import type { ItemRow } from "@/db/client";
 import { getItem } from "@/db/items";
 import {
   getTranscriptJobForItem,
@@ -22,7 +37,19 @@ import {
 } from "@/db/transcript-jobs";
 import { listTagsForItem } from "@/db/tags";
 import { getItemProcessingStatus, type ItemProcessingStatus } from "@/lib/items/status";
-import { improvementHint, platformLabel, qualityLabel } from "@/lib/capture/quality";
+import {
+  improvementHint,
+  isLimitedCaptureQuality,
+  needsUpgradeReason,
+  platformLabel,
+  qualityLabel,
+} from "@/lib/capture/quality";
+import {
+  parseCaptureResultState,
+  toCaptureResultPayload,
+  type CaptureResultPayload,
+  type CaptureResultState,
+} from "@/lib/capture/result";
 import { canUpgradeWithPastedText } from "@/lib/capture/upgrade-policy";
 import { findRelatedItems } from "@/lib/related";
 import { UpgradeTextForm } from "./upgrade-text-form";
@@ -49,15 +76,52 @@ function extractionWarningMessage(code: string): string {
   return code;
 }
 
+function captureSourceLabel(source: string | null | undefined): string {
+  switch (source) {
+    case "android":
+      return "Android";
+    case "extension":
+      return "Extension";
+    case "telegram":
+      return "Telegram";
+    case "system":
+      return "System";
+    case "web":
+      return "Web";
+    default:
+      return "Unknown";
+  }
+}
+
+type CaptureResultKind = "url" | "pdf" | "note";
+
+function parseCaptureResultKind(value: string | undefined): CaptureResultKind | null {
+  if (value === "url" || value === "pdf" || value === "note") return value;
+  return null;
+}
+
+function stateFromLegacyCaptureKind(
+  item: ItemRow,
+  kind: CaptureResultKind | null,
+): CaptureResultState | null {
+  if (!kind) return null;
+  return toCaptureResultPayload(item).state;
+}
+
 export default async function ItemDetailPage({
   params,
   searchParams,
 }: {
   params: Promise<{ id: string }>;
-  searchParams: Promise<{ highlight?: string }>;
+  searchParams: Promise<{
+    highlight?: string;
+    capture?: string;
+    capture_state?: string;
+    repair?: string;
+  }>;
 }) {
   const { id } = await params;
-  const { highlight } = await searchParams;
+  const { highlight, capture, capture_state, repair } = await searchParams;
   const item = getItem(id);
   if (!item) notFound();
 
@@ -79,6 +143,22 @@ export default async function ItemDetailPage({
   const transcriptAttempts = transcriptJob
     ? listTranscriptAttemptsForItem(item.id).slice(0, 3)
     : [];
+  const upgradeReason = needsUpgradeReason({
+    source_platform: item.source_platform,
+    capture_quality: item.capture_quality,
+    extraction_warning: item.extraction_warning,
+  });
+  const limitedQuality = isLimitedCaptureQuality(item.capture_quality) || Boolean(upgradeReason);
+  const captureResultKind = parseCaptureResultKind(capture);
+  const parsedCaptureState = parseCaptureResultState(capture_state);
+  const captureResultState =
+    parsedCaptureState === "failed_without_saved_item"
+      ? null
+      : parsedCaptureState ?? stateFromLegacyCaptureKind(item, captureResultKind);
+  const captureResult = captureResultState
+    ? toCaptureResultPayload(item, { state: captureResultState })
+    : null;
+  const repairQueued = repair === "queued";
 
   // T-12: when arriving via an Ask citation chip, resolve the chunk body so
   // we can render a highlight panel with an anchor the scroll-to-hash hook
@@ -103,6 +183,19 @@ export default async function ItemDetailPage({
         <ArrowLeft className="h-3.5 w-3.5" strokeWidth={2} />
         Back to Library
       </Link>
+
+      {repairQueued && <RepairResultBanner item={item} />}
+
+      {captureResult && (
+        <CaptureResultBanner
+          item={item}
+          result={captureResult}
+          platform={platform}
+          quality={quality}
+          limitedQuality={limitedQuality}
+          upgradeReason={upgradeReason}
+        />
+      )}
 
       {highlightedChunk && (
         <aside
@@ -133,31 +226,13 @@ export default async function ItemDetailPage({
               />
             </div>
             <ItemProcessingBadge status={processingStatus} />
-            <p className="mt-2 font-sans text-xs text-[var(--text-secondary)]">
-              <span>{platform}</span>
-              <span className="mx-2 text-[var(--text-muted)]">·</span>
-              <span>{quality}</span>
-              {item.author && (
-                <>
-                  <span className="mx-2 text-[var(--text-muted)]">·</span>
-                  <span>{item.author}</span>
-                </>
-              )}
-              <span className="mx-2 text-[var(--text-muted)]">·</span>
-              <span>captured {captured}</span>
-              {item.total_pages && (
-                <>
-                  <span className="mx-2 text-[var(--text-muted)]">·</span>
-                  <span>{item.total_pages} pages</span>
-                </>
-              )}
-              {item.total_chars && (
-                <>
-                  <span className="mx-2 text-[var(--text-muted)]">·</span>
-                  <span>{item.total_chars.toLocaleString()} chars</span>
-                </>
-              )}
-            </p>
+            <SourceTrustStrip
+              item={item}
+              captured={captured}
+              platform={platform}
+              quality={quality}
+              limitedQuality={limitedQuality}
+            />
 
             {item.source_url && (
               <p className="mt-2">
@@ -178,11 +253,17 @@ export default async function ItemDetailPage({
                 ⚠ {extractionWarningMessage(item.extraction_warning)}
               </p>
             )}
+            {limitedQuality && (
+              <WeakSourceRepairPanel
+                item={item}
+                upgradeReason={upgradeReason}
+              />
+            )}
           </header>
 
           <div className="whitespace-pre-wrap">{item.body}</div>
 
-          <footer className="mt-12 flex items-center gap-3 border-t border-[var(--border)] pt-6">
+          <footer className="mt-12 flex flex-wrap items-center gap-3 border-t border-[var(--border)] pt-6">
             <Link
               href={`/items/${item.id}/ask`}
               className="inline-flex h-8 items-center gap-2 rounded-md border border-[var(--border)] bg-transparent px-3 font-sans text-sm font-medium text-[var(--text-secondary)] transition-colors hover:border-[var(--border-strong)] hover:text-[var(--text-primary)]"
@@ -434,6 +515,255 @@ function TranscriptRecoveryPanel({
             </li>
           ))}
         </ol>
+      )}
+    </div>
+  );
+}
+
+function RepairResultBanner({ item }: { item: ItemRow }) {
+  return (
+    <section
+      aria-label="Repair result"
+      className="mb-8 rounded-lg border border-[var(--success)] bg-[var(--surface)] p-4"
+    >
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+        <div className="flex min-w-0 gap-3">
+          <CheckCircle2
+            className="mt-0.5 h-5 w-5 shrink-0 text-[var(--success)]"
+            strokeWidth={2}
+          />
+          <div className="min-w-0">
+            <h2 className="text-sm font-semibold text-[var(--text-primary)]">
+              Source text updated
+            </h2>
+            <p className="mt-1 text-sm text-[var(--text-secondary)]">
+              AI enrichment and semantic indexing are queued. Ask may improve after those finish.
+            </p>
+          </div>
+        </div>
+        <Link
+          href={`/items/${item.id}/repair`}
+          className="inline-flex h-8 shrink-0 items-center gap-1.5 rounded-md border border-[var(--border)] px-3 text-sm font-medium text-[var(--text-primary)] hover:bg-[var(--surface-raised)]"
+        >
+          <FileText className="h-3.5 w-3.5" strokeWidth={2} />
+          Edit repair
+        </Link>
+      </div>
+    </section>
+  );
+}
+
+function WeakSourceRepairPanel({
+  item,
+  upgradeReason,
+}: {
+  item: ItemRow;
+  upgradeReason: string | null;
+}) {
+  return (
+    <div className="mt-4 rounded-lg border border-[var(--quality-needs-upgrade)] bg-[var(--surface)] p-4 font-sans text-sm">
+      <p className="font-medium text-[var(--quality-needs-upgrade)]">
+        {upgradeReason ?? "This source needs more readable text."}
+      </p>
+      <p className="mt-1 text-[var(--text-secondary)]">
+        Add source text or a transcript to rebuild search, Ask, and AI topics from the repaired content.
+      </p>
+      <div className="mt-3 flex flex-wrap gap-2">
+        <Link
+          href={`/items/${item.id}/repair`}
+          className="inline-flex h-8 items-center gap-1.5 rounded-md bg-[var(--accent-9)] px-3 text-sm font-medium text-[var(--on-accent)] hover:bg-[var(--accent-10)]"
+        >
+          <FileText className="h-3.5 w-3.5" strokeWidth={2} />
+          Add text
+        </Link>
+        {item.source_url && (
+          <a
+            href={item.source_url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex h-8 items-center gap-1.5 rounded-md border border-[var(--border)] px-3 text-sm font-medium text-[var(--text-primary)] hover:bg-[var(--surface-raised)]"
+          >
+            <ExternalLink className="h-3.5 w-3.5" strokeWidth={2} />
+            Source
+          </a>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function CaptureResultBanner({
+  item,
+  result,
+  platform,
+  quality,
+  limitedQuality,
+  upgradeReason,
+}: {
+  item: ItemRow;
+  result: CaptureResultPayload;
+  platform: string;
+  quality: string;
+  limitedQuality: boolean;
+  upgradeReason: string | null;
+}) {
+  const isWarning =
+    limitedQuality ||
+    result.state === "error_with_saved_item" ||
+    result.state === "duplicate_existing";
+  const label = captureResultTitle(item, result, limitedQuality);
+  const Icon = isWarning ? AlertTriangle : CheckCircle2;
+  return (
+    <section
+      aria-label="Capture result"
+      className={`mb-8 rounded-lg border bg-[var(--surface)] p-4 ${
+        isWarning
+          ? "border-[var(--quality-needs-upgrade)]"
+          : "border-[var(--success)]"
+      }`}
+    >
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+        <div className="flex min-w-0 gap-3">
+          <Icon
+            className={`mt-0.5 h-5 w-5 shrink-0 ${
+              isWarning
+                ? "text-[var(--quality-needs-upgrade)]"
+                : "text-[var(--success)]"
+            }`}
+            strokeWidth={2}
+          />
+          <div className="min-w-0">
+            <h2 className="text-sm font-semibold text-[var(--text-primary)]">
+              {label}
+            </h2>
+            <p className="mt-1 text-sm text-[var(--text-secondary)]">
+              {result.state === "created_needs_upgrade" && upgradeReason
+                ? upgradeReason
+                : result.message}
+            </p>
+            <div className="mt-3 flex flex-wrap gap-1.5 text-xs text-[var(--text-secondary)]">
+              <span className="rounded-full border border-[var(--border)] px-2 py-0.5">
+                {platform}
+              </span>
+              <span className="rounded-full border border-[var(--border)] px-2 py-0.5">
+                via {captureSourceLabel(item.capture_source)}
+              </span>
+              <span
+                className={`rounded-full border px-2 py-0.5 ${
+                  limitedQuality
+                    ? "border-[var(--quality-needs-upgrade)] text-[var(--quality-needs-upgrade)]"
+                    : "border-[var(--border)]"
+                }`}
+              >
+                {quality}
+              </span>
+            </div>
+          </div>
+        </div>
+        <div className="flex shrink-0 flex-wrap gap-2">
+          {(limitedQuality || result.recommendedAction === "upgrade") && (
+            <Link
+              href={`/items/${item.id}/repair`}
+              className="inline-flex h-8 items-center rounded-md bg-[var(--accent-9)] px-3 text-sm font-medium text-[var(--on-accent)] hover:bg-[var(--accent-10)]"
+            >
+              Add text
+            </Link>
+          )}
+          <Link
+            href={`/items/${item.id}/ask`}
+            className="inline-flex h-8 items-center gap-1.5 rounded-md border border-[var(--border)] px-3 text-sm font-medium text-[var(--text-primary)] hover:bg-[var(--surface-raised)]"
+          >
+            <MessageSquare className="h-3.5 w-3.5" strokeWidth={2} />
+            Ask
+          </Link>
+          <Link
+            href="/capture"
+            className="inline-flex h-8 items-center gap-1.5 rounded-md border border-[var(--border)] px-3 text-sm font-medium text-[var(--text-primary)] hover:bg-[var(--surface-raised)]"
+          >
+            <CirclePlus className="h-3.5 w-3.5" strokeWidth={2} />
+            Capture
+          </Link>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function captureResultTitle(
+  item: ItemRow,
+  result: CaptureResultPayload,
+  limitedQuality: boolean,
+): string {
+  switch (result.state) {
+    case "duplicate_existing":
+      return "Already saved";
+    case "updated_existing":
+      return "Existing source upgraded";
+    case "error_with_saved_item":
+      return "Saved with issues";
+    case "created_metadata_only":
+    case "created_preview_only":
+    case "created_needs_upgrade":
+      return "Source saved with limited text";
+    case "created_transcript":
+      return "Transcript saved";
+    case "created_full_text":
+      if (item.source_type === "pdf") return "PDF saved";
+      if (item.source_type === "note") return "Note saved";
+      return limitedQuality ? "Source saved with limited text" : "Source saved";
+    case "failed_without_saved_item":
+      return "Capture failed";
+  }
+}
+
+function SourceTrustStrip({
+  item,
+  captured,
+  platform,
+  quality,
+  limitedQuality,
+}: {
+  item: ItemRow;
+  captured: string;
+  platform: string;
+  quality: string;
+  limitedQuality: boolean;
+}) {
+  return (
+    <div className="mt-4 flex flex-wrap items-center gap-2 font-sans text-xs text-[var(--text-secondary)]">
+      <span className="inline-flex items-center gap-1 rounded-full border border-[var(--border)] bg-[var(--surface)] px-2.5 py-1">
+        <BookOpen className="h-3 w-3" strokeWidth={2} />
+        {platform}
+      </span>
+      <span className="inline-flex rounded-full border border-[var(--border)] bg-[var(--surface)] px-2.5 py-1">
+        via {captureSourceLabel(item.capture_source)}
+      </span>
+      <span
+        className={`inline-flex rounded-full border bg-[var(--surface)] px-2.5 py-1 font-medium ${
+          limitedQuality
+            ? "border-[var(--quality-needs-upgrade)] text-[var(--quality-needs-upgrade)]"
+            : "border-[var(--border)] text-[var(--text-secondary)]"
+        }`}
+      >
+        {quality}
+      </span>
+      {item.author && (
+        <span className="inline-flex rounded-full border border-[var(--border)] bg-[var(--surface)] px-2.5 py-1">
+          {item.author}
+        </span>
+      )}
+      <span className="inline-flex rounded-full border border-[var(--border)] bg-[var(--surface)] px-2.5 py-1">
+        Saved {captured}
+      </span>
+      {item.total_pages && (
+        <span className="inline-flex rounded-full border border-[var(--border)] bg-[var(--surface)] px-2.5 py-1">
+          {item.total_pages} pages
+        </span>
+      )}
+      {item.total_chars && (
+        <span className="inline-flex rounded-full border border-[var(--border)] bg-[var(--surface)] px-2.5 py-1">
+          {item.total_chars.toLocaleString()} chars
+        </span>
       )}
     </div>
   );

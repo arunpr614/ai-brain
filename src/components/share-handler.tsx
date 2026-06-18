@@ -3,6 +3,10 @@
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { isDuplicateShare, shareDedupKey } from "@/lib/capture/dedup";
+import {
+  isCaptureResultPayload,
+  type CaptureResultPayload,
+} from "@/lib/capture/result";
 import { BRAIN_TUNNEL_URL } from "@/lib/config/tunnel";
 
 interface SharePayload {
@@ -13,6 +17,31 @@ interface SharePayload {
 
 interface CapacitorGlobal {
   isNativePlatform: () => boolean;
+}
+
+interface LegacyCaptureResponse {
+  id?: string;
+  duplicate?: boolean;
+  itemId?: string | null;
+  capture_result?: unknown;
+}
+
+interface ParsedCaptureResponse {
+  itemId: string | null;
+  result: CaptureResultPayload | null;
+}
+
+export const ANDROID_CAPTURE_SOURCE = "android";
+
+export function buildAndroidCaptureHeaders(
+  token: string,
+  extra: Record<string, string> = {},
+): Record<string, string> {
+  return {
+    ...extra,
+    authorization: `Bearer ${token}`,
+    "x-brain-capture-source": ANDROID_CAPTURE_SOURCE,
+  };
 }
 
 declare global {
@@ -44,6 +73,29 @@ function hashPayload(p: SharePayload): string {
   const text = (p.texts ?? []).join("\n");
   const files = (p.files ?? []).map((f) => `${f.name}:${f.uri}`).join("|");
   return `${p.title ?? ""}::${text}::${files}`;
+}
+
+function parseCaptureResponse(data: unknown): ParsedCaptureResponse {
+  if (!data || typeof data !== "object") return { itemId: null, result: null };
+  const legacy = data as LegacyCaptureResponse;
+  const result = isCaptureResultPayload(legacy.capture_result)
+    ? legacy.capture_result
+    : null;
+  const itemId =
+    result?.itemId ??
+    result?.existingItemId ??
+    (legacy.duplicate && legacy.itemId ? legacy.itemId : legacy.id) ??
+    null;
+  return { itemId, result };
+}
+
+function pushCaptureResult(
+  router: ReturnType<typeof useRouter>,
+  parsed: ParsedCaptureResponse,
+): void {
+  if (!parsed.itemId) return;
+  const state = parsed.result?.state;
+  router.push(state ? `/items/${parsed.itemId}?capture_state=${state}` : `/items/${parsed.itemId}`);
 }
 
 export function ShareHandler() {
@@ -78,7 +130,7 @@ export function ShareHandler() {
           const liveToken = await getBearerToken();
           if (!liveToken) {
             alert(
-              "Brain is not paired yet. Open Device pairing in the web app and enter the Android code.",
+              "AI Memory is not paired yet. Open Device pairing in the web app and enter the Android code.",
             );
             router.push("/setup-apk");
             return;
@@ -154,10 +206,9 @@ async function postJson(
   try {
     res = await fetch(url, {
       method: "POST",
-      headers: {
+      headers: buildAndroidCaptureHeaders(token, {
         "content-type": "application/json",
-        authorization: `Bearer ${token}`,
-      },
+      }),
       body: JSON.stringify(body),
     });
   } catch (err) {
@@ -183,9 +234,7 @@ async function captureUrl(
 ): Promise<void> {
   const res = await postJson(`${base}/api/capture/url`, token, { url, title });
   if (res.ok) {
-    const data = res.data as { id?: string; duplicate?: boolean; itemId?: string | null };
-    const id = data.duplicate && data.itemId ? data.itemId : data.id;
-    if (id) router.push(`/items/${id}`);
+    pushCaptureResult(router, parseCaptureResponse(res.data));
     return;
   }
   await reportClientError("share.http.capture-failed", `POST /api/capture/url ${res.status}`);
@@ -201,8 +250,7 @@ async function captureNote(
 ): Promise<void> {
   const res = await postJson(`${base}/api/capture/note`, token, { title, body });
   if (res.ok) {
-    const data = res.data as { id?: string };
-    if (data.id) router.push(`/items/${data.id}`);
+    pushCaptureResult(router, parseCaptureResponse(res.data));
     return;
   }
   await reportClientError("share.http.capture-failed", `POST /api/capture/note ${res.status}`);
@@ -239,10 +287,9 @@ async function capturePdf(
   try {
     res = await fetch(`${base}/api/capture/pdf`, {
       method: "POST",
-      headers: {
-        authorization: `Bearer ${token}`,
+      headers: buildAndroidCaptureHeaders(token, {
         "x-expected-sha256": expected,
-      },
+      }),
       body: form,
     });
   } catch (err) {
@@ -253,8 +300,8 @@ async function capturePdf(
   }
 
   if (res.ok) {
-    const data = (await res.json().catch(() => ({}))) as { id?: string };
-    if (data.id) router.push(`/items/${data.id}`);
+    const data = await res.json().catch(() => ({}));
+    pushCaptureResult(router, parseCaptureResponse(data));
     return;
   }
 

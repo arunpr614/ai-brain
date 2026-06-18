@@ -49,7 +49,7 @@ export function Sidebar() {
       >
       <div className="px-2 pb-4 pt-1">
         <h1 className="text-sm font-semibold tracking-tight text-[var(--text-primary)]">
-          AI Brain
+          AI Memory
         </h1>
         <p className="text-xs text-[var(--text-muted)]">v{pkg.version} · cloud</p>
       </div>

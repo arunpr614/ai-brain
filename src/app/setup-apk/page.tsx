@@ -52,7 +52,7 @@ export default function SetupApkPage() {
         if (!token) {
           setStage({
             kind: "verify-error",
-            message: "Brain did not return a valid pairing token.",
+            message: "AI Memory did not return a valid pairing token.",
           });
           return;
         }
@@ -80,7 +80,7 @@ export default function SetupApkPage() {
 
   const retryConnection = useCallback(
     async (token: string) => {
-      setStage({ kind: "verifying", message: "Checking cloud connection..." });
+      setStage({ kind: "verifying", message: "Checking server connection..." });
       try {
         const resolution = await resolveBaseUrl({ token });
         if (!resolution.ok) {
@@ -155,7 +155,7 @@ export default function SetupApkPage() {
       {stage.kind === "paired-unreachable" && (
         <div className="rounded-md border border-[var(--border)] bg-[var(--surface)] p-4 text-sm">
           <p className="font-medium text-[var(--text-primary)]">
-            Paired, but cloud is not reachable
+            Paired, but server is not reachable
           </p>
           <p className="mt-1 text-[var(--text-muted)]">
             The token is saved on this device. Try the connection again when the
@@ -204,13 +204,13 @@ export default function SetupApkPage() {
 function formatExchangeError(error: unknown, status: number): string {
   switch (error) {
     case "expired_code":
-      return "That code expired. Generate a fresh code in the web app.";
+      return "That code expired. Generate a fresh Android code from Device pairing in the web app.";
     case "used_code":
       return "That code was already used. Generate a fresh code.";
     case "rate_limited":
       return "Too many attempts. Wait a few minutes, then generate a fresh code.";
     case "token_not_configured":
-      return "Brain is missing its API token. Open settings on the web app first.";
+      return "AI Memory is missing its API token. Open settings on the web app first.";
     case "invalid_code":
       return "That code was not recognized. Check it and try again.";
     default:

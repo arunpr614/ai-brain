@@ -41,7 +41,7 @@ export default async function DevicePairingPage() {
         Device pairing
       </h1>
       <p className="mb-8 text-sm text-[var(--text-secondary)]">
-        Your Brain is accessible at{" "}
+        Your AI Memory server is accessible at{" "}
         <code className="font-mono text-[var(--text-primary)]">{BRAIN_TUNNEL_URL}</code>{" "}
         via the Cloudflare tunnel. Pair Android with a short-lived code, or use
         the advanced token flow for the Chrome extension.
@@ -71,7 +71,7 @@ export default async function DevicePairingPage() {
         extension publishes an options page at a known
         chrome-extension://<id>/options.html the link will be updated —
         but for a locally-loaded unpacked extension, chrome://extensions
-        is the canonical entry point (click "Details" on the Brain row →
+        is the canonical entry point (click "Details" on the AI Memory row →
         "Extension options").
       */}
       <section className="mb-10">
@@ -81,7 +81,7 @@ export default async function DevicePairingPage() {
         <div className="rounded-lg border border-[var(--border)] bg-[var(--surface)] p-4">
           <ol className="mb-4 list-decimal space-y-1.5 pl-5 text-xs text-[var(--text-secondary)]">
             <li>
-              Install the Brain extension (see{" "}
+              Install the AI Memory extension (see{" "}
               <code className="font-mono text-[var(--text-primary)]">
                 extension/README.md
               </code>{" "}
@@ -95,10 +95,10 @@ export default async function DevicePairingPage() {
               >
                 chrome://extensions
               </a>
-              , find <strong>Brain</strong>, click <strong>Details → Extension options</strong>.
+              , find <strong>AI Memory</strong>, click <strong>Details → Extension options</strong>.
             </li>
             <li>
-              Set <strong>Brain URL</strong> to{" "}
+              Set <strong>AI Memory URL</strong> to{" "}
               <code className="font-mono text-[var(--text-primary)]">
                 {BRAIN_TUNNEL_URL}
               </code>{" "}

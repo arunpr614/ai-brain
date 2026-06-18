@@ -18,6 +18,11 @@ import type { CapacitorConfig } from "@capacitor/cli";
  * build-time constant, not an env var. See
  * `docs/plans/v0.5.0-CLOUDFLARE-RESEARCH.md` §6 + the v2.0 pivot plan.
  *
+ * `server.errorPath` makes Android load the bundled `public/offline.html`
+ * if the live server cannot be reached on first launch or navigation. It
+ * does not create an offline queue; it only gives the PRD-15 server-
+ * unreachable/offline-before-pairing state a branded local fallback.
+ *
  * `androidScheme: "https"` matches the HTTPS tunnel — named tunnels
  * terminate TLS at the Cloudflare edge and present a real CA-signed
  * certificate for `brain.arunp.in`. The legacy `"http"` value was a
@@ -37,11 +42,12 @@ import type { CapacitorConfig } from "@capacitor/cli";
  */
 const config: CapacitorConfig = {
   appId: "com.arunprakash.brain",
-  appName: "Brain",
+  appName: "AI Memory",
   webDir: "public",
   server: {
     url: "https://brain.arunp.in",
     androidScheme: "https",
+    errorPath: "offline.html",
   },
   plugins: {
     CapacitorHttp: {

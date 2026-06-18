@@ -21,7 +21,7 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "AI Brain",
+  title: "AI Memory",
   description: "Personal knowledge base, hosted on Hetzner.",
 };
 

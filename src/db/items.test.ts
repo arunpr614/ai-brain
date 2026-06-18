@@ -8,7 +8,12 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { rmSync } from "node:fs";
 import { TEST_DB_DIR } from "./items.test.setup";
-import { insertCaptured, searchItems } from "./items";
+import {
+  countNeedsUpgradeItems,
+  insertCaptured,
+  listNeedsUpgradeItems,
+  searchItems,
+} from "./items";
 import { insertCaptureArtifact, listCaptureArtifactsForItem } from "./capture-artifacts";
 
 test.after(() => {
@@ -94,4 +99,35 @@ test("insertCaptured persists capture quality metadata and artifact rows", () =>
   const artifacts = listCaptureArtifactsForItem(item.id);
   assert.equal(artifacts.length, 1);
   assert.equal(artifacts[0]?.kind, "metadata_json");
+});
+
+
+test("listNeedsUpgradeItems returns weak captures without full-text items", () => {
+  const weak = insertCaptured({
+    source_type: "youtube",
+    title: "Weak YouTube",
+    body: "Only metadata",
+    source_platform: "youtube",
+    capture_quality: "metadata_only",
+    extraction_warning: "youtube_antibot_metadata_only",
+  });
+  insertCaptured({
+    source_type: "url",
+    title: "Strong article",
+    body: "Full article body",
+    source_platform: "generic_article",
+    capture_quality: "full_text",
+  });
+  const preview = insertCaptured({
+    source_type: "url",
+    title: "Preview newsletter",
+    body: "Preview",
+    source_platform: "substack",
+    capture_quality: "paywall_preview",
+  });
+
+  const ids = new Set(listNeedsUpgradeItems({ limit: 20 }).map((item) => item.id));
+  assert.equal(ids.has(weak.id), true);
+  assert.equal(ids.has(preview.id), true);
+  assert.ok(countNeedsUpgradeItems() >= 2);
 });

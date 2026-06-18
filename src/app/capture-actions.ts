@@ -9,6 +9,7 @@ import { UrlCaptureError } from "@/lib/capture/url";
 import { YoutubeCaptureError } from "@/lib/capture/youtube";
 import { saveCaptureArtifacts } from "@/lib/capture/artifacts";
 import { findItemByUrl, insertCaptured, type CaptureSource } from "@/db/items";
+import { toCaptureResultPayload } from "@/lib/capture/result";
 import { logError } from "@/lib/errors/sink";
 
 export type CaptureState =
@@ -64,18 +65,26 @@ export async function captureUrlAction(
     thumbnail_url: extracted.content.thumbnail_url ?? null,
     description: extracted.content.description ?? null,
   });
+  let artifactError: string | null = null;
   try {
     await saveCaptureArtifacts(item.id, extracted.content.artifacts);
   } catch (err) {
+    artifactError = (err as Error).message;
     logError({
       type: "capture.artifact-save-failed",
       item_id: item.id,
-      message: (err as Error).message,
+      message: artifactError,
       ts: Date.now(),
     });
   }
   revalidatePath("/");
-  redirect(`/items/${item.id}`);
+  revalidatePath("/library");
+  revalidatePath("/needs-upgrade");
+  const result = toCaptureResultPayload(item, {
+    state: artifactError ? "error_with_saved_item" : undefined,
+    errorMessage: artifactError,
+  });
+  redirect(`/items/${item.id}?capture_state=${result.state}`);
 }
 
 /**
@@ -121,5 +130,7 @@ export async function capturePdfAction(
     extraction_version: "capture-v0.7.5",
   });
   revalidatePath("/");
+  revalidatePath("/library");
+  revalidatePath("/needs-upgrade");
   return { id: item.id };
 }

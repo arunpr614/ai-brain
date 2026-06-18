@@ -12,6 +12,10 @@ import { checkClientApiVersion } from "@/lib/auth/api-version";
 import { insertCaptured } from "@/db/items";
 import { isDuplicateShare, shareDedupKey } from "@/lib/capture/dedup";
 import { captureSourceFromTrustedHeader } from "@/lib/capture/source";
+import {
+  toCaptureResultPayload,
+  toDuplicateCaptureResultPayload,
+} from "@/lib/capture/result";
 import { logError } from "@/lib/errors/sink";
 import crypto from "node:crypto";
 
@@ -63,7 +67,15 @@ export async function POST(req: NextRequest) {
       ts: Date.now(),
     });
     return NextResponse.json(
-      { duplicate: true, reason: "window" },
+      {
+        duplicate: true,
+        reason: "window",
+        capture_result: toDuplicateCaptureResultPayload(null, {
+          sourcePlatform: "note",
+          capturedVia: captureSource,
+          quality: "user_provided_full_text",
+        }),
+      },
       { status: 200 },
     );
   }
@@ -79,5 +91,12 @@ export async function POST(req: NextRequest) {
     extraction_version: "capture-v0.7.5",
   });
 
-  return NextResponse.json({ id: item.id, duplicate: false }, { status: 201 });
+  return NextResponse.json(
+    {
+      id: item.id,
+      duplicate: false,
+      capture_result: toCaptureResultPayload(item),
+    },
+    { status: 201 },
+  );
 }

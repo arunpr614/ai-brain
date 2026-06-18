@@ -6127,3 +6127,1606 @@ Per #56 action item #1: get explicit user decision on revert-vs-keep for `a799b1
 - **Tracker versions:** PROJECT_TRACKER v0.9.6, ROADMAP_TRACKER v0.9.7, BACKLOG v7.9 — all pushed.
 - **Open carry-overs to v0.6.3:** T-11b legacy `BRAIN_LAN_TOKEN` drop (date gate passed; standalone candidate), BUG-ENRICH-UNREACHABLE-LOOP log hygiene, Mac better-sqlite3 ABI, `tsx` removal, CSP nonces, HARDEN-HETZNER-SSH.
 - **Next milestone:** v0.6.3 hygiene plan drafting. Bundling decision (one phase vs v0.6.3+v0.6.4 split) pending.
+
+## Entry #81 - 2026-06-14 10:55 IST - UX v2 execution kickoff; baseline and PRD-11 shell smoke captured
+
+**Entry author:** AI agent (Codex) · **Triggered by:** User started goal mode to execute AI Brain UX v2 end-to-end from approved `UX_v2/UX_Final_Plan`, with audit, baseline, tracker/log discipline, QA, review, Android validation, and release only after explicit approval.
+
+### Planned since last entry
+
+Entry #80 left the project at v0.8.5 production handover, with transcript cooldown/backfill follow-up as the next operational topic. The new user request superseded that immediate operational follow-up with a UX v2 execution goal. The hard instruction for this session was to audit first, create a reproducible baseline before coding, compare current app state to `UX_Final_Plan`, maintain tracker/logs, preserve unrelated dirty worktree state, and implement only confirmed `UX_Final_Plan` scope.
+
+### Done
+
+- Read and followed the `codex-project-running-log` skill before writing this entry.
+- Read the approved final plan package:
+  - `UX_v2/UX_Final_Plan/00_FINAL_PACKAGE_INDEX.md`
+  - `01_FINAL_ROADMAP_AND_EXECUTION_PLAN.md`
+  - `02_FINAL_FEATURE_CLASSIFICATION_AND_GAP_ANALYSIS.md`
+  - `03_ADVERSARIAL_REVIEW_REPAIR_CHECKLIST.md`
+  - `04_STALE_DOC_RECONCILIATION.md`
+  - `05_REPRODUCIBILITY_SNAPSHOT.md`
+  - `07_FINAL_VALIDATION_AND_HANDOFF_STATUS.md`
+  - final trackers under `UX_v2/UX_Final_Plan/trackers/`
+- Confirmed the final plan is planning authority only and blocks direct feature implementation until gates clear.
+- Created execution branch `codex/ai-brain-ux-v2-execution` from HEAD `c33166e4c9b9a3af86165b1b83aaea355174ccd7`, carrying the dirty worktree without reset or cleanup.
+- Captured baseline:
+  - dirty entries: `174`;
+  - Node `v22.22.3`;
+  - npm `10.9.8`;
+  - Next `16.2.5`;
+  - Capacitor CLI `8.3.3`;
+  - Java `17.0.19`;
+  - Gradle `8.14.3`;
+  - local DB item count `0`;
+  - local DB migrations applied `001` through `017`.
+- Ran baseline checks:
+  - `npm run check:env` passed;
+  - `npm run lint` passed with one existing warning in `src/lib/queue/enrichment-batch-cron.ts`;
+  - `npm run typecheck` passed;
+  - `npm test` failed one existing test: `src/lib/capture/quality.test.ts` expected `metadata + transcript`, actual `Transcript`;
+  - `npm run build` passed with known `unpdf` warning;
+  - local health passed with a session cookie header;
+  - `npm run build:apk` failed by intended version guard because `brain-debug-v1.0.2-code3.apk` already exists.
+- Started local dev server at `http://127.0.0.1:3000`.
+- Used the in-app Browser skill for PRD-11-SHELL smoke evidence.
+- Captured PRD-11 shell screenshots:
+  - `UX_v2/execution/evidence/screenshots/2026-06-14-prd11-mobile-library.png`
+  - `UX_v2/execution/evidence/screenshots/2026-06-14-prd11-mobile-ask.png`
+  - `UX_v2/execution/evidence/screenshots/2026-06-14-prd11-mobile-capture.png`
+  - `UX_v2/execution/evidence/screenshots/2026-06-14-prd11-mobile-more.png`
+  - `UX_v2/execution/evidence/screenshots/2026-06-14-prd11-desktop-more.png`
+- Confirmed browser console had no errors during the shell smoke.
+- Identified smoke caveats:
+  - mobile `/more` still shows raised Capture treatment while D-006 remains open;
+  - disabled Capture CTAs are low contrast in mobile Library/Capture views;
+  - responsive screenshots are not Android device/emulator evidence.
+- Checked Android tooling:
+  - `adb` is absent from PATH but exists at `/opt/homebrew/share/android-commandlinetools/platform-tools/adb`;
+  - no device/emulator attached;
+  - AVD `Brain_API_36` cannot load because the Google APIs arm64-v8a Brain API 36 system image is missing;
+  - no `emulator` binary found.
+- Wrote execution artifacts:
+  - `UX_v2/execution/UX_V2_BASELINE_AND_AUDIT.md`
+  - `UX_v2/execution/PRD_11_SHELL_SMOKE_2026-06-14.md`
+  - `UX_v2/execution/UX_V2_EXECUTION_TRACKER.md`
+- Read PRD-06-FU and PRD-16 feature packages enough to define the first implementation slice and QA rules.
+
+### Cross-lane notes
+
+- Lead integrator for this goal is Codex in this thread.
+- No parallel agents were spawned in this milestone; no file ownership conflicts exist yet.
+- The approved final plan files were not rewritten. Execution status lives under `UX_v2/execution/`.
+- The existing dirty `RUNNING_LOG.md` and other modified files predate this execution; this entry is append-only.
+- Production/live was not touched.
+
+### Learned
+
+- `UX_Final_Plan` explicitly says "no-go for direct app implementation" until gates are addressed. PRD-11-SHELL was the first hard gate.
+- The app is a Next.js web app plus a thin Capacitor shell loading `https://brain.arunp.in`; Android-specific UX claims must be proven on a real device/emulator.
+- The local in-app browser already had a usable session for `http://127.0.0.1:3000`, so shell smoke did not require PIN changes or DB auth mutation.
+- Full-page screenshots timed out through the browser bridge; bounded viewport screenshots worked.
+- Android validation is blocked by environment/device setup, not by app code at this milestone.
+
+### Deployed / Released
+
+Nothing deployed, pushed, tagged, released, installed, or uploaded this session. No production deploy approval has been requested.
+
+### Documents created or updated this period
+
+**Created:**
+- `UX_v2/execution/UX_V2_BASELINE_AND_AUDIT.md` - reproducible baseline, architecture audit, checks, blockers, and data-safety notes.
+- `UX_v2/execution/PRD_11_SHELL_SMOKE_2026-06-14.md` - PRD-11 shell smoke report and screenshot evidence matrix.
+- `UX_v2/execution/UX_V2_EXECUTION_TRACKER.md` - live execution tracker with phases, tasks, blockers, review state, and deploy state.
+- `UX_v2/execution/evidence/screenshots/*.png` - five baseline shell screenshots.
+
+**Updated:**
+- `RUNNING_LOG.md` - appended this Entry #81.
+
+### Validation
+
+- Baseline command results are recorded in `UX_v2/execution/UX_V2_BASELINE_AND_AUDIT.md`.
+- PRD-11-SHELL smoke evidence is recorded in `UX_v2/execution/PRD_11_SHELL_SMOKE_2026-06-14.md`.
+- G-001 is considered addressed with caveats; other gates remain open.
+
+### Current remaining to-do
+
+1. Implement PRD-06-FU as the first feature slice:
+   - add shared capture result model;
+   - derive banner truth from DB item fields;
+   - keep legacy capture redirects/fields compatible;
+   - add typed share-handler response parsing without PRD-13 UI.
+2. Add focused PRD-06-FU tests:
+   - result mapper tests;
+   - capture API tests for canonical payloads;
+   - banner/smoke coverage where feasible.
+3. Update `UX_v2/execution/UX_V2_EXECUTION_TRACKER.md` after each PRD-06 task.
+4. Run integration review after PRD-06 implementation.
+5. Do not implement PRD-09, PRD-10 mark-good-enough, PRD-12, PRD-13 UI, active offline controls, Android tabs, analytics/events, or YouTube media/player behavior until their gates/decisions close.
+6. Android final validation remains blocked until a device/emulator is available; exact blocker is documented.
+
+### Open questions / decisions needed
+
+1. D-001/D-002/D-003: Ask attachment, high-quality-only, and history semantics.
+2. D-004: whether mark-good-enough removes Needs Upgrade items.
+3. D-006: whether More should show raised Capture or normal tab treatment.
+4. D-007/D-008/D-013: active offline, QR pairing, and Android package ID posture.
+5. G-006: whether live Magic Patterns refs need refresh or frozen local design package is authoritative.
+
+### Session self-critique
+
+- PRD-11 shell is verified as responsive web, not as Android device evidence.
+- The full test suite has one baseline failure that must not be ignored before release.
+- The local DB is empty, so UI smoke did not exercise populated library/card states.
+- The dirty worktree is large; future implementation must inspect affected diffs carefully before editing any already-modified file.
+- `RUNNING_LOG.md` itself was already modified before this session; this update appends to the existing active file and does not repair prior log inconsistencies.
+
+### Action items for the next agent
+
+1. Start from branch `codex/ai-brain-ux-v2-execution` in `/Users/arun.prakash/Documents/arunvault/arun-cursor/Initiatives/Arun_AI_Projects/ai-brain/phase2`.
+2. Read:
+   - `UX_v2/execution/UX_V2_EXECUTION_TRACKER.md`
+   - `UX_v2/execution/UX_V2_BASELINE_AND_AUDIT.md`
+   - `UX_v2/execution/PRD_11_SHELL_SMOKE_2026-06-14.md`
+   - `UX_v2/features/PRD-06-FU-capture-result-states-package.md`
+3. Before editing PRD-06 files, inspect their current dirty diffs so pre-existing changes are preserved.
+4. Keep the local dev server at `http://127.0.0.1:3000` only if still needed; stop it before ending the thread if no longer in use.
+5. Do not deploy or build a new APK without version bump, QA evidence, release gate, and explicit user approval.
+
+### State snapshot
+
+- **Current phase / version:** UX v2 execution Phase 1 baseline and PRD-11-SHELL smoke complete with caveats; PRD-06-FU ready as next implementation slice.
+- **Active branch:** `codex/ai-brain-ux-v2-execution`
+- **HEAD:** `c33166e4c9b9a3af86165b1b83aaea355174ccd7`
+- **Working tree:** dirty, 174 entries before execution docs; new execution docs/screenshots under `UX_v2/execution/`.
+- **Local runtime:** Next dev server running at `http://127.0.0.1:3000` during this entry.
+- **Android runtime:** no device/emulator attached; AVD/system image/emulator binary blocker documented.
+- **Production/runtime state:** production not touched; no release approval requested.
+- **Next milestone:** PRD-06-FU canonical capture result contract implementation and focused tests.
+
+## Entry #82 - 2026-06-14 11:07 IST - PRD-06-FU capture result contract implemented and locally validated
+
+### Summary
+
+Implemented the approved PRD-06-FU slice for canonical capture result states across web/API/share-compatible capture flows. This stayed inside the approved final plan scope: no PRD-13 Android result UI, no analytics/events, no DB migration, and no production deploy.
+
+### Changes completed
+
+- Added a shared capture result contract in `src/lib/capture/result.ts` with canonical states for created, duplicate, updated, saved-with-error, and failed-without-save outcomes.
+- Added focused tests for the capture result mapper and updated the pre-existing capture quality label expectation that was failing at baseline.
+- Wired `capture_result` into URL, note, and PDF capture API responses while preserving legacy fields for compatibility.
+- Updated URL/note/PDF redirect flows to use compact `capture_state` item-page banners where an item exists.
+- Updated the item detail capture banner to derive display truth from saved item data and canonical state, not from trusted query params.
+- Added typed share-handler response parsing that understands the new payload while keeping legacy fallbacks; Android runtime UI behavior remains device-gated.
+- Updated the execution tracker with task status, validation status, and remaining gates.
+
+### Validation
+
+- `node --import tsx --test src/lib/capture/result.test.ts src/lib/capture/quality.test.ts` passed.
+- `node --import tsx --test src/app/api/capture/url/route.test.ts src/app/api/capture/note/route.test.ts src/app/api/capture/pdf/route.test.ts` passed.
+- `npm run typecheck` passed.
+- Browser smoke passed for item-page banner states:
+  - `created_full_text`
+  - `created_metadata_only`
+  - `duplicate_existing`
+  - `updated_existing`
+  - `error_with_saved_item`
+- Temporary local smoke items were deleted; local item count returned to `0`.
+- Broad validation after implementation:
+  - `npm run lint` passed with the existing unused-disable warning in `src/lib/queue/enrichment-batch-cron.ts:49`.
+  - `npm test` passed: 453 tests, 65 suites.
+  - `npm run build` passed with the known `unpdf` warning.
+  - A parallel `npm run typecheck` attempt failed once with transient missing `.next/types` files while the production build was mutating generated output; a clean rerun immediately after build passed.
+
+### Data and release safety
+
+- No storage/API migration was added.
+- Production data was not touched.
+- Production/live was not deployed.
+- Release remains gated on explicit user approval, code review, final QA, Android device/emulator validation, backup/rollback confirmation, and post-deploy smoke planning.
+
+### Remaining blockers
+
+- Android mandatory validation is still blocked by no attached device/emulator, missing AVD system image, and no emulator binary.
+- PRD-09/PRD-12 remain blocked by D-001/D-002/D-003.
+- PRD-10 mark-good-enough remains blocked by D-004.
+- PRD-13 Android share result UI remains blocked by Android validation access and is not part of this PRD-06 implementation.
+- Production/live deployment has not been approved.
+
+### Next milestone
+
+Run and save the required PRD-06 code review report, fix any P0/P1 findings, and then decide whether the next approved slice can proceed or must stop on open product/device gates.
+
+## Entry #83 - 2026-06-14 11:10 IST - PRD-06 code review completed; P2 fixed
+
+### Summary
+
+Completed the required code review for the PRD-06-FU capture result contract slice and saved the report at `UX_v2/execution/PRD_06_CODE_REVIEW_2026-06-14.md`.
+
+### Review result
+
+- Verdict: approve after one P2 fix.
+- P0 findings: none.
+- P1 findings: none.
+- P2 findings: one, fixed.
+- P3 findings: none remaining.
+
+### Fix made during review
+
+- Fixed `error_with_saved_item` payload copy so it no longer exposes raw post-save exception messages to clients.
+- Raw error detail remains in structured logs; the client-facing message now uses safe generic copy.
+- Added a regression assertion that `"artifact write failed"` does not appear in the payload message.
+
+### Validation after review fix
+
+- `node --import tsx --test src/lib/capture/result.test.ts src/lib/capture/quality.test.ts` passed.
+- `node --import tsx --test src/app/api/capture/url/route.test.ts src/app/api/capture/note/route.test.ts src/app/api/capture/pdf/route.test.ts` passed.
+- `npm run typecheck` passed.
+
+### Deploy / release state
+
+- Production/live not deployed.
+- Release approval not requested.
+- Android mandatory validation remains blocked by no attached device/emulator and missing emulator setup.
+- Tracker updated with review state and fixed finding.
+
+## Entry #84 - 2026-06-14 11:12 IST - PRD-10 limited repair slice approved for local implementation
+
+### Summary
+
+Audited PRD-10 after completing PRD-06 and selected the next safe implementation slice: add-text/transcript repair with derived-state reset. This follows the final roadmap order while preserving open decision gates.
+
+### Scope decision
+
+Proceed locally with:
+
+- `/items/[id]/repair` shared web/mobile route.
+- Add text/transcript repair action.
+- Derived-state reset for chunks, vectors, enrichment state/jobs, embedding jobs, auto tags, and AI topics.
+- Needs Upgrade and item detail links to repair.
+
+Do not implement in this slice:
+
+- Mark-good-enough behavior, blocked by D-004.
+- Duplicate merge.
+- Native Android offline repair queue.
+- PRD-13 Android share result UI.
+- Transcript provider fallback.
+- Product analytics/events.
+
+### Data-safety plan
+
+- No schema migration planned.
+- One transaction must update item content and clear stale derived state.
+- Delete `chunks_vec` rows before deleting `chunks`; `chunks_rowid` cascades from chunk deletion.
+- Reset or insert `enrichment_jobs`.
+- Delete old `embedding_jobs` so the existing enrichment-state trigger can create a new embedding job after enrichment completes.
+- Preserve manual tags, collections, source URL, source platform, capture source, author, duration, published date, thumbnail, and description.
+
+### Current blocker status
+
+- PRD-10 mark-good-enough remains blocked.
+- Android validation remains blocked by unavailable device/emulator.
+- Production release remains unapproved.
+
+## Entry #85 - 2026-06-14 11:30 IST - PRD-10 limited repair implemented, validated, and reviewed
+
+### Summary
+
+Completed the approved PRD-10 limited repair slice for add-text/transcript repair and saved the scoped code review report at `UX_v2/execution/PRD_10_CODE_REVIEW_2026-06-14.md`.
+
+### Implementation result
+
+- Added `/items/[id]/repair` with a responsive repair form.
+- Added repair server action and transaction helper.
+- Replaced weak captured text with user-provided text or transcript.
+- Cleared stale chunks, vectors, auto tags, AI topics, enrichment output, old embedding job, and stale queue state.
+- Preserved manual tags, collections, source URL, source platform, capture source, author, and source metadata.
+- Linked Needs Upgrade, item detail, capture-result banners, and focus mode weak-source notices to Add text repair.
+
+### Validation
+
+- `node --import tsx --test src/lib/repair/item-repair.test.ts src/lib/capture/result.test.ts src/lib/capture/quality.test.ts` passed: 8 tests.
+- `npm run typecheck` passed.
+- `npm run lint` passed with the existing `src/lib/queue/enrichment-batch-cron.ts:49` unused-disable warning.
+- `npm test` passed: 455 tests, 65 suites, 0 failures.
+- `npm run build` passed with the known `unpdf` warning.
+- Server-render smoke passed for Needs Upgrade, repair route, repair completion banner, removal from Needs Upgrade, stale retrieval cleanup, and queue reset. Browser/CDP form submission smoke remains a tooling caveat documented in `UX_v2/execution/PRD_10_REPAIR_SMOKE_2026-06-14.md`.
+
+### Review result
+
+- Verdict: approve for local deploy-ready state; production release remains gated.
+- P0 findings: none.
+- P1 findings: none.
+- P2 findings: none.
+- P3 findings: one formatting issue in `src/app/items/[id]/page.tsx`, fixed and revalidated.
+
+### Deploy / release state
+
+- Production/live not deployed.
+- Release approval not requested.
+- Production DB backup remains mandatory before release.
+- Android mandatory validation remains blocked by no attached device/emulator and missing emulator setup.
+- PRD-10 mark-good-enough remains blocked by D-004 and was not implemented.
+
+## Entry #86 - 2026-06-14 11:36 IST - PRD-14 informational trust copy slice selected
+
+### Summary
+
+After closing PRD-10 locally, reviewed the approved plan for the next safe scope. PRD-14 allows only informational privacy/offline copy while active offline behavior remains blocked by D-007.
+
+### Scope decision
+
+Proceed locally with:
+
+- Shared trust copy for Settings and More where app surfaces can import it.
+- Disabled privacy controls labeled `Coming soon`.
+- Offline copy that states Ask, capture, export, and sync require server access.
+- User-readable provider/storage copy.
+- Static offline page copy that avoids QR/offline-queue overclaims.
+
+Do not implement:
+
+- Offline downloads, offline Ask, offline capture queues, or sync controls.
+- Active end-to-end encryption controls.
+- Telemetry/product analytics controls.
+- QR pairing behavior.
+- Android package-ID changes.
+
+### Data-safety plan
+
+- No schema migration.
+- No data writes.
+- No storage/API behavior changes.
+- Rollback is code-only copy/UI revert.
+- Production DB backup remains mandatory before release even though this slice is copy-only.
+
+### Current blocker status
+
+- D-007 remains open for active offline controls.
+- D-008 remains open for QR pairing.
+- D-013 remains open for Android package ID.
+- Android validation remains blocked by unavailable device/emulator.
+- Production release remains unapproved.
+
+## Entry #87 - 2026-06-14 11:40 IST - PRD-14 informational trust copy implemented, validated, and reviewed
+
+### Summary
+
+Completed the approved PRD-14 informational-only trust copy slice and saved the smoke/review artifacts:
+
+- `UX_v2/execution/PRD_14_TRUST_COPY_SMOKE_2026-06-14.md`
+- `UX_v2/execution/PRD_14_CODE_REVIEW_2026-06-14.md`
+
+### Implementation result
+
+- Added shared Settings/More trust copy at `src/lib/settings/trust-copy.ts`.
+- Updated Settings provider, backup, data/privacy, and offline copy.
+- Added disabled privacy controls labeled `Coming soon`.
+- Added explicit offline `Server required` posture without active offline controls.
+- Updated More to use the same provider/privacy/offline trust copy.
+- Updated static `/offline.html` to avoid offline-mode and QR wording.
+
+### Review fixes
+
+- Renamed More section `Sync & Devices` to `Devices`.
+- Allowed More privacy/offline descriptions to wrap so trust copy is visible on small screens.
+- Changed backup copy to user-facing restore wording instead of release-process wording.
+
+### Validation
+
+- Copy audit passed for `end-to-end`, `encrypted`, `anonymous`, `AI Brain`, `Your Brain`, `offline`, `sync`, `QR`, `telemetry`, `private by default`, and `private memory` across the PRD-14 surfaces.
+- Browser smoke passed for Settings, mobile More at 390 x 844, and the static offline page.
+- `npm run typecheck` passed.
+- `npm run lint` passed with the existing `src/lib/queue/enrichment-batch-cron.ts:49` unused-disable warning.
+- `npm test` passed: 455 tests, 65 suites, 0 failures.
+- `npm run build` passed with the known `unpdf` warning.
+
+### Deploy / release state
+
+- Production/live not deployed.
+- Release approval not requested.
+- Active offline controls remain blocked by D-007.
+- QR pairing remains blocked by D-008.
+- Android package-ID changes remain blocked by D-013.
+- Android mandatory validation remains blocked by no attached device/emulator and missing emulator setup.
+
+## Entry #88 - 2026-06-14 11:42 IST - Final QA/release gate saved; production no-go
+
+### Summary
+
+Saved the final QA and release gate report for the current local scope at `UX_v2/execution/UX_V2_FINAL_QA_RELEASE_GATE_2026-06-14.md`.
+
+### Release verdict
+
+No-go for production/live release.
+
+### Current validation state
+
+- Implemented PRD-06, PRD-10 limited repair, and PRD-14 informational trust copy are locally validated.
+- `npm run typecheck` passed.
+- `npm run lint` passed with the existing `src/lib/queue/enrichment-batch-cron.ts:49` unused-disable warning.
+- `npm test` passed: 455 tests, 65 suites, 0 failures.
+- `npm run build` passed with the known `unpdf` warning.
+
+### Refreshed Android/APK blockers
+
+- `adb devices` cannot run because `adb` is not installed/on PATH.
+- `which emulator` returned `emulator not found`.
+- `npm run build:apk` is blocked by the existing `data/artifacts/brain-debug-v1.0.2-code3.apk` artifact and unchanged `versionName=1.0.2` / `versionCode=3`.
+- Share intent, offline fallback, pairing/token, install/open/relaunch, launcher label/icon, and APK flows cannot be validated without Android tooling and a device/emulator.
+
+### Release gate blockers
+
+- Explicit user release approval has not been granted.
+- Production DB backup has not been performed.
+- Staging/smoke verification has not been performed.
+- Rollback owner/release owner/post-deploy smoke checklist are not confirmed.
+- Open product decisions remain for gated PRD rows.
+
+### Deploy / release state
+
+- Production/live not deployed.
+- Release approval not requested because mandatory Android/APK gates are blocked.
+- Tracker updated with final QA/release state.
+
+## Entry #89 - 2026-06-14 11:45 IST - Completion audit added; goal remains active
+
+### Summary
+
+Added requirement-by-requirement completion audit at `UX_v2/execution/UX_V2_COMPLETION_AUDIT_2026-06-14.md`.
+
+### Audit verdict
+
+The goal is not complete.
+
+### Current status
+
+- PRD-06, PRD-10 limited repair, and PRD-14 informational trust copy are complete locally.
+- PRD-16 evidence is complete for current local scope.
+- Production/live release remains no-go.
+- Local dev server was stopped after QA.
+
+### Remaining blockers
+
+- Android tooling/device access: `adb` and `emulator` unavailable.
+- APK build: duplicate `brain-debug-v1.0.2-code3.apk` artifact/version guard.
+- Product decisions/deferrals still needed for gated PRD rows.
+- Production DB backup, staging smoke, release owner, rollback confirmation, post-deploy checklist, and explicit user release approval remain incomplete.
+
+### Deploy / release state
+
+- Production/live not deployed.
+- Release approval not requested.
+- Tracker updated with completion audit and stopped-server state.
+
+## Entry #90 - 2026-06-14 11:49 IST - Android static APK build evidence improved
+
+### Summary
+
+Investigated the Android/APK blockers further and saved static APK evidence at `UX_v2/execution/ANDROID_APK_STATIC_CHECK_2026-06-14.md`.
+
+### Findings
+
+- `android/local.properties` points to `/opt/homebrew/share/android-commandlinetools`.
+- `adb` exists at `/opt/homebrew/share/android-commandlinetools/platform-tools/adb`, but is not on the default PATH.
+- Absolute-path `adb devices` runs and lists no attached devices.
+- Installed SDK packages include platform-tools, Android 36 platform, and build-tools 35/36.
+- No emulator package/binary or system image is installed under the SDK path.
+- Java 21 is installed at `/opt/homebrew/opt/openjdk@21/libexec/openjdk.jdk/Contents/Home`, but Java 17 is the default JDK.
+
+### Build result
+
+- Direct `./gradlew assembleDebug` failed because Gradle could not find Java 21.
+- Direct `JAVA_HOME=/opt/homebrew/opt/openjdk@21/libexec/openjdk.jdk/Contents/Home ./gradlew assembleDebug` passed.
+- Output APK: `android/app/build/outputs/apk/debug/brain-debug-v1.0.2-code3.apk`.
+- SHA-256: `bec5095b60bed064f33a9995757eb1b3a1193aa5c43b9f8655c3a5c84059f4eb`.
+- Size: 4,699,736 bytes.
+
+### Static APK checks
+
+- Package: `com.arunprakash.brain`.
+- Version: `1.0.2` / code `3`.
+- Label: `AI Memory`.
+- `apksigner verify` passed using APK Signature Scheme v2 with the project debug certificate.
+
+### Remaining blockers
+
+- `npm run build:apk` still refuses to overwrite the existing shared artifact at `data/artifacts/brain-debug-v1.0.2-code3.apk`.
+- No device/emulator is available for install/open/relaunch, share intent, pairing/token, offline fallback, or launcher label/icon validation.
+- Production/live release remains no-go.
+
+## Entry #91 - 2026-06-14 12:12 IST - Android emulator runtime validation executed; release still no-go
+
+### Summary
+
+Installed Android emulator tooling, booted AVD `Brain_API_36`, installed the debug APK, and saved runtime validation evidence at `UX_v2/execution/ANDROID_RUNTIME_CHECK_2026-06-14.md`.
+
+### Tooling / APK state
+
+- Installed SDK packages `emulator` and `system-images;android-36;google_apis;arm64-v8a`.
+- Booted emulator `emulator-5554`; `sys.boot_completed=1`.
+- Direct Gradle rebuild with Java 21 passed after syncing `android/app/src/main/assets/public/offline.html` with the approved PRD-14 `public/offline.html` copy.
+- The generated Android asset folder is ignored by Git; the canonical source is `public/offline.html`. The normal `npm run build:apk` pipeline would run `npx cap sync android`, but the duplicate-version guard exits before that step until versioning/same-version rebuild approval is resolved.
+- Current APK: `android/app/build/outputs/apk/debug/brain-debug-v1.0.2-code3.apk`.
+- Current APK SHA-256: `0c8f9b2f7e820139da2eb9b5b4d2cdbaefb6990dfbdbe747a0e15c86d5bb8604`.
+- Current APK size: 4,703,157 bytes.
+- Static metadata/signature still pass: package `com.arunprakash.brain`, label `AI Memory`, version `1.0.2` / code `3`, debug signature verifies.
+
+### Android runtime findings
+
+- `adb install -r` passed.
+- Package resolves to `com.arunprakash.brain/.MainActivity`.
+- Cold launch and relaunch after force-stop pass.
+- Runtime launch loads current live `https://brain.arunp.in` assets and shows stale `Unlock AI Brain` copy.
+- Text share intent delivery passes; Android starts `MainActivity` with `SEND text/plain`, and the share handler shows a not-paired dialog.
+- Share dialog still says `Brain is not paired yet`, proving the share path is also using stale live web code.
+- Clean app data + first launch offline shows Android WebView native `net::ERR_NAME_NOT_RESOLVED`.
+- After one online visit, offline relaunch shows stale live cached `Brain is not reachable` / `Re-scan QR` fallback copy.
+- The APK itself contains the corrected UX v2 offline asset, but runtime fallback after online visit is controlled by cached live web/offline assets.
+- Direct Android `VIEW https://brain.arunp.in/setup-apk` start lands on live root unlock, so pairing/token validation remains blocked without an authenticated pairing code/path.
+
+### Evidence
+
+- `UX_v2/execution/evidence/android/android-launch-2026-06-14.png`
+- `UX_v2/execution/evidence/android/android-online-after-clean-2026-06-14.png`
+- `UX_v2/execution/evidence/android/android-share-text-online-2026-06-14.png`
+- `UX_v2/execution/evidence/android/android-offline-clean-install-2026-06-14.png`
+- `UX_v2/execution/evidence/android/android-offline-after-online-visit-2026-06-14.png`
+- `UX_v2/execution/evidence/android/android-setup-apk-direct-2026-06-14.png`
+
+### Release verdict
+
+Production/live release remains no-go.
+
+### Remaining blockers
+
+- Android runtime UX v2 cannot pass until updated web/offline assets are deployed to a staging/live target and retested.
+- Pairing/token validation needs an authenticated code-generation path.
+- Full share capture/result validation needs pairing/token access.
+- Clean first-launch offline behavior needs explicit acceptance or a fix; it currently shows native WebView error.
+- `npm run build:apk` still refuses to overwrite the existing shared artifact at `data/artifacts/brain-debug-v1.0.2-code3.apk`.
+- Product decisions/deferrals, production DB backup, staging smoke, release owner, rollback confirmation, post-deploy checklist, and explicit user release approval remain incomplete.
+
+### Deploy / release state
+
+- Production/live not deployed.
+- Release approval not requested.
+- Tracker, final QA report, completion audit, static APK report, and Android runtime report updated.
+
+## Entry #92 - 2026-06-14 12:33 IST - PRD-15 Android first-launch offline fallback fixed locally
+
+### Summary
+
+Closed one concrete Android runtime blocker from Entry #91: clean app data + first launch while offline no longer shows Android WebView's native DNS error. The debug APK now packages Capacitor `server.errorPath: "offline.html"` and shows the branded `AI Memory needs the server` fallback from the bundled asset.
+
+### Implementation
+
+- Updated `capacitor.config.ts` to add `server.errorPath: "offline.html"` with a comment tying the behavior to the approved PRD-15 server-unreachable/offline-before-pairing state.
+- Kept `appName: "AI Memory"` in Capacitor config so generated Android assets match the v2 name.
+- Updated `public/offline.html` recovery links for the Capacitor local fallback origin: when served from `https://localhost` or `http://localhost`, `Retry`, `Library`, and `Pair device` resolve back to `https://brain.arunp.in` instead of staying trapped on the local error page origin.
+- Did not add offline queues, offline Ask, QR pairing, Android package-ID changes, API/auth changes, or storage/schema changes.
+
+### Validation
+
+- `npx cap sync android` passed and generated `android/app/src/main/assets/capacitor.config.json` with `appName: "AI Memory"` plus `server.errorPath: "offline.html"`.
+- `diff -u android/app/src/main/assets/public/offline.html public/offline.html` had no differences after sync.
+- `JAVA_HOME=/opt/homebrew/opt/openjdk@21/libexec/openjdk.jdk/Contents/Home ./gradlew assembleDebug` passed from `android/`.
+- `npm run typecheck` passed.
+- APK signature verification passed.
+- `aapt dump badging` still reports package `com.arunprakash.brain`, label `AI Memory`, version `1.0.2` / code `3`, min SDK `24`, target SDK `36`.
+- Final APK: `android/app/build/outputs/apk/debug/brain-debug-v1.0.2-code3.apk`.
+- Final APK SHA-256: `e6820686bec5b0faaaab2275ce4733339062a5dbedf15f1e91d9edd79387edd0`.
+- Final APK size: `7,862,012 bytes`.
+- Emulator clean app data + no default network + first launch now shows the branded fallback; evidence saved at `UX_v2/execution/evidence/android/android-errorpath-offline-first-launch-2026-06-14.png`.
+- Synced errorPath build still accepts Android text share intents; evidence saved at `UX_v2/execution/evidence/android/android-errorpath-share-online-2026-06-14.png`, but full share capture remains blocked by pairing/live staleness.
+
+### Review / documents
+
+- Created `UX_v2/execution/PRD_15_ENTRY_OFFLINE_CODE_REVIEW_2026-06-14.md`.
+- Updated:
+  - `UX_v2/execution/ANDROID_RUNTIME_CHECK_2026-06-14.md`
+  - `UX_v2/execution/ANDROID_APK_STATIC_CHECK_2026-06-14.md`
+  - `UX_v2/execution/UX_V2_FINAL_QA_RELEASE_GATE_2026-06-14.md`
+  - `UX_v2/execution/UX_V2_COMPLETION_AUDIT_2026-06-14.md`
+  - `UX_v2/execution/UX_V2_EXECUTION_TRACKER.md`
+
+### Remaining release blockers
+
+- Production/live has not been deployed and release approval has not been requested.
+- Android online/share flows still load stale live `AI Brain` / `Brain` assets until web/offline assets are deployed to a staging/live target and retested.
+- Post-online offline behavior still needs cache-clear, online-visit, offline-relaunch validation after live/staging assets are updated.
+- Pairing/token validation remains blocked by missing authenticated code-generation access.
+- Full paired Android share capture/result validation remains blocked by pairing/token access.
+- `npm run build:apk` still refuses to overwrite `data/artifacts/brain-debug-v1.0.2-code3.apk` before `npx cap sync android`; version bump or explicit same-version rebuild approval is still needed for the normal artifact pipeline.
+- Production backup, staging smoke, rollback/release owner confirmation, post-deploy smoke checklist, and explicit user approval remain mandatory before production/live release.
+
+## Entry #93 - 2026-06-14 12:34 IST - Android emulator cleanup confirmed
+
+### Summary
+
+Confirmed the headless Android emulator session exited after `adb emu kill`. `/opt/homebrew/share/android-commandlinetools/platform-tools/adb devices -l` now returns no attached devices. Production/live remains untouched and the UX v2 release verdict remains no-go.
+
+## Entry #94 - 2026-06-14 12:36 IST - APK hash evidence corrected
+
+### Summary
+
+Rechecked the actual APK on disk after the final report sweep. The packaged config and offline page are correct, signature verification passes, and `aapt dump badging` still reports package `com.arunprakash.brain`, label `AI Memory`, version `1.0.2` / code `3`. The current artifact hash/size are:
+
+- SHA-256: `d360f25735180bcac7ad51180788772438a01a7586a9144ce212878786f98e1e`
+- Size: `7,862,055 bytes`
+
+The earlier Entry #92 hash/size values were stale evidence and are corrected forward here. Updated the PRD-15 review, Android runtime/static reports, final QA gate, completion audit, and execution tracker to match the artifact on disk.
+
+## Entry #95 - 2026-06-14 12:52 IST - PRD-15 entry/session/pairing copy polish completed
+
+### Summary
+
+Completed another approved PRD-15 local slice covering entry/session/pairing copy without changing auth semantics or deploying live.
+
+### Implementation
+
+- Updated unauthenticated HTML redirects in `src/proxy.ts` to add `reason=session-expired` while preserving the existing `/unlock?next=...` redirect behavior.
+- Updated `src/app/unlock/page.tsx` to show a concrete session recovery note when `reason=session-expired` is present.
+- Kept setup/unlock on AI Memory branding and changed setup/unlock logo rendering to `unoptimized` so the large local PNG is served directly like the sidebar logo.
+- Updated `src/app/setup-apk/page.tsx` recovery copy from cloud wording to server wording and made expired-code guidance point to Android code generation in Device pairing.
+- Did not change token validation, PIN/session verification, API authorization, QR scanning, camera permission, package ID, storage schema, or production deployment.
+
+### Validation
+
+- `node --import tsx --test src/proxy.test.ts` passed: 17 tests.
+- `node --import tsx --test src/proxy.test.ts src/app/api/settings/device-pairing/route.test.ts src/app/api/settings/device-pairing/exchange/route.test.ts src/app/api/settings/rotate-token/route.test.ts` passed: 32 tests.
+- `npm run typecheck` passed.
+- `npm run lint` passed with the existing `src/lib/queue/enrichment-batch-cron.ts:49` unused-disable warning.
+- `npm run build` passed with the known `unpdf` warning.
+- Browser smoke used throwaway `BRAIN_DB_PATH=/tmp/ai-memory-uxv2-prd15-smoke.sqlite`, created dummy PIN `1234`, verified `/setup`, `/unlock?next=%2Fitems%2Fabc&reason=session-expired`, and `/setup-apk`, then removed the temp DB files.
+- Browser smoke confirmed setup/unlock logo image exists at `/ai-memory-logo.png`, unlock shows the session recovery note, no `Unlock AI Brain` heading is visible, `/setup-apk` has pairing-code copy, no QR/re-scan copy, no legacy cloud copy, and browser warning/error logs were empty.
+
+### Documents updated
+
+- Created `UX_v2/execution/PRD_15_ENTRY_SESSION_COPY_REVIEW_2026-06-14.md`.
+- Updated:
+  - `UX_v2/execution/UX_V2_EXECUTION_TRACKER.md`
+  - `UX_v2/execution/UX_V2_FINAL_QA_RELEASE_GATE_2026-06-14.md`
+  - `UX_v2/execution/UX_V2_COMPLETION_AUDIT_2026-06-14.md`
+
+### Remaining release blockers
+
+- Production/live not deployed and release approval not requested.
+- Full Android online/share/pairing validation still requires updated staging/live web assets and authenticated pairing-code access.
+- Post-online Android offline behavior still needs cache-clear/online-visit/offline-relaunch retest after staging/live assets are updated.
+- `npm run build:apk` artifact guard, production backup, staging smoke, rollback/release owner confirmation, post-deploy smoke checklist, and explicit user approval remain open.
+
+## Entry #96 - 2026-06-14 12:56 IST - PRD-15 QR/camera manifest comment corrected
+
+### Summary
+
+Completed the PRD-15 requirement to document the Android camera/QR mismatch as technical debt without changing Android behavior.
+
+### Done
+
+- Updated `android/app/src/main/AndroidManifest.xml` comments above `CAMERA` permission.
+- Removed stale implementation claims that the setup screen uses `navigator.mediaDevices`, streams camera frames, and decodes QR with `jsqr`.
+- Added a D-008 note that pairing is currently code-entry only, QR must not be promised unless implemented and validated, and camera permission should not be removed without an Android migration/release decision.
+- Left `android.permission.CAMERA`, `android.hardware.camera required=false`, package ID, and all runtime behavior unchanged.
+
+### Validation
+
+- Text audit found no stale QR implementation promises in `android/app/src/main/AndroidManifest.xml`, `src/app/setup-apk`, `src/app/settings/device-pairing`, or `public/offline.html`.
+- Updated `UX_v2/execution/PRD_15_ENTRY_SESSION_COPY_REVIEW_2026-06-14.md`, `UX_v2/execution/UX_V2_EXECUTION_TRACKER.md`, and `UX_v2/execution/UX_V2_FINAL_QA_RELEASE_GATE_2026-06-14.md`.
+
+### Release state
+
+Production/live remains untouched. PRD-15 local copy/documentation slices are stronger, but Android pairing/share/live/staging release gates remain blocked as previously documented.
+
+## Entry #97 - 2026-06-14 13:03 IST - PRD-16 APK build pipeline validation improved
+
+### Summary
+
+Moved the APK release-gate forward without publishing a new shared APK. `npm run build:apk` now validates typecheck, Next build, Capacitor sync, and Gradle before stopping at the existing same-version shared-artifact guard.
+
+### Implementation
+
+- Updated `scripts/build-apk.sh` so the duplicate `data/artifacts/brain-debug-v1.0.2-code3.apk` guard runs at the copy/publication step instead of before validation.
+- Added verified Java 21 discovery to `scripts/build-apk.sh`: existing `JAVA_HOME` is used only if it points to Java 21; otherwise the script searches macOS/Homebrew Java 21 locations.
+- Did not bump `versionName`/`versionCode`.
+- Did not overwrite `data/artifacts/brain-debug-v1.0.2-code3.apk`.
+- Did not deploy production/live.
+
+### Validation
+
+- `bash -n scripts/build-apk.sh` passed.
+- `npm run build:apk` selected Java 21 at `/opt/homebrew/opt/openjdk@21/libexec/openjdk.jdk/Contents/Home`.
+- `npm run build:apk` passed script-internal typecheck, `npm run build` with the known `unpdf` warning, `npx cap sync android`, and Gradle `assembleDebug`.
+- `npm run build:apk` exited non-zero only at the intended publication guard: existing shared artifact would not be overwritten.
+- Current Gradle output: `android/app/build/outputs/apk/debug/brain-debug-v1.0.2-code3.apk`.
+- Current Gradle output SHA-256: `4d37853615c3b4aee26ab6827dc884a2a0eef77e2e1a30a4737c945b0b678245`.
+- Current Gradle output size: `7,862,055 bytes`.
+- Shared artifact remained unchanged: `data/artifacts/brain-debug-v1.0.2-code3.apk`, SHA-256 `6ac0bad378c3b214c1b3d32517be685ed1e079054c41fff371fe65fbc6e1753f`, size `4,258,136 bytes`.
+- `apksigner verify --verbose --print-certs` passed for the current Gradle output.
+- `aapt dump badging` still reports package `com.arunprakash.brain`, label `AI Memory`, version `1.0.2` / code `3`, min SDK `24`, target SDK `36`.
+- APK packaged config still contains `server.errorPath: "offline.html"` and the bundled offline page still contains the AI Memory fallback copy.
+
+### Documents updated
+
+- Created `UX_v2/execution/PRD_16_BUILD_APK_PIPELINE_REVIEW_2026-06-14.md`.
+- Updated `UX_v2/execution/UX_V2_FINAL_QA_RELEASE_GATE_2026-06-14.md`, `UX_v2/execution/ANDROID_APK_STATIC_CHECK_2026-06-14.md`, `UX_v2/execution/ANDROID_RUNTIME_CHECK_2026-06-14.md`, `UX_v2/execution/UX_V2_EXECUTION_TRACKER.md`, and `UX_v2/execution/UX_V2_COMPLETION_AUDIT_2026-06-14.md`.
+
+### Remaining release blockers
+
+- Shared APK publication still needs an Android version bump or explicit same-version publication approval.
+- Current Gradle output has not been reinstalled on emulator after this script change.
+- Live/staging web assets, pairing/token validation, full Android share capture/result validation, production backup, release owner, rollback confirmation, post-deploy smoke checklist, and explicit user release approval remain open.
+
+## Entry #98 - 2026-06-14 13:07 IST - Latest local APK emulator validation refreshed
+
+### Summary
+
+Closed the Entry #97 runtime-evidence gap by installing and exercising the latest local Gradle APK output on the Android emulator. Production/live was not deployed, the shared APK artifact was not overwritten, and release remains no-go.
+
+### Validation
+
+- Booted headless AVD `Brain_API_36` from `/opt/homebrew/share/android-commandlinetools/emulator/emulator`.
+- Installed current Gradle output `android/app/build/outputs/apk/debug/brain-debug-v1.0.2-code3.apk`.
+- Latest runtime-tested APK SHA-256: `4d37853615c3b4aee26ab6827dc884a2a0eef77e2e1a30a4737c945b0b678245`.
+- `adb install -r` passed.
+- `pm list packages com.arunprakash.brain` returned `package:com.arunprakash.brain`.
+- `cmd package resolve-activity --brief com.arunprakash.brain` resolved `com.arunprakash.brain/.MainActivity`.
+- Online cold launch and force-stop relaunch passed mechanically, but still rendered stale live `Unlock AI Brain` copy because the Android WebView loads `https://brain.arunp.in`.
+- Clean app data + no active default network + first launch passed the PRD-15 local fallback check: the bundled page shows `AI Memory needs the server`, `Cannot reach AI Memory`, and `Pair device`.
+- `SEND text/plain` share intent delivery to `MainActivity` passed for the current APK. The runtime dialog still says `Brain is not paired yet`, confirming the share path remains blocked by stale live assets and missing pairing-token validation.
+- Emulator was stopped with `adb emu kill`; `adb devices -l` returned no attached devices afterward.
+- No local dev server, Gradle, emulator, or Capacitor sync process remains running.
+
+### Evidence
+
+- `UX_v2/execution/evidence/android/android-latest-apk-online-launch-2026-06-14.png`
+- `UX_v2/execution/evidence/android/android-latest-apk-online-relaunch-2026-06-14.png`
+- `UX_v2/execution/evidence/android/android-latest-apk-offline-first-launch-2026-06-14.png`
+- `UX_v2/execution/evidence/android/android-latest-apk-share-text-2026-06-14.png`
+- XML dumps saved for online/offline inspection:
+  - `UX_v2/execution/evidence/android/window-online-latest-apk-2026-06-14.xml`
+  - `UX_v2/execution/evidence/android/window-latest-apk-offline-first-launch-2026-06-14.xml`
+
+### Documents updated
+
+- `UX_v2/execution/ANDROID_RUNTIME_CHECK_2026-06-14.md` now records the latest runtime-tested APK hash and evidence.
+- `UX_v2/execution/UX_V2_FINAL_QA_RELEASE_GATE_2026-06-14.md` now states that current local Gradle APK install/open/relaunch/share/offline mechanics pass while release remains blocked.
+- `UX_v2/execution/UX_V2_COMPLETION_AUDIT_2026-06-14.md` now points at Entry #98 and the latest runtime evidence.
+- `UX_v2/execution/UX_V2_EXECUTION_TRACKER.md` now distinguishes the earlier `d360f257...` evidence from the latest `4d378536...` current Gradle output and removes stale “not reinstalled” wording.
+
+### Remaining release blockers
+
+- Shared APK publication still needs a versionName/versionCode bump or explicit same-version publication approval.
+- Live/staging web/offline assets still need approved deployment before Android online/share/post-online-offline UX v2 validation can pass.
+- Pairing/token validation still needs an authenticated pairing-code path.
+- Full paired Android share capture/result validation remains blocked.
+- Production DB backup, staging smoke, rollback/release owner confirmation, post-deploy smoke checklist, product decision deferrals, and explicit user release approval remain mandatory before production/live release.
+
+## Entry #99 - 2026-06-14 13:17 IST - UX v2 release approval packet created
+
+### Summary
+
+Converted the remaining PRD-16 release gate into an operator-ready approval packet without deploying production/live, publishing the shared APK, or treating blocked Android checks as accepted.
+
+### Done
+
+- Inspected `scripts/deploy.sh`, `scripts/backup-offsite.sh`, `scripts/restore-from-backup.sh`, `scripts/deploy/brain.service`, `scripts/deploy/cutover.sh`, `.env.example`, and README deployment/APK notes.
+- Created `UX_v2/execution/UX_V2_RELEASE_APPROVAL_PACKET_2026-06-14.md`.
+- The packet records:
+  - current branch/baseline/worktree state
+  - deploy defaults (`https://brain.arunp.in`, SSH alias `brain`, remote dir `/opt/brain`)
+  - current Gradle APK and shared APK hashes
+  - release blockers by severity
+  - pre-deploy approval checklist
+  - production SQLite backup command pattern
+  - off-site backup trigger if configured
+  - rollback requirements and restore command pattern
+  - production deploy command using `scripts/deploy.sh`
+  - post-deploy smoke checklist
+  - APK publication decision options
+  - exact approval prompt required before release
+- Updated `UX_v2/execution/UX_V2_EXECUTION_TRACKER.md` with a release approval packet task and deploy-state link.
+- Updated `UX_v2/execution/UX_V2_FINAL_QA_RELEASE_GATE_2026-06-14.md` to reference the packet while keeping the release verdict no-go.
+- Updated `UX_v2/execution/UX_V2_COMPLETION_AUDIT_2026-06-14.md` to reference the packet and clarify that the remaining Android evidence is staging/live pairing/share/post-online-offline evidence, not generic local APK evidence.
+
+### Validation
+
+- `rg` confirmed the release packet is linked from the tracker, final QA gate, and completion audit.
+- `git diff --check -- UX_v2/execution/UX_V2_RELEASE_APPROVAL_PACKET_2026-06-14.md UX_v2/execution/UX_V2_EXECUTION_TRACKER.md UX_v2/execution/UX_V2_FINAL_QA_RELEASE_GATE_2026-06-14.md UX_v2/execution/UX_V2_COMPLETION_AUDIT_2026-06-14.md RUNNING_LOG.md` passed.
+- Checked the new release packet for non-ASCII characters; none found.
+- `/opt/homebrew/share/android-commandlinetools/platform-tools/adb devices -l` returned no attached devices.
+- No `next dev`, Gradle, emulator, Capacitor sync process, or local port 3000 listener remains running.
+
+### Release state
+
+- Production/live not deployed.
+- Shared APK artifact not overwritten.
+- Explicit release approval not granted.
+- Release verdict remains no-go.
+
+### Remaining release blockers
+
+- User/product decisions or explicit deferrals for D-001 through D-008, D-013, and D-014.
+- Explicit approval for staging deploy, production deploy, APK publication, or accepted deploy-ready status.
+- Release owner, staging target or accepted skip rationale, production backup, rollback source, and post-deploy smoke owner.
+- Pairing-code/token validation path for Android.
+- Staging/live deployment of UX v2 web/offline assets followed by Android online launch, share, pairing, and post-online offline validation.
+- APK publication decision: version bump versus explicit same-version publication approval.
+
+## Entry #100 - 2026-06-14 13:22 IST - UX v2 open decisions approval packet created
+
+### Summary
+
+Converted the remaining final-plan product decisions into an explicit approval/deferral packet. This reduces release ambiguity but does not close any decision, approve deferred behavior, deploy production/live, or publish a shared APK.
+
+### Done
+
+- Read the final-plan decision sources:
+  - `UX_v2/UX_Final_Plan/trackers/open_questions_decisions.md`
+  - `UX_v2/UX_Final_Plan/trackers/prd_tracker.md`
+  - `UX_v2/UX_Final_Plan/01_FINAL_ROADMAP_AND_EXECUTION_PLAN.md`
+  - `UX_v2/UX_Final_Plan/02_FINAL_FEATURE_CLASSIFICATION_AND_GAP_ANALYSIS.md`
+  - `UX_v2/UX_Final_Plan/trackers/risks_blockers_decisions_tracker.md`
+- Created `UX_v2/execution/UX_V2_OPEN_DECISIONS_APPROVAL_PACKET_2026-06-14.md`.
+- The packet offers:
+  - Decision Bundle A: recommended UX v2 release deferrals for D-001 through D-014.
+  - Decision Bundle B: follow-up implementation tracks if Arun/Product wants specific decision-gated work before release.
+  - Approval prompts for accepting deferrals or approving specific follow-up IDs.
+  - A warning that this does not approve production deploy, APK publication, or code for deferred items.
+- Updated `UX_v2/execution/UX_V2_EXECUTION_TRACKER.md` with an open-decisions approval-packet task.
+- Updated `UX_v2/execution/UX_V2_RELEASE_APPROVAL_PACKET_2026-06-14.md` so release approval asks for product decision handling.
+- Updated `UX_v2/execution/UX_V2_FINAL_QA_RELEASE_GATE_2026-06-14.md` and `UX_v2/execution/UX_V2_COMPLETION_AUDIT_2026-06-14.md` to reference the new decision packet and keep the release verdict no-go.
+
+### Validation
+
+- `rg` confirmed the open-decisions packet is linked from the release packet, tracker, final QA gate, and completion audit.
+- `git diff --check -- UX_v2/execution/UX_V2_OPEN_DECISIONS_APPROVAL_PACKET_2026-06-14.md UX_v2/execution/UX_V2_RELEASE_APPROVAL_PACKET_2026-06-14.md UX_v2/execution/UX_V2_EXECUTION_TRACKER.md UX_v2/execution/UX_V2_FINAL_QA_RELEASE_GATE_2026-06-14.md UX_v2/execution/UX_V2_COMPLETION_AUDIT_2026-06-14.md RUNNING_LOG.md` passed.
+- Checked the new packet for non-ASCII characters; none found.
+
+### Release state
+
+- Production/live not deployed.
+- Shared APK artifact not overwritten.
+- Explicit release approval not granted.
+- Product decision deferrals/approvals not granted.
+- Release verdict remains no-go.
+
+### Remaining release blockers
+
+- Arun/Product must accept Decision Bundle A or approve specific follow-up decision IDs before gated features can be treated as deferred or reopened.
+- Release approval packet still needs explicit deploy/APK approval, release owner, staging/smoke or accepted skip, production backup, rollback source, pairing validation path, post-deploy smoke owner, and APK publication decision.
+- Android live/staging pairing/share/post-online-offline evidence remains blocked until web/offline assets are deployed to a target with approval and a pairing-token path exists.
+
+## Entry #101 - 2026-06-14 13:29 IST - UX v2 release candidate change manifest created
+
+### Summary
+
+Reduced the release-commit hygiene blocker by creating a release candidate change manifest. The manifest documents what belongs to the current approved UX v2 candidate, what is evidence-only, what is mixed and needs patch review, and what is decision-gated or unrelated. No files were staged or committed.
+
+### Done
+
+- Inspected current git state:
+  - `git diff --name-only | wc -l` -> 92 tracked modified paths.
+  - `git ls-files --others --exclude-standard | wc -l` -> 318 untracked paths.
+  - `git ls-files --others --exclude-standard UX_v2/execution | wc -l` -> 43 untracked UX v2 execution paths.
+- Read `UX_v2/execution/UX_V2_BASELINE_AND_AUDIT.md` and `UX_v2/execution/UX_V2_EXECUTION_TRACKER.md` to cross-check baseline dirty-state notes and approved slice ownership.
+- Created `UX_v2/execution/UX_V2_RELEASE_CANDIDATE_CHANGE_MANIFEST_2026-06-14.md`.
+- The manifest separates:
+  - UX v2 evidence bundle.
+  - Approved local code bundle for PRD-06, PRD-10 limited repair, PRD-14, PRD-15, and PRD-16.
+  - Mixed files that require patch review before staging.
+  - Decision-gated/unapproved files that must not be swept into a release commit.
+  - Public asset bundle requiring separate branding review.
+  - Suggested selective review/staging sequence.
+- Updated:
+  - `UX_v2/execution/UX_V2_EXECUTION_TRACKER.md`
+  - `UX_v2/execution/UX_V2_RELEASE_APPROVAL_PACKET_2026-06-14.md`
+  - `UX_v2/execution/UX_V2_FINAL_QA_RELEASE_GATE_2026-06-14.md`
+  - `UX_v2/execution/UX_V2_COMPLETION_AUDIT_2026-06-14.md`
+
+### Validation
+
+- `rg` confirmed the manifest is linked from the release packet, tracker, final QA gate, and completion audit.
+- `git diff --check -- UX_v2/execution/UX_V2_RELEASE_CANDIDATE_CHANGE_MANIFEST_2026-06-14.md UX_v2/execution/UX_V2_RELEASE_APPROVAL_PACKET_2026-06-14.md UX_v2/execution/UX_V2_EXECUTION_TRACKER.md UX_v2/execution/UX_V2_FINAL_QA_RELEASE_GATE_2026-06-14.md UX_v2/execution/UX_V2_COMPLETION_AUDIT_2026-06-14.md RUNNING_LOG.md` passed before this log append.
+- Checked the manifest for non-ASCII characters; none found.
+
+### Release state
+
+- Production/live not deployed.
+- Shared APK artifact not overwritten.
+- No staging, commit, branch push, or PR created.
+- Release verdict remains no-go.
+
+### Remaining release blockers
+
+- Selective staging/review and a release commit still need to be done before any deploy, unless Arun explicitly approves deploying from the dirty worktree.
+- Product decision deferrals/approvals remain open.
+- Release approval packet still needs explicit deploy/APK approval, release owner, staging/smoke or accepted skip, production backup, rollback source, pairing validation path, post-deploy smoke owner, and APK publication decision.
+- Android live/staging pairing/share/post-online-offline evidence remains blocked until web/offline assets are deployed to a target with approval and a pairing-token path exists.
+
+## Entry #102 - 2026-06-14 13:36 IST - UX v2 scoped integration review completed; P2 repair-action copy fixed
+
+### Summary
+
+Completed a scoped integration review of the approved local UX v2 slices: PRD-06-FU, PRD-10 limited repair, PRD-14 informational trust copy, PRD-15 entry/session/offline fallback, and PRD-16 APK/release-gate evidence. This was intentionally scoped to the approved local slices instead of the entire dirty worktree.
+
+### Done
+
+- Reviewed the capture result contract, capture routes, Android share parser, item banners, limited repair flow, trust/offline/session copy, Android entrypoints, and APK build script.
+- Found one P2 issue in `src/app/items/[id]/repair/actions.ts`: unexpected repair exceptions could be returned directly to the form.
+- Fixed the P2 by logging unexpected repair failures through `logError()` as `repair.item.unexpected-failure` and returning a generic user-facing retry message. Expected `RepairItemError` validation messages still show normally.
+- Saved the scoped review report:
+  - `UX_v2/execution/UX_V2_INTEGRATION_REVIEW_2026-06-14.md`
+- Updated:
+  - `UX_v2/execution/UX_V2_EXECUTION_TRACKER.md`
+  - `UX_v2/execution/UX_V2_FINAL_QA_RELEASE_GATE_2026-06-14.md`
+  - `UX_v2/execution/UX_V2_COMPLETION_AUDIT_2026-06-14.md`
+
+### Validation
+
+- `node --import tsx --test src/lib/capture/result.test.ts src/lib/repair/item-repair.test.ts src/proxy.test.ts` passed: 23 tests, 5 suites.
+- `node --import tsx --test src/app/api/capture/url/route.test.ts src/app/api/capture/note/route.test.ts src/app/api/capture/pdf/route.test.ts` passed: 16 tests, 3 suites.
+- `npm run typecheck` passed.
+- `bash -n scripts/build-apk.sh` passed.
+
+### Release state
+
+- Production/live not deployed.
+- Shared APK artifact not overwritten.
+- No staging, commit, branch push, or PR created.
+- No open P0/P1/P2 findings remain in the approved local slices reviewed in this pass.
+- Release verdict remains no-go.
+
+### Remaining release blockers
+
+- Selective staging/review and a release commit still need to be done before any deploy, unless Arun explicitly approves deploying from the dirty worktree.
+- Product decision deferrals/approvals remain open.
+- Release approval packet still needs explicit deploy/APK approval, release owner, staging/smoke or accepted skip, production backup, rollback source, pairing validation path, post-deploy smoke owner, and APK publication decision.
+- Android live/staging pairing/share/post-online-offline evidence remains blocked until web/offline assets are deployed to a target with approval and a pairing-token path exists.
+
+## Entry #103 - 2026-06-14 13:41 IST - UX v2 selective staging review completed
+
+### Summary
+
+Reduced the release-commit hygiene blocker by reviewing the current dirty tree against the release-candidate manifest and identifying which files are safe to stage now versus which must be split or owner-approved first. No production/live deploy was attempted.
+
+### Done
+
+- Rechecked branch and baseline:
+  - Branch: `codex/ai-brain-ux-v2-execution`
+  - HEAD: `c33166e4c9b9a3af86165b1b83aaea355174ccd7`
+- Re-read `UX_v2/execution/UX_V2_RELEASE_CANDIDATE_CHANGE_MANIFEST_2026-06-14.md` and current git status.
+- Inspected mixed approved-code diffs:
+  - `src/app/items/[id]/page.tsx` mixes approved PRD-06/10 work with focus mode, topics, and broader item-detail changes.
+  - `src/db/items.ts` mixes approved Needs Upgrade helpers with broader library filters and ordered lookup helpers.
+  - `src/db/items.test.ts` mixes approved Needs Upgrade coverage with broader library filter/tag/order tests.
+- Confirmed `RUNNING_LOG.md` is not safe to stage whole-file because the diff relative to HEAD shows thousands of deletions as well as additions.
+- Created `UX_v2/execution/UX_V2_SELECTIVE_STAGING_REVIEW_2026-06-14.md`.
+- Updated:
+  - `UX_v2/execution/UX_V2_EXECUTION_TRACKER.md`
+  - `UX_v2/execution/UX_V2_FINAL_QA_RELEASE_GATE_2026-06-14.md`
+  - `UX_v2/execution/UX_V2_COMPLETION_AUDIT_2026-06-14.md`
+  - `UX_v2/execution/UX_V2_RELEASE_CANDIDATE_CHANGE_MANIFEST_2026-06-14.md`
+
+### Staging verdict
+
+- Safe to stage as evidence-only:
+  - `UX_v2/execution/**`
+- Do not stage whole-file yet:
+  - `RUNNING_LOG.md`
+  - `ROADMAP_TRACKER.md`
+  - `src/app/items/[id]/page.tsx`
+  - `src/db/items.ts`
+  - `src/db/items.test.ts`
+  - Android/public branding assets
+  - `android/app/build.gradle`
+
+### Release state
+
+- Production/live not deployed.
+- Shared APK artifact not overwritten.
+- No release code commit created.
+- Release verdict remains no-go.
+
+### Remaining release blockers
+
+- Approved code files must be patch-split or reconstructed on a clean branch before a safe release code commit can be made.
+- `RUNNING_LOG.md` needs append-only staging reconstruction or owner approval before staging.
+- Product decision deferrals/approvals remain open.
+- Release approval packet still needs explicit deploy/APK approval, release owner, staging/smoke or accepted skip, production backup, rollback source, pairing validation path, post-deploy smoke owner, and APK publication decision.
+- Android live/staging pairing/share/post-online-offline evidence remains blocked until web/offline assets are deployed to a target with approval and a pairing-token path exists.
+
+## Entry #104 - 2026-06-14 13:45 IST - UX v2 evidence bundle staged
+
+### Summary
+
+Staged the isolated UX v2 evidence package only. Code files, root logs, roadmap, Android/public branding assets, and APK version files remain unstaged.
+
+### Done
+
+- Ran `git diff --check -- UX_v2/execution RUNNING_LOG.md` successfully before staging.
+- Staged `UX_v2/execution/**` only.
+- The staged bundle contains 46 files: reports, approval packets, QA/audit artifacts, Android evidence, and screenshots.
+- Initial staged whitespace check caught Markdown hard-break trailing spaces in evidence docs; those were mechanically normalized in `UX_v2/execution/*.md`.
+- Re-staged `UX_v2/execution/**`.
+- Updated staged evidence docs to say the evidence bundle is now staged:
+  - `UX_v2/execution/UX_V2_EXECUTION_TRACKER.md`
+  - `UX_v2/execution/UX_V2_FINAL_QA_RELEASE_GATE_2026-06-14.md`
+  - `UX_v2/execution/UX_V2_COMPLETION_AUDIT_2026-06-14.md`
+  - `UX_v2/execution/UX_V2_RELEASE_CANDIDATE_CHANGE_MANIFEST_2026-06-14.md`
+  - `UX_v2/execution/UX_V2_SELECTIVE_STAGING_REVIEW_2026-06-14.md`
+
+### Validation
+
+- `git diff --cached --check -- UX_v2/execution` passed after normalization.
+- `git diff --cached --stat -- UX_v2/execution` shows 46 staged evidence files and 2,529 inserted text lines plus binary evidence files.
+
+### Release state
+
+- Production/live not deployed.
+- Shared APK artifact not overwritten.
+- No code staged.
+- No commit created.
+- Release verdict remains no-go.
+
+### Remaining release blockers
+
+- Approved code files must be patch-split or reconstructed on a clean branch before a safe release code commit can be made.
+- `RUNNING_LOG.md` remains unstaged because its whole-file diff is not append-only relative to HEAD.
+- Product decision deferrals/approvals remain open.
+- Release approval packet still needs explicit deploy/APK approval, release owner, staging/smoke or accepted skip, production backup, rollback source, pairing validation path, post-deploy smoke owner, and APK publication decision.
+
+## Entry #105 - 2026-06-14 13:50 IST - UX v2 PRD-06/14/15/16 code tranche staged
+
+### Summary
+
+Staged the first whole-file code tranche that is cleanly tied to approved UX v2 scope. This tranche covers PRD-06 capture result contract/API/share compatibility, PRD-14 informational trust copy, PRD-15 entry/session/offline fallback copy, and PRD-16 APK build-pipeline validation. It does not stage PRD-10 repair/Needs Upgrade mixed files yet.
+
+### Done
+
+- Staged:
+  - `src/lib/capture/result.ts`
+  - `src/lib/capture/result.test.ts`
+  - `src/app/api/capture/url/route.ts`
+  - `src/app/api/capture/url/route.test.ts`
+  - `src/app/api/capture/note/route.ts`
+  - `src/app/api/capture/note/route.test.ts`
+  - `src/app/api/capture/pdf/route.ts`
+  - `src/app/api/capture/pdf/route.test.ts`
+  - `src/app/capture-actions.ts`
+  - `src/components/share-handler.tsx`
+  - `src/lib/capture/quality.ts`
+  - `src/lib/capture/quality.test.ts`
+  - `src/lib/settings/trust-copy.ts`
+  - `src/app/settings/page.tsx`
+  - `public/offline.html`
+  - `src/proxy.ts`
+  - `src/proxy.test.ts`
+  - `src/app/unlock/page.tsx`
+  - `src/app/setup/page.tsx`
+  - `src/app/setup-apk/page.tsx`
+  - `capacitor.config.ts`
+  - `android/app/src/main/AndroidManifest.xml`
+  - `scripts/build-apk.sh`
+  - `public/ai-memory-logo.png`
+- Created `UX_v2/execution/UX_V2_CODE_STAGING_REVIEW_2026-06-14.md`.
+- Updated:
+  - `UX_v2/execution/UX_V2_EXECUTION_TRACKER.md`
+  - `UX_v2/execution/UX_V2_FINAL_QA_RELEASE_GATE_2026-06-14.md`
+  - `UX_v2/execution/UX_V2_COMPLETION_AUDIT_2026-06-14.md`
+  - `UX_v2/execution/UX_V2_RELEASE_CANDIDATE_CHANGE_MANIFEST_2026-06-14.md`
+  - `UX_v2/execution/UX_V2_SELECTIVE_STAGING_REVIEW_2026-06-14.md`
+
+### Validation
+
+- `npm run typecheck` passed.
+- `node --import tsx --test src/lib/capture/result.test.ts src/proxy.test.ts src/app/api/capture/url/route.test.ts src/app/api/capture/note/route.test.ts src/app/api/capture/pdf/route.test.ts` passed: 37 tests, 8 suites.
+- `bash -n scripts/build-apk.sh` passed.
+- `git diff --cached --check` passed before this log append.
+
+### Release state
+
+- Production/live not deployed.
+- Shared APK artifact not overwritten.
+- No commit created.
+- Release verdict remains no-go.
+
+### Remaining release blockers
+
+- PRD-10 repair/Needs Upgrade staging still needs patch splitting or clean reconstruction across mixed files, especially `src/app/items/[id]/page.tsx`, `src/db/items.ts`, and `src/db/items.test.ts`.
+- `RUNNING_LOG.md` remains unstaged because its whole-file diff is not append-only relative to HEAD.
+- Product decision deferrals/approvals remain open.
+- Release approval packet still needs explicit deploy/APK approval, release owner, staging/smoke or accepted skip, production backup, rollback source, pairing validation path, post-deploy smoke owner, and APK publication decision.
+
+## Entry #106 - 2026-06-14 13:55 IST - UX v2 PRD-10 direct repair tranche staged
+
+### Summary
+
+Reduced the PRD-10 release-commit blocker by staging the direct item repair route and helper separately from the mixed Needs Upgrade, item-detail, topics, and broader library changes. No production/live deploy was attempted.
+
+### Done
+
+- Reviewed the staged PRD-10 direct repair path:
+  - `src/lib/repair/item-repair.ts`
+  - `src/app/items/[id]/repair/actions.ts`
+  - `src/app/items/[id]/repair/page.tsx`
+  - `src/app/items/[id]/repair/repair-form.tsx`
+- Updated `src/lib/repair/item-repair.ts` so it only deletes from `item_topics` when that table exists. This avoids requiring the unapproved topics migration for the staged direct repair path.
+- Confirmed the repair action logs unexpected failures with `logError()` and returns generic retry copy while preserving expected `RepairItemError` validation messages.
+- Updated:
+  - `UX_v2/execution/UX_V2_CODE_STAGING_REVIEW_2026-06-14.md`
+  - `UX_v2/execution/UX_V2_SELECTIVE_STAGING_REVIEW_2026-06-14.md`
+  - `UX_v2/execution/UX_V2_EXECUTION_TRACKER.md`
+  - `UX_v2/execution/UX_V2_FINAL_QA_RELEASE_GATE_2026-06-14.md`
+  - `UX_v2/execution/UX_V2_COMPLETION_AUDIT_2026-06-14.md`
+  - `UX_v2/execution/UX_V2_RELEASE_CANDIDATE_CHANGE_MANIFEST_2026-06-14.md`
+
+### Validation
+
+- `node --import tsx --test src/lib/repair/item-repair.test.ts` passed: 2 tests.
+- `npm run typecheck` passed.
+
+### Release state
+
+- Production/live not deployed.
+- Shared APK artifact not overwritten.
+- No commit created.
+- Release verdict remains no-go.
+
+### Remaining release blockers
+
+- PRD-10 Needs Upgrade page, item-detail repair banners/links, and DB helper/test split work still need patch splitting or clean reconstruction before a safe release code commit.
+- `RUNNING_LOG.md` remains unstaged because its whole-file diff is not append-only relative to HEAD.
+- Product decision deferrals/approvals remain open.
+- Release approval packet still needs explicit deploy/APK approval, release owner, staging/smoke or accepted skip, production backup, rollback source, pairing validation path, post-deploy smoke owner, and APK publication decision.
+- Android live/staging pairing/share/post-online-offline evidence remains blocked until web/offline assets are deployed to a target with approval and a pairing-token path exists.
+
+## Entry #107 - 2026-06-14 14:08 IST - UX v2 approved PRD-10 split staged and staged-index validated
+
+### Summary
+
+Closed the PRD-10 code-splitting blocker for the approved local slice by staging approved-only Needs Upgrade, item-detail, DB helper, and repair-test content in the index while leaving broader working-tree topics, focus mode, and library-filter work unstaged. No production/live deploy was attempted.
+
+### Done
+
+- Re-read the PRD-10 approved package and current mixed diffs.
+- Staged approved-only index content for:
+  - `src/app/needs-upgrade/page.tsx`
+  - `src/app/items/[id]/page.tsx`
+  - `src/db/items.ts`
+  - `src/db/items.test.ts`
+  - `src/lib/repair/item-repair.test.ts`
+  - `src/lib/repair/item-repair.test.setup.ts`
+- Kept unapproved topics schema/UI/db helpers, focus mode, broader library filters, Android/public branding assets, APK version metadata, `ROADMAP_TRACKER.md`, and non-append `RUNNING_LOG.md` whole-file diff unstaged.
+- Updated:
+  - `UX_v2/execution/UX_V2_CODE_STAGING_REVIEW_2026-06-14.md`
+  - `UX_v2/execution/UX_V2_SELECTIVE_STAGING_REVIEW_2026-06-14.md`
+  - `UX_v2/execution/UX_V2_EXECUTION_TRACKER.md`
+  - `UX_v2/execution/UX_V2_FINAL_QA_RELEASE_GATE_2026-06-14.md`
+  - `UX_v2/execution/UX_V2_COMPLETION_AUDIT_2026-06-14.md`
+  - `UX_v2/execution/UX_V2_RELEASE_CANDIDATE_CHANGE_MANIFEST_2026-06-14.md`
+
+### Validation
+
+- `git diff --cached --check` passed.
+- Temporary staged-index checkout `npm run typecheck` passed.
+- Temporary staged-index checkout focused PRD-06/10/14/15 capture/proxy/API tests passed: 47 tests, 9 suites.
+- Temporary staged-index checkout `bash -n scripts/build-apk.sh` passed.
+- Temporary staged-index checkout `npm run lint` passed with two existing unused-disable warnings.
+- Temporary staged-index checkout `npm run build` passed with the known `unpdf` warning.
+- Temporary staged-index checkout with Git metadata `npm test` passed: 445 tests, 65 suites.
+
+### Release state
+
+- Production/live not deployed.
+- Shared APK artifact not overwritten.
+- No commit created.
+- Release verdict remains no-go.
+
+### Remaining release blockers
+
+- Create and review a release commit from the staged approved bundle; do not sweep in working-tree-only topics/focus/library-filter deltas or the non-append root running-log diff.
+- Product decision deferrals/approvals remain open.
+- Release approval packet still needs explicit deploy/APK approval, release owner, staging/smoke or accepted skip, production backup, rollback source, pairing validation path, post-deploy smoke owner, and APK publication decision.
+- Android live/staging pairing/share/post-online-offline evidence remains blocked until web/offline assets are deployed to a target with approval and a pairing-token path exists.
+
+## Entry #108 - 2026-06-14 14:14 IST - UX v2 local release-candidate commit created and reviewed
+
+### Summary
+
+Created a local release-candidate commit from the staged approved UX v2 bundle and saved a post-commit review report. No production/live deploy, push, PR, or shared APK publication was attempted.
+
+### Done
+
+- Created commit:
+  - `ef0b2e2 feat(ux-v2): stage approved local release candidate`
+- Confirmed the commit includes the approved PRD-06/10/14/15/16 local code bundle, UX v2 execution evidence, Android evidence, and append-only root running-log reconstruction for entries #81-#107.
+- Ran `git diff HEAD^..HEAD --check`; it passed.
+- Saved release-commit review:
+  - `UX_v2/execution/UX_V2_RELEASE_COMMIT_REVIEW_2026-06-14.md`
+- Updated:
+  - `UX_v2/execution/UX_V2_EXECUTION_TRACKER.md`
+  - `UX_v2/execution/UX_V2_FINAL_QA_RELEASE_GATE_2026-06-14.md`
+  - `UX_v2/execution/UX_V2_COMPLETION_AUDIT_2026-06-14.md`
+  - `UX_v2/execution/UX_V2_RELEASE_CANDIDATE_CHANGE_MANIFEST_2026-06-14.md`
+
+### Validation
+
+- `git diff HEAD^..HEAD --check` passed.
+- Previous staged-index validation remains the release-candidate validation basis:
+  - typecheck passed;
+  - lint passed with two existing unused-disable warnings;
+  - full tests passed: 445 tests, 65 suites;
+  - build passed with the known `unpdf` warning;
+  - APK script syntax check passed.
+
+### Release state
+
+- Production/live not deployed.
+- Branch not pushed.
+- Pull request not created.
+- Shared APK artifact not overwritten.
+- Release verdict remains no-go.
+
+### Remaining release blockers
+
+- Product decision deferrals/approvals remain open.
+- Release approval packet still needs explicit deploy/APK approval, release owner, staging/smoke or accepted skip, production backup, rollback source, pairing validation path, post-deploy smoke owner, and APK publication decision.
+- Android live/staging pairing/share/post-online-offline evidence remains blocked until web/offline assets are deployed to a target with approval and a pairing-token path exists.
+- Working tree still contains unrelated and decision-gated deltas; do not deploy or commit the dirty tree wholesale.
+
+## Entry #109 - 2026-06-14 14:27 IST - UX v2 main-based integration branch created and validated
+
+### Summary
+
+Created a clean branch from current `origin/main`, resolved the UX v2 release-candidate merge conflicts, and validated the integrated branch. Production/live was not deployed, the branch was not pushed, and no pull request was created.
+
+### Done
+
+- Created integration branch:
+  - `codex/ai-brain-ux-v2-main-ready`
+- Base:
+  - `origin/main` `2b4db9540d0b76ee6d3aa2a9da5f788b69a8d02a`
+- Cherry-picked the UX v2 release-candidate commits onto current `main`.
+- Resolved conflicts in:
+  - `src/app/api/capture/url/route.ts`
+  - `src/app/items/[id]/page.tsx`
+- Preserved current `main` YouTube transcript-recovery behavior and UX v2 capture-result/repair UI behavior.
+- Created integrated commits:
+  - `e596b9a feat(ux-v2): stage approved local release candidate`
+  - `9bd4ad7 docs(ux-v2): record release candidate commit review`
+- Saved:
+  - `UX_v2/execution/UX_V2_PR_READINESS_AND_MAIN_INTEGRATION_2026-06-14.md`
+- Updated:
+  - `UX_v2/execution/UX_V2_EXECUTION_TRACKER.md`
+  - `UX_v2/execution/UX_V2_FINAL_QA_RELEASE_GATE_2026-06-14.md`
+  - `UX_v2/execution/UX_V2_COMPLETION_AUDIT_2026-06-14.md`
+  - `UX_v2/execution/UX_V2_RELEASE_APPROVAL_PACKET_2026-06-14.md`
+
+### Validation
+
+- `git diff --check origin/main...HEAD` passed.
+- `npm run typecheck` passed.
+- `npm test` passed: 503 tests, 76 suites.
+- `npm run lint` passed with the existing unused-disable warnings in `src/lib/client/register-sw.ts` and `src/lib/queue/enrichment-batch-cron.ts`.
+- `npm run build` passed with the known `unpdf` warning.
+- `bash -n scripts/build-apk.sh` passed.
+
+### Release state
+
+- Production/live not deployed.
+- Branch not pushed.
+- Pull request not created.
+- Shared APK artifact not overwritten.
+- Release verdict remains no-go.
+
+### Remaining release blockers
+
+- Explicit production/live approval has not been granted.
+- Production DB backup, staging/smoke, release owner, rollback source/command, and post-deploy smoke owner remain open.
+- Android online/share UX v2 validation still needs deployed UX v2 web/offline assets.
+- Android pairing/token validation remains blocked by missing authenticated pairing-code path.
+- Post-online cached offline Android retest remains blocked until staging/live deployment approval.
+- APK publication remains blocked by same-version artifact guard unless version is bumped or same-version publication is explicitly approved.
+- Product decisions D-001 through D-014 still need explicit deferral acceptance or follow-up implementation approval.
+
+## Entry #111 - 2026-06-14 14:37 IST - UX v2 PR #6 review pass completed
+
+### Summary
+
+Reviewed draft PR #6 with focus on the main-based conflict-resolution paths. No P0, P1, or P2 findings were found. One P3 test-coverage gap was fixed.
+
+### Done
+
+- Saved review report:
+  - `UX_v2/execution/UX_V2_PR6_REVIEW_2026-06-14.md`
+- Added test assertions for the transcript-recovery duplicate URL path in:
+  - `src/app/api/capture/url/route.test.ts`
+- The new assertions verify the UX v2 `capture_result` payload on the `transcript_recovery_queued` branch:
+  - `state`
+  - `itemId`
+  - `existingItemId`
+  - `recommendedAction`
+- Updated:
+  - `UX_v2/execution/UX_V2_EXECUTION_TRACKER.md`
+  - `UX_v2/execution/UX_V2_FINAL_QA_RELEASE_GATE_2026-06-14.md`
+  - `UX_v2/execution/UX_V2_COMPLETION_AUDIT_2026-06-14.md`
+  - `UX_v2/execution/UX_V2_PR_READINESS_AND_MAIN_INTEGRATION_2026-06-14.md`
+
+### Validation
+
+- Initial `npm test -- src/app/api/capture/url/route.test.ts` failed because the clean PR worktree did not have a `node_modules` dependency link. This was an environment setup issue.
+- After restoring a temporary dependency link:
+  - `node --import tsx --test src/app/api/capture/url/route.test.ts` passed: 13 tests, 1 suite.
+  - `npm run typecheck` passed.
+- Removed the temporary `node_modules` link after validation.
+
+### Release state
+
+- Production/live not deployed.
+- Shared APK artifact not overwritten.
+- PR remains draft.
+- Release verdict remains no-go.
+
+### Remaining release blockers
+
+- Explicit production/live approval has not been granted.
+- Production DB backup, staging/smoke, release owner, rollback source/command, and post-deploy smoke owner remain open.
+- Android online/share UX v2 validation still needs deployed UX v2 web/offline assets.
+- Android pairing/token validation remains blocked by missing authenticated pairing-code path.
+- Post-online cached offline Android retest remains blocked until staging/live deployment approval.
+- APK publication remains blocked by same-version artifact guard unless version is bumped or same-version publication is explicitly approved.
+- Product decisions D-001 through D-014 still need explicit deferral acceptance or follow-up implementation approval.
+
+## Entry #110 - 2026-06-14 14:32 IST - UX v2 draft PR opened for review
+
+### Summary
+
+Pushed the clean main-based UX v2 integration branch and opened a draft pull request for review. This is not production/live release approval.
+
+### Done
+
+- Pushed branch:
+  - `codex/ai-brain-ux-v2-main-ready`
+- Opened draft PR:
+  - `https://github.com/arunpr614/ai-brain/pull/6`
+- GitHub PR state at creation check:
+  - open
+  - draft
+  - mergeable
+  - no status checks reported yet
+- Updated:
+  - `UX_v2/execution/UX_V2_PR_READINESS_AND_MAIN_INTEGRATION_2026-06-14.md`
+  - `UX_v2/execution/UX_V2_EXECUTION_TRACKER.md`
+  - `UX_v2/execution/UX_V2_FINAL_QA_RELEASE_GATE_2026-06-14.md`
+  - `UX_v2/execution/UX_V2_COMPLETION_AUDIT_2026-06-14.md`
+  - `UX_v2/execution/UX_V2_RELEASE_APPROVAL_PACKET_2026-06-14.md`
+
+### Validation
+
+- `git fetch origin --prune` completed before push.
+- `origin/main` remained an ancestor of the branch.
+- `git diff --check origin/main...HEAD` passed before push.
+- PR view confirmed `mergeable`.
+
+### Release state
+
+- Production/live not deployed.
+- Shared APK artifact not overwritten.
+- PR is draft and should stay draft until release blockers are resolved or explicitly accepted as deploy-ready blockers.
+- Release verdict remains no-go.
+
+### Remaining release blockers
+
+- Explicit production/live approval has not been granted.
+- Production DB backup, staging/smoke, release owner, rollback source/command, and post-deploy smoke owner remain open.
+- Android online/share UX v2 validation still needs deployed UX v2 web/offline assets.
+- Android pairing/token validation remains blocked by missing authenticated pairing-code path.
+- Post-online cached offline Android retest remains blocked until staging/live deployment approval.
+- APK publication remains blocked by same-version artifact guard unless version is bumped or same-version publication is explicitly approved.
+- Product decisions D-001 through D-014 still need explicit deferral acceptance or follow-up implementation approval.
+
+---
+
+## Entry #112 - 2026-06-14 14:44 IST - UX v2 PR #6 full validation refreshed
+
+### Summary
+
+Refreshed the clean PR branch validation after the P3 transcript-recovery coverage fix and updated the release evidence docs. No production/live deploy, shared APK publication, or Android retest was performed.
+
+### Done
+
+- Confirmed draft PR #6 state before the documentation refresh:
+  - PR URL: `https://github.com/arunpr614/ai-brain/pull/6`
+  - State: open
+  - Draft: yes
+  - Mergeable: yes
+  - Status checks: none reported
+  - Validated code head: `75b38896d43d30b16deaf024ba8541cff0fe9820`
+- Ran a full validation refresh on the clean PR worktree `/private/tmp/ai-brain-ux-v2-main-ready` at 2026-06-14 14:42 IST.
+- The first validation wrapper had a shell-wrapper error after the checks completed (`status` is read-only in zsh), so the validation was rerun under Bash and exited 0.
+- Removed the temporary `node_modules` symlink after validation; the clean PR worktree did not retain dependency artifacts.
+- Updated evidence docs to record the validation refresh and fix stale source-hygiene wording:
+  - `UX_v2/execution/UX_V2_EXECUTION_TRACKER.md`
+  - `UX_v2/execution/UX_V2_FINAL_QA_RELEASE_GATE_2026-06-14.md`
+  - `UX_v2/execution/UX_V2_PR6_REVIEW_2026-06-14.md`
+  - `UX_v2/execution/UX_V2_PR_READINESS_AND_MAIN_INTEGRATION_2026-06-14.md`
+  - `UX_v2/execution/UX_V2_COMPLETION_AUDIT_2026-06-14.md`
+  - `UX_v2/execution/UX_V2_RELEASE_APPROVAL_PACKET_2026-06-14.md`
+
+### Validation
+
+- `git diff --check origin/main...HEAD` passed.
+- `npm run typecheck` passed.
+- `npm run lint` passed with the known unused-disable warnings in `src/lib/client/register-sw.ts` and `src/lib/queue/enrichment-batch-cron.ts`.
+- `npm test` passed: 503 tests, 76 suites, 0 failures.
+- `npm run build` passed with the known `unpdf` warning.
+- `bash -n scripts/build-apk.sh` passed.
+
+### Release state
+
+- Production/live not deployed.
+- Shared APK artifact not overwritten.
+- PR #6 remains draft.
+- Release verdict remains no-go.
+
+### Remaining release blockers
+
+- Explicit production/live approval has not been granted.
+- Production DB backup, staging/smoke, release owner, rollback source/command, and post-deploy smoke owner remain open.
+- Android online/share UX v2 validation still needs deployed UX v2 web/offline assets.
+- Android pairing/token validation remains blocked by missing authenticated pairing-code path.
+- Post-online cached offline Android retest remains blocked until staging/live deployment approval.
+- APK publication remains blocked by same-version artifact guard unless version is bumped or same-version publication is explicitly approved.
+- Product decisions D-001 through D-014 still need explicit deferral acceptance or follow-up implementation approval.
+
+### Action items for the next agent
+
+1. Treat `codex/ai-brain-ux-v2-main-ready` and PR #6 as the clean release-candidate source; do not deploy from the dirty original project worktree.
+2. If only documentation changes are committed after this entry, note that the validated code head remains `75b3889`.
+3. Do not deploy production/live without the approval packet values: explicit approval, release owner, backup path/integrity, staging or accepted skip, rollback source, pairing validation path, APK publication decision, and post-deploy smoke owner.
+
+---
+
+## Entry #113 - 2026-06-15 11:05 IST - UX v2 PR #6 current head revalidated after pause
+
+### Summary
+
+Resumed the UX v2 goal after the user pause, recreated the clean PR worktree because `/private/tmp/ai-brain-ux-v2-main-ready` had been cleaned up, and refreshed validation on current PR head `70d6cc8`. No production/live deploy, shared APK publication, Android retest, or product-code change was performed.
+
+### Done
+
+- Recreated clean PR worktree:
+  - Worktree: `/private/tmp/ai-brain-ux-v2-main-ready`
+  - Branch: `codex/ai-brain-ux-v2-main-ready`
+  - Head before this evidence update: `70d6cc8c180a6f0d3c695cba1640f108ced60310`
+- Confirmed original project worktree remains dirty and was not used as the release source.
+- Confirmed PR #6 state at 2026-06-15 11:05 IST:
+  - PR URL: `https://github.com/arunpr614/ai-brain/pull/6`
+  - State: open
+  - Draft: yes
+  - Mergeable: yes
+  - Status checks: none reported
+- Updated:
+  - `UX_v2/execution/UX_V2_EXECUTION_TRACKER.md`
+  - `UX_v2/execution/UX_V2_FINAL_QA_RELEASE_GATE_2026-06-14.md`
+  - `UX_v2/execution/UX_V2_PR6_REVIEW_2026-06-14.md`
+  - `UX_v2/execution/UX_V2_PR_READINESS_AND_MAIN_INTEGRATION_2026-06-14.md`
+  - `UX_v2/execution/UX_V2_COMPLETION_AUDIT_2026-06-14.md`
+  - `UX_v2/execution/UX_V2_RELEASE_APPROVAL_PACKET_2026-06-14.md`
+
+### Validation
+
+- `git diff --check origin/main...HEAD` passed.
+- `npm run typecheck` passed.
+- `npm run lint` passed with the known unused-disable warnings in `src/lib/client/register-sw.ts` and `src/lib/queue/enrichment-batch-cron.ts`.
+- Initial sandboxed `npm test` failed: 474 pass, 29 fail. All failures were provider tests trying to bind local HTTP mock servers and reporting `listen EPERM: operation not permitted 127.0.0.1`.
+- Reran `npm test` outside the sandbox with approval; it passed: 503 tests, 76 suites, 0 failures.
+- Initial sandboxed `npm run build` failed because restricted network could not resolve `fonts.googleapis.com` for Next font fetching.
+- Reran `npm run build` with network approval; it passed with the known `unpdf` warning.
+- `bash -n scripts/build-apk.sh` passed.
+- Removed the temporary `node_modules` symlink after validation; no dependency artifact remained in the clean PR worktree.
+
+### Release state
+
+- Production/live not deployed.
+- Shared APK artifact not overwritten.
+- PR #6 remains draft.
+- Release verdict remains no-go.
+
+### Remaining release blockers
+
+- Explicit production/live approval has not been granted.
+- Production DB backup, staging/smoke, release owner, rollback source/command, and post-deploy smoke owner remain open.
+- Android online/share UX v2 validation still needs deployed UX v2 web/offline assets.
+- Android pairing/token validation remains blocked by missing authenticated pairing-code path.
+- Post-online cached offline Android retest remains blocked until staging/live deployment approval.
+- APK publication remains blocked by same-version artifact guard unless version is bumped or same-version publication is explicitly approved.
+- Product decisions D-001 through D-014 still need explicit deferral acceptance or follow-up implementation approval.
+
+### Action items for the next agent
+
+1. Treat PR #6 and `codex/ai-brain-ux-v2-main-ready` as the clean release-candidate source; keep the original dirty project worktree out of release.
+2. If this evidence update is committed, note that it is documentation-only after validating app head `70d6cc8`.
+3. Do not deploy production/live or publish APK artifacts without the release approval packet values and explicit user approval.
+
+---
+
+## Entry #114 - 2026-06-15 13:05 IST - UX v2 production approved, deployed, smoked, and closed
+
+### Summary
+
+User approved production with `Approved for production. proceed continue goal`. Used the clean PR worktree `/private/tmp/ai-brain-ux-v2-main-ready` and branch `codex/ai-brain-ux-v2-main-ready` as the release source, not the dirty original project worktree. Production is live at `https://brain.arunp.in` from final deployed code head `7c28ba5 fix(ux-v2): attribute android share captures`.
+
+### Done
+
+- Published Android release metadata and artifact:
+  - Version: `1.0.2` / code `3`
+  - Label: `AI Memory`
+  - APK: `data/artifacts/brain-debug-v1.0.2-code3.apk`
+  - APK SHA-256: `897627f6b71180de3766f2731f9bc478c746c3ae5e992a7381d8d657a6c3ebd0`
+- Completed release fixes after the pre-approval gate:
+  - `4fce843 chore(ux-v2): bump android release metadata`
+  - `5761d6a fix(ux-v2): finish ai memory brand copy`
+  - `a85fd42 fix(ux-v2): serve unauthenticated brand logo`
+  - `7c28ba5 fix(ux-v2): attribute android share captures`
+- Created and verified production SQLite backups before deploy steps:
+  - `/opt/brain/data/backups/ux-v2-predeploy-2026-06-15_062428.sqlite`
+  - `/opt/brain/data/backups/ux-v2-predeploy-brandfix-2026-06-15_063824.sqlite`
+  - `/opt/brain/data/backups/ux-v2-predeploy-logo-fix-2026-06-15_122213.sqlite`
+  - `/opt/brain/data/backups/ux-v2-predeploy-android-share-source-2026-06-15_124103.sqlite`
+- Deployed production with `scripts/deploy.sh`.
+- Completed post-deploy smoke:
+  - Live `/unlock`, `/setup-apk`, `/offline.html`, and `/ai-memory-logo.png` return 200.
+  - Authenticated health check passed during deploy.
+  - `brain.service` is active with 0 restarts after deploy.
+  - Remote AI provider checks passed.
+  - Stale live HTML scan found no checked `AI Brain`, `Your Brain`, `Ask AI Brain`, or `Unlock AI Brain` strings.
+  - Production item count returned to 15 after smoke cleanup.
+- Completed Android emulator validation:
+  - APK installed, launched, and relaunched.
+  - Logo and AI Memory copy rendered after the logo proxy fix.
+  - Pairing code flow succeeded; token persistence verified with value redacted.
+  - Paired Android text share created an item with `capture_source=android`; smoke row was deleted.
+  - Current offline fallback was verified after clearing app data.
+  - Online recovery after offline returned to the expected unlock flow after app data clear.
+- Saved evidence:
+  - `UX_v2/execution/UX_V2_PRODUCTION_RELEASE_2026-06-15.md`
+  - `UX_v2/execution/evidence/android/2026-06-15-production/`
+  - Updated tracker, release approval packet, final QA gate, and completion audit.
+
+### Validation
+
+- Final code validation before deploy:
+  - `npm run typecheck` passed.
+  - `npm run lint` passed with the known unused-disable warnings in `src/lib/client/register-sw.ts` and `src/lib/queue/enrichment-batch-cron.ts`.
+  - `npm test` passed: 505 tests, 77 suites, 0 failures.
+  - `npm run build` passed with the known `unpdf` warning.
+- Deploy validation:
+  - Local Ollama provider check was warn-only because local Ollama was unavailable.
+  - Remote Anthropic/Gemini provider checks passed on production.
+  - Telegram release smoke was skipped because `TELEGRAM_RELEASE` was not set; unauthenticated webhook reachability returned the expected 401 during deploy checks.
+- Fresh closure smoke:
+  - `/unlock`: 200
+  - `/setup-apk`: 200
+  - `/offline.html`: 200
+  - `/ai-memory-logo.png`: 200, `image/png`, 2837864 bytes
+  - `brain.service`: active
+  - Production item count: 15
+
+### Release state
+
+- Production/live: deployed and smoked.
+- Android mandatory checks: passed on emulator with caveats.
+- PR #6: remains the GitHub integration artifact for the clean release branch.
+- Original project worktree: preserved dirty and not used for release.
+- Goal state: complete for approved UX_Final_Plan production scope.
+
+### Residual caveats
+
+- Existing Android WebView caches may retain the previous offline fallback until app data/cache is cleared or the app is reinstalled; the current bundled fallback was verified after clearing app data.
+- No physical Android device was available; emulator validation is the recorded mandatory Android evidence.
+- Offsite backup script is not installed on production; on-host SQLite backups were verified.
+- Local Ollama was unavailable, so local provider validation was warn-only; remote production provider checks passed.
+- Open UX_Final_Plan decisions remain deferred follow-up work; no decision-gated behavior was silently implemented.
