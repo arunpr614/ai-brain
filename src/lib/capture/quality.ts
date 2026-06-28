@@ -52,6 +52,25 @@ export function platformLabel(platform: string | null | undefined, sourceType?: 
   }
 }
 
+export function captureSourceLabel(source: string | null | undefined): string {
+  switch (source) {
+    case "android":
+      return "Android";
+    case "extension":
+      return "Extension";
+    case "telegram":
+      return "Telegram";
+    case "system":
+      return "System";
+    case "web":
+      return "Web";
+    case "recall":
+      return "Recall";
+    default:
+      return "Unknown";
+  }
+}
+
 export function inferQualityFromWarning(
   platform: CapturePlatform,
   warning: string | null | undefined,
@@ -71,7 +90,7 @@ export function improvementHint(
   quality: string | null | undefined,
 ): string | null {
   if (quality === "metadata_only" && (platform === "youtube" || platform === "youtube_short")) {
-    return "Retry later or add a note if the video has no transcript.";
+    return "Retry later or add a transcript if the video has no available captions.";
   }
   if (quality === "metadata_only" && platform === "linkedin") {
     return "Paste the post text with the link to upgrade this capture.";

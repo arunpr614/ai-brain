@@ -1,0 +1,21 @@
+[Unit]
+Description=AI Brain Recall daily snapshot import
+After=network-online.target brain.service
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+User=brain
+Group=brain
+WorkingDirectory=/opt/brain
+EnvironmentFile=/etc/brain/.env
+ExecStart=/usr/bin/bash /opt/brain/scripts/recall-scheduled-apply.sh
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=brain-recall-sync
+
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/opt/brain/data
