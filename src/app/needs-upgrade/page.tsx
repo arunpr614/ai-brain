@@ -13,6 +13,7 @@ import type { ItemRow } from "@/db/client";
 import { listNeedsUpgradeItems } from "@/db/items";
 import { verifySessionCookie } from "@/lib/auth";
 import {
+  captureSourceLabel,
   improvementHint,
   needsUpgradeReason,
   platformLabel,
@@ -37,8 +38,12 @@ function SourceIcon({ item }: { item: ItemRow }) {
 }
 
 function nextAction(item: ItemRow): { label: string; href: string; icon: typeof FileText } {
+  const isYoutube =
+    item.source_type === "youtube" ||
+    item.source_platform === "youtube" ||
+    item.source_platform === "youtube_short";
   return {
-    label: "Add text",
+    label: isYoutube ? "Add transcript" : "Add text",
     href: `/items/${item.id}/repair`,
     icon: FileText,
   };
@@ -169,7 +174,7 @@ export default async function NeedsUpgradePage() {
                             <p className="mt-1 flex flex-wrap items-center gap-2 text-xs text-[var(--text-secondary)]">
                               <span>{platformLabel(item.source_platform, item.source_type)}</span>
                               <span className="text-[var(--text-muted)]">/</span>
-                              <span>Via {item.capture_source}</span>
+                              <span>Via {captureSourceLabel(item.capture_source)}</span>
                               <span className="text-[var(--text-muted)]">/</span>
                               <span>{qualityLabel(item.capture_quality)}</span>
                               <span className="text-[var(--text-muted)]">/</span>

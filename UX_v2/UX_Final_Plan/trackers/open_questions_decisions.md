@@ -1,0 +1,21 @@
+# Open Questions And Decisions Tracker
+
+Created: 2026-06-14 10:15 IST
+Source of truth: this Markdown file. CSV is a convenience export.
+
+| ID | Decision needed | Owner | Priority | Blocks | Recommendation |
+| --- | --- | --- | --- | --- | --- |
+| D-001 | Should attached Ask context be temporary, saved as real items, or both? | Arun/Product | P1 | PRD-09-FU, PRD-12 | Use hybrid: saved items for paste link/write note, references for existing items |
+| D-002 | Should high-quality-only Ask be a toggle, chip, or automatic warning action? | Arun/Product | P1 | PRD-09-FU | Use visible per-question chip/toggle |
+| D-003 | Should tag/topic/collection history store dynamic membership or snapshot item IDs? | Arun/Product | P1 | PRD-09-FU | Store both label and resolved item IDs |
+| D-004 | Should "mark good enough" remove Needs Upgrade items? | Arun/Product | P1 | PRD-10 | Do not implement until explicitly approved |
+| D-005 | Should Android item detail tabs be in PRD-11-FU or a separate PRD? | Arun/Product | P2 | PRD-11-FU | Split unless urgent |
+| D-006 | Should More route show raised Capture FAB? | Arun/Product | P2 | PRD-11-FU | Default to normal tab on More |
+| D-007 | Should offline controls download readable content or remain informational? | Arun/Product | P2 | PRD-14 | Keep informational for UX v2 unless offline project is approved |
+| D-008 | Should QR scanning return for Android pairing? | Arun/Product | P2 | PRD-15 | Keep code-entry unless QR is explicitly implemented |
+| D-009 | Should transcript operator visibility be part of UX v2? | Arun/Product | P3 | OPS-01 | Separate ops/admin track unless prioritized |
+| D-010 | Should transcript provider fallback be researched now? | Arun/Product | P3 | OPS-02 | Research separately before implementation |
+| D-011 | Should AI Memory collect any product events? | Arun/Product | P3 | ANALYTICS-01 | Default to no product analytics |
+| D-012 | Should Chrome extension UX be redesigned in this pass? | Arun/Product | P3 | EXT-01 | Keep compatible, defer redesign |
+| D-013 | Should Android package ID retain `brain`? | Arun/Product/Engineering | P2 | PRD-15/APK | Keep for compatibility unless migration is planned |
+| D-014 | Should YouTube item detail include thumbnail/player? | Arun/Product | P2 | YT-01 | Start with metadata/thumbnail only, no embedded player |

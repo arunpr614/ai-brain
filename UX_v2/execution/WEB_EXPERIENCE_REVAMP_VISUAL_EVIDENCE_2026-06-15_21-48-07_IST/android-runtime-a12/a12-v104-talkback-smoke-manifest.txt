@@ -1,0 +1,7 @@
+pre_enabled_accessibility_services=null
+pre_touch_exploration_enabled=0
+talkback_service_enabled_for_smoke=com.google.android.marvin.talkback/.TalkBackService
+touch_exploration_enabled_for_smoke=1
+restored_enabled_accessibility_services=null
+restored_touch_exploration_enabled=0
+scope=bounded launch smoke only; no spoken-order capture available from this automation.

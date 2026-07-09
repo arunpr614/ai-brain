@@ -1,0 +1,32 @@
+{
+  "baseUrl": "http://127.0.0.1:3027",
+  "viewport": {
+    "width": 390,
+    "height": 844,
+    "isMobile": true
+  },
+  "mode": "empty",
+  "dbPath": "/tmp/ai-memory-android-a2-empty.sqlite",
+  "states": [
+    {
+      "name": "390x844-needs-upgrade-empty",
+      "path": "/needs-upgrade",
+      "screenshot": "/Users/arun.prakash/Library/CloudStorage/GoogleDrive-arun.prakash@toasttab.com/Other computers/My MacBook Pro M1 2025/arun-cursor/Initiatives/Arun_AI_Projects/ai-brain/phase2/UX_v2/execution/WEB_EXPERIENCE_REVAMP_VISUAL_EVIDENCE_2026-06-15_21-48-07_IST/screenshots/android-a2-capture-repair-needs-upgrade/390x844-needs-upgrade-empty.png",
+      "metrics": {
+        "title": "AI Memory",
+        "url": "/needs-upgrade",
+        "bodyTextSample": "Library\nCapture\nAsk\nMore\nBack to Library\nCapture quality\nNeeds Upgrade\n\nThese saves are still useful as bookmarks, but they do not have enough readable source text for reliable search or Ask. Add text or open the source.\n\nNo captures need attention.\n\nNew metadata-only, preview-only, or failed captures will appear here.",
+        "scrollWidth": 390,
+        "clientWidth": 390,
+        "scrollHeight": 844,
+        "clientHeight": 844,
+        "horizontalOverflow": false,
+        "forbiddenMatches": [],
+        "expectedMissing": [],
+        "clippedControls": []
+      }
+    }
+  ],
+  "issues": [],
+  "issueCount": 0
+}

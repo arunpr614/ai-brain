@@ -1,0 +1,94 @@
+{
+  "generatedAt": 1781550091634,
+  "payloads": {
+    "saved_full": {
+      "state": "saved_full",
+      "sourceKind": "url",
+      "quality": "full_text",
+      "itemId": "share-result-full",
+      "retryable": false,
+      "createdAt": 1781550091634,
+      "expiresAt": 1781551891634
+    },
+    "saved_limited": {
+      "state": "saved_limited",
+      "sourceKind": "url",
+      "quality": "metadata_only",
+      "itemId": "share-result-limited",
+      "retryable": false,
+      "createdAt": 1781550091634,
+      "expiresAt": 1781551891634
+    },
+    "duplicate_existing": {
+      "state": "duplicate_existing",
+      "sourceKind": "url",
+      "existingItemId": "share-result-existing",
+      "retryable": false,
+      "createdAt": 1781550091634,
+      "expiresAt": 1781551891634
+    },
+    "updated_existing": {
+      "state": "updated_existing",
+      "sourceKind": "note",
+      "itemId": "share-result-updated",
+      "retryable": false,
+      "createdAt": 1781550091634,
+      "expiresAt": 1781551891634
+    },
+    "missing_token": {
+      "state": "missing_token",
+      "sourceKind": "unknown",
+      "retryable": false,
+      "createdAt": 1781550091634,
+      "expiresAt": 1781551891634,
+      "errorCode": "missing_token"
+    },
+    "server_unreachable": {
+      "state": "server_unreachable",
+      "sourceKind": "url",
+      "retryable": true,
+      "createdAt": 1781550091634,
+      "expiresAt": 1781551891634,
+      "errorCode": "url_capture_failed"
+    },
+    "pdf_read_failed": {
+      "state": "pdf_read_failed",
+      "sourceKind": "pdf",
+      "retryable": true,
+      "createdAt": 1781550091634,
+      "expiresAt": 1781551891634,
+      "errorCode": "pdf_read_failed"
+    },
+    "pdf_checksum_failed": {
+      "state": "pdf_checksum_failed",
+      "sourceKind": "pdf",
+      "retryable": true,
+      "createdAt": 1781550091634,
+      "expiresAt": 1781551891634,
+      "errorCode": "pdf_checksum_failed"
+    },
+    "pdf_upload_failed": {
+      "state": "pdf_upload_failed",
+      "sourceKind": "pdf",
+      "retryable": true,
+      "createdAt": 1781550091634,
+      "expiresAt": 1781551891634,
+      "errorCode": "pdf_upload_failed"
+    },
+    "multi_pdf_rejected": {
+      "state": "multi_pdf_rejected",
+      "sourceKind": "pdf",
+      "retryable": false,
+      "createdAt": 1781550091634,
+      "expiresAt": 1781551891634,
+      "errorCode": "multi_pdf_rejected"
+    },
+    "expired_result": {
+      "state": "expired_result",
+      "sourceKind": "unknown",
+      "retryable": false,
+      "createdAt": 1781548231634,
+      "expiresAt": 1781550031634
+    }
+  }
+}

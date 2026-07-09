@@ -18,12 +18,14 @@ import {
 import type { CollectionRow } from "@/db/collections";
 import type { ItemRow } from "@/db/client";
 import {
+  captureSourceLabel,
   isLimitedCaptureQuality,
   platformLabel,
   qualityLabel,
 } from "@/lib/capture/quality";
 import { getAskSelectedActionState } from "@/lib/library/selected-actions";
 import { ItemEnrichmentWatch } from "./item-enrichment-watch";
+import { SourceLogo } from "./source-logo";
 
 /**
  * F-207 library bulk-select UI.
@@ -60,28 +62,27 @@ function warningLabel(code: string): string {
   return "⚠ warning";
 }
 
+const DUPLICATE_METADATA_WARNING_CODES = new Set([
+  "youtube_antibot_metadata_only",
+  "youtube_transcript_fetch_metadata_only",
+]);
+
+function shouldShowMobileWarning(
+  code: string | null | undefined,
+  quality: string | null | undefined,
+): code is string {
+  if (!code) return false;
+  if (quality === "metadata_only" && DUPLICATE_METADATA_WARNING_CODES.has(code)) {
+    return false;
+  }
+  return true;
+}
+
 function SourceIcon({ type }: { type: string }) {
   if (type === "pdf") return <FileText className="h-4 w-4" strokeWidth={2} />;
   if (type === "url") return <Globe className="h-4 w-4" strokeWidth={2} />;
   if (type === "youtube") return <Video className="h-4 w-4" strokeWidth={2} />;
   return <StickyNote className="h-4 w-4" strokeWidth={2} />;
-}
-
-function captureSourceLabel(source: string | null | undefined): string {
-  switch (source) {
-    case "android":
-      return "Android";
-    case "extension":
-      return "Extension";
-    case "telegram":
-      return "Telegram";
-    case "system":
-      return "System";
-    case "web":
-      return "Web";
-    default:
-      return "Unknown";
-  }
 }
 
 function QualityBadge({ quality }: { quality: string | null | undefined }) {
@@ -195,14 +196,69 @@ export function LibraryList({
       <ul className="flex flex-col gap-3">
         {items.map((it) => {
           const checked = selectedIds.has(it.id);
+          const cardStateClass = checked
+            ? "border-[var(--control-selected-border)] bg-[var(--control-selected-bg)]"
+            : "border-[var(--border)] hover:border-[var(--border-strong)] hover:bg-[var(--surface-raised)]";
+          const mobileWarning = shouldShowMobileWarning(
+            it.extraction_warning,
+            it.capture_quality,
+          )
+            ? it.extraction_warning
+            : null;
           return (
             <li key={it.id} className="group/row">
               <div
-                className={`flex items-start gap-3 rounded-lg border bg-[var(--surface)] p-4 transition-colors duration-[var(--duration-fast)] ${
-                  checked
-                    ? "border-[var(--control-selected-border)] bg-[var(--control-selected-bg)]"
-                    : "border-[var(--border)] hover:border-[var(--border-strong)] hover:bg-[var(--surface-raised)]"
-                }`}
+                className={`rounded-lg border bg-[var(--surface)] p-3.5 transition-colors duration-[var(--duration-fast)] md:hidden ${cardStateClass}`}
+              >
+                <div className="flex items-start gap-2.5">
+                  <label
+                    className="inline-flex w-8 min-w-8 shrink-0 cursor-pointer items-start justify-center pt-0.5"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={checked}
+                      onChange={() => toggle(it.id)}
+                      aria-label={`Select ${it.title}`}
+                      className="h-[18px] w-[18px] cursor-pointer accent-[var(--accent-9)]"
+                    />
+                  </label>
+                  <Link href={`/items/${it.id}`} className="min-w-0 flex-1">
+                    <h2 className="line-clamp-2 overflow-hidden text-[15px] font-semibold leading-snug text-[var(--text-primary)]">
+                      {it.title}
+                    </h2>
+                    <div className="mt-2 flex max-h-[52px] flex-wrap items-center gap-x-1.5 gap-y-1 overflow-hidden text-[11px] leading-4 text-[var(--text-secondary)]">
+                      <span className="inline-flex min-w-0 max-w-full items-center gap-1.5">
+                        <SourceLogo
+                          platform={it.source_platform}
+                          type={it.source_type}
+                          className="h-3.5 w-3.5 shrink-0"
+                        />
+                        <span className="truncate">
+                          {platformLabel(it.source_platform, it.source_type)}
+                        </span>
+                      </span>
+                      <QualityBadge quality={it.capture_quality} />
+                      <ItemEnrichmentWatch
+                        itemId={it.id}
+                        initialState={it.enrichment_state}
+                        compact
+                      />
+                      <span className="shrink-0">{formatRelative(it.captured_at)}</span>
+                      {mobileWarning && (
+                        <span
+                          className="min-w-0 truncate text-[var(--warning)]"
+                          title={mobileWarning}
+                        >
+                          {warningLabel(mobileWarning)}
+                        </span>
+                      )}
+                    </div>
+                  </Link>
+                </div>
+              </div>
+              <div
+                className={`hidden items-start gap-3 rounded-lg border bg-[var(--surface)] p-4 transition-colors duration-[var(--duration-fast)] md:flex ${cardStateClass}`}
               >
                 <label
                   className={`inline-flex h-11 w-11 shrink-0 cursor-pointer items-start justify-center pt-1 ${

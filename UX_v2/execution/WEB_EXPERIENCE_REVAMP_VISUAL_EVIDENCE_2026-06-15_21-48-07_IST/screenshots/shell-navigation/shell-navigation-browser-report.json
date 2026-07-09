@@ -1,0 +1,861 @@
+{
+  "desktop": [
+    {
+      "route": "/library",
+      "theme": "light",
+      "state": "expanded",
+      "observation": {
+        "current": [
+          {
+            "ariaLabel": null,
+            "background": "rgb(238, 244, 255)",
+            "color": "rgb(20, 33, 61)",
+            "effectiveBackground": "rgb(238, 244, 255)",
+            "href": "/library",
+            "tag": "a",
+            "text": "Library"
+          },
+          {
+            "ariaLabel": null,
+            "background": "rgb(238, 244, 255)",
+            "color": "rgb(20, 33, 61)",
+            "effectiveBackground": "rgb(238, 244, 255)",
+            "href": "/library",
+            "tag": "a",
+            "text": "All"
+          },
+          {
+            "ariaLabel": null,
+            "background": "rgb(238, 244, 255)",
+            "color": "rgb(20, 33, 61)",
+            "effectiveBackground": "rgb(238, 244, 255)",
+            "href": "/library",
+            "tag": "a",
+            "text": "All"
+          }
+        ],
+        "dataTheme": "light",
+        "privacyAnchors": [],
+        "privacyRows": [
+          {
+            "href": null,
+            "tabIndex": null,
+            "tag": "div",
+            "text": "Privacy Controlssoon"
+          }
+        ],
+        "url": "/library"
+      }
+    },
+    {
+      "route": "/library",
+      "theme": "light",
+      "state": "collapsed",
+      "observation": {
+        "current": [
+          {
+            "ariaLabel": null,
+            "background": "rgb(238, 244, 255)",
+            "color": "rgb(20, 33, 61)",
+            "effectiveBackground": "rgb(238, 244, 255)",
+            "href": "/library",
+            "tag": "a",
+            "text": "Library"
+          },
+          {
+            "ariaLabel": null,
+            "background": "rgb(238, 244, 255)",
+            "color": "rgb(20, 33, 61)",
+            "effectiveBackground": "rgb(238, 244, 255)",
+            "href": "/library",
+            "tag": "a",
+            "text": "All"
+          },
+          {
+            "ariaLabel": null,
+            "background": "rgb(238, 244, 255)",
+            "color": "rgb(20, 33, 61)",
+            "effectiveBackground": "rgb(238, 244, 255)",
+            "href": "/library",
+            "tag": "a",
+            "text": "All"
+          }
+        ],
+        "dataTheme": "light",
+        "privacyAnchors": [],
+        "privacyRows": [
+          {
+            "href": null,
+            "tabIndex": null,
+            "tag": "div",
+            "text": "Privacy Controls"
+          }
+        ],
+        "url": "/library"
+      }
+    },
+    {
+      "route": "/capture",
+      "theme": "light",
+      "state": "expanded",
+      "observation": {
+        "current": [
+          {
+            "ariaLabel": "Capture",
+            "background": "rgb(20, 33, 61)",
+            "color": "rgb(255, 255, 255)",
+            "effectiveBackground": "rgb(20, 33, 61)",
+            "href": "/capture",
+            "tag": "a",
+            "text": "Capture"
+          }
+        ],
+        "dataTheme": "light",
+        "privacyAnchors": [],
+        "privacyRows": [
+          {
+            "href": null,
+            "tabIndex": null,
+            "tag": "div",
+            "text": "Privacy Controlssoon"
+          }
+        ],
+        "url": "/capture"
+      }
+    },
+    {
+      "route": "/ask",
+      "theme": "light",
+      "state": "expanded",
+      "observation": {
+        "current": [
+          {
+            "ariaLabel": null,
+            "background": "rgb(238, 244, 255)",
+            "color": "rgb(20, 33, 61)",
+            "effectiveBackground": "rgb(238, 244, 255)",
+            "href": "/ask",
+            "tag": "a",
+            "text": "Ask"
+          }
+        ],
+        "dataTheme": "light",
+        "privacyAnchors": [],
+        "privacyRows": [
+          {
+            "href": null,
+            "tabIndex": null,
+            "tag": "div",
+            "text": "Privacy Controlssoon"
+          }
+        ],
+        "url": "/ask"
+      }
+    },
+    {
+      "route": "/settings",
+      "theme": "light",
+      "state": "expanded",
+      "observation": {
+        "current": [
+          {
+            "ariaLabel": null,
+            "background": "rgb(238, 244, 255)",
+            "color": "rgb(20, 33, 61)",
+            "effectiveBackground": "rgb(238, 244, 255)",
+            "href": "/settings",
+            "tag": "a",
+            "text": "Settings"
+          }
+        ],
+        "dataTheme": "light",
+        "privacyAnchors": [],
+        "privacyRows": [
+          {
+            "href": null,
+            "tabIndex": null,
+            "tag": "div",
+            "text": "Privacy Controlssoon"
+          }
+        ],
+        "url": "/settings"
+      }
+    },
+    {
+      "route": "/settings/device-pairing",
+      "theme": "light",
+      "state": "expanded",
+      "observation": {
+        "current": [
+          {
+            "ariaLabel": null,
+            "background": "rgb(238, 244, 255)",
+            "color": "rgb(20, 33, 61)",
+            "effectiveBackground": "rgb(238, 244, 255)",
+            "href": "/settings/device-pairing",
+            "tag": "a",
+            "text": "Pair Device"
+          }
+        ],
+        "dataTheme": "light",
+        "privacyAnchors": [],
+        "privacyRows": [
+          {
+            "href": null,
+            "tabIndex": null,
+            "tag": "div",
+            "text": "Privacy Controlssoon"
+          }
+        ],
+        "url": "/settings/device-pairing"
+      }
+    },
+    {
+      "route": "/library",
+      "theme": "dark",
+      "state": "expanded",
+      "observation": {
+        "current": [
+          {
+            "ariaLabel": null,
+            "background": "rgb(34, 51, 78)",
+            "color": "rgb(216, 224, 236)",
+            "effectiveBackground": "rgb(34, 51, 78)",
+            "href": "/library",
+            "tag": "a",
+            "text": "Library"
+          },
+          {
+            "ariaLabel": null,
+            "background": "rgb(34, 51, 78)",
+            "color": "rgb(216, 224, 236)",
+            "effectiveBackground": "rgb(34, 51, 78)",
+            "href": "/library",
+            "tag": "a",
+            "text": "All"
+          },
+          {
+            "ariaLabel": null,
+            "background": "rgb(34, 51, 78)",
+            "color": "rgb(216, 224, 236)",
+            "effectiveBackground": "rgb(34, 51, 78)",
+            "href": "/library",
+            "tag": "a",
+            "text": "All"
+          }
+        ],
+        "dataTheme": "dark",
+        "privacyAnchors": [],
+        "privacyRows": [
+          {
+            "href": null,
+            "tabIndex": null,
+            "tag": "div",
+            "text": "Privacy Controlssoon"
+          }
+        ],
+        "url": "/library"
+      }
+    },
+    {
+      "route": "/settings/device-pairing",
+      "theme": "dark",
+      "state": "expanded",
+      "observation": {
+        "current": [
+          {
+            "ariaLabel": null,
+            "background": "rgb(34, 51, 78)",
+            "color": "rgb(216, 224, 236)",
+            "effectiveBackground": "rgb(34, 51, 78)",
+            "href": "/settings/device-pairing",
+            "tag": "a",
+            "text": "Pair Device"
+          }
+        ],
+        "dataTheme": "dark",
+        "privacyAnchors": [],
+        "privacyRows": [
+          {
+            "href": null,
+            "tabIndex": null,
+            "tag": "div",
+            "text": "Privacy Controlssoon"
+          }
+        ],
+        "url": "/settings/device-pairing"
+      }
+    }
+  ],
+  "mobile": [
+    {
+      "route": "/library",
+      "theme": "light",
+      "observation": {
+        "current": [
+          {
+            "ariaLabel": "Open Library",
+            "background": "rgba(0, 0, 0, 0)",
+            "color": "rgb(20, 33, 61)",
+            "effectiveBackground": "rgb(251, 252, 254)",
+            "href": "/library",
+            "tag": "a",
+            "text": "Library"
+          }
+        ],
+        "dataTheme": "light",
+        "privacyAnchors": [],
+        "privacyRows": [
+          {
+            "href": null,
+            "tabIndex": null,
+            "tag": "div",
+            "text": "Privacy Controlssoon"
+          }
+        ],
+        "url": "/library"
+      }
+    },
+    {
+      "route": "/capture",
+      "theme": "light",
+      "observation": {
+        "current": [
+          {
+            "ariaLabel": "Open Capture",
+            "background": "rgba(0, 0, 0, 0)",
+            "color": "rgb(20, 33, 61)",
+            "effectiveBackground": "rgb(251, 252, 254)",
+            "href": "/capture",
+            "tag": "a",
+            "text": "Capture"
+          }
+        ],
+        "dataTheme": "light",
+        "privacyAnchors": [],
+        "privacyRows": [
+          {
+            "href": null,
+            "tabIndex": null,
+            "tag": "div",
+            "text": "Privacy Controlssoon"
+          }
+        ],
+        "url": "/capture"
+      }
+    },
+    {
+      "route": "/ask",
+      "theme": "light",
+      "observation": {
+        "current": [
+          {
+            "ariaLabel": "Open Ask",
+            "background": "rgba(0, 0, 0, 0)",
+            "color": "rgb(20, 33, 61)",
+            "effectiveBackground": "rgb(251, 252, 254)",
+            "href": "/ask",
+            "tag": "a",
+            "text": "Ask"
+          }
+        ],
+        "dataTheme": "light",
+        "privacyAnchors": [],
+        "privacyRows": [
+          {
+            "href": null,
+            "tabIndex": null,
+            "tag": "div",
+            "text": "Privacy Controlssoon"
+          }
+        ],
+        "url": "/ask"
+      }
+    },
+    {
+      "route": "/settings",
+      "theme": "light",
+      "observation": {
+        "current": [
+          {
+            "ariaLabel": "Open More",
+            "background": "rgba(0, 0, 0, 0)",
+            "color": "rgb(20, 33, 61)",
+            "effectiveBackground": "rgb(251, 252, 254)",
+            "href": "/more",
+            "tag": "a",
+            "text": "More"
+          }
+        ],
+        "dataTheme": "light",
+        "privacyAnchors": [],
+        "privacyRows": [
+          {
+            "href": null,
+            "tabIndex": null,
+            "tag": "div",
+            "text": "Privacy Controlssoon"
+          }
+        ],
+        "url": "/settings"
+      }
+    },
+    {
+      "route": "/settings/device-pairing",
+      "theme": "light",
+      "observation": {
+        "current": [
+          {
+            "ariaLabel": "Open More",
+            "background": "rgba(0, 0, 0, 0)",
+            "color": "rgb(20, 33, 61)",
+            "effectiveBackground": "rgb(251, 252, 254)",
+            "href": "/more",
+            "tag": "a",
+            "text": "More"
+          }
+        ],
+        "dataTheme": "light",
+        "privacyAnchors": [],
+        "privacyRows": [
+          {
+            "href": null,
+            "tabIndex": null,
+            "tag": "div",
+            "text": "Privacy Controlssoon"
+          }
+        ],
+        "url": "/settings/device-pairing"
+      }
+    },
+    {
+      "route": "/more",
+      "theme": "light",
+      "observation": {
+        "current": [
+          {
+            "ariaLabel": "Open More",
+            "background": "rgba(0, 0, 0, 0)",
+            "color": "rgb(20, 33, 61)",
+            "effectiveBackground": "rgb(251, 252, 254)",
+            "href": "/more",
+            "tag": "a",
+            "text": "More"
+          }
+        ],
+        "dataTheme": "light",
+        "privacyAnchors": [],
+        "privacyRows": [
+          {
+            "href": null,
+            "tabIndex": null,
+            "tag": "div",
+            "text": "Privacy Controlssoon"
+          }
+        ],
+        "url": "/more"
+      }
+    },
+    {
+      "route": "/library",
+      "theme": "dark",
+      "observation": {
+        "current": [
+          {
+            "ariaLabel": "Open Library",
+            "background": "rgba(0, 0, 0, 0)",
+            "color": "rgb(216, 224, 236)",
+            "effectiveBackground": "rgb(16, 24, 37)",
+            "href": "/library",
+            "tag": "a",
+            "text": "Library"
+          }
+        ],
+        "dataTheme": "dark",
+        "privacyAnchors": [],
+        "privacyRows": [
+          {
+            "href": null,
+            "tabIndex": null,
+            "tag": "div",
+            "text": "Privacy Controlssoon"
+          }
+        ],
+        "url": "/library"
+      }
+    },
+    {
+      "route": "/settings/device-pairing",
+      "theme": "dark",
+      "observation": {
+        "current": [
+          {
+            "ariaLabel": "Open More",
+            "background": "rgba(0, 0, 0, 0)",
+            "color": "rgb(216, 224, 236)",
+            "effectiveBackground": "rgb(16, 24, 37)",
+            "href": "/more",
+            "tag": "a",
+            "text": "More"
+          }
+        ],
+        "dataTheme": "dark",
+        "privacyAnchors": [],
+        "privacyRows": [
+          {
+            "href": null,
+            "tabIndex": null,
+            "tag": "div",
+            "text": "Privacy Controlssoon"
+          }
+        ],
+        "url": "/settings/device-pairing"
+      }
+    }
+  ],
+  "context": [
+    {
+      "route": "/items/fixture-shell-route",
+      "theme": "dark",
+      "observation": {
+        "current": [
+          {
+            "ariaLabel": null,
+            "background": "rgb(34, 51, 78)",
+            "color": "rgb(216, 224, 236)",
+            "effectiveBackground": "rgb(34, 51, 78)",
+            "href": "/library",
+            "tag": "a",
+            "text": "Library"
+          }
+        ],
+        "dataTheme": "dark",
+        "privacyAnchors": [],
+        "privacyRows": [
+          {
+            "href": null,
+            "tabIndex": null,
+            "tag": "div",
+            "text": "Privacy Controlssoon"
+          }
+        ],
+        "url": "/items/fixture-shell-route"
+      }
+    },
+    {
+      "route": "/items/fixture-shell-route/ask",
+      "theme": "dark",
+      "observation": {
+        "current": [
+          {
+            "ariaLabel": null,
+            "background": "rgb(34, 51, 78)",
+            "color": "rgb(216, 224, 236)",
+            "effectiveBackground": "rgb(34, 51, 78)",
+            "href": "/ask",
+            "tag": "a",
+            "text": "Ask"
+          }
+        ],
+        "dataTheme": "dark",
+        "privacyAnchors": [],
+        "privacyRows": [
+          {
+            "href": null,
+            "tabIndex": null,
+            "tag": "div",
+            "text": "Privacy Controlssoon"
+          }
+        ],
+        "url": "/items/fixture-shell-route/ask"
+      }
+    },
+    {
+      "route": "/topics/fixture-shell-topic",
+      "theme": "dark",
+      "observation": {
+        "current": [
+          {
+            "ariaLabel": null,
+            "background": "rgb(34, 51, 78)",
+            "color": "rgb(216, 224, 236)",
+            "effectiveBackground": "rgb(34, 51, 78)",
+            "href": "/library",
+            "tag": "a",
+            "text": "Library"
+          }
+        ],
+        "dataTheme": "dark",
+        "privacyAnchors": [],
+        "privacyRows": [
+          {
+            "href": null,
+            "tabIndex": null,
+            "tag": "div",
+            "text": "Privacy Controlssoon"
+          }
+        ],
+        "url": "/topics/fixture-shell-topic"
+      }
+    },
+    {
+      "route": "/collections/fixture-shell-collection",
+      "theme": "dark",
+      "observation": {
+        "current": [
+          {
+            "ariaLabel": null,
+            "background": "rgb(34, 51, 78)",
+            "color": "rgb(216, 224, 236)",
+            "effectiveBackground": "rgb(34, 51, 78)",
+            "href": "/library",
+            "tag": "a",
+            "text": "Library"
+          }
+        ],
+        "dataTheme": "dark",
+        "privacyAnchors": [],
+        "privacyRows": [
+          {
+            "href": null,
+            "tabIndex": null,
+            "tag": "div",
+            "text": "Privacy Controlssoon"
+          }
+        ],
+        "url": "/collections/fixture-shell-collection"
+      }
+    },
+    {
+      "route": "/search",
+      "theme": "dark",
+      "observation": {
+        "current": [
+          {
+            "ariaLabel": null,
+            "background": "rgb(34, 51, 78)",
+            "color": "rgb(216, 224, 236)",
+            "effectiveBackground": "rgb(34, 51, 78)",
+            "href": "/library",
+            "tag": "a",
+            "text": "Library"
+          }
+        ],
+        "dataTheme": "dark",
+        "privacyAnchors": [],
+        "privacyRows": [
+          {
+            "href": null,
+            "tabIndex": null,
+            "tag": "div",
+            "text": "Privacy Controlssoon"
+          }
+        ],
+        "url": "/search"
+      }
+    },
+    {
+      "route": "/needs-upgrade",
+      "theme": "dark",
+      "observation": {
+        "current": [
+          {
+            "ariaLabel": null,
+            "background": "rgb(34, 51, 78)",
+            "color": "rgb(216, 224, 236)",
+            "effectiveBackground": "rgb(34, 51, 78)",
+            "href": "/needs-upgrade",
+            "tag": "a",
+            "text": "Needs Upgrade"
+          }
+        ],
+        "dataTheme": "dark",
+        "privacyAnchors": [],
+        "privacyRows": [
+          {
+            "href": null,
+            "tabIndex": null,
+            "tag": "div",
+            "text": "Privacy Controlssoon"
+          }
+        ],
+        "url": "/needs-upgrade"
+      }
+    }
+  ],
+  "privacy": [
+    {
+      "current": [
+        {
+          "ariaLabel": null,
+          "background": "rgb(238, 244, 255)",
+          "color": "rgb(20, 33, 61)",
+          "effectiveBackground": "rgb(238, 244, 255)",
+          "href": "/library",
+          "tag": "a",
+          "text": "Library"
+        },
+        {
+          "ariaLabel": null,
+          "background": "rgb(238, 244, 255)",
+          "color": "rgb(20, 33, 61)",
+          "effectiveBackground": "rgb(238, 244, 255)",
+          "href": "/library",
+          "tag": "a",
+          "text": "All"
+        },
+        {
+          "ariaLabel": null,
+          "background": "rgb(238, 244, 255)",
+          "color": "rgb(20, 33, 61)",
+          "effectiveBackground": "rgb(238, 244, 255)",
+          "href": "/library",
+          "tag": "a",
+          "text": "All"
+        }
+      ],
+      "dataTheme": "light",
+      "privacyAnchors": [],
+      "privacyRows": [
+        {
+          "href": null,
+          "tabIndex": null,
+          "tag": "div",
+          "text": "Privacy Controlssoon"
+        }
+      ],
+      "url": "/library"
+    }
+  ],
+  "contrast": [
+    {
+      "color": "rgb(255, 255, 255)",
+      "effectiveBackground": "rgb(20, 33, 61)",
+      "href": "/capture",
+      "text": "Capture",
+      "contrast": 15.973572602316318
+    },
+    {
+      "color": "rgb(20, 33, 61)",
+      "effectiveBackground": "rgb(238, 244, 255)",
+      "href": "/library",
+      "text": "Library",
+      "contrast": 14.467266233474628
+    },
+    {
+      "color": "rgb(36, 52, 79)",
+      "effectiveBackground": "rgb(255, 255, 255)",
+      "href": "/settings/device-pairing",
+      "text": "Pair Device",
+      "contrast": 12.506604498403455
+    },
+    {
+      "color": "rgb(255, 255, 255)",
+      "effectiveBackground": "rgb(20, 33, 61)",
+      "href": "/capture",
+      "text": "Capture",
+      "contrast": 15.973572602316318
+    },
+    {
+      "color": "rgb(255, 255, 255)",
+      "effectiveBackground": "rgb(20, 33, 61)",
+      "href": "/capture",
+      "text": "Capture",
+      "contrast": 15.973572602316318
+    }
+  ],
+  "keyboard": [
+    {
+      "ariaLabel": null,
+      "href": null,
+      "tag": "body",
+      "text": "AI Memoryv0.6.2 · private memoryNavigationSearch⌘KCaptureLibraryNeeds UpgradeAsk"
+    },
+    {
+      "ariaLabel": null,
+      "href": null,
+      "tag": "body",
+      "text": "AI Memoryv0.6.2 · private memoryNavigationSearch⌘KCaptureLibraryNeeds UpgradeAsk"
+    },
+    {
+      "ariaLabel": null,
+      "href": null,
+      "tag": "body",
+      "text": "AI Memoryv0.6.2 · private memoryNavigationSearch⌘KCaptureLibraryNeeds UpgradeAsk"
+    },
+    {
+      "ariaLabel": null,
+      "href": null,
+      "tag": "body",
+      "text": "AI Memoryv0.6.2 · private memoryNavigationSearch⌘KCaptureLibraryNeeds UpgradeAsk"
+    },
+    {
+      "ariaLabel": null,
+      "href": null,
+      "tag": "body",
+      "text": "AI Memoryv0.6.2 · private memoryNavigationSearch⌘KCaptureLibraryNeeds UpgradeAsk"
+    },
+    {
+      "ariaLabel": null,
+      "href": null,
+      "tag": "body",
+      "text": "AI Memoryv0.6.2 · private memoryNavigationSearch⌘KCaptureLibraryNeeds UpgradeAsk"
+    },
+    {
+      "ariaLabel": null,
+      "href": null,
+      "tag": "body",
+      "text": "AI Memoryv0.6.2 · private memoryNavigationSearch⌘KCaptureLibraryNeeds UpgradeAsk"
+    },
+    {
+      "ariaLabel": null,
+      "href": null,
+      "tag": "body",
+      "text": "AI Memoryv0.6.2 · private memoryNavigationSearch⌘KCaptureLibraryNeeds UpgradeAsk"
+    }
+  ],
+  "screenshots": [
+    "shell-library-desktop-light-expanded.png",
+    "shell-library-desktop-light-collapsed.png",
+    "shell-capture-desktop-light.png",
+    "shell-ask-desktop-light.png",
+    "shell-settings-desktop-light.png",
+    "shell-pair-device-desktop-light.png",
+    "shell-library-desktop-dark-expanded.png",
+    "shell-pair-device-desktop-dark.png",
+    "shell-library-mobile-light.png",
+    "shell-capture-mobile-light.png",
+    "shell-ask-mobile-light.png",
+    "shell-settings-mobile-light.png",
+    "shell-pair-device-mobile-light.png",
+    "shell-more-mobile-light.png",
+    "shell-library-mobile-dark.png",
+    "shell-pair-device-mobile-dark.png"
+  ],
+  "logs": [
+    {
+      "level": "error",
+      "message": "Encountered a script tag while rendering React component. Scripts inside React components are never executed when rendering on the client. Consider using template tag instead (https://developer.mozilla.org/en-US/docs/Web/HTML/Element/template).",
+      "timestamp": "2026-06-15T16:55:37.832Z",
+      "url": "http://127.0.0.1:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js"
+    },
+    {
+      "level": "error",
+      "message": "Encountered a script tag while rendering React component. Scripts inside React components are never executed when rendering on the client. Consider using template tag instead (https://developer.mozilla.org/en-US/docs/Web/HTML/Element/template).",
+      "timestamp": "2026-06-15T16:55:38.462Z",
+      "url": "http://127.0.0.1:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js"
+    },
+    {
+      "level": "error",
+      "message": "Encountered a script tag while rendering React component. Scripts inside React components are never executed when rendering on the client. Consider using template tag instead (https://developer.mozilla.org/en-US/docs/Web/HTML/Element/template).",
+      "timestamp": "2026-06-15T16:55:39.184Z",
+      "url": "http://127.0.0.1:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js"
+    },
+    {
+      "level": "error",
+      "message": "Encountered a script tag while rendering React component. Scripts inside React components are never executed when rendering on the client. Consider using template tag instead (https://developer.mozilla.org/en-US/docs/Web/HTML/Element/template).",
+      "timestamp": "2026-06-15T16:55:39.854Z",
+      "url": "http://127.0.0.1:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js"
+    }
+  ]
+}

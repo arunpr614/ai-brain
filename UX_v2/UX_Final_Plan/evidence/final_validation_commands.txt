@@ -1,0 +1,39 @@
+AI Memory UX v2 FINAL package validation commands
+Captured: 2026-06-14 10:24 IST
+
+Command:
+find UX_v2/UX_Final_Plan -maxdepth 3 -type f | wc -l
+Result:
+30
+
+Command:
+for paired trackers, compare Markdown table data rows against CSV data rows
+Result:
+design_traceability_matrix md=100 csv=100
+implementation_plan_tracker md=9 csv=9
+master_feature_inventory md=17 csv=17
+milestone_tracker md=11 csv=11
+open_questions_decisions md=14 csv=14
+prd_tracker md=9 csv=9
+risks_blockers_decisions_tracker md=12 csv=12
+testing_qa_readiness_tracker md=14 csv=14
+
+Command:
+find UX_UI_DESIGN_PACKAGE/screenshots -type f | wc -l
+Result:
+17
+
+Command:
+find UX_UI_DESIGN_PACKAGE/source-exports -type f | wc -l
+Result:
+63
+
+Command:
+rg "PRD v2 ready|Plan v2 ready|ready for implementation selection|deployment readiness|deployment-ready|release ready" UX_v2/UX_Final_Plan
+Result:
+Only acceptable hits were the repair checklist quoting the old bad phrases and this validation evidence file recording the search. No active final tracker row uses broad "PRD v2 ready" or "Plan v2 ready" status.
+
+Command:
+git status --short -- UX_v2/UX_Final_Plan UX_v2/RUNNING_LOG.md
+Result:
+UX_v2 remains untracked from the repo perspective. This repair pass intentionally touched planning docs under UX_v2/UX_Final_Plan and appended UX_v2/RUNNING_LOG.md only; no app implementation files were touched.

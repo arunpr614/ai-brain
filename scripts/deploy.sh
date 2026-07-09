@@ -62,6 +62,77 @@ remote_env_preflight() {
     || die "remote /etc/brain/.env must contain BRAIN_API_TOKEN before deploy"
 }
 
+remote_recall_timer_preflight() {
+  if [[ "${BRAIN_RECALL_ALLOW_EXISTING_TIMER:-0}" == "1" ]]; then
+    echo "[deploy] BRAIN_RECALL_ALLOW_EXISTING_TIMER=1; skipping disabled Recall timer preflight."
+    return
+  fi
+
+  ssh "${SSH_HOST}" "if systemctl is-enabled --quiet brain-recall-sync.timer 2>/dev/null; then echo '[deploy] brain-recall-sync.timer is enabled' >&2; exit 1; fi; if systemctl is-active --quiet brain-recall-sync.timer 2>/dev/null; then echo '[deploy] brain-recall-sync.timer is active' >&2; exit 1; fi" \
+    || die "brain-recall-sync.timer must be disabled and inactive before deploy. Disable it, or set BRAIN_RECALL_ALLOW_EXISTING_TIMER=1 only after scheduler approval."
+}
+
+remote_recall_env_preflight() {
+  if [[ "${BRAIN_RECALL_ALLOW_ENABLED_FLAGS:-0}" == "1" ]]; then
+    echo "[deploy] BRAIN_RECALL_ALLOW_ENABLED_FLAGS=1; skipping disabled Recall env preflight."
+    return
+  fi
+
+  ssh "${SSH_HOST}" "sudo bash -s" <<'REMOTE_RECALL_ENV_PREFLIGHT' || die "remote Recall enable flags must be disabled before deploy. Set BRAIN_RECALL_ALLOW_ENABLED_FLAGS=1 only for an approved apply/scheduler window."
+set -euo pipefail
+
+for key in BRAIN_RECALL_SYNC_ENABLED BRAIN_RECALL_SCHEDULER_ENABLED BRAIN_RECALL_CONFIRM_LIVE_API; do
+  if grep -Eq "^(export[[:space:]]+)?${key}[[:space:]]*=[[:space:]]*[\"']?1[\"']?[[:space:]]*$" /etc/brain/.env; then
+    echo "[deploy] remote /etc/brain/.env has ${key}=1" >&2
+    exit 1
+  fi
+done
+REMOTE_RECALL_ENV_PREFLIGHT
+}
+
+remote_recall_key_rotation_evidence_preflight() {
+  if [[ "${BRAIN_RECALL_ALLOW_ENABLED_FLAGS:-0}" != "1" && "${BRAIN_RECALL_ALLOW_EXISTING_TIMER:-0}" != "1" ]]; then
+    return
+  fi
+
+  local env_file
+  local checkpoint
+  local env_file_quoted
+  local checkpoint_quoted
+
+  env_file="${BRAIN_RECALL_KEY_ROTATION_ENV_FILE:-${BRAIN_RECALL_KEY_ROTATION_EVIDENCE_FILE:-/etc/brain/.env}}"
+  checkpoint="${BRAIN_RECALL_KEY_ROTATED_AFTER_ISO:-2026-06-24T15:54:17.000Z}"
+  env_file_quoted="$(printf '%q' "$env_file")"
+  checkpoint_quoted="$(printf '%q' "$checkpoint")"
+
+  ssh "${SSH_HOST}" "sudo env BRAIN_RECALL_KEY_ROTATION_ENV_FILE=${env_file_quoted} BRAIN_RECALL_KEY_ROTATION_EVIDENCE_FILE=${env_file_quoted} BRAIN_RECALL_KEY_ROTATED_AFTER_ISO=${checkpoint_quoted} bash -s" <<'REMOTE_RECALL_KEY_EVIDENCE' \
+    || die "remote Recall key rotation evidence must pass when Recall deploy overrides are used."
+set -euo pipefail
+
+file="${BRAIN_RECALL_KEY_ROTATION_ENV_FILE:-${BRAIN_RECALL_KEY_ROTATION_EVIDENCE_FILE:-/etc/brain/.env}}"
+checkpoint="${BRAIN_RECALL_KEY_ROTATED_AFTER_ISO:-2026-06-24T15:54:17.000Z}"
+
+if [[ ! -f "$file" ]]; then
+  echo "[deploy] Recall key rotation evidence file is missing" >&2
+  exit 1
+fi
+
+mode_octal="$(stat -c '%a' "$file")"
+mode=$((8#$mode_octal))
+if (((mode & 0027) != 0 || (mode & 0400) == 0)); then
+  echo "[deploy] Recall key rotation evidence file permissions are not restrictive enough" >&2
+  exit 1
+fi
+
+mtime_epoch="$(stat -c '%Y' "$file")"
+checkpoint_epoch="$(date -u -d "$checkpoint" +%s)"
+if ((mtime_epoch < checkpoint_epoch)); then
+  echo "[deploy] Recall key rotation evidence file predates the required checkpoint" >&2
+  exit 1
+fi
+REMOTE_RECALL_KEY_EVIDENCE
+}
+
 local_authenticated_health_check() {
   local token="${BRAIN_API_TOKEN:-}"
   [[ -n "$token" ]] || die "BRAIN_API_TOKEN is required locally for authenticated health check"
@@ -155,12 +226,43 @@ log "1. Toolchain and environment preflight"
 toolchain_preflight
 local_env_preflight
 remote_env_preflight
+remote_recall_timer_preflight
+remote_recall_env_preflight
+remote_recall_key_rotation_evidence_preflight
 
 log "2. Local release gates"
 npm run typecheck
 npm run lint
 npm test
 npm run check:env
+npm run check:recall-approval-packet
+npm run smoke:recall-key-rotation-env-writer
+npm run smoke:recall-key-rotation-handoff
+npm run recall:key-rotation:handoff -- --json
+npm run smoke:recall-first-apply-prepare-after-rotation
+npm run smoke:recall-first-apply-live-diagnostic
+npm run smoke:recall-first-apply-live-diagnostic-prompt-guard
+npm run smoke:recall-public-docs-privacy
+npm run check:recall-public-docs-privacy
+npm run smoke:recall-live-spikes
+npm run smoke:recall-live-spike-reports
+npm run build:recall-cli
+npm run smoke:recall-cli:bundle
+npm run smoke:recall-scheduler-wrapper
+npm run smoke:recall-second-manual-runtime-preflight
+npm run smoke:recall-second-manual-remote-runtime-preflight
+npm run smoke:recall-production-key-evidence-repair
+npm run smoke:recall-production-env-key-install
+npm run smoke:recall-second-manual-production-apply
+npm run smoke:recall-manual-verification-apply
+npm run smoke:recall-second-manual-readiness
+npm run smoke:recall-second-manual-command
+npm run check:recall-scheduler
+npm run smoke:recall-daily-sync-completion-status
+npm run smoke:recall-scheduler-enable-evidence-record
+npm run smoke:recall-scheduler-enable-command
+npm run smoke:recall-scheduler-evidence-command
+npm run recall:daily-sync:completion-status
 npm run check:ai-providers -- $(ai_provider_check_args)
 
 log "3. Build standalone artifact"
@@ -172,8 +274,15 @@ log "4. Sync artifact to Hetzner"
 rsync -az --delete --exclude '/data/' .next/standalone/ "${SSH_HOST}:${REMOTE_DIR}/"
 rsync -az --delete .next/static/ "${SSH_HOST}:${REMOTE_DIR}/.next/static/"
 rsync -az --delete public/ "${SSH_HOST}:${REMOTE_DIR}/public/"
-ssh "${SSH_HOST}" "mkdir -p '${REMOTE_DIR}/scripts'"
-rsync -az scripts/check-ai-providers.mjs scripts/backfill-embeddings-prod.mjs "${SSH_HOST}:${REMOTE_DIR}/scripts/"
+ssh "${SSH_HOST}" "mkdir -p '${REMOTE_DIR}/scripts' '${REMOTE_DIR}/scripts/deploy' '${REMOTE_DIR}/scripts/lib' '${REMOTE_DIR}/docs/plans/spikes'"
+rsync -az scripts/check-ai-providers.mjs scripts/check-recall-key-rotation-evidence.mjs scripts/check-recall-dry-run-report.mjs scripts/check-recall-apply-report.mjs scripts/check-recall-live-spike-reports.mjs scripts/check-recall-public-privacy.mjs scripts/check-recall-public-manifest-privacy.mjs scripts/check-recall-second-manual-runtime-preflight.mjs scripts/backfill-embeddings-prod.mjs scripts/restore-from-backup.sh scripts/recall-first-apply-preflight.mjs scripts/recall-scheduled-apply.sh scripts/recall-second-manual-verification-apply.sh scripts/dist/sync-recall-prod.mjs "${SSH_HOST}:${REMOTE_DIR}/scripts/"
+rsync -az scripts/lib/recall-controlled-samples.mjs "${SSH_HOST}:${REMOTE_DIR}/scripts/lib/"
+rsync -az docs/plans/spikes/SPIKE-013-recall-rest-enumeration-*.md docs/plans/spikes/SPIKE-014-recall-content-fidelity-*.md "${SSH_HOST}:${REMOTE_DIR}/docs/plans/spikes/"
+rsync -az --delete scripts/dist/db/ "${SSH_HOST}:${REMOTE_DIR}/scripts/db/"
+rsync -az scripts/deploy/brain-recall-sync.service scripts/deploy/brain-recall-sync.timer "${SSH_HOST}:${REMOTE_DIR}/scripts/deploy/"
+ssh "${SSH_HOST}" "sudo install -m 0644 '${REMOTE_DIR}/scripts/deploy/brain-recall-sync.service' /etc/systemd/system/brain-recall-sync.service"
+ssh "${SSH_HOST}" "sudo install -m 0644 '${REMOTE_DIR}/scripts/deploy/brain-recall-sync.timer' /etc/systemd/system/brain-recall-sync.timer"
+ssh "${SSH_HOST}" "sudo systemctl daemon-reload"
 
 log "5. Repair remote native dependencies"
 repair_remote_native_deps

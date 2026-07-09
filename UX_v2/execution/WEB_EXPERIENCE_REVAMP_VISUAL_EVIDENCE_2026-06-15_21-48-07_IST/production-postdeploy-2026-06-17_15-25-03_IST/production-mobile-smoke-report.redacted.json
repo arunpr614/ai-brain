@@ -1,0 +1,204 @@
+{
+  "stamp": "2026-06-17_15-25-03_IST",
+  "baseUrl": "https://brain.arunp.in",
+  "outDir": "/Users/arun.prakash/Library/CloudStorage/GoogleDrive-arun.prakash@toasttab.com/Other computers/My MacBook Pro M1 2025/arun-cursor/Initiatives/Arun_AI_Projects/ai-brain/phase2/UX_v2/execution/WEB_EXPERIENCE_REVAMP_VISUAL_EVIDENCE_2026-06-15_21-48-07_IST/production-postdeploy-2026-06-17_15-25-03_IST",
+  "settings": {
+    "osDarkNoTheme": {
+      "href": "https://brain.arunp.in/settings",
+      "width": 390,
+      "theme": "light",
+      "radios": [
+        {
+          "label": "Light theme",
+          "checked": "true",
+          "center": {
+            "x": 266,
+            "y": 376
+          }
+        },
+        {
+          "label": "Dark theme",
+          "checked": "false",
+          "center": {
+            "x": 314,
+            "y": 376
+          }
+        }
+      ],
+      "hasSystemText": false,
+      "hasLightFirstCopy": true
+    },
+    "afterDarkClick": {
+      "href": "https://brain.arunp.in/settings",
+      "width": 390,
+      "theme": "dark",
+      "radios": [
+        {
+          "label": "Light theme",
+          "checked": "false",
+          "center": {
+            "x": 266,
+            "y": 376
+          }
+        },
+        {
+          "label": "Dark theme",
+          "checked": "true",
+          "center": {
+            "x": 314,
+            "y": 376
+          }
+        }
+      ],
+      "hasSystemText": false,
+      "hasLightFirstCopy": true
+    },
+    "afterLightRestore": {
+      "href": "https://brain.arunp.in/settings",
+      "width": 390,
+      "theme": "light",
+      "radios": [
+        {
+          "label": "Light theme",
+          "checked": "true",
+          "center": {
+            "x": 266,
+            "y": 376
+          }
+        },
+        {
+          "label": "Dark theme",
+          "checked": "false",
+          "center": {
+            "x": 314,
+            "y": 376
+          }
+        }
+      ],
+      "hasSystemText": false,
+      "hasLightFirstCopy": true
+    }
+  },
+  "library": {
+    "initial": {
+      "href": "https://brain.arunp.in/library",
+      "width": 390,
+      "theme": "light",
+      "cardCount": 32,
+      "visibleChecked": 0,
+      "rows": [
+        {
+          "index": 0,
+          "height": 127,
+          "titleHeight": 41,
+          "metaHeight": 48,
+          "mobileDisplay": "block",
+          "desktopDisplay": "none"
+        },
+        {
+          "index": 1,
+          "height": 127,
+          "titleHeight": 41,
+          "metaHeight": 48,
+          "mobileDisplay": "block",
+          "desktopDisplay": "none"
+        },
+        {
+          "index": 2,
+          "height": 127,
+          "titleHeight": 41,
+          "metaHeight": 48,
+          "mobileDisplay": "block",
+          "desktopDisplay": "none"
+        },
+        {
+          "index": 3,
+          "height": 127,
+          "titleHeight": 41,
+          "metaHeight": 48,
+          "mobileDisplay": "block",
+          "desktopDisplay": "none"
+        },
+        {
+          "index": 4,
+          "height": 101,
+          "titleHeight": 41,
+          "metaHeight": 22,
+          "mobileDisplay": "block",
+          "desktopDisplay": "none"
+        },
+        {
+          "index": 5,
+          "height": 101,
+          "titleHeight": 41,
+          "metaHeight": 22,
+          "mobileDisplay": "block",
+          "desktopDisplay": "none"
+        },
+        {
+          "index": 6,
+          "height": 101,
+          "titleHeight": 41,
+          "metaHeight": 22,
+          "mobileDisplay": "block",
+          "desktopDisplay": "none"
+        },
+        {
+          "index": 7,
+          "height": 101,
+          "titleHeight": 41,
+          "metaHeight": 22,
+          "mobileDisplay": "block",
+          "desktopDisplay": "none"
+        }
+      ]
+    },
+    "afterOne": {
+      "visibleChecked": 1
+    },
+    "afterTwo": {
+      "visibleChecked": 2
+    },
+    "askCandidates": [
+      {
+        "text": "Ask",
+        "parentText": "LibraryCaptureAskMore",
+        "href": "/ask",
+        "x": 187,
+        "y": 787.25,
+        "width": 97.5,
+        "height": 46.5,
+        "visible": true
+      },
+      {
+        "text": "Ask",
+        "parentText": "2 selectedAsk",
+        "href": "",
+        "x": 249.75,
+        "y": 723,
+        "width": 71.25,
+        "height": 36,
+        "visible": true
+      }
+    ],
+    "askRoute": {
+      "hrefPattern": "/ask?scope=selected&ids=[redacted]",
+      "hasSelectedCopy": true
+    },
+    "firstCardLink": {
+      "hrefPattern": "/items/[redacted]",
+      "center": {
+        "x": 216,
+        "y": 365
+      }
+    },
+    "cardNavigation": {
+      "hrefPattern": "/items/[redacted]",
+      "hasDetailChrome": true
+    }
+  },
+  "issues": [],
+  "screenshotNote": "No production screenshots captured in this pass to avoid private Library content; JSON values are redacted.",
+  "issueCount": 0,
+  "redactionCorrection": "Corrected doubled question mark introduced by the redaction harness; the recorded route had selected Ask state and selected-copy proof."
+}

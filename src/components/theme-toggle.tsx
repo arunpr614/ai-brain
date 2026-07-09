@@ -1,38 +1,22 @@
 "use client";
 
-import { Monitor, Moon, Sun } from "lucide-react";
-import { useEffect, useState } from "react";
+import { Moon, Sun } from "lucide-react";
+import { useState } from "react";
 import { cn } from "@/lib/cn";
-import { isTheme, THEME_COOKIE, type Theme } from "@/lib/theme";
+import { isTheme, serializeThemeCookie, type Theme } from "@/lib/theme";
 
 const OPTIONS: { value: Theme; icon: typeof Sun; label: string }[] = [
-  { value: "system", icon: Monitor, label: "System" },
   { value: "light", icon: Sun, label: "Light" },
   { value: "dark", icon: Moon, label: "Dark" },
 ];
 
 function applyTheme(theme: Theme): void {
-  const resolved =
-    theme === "system"
-      ? window.matchMedia("(prefers-color-scheme: dark)").matches
-        ? "dark"
-        : "light"
-      : theme;
-  document.documentElement.dataset.theme = resolved;
-  document.cookie = `${THEME_COOKIE}=${theme}; path=/; max-age=${60 * 60 * 24 * 365}; samesite=strict`;
+  document.documentElement.dataset.theme = theme;
+  document.cookie = serializeThemeCookie(theme);
 }
 
 export function ThemeToggle({ initial }: { initial: Theme }) {
   const [theme, setTheme] = useState<Theme>(initial);
-
-  // If user picks "system", keep it reactive to OS preference changes.
-  useEffect(() => {
-    if (theme !== "system") return;
-    const mql = window.matchMedia("(prefers-color-scheme: dark)");
-    const handler = () => applyTheme("system");
-    mql.addEventListener("change", handler);
-    return () => mql.removeEventListener("change", handler);
-  }, [theme]);
 
   const onSelect = (value: Theme) => {
     if (!isTheme(value)) return;

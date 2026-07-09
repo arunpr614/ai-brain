@@ -30,8 +30,15 @@ import type { ItemRow } from "@/db/client";
 import { getItem } from "@/db/items";
 import { listTagsForItem } from "@/db/tags";
 import { listTopicsForItem, type ItemTopicRow } from "@/db/topics";
+import {
+  getActiveTranscriptSourceForItem,
+  listTranscriptSegmentsForSource,
+  type TranscriptSegmentRow,
+  type TranscriptSourceRow,
+} from "@/db/transcripts";
 import { getItemProcessingStatus, type ItemProcessingStatus } from "@/lib/items/status";
 import {
+  captureSourceLabel,
   improvementHint,
   isLimitedCaptureQuality,
   needsUpgradeReason,
@@ -69,25 +76,23 @@ function extractionWarningMessage(code: string): string {
   return code;
 }
 
-function captureSourceLabel(source: string | null | undefined): string {
-  switch (source) {
-    case "android":
-      return "Android";
-    case "extension":
-      return "Extension";
-    case "telegram":
-      return "Telegram";
-    case "system":
-      return "System";
-    case "web":
-      return "Web";
-    default:
-      return "Unknown";
-  }
+function isYoutubeSource(item: ItemRow): boolean {
+  return (
+    item.source_type === "youtube" ||
+    item.source_platform === "youtube" ||
+    item.source_platform === "youtube_short"
+  );
 }
 
 type CaptureResultKind = "url" | "pdf" | "note";
 type ItemDetailTab = "original" | "digest" | "ask" | "related" | "details";
+const TRANSCRIPT_PANEL_SEGMENT_PREVIEW_LIMIT = 200;
+
+type TranscriptPreview = {
+  source: TranscriptSourceRow;
+  segments: TranscriptSegmentRow[];
+  hiddenCount: number;
+};
 
 function parseCaptureResultKind(value: string | undefined): CaptureResultKind | null {
   if (value === "url" || value === "pdf" || value === "note") return value;
@@ -146,6 +151,20 @@ export default async function ItemDetailPage({
 
   const item = getItem(id);
   if (!item) notFound();
+  const activeTranscriptSource = getActiveTranscriptSourceForItem(item.id);
+  const transcriptPreview =
+    activeTranscriptSource && activeTranscriptSource.segment_count > 0
+      ? {
+          source: activeTranscriptSource,
+          segments: listTranscriptSegmentsForSource(activeTranscriptSource.id, {
+            limit: TRANSCRIPT_PANEL_SEGMENT_PREVIEW_LIMIT,
+          }),
+          hiddenCount: Math.max(
+            0,
+            activeTranscriptSource.segment_count - TRANSCRIPT_PANEL_SEGMENT_PREVIEW_LIMIT,
+          ),
+        }
+      : null;
 
   const captured = new Date(item.captured_at).toLocaleString();
   const tags = listTagsForItem(item.id).filter((tag) => tag.kind === "manual");
@@ -264,6 +283,7 @@ export default async function ItemDetailPage({
           hasDigest={hasDigest}
           quotes={quotes}
           related={related}
+          transcriptPreview={transcriptPreview}
           preserveQuery={{ capture_state, repair, highlight }}
         />
       </div>
@@ -316,6 +336,8 @@ export default async function ItemDetailPage({
               />
             )}
           </header>
+
+          {transcriptPreview && <TranscriptPanel preview={transcriptPreview} />}
 
           <div className="whitespace-pre-wrap">{item.body}</div>
 
@@ -556,6 +578,7 @@ function MobileItemDetailTabs({
   hasDigest,
   quotes,
   related,
+  transcriptPreview,
   preserveQuery,
 }: {
   item: ItemRow;
@@ -575,6 +598,7 @@ function MobileItemDetailTabs({
   hasDigest: boolean;
   quotes: string[];
   related: ReturnType<typeof findRelatedItems>;
+  transcriptPreview: TranscriptPreview | null;
   preserveQuery: {
     capture_state?: string;
     repair?: string;
@@ -616,6 +640,7 @@ function MobileItemDetailTabs({
           limitedQuality={limitedQuality}
           upgradeReason={upgradeReason}
           processingStatus={processingStatus}
+          transcriptPreview={transcriptPreview}
         />
       )}
       {activeTab === "digest" && (
@@ -654,6 +679,7 @@ function MobileOriginalTab({
   limitedQuality,
   upgradeReason,
   processingStatus,
+  transcriptPreview,
 }: {
   item: ItemRow;
   captured: string;
@@ -662,6 +688,7 @@ function MobileOriginalTab({
   limitedQuality: boolean;
   upgradeReason: string | null;
   processingStatus: ItemProcessingStatus;
+  transcriptPreview: TranscriptPreview | null;
 }) {
   return (
     <article className="article">
@@ -707,6 +734,8 @@ function MobileOriginalTab({
           <WeakSourceRepairPanel item={item} upgradeReason={upgradeReason} />
         )}
       </header>
+
+      {transcriptPreview && <TranscriptPanel preview={transcriptPreview} />}
 
       <div className="whitespace-pre-wrap">{item.body}</div>
 
@@ -970,6 +999,107 @@ function MobileDetailsTab({
   );
 }
 
+function TranscriptPanel({ preview }: { preview: TranscriptPreview }) {
+  const { source, segments, hiddenCount } = preview;
+  const timestamped = source.timestamp_mode === "timestamped";
+  return (
+    <section className="mb-8 rounded-lg border border-[var(--border)] bg-[var(--surface)] p-4 font-sans">
+      <div className="mb-4 flex flex-col gap-3 border-b border-[var(--border)] pb-3 sm:flex-row sm:items-start sm:justify-between">
+        <div>
+          <p className="text-[11px] font-medium uppercase tracking-wider text-[var(--text-muted)]">
+            Transcript
+          </p>
+          <h2 className="mt-1 text-base font-semibold text-[var(--text-primary)]">
+            {timestamped ? "Timestamped transcript" : "Transcript paragraphs"}
+          </h2>
+        </div>
+        <div className="flex flex-wrap gap-1.5 text-xs text-[var(--text-secondary)]">
+          <span className="rounded-full border border-[var(--border)] px-2 py-0.5">
+            {sourceKindLabel(source.source_kind)}
+          </span>
+          <span className="rounded-full border border-[var(--border)] px-2 py-0.5">
+            {timestampModeLabel(source.timestamp_mode)}
+          </span>
+          {source.language_code && (
+            <span className="rounded-full border border-[var(--border)] px-2 py-0.5">
+              {source.language_code}
+            </span>
+          )}
+          <span className="rounded-full border border-[var(--border)] px-2 py-0.5">
+            {source.segment_count.toLocaleString()} segments
+          </span>
+        </div>
+      </div>
+
+      <ol className="flex flex-col gap-2">
+        {segments.map((segment) => (
+          <li
+            key={segment.id}
+            className="grid gap-2 rounded-md border border-[var(--border)] bg-[var(--surface-raised)] px-3 py-2 text-sm sm:grid-cols-[72px_minmax(0,1fr)]"
+          >
+            <span className="font-mono text-xs text-[var(--text-muted)]">
+              {timestamped
+                ? formatTranscriptTimestamp(segment.start_ms)
+                : `#${segment.idx + 1}`}
+            </span>
+            <span className="whitespace-pre-wrap leading-6 text-[var(--text-primary)]">
+              {segment.text}
+            </span>
+          </li>
+        ))}
+      </ol>
+
+      {hiddenCount > 0 && (
+        <p className="mt-3 rounded-md border border-[var(--border)] bg-[var(--surface-raised)] px-3 py-2 text-xs text-[var(--text-secondary)]">
+          Showing first {TRANSCRIPT_PANEL_SEGMENT_PREVIEW_LIMIT.toLocaleString()} of{" "}
+          {source.segment_count.toLocaleString()} segments. Full text is in the item body.
+        </p>
+      )}
+      <p className="mt-3 text-xs text-[var(--text-muted)]">
+        Imported {new Date(source.created_at).toLocaleString()}.
+      </p>
+    </section>
+  );
+}
+
+function sourceKindLabel(kind: TranscriptSourceRow["source_kind"]): string {
+  switch (kind) {
+    case "uploaded_file":
+      return "Uploaded file";
+    case "user_paste":
+      return "User paste";
+    case "youtube_official_caption":
+      return "Official captions";
+    case "owned_media_stt":
+      return "Owned media STT";
+    case "lab_public_caption":
+      return "Lab captions";
+  }
+}
+
+function timestampModeLabel(mode: TranscriptSourceRow["timestamp_mode"]): string {
+  switch (mode) {
+    case "timestamped":
+      return "Timestamped";
+    case "paragraph_only":
+      return "Paragraphs";
+    case "inferred":
+      return "Inferred";
+  }
+}
+
+function formatTranscriptTimestamp(ms: number | null): string {
+  if (ms === null) return "--:--";
+  const totalSeconds = Math.floor(ms / 1000);
+  const hours = Math.floor(totalSeconds / 3600);
+  const minutes = Math.floor((totalSeconds % 3600) / 60);
+  const seconds = totalSeconds % 60;
+  if (hours > 0) {
+    return `${hours}:${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
+  }
+  return `${minutes}:${String(seconds).padStart(2, "0")}`;
+}
+
 function RepairResultBanner({ item }: { item: ItemRow }) {
   return (
     <section
@@ -1010,6 +1140,7 @@ function WeakSourceRepairPanel({
   item: ItemRow;
   upgradeReason: string | null;
 }) {
+  const isYoutube = isYoutubeSource(item);
   return (
     <div className="mt-4 rounded-lg border border-[var(--quality-needs-upgrade)] bg-[var(--surface)] p-4 font-sans text-sm">
       <p className="font-medium text-[var(--quality-needs-upgrade)]">
@@ -1024,7 +1155,7 @@ function WeakSourceRepairPanel({
           className="inline-flex h-11 items-center gap-1.5 rounded-md bg-[var(--action-primary-bg)] px-3 text-sm font-medium text-[var(--action-primary-fg)] hover:bg-[var(--action-primary-bg-hover)] md:h-8"
         >
           <FileText className="h-3.5 w-3.5" strokeWidth={2} />
-          Add text
+          {isYoutube ? "Add transcript" : "Add text"}
         </Link>
         {item.source_url && (
           <a
@@ -1337,7 +1468,7 @@ function FocusReadMode({
                 href={`/items/${item.id}/repair`}
                 className="inline-flex h-8 items-center rounded-md bg-[var(--action-primary-bg)] px-3 text-sm font-medium text-[var(--action-primary-fg)] hover:bg-[var(--action-primary-bg-hover)]"
               >
-                Add text
+                {isYoutubeSource(item) ? "Add transcript" : "Add text"}
               </Link>
               {item.source_url && (
                 <a

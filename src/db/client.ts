@@ -92,7 +92,7 @@ function runMigrations(db: Database.Database): void {
       .map((r) => (r as { name: string }).name),
   );
 
-  const migrationsDir = resolve(process.cwd(), "src/db/migrations");
+  const migrationsDir = resolveMigrationsDir();
   const files = readdirSync(migrationsDir)
     .filter((f) => f.endsWith(".sql"))
     .sort(); // NNN_ prefix ensures lexicographic == numeric order
@@ -109,12 +109,23 @@ function runMigrations(db: Database.Database): void {
     });
     try {
       tx();
-      console.log(`[db] applied migration ${file}`);
+      console.error(`[db] applied migration ${file}`);
     } catch (err) {
       console.error(`[db] migration ${file} failed:`, (err as Error).message);
       throw err;
     }
   }
+}
+
+function resolveMigrationsDir(): string {
+  const configured = process.env.BRAIN_MIGRATIONS_DIR?.trim();
+  const migrationsDir = configured
+    ? resolve(configured)
+    : resolve(process.cwd(), "src/db/migrations");
+  if (!existsSync(migrationsDir)) {
+    throw new Error(`[db] migrations directory not found: ${migrationsDir}`);
+  }
+  return migrationsDir;
 }
 
 /**
@@ -123,7 +134,7 @@ function runMigrations(db: Database.Database): void {
 export interface ItemRow {
   id: string;
   source_type: "url" | "pdf" | "note" | "youtube" | "podcast" | "epub" | "docx" | "telegram";
-  capture_source: "web" | "android" | "extension" | "telegram" | "system" | "unknown";
+  capture_source: "web" | "android" | "extension" | "telegram" | "system" | "unknown" | "recall";
   source_url: string | null;
   title: string;
   author: string | null;

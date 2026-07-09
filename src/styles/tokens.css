@@ -3,10 +3,9 @@
  * referenced in components MUST come from here.
  *
  * Themes:
- *   - :root                         → light theme (default)
- *   - :root[data-theme="dark"]      → dark theme
- * System preference is applied server-side via a `theme` cookie; set
- * `data-theme` on <html> before first paint to avoid FOUC.
+ *   - :root                         -> light theme (default)
+ *   - :root[data-theme="dark"]      -> explicit dark preference
+ * Missing, invalid, and legacy System cookies resolve to Light before first paint.
  */
 
 :root {

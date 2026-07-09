@@ -8,6 +8,11 @@ import {
   RepairItemError,
   type RepairTextKind,
 } from "@/lib/repair/item-repair";
+import {
+  attachUploadedTranscriptFileToYoutubeItem,
+  attachUserProvidedTranscriptToYoutubeItem,
+  UserProvidedTranscriptError,
+} from "@/lib/capture/transcripts/user-provided";
 import { logError } from "@/lib/errors/sink";
 
 export type RepairFormState = { error?: string } | null;
@@ -16,7 +21,7 @@ const RepairInput = z.object({
   item_id: z.string().min(1),
   title: z.string().max(500).optional(),
   text_kind: z.enum(["text", "transcript"]),
-  text: z.string().min(1, "Paste the source text first."),
+  text: z.string(),
 });
 
 export async function repairItemWithTextAction(
@@ -34,17 +39,64 @@ export async function repairItemWithTextAction(
     return { error: parsed.error.issues[0]?.message ?? "Repair could not be saved." };
   }
 
+  const uploadedFile = formData.get("transcript_file");
+  const hasUploadedTranscriptFile =
+    uploadedFile instanceof File && uploadedFile.size > 0 && Boolean(uploadedFile.name);
+  const transcriptFile = hasUploadedTranscriptFile ? (uploadedFile as File) : null;
+  const hasPastedText = parsed.data.text.trim().length > 0;
+  if (hasUploadedTranscriptFile && hasPastedText) {
+    return { error: "Use either pasted text or a transcript file, not both." };
+  }
+  if (!hasUploadedTranscriptFile && !hasPastedText) {
+    return { error: "Paste source text or choose a transcript file first." };
+  }
+
   let itemId: string;
   try {
-    const result = repairItemWithText({
-      itemId: parsed.data.item_id,
-      title: parsed.data.title,
-      text: parsed.data.text,
-      textKind: parsed.data.text_kind as RepairTextKind,
-    });
-    itemId = result.item.id;
+    if (parsed.data.text_kind === "transcript" && transcriptFile) {
+      const result = attachUploadedTranscriptFileToYoutubeItem({
+        itemId: parsed.data.item_id,
+        title: parsed.data.title,
+        filename: transcriptFile.name,
+        contentType: transcriptFile.type,
+        bytes: new Uint8Array(await transcriptFile.arrayBuffer()),
+      });
+      itemId = result.repair.item.id;
+    } else if (parsed.data.text_kind === "transcript") {
+      try {
+        const result = attachUserProvidedTranscriptToYoutubeItem({
+          itemId: parsed.data.item_id,
+          title: parsed.data.title,
+          text: parsed.data.text,
+        });
+        itemId = result.repair.item.id;
+      } catch (err) {
+        if (
+          err instanceof UserProvidedTranscriptError &&
+          err.code === "not_youtube_item"
+        ) {
+          const result = repairItemWithText({
+            itemId: parsed.data.item_id,
+            title: parsed.data.title,
+            text: parsed.data.text,
+            textKind: parsed.data.text_kind as RepairTextKind,
+          });
+          itemId = result.item.id;
+        } else {
+          throw err;
+        }
+      }
+    } else {
+      const result = repairItemWithText({
+        itemId: parsed.data.item_id,
+        title: parsed.data.title,
+        text: parsed.data.text,
+        textKind: parsed.data.text_kind as RepairTextKind,
+      });
+      itemId = result.item.id;
+    }
   } catch (err) {
-    if (err instanceof RepairItemError) {
+    if (err instanceof RepairItemError || err instanceof UserProvidedTranscriptError) {
       return { error: err.message };
     }
     logError({

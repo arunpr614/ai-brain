@@ -22,7 +22,7 @@ import {
   PRIVACY_TRUST_COPY,
   PROVIDER_TRUST_COPY,
 } from "@/lib/settings/trust-copy";
-import { isTheme, THEME_COOKIE, type Theme } from "@/lib/theme";
+import { resolveThemePreference, THEME_COOKIE, type Theme } from "@/lib/theme";
 import pkg from "../../../package.json";
 
 interface BackupConfig {
@@ -44,7 +44,7 @@ export default async function SettingsPage() {
   }
 
   const raw = c.get(THEME_COOKIE)?.value;
-  const themePref: Theme = isTheme(raw) ? raw : "system";
+  const themePref: Theme = resolveThemePreference(raw);
   const backup = getJsonSetting<BackupConfig>("backup", BACKUP_DEFAULTS);
   const providerStatus = await getProviderStatusReport();
 
@@ -89,10 +89,10 @@ export default async function SettingsPage() {
         </h2>
         <div className="flex items-center justify-between rounded-lg border border-[var(--border)] bg-[var(--surface)] px-4 py-3">
           <div>
-            <p className="text-sm font-medium text-[var(--text-primary)]">Theme</p>
-            <p className="text-xs text-[var(--text-secondary)]">
-              System follows your OS preference.
-            </p>
+	            <p className="text-sm font-medium text-[var(--text-primary)]">Theme</p>
+	            <p className="text-xs text-[var(--text-secondary)]">
+	              AI Memory opens in Light. Dark is an explicit preference.
+	            </p>
           </div>
           <ThemeToggle initial={themePref} />
         </div>

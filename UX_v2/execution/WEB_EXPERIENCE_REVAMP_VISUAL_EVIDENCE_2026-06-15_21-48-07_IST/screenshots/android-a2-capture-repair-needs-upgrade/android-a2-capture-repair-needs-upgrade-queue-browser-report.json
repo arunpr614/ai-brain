@@ -1,0 +1,198 @@
+{
+  "baseUrl": "http://127.0.0.1:3027",
+  "viewport": {
+    "width": 390,
+    "height": 844,
+    "isMobile": true
+  },
+  "mode": "queue",
+  "dbPath": "/tmp/ai-memory-android-a2-queue.sqlite",
+  "states": [
+    {
+      "name": "390x844-capture-url-duplicate-result",
+      "path": "/capture?url=https%3A%2F%2Fexample.test%2Fa2-duplicate-url",
+      "screenshot": "/Users/arun.prakash/Library/CloudStorage/GoogleDrive-arun.prakash@toasttab.com/Other computers/My MacBook Pro M1 2025/arun-cursor/Initiatives/Arun_AI_Projects/ai-brain/phase2/UX_v2/execution/WEB_EXPERIENCE_REVAMP_VISUAL_EVIDENCE_2026-06-15_21-48-07_IST/screenshots/android-a2-capture-repair-needs-upgrade/390x844-capture-url-duplicate-result.png",
+      "metrics": {
+        "title": "AI Memory",
+        "url": "/capture?url=https%3A%2F%2Fexample.test%2Fa2-duplicate-url",
+        "bodyTextSample": "Library\nCapture\nAsk\nMore\nBack to Library\nCapture\n\nSave a URL, PDF, or note to AI Memory.\n\nURL\nPDF\nNote\nURL\n\nPaste a public article URL. AI Memory fetches, extracts clean text, and saves.\n\nYou’ve already saved this URL.\n\nOpen existing\nSave again anyway\nSave URL\nCancel",
+        "scrollWidth": 390,
+        "clientWidth": 390,
+        "scrollHeight": 844,
+        "clientHeight": 844,
+        "horizontalOverflow": false,
+        "forbiddenMatches": [],
+        "expectedMissing": [],
+        "clippedControls": []
+      }
+    },
+    {
+      "name": "390x844-capture-pdf-initial",
+      "path": "/capture?tab=pdf",
+      "screenshot": "/Users/arun.prakash/Library/CloudStorage/GoogleDrive-arun.prakash@toasttab.com/Other computers/My MacBook Pro M1 2025/arun-cursor/Initiatives/Arun_AI_Projects/ai-brain/phase2/UX_v2/execution/WEB_EXPERIENCE_REVAMP_VISUAL_EVIDENCE_2026-06-15_21-48-07_IST/screenshots/android-a2-capture-repair-needs-upgrade/390x844-capture-pdf-initial.png",
+      "metrics": {
+        "title": "AI Memory",
+        "url": "/capture?tab=pdf",
+        "bodyTextSample": "Library\nCapture\nAsk\nMore\nBack to Library\nCapture\n\nSave a URL, PDF, or note to AI Memory.\n\nURL\nPDF\nNote\n\nDrop a PDF here or click to browse\n\nUp to 50 MB. Text is extracted via unpdf.",
+        "scrollWidth": 390,
+        "clientWidth": 390,
+        "scrollHeight": 844,
+        "clientHeight": 844,
+        "horizontalOverflow": false,
+        "forbiddenMatches": [],
+        "expectedMissing": [],
+        "clippedControls": []
+      }
+    },
+    {
+      "name": "390x844-capture-pdf-invalid-file",
+      "path": "/capture?tab=pdf",
+      "screenshot": "/Users/arun.prakash/Library/CloudStorage/GoogleDrive-arun.prakash@toasttab.com/Other computers/My MacBook Pro M1 2025/arun-cursor/Initiatives/Arun_AI_Projects/ai-brain/phase2/UX_v2/execution/WEB_EXPERIENCE_REVAMP_VISUAL_EVIDENCE_2026-06-15_21-48-07_IST/screenshots/android-a2-capture-repair-needs-upgrade/390x844-capture-pdf-invalid-file.png",
+      "metrics": {
+        "title": "AI Memory",
+        "url": "/capture?tab=pdf",
+        "bodyTextSample": "Library\nCapture\nAsk\nMore\nBack to Library\nCapture\n\nSave a URL, PDF, or note to AI Memory.\n\nURL\nPDF\nNote\n\nDrop a PDF here or click to browse\n\nUp to 50 MB. Text is extracted via unpdf.\n\nOnly PDF files are supported.",
+        "scrollWidth": 390,
+        "clientWidth": 390,
+        "scrollHeight": 844,
+        "clientHeight": 844,
+        "horizontalOverflow": false,
+        "forbiddenMatches": [],
+        "expectedMissing": [],
+        "clippedControls": []
+      }
+    },
+    {
+      "name": "390x844-capture-note-initial",
+      "path": "/capture?tab=note",
+      "screenshot": "/Users/arun.prakash/Library/CloudStorage/GoogleDrive-arun.prakash@toasttab.com/Other computers/My MacBook Pro M1 2025/arun-cursor/Initiatives/Arun_AI_Projects/ai-brain/phase2/UX_v2/execution/WEB_EXPERIENCE_REVAMP_VISUAL_EVIDENCE_2026-06-15_21-48-07_IST/screenshots/android-a2-capture-repair-needs-upgrade/390x844-capture-note-initial.png",
+      "metrics": {
+        "title": "AI Memory",
+        "url": "/capture?tab=note",
+        "bodyTextSample": "Library\nCapture\nAsk\nMore\nBack to Library\nCapture\n\nSave a URL, PDF, or note to AI Memory.\n\nURL\nPDF\nNote\nTitle\nBody\nSave note\nCancel",
+        "scrollWidth": 390,
+        "clientWidth": 390,
+        "scrollHeight": 913,
+        "clientHeight": 844,
+        "horizontalOverflow": false,
+        "forbiddenMatches": [],
+        "expectedMissing": [],
+        "clippedControls": []
+      }
+    },
+    {
+      "name": "390x844-capture-note-saved-item",
+      "path": "/items/67d63b49bbe0220e8d32e66c?capture_state=created_full_text",
+      "screenshot": "/Users/arun.prakash/Library/CloudStorage/GoogleDrive-arun.prakash@toasttab.com/Other computers/My MacBook Pro M1 2025/arun-cursor/Initiatives/Arun_AI_Projects/ai-brain/phase2/UX_v2/execution/WEB_EXPERIENCE_REVAMP_VISUAL_EVIDENCE_2026-06-15_21-48-07_IST/screenshots/android-a2-capture-repair-needs-upgrade/390x844-capture-note-saved-item.png",
+      "metrics": {
+        "title": "AI Memory",
+        "url": "/items/67d63b49bbe0220e8d32e66c?capture_state=created_full_text",
+        "bodyTextSample": "Library\nCapture\nAsk\nMore\nBack to Library\nNote saved\n\nSaved with readable text. This source is ready for search and Ask.\n\nNote\nvia Web\nFull text\nAsk\nCapture\nA2 mobile note proof\nqueued\n\nSaved\n\nNote\nvia Web\nFull text\nSaved 6/16/2026, 11:31:23 AM\n138 chars\nA2 mobile note body saved through the real Capture note form. It proves the mobile note action routes to an item detail page after saving.\nFocus mode\nAsk this item\nExport as .md\n\nTAGS\n\nNo tags yet.\nAdd\n\nINCLUDED TOPICS\n\nAI\n\nNo included topics yet.\n\nCAPTURE\n\nPlatform\nNote\nQuality\nFull text\nMethod\nmanual_note\nVia\nweb\n\nCOLLECTIONS\n\nNo collections yet.\n+ add to collection…\nA2 Preserve Collection\nAdd\nAI digest will appear here once the enrichment worker picks this item up.",
+        "scrollWidth": 390,
+        "clientWidth": 390,
+        "scrollHeight": 1636,
+        "clientHeight": 844,
+        "horizontalOverflow": false,
+        "forbiddenMatches": [],
+        "expectedMissing": [],
+        "clippedControls": [
+          {
+            "tag": "a",
+            "text": "Export as .md",
+            "top": 814,
+            "bottom": 846,
+            "left": 32,
+            "right": 172,
+            "width": 140,
+            "height": 32
+          }
+        ]
+      }
+    },
+    {
+      "name": "390x844-needs-upgrade-queue",
+      "path": "/needs-upgrade",
+      "screenshot": "/Users/arun.prakash/Library/CloudStorage/GoogleDrive-arun.prakash@toasttab.com/Other computers/My MacBook Pro M1 2025/arun-cursor/Initiatives/Arun_AI_Projects/ai-brain/phase2/UX_v2/execution/WEB_EXPERIENCE_REVAMP_VISUAL_EVIDENCE_2026-06-15_21-48-07_IST/screenshots/android-a2-capture-repair-needs-upgrade/390x844-needs-upgrade-queue.png",
+      "metrics": {
+        "title": "AI Memory",
+        "url": "/needs-upgrade",
+        "bodyTextSample": "Library\nCapture\nAsk\nMore\nBack to Library\nCapture quality\nNeeds Upgrade\n\nThese saves are still useful as bookmarks, but they do not have enough readable source text for reliable search or Ask. Add text or open the source.\n\nNeeds transcript\n1 source\nA2 repair weak fixture\nNeeds transcript\n\nYouTube\n/\nVia android\n/\nMetadata only\n/\n46m ago\n\nRetry later or add a note if the video has no transcript.\n\nAdd text\nSource\nPreview only\n1 source\nA2 long preview fixture title that should wrap across mobile Needs Upgrade rows without clipping\nPreview only\n\nSubstack\n/\nVia web\n/\nPreview only\n/\n2h ago\n\nAttach or paste the newsletter email body to save the full post.\n\nAdd text\nSource\nExtraction failed\n1 source\nA2 failed extraction fixture\nExtraction failed\n\nArticle\n/\nVia web\n/\nNeeds upgrade\n/\n3h ago\n\nOpen the item to add source text or inspect capture details.\n\nAdd text\nSource",
+        "scrollWidth": 390,
+        "clientWidth": 390,
+        "scrollHeight": 1411,
+        "clientHeight": 844,
+        "horizontalOverflow": false,
+        "forbiddenMatches": [],
+        "expectedMissing": [],
+        "clippedControls": []
+      }
+    },
+    {
+      "name": "390x844-repair-form",
+      "path": "/items/0713d164f8fee5a2e2728cb3/repair",
+      "screenshot": "/Users/arun.prakash/Library/CloudStorage/GoogleDrive-arun.prakash@toasttab.com/Other computers/My MacBook Pro M1 2025/arun-cursor/Initiatives/Arun_AI_Projects/ai-brain/phase2/UX_v2/execution/WEB_EXPERIENCE_REVAMP_VISUAL_EVIDENCE_2026-06-15_21-48-07_IST/screenshots/android-a2-capture-repair-needs-upgrade/390x844-repair-form.png",
+      "metrics": {
+        "title": "AI Memory",
+        "url": "/items/0713d164f8fee5a2e2728cb3/repair",
+        "bodyTextSample": "Library\nCapture\nAsk\nMore\nBack to item\nNeeds transcript\nRepair source text\n\nA2 repair weak fixture\n\nYouTube\nMetadata only\nvia android\n\nRetry later or add a note if the video has no transcript.\n\nOpen source\nTitle\nRepair type\nText\nTranscript\nSource text\n\nPaste at least 200 useful characters. Existing tags and collections stay attached.\n\nSave repair\nCancel",
+        "scrollWidth": 390,
+        "clientWidth": 390,
+        "scrollHeight": 1232,
+        "clientHeight": 844,
+        "horizontalOverflow": false,
+        "forbiddenMatches": [],
+        "expectedMissing": [],
+        "clippedControls": [
+          {
+            "tag": "textarea",
+            "text": "",
+            "top": 596,
+            "bottom": 904,
+            "left": 20,
+            "right": 370,
+            "width": 350,
+            "height": 308
+          }
+        ]
+      }
+    },
+    {
+      "name": "390x844-repair-saved-item",
+      "path": "/items/0713d164f8fee5a2e2728cb3?repair=queued",
+      "screenshot": "/Users/arun.prakash/Library/CloudStorage/GoogleDrive-arun.prakash@toasttab.com/Other computers/My MacBook Pro M1 2025/arun-cursor/Initiatives/Arun_AI_Projects/ai-brain/phase2/UX_v2/execution/WEB_EXPERIENCE_REVAMP_VISUAL_EVIDENCE_2026-06-15_21-48-07_IST/screenshots/android-a2-capture-repair-needs-upgrade/390x844-repair-saved-item.png",
+      "metrics": {
+        "title": "AI Memory",
+        "url": "/items/0713d164f8fee5a2e2728cb3?repair=queued",
+        "bodyTextSample": "Library\nCapture\nAsk\nMore\nBack to Library\nSource text updated\n\nAI enrichment and semantic indexing are queued. Ask may improve after those finish.\n\nEdit repair\nA2 repair weak fixture\nqueued\n\nSaved\n\nYouTube\nvia Android\nFull text\nSaved 6/16/2026, 10:45:44 AM\n276 chars\n\nwww.youtube.com\n\nA2 repaired source text with enough useful detail to replace a weak capture. It contains mobile QA evidence, repair success checks, collection preservation, and tag preservation. This body is intentionally longer than the minimum repair threshold for deterministic validation.\nFocus mode\nAsk this item\nExport as .md\n\nTAGS\n\na2-preserve-tag\nAdd\n\nINCLUDED TOPICS\n\nAI\n\nNo included topics yet.\n\nCAPTURE\n\nPlatform\nYouTube\nQuality\nFull text\nMethod\nmanual_repair_transcript\nVia\nandroid\n\nCOLLECTIONS\n\nA2 Preserve Collection\nAI digest will appear here once the enrichment worker picks this item up.",
+        "scrollWidth": 390,
+        "clientWidth": 390,
+        "scrollHeight": 1730,
+        "clientHeight": 844,
+        "horizontalOverflow": false,
+        "forbiddenMatches": [],
+        "expectedMissing": [],
+        "clippedControls": []
+      }
+    },
+    {
+      "name": "390x844-needs-upgrade-after-repair",
+      "path": "/needs-upgrade",
+      "screenshot": "/Users/arun.prakash/Library/CloudStorage/GoogleDrive-arun.prakash@toasttab.com/Other computers/My MacBook Pro M1 2025/arun-cursor/Initiatives/Arun_AI_Projects/ai-brain/phase2/UX_v2/execution/WEB_EXPERIENCE_REVAMP_VISUAL_EVIDENCE_2026-06-15_21-48-07_IST/screenshots/android-a2-capture-repair-needs-upgrade/390x844-needs-upgrade-after-repair.png",
+      "metrics": {
+        "title": "AI Memory",
+        "url": "/needs-upgrade",
+        "bodyTextSample": "Library\nCapture\nAsk\nMore\nBack to Library\nCapture quality\nNeeds Upgrade\n\nThese saves are still useful as bookmarks, but they do not have enough readable source text for reliable search or Ask. Add text or open the source.\n\nPreview only\n1 source\nA2 long preview fixture title that should wrap across mobile Needs Upgrade rows without clipping\nPreview only\n\nSubstack\n/\nVia web\n/\nPreview only\n/\n2h ago\n\nAttach or paste the newsletter email body to save the full post.\n\nAdd text\nSource\nExtraction failed\n1 source\nA2 failed extraction fixture\nExtraction failed\n\nArticle\n/\nVia web\n/\nNeeds upgrade\n/\n3h ago\n\nOpen the item to add source text or inspect capture details.\n\nAdd text\nSource",
+        "scrollWidth": 390,
+        "clientWidth": 390,
+        "scrollHeight": 1115,
+        "clientHeight": 844,
+        "horizontalOverflow": false,
+        "forbiddenMatches": [],
+        "expectedMissing": [],
+        "clippedControls": []
+      }
+    }
+  ],
+  "issues": [],
+  "issueCount": 0
+}

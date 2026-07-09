@@ -1,0 +1,135 @@
+{
+  "baseUrl": "http://127.0.0.1:3027",
+  "viewport": {
+    "width": 390,
+    "height": 844,
+    "isMobile": true
+  },
+  "dbPath": "/tmp/ai-memory-android-a4-topic-collection.sqlite",
+  "routes": {
+    "topic": "/topics/a4-mobile-qa-topic",
+    "emptyTopic": "/topics/a4-empty-topic",
+    "topicAsk": "/ask?scope=topic&topic=a4-mobile-qa-topic",
+    "collection": "/collections/6485bd3552ed15378726b7fc",
+    "emptyCollection": "/collections/031c5aa452d3c252f59cb457",
+    "collectionAsk": "/ask?scope=collection&collection=6485bd3552ed15378726b7fc"
+  },
+  "states": [
+    {
+      "name": "390x844-topic-populated",
+      "path": "/topics/a4-mobile-qa-topic",
+      "screenshot": "/Users/arun.prakash/Library/CloudStorage/GoogleDrive-arun.prakash@toasttab.com/Other computers/My MacBook Pro M1 2025/arun-cursor/Initiatives/Arun_AI_Projects/ai-brain/phase2/UX_v2/execution/WEB_EXPERIENCE_REVAMP_VISUAL_EVIDENCE_2026-06-15_21-48-07_IST/screenshots/android-a4-topic-collection/390x844-topic-populated.png",
+      "metrics": {
+        "title": "AI Memory",
+        "url": "/topics/a4-mobile-qa-topic",
+        "bodyTextSample": "Library\nCapture\nAsk\nMore\nBack to Library\n\nINCLUDED TOPIC\n\nA4 Mobile QA Topic\n\n2 sources matched by AI.\n\nSynthetic topic used for Android A4 mobile QA.\n\n2 sources\n1 readable\n1 need upgrade\n\nSome sources in this topic may produce thinner answers until they are upgraded.\n\nAsk topic\nA4 topic collection full source\n\nARTICLE-Full text-12m ago\n\nA4 mobile Topic and Collection evidence verifies scoped Ask entry points, safe item rows, and empty route states. This full source should appear in populated Topic and Collectio...\n\nA4 weak source in scope\n\nYOUTUBE-Metadata only-22m ago\n\nMetadata-only A4 fixture for scope health warning.",
+        "scrollWidth": 390,
+        "clientWidth": 390,
+        "scrollHeight": 855,
+        "clientHeight": 844,
+        "horizontalOverflow": false,
+        "forbiddenMatches": [],
+        "expectedMissing": [],
+        "clippedControls": [],
+        "mutationControls": []
+      }
+    },
+    {
+      "name": "390x844-topic-empty",
+      "path": "/topics/a4-empty-topic",
+      "screenshot": "/Users/arun.prakash/Library/CloudStorage/GoogleDrive-arun.prakash@toasttab.com/Other computers/My MacBook Pro M1 2025/arun-cursor/Initiatives/Arun_AI_Projects/ai-brain/phase2/UX_v2/execution/WEB_EXPERIENCE_REVAMP_VISUAL_EVIDENCE_2026-06-15_21-48-07_IST/screenshots/android-a4-topic-collection/390x844-topic-empty.png",
+      "metrics": {
+        "title": "AI Memory",
+        "url": "/topics/a4-empty-topic",
+        "bodyTextSample": "Library\nCapture\nAsk\nMore\nBack to Library\n\nINCLUDED TOPIC\n\nA4 Empty Topic\n\n0 sources matched by AI.\n\nSynthetic empty topic used for Android A4 empty-state QA.\n\n0 sources\n0 readable\nNo sources currently include this topic.\n\nTopics are derived from saved sources. This topic will fill in when matching sources are attached by enrichment.",
+        "scrollWidth": 390,
+        "clientWidth": 390,
+        "scrollHeight": 844,
+        "clientHeight": 844,
+        "horizontalOverflow": false,
+        "forbiddenMatches": [],
+        "expectedMissing": [],
+        "clippedControls": [],
+        "mutationControls": []
+      }
+    },
+    {
+      "name": "390x844-topic-ask-scope",
+      "path": "/ask?scope=topic&topic=a4-mobile-qa-topic",
+      "screenshot": "/Users/arun.prakash/Library/CloudStorage/GoogleDrive-arun.prakash@toasttab.com/Other computers/My MacBook Pro M1 2025/arun-cursor/Initiatives/Arun_AI_Projects/ai-brain/phase2/UX_v2/execution/WEB_EXPERIENCE_REVAMP_VISUAL_EVIDENCE_2026-06-15_21-48-07_IST/screenshots/android-a4-topic-collection/390x844-topic-ask-scope.png",
+      "metrics": {
+        "title": "AI Memory",
+        "url": "/ask?scope=topic&topic=a4-mobile-qa-topic",
+        "bodyTextSample": "Library\nCapture\nAsk\nMore\nAsk A4 Mobile QA Topic\nTOPIC\nthe A4 Mobile QA Topic topic\n2 sources\nA4 topic collection full source\nA4 weak source in scope\n\n1 source may have limited text. Needs transcript.\n\nAsk a question across the A4 Mobile QA Topic topic.",
+        "scrollWidth": 390,
+        "clientWidth": 390,
+        "scrollHeight": 852,
+        "clientHeight": 844,
+        "horizontalOverflow": false,
+        "forbiddenMatches": [],
+        "expectedMissing": [],
+        "clippedControls": [],
+        "mutationControls": []
+      }
+    },
+    {
+      "name": "390x844-collection-populated",
+      "path": "/collections/6485bd3552ed15378726b7fc",
+      "screenshot": "/Users/arun.prakash/Library/CloudStorage/GoogleDrive-arun.prakash@toasttab.com/Other computers/My MacBook Pro M1 2025/arun-cursor/Initiatives/Arun_AI_Projects/ai-brain/phase2/UX_v2/execution/WEB_EXPERIENCE_REVAMP_VISUAL_EVIDENCE_2026-06-15_21-48-07_IST/screenshots/android-a4-topic-collection/390x844-collection-populated.png",
+      "metrics": {
+        "title": "AI Memory",
+        "url": "/collections/6485bd3552ed15378726b7fc",
+        "bodyTextSample": "Library\nCapture\nAsk\nMore\nAll collections\nA4 Mobile QA Collection\n\n2 items\n\nSynthetic collection used for Android A4 mobile QA.\n\n2 items\n1 readable\n1 need upgrade\n\nSome items in this collection may need richer text before scoped Ask can use them well.\n\nAsk collection\nA4 topic collection full source\n\nARTICLE-Full text-12m ago\n\nA4 mobile Topic and Collection evidence verifies scoped Ask entry points, safe item rows, and empty route states. This full source should appear in populated Topic and Collectio...\n\nA4 weak source in scope\n\nYOUTUBE-Metadata only-22m ago\n\nMetadata-only A4 fixture for scope health warning.",
+        "scrollWidth": 390,
+        "clientWidth": 390,
+        "scrollHeight": 844,
+        "clientHeight": 844,
+        "horizontalOverflow": false,
+        "forbiddenMatches": [],
+        "expectedMissing": [],
+        "clippedControls": [],
+        "mutationControls": []
+      }
+    },
+    {
+      "name": "390x844-collection-empty",
+      "path": "/collections/031c5aa452d3c252f59cb457",
+      "screenshot": "/Users/arun.prakash/Library/CloudStorage/GoogleDrive-arun.prakash@toasttab.com/Other computers/My MacBook Pro M1 2025/arun-cursor/Initiatives/Arun_AI_Projects/ai-brain/phase2/UX_v2/execution/WEB_EXPERIENCE_REVAMP_VISUAL_EVIDENCE_2026-06-15_21-48-07_IST/screenshots/android-a4-topic-collection/390x844-collection-empty.png",
+      "metrics": {
+        "title": "AI Memory",
+        "url": "/collections/031c5aa452d3c252f59cb457",
+        "bodyTextSample": "Library\nCapture\nAsk\nMore\nAll collections\nA4 Empty Collection\n\n0 items\n\nSynthetic empty collection used for Android A4 empty-state QA.\n\n0 items\n0 readable\nNo items in this collection yet.\n\nCollections show saved items after they are added from existing library controls.",
+        "scrollWidth": 390,
+        "clientWidth": 390,
+        "scrollHeight": 844,
+        "clientHeight": 844,
+        "horizontalOverflow": false,
+        "forbiddenMatches": [],
+        "expectedMissing": [],
+        "clippedControls": [],
+        "mutationControls": []
+      }
+    },
+    {
+      "name": "390x844-collection-ask-scope",
+      "path": "/ask?scope=collection&collection=6485bd3552ed15378726b7fc",
+      "screenshot": "/Users/arun.prakash/Library/CloudStorage/GoogleDrive-arun.prakash@toasttab.com/Other computers/My MacBook Pro M1 2025/arun-cursor/Initiatives/Arun_AI_Projects/ai-brain/phase2/UX_v2/execution/WEB_EXPERIENCE_REVAMP_VISUAL_EVIDENCE_2026-06-15_21-48-07_IST/screenshots/android-a4-topic-collection/390x844-collection-ask-scope.png",
+      "metrics": {
+        "title": "AI Memory",
+        "url": "/ask?scope=collection&collection=6485bd3552ed15378726b7fc",
+        "bodyTextSample": "Library\nCapture\nAsk\nMore\nAsk A4 Mobile QA Collection\nCOLLECTION\nthe A4 Mobile QA Collection collection\n2 sources\nA4 topic collection full source\nA4 weak source in scope\n\n1 source may have limited text. Needs transcript.\n\nAsk a question across the A4 Mobile QA Collection collection.",
+        "scrollWidth": 390,
+        "clientWidth": 390,
+        "scrollHeight": 852,
+        "clientHeight": 844,
+        "horizontalOverflow": false,
+        "forbiddenMatches": [],
+        "expectedMissing": [],
+        "clippedControls": [],
+        "mutationControls": []
+      }
+    }
+  ],
+  "issues": [],
+  "issueCount": 0
+}

@@ -1,6 +1,6 @@
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
-import { improvementHint, platformLabel, qualityLabel } from "./quality";
+import { captureSourceLabel, improvementHint, platformLabel, qualityLabel } from "./quality";
 
 describe("capture quality labels", () => {
   it("renders human labels for platform and quality", () => {
@@ -14,5 +14,11 @@ describe("capture quality labels", () => {
     assert.match(improvementHint("linkedin", "metadata_only") ?? "", /Paste the post text/);
     assert.match(improvementHint("substack", "paywall_preview") ?? "", /newsletter email/);
     assert.equal(improvementHint("generic_article", "full_text"), null);
+  });
+
+  it("renders human labels for capture sources", () => {
+    assert.equal(captureSourceLabel("recall"), "Recall");
+    assert.equal(captureSourceLabel("android"), "Android");
+    assert.equal(captureSourceLabel("unknown-source"), "Unknown");
   });
 });

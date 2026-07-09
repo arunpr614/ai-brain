@@ -13,11 +13,13 @@ export function RepairForm({
   title,
   defaultTextKind,
   minChars,
+  allowTranscriptFileUpload,
 }: {
   itemId: string;
   title: string;
   defaultTextKind: "text" | "transcript";
   minChars: number;
+  allowTranscriptFileUpload?: boolean;
 }) {
   const [state, action, pending] = useActionState<RepairFormState, FormData>(
     repairItemWithTextAction,
@@ -85,7 +87,7 @@ export function RepairForm({
         <textarea
           id="text"
           name="text"
-          required
+          required={!allowTranscriptFileUpload}
           minLength={minChars}
           rows={14}
           className="min-h-[240px] w-full rounded-md border border-[var(--border)] bg-[var(--surface-raised)] p-3 font-mono text-[13px] leading-[1.55] text-[var(--text-primary)] md:min-h-[360px]"
@@ -94,6 +96,27 @@ export function RepairForm({
           Paste at least {minChars} useful characters. Existing tags and collections stay attached.
         </p>
       </div>
+
+      {allowTranscriptFileUpload && (
+        <div className="rounded-lg border border-[var(--border)] bg-[var(--surface)] p-4">
+          <label
+            htmlFor="transcript_file"
+            className="mb-1.5 block text-sm font-medium text-[var(--text-primary)]"
+          >
+            Transcript file
+          </label>
+          <input
+            id="transcript_file"
+            name="transcript_file"
+            type="file"
+            accept=".vtt,.srt,.txt,.md,text/vtt,application/x-subrip,text/plain,text/markdown"
+            className="block w-full text-sm text-[var(--text-secondary)] file:mr-3 file:h-9 file:rounded-md file:border-0 file:bg-[var(--action-secondary-bg)] file:px-3 file:text-sm file:font-medium file:text-[var(--action-secondary-fg)] hover:file:bg-[var(--action-secondary-bg-hover)]"
+          />
+          <p className="mt-1.5 text-xs text-[var(--text-muted)]">
+            Upload a .vtt, .srt, .txt, or .md file instead of pasting text. Leave the text box empty when uploading a file.
+          </p>
+        </div>
+      )}
 
       {state?.error && (
         <p className="rounded-md border border-[var(--danger)] bg-[var(--surface)] px-3 py-2 text-sm text-[var(--danger)]">

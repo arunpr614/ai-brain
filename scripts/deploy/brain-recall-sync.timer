@@ -1,0 +1,11 @@
+[Unit]
+Description=Run AI Brain Recall daily snapshot import
+
+[Timer]
+OnCalendar=*-*-* 20:00:00 UTC
+Persistent=true
+RandomizedDelaySec=10m
+Unit=brain-recall-sync.service
+
+[Install]
+WantedBy=timers.target

@@ -1,0 +1,174 @@
+{
+  "route": "/library",
+  "focusables": [
+    {
+      "ariaCurrent": null,
+      "ariaLabel": "Collapse sidebar",
+      "href": null,
+      "tabIndex": null,
+      "tag": "button",
+      "text": "Navigation"
+    },
+    {
+      "ariaCurrent": null,
+      "ariaLabel": null,
+      "href": null,
+      "tabIndex": null,
+      "tag": "button",
+      "text": "Search⌘K"
+    },
+    {
+      "ariaCurrent": null,
+      "ariaLabel": "Capture",
+      "href": "/capture",
+      "tabIndex": null,
+      "tag": "a",
+      "text": "Capture"
+    },
+    {
+      "ariaCurrent": "page",
+      "ariaLabel": null,
+      "href": "/library",
+      "tabIndex": null,
+      "tag": "a",
+      "text": "Library"
+    },
+    {
+      "ariaCurrent": null,
+      "ariaLabel": null,
+      "href": "/needs-upgrade",
+      "tabIndex": null,
+      "tag": "a",
+      "text": "Needs Upgrade"
+    },
+    {
+      "ariaCurrent": null,
+      "ariaLabel": null,
+      "href": "/ask",
+      "tabIndex": null,
+      "tag": "a",
+      "text": "Ask"
+    },
+    {
+      "ariaCurrent": null,
+      "ariaLabel": null,
+      "href": "/settings",
+      "tabIndex": null,
+      "tag": "a",
+      "text": "Settings"
+    },
+    {
+      "ariaCurrent": null,
+      "ariaLabel": null,
+      "href": "/settings/device-pairing",
+      "tabIndex": null,
+      "tag": "a",
+      "text": "Pair Device"
+    },
+    {
+      "ariaCurrent": null,
+      "ariaLabel": null,
+      "href": "/capture",
+      "tabIndex": null,
+      "tag": "a",
+      "text": "Capture"
+    },
+    {
+      "ariaCurrent": null,
+      "ariaLabel": null,
+      "href": null,
+      "tabIndex": null,
+      "tag": "input",
+      "text": ""
+    },
+    {
+      "ariaCurrent": "page",
+      "ariaLabel": null,
+      "href": "/library",
+      "tabIndex": null,
+      "tag": "a",
+      "text": "All"
+    },
+    {
+      "ariaCurrent": null,
+      "ariaLabel": null,
+      "href": "/library?source=article",
+      "tabIndex": null,
+      "tag": "a",
+      "text": "Articles"
+    },
+    {
+      "ariaCurrent": null,
+      "ariaLabel": null,
+      "href": "/library?source=youtube",
+      "tabIndex": null,
+      "tag": "a",
+      "text": "YouTube"
+    },
+    {
+      "ariaCurrent": null,
+      "ariaLabel": null,
+      "href": "/library?source=pdf",
+      "tabIndex": null,
+      "tag": "a",
+      "text": "PDFs"
+    },
+    {
+      "ariaCurrent": null,
+      "ariaLabel": null,
+      "href": "/library?source=note",
+      "tabIndex": null,
+      "tag": "a",
+      "text": "Notes"
+    },
+    {
+      "ariaCurrent": null,
+      "ariaLabel": null,
+      "href": "/library?source=telegram",
+      "tabIndex": null,
+      "tag": "a",
+      "text": "Telegram"
+    },
+    {
+      "ariaCurrent": "page",
+      "ariaLabel": null,
+      "href": "/library",
+      "tabIndex": null,
+      "tag": "a",
+      "text": "All"
+    },
+    {
+      "ariaCurrent": null,
+      "ariaLabel": null,
+      "href": "/library?quality=full_text",
+      "tabIndex": null,
+      "tag": "a",
+      "text": "Full text"
+    },
+    {
+      "ariaCurrent": null,
+      "ariaLabel": null,
+      "href": "/library?quality=transcript",
+      "tabIndex": null,
+      "tag": "a",
+      "text": "Transcript"
+    },
+    {
+      "ariaCurrent": null,
+      "ariaLabel": null,
+      "href": "/library?quality=needs_upgrade",
+      "tabIndex": null,
+      "tag": "a",
+      "text": "Needs upgrade"
+    },
+    {
+      "ariaCurrent": null,
+      "ariaLabel": null,
+      "href": "/capture",
+      "tabIndex": null,
+      "tag": "a",
+      "text": "Capture"
+    }
+  ],
+  "privacyFocusable": []
+}

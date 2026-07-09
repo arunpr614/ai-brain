@@ -1,0 +1,5038 @@
+{
+  "checkedAt": "2026-06-16T05:21:58.253Z",
+  "baseUrl": "http://127.0.0.1:3027",
+  "tempEvidenceDir": "/tmp/ai-memory-android-a1-shell-library-more-offline",
+  "routeData": {
+    "itemArticle": "/items/4f1e90ebad20182ec2b5cf98",
+    "topicPopulated": "/topics/ux-v2-source-health",
+    "collectionPopulated": "/collections/5d16649f376192f31629f870",
+    "searchHit": "/search?q=LSTC%20search%20beacon"
+  },
+  "viewportResults": [
+    {
+      "name": "library-default",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "path": "/library",
+      "screenshotPath": "/tmp/ai-memory-android-a1-shell-library-more-offline/390x844-library-default.png",
+      "metrics": {
+        "bodyTextSample": "AI Memoryv0.6.2 · private memoryNavigationSearch⌘KCaptureLibraryNeeds Upgrade2AskSettingsPair DevicePrivacy ControlssoonLibraryCaptureAskMoreLibrary12 sources captured2 need upgradeCaptureFiltersAll sources12SourceAllArticlesYouTubePDFsNotesTelegramQualityAllFull textTranscriptNeeds upgradeUX v2 library fixture articlequeuedArticle·via Web·Full text·14m ago·127 charsUX v2 selected ask fixture notequeuedNote·via Web·Full text·24m ago·145 charsUX v2 transcript fixture videoqueuedYouTube·via Web·Transcript·54m ago·85 charsUX v2 library fixture articlequeuedArticle·via Web·Full text·2h ago·127 charsUX v2 PDF fixture briefqueuedPDF·via Web·Full text·2h ago·92 charsUX v2 selected ask fixture notequeuedNote·via Web·Full text·2h ago·145 charsUX v2 transcript fixture videoqueuedYouTube·via Web·Transcript·3h ago·85 charsUX v2 weak metadata fixturequeuedYouTube·via Web·Metadata only·3h ago·46 chars·⚠ metadata onlyUX v2 PDF fixture briefqueuedPDF·via Web·Full text·4h ago·92 charsUX v2 weak metadata fixturequeuedYouTube·via Web·Metadata only·5h ago·46 chars·⚠ metadata onlyUX v2 long title stress fixture for wrapping behavior across library rows, search rows, topic rows, and collection rowsqueuedArticle·via Web·Full text·6h ago·149 charsUX v2 long title stress fixture for wrapping behavior across library rows, search rows, topic rows, and collection rowsqueuedArticle·via Web·Full text·8h ago·149 charsself.__next_r=\"f3ts52KRSP9GOTMJTVbG2\"(self.__next_f=self.__next_f||[]).push([0])self.__nex",
+        "bottomNav": {
+          "links": [
+            {
+              "aria": "Open Library",
+              "current": "page",
+              "href": "/library",
+              "rect": {
+                "height": 47,
+                "width": 98,
+                "x": 8,
+                "y": 787
+              },
+              "text": "Library"
+            },
+            {
+              "aria": "Open Capture",
+              "current": null,
+              "href": "/capture",
+              "rect": {
+                "height": 56,
+                "width": 56,
+                "x": 118,
+                "y": 761
+              },
+              "text": ""
+            },
+            {
+              "aria": "Open Ask",
+              "current": null,
+              "href": "/ask",
+              "rect": {
+                "height": 47,
+                "width": 98,
+                "x": 187,
+                "y": 787
+              },
+              "text": "Ask"
+            },
+            {
+              "aria": "Open More",
+              "current": null,
+              "href": "/more",
+              "rect": {
+                "height": 47,
+                "width": 98,
+                "x": 285,
+                "y": 787
+              },
+              "text": "More"
+            }
+          ],
+          "rect": {
+            "height": 64,
+            "width": 390,
+            "x": 0,
+            "y": 780
+          },
+          "text": "LibraryCaptureAskMore",
+          "visible": true
+        },
+        "buttons": [
+          {
+            "aria": "Collapse sidebar",
+            "expanded": "true",
+            "rect": {
+              "height": 0,
+              "width": 0,
+              "x": 0,
+              "y": 0
+            },
+            "text": "Navigation"
+          },
+          {
+            "aria": null,
+            "expanded": null,
+            "rect": {
+              "height": 0,
+              "width": 0,
+              "x": 0,
+              "y": 0
+            },
+            "text": "Search⌘K"
+          },
+          {
+            "aria": null,
+            "expanded": "false",
+            "rect": {
+              "height": 62,
+              "width": 350,
+              "x": 20,
+              "y": 228
+            },
+            "text": "FiltersAll sources12"
+          }
+        ],
+        "checkboxCount": 12,
+        "desktopBulkToolbar": {
+          "rect": null,
+          "text": null,
+          "visible": false
+        },
+        "dialog": {
+          "rect": null,
+          "text": null,
+          "visible": false
+        },
+        "h1": "AI Memory",
+        "links": [
+          {
+            "aria": "Capture",
+            "current": null,
+            "href": "/capture",
+            "rect": {
+              "height": 0,
+              "width": 0,
+              "x": 0,
+              "y": 0
+            },
+            "text": "Capture"
+          },
+          {
+            "aria": null,
+            "current": "page",
+            "href": "/library",
+            "rect": {
+              "height": 0,
+              "width": 0,
+              "x": 0,
+              "y": 0
+            },
+            "text": "Library"
+          },
+          {
+            "aria": null,
+            "current": null,
+            "href": "/needs-upgrade",
+            "rect": {
+              "height": 0,
+              "width": 0,
+              "x": 0,
+              "y": 0
+            },
+            "text": "Needs Upgrade2"
+          },
+          {
+            "aria": null,
+            "current": null,
+            "href": "/ask",
+            "rect": {
+              "height": 0,
+              "width": 0,
+              "x": 0,
+              "y": 0
+            },
+            "text": "Ask"
+          },
+          {
+            "aria": null,
+            "current": null,
+            "href": "/settings",
+            "rect": {
+              "height": 0,
+              "width": 0,
+              "x": 0,
+              "y": 0
+            },
+            "text": "Settings"
+          },
+          {
+            "aria": null,
+            "current": null,
+            "href": "/settings/device-pairing",
+            "rect": {
+              "height": 0,
+              "width": 0,
+              "x": 0,
+              "y": 0
+            },
+            "text": "Pair Device"
+          },
+          "[Circular]",
+          "[Circular]",
+          "[Circular]",
+          "[Circular]",
+          {
+            "aria": null,
+            "current": null,
+            "href": "/needs-upgrade",
+            "rect": {
+              "height": 36,
+              "width": 132,
+              "x": 20,
+              "y": 108
+            },
+            "text": "2 need upgrade"
+          },
+          {
+            "aria": null,
+            "current": null,
+            "href": "/capture",
+            "rect": {
+              "height": 36,
+              "width": 109,
+              "x": 160,
+              "y": 108
+            },
+            "text": "Capture"
+          },
+          {
+            "aria": null,
+            "current": "page",
+            "href": "/library",
+            "rect": {
+              "height": 0,
+              "width": 0,
+              "x": 0,
+              "y": 0
+            },
+            "text": "All"
+          },
+          {
+            "aria": null,
+            "current": null,
+            "href": "/library?source=article",
+            "rect": {
+              "height": 0,
+              "width": 0,
+              "x": 0,
+              "y": 0
+            },
+            "text": "Articles"
+          },
+          {
+            "aria": null,
+            "current": null,
+            "href": "/library?source=youtube",
+            "rect": {
+              "height": 0,
+              "width": 0,
+              "x": 0,
+              "y": 0
+            },
+            "text": "YouTube"
+          },
+          {
+            "aria": null,
+            "current": null,
+            "href": "/library?source=pdf",
+            "rect": {
+              "height": 0,
+              "width": 0,
+              "x": 0,
+              "y": 0
+            },
+            "text": "PDFs"
+          },
+          {
+            "aria": null,
+            "current": null,
+            "href": "/library?source=note",
+            "rect": {
+              "height": 0,
+              "width": 0,
+              "x": 0,
+              "y": 0
+            },
+            "text": "Notes"
+          },
+          {
+            "aria": null,
+            "current": null,
+            "href": "/library?source=telegram",
+            "rect": {
+              "height": 0,
+              "width": 0,
+              "x": 0,
+              "y": 0
+            },
+            "text": "Telegram"
+          },
+          {
+            "aria": null,
+            "current": "page",
+            "href": "/library",
+            "rect": {
+              "height": 0,
+              "width": 0,
+              "x": 0,
+              "y": 0
+            },
+            "text": "All"
+          },
+          {
+            "aria": null,
+            "current": null,
+            "href": "/library?quality=full_text",
+            "rect": {
+              "height": 0,
+              "width": 0,
+              "x": 0,
+              "y": 0
+            },
+            "text": "Full text"
+          },
+          {
+            "aria": null,
+            "current": null,
+            "href": "/library?quality=transcript",
+            "rect": {
+              "height": 0,
+              "width": 0,
+              "x": 0,
+              "y": 0
+            },
+            "text": "Transcript"
+          },
+          {
+            "aria": null,
+            "current": null,
+            "href": "/library?quality=needs_upgrade",
+            "rect": {
+              "height": 0,
+              "width": 0,
+              "x": 0,
+              "y": 0
+            },
+            "text": "Needs upgrade"
+          },
+          {
+            "aria": null,
+            "current": null,
+            "href": "/items/4f1e90ebad20182ec2b5cf98",
+            "rect": {
+              "height": 104,
+              "width": 288,
+              "x": 65,
+              "y": 327
+            },
+            "text": "UX v2 library fixture articlequeuedArticle·via Web·Full text·14m ago·127 chars"
+          },
+          {
+            "aria": null,
+            "current": null,
+            "href": "/items/089c8261c9460f2d6a945c74",
+            "rect": {
+              "height": 104,
+              "width": 288,
+              "x": 65,
+              "y": 477
+            },
+            "text": "UX v2 selected ask fixture notequeuedNote·via Web·Full text·24m ago·145 chars"
+          },
+          {
+            "aria": null,
+            "current": null,
+            "href": "/items/6d5fc4dbeaf9be69d3931bc6",
+            "rect": {
+              "height": 104,
+              "width": 288,
+              "x": 65,
+              "y": 628
+            },
+            "text": "UX v2 transcript fixture videoqueuedYouTube·via Web·Transcript·54m ago·85 chars"
+          },
+          {
+            "aria": null,
+            "current": null,
+            "href": "/items/5e6a4a7afe1775e502aa38a4",
+            "rect": {
+              "height": 104,
+              "width": 288,
+              "x": 65,
+              "y": 778
+            },
+            "text": "UX v2 library fixture articlequeuedArticle·via Web·Full text·2h ago·127 chars"
+          },
+          {
+            "aria": null,
+            "current": null,
+            "href": "/items/b4de2ddd41c2ab9729e65065",
+            "rect": {
+              "height": 104,
+              "width": 288,
+              "x": 65,
+              "y": 929
+            },
+            "text": "UX v2 PDF fixture briefqueuedPDF·via Web·Full text·2h ago·92 chars"
+          },
+          {
+            "aria": null,
+            "current": null,
+            "href": "/items/78c50eca82c4c475fd050bb9",
+            "rect": {
+              "height": 104,
+              "width": 288,
+              "x": 65,
+              "y": 1079
+            },
+            "text": "UX v2 selected ask fixture notequeuedNote·via Web·Full text·2h ago·145 chars"
+          },
+          {
+            "aria": null,
+            "current": null,
+            "href": "/items/e9a6bfde7ab94596a64c0ee1",
+            "rect": {
+              "height": 104,
+              "width": 288,
+              "x": 65,
+              "y": 1230
+            },
+            "text": "UX v2 transcript fixture videoqueuedYouTube·via Web·Transcript·3h ago·85 chars"
+          },
+          {
+            "aria": null,
+            "current": null,
+            "href": "/items/9a5236bbc1e5f6be4d23911e",
+            "rect": {
+              "height": 104,
+              "width": 288,
+              "x": 65,
+              "y": 1380
+            },
+            "text": "UX v2 weak metadata fixturequeuedYouTube·via Web·Metadata only·3h ago·46 chars·⚠ metadata only"
+          },
+          {
+            "aria": null,
+            "current": null,
+            "href": "/items/58a7468a319ea63a3407e776",
+            "rect": {
+              "height": 104,
+              "width": 288,
+              "x": 65,
+              "y": 1531
+            },
+            "text": "UX v2 PDF fixture briefqueuedPDF·via Web·Full text·4h ago·92 chars"
+          },
+          {
+            "aria": null,
+            "current": null,
+            "href": "/items/26f1a665a2d1231a35ac50f2",
+            "rect": {
+              "height": 104,
+              "width": 288,
+              "x": 65,
+              "y": 1681
+            },
+            "text": "UX v2 weak metadata fixturequeuedYouTube·via Web·Metadata only·5h ago·46 chars·⚠ metadata only"
+          },
+          {
+            "aria": null,
+            "current": null,
+            "href": "/items/01cc6b31eccd7e6f9101b9c2",
+            "rect": {
+              "height": 244,
+              "width": 288,
+              "x": 65,
+              "y": 1832
+            },
+            "text": "UX v2 long title stress fixture for wrapping behavior across library rows, search rows, topic rows, and collection rowsqueuedArticle·via Web·Full text·6h ago·149 chars"
+          },
+          {
+            "aria": null,
+            "current": null,
+            "href": "/items/d5845471e0244baeb5a70675",
+            "rect": {
+              "height": 244,
+              "width": 288,
+              "x": 65,
+              "y": 2122
+            },
+            "text": "UX v2 long title stress fixture for wrapping behavior across library rows, search rows, topic rows, and collection rowsqueuedArticle·via Web·Full text·8h ago·149 chars"
+          }
+        ],
+        "overflow": {
+          "documentWidth": 390,
+          "hasHorizontalOverflow": false,
+          "viewportWidth": 390
+        },
+        "selectedToolbar": {
+          "rect": null,
+          "text": null,
+          "visible": false
+        },
+        "title": "AI Memory",
+        "url": "http://127.0.0.1:3027/library",
+        "viewport": {
+          "height": 844,
+          "width": 390
+        },
+        "visibleCheckboxCount": 12
+      }
+    },
+    {
+      "name": "library-selected",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "path": "/library",
+      "screenshotPath": "/tmp/ai-memory-android-a1-shell-library-more-offline/390x844-library-selected.png",
+      "metrics": {
+        "bodyTextSample": "AI Memoryv0.6.2 · private memoryNavigationSearch⌘KCaptureLibraryNeeds Upgrade2AskSettingsPair DevicePrivacy ControlssoonLibraryCaptureAskMoreLibrary12 sources captured2 need upgradeCaptureFiltersAll sources12SourceAllArticlesYouTubePDFsNotesTelegramQualityAllFull textTranscriptNeeds upgradeUX v2 library fixture articlequeuedArticle·via Web·Full text·14m ago·127 charsUX v2 selected ask fixture notequeuedNote·via Web·Full text·24m ago·145 charsUX v2 transcript fixture videoqueuedYouTube·via Web·Transcript·54m ago·85 charsUX v2 library fixture articlequeuedArticle·via Web·Full text·2h ago·127 charsUX v2 PDF fixture briefqueuedPDF·via Web·Full text·2h ago·92 charsUX v2 selected ask fixture notequeuedNote·via Web·Full text·2h ago·145 charsUX v2 transcript fixture videoqueuedYouTube·via Web·Transcript·3h ago·85 charsUX v2 weak metadata fixturequeuedYouTube·via Web·Metadata only·3h ago·46 chars·⚠ metadata onlyUX v2 PDF fixture briefqueuedPDF·via Web·Full text·4h ago·92 charsUX v2 weak metadata fixturequeuedYouTube·via Web·Metadata only·5h ago·46 chars·⚠ metadata onlyUX v2 long title stress fixture for wrapping behavior across library rows, search rows, topic rows, and collection rowsqueuedArticle·via Web·Full text·6h ago·149 charsUX v2 long title stress fixture for wrapping behavior across library rows, search rows, topic rows, and collection rowsqueuedArticle·via Web·Full text·8h ago·149 chars1 selectedAsk1 selectedAskTag+ collectionUX v2 Empty Fixture CollectionUX v2 Empty Fixture",
+        "bottomNav": {
+          "links": [
+            {
+              "aria": "Open Library",
+              "current": "page",
+              "href": "/library",
+              "rect": {
+                "height": 47,
+                "width": 98,
+                "x": 8,
+                "y": 787
+              },
+              "text": "Library"
+            },
+            {
+              "aria": "Open Capture",
+              "current": null,
+              "href": "/capture",
+              "rect": {
+                "height": 56,
+                "width": 56,
+                "x": 118,
+                "y": 761
+              },
+              "text": ""
+            },
+            {
+              "aria": "Open Ask",
+              "current": null,
+              "href": "/ask",
+              "rect": {
+                "height": 47,
+                "width": 98,
+                "x": 187,
+                "y": 787
+              },
+              "text": "Ask"
+            },
+            {
+              "aria": "Open More",
+              "current": null,
+              "href": "/more",
+              "rect": {
+                "height": 47,
+                "width": 98,
+                "x": 285,
+                "y": 787
+              },
+              "text": "More"
+            }
+          ],
+          "rect": {
+            "height": 64,
+            "width": 390,
+            "x": 0,
+            "y": 780
+          },
+          "text": "LibraryCaptureAskMore",
+          "visible": true
+        },
+        "buttons": [
+          {
+            "aria": "Collapse sidebar",
+            "expanded": "true",
+            "rect": {
+              "height": 0,
+              "width": 0,
+              "x": 0,
+              "y": 0
+            },
+            "text": "Navigation"
+          },
+          {
+            "aria": null,
+            "expanded": null,
+            "rect": {
+              "height": 0,
+              "width": 0,
+              "x": 0,
+              "y": 0
+            },
+            "text": "Search⌘K"
+          },
+          {
+            "aria": null,
+            "expanded": "false",
+            "rect": {
+              "height": 62,
+              "width": 350,
+              "x": 20,
+              "y": 228
+            },
+            "text": "FiltersAll sources12"
+          },
+          {
+            "aria": null,
+            "expanded": null,
+            "rect": {
+              "height": 36,
+              "width": 71,
+              "x": 250,
+              "y": 723
+            },
+            "text": "Ask"
+          },
+          {
+            "aria": "Clear selection",
+            "expanded": null,
+            "rect": {
+              "height": 36,
+              "width": 36,
+              "x": 329,
+              "y": 723
+            },
+            "text": ""
+          },
+          {
+            "aria": null,
+            "expanded": null,
+            "rect": {
+              "height": 0,
+              "width": 0,
+              "x": 0,
+              "y": 0
+            },
+            "text": "Ask"
+          },
+          {
+            "aria": null,
+            "expanded": null,
+            "rect": {
+              "height": 0,
+              "width": 0,
+              "x": 0,
+              "y": 0
+            },
+            "text": "Tag"
+          },
+          {
+            "aria": "Clear selection",
+            "expanded": null,
+            "rect": {
+              "height": 0,
+              "width": 0,
+              "x": 0,
+              "y": 0
+            },
+            "text": ""
+          }
+        ],
+        "checkboxCount": 12,
+        "desktopBulkToolbar": {
+          "rect": {
+            "height": 0,
+            "width": 0,
+            "x": 0,
+            "y": 0
+          },
+          "text": "1 selectedAskTag+ collectionUX v2 Empty Fixture CollectionUX v2 Empty Fixture CollectionUX v2 Fixture CollectionUX v2 Fixture Collection",
+          "visible": false
+        },
+        "dialog": {
+          "rect": null,
+          "text": null,
+          "visible": false
+        },
+        "h1": "AI Memory",
+        "links": [
+          {
+            "aria": "Capture",
+            "current": null,
+            "href": "/capture",
+            "rect": {
+              "height": 0,
+              "width": 0,
+              "x": 0,
+              "y": 0
+            },
+            "text": "Capture"
+          },
+          {
+            "aria": null,
+            "current": "page",
+            "href": "/library",
+            "rect": {
+              "height": 0,
+              "width": 0,
+              "x": 0,
+              "y": 0
+            },
+            "text": "Library"
+          },
+          {
+            "aria": null,
+            "current": null,
+            "href": "/needs-upgrade",
+            "rect": {
+              "height": 0,
+              "width": 0,
+              "x": 0,
+              "y": 0
+            },
+            "text": "Needs Upgrade2"
+          },
+          {
+            "aria": null,
+            "current": null,
+            "href": "/ask",
+            "rect": {
+              "height": 0,
+              "width": 0,
+              "x": 0,
+              "y": 0
+            },
+            "text": "Ask"
+          },
+          {
+            "aria": null,
+            "current": null,
+            "href": "/settings",
+            "rect": {
+              "height": 0,
+              "width": 0,
+              "x": 0,
+              "y": 0
+            },
+            "text": "Settings"
+          },
+          {
+            "aria": null,
+            "current": null,
+            "href": "/settings/device-pairing",
+            "rect": {
+              "height": 0,
+              "width": 0,
+              "x": 0,
+              "y": 0
+            },
+            "text": "Pair Device"
+          },
+          "[Circular]",
+          "[Circular]",
+          "[Circular]",
+          "[Circular]",
+          {
+            "aria": null,
+            "current": null,
+            "href": "/needs-upgrade",
+            "rect": {
+              "height": 36,
+              "width": 132,
+              "x": 20,
+              "y": 108
+            },
+            "text": "2 need upgrade"
+          },
+          {
+            "aria": null,
+            "current": null,
+            "href": "/capture",
+            "rect": {
+              "height": 36,
+              "width": 109,
+              "x": 160,
+              "y": 108
+            },
+            "text": "Capture"
+          },
+          {
+            "aria": null,
+            "current": "page",
+            "href": "/library",
+            "rect": {
+              "height": 0,
+              "width": 0,
+              "x": 0,
+              "y": 0
+            },
+            "text": "All"
+          },
+          {
+            "aria": null,
+            "current": null,
+            "href": "/library?source=article",
+            "rect": {
+              "height": 0,
+              "width": 0,
+              "x": 0,
+              "y": 0
+            },
+            "text": "Articles"
+          },
+          {
+            "aria": null,
+            "current": null,
+            "href": "/library?source=youtube",
+            "rect": {
+              "height": 0,
+              "width": 0,
+              "x": 0,
+              "y": 0
+            },
+            "text": "YouTube"
+          },
+          {
+            "aria": null,
+            "current": null,
+            "href": "/library?source=pdf",
+            "rect": {
+              "height": 0,
+              "width": 0,
+              "x": 0,
+              "y": 0
+            },
+            "text": "PDFs"
+          },
+          {
+            "aria": null,
+            "current": null,
+            "href": "/library?source=note",
+            "rect": {
+              "height": 0,
+              "width": 0,
+              "x": 0,
+              "y": 0
+            },
+            "text": "Notes"
+          },
+          {
+            "aria": null,
+            "current": null,
+            "href": "/library?source=telegram",
+            "rect": {
+              "height": 0,
+              "width": 0,
+              "x": 0,
+              "y": 0
+            },
+            "text": "Telegram"
+          },
+          {
+            "aria": null,
+            "current": "page",
+            "href": "/library",
+            "rect": {
+              "height": 0,
+              "width": 0,
+              "x": 0,
+              "y": 0
+            },
+            "text": "All"
+          },
+          {
+            "aria": null,
+            "current": null,
+            "href": "/library?quality=full_text",
+            "rect": {
+              "height": 0,
+              "width": 0,
+              "x": 0,
+              "y": 0
+            },
+            "text": "Full text"
+          },
+          {
+            "aria": null,
+            "current": null,
+            "href": "/library?quality=transcript",
+            "rect": {
+              "height": 0,
+              "width": 0,
+              "x": 0,
+              "y": 0
+            },
+            "text": "Transcript"
+          },
+          {
+            "aria": null,
+            "current": null,
+            "href": "/library?quality=needs_upgrade",
+            "rect": {
+              "height": 0,
+              "width": 0,
+              "x": 0,
+              "y": 0
+            },
+            "text": "Needs upgrade"
+          },
+          {
+            "aria": null,
+            "current": null,
+            "href": "/items/4f1e90ebad20182ec2b5cf98",
+            "rect": {
+              "height": 104,
+              "width": 288,
+              "x": 65,
+              "y": 327
+            },
+            "text": "UX v2 library fixture articlequeuedArticle·via Web·Full text·14m ago·127 chars"
+          },
+          {
+            "aria": null,
+            "current": null,
+            "href": "/items/089c8261c9460f2d6a945c74",
+            "rect": {
+              "height": 104,
+              "width": 288,
+              "x": 65,
+              "y": 477
+            },
+            "text": "UX v2 selected ask fixture notequeuedNote·via Web·Full text·24m ago·145 chars"
+          },
+          {
+            "aria": null,
+            "current": null,
+            "href": "/items/6d5fc4dbeaf9be69d3931bc6",
+            "rect": {
+              "height": 104,
+              "width": 288,
+              "x": 65,
+              "y": 628
+            },
+            "text": "UX v2 transcript fixture videoqueuedYouTube·via Web·Transcript·54m ago·85 chars"
+          },
+          {
+            "aria": null,
+            "current": null,
+            "href": "/items/5e6a4a7afe1775e502aa38a4",
+            "rect": {
+              "height": 104,
+              "width": 288,
+              "x": 65,
+              "y": 778
+            },
+            "text": "UX v2 library fixture articlequeuedArticle·via Web·Full text·2h ago·127 chars"
+          },
+          {
+            "aria": null,
+            "current": null,
+            "href": "/items/b4de2ddd41c2ab9729e65065",
+            "rect": {
+              "height": 104,
+              "width": 288,
+              "x": 65,
+              "y": 929
+            },
+            "text": "UX v2 PDF fixture briefqueuedPDF·via Web·Full text·2h ago·92 chars"
+          },
+          {
+            "aria": null,
+            "current": null,
+            "href": "/items/78c50eca82c4c475fd050bb9",
+            "rect": {
+              "height": 104,
+              "width": 288,
+              "x": 65,
+              "y": 1079
+            },
+            "text": "UX v2 selected ask fixture notequeuedNote·via Web·Full text·2h ago·145 chars"
+          },
+          {
+            "aria": null,
+            "current": null,
+            "href": "/items/e9a6bfde7ab94596a64c0ee1",
+            "rect": {
+              "height": 104,
+              "width": 288,
+              "x": 65,
+              "y": 1230
+            },
+            "text": "UX v2 transcript fixture videoqueuedYouTube·via Web·Transcript·3h ago·85 chars"
+          },
+          {
+            "aria": null,
+            "current": null,
+            "href": "/items/9a5236bbc1e5f6be4d23911e",
+            "rect": {
+              "height": 104,
+              "width": 288,
+              "x": 65,
+              "y": 1380
+            },
+            "text": "UX v2 weak metadata fixturequeuedYouTube·via Web·Metadata only·3h ago·46 chars·⚠ metadata only"
+          },
+          {
+            "aria": null,
+            "current": null,
+            "href": "/items/58a7468a319ea63a3407e776",
+            "rect": {
+              "height": 104,
+              "width": 288,
+              "x": 65,
+              "y": 1531
+            },
+            "text": "UX v2 PDF fixture briefqueuedPDF·via Web·Full text·4h ago·92 chars"
+          },
+          {
+            "aria": null,
+            "current": null,
+            "href": "/items/26f1a665a2d1231a35ac50f2",
+            "rect": {
+              "height": 104,
+              "width": 288,
+              "x": 65,
+              "y": 1681
+            },
+            "text": "UX v2 weak metadata fixturequeuedYouTube·via Web·Metadata only·5h ago·46 chars·⚠ metadata only"
+          },
+          {
+            "aria": null,
+            "current": null,
+            "href": "/items/01cc6b31eccd7e6f9101b9c2",
+            "rect": {
+              "height": 244,
+              "width": 288,
+              "x": 65,
+              "y": 1832
+            },
+            "text": "UX v2 long title stress fixture for wrapping behavior across library rows, search rows, topic rows, and collection rowsqueuedArticle·via Web·Full text·6h ago·149 chars"
+          },
+          {
+            "aria": null,
+            "current": null,
+            "href": "/items/d5845471e0244baeb5a70675",
+            "rect": {
+              "height": 244,
+              "width": 288,
+              "x": 65,
+              "y": 2122
+            },
+            "text": "UX v2 long title stress fixture for wrapping behavior across library rows, search rows, topic rows, and collection rowsqueuedArticle·via Web·Full text·8h ago·149 chars"
+          }
+        ],
+        "overflow": {
+          "documentWidth": 390,
+          "hasHorizontalOverflow": false,
+          "viewportWidth": 390
+        },
+        "selectedToolbar": {
+          "rect": {
+            "height": 54,
+            "width": 366,
+            "x": 12,
+            "y": 714
+          },
+          "text": "1 selectedAsk",
+          "visible": true
+        },
+        "title": "AI Memory",
+        "url": "http://127.0.0.1:3027/library",
+        "viewport": {
+          "height": 844,
+          "width": 390
+        },
+        "visibleCheckboxCount": 12
+      }
+    },
+    {
+      "name": "more",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "path": "/more",
+      "screenshotPath": "/tmp/ai-memory-android-a1-shell-library-more-offline/390x844-more.png",
+      "metrics": {
+        "bodyTextSample": "AI Memoryv0.6.2 · private memoryNavigationSearch⌘KCaptureLibraryNeeds Upgrade2AskSettingsPair DevicePrivacy ControlssoonLibraryCaptureAskMoreMoreSettings, devices, data, and app health.AI MemoryPersonal memory workspaceNeeds upgrade2 weak capturesPreferencesAppearanceTagsCollectionsDevicesDevice pairingAndroid setupData & PrivacyBackup & exportPrivacy controlsEnd-to-end encryption is not active yet. Privacy controls are coming soon.Coming soonOffline accessAsk, capture, export, and sync require the AI Memory server. There is no offline queue in UX v2.Server requiredProvider HealthClaude generationollama · qwen2.5:7b-instruct-q4_K_MUnreachableGemini semantic indexingollama · nomic-embed-textUnreachableAI Memory v0.6.2self.__next_r=\"Yztq15p-1n_DzAhvilmZx\"(self.__next_f=self.__next_f||[]).push([0])self.__next_f.push([1,\"9:I[\\\"[project]/node_modules/next/dist/next-devtools/userspace/app/segment-explorer-node.js [app-client] (ecmascript)\\\",[\\\"/_next/static/chunks/node_modules_0k7eqr8._.js\\\",\\\"/_next/static/chunks/_06_n~y6._.js\\\",\\\"/_next/static/chunks/node_modules_0.1878.._.js\\\",\\\"/_next/static/chunks/src_app_layout_tsx_004glpo._.js\\\"],\\\"SegmentViewNode\\\"]\\nb:\\\"$Sreact.fragment\\\"\\n1e:I[\\\"[project]/node_modules/next/dist/client/components/layout-router.js [app-client] (ecmascript)\\\",[\\\"/_next/static/chunks/node_modules_0k7eqr8._.js\\\",\\\"/_next/static/chunks/_06_n~y6._.js\\\",\\\"/_next/static/chunks/node_modules_0.1878.._.js\\\",\\\"/_next/static/chunks/src_app_layout_tsx_004glpo._.js\\\"],\\\"",
+        "bottomNav": {
+          "links": [
+            {
+              "aria": "Open Library",
+              "current": null,
+              "href": "/library",
+              "rect": {
+                "height": 47,
+                "width": 98,
+                "x": 8,
+                "y": 787
+              },
+              "text": "Library"
+            },
+            {
+              "aria": "Open Capture",
+              "current": null,
+              "href": "/capture",
+              "rect": {
+                "height": 56,
+                "width": 56,
+                "x": 118,
+                "y": 761
+              },
+              "text": ""
+            },
+            {
+              "aria": "Open Ask",
+              "current": null,
+              "href": "/ask",
+              "rect": {
+                "height": 47,
+                "width": 98,
+                "x": 187,
+                "y": 787
+              },
+              "text": "Ask"
+            },
+            {
+              "aria": "Open More",
+              "current": "page",
+              "href": "/more",
+              "rect": {
+                "height": 47,
+                "width": 98,
+                "x": 285,
+                "y": 787
+              },
+              "text": "More"
+            }
+          ],
+          "rect": {
+            "height": 64,
+            "width": 390,
+            "x": 0,
+            "y": 780
+          },
+          "text": "LibraryCaptureAskMore",
+          "visible": true
+        },
+        "buttons": [
+          {
+            "aria": "Collapse sidebar",
+            "expanded": "true",
+            "rect": {
+              "height": 0,
+              "width": 0,
+              "x": 0,
+              "y": 0
+            },
+            "text": "Navigation"
+          },
+          {
+            "aria": null,
+            "expanded": null,
+            "rect": {
+              "height": 0,
+              "width": 0,
+              "x": 0,
+              "y": 0
+            },
+            "text": "Search⌘K"
+          }
+        ],
+        "checkboxCount": 0,
+        "desktopBulkToolbar": {
+          "rect": null,
+          "text": null,
+          "visible": false
+        },
+        "dialog": {
+          "rect": null,
+          "text": null,
+          "visible": false
+        },
+        "h1": "AI Memory",
+        "links": [
+          {
+            "aria": "Capture",
+            "current": null,
+            "href": "/capture",
+            "rect": {
+              "height": 0,
+              "width": 0,
+              "x": 0,
+              "y": 0
+            },
+            "text": "Capture"
+          },
+          {
+            "aria": null,
+            "current": null,
+            "href": "/library",
+            "rect": {
+              "height": 0,
+              "width": 0,
+              "x": 0,
+              "y": 0
+            },
+            "text": "Library"
+          },
+          {
+            "aria": null,
+            "current": null,
+            "href": "/needs-upgrade",
+            "rect": {
+              "height": 0,
+              "width": 0,
+              "x": 0,
+              "y": 0
+            },
+            "text": "Needs Upgrade2"
+          },
+          {
+            "aria": null,
+            "current": null,
+            "href": "/ask",
+            "rect": {
+              "height": 0,
+              "width": 0,
+              "x": 0,
+              "y": 0
+            },
+            "text": "Ask"
+          },
+          {
+            "aria": null,
+            "current": null,
+            "href": "/settings",
+            "rect": {
+              "height": 0,
+              "width": 0,
+              "x": 0,
+              "y": 0
+            },
+            "text": "Settings"
+          },
+          {
+            "aria": null,
+            "current": null,
+            "href": "/settings/device-pairing",
+            "rect": {
+              "height": 0,
+              "width": 0,
+              "x": 0,
+              "y": 0
+            },
+            "text": "Pair Device"
+          },
+          "[Circular]",
+          "[Circular]",
+          "[Circular]",
+          "[Circular]",
+          {
+            "aria": null,
+            "current": null,
+            "href": "/needs-upgrade",
+            "rect": {
+              "height": 74,
+              "width": 350,
+              "x": 20,
+              "y": 218
+            },
+            "text": "Needs upgrade2 weak captures"
+          },
+          {
+            "aria": null,
+            "current": null,
+            "href": "/settings",
+            "rect": {
+              "height": 57,
+              "width": 348,
+              "x": 21,
+              "y": 341
+            },
+            "text": "Appearance"
+          },
+          {
+            "aria": null,
+            "current": null,
+            "href": "/settings/tags",
+            "rect": {
+              "height": 57,
+              "width": 348,
+              "x": 21,
+              "y": 398
+            },
+            "text": "Tags"
+          },
+          {
+            "aria": null,
+            "current": null,
+            "href": "/settings/collections",
+            "rect": {
+              "height": 56,
+              "width": 348,
+              "x": 21,
+              "y": 455
+            },
+            "text": "Collections"
+          },
+          {
+            "aria": null,
+            "current": null,
+            "href": "/settings/device-pairing",
+            "rect": {
+              "height": 57,
+              "width": 348,
+              "x": 21,
+              "y": 561
+            },
+            "text": "Device pairing"
+          },
+          {
+            "aria": null,
+            "current": null,
+            "href": "/setup-apk",
+            "rect": {
+              "height": 56,
+              "width": 348,
+              "x": 21,
+              "y": 618
+            },
+            "text": "Android setup"
+          },
+          {
+            "aria": null,
+            "current": null,
+            "href": "/api/library/export.zip",
+            "rect": {
+              "height": 57,
+              "width": 348,
+              "x": 21,
+              "y": 724
+            },
+            "text": "Backup & export"
+          }
+        ],
+        "overflow": {
+          "documentWidth": 390,
+          "hasHorizontalOverflow": false,
+          "viewportWidth": 390
+        },
+        "selectedToolbar": {
+          "rect": null,
+          "text": null,
+          "visible": false
+        },
+        "title": "AI Memory",
+        "url": "http://127.0.0.1:3027/more",
+        "viewport": {
+          "height": 844,
+          "width": 390
+        },
+        "visibleCheckboxCount": 0
+      }
+    },
+    {
+      "name": "offline-fallback",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "path": "/offline.html",
+      "screenshotPath": "/tmp/ai-memory-android-a1-shell-library-more-offline/390x844-offline-fallback.png",
+      "metrics": {
+        "bodyTextSample": "AI Memory needs the server The app could not reach your AI Memory server. This fallback page can load from the device cache, but Ask, capture, export, and sync require server access. There is no offline queue in UX v2. If this is a new device, open AI Memory online once so the fallback page can be cached. Connected (26 ms). Redirecting… Retry Library Pair device If retry keeps failing: check your internet connection, wait a moment, and try again. If the issue persists, the AI Memory server may be down. /* * This inline script intentionally does NOT import reachability.ts — * the offline page is served from /public and must render even when * the Next.js server is dead, so bundled ES modules are not available. * Keep this in sync with src/lib/client/reachability.ts at the wire * level: 2s timeout, GET /api/health, cache-bypass, status-code case * analysis mirrors the TS module. * * Why no bearer token: the offline page runs before pairing is * confirmed and cannot reliably read Capacitor Preferences via * bundled plugin imports from a static /public page. We probe the * current origin without auth — the proxy responds 401 if the * server is up but the token path is wanted, which is enough signal * to distinguish \"AI Memory up\" from \"AI Memory down / unreachable\". The * richer bearer-authed probe runs from share-handler.tsx using the * canonical reachability.ts module. */ (function () { const statusEl = document.getElementById(\"status\"); const retryBtn = document.getElementById",
+        "bottomNav": {
+          "links": [],
+          "rect": null,
+          "text": null,
+          "visible": false
+        },
+        "buttons": [
+          {
+            "aria": null,
+            "expanded": null,
+            "rect": {
+              "height": 40,
+              "width": 75,
+              "x": 45,
+              "y": 410
+            },
+            "text": "Retry"
+          }
+        ],
+        "checkboxCount": 0,
+        "desktopBulkToolbar": {
+          "rect": null,
+          "text": null,
+          "visible": false
+        },
+        "dialog": {
+          "rect": null,
+          "text": null,
+          "visible": false
+        },
+        "h1": "AI Memory needs the server",
+        "links": [
+          {
+            "aria": null,
+            "current": null,
+            "href": "http://127.0.0.1:3027/",
+            "rect": {
+              "height": 40,
+              "width": 89,
+              "x": 132,
+              "y": 410
+            },
+            "text": "Library"
+          },
+          {
+            "aria": null,
+            "current": null,
+            "href": "http://127.0.0.1:3027/setup-apk",
+            "rect": {
+              "height": 40,
+              "width": 116,
+              "x": 45,
+              "y": 462
+            },
+            "text": "Pair device"
+          }
+        ],
+        "overflow": {
+          "documentWidth": 390,
+          "hasHorizontalOverflow": false,
+          "viewportWidth": 390
+        },
+        "selectedToolbar": {
+          "rect": null,
+          "text": null,
+          "visible": false
+        },
+        "title": "AI Memory — offline",
+        "url": "http://127.0.0.1:3027/offline.html",
+        "viewport": {
+          "height": 844,
+          "width": 390
+        },
+        "visibleCheckboxCount": 0
+      }
+    },
+    {
+      "name": "library-default",
+      "viewport": {
+        "width": 430,
+        "height": 932
+      },
+      "path": "/library",
+      "screenshotPath": "/tmp/ai-memory-android-a1-shell-library-more-offline/430x932-library-default.png",
+      "metrics": {
+        "bodyTextSample": "AI Memoryv0.6.2 · private memoryNavigationSearch⌘KCaptureLibraryNeeds Upgrade2AskSettingsPair DevicePrivacy ControlssoonLibraryCaptureAskMoreLibrary12 sources captured2 need upgradeCaptureFiltersAll sources12SourceAllArticlesYouTubePDFsNotesTelegramQualityAllFull textTranscriptNeeds upgradeUX v2 library fixture articlequeuedArticle·via Web·Full text·14m ago·127 charsUX v2 selected ask fixture notequeuedNote·via Web·Full text·24m ago·145 charsUX v2 transcript fixture videoqueuedYouTube·via Web·Transcript·54m ago·85 charsUX v2 library fixture articlequeuedArticle·via Web·Full text·2h ago·127 charsUX v2 PDF fixture briefqueuedPDF·via Web·Full text·2h ago·92 charsUX v2 selected ask fixture notequeuedNote·via Web·Full text·2h ago·145 charsUX v2 transcript fixture videoqueuedYouTube·via Web·Transcript·3h ago·85 charsUX v2 weak metadata fixturequeuedYouTube·via Web·Metadata only·3h ago·46 chars·⚠ metadata onlyUX v2 PDF fixture briefqueuedPDF·via Web·Full text·4h ago·92 charsUX v2 weak metadata fixturequeuedYouTube·via Web·Metadata only·5h ago·46 chars·⚠ metadata onlyUX v2 long title stress fixture for wrapping behavior across library rows, search rows, topic rows, and collection rowsqueuedArticle·via Web·Full text·6h ago·149 charsUX v2 long title stress fixture for wrapping behavior across library rows, search rows, topic rows, and collection rowsqueuedArticle·via Web·Full text·8h ago·149 charsself.__next_r=\"JUALdT0te4n9ZkuojGrzj\"(self.__next_f=self.__next_f||[]).push([0])self.__nex",
+        "bottomNav": {
+          "links": [
+            {
+              "aria": "Open Library",
+              "current": "page",
+              "href": "/library",
+              "rect": {
+                "height": 47,
+                "width": 108,
+                "x": 8,
+                "y": 875
+              },
+              "text": "Library"
+            },
+            {
+              "aria": "Open Capture",
+              "current": null,
+              "href": "/capture",
+              "rect": {
+                "height": 56,
+                "width": 56,
+                "x": 133,
+                "y": 849
+              },
+              "text": ""
+            },
+            {
+              "aria": "Open Ask",
+              "current": null,
+              "href": "/ask",
+              "rect": {
+                "height": 47,
+                "width": 108,
+                "x": 207,
+                "y": 875
+              },
+              "text": "Ask"
+            },
+            {
+              "aria": "Open More",
+              "current": null,
+              "href": "/more",
+              "rect": {
+                "height": 47,
+                "width": 108,
+                "x": 315,
+                "y": 875
+              },
+              "text": "More"
+            }
+          ],
+          "rect": {
+            "height": 64,
+            "width": 430,
+            "x": 0,
+            "y": 868
+          },
+          "text": "LibraryCaptureAskMore",
+          "visible": true
+        },
+        "buttons": [
+          {
+            "aria": "Collapse sidebar",
+            "expanded": "true",
+            "rect": {
+              "height": 0,
+              "width": 0,
+              "x": 0,
+              "y": 0
+            },
+            "text": "Navigation"
+          },
+          {
+            "aria": null,
+            "expanded": null,
+            "rect": {
+              "height": 0,
+              "width": 0,
+              "x": 0,
+              "y": 0
+            },
+            "text": "Search⌘K"
+          },
+          {
+            "aria": null,
+            "expanded": "false",
+            "rect": {
+              "height": 62,
+              "width": 390,
+              "x": 20,
+              "y": 228
+            },
+            "text": "FiltersAll sources12"
+          }
+        ],
+        "checkboxCount": 12,
+        "desktopBulkToolbar": {
+          "rect": null,
+          "text": null,
+          "visible": false
+        },
+        "dialog": {
+          "rect": null,
+          "text": null,
+          "visible": false
+        },
+        "h1": "AI Memory",
+        "links": [
+          {
+            "aria": "Capture",
+            "current": null,
+            "href": "/capture",
+            "rect": {
+              "height": 0,
+              "width": 0,
+              "x": 0,
+              "y": 0
+            },
+            "text": "Capture"
+          },
+          {
+            "aria": null,
+            "current": "page",
+            "href": "/library",
+            "rect": {
+              "height": 0,
+              "width": 0,
+              "x": 0,
+              "y": 0
+            },
+            "text": "Library"
+          },
+          {
+            "aria": null,
+            "current": null,
+            "href": "/needs-upgrade",
+            "rect": {
+              "height": 0,
+              "width": 0,
+              "x": 0,
+              "y": 0
+            },
+            "text": "Needs Upgrade2"
+          },
+          {
+            "aria": null,
+            "current": null,
+            "href": "/ask",
+            "rect": {
+              "height": 0,
+              "width": 0,
+              "x": 0,
+              "y": 0
+            },
+            "text": "Ask"
+          },
+          {
+            "aria": null,
+            "current": null,
+            "href": "/settings",
+            "rect": {
+              "height": 0,
+              "width": 0,
+              "x": 0,
+              "y": 0
+            },
+            "text": "Settings"
+          },
+          {
+            "aria": null,
+            "current": null,
+            "href": "/settings/device-pairing",
+            "rect": {
+              "height": 0,
+              "width": 0,
+              "x": 0,
+              "y": 0
+            },
+            "text": "Pair Device"
+          },
+          "[Circular]",
+          "[Circular]",
+          "[Circular]",
+          "[Circular]",
+          {
+            "aria": null,
+            "current": null,
+            "href": "/needs-upgrade",
+            "rect": {
+              "height": 36,
+              "width": 132,
+              "x": 20,
+              "y": 108
+            },
+            "text": "2 need upgrade"
+          },
+          {
+            "aria": null,
+            "current": null,
+            "href": "/capture",
+            "rect": {
+              "height": 36,
+              "width": 109,
+              "x": 160,
+              "y": 108
+            },
+            "text": "Capture"
+          },
+          {
+            "aria": null,
+            "current": "page",
+            "href": "/library",
+            "rect": {
+              "height": 0,
+              "width": 0,
+              "x": 0,
+              "y": 0
+            },
+            "text": "All"
+          },
+          {
+            "aria": null,
+            "current": null,
+            "href": "/library?source=article",
+            "rect": {
+              "height": 0,
+              "width": 0,
+              "x": 0,
+              "y": 0
+            },
+            "text": "Articles"
+          },
+          {
+            "aria": null,
+            "current": null,
+            "href": "/library?source=youtube",
+            "rect": {
+              "height": 0,
+              "width": 0,
+              "x": 0,
+              "y": 0
+            },
+            "text": "YouTube"
+          },
+          {
+            "aria": null,
+            "current": null,
+            "href": "/library?source=pdf",
+            "rect": {
+              "height": 0,
+              "width": 0,
+              "x": 0,
+              "y": 0
+            },
+            "text": "PDFs"
+          },
+          {
+            "aria": null,
+            "current": null,
+            "href": "/library?source=note",
+            "rect": {
+              "height": 0,
+              "width": 0,
+              "x": 0,
+              "y": 0
+            },
+            "text": "Notes"
+          },
+          {
+            "aria": null,
+            "current": null,
+            "href": "/library?source=telegram",
+            "rect": {
+              "height": 0,
+              "width": 0,
+              "x": 0,
+              "y": 0
+            },
+            "text": "Telegram"
+          },
+          {
+            "aria": null,
+            "current": "page",
+            "href": "/library",
+            "rect": {
+              "height": 0,
+              "width": 0,
+              "x": 0,
+              "y": 0
+            },
+            "text": "All"
+          },
+          {
+            "aria": null,
+            "current": null,
+            "href": "/library?quality=full_text",
+            "rect": {
+              "height": 0,
+              "width": 0,
+              "x": 0,
+              "y": 0
+            },
+            "text": "Full text"
+          },
+          {
+            "aria": null,
+            "current": null,
+            "href": "/library?quality=transcript",
+            "rect": {
+              "height": 0,
+              "width": 0,
+              "x": 0,
+              "y": 0
+            },
+            "text": "Transcript"
+          },
+          {
+            "aria": null,
+            "current": null,
+            "href": "/library?quality=needs_upgrade",
+            "rect": {
+              "height": 0,
+              "width": 0,
+              "x": 0,
+              "y": 0
+            },
+            "text": "Needs upgrade"
+          },
+          {
+            "aria": null,
+            "current": null,
+            "href": "/items/4f1e90ebad20182ec2b5cf98",
+            "rect": {
+              "height": 104,
+              "width": 328,
+              "x": 65,
+              "y": 327
+            },
+            "text": "UX v2 library fixture articlequeuedArticle·via Web·Full text·14m ago·127 chars"
+          },
+          {
+            "aria": null,
+            "current": null,
+            "href": "/items/089c8261c9460f2d6a945c74",
+            "rect": {
+              "height": 104,
+              "width": 328,
+              "x": 65,
+              "y": 477
+            },
+            "text": "UX v2 selected ask fixture notequeuedNote·via Web·Full text·24m ago·145 chars"
+          },
+          {
+            "aria": null,
+            "current": null,
+            "href": "/items/6d5fc4dbeaf9be69d3931bc6",
+            "rect": {
+              "height": 104,
+              "width": 328,
+              "x": 65,
+              "y": 628
+            },
+            "text": "UX v2 transcript fixture videoqueuedYouTube·via Web·Transcript·54m ago·85 chars"
+          },
+          {
+            "aria": null,
+            "current": null,
+            "href": "/items/5e6a4a7afe1775e502aa38a4",
+            "rect": {
+              "height": 104,
+              "width": 328,
+              "x": 65,
+              "y": 778
+            },
+            "text": "UX v2 library fixture articlequeuedArticle·via Web·Full text·2h ago·127 chars"
+          },
+          {
+            "aria": null,
+            "current": null,
+            "href": "/items/b4de2ddd41c2ab9729e65065",
+            "rect": {
+              "height": 53,
+              "width": 328,
+              "x": 65,
+              "y": 929
+            },
+            "text": "UX v2 PDF fixture briefqueuedPDF·via Web·Full text·2h ago·92 chars"
+          },
+          {
+            "aria": null,
+            "current": null,
+            "href": "/items/78c50eca82c4c475fd050bb9",
+            "rect": {
+              "height": 104,
+              "width": 328,
+              "x": 65,
+              "y": 1027
+            },
+            "text": "UX v2 selected ask fixture notequeuedNote·via Web·Full text·2h ago·145 chars"
+          },
+          {
+            "aria": null,
+            "current": null,
+            "href": "/items/e9a6bfde7ab94596a64c0ee1",
+            "rect": {
+              "height": 104,
+              "width": 328,
+              "x": 65,
+              "y": 1178
+            },
+            "text": "UX v2 transcript fixture videoqueuedYouTube·via Web·Transcript·3h ago·85 chars"
+          },
+          {
+            "aria": null,
+            "current": null,
+            "href": "/items/9a5236bbc1e5f6be4d23911e",
+            "rect": {
+              "height": 104,
+              "width": 328,
+              "x": 65,
+              "y": 1328
+            },
+            "text": "UX v2 weak metadata fixturequeuedYouTube·via Web·Metadata only·3h ago·46 chars·⚠ metadata only"
+          },
+          {
+            "aria": null,
+            "current": null,
+            "href": "/items/58a7468a319ea63a3407e776",
+            "rect": {
+              "height": 53,
+              "width": 328,
+              "x": 65,
+              "y": 1479
+            },
+            "text": "UX v2 PDF fixture briefqueuedPDF·via Web·Full text·4h ago·92 chars"
+          },
+          {
+            "aria": null,
+            "current": null,
+            "href": "/items/26f1a665a2d1231a35ac50f2",
+            "rect": {
+              "height": 104,
+              "width": 328,
+              "x": 65,
+              "y": 1577
+            },
+            "text": "UX v2 weak metadata fixturequeuedYouTube·via Web·Metadata only·5h ago·46 chars·⚠ metadata only"
+          },
+          {
+            "aria": null,
+            "current": null,
+            "href": "/items/01cc6b31eccd7e6f9101b9c2",
+            "rect": {
+              "height": 216,
+              "width": 328,
+              "x": 65,
+              "y": 1728
+            },
+            "text": "UX v2 long title stress fixture for wrapping behavior across library rows, search rows, topic rows, and collection rowsqueuedArticle·via Web·Full text·6h ago·149 chars"
+          },
+          {
+            "aria": null,
+            "current": null,
+            "href": "/items/d5845471e0244baeb5a70675",
+            "rect": {
+              "height": 216,
+              "width": 328,
+              "x": 65,
+              "y": 1990
+            },
+            "text": "UX v2 long title stress fixture for wrapping behavior across library rows, search rows, topic rows, and collection rowsqueuedArticle·via Web·Full text·8h ago·149 chars"
+          }
+        ],
+        "overflow": {
+          "documentWidth": 430,
+          "hasHorizontalOverflow": false,
+          "viewportWidth": 430
+        },
+        "selectedToolbar": {
+          "rect": null,
+          "text": null,
+          "visible": false
+        },
+        "title": "AI Memory",
+        "url": "http://127.0.0.1:3027/library",
+        "viewport": {
+          "height": 932,
+          "width": 430
+        },
+        "visibleCheckboxCount": 12
+      }
+    },
+    {
+      "name": "library-selected",
+      "viewport": {
+        "width": 430,
+        "height": 932
+      },
+      "path": "/library",
+      "screenshotPath": "/tmp/ai-memory-android-a1-shell-library-more-offline/430x932-library-selected.png",
+      "metrics": {
+        "bodyTextSample": "AI Memoryv0.6.2 · private memoryNavigationSearch⌘KCaptureLibraryNeeds Upgrade2AskSettingsPair DevicePrivacy ControlssoonLibraryCaptureAskMoreLibrary12 sources captured2 need upgradeCaptureFiltersAll sources12SourceAllArticlesYouTubePDFsNotesTelegramQualityAllFull textTranscriptNeeds upgradeUX v2 library fixture articlequeuedArticle·via Web·Full text·14m ago·127 charsUX v2 selected ask fixture notequeuedNote·via Web·Full text·24m ago·145 charsUX v2 transcript fixture videoqueuedYouTube·via Web·Transcript·54m ago·85 charsUX v2 library fixture articlequeuedArticle·via Web·Full text·2h ago·127 charsUX v2 PDF fixture briefqueuedPDF·via Web·Full text·2h ago·92 charsUX v2 selected ask fixture notequeuedNote·via Web·Full text·2h ago·145 charsUX v2 transcript fixture videoqueuedYouTube·via Web·Transcript·3h ago·85 charsUX v2 weak metadata fixturequeuedYouTube·via Web·Metadata only·3h ago·46 chars·⚠ metadata onlyUX v2 PDF fixture briefqueuedPDF·via Web·Full text·4h ago·92 charsUX v2 weak metadata fixturequeuedYouTube·via Web·Metadata only·5h ago·46 chars·⚠ metadata onlyUX v2 long title stress fixture for wrapping behavior across library rows, search rows, topic rows, and collection rowsqueuedArticle·via Web·Full text·6h ago·149 charsUX v2 long title stress fixture for wrapping behavior across library rows, search rows, topic rows, and collection rowsqueuedArticle·via Web·Full text·8h ago·149 chars1 selectedAsk1 selectedAskTag+ collectionUX v2 Empty Fixture CollectionUX v2 Empty Fixture",
+        "bottomNav": {
+          "links": [
+            {
+              "aria": "Open Library",
+              "current": "page",
+              "href": "/library",
+              "rect": {
+                "height": 47,
+                "width": 108,
+                "x": 8,
+                "y": 875
+              },
+              "text": "Library"
+            },
+            {
+              "aria": "Open Capture",
+              "current": null,
+              "href": "/capture",
+              "rect": {
+                "height": 56,
+                "width": 56,
+                "x": 133,
+                "y": 849
+              },
+              "text": ""
+            },
+            {
+              "aria": "Open Ask",
+              "current": null,
+              "href": "/ask",
+              "rect": {
+                "height": 47,
+                "width": 108,
+                "x": 207,
+                "y": 875
+              },
+              "text": "Ask"
+            },
+            {
+              "aria": "Open More",
+              "current": null,
+              "href": "/more",
+              "rect": {
+                "height": 47,
+                "width": 108,
+                "x": 315,
+                "y": 875
+              },
+              "text": "More"
+            }
+          ],
+          "rect": {
+            "height": 64,
+            "width": 430,
+            "x": 0,
+            "y": 868
+          },
+          "text": "LibraryCaptureAskMore",
+          "visible": true
+        },
+        "buttons": [
+          {
+            "aria": "Collapse sidebar",
+            "expanded": "true",
+            "rect": {
+              "height": 0,
+              "width": 0,
+              "x": 0,
+              "y": 0
+            },
+            "text": "Navigation"
+          },
+          {
+            "aria": null,
+            "expanded": null,
+            "rect": {
+              "height": 0,
+              "width": 0,
+              "x": 0,
+              "y": 0
+            },
+            "text": "Search⌘K"
+          },
+          {
+            "aria": null,
+            "expanded": "false",
+            "rect": {
+              "height": 62,
+              "width": 390,
+              "x": 20,
+              "y": 228
+            },
+            "text": "FiltersAll sources12"
+          },
+          {
+            "aria": null,
+            "expanded": null,
+            "rect": {
+              "height": 36,
+              "width": 71,
+              "x": 290,
+              "y": 811
+            },
+            "text": "Ask"
+          },
+          {
+            "aria": "Clear selection",
+            "expanded": null,
+            "rect": {
+              "height": 36,
+              "width": 36,
+              "x": 369,
+              "y": 811
+            },
+            "text": ""
+          },
+          {
+            "aria": null,
+            "expanded": null,
+            "rect": {
+              "height": 0,
+              "width": 0,
+              "x": 0,
+              "y": 0
+            },
+            "text": "Ask"
+          },
+          {
+            "aria": null,
+            "expanded": null,
+            "rect": {
+              "height": 0,
+              "width": 0,
+              "x": 0,
+              "y": 0
+            },
+            "text": "Tag"
+          },
+          {
+            "aria": "Clear selection",
+            "expanded": null,
+            "rect": {
+              "height": 0,
+              "width": 0,
+              "x": 0,
+              "y": 0
+            },
+            "text": ""
+          }
+        ],
+        "checkboxCount": 12,
+        "desktopBulkToolbar": {
+          "rect": {
+            "height": 0,
+            "width": 0,
+            "x": 0,
+            "y": 0
+          },
+          "text": "1 selectedAskTag+ collectionUX v2 Empty Fixture CollectionUX v2 Empty Fixture CollectionUX v2 Fixture CollectionUX v2 Fixture Collection",
+          "visible": false
+        },
+        "dialog": {
+          "rect": null,
+          "text": null,
+          "visible": false
+        },
+        "h1": "AI Memory",
+        "links": [
+          {
+            "aria": "Capture",
+            "current": null,
+            "href": "/capture",
+            "rect": {
+              "height": 0,
+              "width": 0,
+              "x": 0,
+              "y": 0
+            },
+            "text": "Capture"
+          },
+          {
+            "aria": null,
+            "current": "page",
+            "href": "/library",
+            "rect": {
+              "height": 0,
+              "width": 0,
+              "x": 0,
+              "y": 0
+            },
+            "text": "Library"
+          },
+          {
+            "aria": null,
+            "current": null,
+            "href": "/needs-upgrade",
+            "rect": {
+              "height": 0,
+              "width": 0,
+              "x": 0,
+              "y": 0
+            },
+            "text": "Needs Upgrade2"
+          },
+          {
+            "aria": null,
+            "current": null,
+            "href": "/ask",
+            "rect": {
+              "height": 0,
+              "width": 0,
+              "x": 0,
+              "y": 0
+            },
+            "text": "Ask"
+          },
+          {
+            "aria": null,
+            "current": null,
+            "href": "/settings",
+            "rect": {
+              "height": 0,
+              "width": 0,
+              "x": 0,
+              "y": 0
+            },
+            "text": "Settings"
+          },
+          {
+            "aria": null,
+            "current": null,
+            "href": "/settings/device-pairing",
+            "rect": {
+              "height": 0,
+              "width": 0,
+              "x": 0,
+              "y": 0
+            },
+            "text": "Pair Device"
+          },
+          "[Circular]",
+          "[Circular]",
+          "[Circular]",
+          "[Circular]",
+          {
+            "aria": null,
+            "current": null,
+            "href": "/needs-upgrade",
+            "rect": {
+              "height": 36,
+              "width": 132,
+              "x": 20,
+              "y": 108
+            },
+            "text": "2 need upgrade"
+          },
+          {
+            "aria": null,
+            "current": null,
+            "href": "/capture",
+            "rect": {
+              "height": 36,
+              "width": 109,
+              "x": 160,
+              "y": 108
+            },
+            "text": "Capture"
+          },
+          {
+            "aria": null,
+            "current": "page",
+            "href": "/library",
+            "rect": {
+              "height": 0,
+              "width": 0,
+              "x": 0,
+              "y": 0
+            },
+            "text": "All"
+          },
+          {
+            "aria": null,
+            "current": null,
+            "href": "/library?source=article",
+            "rect": {
+              "height": 0,
+              "width": 0,
+              "x": 0,
+              "y": 0
+            },
+            "text": "Articles"
+          },
+          {
+            "aria": null,
+            "current": null,
+            "href": "/library?source=youtube",
+            "rect": {
+              "height": 0,
+              "width": 0,
+              "x": 0,
+              "y": 0
+            },
+            "text": "YouTube"
+          },
+          {
+            "aria": null,
+            "current": null,
+            "href": "/library?source=pdf",
+            "rect": {
+              "height": 0,
+              "width": 0,
+              "x": 0,
+              "y": 0
+            },
+            "text": "PDFs"
+          },
+          {
+            "aria": null,
+            "current": null,
+            "href": "/library?source=note",
+            "rect": {
+              "height": 0,
+              "width": 0,
+              "x": 0,
+              "y": 0
+            },
+            "text": "Notes"
+          },
+          {
+            "aria": null,
+            "current": null,
+            "href": "/library?source=telegram",
+            "rect": {
+              "height": 0,
+              "width": 0,
+              "x": 0,
+              "y": 0
+            },
+            "text": "Telegram"
+          },
+          {
+            "aria": null,
+            "current": "page",
+            "href": "/library",
+            "rect": {
+              "height": 0,
+              "width": 0,
+              "x": 0,
+              "y": 0
+            },
+            "text": "All"
+          },
+          {
+            "aria": null,
+            "current": null,
+            "href": "/library?quality=full_text",
+            "rect": {
+              "height": 0,
+              "width": 0,
+              "x": 0,
+              "y": 0
+            },
+            "text": "Full text"
+          },
+          {
+            "aria": null,
+            "current": null,
+            "href": "/library?quality=transcript",
+            "rect": {
+              "height": 0,
+              "width": 0,
+              "x": 0,
+              "y": 0
+            },
+            "text": "Transcript"
+          },
+          {
+            "aria": null,
+            "current": null,
+            "href": "/library?quality=needs_upgrade",
+            "rect": {
+              "height": 0,
+              "width": 0,
+              "x": 0,
+              "y": 0
+            },
+            "text": "Needs upgrade"
+          },
+          {
+            "aria": null,
+            "current": null,
+            "href": "/items/4f1e90ebad20182ec2b5cf98",
+            "rect": {
+              "height": 104,
+              "width": 328,
+              "x": 65,
+              "y": 327
+            },
+            "text": "UX v2 library fixture articlequeuedArticle·via Web·Full text·14m ago·127 chars"
+          },
+          {
+            "aria": null,
+            "current": null,
+            "href": "/items/089c8261c9460f2d6a945c74",
+            "rect": {
+              "height": 104,
+              "width": 328,
+              "x": 65,
+              "y": 477
+            },
+            "text": "UX v2 selected ask fixture notequeuedNote·via Web·Full text·24m ago·145 chars"
+          },
+          {
+            "aria": null,
+            "current": null,
+            "href": "/items/6d5fc4dbeaf9be69d3931bc6",
+            "rect": {
+              "height": 104,
+              "width": 328,
+              "x": 65,
+              "y": 628
+            },
+            "text": "UX v2 transcript fixture videoqueuedYouTube·via Web·Transcript·54m ago·85 chars"
+          },
+          {
+            "aria": null,
+            "current": null,
+            "href": "/items/5e6a4a7afe1775e502aa38a4",
+            "rect": {
+              "height": 104,
+              "width": 328,
+              "x": 65,
+              "y": 778
+            },
+            "text": "UX v2 library fixture articlequeuedArticle·via Web·Full text·2h ago·127 chars"
+          },
+          {
+            "aria": null,
+            "current": null,
+            "href": "/items/b4de2ddd41c2ab9729e65065",
+            "rect": {
+              "height": 53,
+              "width": 328,
+              "x": 65,
+              "y": 929
+            },
+            "text": "UX v2 PDF fixture briefqueuedPDF·via Web·Full text·2h ago·92 chars"
+          },
+          {
+            "aria": null,
+            "current": null,
+            "href": "/items/78c50eca82c4c475fd050bb9",
+            "rect": {
+              "height": 104,
+              "width": 328,
+              "x": 65,
+              "y": 1027
+            },
+            "text": "UX v2 selected ask fixture notequeuedNote·via Web·Full text·2h ago·145 chars"
+          },
+          {
+            "aria": null,
+            "current": null,
+            "href": "/items/e9a6bfde7ab94596a64c0ee1",
+            "rect": {
+              "height": 104,
+              "width": 328,
+              "x": 65,
+              "y": 1178
+            },
+            "text": "UX v2 transcript fixture videoqueuedYouTube·via Web·Transcript·3h ago·85 chars"
+          },
+          {
+            "aria": null,
+            "current": null,
+            "href": "/items/9a5236bbc1e5f6be4d23911e",
+            "rect": {
+              "height": 104,
+              "width": 328,
+              "x": 65,
+              "y": 1328
+            },
+            "text": "UX v2 weak metadata fixturequeuedYouTube·via Web·Metadata only·3h ago·46 chars·⚠ metadata only"
+          },
+          {
+            "aria": null,
+            "current": null,
+            "href": "/items/58a7468a319ea63a3407e776",
+            "rect": {
+              "height": 53,
+              "width": 328,
+              "x": 65,
+              "y": 1479
+            },
+            "text": "UX v2 PDF fixture briefqueuedPDF·via Web·Full text·4h ago·92 chars"
+          },
+          {
+            "aria": null,
+            "current": null,
+            "href": "/items/26f1a665a2d1231a35ac50f2",
+            "rect": {
+              "height": 104,
+              "width": 328,
+              "x": 65,
+              "y": 1577
+            },
+            "text": "UX v2 weak metadata fixturequeuedYouTube·via Web·Metadata only·5h ago·46 chars·⚠ metadata only"
+          },
+          {
+            "aria": null,
+            "current": null,
+            "href": "/items/01cc6b31eccd7e6f9101b9c2",
+            "rect": {
+              "height": 216,
+              "width": 328,
+              "x": 65,
+              "y": 1728
+            },
+            "text": "UX v2 long title stress fixture for wrapping behavior across library rows, search rows, topic rows, and collection rowsqueuedArticle·via Web·Full text·6h ago·149 chars"
+          },
+          {
+            "aria": null,
+            "current": null,
+            "href": "/items/d5845471e0244baeb5a70675",
+            "rect": {
+              "height": 216,
+              "width": 328,
+              "x": 65,
+              "y": 1990
+            },
+            "text": "UX v2 long title stress fixture for wrapping behavior across library rows, search rows, topic rows, and collection rowsqueuedArticle·via Web·Full text·8h ago·149 chars"
+          }
+        ],
+        "overflow": {
+          "documentWidth": 430,
+          "hasHorizontalOverflow": false,
+          "viewportWidth": 430
+        },
+        "selectedToolbar": {
+          "rect": {
+            "height": 54,
+            "width": 406,
+            "x": 12,
+            "y": 802
+          },
+          "text": "1 selectedAsk",
+          "visible": true
+        },
+        "title": "AI Memory",
+        "url": "http://127.0.0.1:3027/library",
+        "viewport": {
+          "height": 932,
+          "width": 430
+        },
+        "visibleCheckboxCount": 12
+      }
+    },
+    {
+      "name": "more",
+      "viewport": {
+        "width": 430,
+        "height": 932
+      },
+      "path": "/more",
+      "screenshotPath": "/tmp/ai-memory-android-a1-shell-library-more-offline/430x932-more.png",
+      "metrics": {
+        "bodyTextSample": "AI Memoryv0.6.2 · private memoryNavigationSearch⌘KCaptureLibraryNeeds Upgrade2AskSettingsPair DevicePrivacy ControlssoonLibraryCaptureAskMoreMoreSettings, devices, data, and app health.AI MemoryPersonal memory workspaceNeeds upgrade2 weak capturesPreferencesAppearanceTagsCollectionsDevicesDevice pairingAndroid setupData & PrivacyBackup & exportPrivacy controlsEnd-to-end encryption is not active yet. Privacy controls are coming soon.Coming soonOffline accessAsk, capture, export, and sync require the AI Memory server. There is no offline queue in UX v2.Server requiredProvider HealthClaude generationollama · qwen2.5:7b-instruct-q4_K_MUnreachableGemini semantic indexingollama · nomic-embed-textUnreachableAI Memory v0.6.2self.__next_r=\"gkjHZuSyzemlsRzizwuwx\"(self.__next_f=self.__next_f||[]).push([0])self.__next_f.push([1,\"9:I[\\\"[project]/node_modules/next/dist/next-devtools/userspace/app/segment-explorer-node.js [app-client] (ecmascript)\\\",[\\\"/_next/static/chunks/node_modules_0k7eqr8._.js\\\",\\\"/_next/static/chunks/_06_n~y6._.js\\\",\\\"/_next/static/chunks/node_modules_0.1878.._.js\\\",\\\"/_next/static/chunks/src_app_layout_tsx_004glpo._.js\\\"],\\\"SegmentViewNode\\\"]\\nb:\\\"$Sreact.fragment\\\"\\n1e:I[\\\"[project]/node_modules/next/dist/client/components/layout-router.js [app-client] (ecmascript)\\\",[\\\"/_next/static/chunks/node_modules_0k7eqr8._.js\\\",\\\"/_next/static/chunks/_06_n~y6._.js\\\",\\\"/_next/static/chunks/node_modules_0.1878.._.js\\\",\\\"/_next/static/chunks/src_app_layout_tsx_004glpo._.js\\\"],\\\"",
+        "bottomNav": {
+          "links": [
+            {
+              "aria": "Open Library",
+              "current": null,
+              "href": "/library",
+              "rect": {
+                "height": 47,
+                "width": 108,
+                "x": 8,
+                "y": 875
+              },
+              "text": "Library"
+            },
+            {
+              "aria": "Open Capture",
+              "current": null,
+              "href": "/capture",
+              "rect": {
+                "height": 56,
+                "width": 56,
+                "x": 133,
+                "y": 849
+              },
+              "text": ""
+            },
+            {
+              "aria": "Open Ask",
+              "current": null,
+              "href": "/ask",
+              "rect": {
+                "height": 47,
+                "width": 108,
+                "x": 207,
+                "y": 875
+              },
+              "text": "Ask"
+            },
+            {
+              "aria": "Open More",
+              "current": "page",
+              "href": "/more",
+              "rect": {
+                "height": 47,
+                "width": 108,
+                "x": 315,
+                "y": 875
+              },
+              "text": "More"
+            }
+          ],
+          "rect": {
+            "height": 64,
+            "width": 430,
+            "x": 0,
+            "y": 868
+          },
+          "text": "LibraryCaptureAskMore",
+          "visible": true
+        },
+        "buttons": [
+          {
+            "aria": "Collapse sidebar",
+            "expanded": "true",
+            "rect": {
+              "height": 0,
+              "width": 0,
+              "x": 0,
+              "y": 0
+            },
+            "text": "Navigation"
+          },
+          {
+            "aria": null,
+            "expanded": null,
+            "rect": {
+              "height": 0,
+              "width": 0,
+              "x": 0,
+              "y": 0
+            },
+            "text": "Search⌘K"
+          }
+        ],
+        "checkboxCount": 0,
+        "desktopBulkToolbar": {
+          "rect": null,
+          "text": null,
+          "visible": false
+        },
+        "dialog": {
+          "rect": null,
+          "text": null,
+          "visible": false
+        },
+        "h1": "AI Memory",
+        "links": [
+          {
+            "aria": "Capture",
+            "current": null,
+            "href": "/capture",
+            "rect": {
+              "height": 0,
+              "width": 0,
+              "x": 0,
+              "y": 0
+            },
+            "text": "Capture"
+          },
+          {
+            "aria": null,
+            "current": null,
+            "href": "/library",
+            "rect": {
+              "height": 0,
+              "width": 0,
+              "x": 0,
+              "y": 0
+            },
+            "text": "Library"
+          },
+          {
+            "aria": null,
+            "current": null,
+            "href": "/needs-upgrade",
+            "rect": {
+              "height": 0,
+              "width": 0,
+              "x": 0,
+              "y": 0
+            },
+            "text": "Needs Upgrade2"
+          },
+          {
+            "aria": null,
+            "current": null,
+            "href": "/ask",
+            "rect": {
+              "height": 0,
+              "width": 0,
+              "x": 0,
+              "y": 0
+            },
+            "text": "Ask"
+          },
+          {
+            "aria": null,
+            "current": null,
+            "href": "/settings",
+            "rect": {
+              "height": 0,
+              "width": 0,
+              "x": 0,
+              "y": 0
+            },
+            "text": "Settings"
+          },
+          {
+            "aria": null,
+            "current": null,
+            "href": "/settings/device-pairing",
+            "rect": {
+              "height": 0,
+              "width": 0,
+              "x": 0,
+              "y": 0
+            },
+            "text": "Pair Device"
+          },
+          "[Circular]",
+          "[Circular]",
+          "[Circular]",
+          "[Circular]",
+          {
+            "aria": null,
+            "current": null,
+            "href": "/needs-upgrade",
+            "rect": {
+              "height": 74,
+              "width": 390,
+              "x": 20,
+              "y": 218
+            },
+            "text": "Needs upgrade2 weak captures"
+          },
+          {
+            "aria": null,
+            "current": null,
+            "href": "/settings",
+            "rect": {
+              "height": 57,
+              "width": 388,
+              "x": 21,
+              "y": 341
+            },
+            "text": "Appearance"
+          },
+          {
+            "aria": null,
+            "current": null,
+            "href": "/settings/tags",
+            "rect": {
+              "height": 57,
+              "width": 388,
+              "x": 21,
+              "y": 398
+            },
+            "text": "Tags"
+          },
+          {
+            "aria": null,
+            "current": null,
+            "href": "/settings/collections",
+            "rect": {
+              "height": 56,
+              "width": 388,
+              "x": 21,
+              "y": 455
+            },
+            "text": "Collections"
+          },
+          {
+            "aria": null,
+            "current": null,
+            "href": "/settings/device-pairing",
+            "rect": {
+              "height": 57,
+              "width": 388,
+              "x": 21,
+              "y": 561
+            },
+            "text": "Device pairing"
+          },
+          {
+            "aria": null,
+            "current": null,
+            "href": "/setup-apk",
+            "rect": {
+              "height": 56,
+              "width": 388,
+              "x": 21,
+              "y": 618
+            },
+            "text": "Android setup"
+          },
+          {
+            "aria": null,
+            "current": null,
+            "href": "/api/library/export.zip",
+            "rect": {
+              "height": 57,
+              "width": 388,
+              "x": 21,
+              "y": 724
+            },
+            "text": "Backup & export"
+          }
+        ],
+        "overflow": {
+          "documentWidth": 430,
+          "hasHorizontalOverflow": false,
+          "viewportWidth": 430
+        },
+        "selectedToolbar": {
+          "rect": null,
+          "text": null,
+          "visible": false
+        },
+        "title": "AI Memory",
+        "url": "http://127.0.0.1:3027/more",
+        "viewport": {
+          "height": 932,
+          "width": 430
+        },
+        "visibleCheckboxCount": 0
+      }
+    },
+    {
+      "name": "offline-fallback",
+      "viewport": {
+        "width": 430,
+        "height": 932
+      },
+      "path": "/offline.html",
+      "screenshotPath": "/tmp/ai-memory-android-a1-shell-library-more-offline/430x932-offline-fallback.png",
+      "metrics": {
+        "bodyTextSample": "AI Memory needs the server The app could not reach your AI Memory server. This fallback page can load from the device cache, but Ask, capture, export, and sync require server access. There is no offline queue in UX v2. If this is a new device, open AI Memory online once so the fallback page can be cached. Connected (7 ms). Redirecting… Retry Library Pair device If retry keeps failing: check your internet connection, wait a moment, and try again. If the issue persists, the AI Memory server may be down. /* * This inline script intentionally does NOT import reachability.ts — * the offline page is served from /public and must render even when * the Next.js server is dead, so bundled ES modules are not available. * Keep this in sync with src/lib/client/reachability.ts at the wire * level: 2s timeout, GET /api/health, cache-bypass, status-code case * analysis mirrors the TS module. * * Why no bearer token: the offline page runs before pairing is * confirmed and cannot reliably read Capacitor Preferences via * bundled plugin imports from a static /public page. We probe the * current origin without auth — the proxy responds 401 if the * server is up but the token path is wanted, which is enough signal * to distinguish \"AI Memory up\" from \"AI Memory down / unreachable\". The * richer bearer-authed probe runs from share-handler.tsx using the * canonical reachability.ts module. */ (function () { const statusEl = document.getElementById(\"status\"); const retryBtn = document.getElementById(",
+        "bottomNav": {
+          "links": [],
+          "rect": null,
+          "text": null,
+          "visible": false
+        },
+        "buttons": [
+          {
+            "aria": null,
+            "expanded": null,
+            "rect": {
+              "height": 40,
+              "width": 75,
+              "x": 45,
+              "y": 357
+            },
+            "text": "Retry"
+          }
+        ],
+        "checkboxCount": 0,
+        "desktopBulkToolbar": {
+          "rect": null,
+          "text": null,
+          "visible": false
+        },
+        "dialog": {
+          "rect": null,
+          "text": null,
+          "visible": false
+        },
+        "h1": "AI Memory needs the server",
+        "links": [
+          {
+            "aria": null,
+            "current": null,
+            "href": "http://127.0.0.1:3027/",
+            "rect": {
+              "height": 40,
+              "width": 89,
+              "x": 132,
+              "y": 357
+            },
+            "text": "Library"
+          },
+          {
+            "aria": null,
+            "current": null,
+            "href": "http://127.0.0.1:3027/setup-apk",
+            "rect": {
+              "height": 40,
+              "width": 116,
+              "x": 233,
+              "y": 357
+            },
+            "text": "Pair device"
+          }
+        ],
+        "overflow": {
+          "documentWidth": 430,
+          "hasHorizontalOverflow": false,
+          "viewportWidth": 430
+        },
+        "selectedToolbar": {
+          "rect": null,
+          "text": null,
+          "visible": false
+        },
+        "title": "AI Memory — offline",
+        "url": "http://127.0.0.1:3027/offline.html",
+        "viewport": {
+          "height": 932,
+          "width": 430
+        },
+        "visibleCheckboxCount": 0
+      }
+    },
+    {
+      "name": "library-filter-sheet-open",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "path": "/library",
+      "screenshotPath": "/tmp/ai-memory-android-a1-shell-library-more-offline/390x844-library-filter-sheet-open.png",
+      "metrics": {
+        "bodyTextSample": "AI Memoryv0.6.2 · private memoryNavigationSearch⌘KCaptureLibraryNeeds Upgrade2AskSettingsPair DevicePrivacy ControlssoonLibraryCaptureAskMoreLibrary12 sources captured2 need upgradeCaptureFiltersAll sources12Filters12 sources shownSourceAllAllArticlesYouTubePDFsNotesTelegramQualityAllAllFull textTranscriptNeeds upgradeSourceAllArticlesYouTubePDFsNotesTelegramQualityAllFull textTranscriptNeeds upgradeUX v2 library fixture articlequeuedArticle·via Web·Full text·14m ago·127 charsUX v2 selected ask fixture notequeuedNote·via Web·Full text·24m ago·145 charsUX v2 transcript fixture videoqueuedYouTube·via Web·Transcript·54m ago·85 charsUX v2 library fixture articlequeuedArticle·via Web·Full text·2h ago·127 charsUX v2 PDF fixture briefqueuedPDF·via Web·Full text·2h ago·92 charsUX v2 selected ask fixture notequeuedNote·via Web·Full text·2h ago·145 charsUX v2 transcript fixture videoqueuedYouTube·via Web·Transcript·3h ago·85 charsUX v2 weak metadata fixturequeuedYouTube·via Web·Metadata only·3h ago·46 chars·⚠ metadata onlyUX v2 PDF fixture briefqueuedPDF·via Web·Full text·4h ago·92 charsUX v2 weak metadata fixturequeuedYouTube·via Web·Metadata only·5h ago·46 chars·⚠ metadata onlyUX v2 long title stress fixture for wrapping behavior across library rows, search rows, topic rows, and collection rowsqueuedArticle·via Web·Full text·6h ago·149 charsUX v2 long title stress fixture for wrapping behavior across library rows, search rows, topic rows, and collection rowsqueuedArticle·via Web·Full",
+        "bottomNav": {
+          "links": [
+            {
+              "aria": "Open Library",
+              "current": "page",
+              "href": "/library",
+              "rect": {
+                "height": 47,
+                "width": 98,
+                "x": 8,
+                "y": 787
+              },
+              "text": "Library"
+            },
+            {
+              "aria": "Open Capture",
+              "current": null,
+              "href": "/capture",
+              "rect": {
+                "height": 56,
+                "width": 56,
+                "x": 118,
+                "y": 761
+              },
+              "text": ""
+            },
+            {
+              "aria": "Open Ask",
+              "current": null,
+              "href": "/ask",
+              "rect": {
+                "height": 47,
+                "width": 98,
+                "x": 187,
+                "y": 787
+              },
+              "text": "Ask"
+            },
+            {
+              "aria": "Open More",
+              "current": null,
+              "href": "/more",
+              "rect": {
+                "height": 47,
+                "width": 98,
+                "x": 285,
+                "y": 787
+              },
+              "text": "More"
+            }
+          ],
+          "rect": {
+            "height": 64,
+            "width": 390,
+            "x": 0,
+            "y": 780
+          },
+          "text": "LibraryCaptureAskMore",
+          "visible": true
+        },
+        "buttons": [
+          {
+            "aria": "Collapse sidebar",
+            "expanded": "true",
+            "rect": {
+              "height": 0,
+              "width": 0,
+              "x": 0,
+              "y": 0
+            },
+            "text": "Navigation"
+          },
+          {
+            "aria": null,
+            "expanded": null,
+            "rect": {
+              "height": 0,
+              "width": 0,
+              "x": 0,
+              "y": 0
+            },
+            "text": "Search⌘K"
+          },
+          {
+            "aria": null,
+            "expanded": "true",
+            "rect": {
+              "height": 62,
+              "width": 350,
+              "x": 20,
+              "y": 228
+            },
+            "text": "FiltersAll sources12"
+          },
+          {
+            "aria": "Close filters",
+            "expanded": null,
+            "rect": {
+              "height": 844,
+              "width": 390,
+              "x": 0,
+              "y": 0
+            },
+            "text": ""
+          },
+          {
+            "aria": "Close filters",
+            "expanded": null,
+            "rect": {
+              "height": 32,
+              "width": 32,
+              "x": 341,
+              "y": 441
+            },
+            "text": ""
+          }
+        ],
+        "checkboxCount": 12,
+        "desktopBulkToolbar": {
+          "rect": null,
+          "text": null,
+          "visible": false
+        },
+        "dialog": {
+          "rect": {
+            "height": 356,
+            "width": 390,
+            "x": 0,
+            "y": 424
+          },
+          "text": "Filters12 sources shownSourceAllAllArticlesYouTubePDFsNotesTelegramQualityAllAllFull textTranscriptNeeds upgrade",
+          "visible": true
+        },
+        "h1": "AI Memory",
+        "links": [
+          {
+            "aria": "Capture",
+            "current": null,
+            "href": "/capture",
+            "rect": {
+              "height": 0,
+              "width": 0,
+              "x": 0,
+              "y": 0
+            },
+            "text": "Capture"
+          },
+          {
+            "aria": null,
+            "current": "page",
+            "href": "/library",
+            "rect": {
+              "height": 0,
+              "width": 0,
+              "x": 0,
+              "y": 0
+            },
+            "text": "Library"
+          },
+          {
+            "aria": null,
+            "current": null,
+            "href": "/needs-upgrade",
+            "rect": {
+              "height": 0,
+              "width": 0,
+              "x": 0,
+              "y": 0
+            },
+            "text": "Needs Upgrade2"
+          },
+          {
+            "aria": null,
+            "current": null,
+            "href": "/ask",
+            "rect": {
+              "height": 0,
+              "width": 0,
+              "x": 0,
+              "y": 0
+            },
+            "text": "Ask"
+          },
+          {
+            "aria": null,
+            "current": null,
+            "href": "/settings",
+            "rect": {
+              "height": 0,
+              "width": 0,
+              "x": 0,
+              "y": 0
+            },
+            "text": "Settings"
+          },
+          {
+            "aria": null,
+            "current": null,
+            "href": "/settings/device-pairing",
+            "rect": {
+              "height": 0,
+              "width": 0,
+              "x": 0,
+              "y": 0
+            },
+            "text": "Pair Device"
+          },
+          "[Circular]",
+          "[Circular]",
+          "[Circular]",
+          "[Circular]",
+          {
+            "aria": null,
+            "current": null,
+            "href": "/needs-upgrade",
+            "rect": {
+              "height": 36,
+              "width": 132,
+              "x": 20,
+              "y": 108
+            },
+            "text": "2 need upgrade"
+          },
+          {
+            "aria": null,
+            "current": null,
+            "href": "/capture",
+            "rect": {
+              "height": 36,
+              "width": 109,
+              "x": 160,
+              "y": 108
+            },
+            "text": "Capture"
+          },
+          {
+            "aria": null,
+            "current": "page",
+            "href": "/library",
+            "rect": {
+              "height": 36,
+              "width": 174,
+              "x": 17,
+              "y": 519
+            },
+            "text": "All"
+          },
+          {
+            "aria": null,
+            "current": null,
+            "href": "/library?source=article",
+            "rect": {
+              "height": 36,
+              "width": 174,
+              "x": 199,
+              "y": 519
+            },
+            "text": "Articles"
+          },
+          {
+            "aria": null,
+            "current": null,
+            "href": "/library?source=youtube",
+            "rect": {
+              "height": 36,
+              "width": 174,
+              "x": 17,
+              "y": 563
+            },
+            "text": "YouTube"
+          },
+          {
+            "aria": null,
+            "current": null,
+            "href": "/library?source=pdf",
+            "rect": {
+              "height": 36,
+              "width": 174,
+              "x": 199,
+              "y": 563
+            },
+            "text": "PDFs"
+          },
+          {
+            "aria": null,
+            "current": null,
+            "href": "/library?source=note",
+            "rect": {
+              "height": 36,
+              "width": 174,
+              "x": 17,
+              "y": 607
+            },
+            "text": "Notes"
+          },
+          {
+            "aria": null,
+            "current": null,
+            "href": "/library?source=telegram",
+            "rect": {
+              "height": 36,
+              "width": 174,
+              "x": 199,
+              "y": 607
+            },
+            "text": "Telegram"
+          },
+          {
+            "aria": null,
+            "current": "page",
+            "href": "/library",
+            "rect": {
+              "height": 36,
+              "width": 174,
+              "x": 17,
+              "y": 683
+            },
+            "text": "All"
+          },
+          {
+            "aria": null,
+            "current": null,
+            "href": "/library?quality=full_text",
+            "rect": {
+              "height": 36,
+              "width": 174,
+              "x": 199,
+              "y": 683
+            },
+            "text": "Full text"
+          },
+          {
+            "aria": null,
+            "current": null,
+            "href": "/library?quality=transcript",
+            "rect": {
+              "height": 36,
+              "width": 174,
+              "x": 17,
+              "y": 727
+            },
+            "text": "Transcript"
+          },
+          {
+            "aria": null,
+            "current": null,
+            "href": "/library?quality=needs_upgrade",
+            "rect": {
+              "height": 36,
+              "width": 174,
+              "x": 199,
+              "y": 727
+            },
+            "text": "Needs upgrade"
+          },
+          {
+            "aria": null,
+            "current": "page",
+            "href": "/library",
+            "rect": {
+              "height": 0,
+              "width": 0,
+              "x": 0,
+              "y": 0
+            },
+            "text": "All"
+          },
+          {
+            "aria": null,
+            "current": null,
+            "href": "/library?source=article",
+            "rect": {
+              "height": 0,
+              "width": 0,
+              "x": 0,
+              "y": 0
+            },
+            "text": "Articles"
+          },
+          {
+            "aria": null,
+            "current": null,
+            "href": "/library?source=youtube",
+            "rect": {
+              "height": 0,
+              "width": 0,
+              "x": 0,
+              "y": 0
+            },
+            "text": "YouTube"
+          },
+          {
+            "aria": null,
+            "current": null,
+            "href": "/library?source=pdf",
+            "rect": {
+              "height": 0,
+              "width": 0,
+              "x": 0,
+              "y": 0
+            },
+            "text": "PDFs"
+          },
+          {
+            "aria": null,
+            "current": null,
+            "href": "/library?source=note",
+            "rect": {
+              "height": 0,
+              "width": 0,
+              "x": 0,
+              "y": 0
+            },
+            "text": "Notes"
+          },
+          {
+            "aria": null,
+            "current": null,
+            "href": "/library?source=telegram",
+            "rect": {
+              "height": 0,
+              "width": 0,
+              "x": 0,
+              "y": 0
+            },
+            "text": "Telegram"
+          },
+          {
+            "aria": null,
+            "current": "page",
+            "href": "/library",
+            "rect": {
+              "height": 0,
+              "width": 0,
+              "x": 0,
+              "y": 0
+            },
+            "text": "All"
+          },
+          {
+            "aria": null,
+            "current": null,
+            "href": "/library?quality=full_text",
+            "rect": {
+              "height": 0,
+              "width": 0,
+              "x": 0,
+              "y": 0
+            },
+            "text": "Full text"
+          },
+          {
+            "aria": null,
+            "current": null,
+            "href": "/library?quality=transcript",
+            "rect": {
+              "height": 0,
+              "width": 0,
+              "x": 0,
+              "y": 0
+            },
+            "text": "Transcript"
+          },
+          {
+            "aria": null,
+            "current": null,
+            "href": "/library?quality=needs_upgrade",
+            "rect": {
+              "height": 0,
+              "width": 0,
+              "x": 0,
+              "y": 0
+            },
+            "text": "Needs upgrade"
+          },
+          {
+            "aria": null,
+            "current": null,
+            "href": "/items/4f1e90ebad20182ec2b5cf98",
+            "rect": {
+              "height": 104,
+              "width": 288,
+              "x": 65,
+              "y": 327
+            },
+            "text": "UX v2 library fixture articlequeuedArticle·via Web·Full text·14m ago·127 chars"
+          },
+          {
+            "aria": null,
+            "current": null,
+            "href": "/items/089c8261c9460f2d6a945c74",
+            "rect": {
+              "height": 104,
+              "width": 288,
+              "x": 65,
+              "y": 477
+            },
+            "text": "UX v2 selected ask fixture notequeuedNote·via Web·Full text·24m ago·145 chars"
+          },
+          {
+            "aria": null,
+            "current": null,
+            "href": "/items/6d5fc4dbeaf9be69d3931bc6",
+            "rect": {
+              "height": 104,
+              "width": 288,
+              "x": 65,
+              "y": 628
+            },
+            "text": "UX v2 transcript fixture videoqueuedYouTube·via Web·Transcript·54m ago·85 chars"
+          },
+          {
+            "aria": null,
+            "current": null,
+            "href": "/items/5e6a4a7afe1775e502aa38a4",
+            "rect": {
+              "height": 104,
+              "width": 288,
+              "x": 65,
+              "y": 778
+            },
+            "text": "UX v2 library fixture articlequeuedArticle·via Web·Full text·2h ago·127 chars"
+          },
+          {
+            "aria": null,
+            "current": null,
+            "href": "/items/b4de2ddd41c2ab9729e65065",
+            "rect": {
+              "height": 104,
+              "width": 288,
+              "x": 65,
+              "y": 929
+            },
+            "text": "UX v2 PDF fixture briefqueuedPDF·via Web·Full text·2h ago·92 chars"
+          },
+          {
+            "aria": null,
+            "current": null,
+            "href": "/items/78c50eca82c4c475fd050bb9",
+            "rect": {
+              "height": 104,
+              "width": 288,
+              "x": 65,
+              "y": 1079
+            },
+            "text": "UX v2 selected ask fixture notequeuedNote·via Web·Full text·2h ago·145 chars"
+          },
+          {
+            "aria": null,
+            "current": null,
+            "href": "/items/e9a6bfde7ab94596a64c0ee1",
+            "rect": {
+              "height": 104,
+              "width": 288,
+              "x": 65,
+              "y": 1230
+            },
+            "text": "UX v2 transcript fixture videoqueuedYouTube·via Web·Transcript·3h ago·85 chars"
+          },
+          {
+            "aria": null,
+            "current": null,
+            "href": "/items/9a5236bbc1e5f6be4d23911e",
+            "rect": {
+              "height": 104,
+              "width": 288,
+              "x": 65,
+              "y": 1380
+            },
+            "text": "UX v2 weak metadata fixturequeuedYouTube·via Web·Metadata only·3h ago·46 chars·⚠ metadata only"
+          },
+          {
+            "aria": null,
+            "current": null,
+            "href": "/items/58a7468a319ea63a3407e776",
+            "rect": {
+              "height": 104,
+              "width": 288,
+              "x": 65,
+              "y": 1531
+            },
+            "text": "UX v2 PDF fixture briefqueuedPDF·via Web·Full text·4h ago·92 chars"
+          },
+          {
+            "aria": null,
+            "current": null,
+            "href": "/items/26f1a665a2d1231a35ac50f2",
+            "rect": {
+              "height": 104,
+              "width": 288,
+              "x": 65,
+              "y": 1681
+            },
+            "text": "UX v2 weak metadata fixturequeuedYouTube·via Web·Metadata only·5h ago·46 chars·⚠ metadata only"
+          },
+          {
+            "aria": null,
+            "current": null,
+            "href": "/items/01cc6b31eccd7e6f9101b9c2",
+            "rect": {
+              "height": 244,
+              "width": 288,
+              "x": 65,
+              "y": 1832
+            },
+            "text": "UX v2 long title stress fixture for wrapping behavior across library rows, search rows, topic rows, and collection rowsqueuedArticle·via Web·Full text·6h ago·149 chars"
+          },
+          {
+            "aria": null,
+            "current": null,
+            "href": "/items/d5845471e0244baeb5a70675",
+            "rect": {
+              "height": 244,
+              "width": 288,
+              "x": 65,
+              "y": 2122
+            },
+            "text": "UX v2 long title stress fixture for wrapping behavior across library rows, search rows, topic rows, and collection rowsqueuedArticle·via Web·Full text·8h ago·149 chars"
+          }
+        ],
+        "overflow": {
+          "documentWidth": 390,
+          "hasHorizontalOverflow": false,
+          "viewportWidth": 390
+        },
+        "selectedToolbar": {
+          "rect": null,
+          "text": null,
+          "visible": false
+        },
+        "title": "AI Memory",
+        "url": "http://127.0.0.1:3027/library",
+        "viewport": {
+          "height": 844,
+          "width": 390
+        },
+        "visibleCheckboxCount": 12
+      }
+    },
+    {
+      "name": "search-hit",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "path": "/search?q=LSTC%20search%20beacon",
+      "screenshotPath": "/tmp/ai-memory-android-a1-shell-library-more-offline/390x844-search-hit.png",
+      "metrics": {
+        "bodyTextSample": "AI Memoryv0.6.2 · private memoryNavigationSearch⌘KCaptureLibraryNeeds Upgrade2AskSettingsPair DevicePrivacy ControlssoonLibraryCaptureAskMoreBack to LibrarySearchFull-textSemanticHybrid2 results for “LSTC search beacon” · full-textUX v2 library fixture articleurl·2h agoUX v2 library fixture articleurl·14m agoself.__next_r=\"BoIE_kR-0yD6lkMPVjjao\"(self.__next_f=self.__next_f||[]).push([0])self.__next_f.push([1,\"9:I[\\\"[project]/node_modules/next/dist/next-devtools/userspace/app/segment-explorer-node.js [app-client] (ecmascript)\\\",[\\\"/_next/static/chunks/node_modules_0k7eqr8._.js\\\",\\\"/_next/static/chunks/_06_n~y6._.js\\\",\\\"/_next/static/chunks/node_modules_0.1878.._.js\\\",\\\"/_next/static/chunks/src_app_layout_tsx_004glpo._.js\\\"],\\\"SegmentViewNode\\\"]\\nb:\\\"$Sreact.fragment\\\"\\n1e:I[\\\"[project]/node_modules/next/dist/client/components/layout-router.js [app-client] (ecmascript)\\\",[\\\"/_next/static/chunks/node_modules_0k7eqr8._.js\\\",\\\"/_next/static/chunks/_06_n~y6._.js\\\",\\\"/_next/static/chunks/node_modules_0.1878.._.js\\\",\\\"/_next/static/chunks/src_app_layout_tsx_004glpo._.js\\\"],\\\"default\\\"]\\n20:I[\\\"[project]/node_modules/next/dist/client/components/render-from-template-context.js [app-client] (ecmascript)\\\",[\\\"/_next/static/chunks/node_modules_0k7eqr8._.js\\\",\\\"/_next/static/chunks/_06_n~y6._.js\\\",\\\"/_next/static/chunks/node_modules_0.1878.._.js\\\",\\\"/_next/static/chunks/src_app_layout_tsx_004glpo._.js\\\"],\\\"default\\\"]\\n2e:I[\\\"[project]/node_modules/next/dist/lib/framework/boundary-component",
+        "bottomNav": {
+          "links": [
+            {
+              "aria": "Open Library",
+              "current": "page",
+              "href": "/library",
+              "rect": {
+                "height": 47,
+                "width": 98,
+                "x": 8,
+                "y": 787
+              },
+              "text": "Library"
+            },
+            {
+              "aria": "Open Capture",
+              "current": null,
+              "href": "/capture",
+              "rect": {
+                "height": 56,
+                "width": 56,
+                "x": 118,
+                "y": 761
+              },
+              "text": ""
+            },
+            {
+              "aria": "Open Ask",
+              "current": null,
+              "href": "/ask",
+              "rect": {
+                "height": 47,
+                "width": 98,
+                "x": 187,
+                "y": 787
+              },
+              "text": "Ask"
+            },
+            {
+              "aria": "Open More",
+              "current": null,
+              "href": "/more",
+              "rect": {
+                "height": 47,
+                "width": 98,
+                "x": 285,
+                "y": 787
+              },
+              "text": "More"
+            }
+          ],
+          "rect": {
+            "height": 64,
+            "width": 390,
+            "x": 0,
+            "y": 780
+          },
+          "text": "LibraryCaptureAskMore",
+          "visible": true
+        },
+        "buttons": [
+          {
+            "aria": "Collapse sidebar",
+            "expanded": "true",
+            "rect": {
+              "height": 0,
+              "width": 0,
+              "x": 0,
+              "y": 0
+            },
+            "text": "Navigation"
+          },
+          {
+            "aria": null,
+            "expanded": null,
+            "rect": {
+              "height": 0,
+              "width": 0,
+              "x": 0,
+              "y": 0
+            },
+            "text": "Search⌘K"
+          }
+        ],
+        "checkboxCount": 0,
+        "desktopBulkToolbar": {
+          "rect": null,
+          "text": null,
+          "visible": false
+        },
+        "dialog": {
+          "rect": null,
+          "text": null,
+          "visible": false
+        },
+        "h1": "AI Memory",
+        "links": [
+          {
+            "aria": "Capture",
+            "current": null,
+            "href": "/capture",
+            "rect": {
+              "height": 0,
+              "width": 0,
+              "x": 0,
+              "y": 0
+            },
+            "text": "Capture"
+          },
+          {
+            "aria": null,
+            "current": "page",
+            "href": "/library",
+            "rect": {
+              "height": 0,
+              "width": 0,
+              "x": 0,
+              "y": 0
+            },
+            "text": "Library"
+          },
+          {
+            "aria": null,
+            "current": null,
+            "href": "/needs-upgrade",
+            "rect": {
+              "height": 0,
+              "width": 0,
+              "x": 0,
+              "y": 0
+            },
+            "text": "Needs Upgrade2"
+          },
+          {
+            "aria": null,
+            "current": null,
+            "href": "/ask",
+            "rect": {
+              "height": 0,
+              "width": 0,
+              "x": 0,
+              "y": 0
+            },
+            "text": "Ask"
+          },
+          {
+            "aria": null,
+            "current": null,
+            "href": "/settings",
+            "rect": {
+              "height": 0,
+              "width": 0,
+              "x": 0,
+              "y": 0
+            },
+            "text": "Settings"
+          },
+          {
+            "aria": null,
+            "current": null,
+            "href": "/settings/device-pairing",
+            "rect": {
+              "height": 0,
+              "width": 0,
+              "x": 0,
+              "y": 0
+            },
+            "text": "Pair Device"
+          },
+          "[Circular]",
+          "[Circular]",
+          "[Circular]",
+          "[Circular]",
+          {
+            "aria": null,
+            "current": null,
+            "href": "/library",
+            "rect": {
+              "height": 20,
+              "width": 120,
+              "x": 32,
+              "y": 41
+            },
+            "text": "Back to Library"
+          },
+          {
+            "aria": null,
+            "current": null,
+            "href": "/search?q=LSTC%20search%20beacon&mode=fts",
+            "rect": {
+              "height": 26,
+              "width": 73,
+              "x": 32,
+              "y": 185
+            },
+            "text": "Full-text"
+          },
+          {
+            "aria": null,
+            "current": null,
+            "href": "/search?q=LSTC%20search%20beacon&mode=semantic",
+            "rect": {
+              "height": 26,
+              "width": 80,
+              "x": 111,
+              "y": 185
+            },
+            "text": "Semantic"
+          },
+          {
+            "aria": null,
+            "current": null,
+            "href": "/search?q=LSTC%20search%20beacon&mode=hybrid",
+            "rect": {
+              "height": 26,
+              "width": 65,
+              "x": 197,
+              "y": 185
+            },
+            "text": "Hybrid"
+          },
+          {
+            "aria": null,
+            "current": null,
+            "href": "/items/5e6a4a7afe1775e502aa38a4",
+            "rect": {
+              "height": 76,
+              "width": 326,
+              "x": 32,
+              "y": 275
+            },
+            "text": "UX v2 library fixture articleurl·2h ago"
+          },
+          {
+            "aria": null,
+            "current": null,
+            "href": "/items/4f1e90ebad20182ec2b5cf98",
+            "rect": {
+              "height": 76,
+              "width": 326,
+              "x": 32,
+              "y": 363
+            },
+            "text": "UX v2 library fixture articleurl·14m ago"
+          }
+        ],
+        "overflow": {
+          "documentWidth": 390,
+          "hasHorizontalOverflow": false,
+          "viewportWidth": 390
+        },
+        "selectedToolbar": {
+          "rect": null,
+          "text": null,
+          "visible": false
+        },
+        "title": "AI Memory",
+        "url": "http://127.0.0.1:3027/search?q=LSTC%20search%20beacon",
+        "viewport": {
+          "height": 844,
+          "width": 390
+        },
+        "visibleCheckboxCount": 0
+      }
+    },
+    {
+      "name": "needs-upgrade-smoke",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "path": "/needs-upgrade",
+      "screenshotPath": "/tmp/ai-memory-android-a1-shell-library-more-offline/390x844-needs-upgrade-smoke.png",
+      "metrics": {
+        "bodyTextSample": "AI Memoryv0.6.2 · private memoryNavigationSearch⌘KCaptureLibraryNeeds Upgrade2AskSettingsPair DevicePrivacy ControlssoonLibraryCaptureAskMoreBack to LibraryCapture qualityNeeds UpgradeThese saves are still useful as bookmarks, but they do not have enough readable source text for reliable search or Ask. Add text or open the source.Needs transcript2 sourcesUX v2 weak metadata fixtureNeeds transcriptYouTube/Via web/Metadata only/3h agoRetry later or add a note if the video has no transcript.Add textSourceUX v2 weak metadata fixtureNeeds transcriptYouTube/Via web/Metadata only/5h agoRetry later or add a note if the video has no transcript.Add textSourceself.__next_r=\"xVnrvbaPK3B6MtnVewtbY\"(self.__next_f=self.__next_f||[]).push([0])self.__next_f.push([1,\"9:I[\\\"[project]/node_modules/next/dist/next-devtools/userspace/app/segment-explorer-node.js [app-client] (ecmascript)\\\",[\\\"/_next/static/chunks/node_modules_0k7eqr8._.js\\\",\\\"/_next/static/chunks/_06_n~y6._.js\\\",\\\"/_next/static/chunks/node_modules_0.1878.._.js\\\",\\\"/_next/static/chunks/src_app_layout_tsx_004glpo._.js\\\"],\\\"SegmentViewNode\\\"]\\nb:\\\"$Sreact.fragment\\\"\\n1e:I[\\\"[project]/node_modules/next/dist/client/components/layout-router.js [app-client] (ecmascript)\\\",[\\\"/_next/static/chunks/node_modules_0k7eqr8._.js\\\",\\\"/_next/static/chunks/_06_n~y6._.js\\\",\\\"/_next/static/chunks/node_modules_0.1878.._.js\\\",\\\"/_next/static/chunks/src_app_layout_tsx_004glpo._.js\\\"],\\\"default\\\"]\\n20:I[\\\"[project]/node_modules/next/dist/client/components",
+        "bottomNav": {
+          "links": [
+            {
+              "aria": "Open Library",
+              "current": "page",
+              "href": "/library",
+              "rect": {
+                "height": 47,
+                "width": 98,
+                "x": 8,
+                "y": 787
+              },
+              "text": "Library"
+            },
+            {
+              "aria": "Open Capture",
+              "current": null,
+              "href": "/capture",
+              "rect": {
+                "height": 56,
+                "width": 56,
+                "x": 118,
+                "y": 761
+              },
+              "text": ""
+            },
+            {
+              "aria": "Open Ask",
+              "current": null,
+              "href": "/ask",
+              "rect": {
+                "height": 47,
+                "width": 98,
+                "x": 187,
+                "y": 787
+              },
+              "text": "Ask"
+            },
+            {
+              "aria": "Open More",
+              "current": null,
+              "href": "/more",
+              "rect": {
+                "height": 47,
+                "width": 98,
+                "x": 285,
+                "y": 787
+              },
+              "text": "More"
+            }
+          ],
+          "rect": {
+            "height": 64,
+            "width": 390,
+            "x": 0,
+            "y": 780
+          },
+          "text": "LibraryCaptureAskMore",
+          "visible": true
+        },
+        "buttons": [
+          {
+            "aria": "Collapse sidebar",
+            "expanded": "true",
+            "rect": {
+              "height": 0,
+              "width": 0,
+              "x": 0,
+              "y": 0
+            },
+            "text": "Navigation"
+          },
+          {
+            "aria": null,
+            "expanded": null,
+            "rect": {
+              "height": 0,
+              "width": 0,
+              "x": 0,
+              "y": 0
+            },
+            "text": "Search⌘K"
+          }
+        ],
+        "checkboxCount": 0,
+        "desktopBulkToolbar": {
+          "rect": null,
+          "text": null,
+          "visible": false
+        },
+        "dialog": {
+          "rect": null,
+          "text": null,
+          "visible": false
+        },
+        "h1": "AI Memory",
+        "links": [
+          {
+            "aria": "Capture",
+            "current": null,
+            "href": "/capture",
+            "rect": {
+              "height": 0,
+              "width": 0,
+              "x": 0,
+              "y": 0
+            },
+            "text": "Capture"
+          },
+          {
+            "aria": null,
+            "current": null,
+            "href": "/library",
+            "rect": {
+              "height": 0,
+              "width": 0,
+              "x": 0,
+              "y": 0
+            },
+            "text": "Library"
+          },
+          {
+            "aria": null,
+            "current": "page",
+            "href": "/needs-upgrade",
+            "rect": {
+              "height": 0,
+              "width": 0,
+              "x": 0,
+              "y": 0
+            },
+            "text": "Needs Upgrade2"
+          },
+          {
+            "aria": null,
+            "current": null,
+            "href": "/ask",
+            "rect": {
+              "height": 0,
+              "width": 0,
+              "x": 0,
+              "y": 0
+            },
+            "text": "Ask"
+          },
+          {
+            "aria": null,
+            "current": null,
+            "href": "/settings",
+            "rect": {
+              "height": 0,
+              "width": 0,
+              "x": 0,
+              "y": 0
+            },
+            "text": "Settings"
+          },
+          {
+            "aria": null,
+            "current": null,
+            "href": "/settings/device-pairing",
+            "rect": {
+              "height": 0,
+              "width": 0,
+              "x": 0,
+              "y": 0
+            },
+            "text": "Pair Device"
+          },
+          "[Circular]",
+          "[Circular]",
+          "[Circular]",
+          "[Circular]",
+          {
+            "aria": null,
+            "current": null,
+            "href": "/library",
+            "rect": {
+              "height": 20,
+              "width": 120,
+              "x": 32,
+              "y": 41
+            },
+            "text": "Back to Library"
+          },
+          {
+            "aria": null,
+            "current": null,
+            "href": "/items/9a5236bbc1e5f6be4d23911e",
+            "rect": {
+              "height": 28,
+              "width": 249,
+              "x": 49,
+              "y": 386
+            },
+            "text": "UX v2 weak metadata fixture"
+          },
+          {
+            "aria": null,
+            "current": null,
+            "href": "/items/9a5236bbc1e5f6be4d23911e/repair",
+            "rect": {
+              "height": 32,
+              "width": 92,
+              "x": 49,
+              "y": 540
+            },
+            "text": "Add text"
+          },
+          {
+            "aria": null,
+            "current": null,
+            "href": "https://www.youtube.com/watch?v=uxv2weak01",
+            "rect": {
+              "height": 32,
+              "width": 87,
+              "x": 149,
+              "y": 540
+            },
+            "text": "Source"
+          },
+          {
+            "aria": null,
+            "current": null,
+            "href": "/items/26f1a665a2d1231a35ac50f2",
+            "rect": {
+              "height": 28,
+              "width": 249,
+              "x": 49,
+              "y": 654
+            },
+            "text": "UX v2 weak metadata fixture"
+          },
+          {
+            "aria": null,
+            "current": null,
+            "href": "/items/26f1a665a2d1231a35ac50f2/repair",
+            "rect": {
+              "height": 32,
+              "width": 92,
+              "x": 49,
+              "y": 808
+            },
+            "text": "Add text"
+          },
+          {
+            "aria": null,
+            "current": null,
+            "href": "https://www.youtube.com/watch?v=uxv2weak01",
+            "rect": {
+              "height": 32,
+              "width": 87,
+              "x": 149,
+              "y": 808
+            },
+            "text": "Source"
+          }
+        ],
+        "overflow": {
+          "documentWidth": 390,
+          "hasHorizontalOverflow": false,
+          "viewportWidth": 390
+        },
+        "selectedToolbar": {
+          "rect": null,
+          "text": null,
+          "visible": false
+        },
+        "title": "AI Memory",
+        "url": "http://127.0.0.1:3027/needs-upgrade",
+        "viewport": {
+          "height": 844,
+          "width": 390
+        },
+        "visibleCheckboxCount": 0
+      }
+    },
+    {
+      "name": "item-detail-smoke",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "path": "/items/4f1e90ebad20182ec2b5cf98",
+      "screenshotPath": "/tmp/ai-memory-android-a1-shell-library-more-offline/390x844-item-detail-smoke.png",
+      "metrics": {
+        "bodyTextSample": "AI Memoryv0.6.2 · private memoryNavigationSearch⌘KCaptureLibraryNeeds Upgrade2AskSettingsPair DevicePrivacy ControlssoonLibraryCaptureAskMoreBack to LibraryUX v2 library fixture articlequeuedSavedArticlevia WebFull textSaved 6/16/2026, 10:38:18 AM127 charsexample.testLSTC search beacon. A full-text article about library filtering, topic health, and scoped answers for the AI Memory QA fixture.Focus modeAsk this itemExport as .mdTagsux-v2-fixtureAddIncluded TopicsAIUX V2 Source HealthAI-detected from this source.CapturePlatformArticleQualityFull textViawebCollectionsUX v2 Fixture Collection+ add to collection…UX v2 Empty Fixture CollectionUX v2 Empty Fixture CollectionUX v2 Fixture CollectionAddAI digest will appear here once the enrichment worker picks this item up.addEventListener(\"submit\",function(a){if(!a.defaultPrevented){var b=a.target,d=a.submitter,c=b.action,e=d;if(d){var f=d.getAttribute(\"formAction\");null!=f&&(c=f,e=null)}\"javascript:throw new Error('React form unexpectedly submitted.')\"===c&&(a.preventDefault(),a=new FormData(b,e),c=b.ownerDocument||b,(c.$$reactFormReplay=c.$$reactFormReplay||[]).push(b,d,a))}});self.__next_r=\"gYWXTKsZ8mD_CswddIgwq\"(self.__next_f=self.__next_f||[]).push([0])self.__next_f.push([1,\"9:I[\\\"[project]/node_modules/next/dist/next-devtools/userspace/app/segment-explorer-node.js [app-client] (ecmascript)\\\",[\\\"/_next/static/chunks/node_modules_0k7eqr8._.js\\\",\\\"/_next/static/chunks/_06_n~y6._.js\\\",\\\"/_next/static/chunks/node_modules_0.1878.._.j",
+        "bottomNav": {
+          "links": [
+            {
+              "aria": "Open Library",
+              "current": "page",
+              "href": "/library",
+              "rect": {
+                "height": 47,
+                "width": 98,
+                "x": 8,
+                "y": 787
+              },
+              "text": "Library"
+            },
+            {
+              "aria": "Open Capture",
+              "current": null,
+              "href": "/capture",
+              "rect": {
+                "height": 56,
+                "width": 56,
+                "x": 118,
+                "y": 761
+              },
+              "text": ""
+            },
+            {
+              "aria": "Open Ask",
+              "current": null,
+              "href": "/ask",
+              "rect": {
+                "height": 47,
+                "width": 98,
+                "x": 187,
+                "y": 787
+              },
+              "text": "Ask"
+            },
+            {
+              "aria": "Open More",
+              "current": null,
+              "href": "/more",
+              "rect": {
+                "height": 47,
+                "width": 98,
+                "x": 285,
+                "y": 787
+              },
+              "text": "More"
+            }
+          ],
+          "rect": {
+            "height": 64,
+            "width": 390,
+            "x": 0,
+            "y": 780
+          },
+          "text": "LibraryCaptureAskMore",
+          "visible": true
+        },
+        "buttons": [
+          {
+            "aria": "Collapse sidebar",
+            "expanded": "true",
+            "rect": {
+              "height": 0,
+              "width": 0,
+              "x": 0,
+              "y": 0
+            },
+            "text": "Navigation"
+          },
+          {
+            "aria": null,
+            "expanded": null,
+            "rect": {
+              "height": 0,
+              "width": 0,
+              "x": 0,
+              "y": 0
+            },
+            "text": "Search⌘K"
+          },
+          {
+            "aria": "Remove tag ux-v2-fixture",
+            "expanded": null,
+            "rect": {
+              "height": 12,
+              "width": 12,
+              "x": 141,
+              "y": 811
+            },
+            "text": ""
+          },
+          {
+            "aria": null,
+            "expanded": null,
+            "rect": {
+              "height": 28,
+              "width": 39,
+              "x": 298,
+              "y": 836
+            },
+            "text": "Add"
+          },
+          {
+            "aria": "Remove from UX v2 Fixture Collection",
+            "expanded": null,
+            "rect": {
+              "height": 12,
+              "width": 12,
+              "x": 203,
+              "y": 1261
+            },
+            "text": ""
+          },
+          {
+            "aria": null,
+            "expanded": null,
+            "rect": {
+              "height": 28,
+              "width": 39,
+              "x": 298,
+              "y": 1286
+            },
+            "text": "Add"
+          }
+        ],
+        "checkboxCount": 0,
+        "desktopBulkToolbar": {
+          "rect": null,
+          "text": null,
+          "visible": false
+        },
+        "dialog": {
+          "rect": null,
+          "text": null,
+          "visible": false
+        },
+        "h1": "AI Memory",
+        "links": [
+          {
+            "aria": "Capture",
+            "current": null,
+            "href": "/capture",
+            "rect": {
+              "height": 0,
+              "width": 0,
+              "x": 0,
+              "y": 0
+            },
+            "text": "Capture"
+          },
+          {
+            "aria": null,
+            "current": "page",
+            "href": "/library",
+            "rect": {
+              "height": 0,
+              "width": 0,
+              "x": 0,
+              "y": 0
+            },
+            "text": "Library"
+          },
+          {
+            "aria": null,
+            "current": null,
+            "href": "/needs-upgrade",
+            "rect": {
+              "height": 0,
+              "width": 0,
+              "x": 0,
+              "y": 0
+            },
+            "text": "Needs Upgrade2"
+          },
+          {
+            "aria": null,
+            "current": null,
+            "href": "/ask",
+            "rect": {
+              "height": 0,
+              "width": 0,
+              "x": 0,
+              "y": 0
+            },
+            "text": "Ask"
+          },
+          {
+            "aria": null,
+            "current": null,
+            "href": "/settings",
+            "rect": {
+              "height": 0,
+              "width": 0,
+              "x": 0,
+              "y": 0
+            },
+            "text": "Settings"
+          },
+          {
+            "aria": null,
+            "current": null,
+            "href": "/settings/device-pairing",
+            "rect": {
+              "height": 0,
+              "width": 0,
+              "x": 0,
+              "y": 0
+            },
+            "text": "Pair Device"
+          },
+          "[Circular]",
+          "[Circular]",
+          "[Circular]",
+          "[Circular]",
+          {
+            "aria": null,
+            "current": null,
+            "href": "/library",
+            "rect": {
+              "height": 20,
+              "width": 120,
+              "x": 32,
+              "y": 41
+            },
+            "text": "Back to Library"
+          },
+          {
+            "aria": null,
+            "current": null,
+            "href": "https://example.test/ux-v2-library-fixture",
+            "rect": {
+              "height": 16,
+              "width": 90,
+              "x": 32,
+              "y": 381
+            },
+            "text": "example.test"
+          },
+          {
+            "aria": null,
+            "current": null,
+            "href": "/items/4f1e90ebad20182ec2b5cf98?mode=focus",
+            "rect": {
+              "height": 32,
+              "width": 130,
+              "x": 32,
+              "y": 645
+            },
+            "text": "Focus mode"
+          },
+          {
+            "aria": null,
+            "current": null,
+            "href": "/items/4f1e90ebad20182ec2b5cf98/ask",
+            "rect": {
+              "height": 32,
+              "width": 134,
+              "x": 174,
+              "y": 645
+            },
+            "text": "Ask this item"
+          },
+          {
+            "aria": null,
+            "current": null,
+            "href": "/api/items/4f1e90ebad20182ec2b5cf98/export.md",
+            "rect": {
+              "height": 32,
+              "width": 140,
+              "x": 32,
+              "y": 689
+            },
+            "text": "Export as .md"
+          },
+          {
+            "aria": null,
+            "current": null,
+            "href": "/library?tag=ux-v2-fixture",
+            "rect": {
+              "height": 16,
+              "width": 75,
+              "x": 62,
+              "y": 809
+            },
+            "text": "ux-v2-fixture"
+          },
+          {
+            "aria": null,
+            "current": null,
+            "href": "/topics/ux-v2-source-health",
+            "rect": {
+              "height": 26,
+              "width": 159,
+              "x": 53,
+              "y": 958
+            },
+            "text": "UX V2 Source Health"
+          },
+          {
+            "aria": null,
+            "current": null,
+            "href": "/collections/5d16649f376192f31629f870",
+            "rect": {
+              "height": 16,
+              "width": 137,
+              "x": 62,
+              "y": 1259
+            },
+            "text": "UX v2 Fixture Collection"
+          }
+        ],
+        "overflow": {
+          "documentWidth": 390,
+          "hasHorizontalOverflow": false,
+          "viewportWidth": 390
+        },
+        "selectedToolbar": {
+          "rect": null,
+          "text": null,
+          "visible": false
+        },
+        "title": "AI Memory",
+        "url": "http://127.0.0.1:3027/items/4f1e90ebad20182ec2b5cf98",
+        "viewport": {
+          "height": 844,
+          "width": 390
+        },
+        "visibleCheckboxCount": 0
+      }
+    },
+    {
+      "name": "topic-smoke",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "path": "/topics/ux-v2-source-health",
+      "screenshotPath": "/tmp/ai-memory-android-a1-shell-library-more-offline/390x844-topic-smoke.png",
+      "metrics": {
+        "bodyTextSample": "AI Memoryv0.6.2 · private memoryNavigationSearch⌘KCaptureLibraryNeeds Upgrade2AskSettingsPair DevicePrivacy ControlssoonLibraryCaptureAskMoreBack to LibraryIncluded TopicUX V2 Source Health6 sources matched by AI.Synthetic generated topic covering readable and weak source health states.6 sources4 readable2 need upgradeSome sources in this topic may produce thinner answers until they are upgraded.Ask topicUX v2 library fixture articleArticle-Full text-14m agoLSTC search beacon. A full-text article about library filtering, topic health, and scoped answers for the AI Memory QA fixture.UX v2 library fixture articleArticle-Full text-2h agoLSTC search beacon. A full-text article about library filtering, topic health, and scoped answers for the AI Memory QA fixture.UX v2 weak metadata fixtureYouTube-Metadata only-3h agoMetadata-only fixture. Transcript unavailable.UX v2 weak metadata fixtureYouTube-Metadata only-5h agoMetadata-only fixture. Transcript unavailable.UX v2 long title stress fixture for wrapping behavior across library rows, search rows, topic rows, and collection rowsArticle-Full text-6h agoA long-title fixture that keeps content synthetic while exercising row wrapping, truncation, metadata layout, and visual stability at compact widths.UX v2 long title stress fixture for wrapping behavior across library rows, search rows, topic rows, and collection rowsArticle-Full text-8h agoA long-title fixture that keeps content synthetic while exercising row wrapping, truncation, m",
+        "bottomNav": {
+          "links": [
+            {
+              "aria": "Open Library",
+              "current": "page",
+              "href": "/library",
+              "rect": {
+                "height": 47,
+                "width": 98,
+                "x": 8,
+                "y": 787
+              },
+              "text": "Library"
+            },
+            {
+              "aria": "Open Capture",
+              "current": null,
+              "href": "/capture",
+              "rect": {
+                "height": 56,
+                "width": 56,
+                "x": 118,
+                "y": 761
+              },
+              "text": ""
+            },
+            {
+              "aria": "Open Ask",
+              "current": null,
+              "href": "/ask",
+              "rect": {
+                "height": 47,
+                "width": 98,
+                "x": 187,
+                "y": 787
+              },
+              "text": "Ask"
+            },
+            {
+              "aria": "Open More",
+              "current": null,
+              "href": "/more",
+              "rect": {
+                "height": 47,
+                "width": 98,
+                "x": 285,
+                "y": 787
+              },
+              "text": "More"
+            }
+          ],
+          "rect": {
+            "height": 64,
+            "width": 390,
+            "x": 0,
+            "y": 780
+          },
+          "text": "LibraryCaptureAskMore",
+          "visible": true
+        },
+        "buttons": [
+          {
+            "aria": "Collapse sidebar",
+            "expanded": "true",
+            "rect": {
+              "height": 0,
+              "width": 0,
+              "x": 0,
+              "y": 0
+            },
+            "text": "Navigation"
+          },
+          {
+            "aria": null,
+            "expanded": null,
+            "rect": {
+              "height": 0,
+              "width": 0,
+              "x": 0,
+              "y": 0
+            },
+            "text": "Search⌘K"
+          }
+        ],
+        "checkboxCount": 0,
+        "desktopBulkToolbar": {
+          "rect": null,
+          "text": null,
+          "visible": false
+        },
+        "dialog": {
+          "rect": null,
+          "text": null,
+          "visible": false
+        },
+        "h1": "AI Memory",
+        "links": [
+          {
+            "aria": "Capture",
+            "current": null,
+            "href": "/capture",
+            "rect": {
+              "height": 0,
+              "width": 0,
+              "x": 0,
+              "y": 0
+            },
+            "text": "Capture"
+          },
+          {
+            "aria": null,
+            "current": "page",
+            "href": "/library",
+            "rect": {
+              "height": 0,
+              "width": 0,
+              "x": 0,
+              "y": 0
+            },
+            "text": "Library"
+          },
+          {
+            "aria": null,
+            "current": null,
+            "href": "/needs-upgrade",
+            "rect": {
+              "height": 0,
+              "width": 0,
+              "x": 0,
+              "y": 0
+            },
+            "text": "Needs Upgrade2"
+          },
+          {
+            "aria": null,
+            "current": null,
+            "href": "/ask",
+            "rect": {
+              "height": 0,
+              "width": 0,
+              "x": 0,
+              "y": 0
+            },
+            "text": "Ask"
+          },
+          {
+            "aria": null,
+            "current": null,
+            "href": "/settings",
+            "rect": {
+              "height": 0,
+              "width": 0,
+              "x": 0,
+              "y": 0
+            },
+            "text": "Settings"
+          },
+          {
+            "aria": null,
+            "current": null,
+            "href": "/settings/device-pairing",
+            "rect": {
+              "height": 0,
+              "width": 0,
+              "x": 0,
+              "y": 0
+            },
+            "text": "Pair Device"
+          },
+          "[Circular]",
+          "[Circular]",
+          "[Circular]",
+          "[Circular]",
+          {
+            "aria": null,
+            "current": null,
+            "href": "/library",
+            "rect": {
+              "height": 20,
+              "width": 120,
+              "x": 32,
+              "y": 41
+            },
+            "text": "Back to Library"
+          },
+          {
+            "aria": null,
+            "current": null,
+            "href": "/ask?scope=topic&topic=ux-v2-source-health",
+            "rect": {
+              "height": 36,
+              "width": 326,
+              "x": 32,
+              "y": 341
+            },
+            "text": "Ask topic"
+          },
+          {
+            "aria": null,
+            "current": null,
+            "href": "/items/4f1e90ebad20182ec2b5cf98",
+            "rect": {
+              "height": 130,
+              "width": 326,
+              "x": 32,
+              "y": 426
+            },
+            "text": "UX v2 library fixture articleArticle-Full text-14m agoLSTC search beacon. A full-text article about library filtering, topic health, and scoped answers for the AI Memory QA fixture."
+          },
+          {
+            "aria": null,
+            "current": null,
+            "href": "/items/5e6a4a7afe1775e502aa38a4",
+            "rect": {
+              "height": 130,
+              "width": 326,
+              "x": 32,
+              "y": 567
+            },
+            "text": "UX v2 library fixture articleArticle-Full text-2h agoLSTC search beacon. A full-text article about library filtering, topic health, and scoped answers for the AI Memory QA fixture."
+          },
+          {
+            "aria": null,
+            "current": null,
+            "href": "/items/9a5236bbc1e5f6be4d23911e",
+            "rect": {
+              "height": 130,
+              "width": 326,
+              "x": 32,
+              "y": 709
+            },
+            "text": "UX v2 weak metadata fixtureYouTube-Metadata only-3h agoMetadata-only fixture. Transcript unavailable."
+          },
+          {
+            "aria": null,
+            "current": null,
+            "href": "/items/26f1a665a2d1231a35ac50f2",
+            "rect": {
+              "height": 130,
+              "width": 326,
+              "x": 32,
+              "y": 850
+            },
+            "text": "UX v2 weak metadata fixtureYouTube-Metadata only-5h agoMetadata-only fixture. Transcript unavailable."
+          },
+          {
+            "aria": null,
+            "current": null,
+            "href": "/items/01cc6b31eccd7e6f9101b9c2",
+            "rect": {
+              "height": 196,
+              "width": 326,
+              "x": 32,
+              "y": 992
+            },
+            "text": "UX v2 long title stress fixture for wrapping behavior across library rows, search rows, topic rows, and collection rowsArticle-Full text-6h agoA long-title fixture that keeps content synthetic while exercising row wrapping, truncation, metadata layout, and visual stability at compact widths."
+          },
+          {
+            "aria": null,
+            "current": null,
+            "href": "/items/d5845471e0244baeb5a70675",
+            "rect": {
+              "height": 196,
+              "width": 326,
+              "x": 32,
+              "y": 1199
+            },
+            "text": "UX v2 long title stress fixture for wrapping behavior across library rows, search rows, topic rows, and collection rowsArticle-Full text-8h agoA long-title fixture that keeps content synthetic while exercising row wrapping, truncation, metadata layout, and visual stability at compact widths."
+          }
+        ],
+        "overflow": {
+          "documentWidth": 390,
+          "hasHorizontalOverflow": false,
+          "viewportWidth": 390
+        },
+        "selectedToolbar": {
+          "rect": null,
+          "text": null,
+          "visible": false
+        },
+        "title": "AI Memory",
+        "url": "http://127.0.0.1:3027/topics/ux-v2-source-health",
+        "viewport": {
+          "height": 844,
+          "width": 390
+        },
+        "visibleCheckboxCount": 0
+      }
+    },
+    {
+      "name": "collection-smoke",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "path": "/collections/5d16649f376192f31629f870",
+      "screenshotPath": "/tmp/ai-memory-android-a1-shell-library-more-offline/390x844-collection-smoke.png",
+      "metrics": {
+        "bodyTextSample": "AI Memoryv0.6.2 · private memoryNavigationSearch⌘KCaptureLibraryNeeds Upgrade2AskSettingsPair DevicePrivacy ControlssoonLibraryCaptureAskMoreAll collectionsUX v2 Fixture Collection3 itemsSynthetic collection used for Library/Search/Topic/Collection browser QA.3 items2 readable1 need upgradeSome items in this collection may need richer text before scoped Ask can use them well.Ask collectionUX v2 library fixture articleArticle·Full text·14m agoUX v2 selected ask fixture noteNote·Full text·24m agoUX v2 weak metadata fixtureYouTube·Metadata only·3h agoself.__next_r=\"lekSh47xJ7WqfeGGvg3AS\"(self.__next_f=self.__next_f||[]).push([0])self.__next_f.push([1,\"9:I[\\\"[project]/node_modules/next/dist/next-devtools/userspace/app/segment-explorer-node.js [app-client] (ecmascript)\\\",[\\\"/_next/static/chunks/node_modules_0k7eqr8._.js\\\",\\\"/_next/static/chunks/_06_n~y6._.js\\\",\\\"/_next/static/chunks/node_modules_0.1878.._.js\\\",\\\"/_next/static/chunks/src_app_layout_tsx_004glpo._.js\\\"],\\\"SegmentViewNode\\\"]\\nb:\\\"$Sreact.fragment\\\"\\n1e:I[\\\"[project]/node_modules/next/dist/client/components/layout-router.js [app-client] (ecmascript)\\\",[\\\"/_next/static/chunks/node_modules_0k7eqr8._.js\\\",\\\"/_next/static/chunks/_06_n~y6._.js\\\",\\\"/_next/static/chunks/node_modules_0.1878.._.js\\\",\\\"/_next/static/chunks/src_app_layout_tsx_004glpo._.js\\\"],\\\"default\\\"]\\n20:I[\\\"[project]/node_modules/next/dist/client/components/render-from-template-context.js [app-client] (ecmascript)\\\",[\\\"/_next/static/chunks/node_modules_0k7eq",
+        "bottomNav": {
+          "links": [
+            {
+              "aria": "Open Library",
+              "current": "page",
+              "href": "/library",
+              "rect": {
+                "height": 47,
+                "width": 98,
+                "x": 8,
+                "y": 787
+              },
+              "text": "Library"
+            },
+            {
+              "aria": "Open Capture",
+              "current": null,
+              "href": "/capture",
+              "rect": {
+                "height": 56,
+                "width": 56,
+                "x": 118,
+                "y": 761
+              },
+              "text": ""
+            },
+            {
+              "aria": "Open Ask",
+              "current": null,
+              "href": "/ask",
+              "rect": {
+                "height": 47,
+                "width": 98,
+                "x": 187,
+                "y": 787
+              },
+              "text": "Ask"
+            },
+            {
+              "aria": "Open More",
+              "current": null,
+              "href": "/more",
+              "rect": {
+                "height": 47,
+                "width": 98,
+                "x": 285,
+                "y": 787
+              },
+              "text": "More"
+            }
+          ],
+          "rect": {
+            "height": 64,
+            "width": 390,
+            "x": 0,
+            "y": 780
+          },
+          "text": "LibraryCaptureAskMore",
+          "visible": true
+        },
+        "buttons": [
+          {
+            "aria": "Collapse sidebar",
+            "expanded": "true",
+            "rect": {
+              "height": 0,
+              "width": 0,
+              "x": 0,
+              "y": 0
+            },
+            "text": "Navigation"
+          },
+          {
+            "aria": null,
+            "expanded": null,
+            "rect": {
+              "height": 0,
+              "width": 0,
+              "x": 0,
+              "y": 0
+            },
+            "text": "Search⌘K"
+          }
+        ],
+        "checkboxCount": 0,
+        "desktopBulkToolbar": {
+          "rect": null,
+          "text": null,
+          "visible": false
+        },
+        "dialog": {
+          "rect": null,
+          "text": null,
+          "visible": false
+        },
+        "h1": "AI Memory",
+        "links": [
+          {
+            "aria": "Capture",
+            "current": null,
+            "href": "/capture",
+            "rect": {
+              "height": 0,
+              "width": 0,
+              "x": 0,
+              "y": 0
+            },
+            "text": "Capture"
+          },
+          {
+            "aria": null,
+            "current": "page",
+            "href": "/library",
+            "rect": {
+              "height": 0,
+              "width": 0,
+              "x": 0,
+              "y": 0
+            },
+            "text": "Library"
+          },
+          {
+            "aria": null,
+            "current": null,
+            "href": "/needs-upgrade",
+            "rect": {
+              "height": 0,
+              "width": 0,
+              "x": 0,
+              "y": 0
+            },
+            "text": "Needs Upgrade2"
+          },
+          {
+            "aria": null,
+            "current": null,
+            "href": "/ask",
+            "rect": {
+              "height": 0,
+              "width": 0,
+              "x": 0,
+              "y": 0
+            },
+            "text": "Ask"
+          },
+          {
+            "aria": null,
+            "current": null,
+            "href": "/settings",
+            "rect": {
+              "height": 0,
+              "width": 0,
+              "x": 0,
+              "y": 0
+            },
+            "text": "Settings"
+          },
+          {
+            "aria": null,
+            "current": null,
+            "href": "/settings/device-pairing",
+            "rect": {
+              "height": 0,
+              "width": 0,
+              "x": 0,
+              "y": 0
+            },
+            "text": "Pair Device"
+          },
+          "[Circular]",
+          "[Circular]",
+          "[Circular]",
+          "[Circular]",
+          {
+            "aria": null,
+            "current": null,
+            "href": "/settings/collections",
+            "rect": {
+              "height": 20,
+              "width": 112,
+              "x": 32,
+              "y": 41
+            },
+            "text": "All collections"
+          },
+          {
+            "aria": null,
+            "current": null,
+            "href": "/ask?scope=collection&collection=5d16649f376192f31629f870",
+            "rect": {
+              "height": 36,
+              "width": 326,
+              "x": 32,
+              "y": 364
+            },
+            "text": "Ask collection"
+          },
+          {
+            "aria": null,
+            "current": null,
+            "href": "/items/4f1e90ebad20182ec2b5cf98",
+            "rect": {
+              "height": 76,
+              "width": 326,
+              "x": 32,
+              "y": 449
+            },
+            "text": "UX v2 library fixture articleArticle·Full text·14m ago"
+          },
+          {
+            "aria": null,
+            "current": null,
+            "href": "/items/089c8261c9460f2d6a945c74",
+            "rect": {
+              "height": 76,
+              "width": 326,
+              "x": 32,
+              "y": 537
+            },
+            "text": "UX v2 selected ask fixture noteNote·Full text·24m ago"
+          },
+          {
+            "aria": null,
+            "current": null,
+            "href": "/items/9a5236bbc1e5f6be4d23911e",
+            "rect": {
+              "height": 76,
+              "width": 326,
+              "x": 32,
+              "y": 625
+            },
+            "text": "UX v2 weak metadata fixtureYouTube·Metadata only·3h ago"
+          }
+        ],
+        "overflow": {
+          "documentWidth": 390,
+          "hasHorizontalOverflow": false,
+          "viewportWidth": 390
+        },
+        "selectedToolbar": {
+          "rect": null,
+          "text": null,
+          "visible": false
+        },
+        "title": "AI Memory",
+        "url": "http://127.0.0.1:3027/collections/5d16649f376192f31629f870",
+        "viewport": {
+          "height": 844,
+          "width": 390
+        },
+        "visibleCheckboxCount": 0
+      }
+    }
+  ],
+  "issueCount": 0,
+  "issues": [],
+  "consoleCount": 0,
+  "console": [],
+  "harnessCorrections": {
+    "correctedAt": "2026-06-16T05:22:29.839Z",
+    "resolvedFalsePositives": [
+      {
+        "state": "needs-upgrade-smoke",
+        "message": "needs-upgrade page heading missing",
+        "details": {
+          "sample": "AI Memoryv0.6.2 · private memoryNavigationSearch⌘KCaptureLibraryNeeds Upgrade2AskSettingsPair DevicePrivacy ControlssoonLibraryCaptureAskMoreBack to LibraryCapture qualityNeeds UpgradeThese saves are still useful as bookmarks, but they do not have enough readable source text for reliable search or Ask. Add text or open the source.Needs transcript2 sourcesUX v2 weak metadata fixtureNeeds transcriptYouTube/Via web/Metadata only/3h agoRetry later or add a note if the video has no transcript.Add textSourceUX v2 weak metadata fixtureNeeds transcriptYouTube/Via web/Metadata only/5h agoRetry later or add a note if the video has no transcript.Add textSourceself.__next_r=\"xVnrvbaPK3B6MtnVewtbY\"(self.__next_f=self.__next_f||[]).push([0])self.__next_f.push([1,\"9:I[\\\"[project]/node_modules/next/dist/next-devtools/userspace/app/segment-explorer-node.js [app-client] (ecmascript)\\\",[\\\"/_next/static/chunks/node_modules_0k7eqr8._.js\\\",\\\"/_next/static/chunks/_06_n~y6._.js\\\",\\\"/_next/static/chunks/node_modules_0.1878.._.js\\\",\\\"/_next/static/chunks/src_app_layout_tsx_004glpo._.js\\\"],\\\"SegmentViewNode\\\"]\\nb:\\\"$Sreact.fragment\\\"\\n1e:I[\\\"[project]/node_modules/next/dist/client/components/layout-router.js [app-client] (ecmascript)\\\",[\\\"/_next/static/chunks/node_modules_0k7eqr8._.js\\\",\\\"/_next/static/chunks/_06_n~y6._.js\\\",\\\"/_next/static/chunks/node_modules_0.1878.._.js\\\",\\\"/_next/static/chunks/src_app_layout_tsx_004glpo._.js\\\"],\\\"default\\\"]\\n20:I[\\\"[project]/node_modules/next/dist/client/components"
+        },
+        "resolution": "False positive: page rendered expected heading with capitalized Upgrade."
+      },
+      {
+        "state": "topic-smoke",
+        "message": "topic title missing",
+        "details": {
+          "sample": "AI Memoryv0.6.2 · private memoryNavigationSearch⌘KCaptureLibraryNeeds Upgrade2AskSettingsPair DevicePrivacy ControlssoonLibraryCaptureAskMoreBack to LibraryIncluded TopicUX V2 Source Health6 sources matched by AI.Synthetic generated topic covering readable and weak source health states.6 sources4 readable2 need upgradeSome sources in this topic may produce thinner answers until they are upgraded.Ask topicUX v2 library fixture articleArticle-Full text-14m agoLSTC search beacon. A full-text article about library filtering, topic health, and scoped answers for the AI Memory QA fixture.UX v2 library fixture articleArticle-Full text-2h agoLSTC search beacon. A full-text article about library filtering, topic health, and scoped answers for the AI Memory QA fixture.UX v2 weak metadata fixtureYouTube-Metadata only-3h agoMetadata-only fixture. Transcript unavailable.UX v2 weak metadata fixtureYouTube-Metadata only-5h agoMetadata-only fixture. Transcript unavailable.UX v2 long title stress fixture for wrapping behavior across library rows, search rows, topic rows, and collection rowsArticle-Full text-6h agoA long-title fixture that keeps content synthetic while exercising row wrapping, truncation, metadata layout, and visual stability at compact widths.UX v2 long title stress fixture for wrapping behavior across library rows, search rows, topic rows, and collection rowsArticle-Full text-8h agoA long-title fixture that keeps content synthetic while exercising row wrapping, truncation, m"
+        },
+        "resolution": "False positive: topic page title was rendered from slug with V2 capitalization."
+      }
+    ]
+  }
+}

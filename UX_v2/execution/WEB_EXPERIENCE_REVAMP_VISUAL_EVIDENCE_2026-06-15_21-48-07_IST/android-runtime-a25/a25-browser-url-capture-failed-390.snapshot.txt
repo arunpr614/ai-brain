@@ -1,0 +1,25 @@
+- navigation "Primary mobile":
+  - link "Open Library":
+    - /url: /library
+    - generic: Library
+  - link "Open Capture":
+    - /url: /capture
+    - generic: Capture
+  - link "Open Ask":
+    - /url: /ask
+    - generic: Ask
+  - link "Open More":
+    - /url: /more
+    - generic: More
+- main:
+  - link "Library":
+    - /url: /library
+    - text: Library
+  - paragraph: Android share
+  - heading "Link could not be saved" [level=1]
+  - paragraph: AI Memory reached the server, but this link could not be captured. Try Capture manually or share a different source.
+  - link "Capture manually":
+    - /url: /capture
+  - link "Done":
+    - /url: /library
+- alert

@@ -187,6 +187,10 @@ function libraryWhere(options: Pick<ListItemsOptions, "source" | "quality" | "ta
       clauses.push(`(
         capture_quality IN ('transcript', 'metadata_plus_transcript')
         OR (
+          capture_quality = 'user_provided_full_text'
+          AND (source_type = 'youtube' OR source_platform IN ('youtube', 'youtube_short'))
+        )
+        OR (
           capture_quality IS NULL
           AND extraction_warning IS NULL
           AND source_type = 'youtube'

@@ -1,6 +1,7 @@
 import { getDb, type ItemRow } from "@/db/client";
 import { getItem } from "@/db/items";
 import { CAPTURE_EXTRACTION_VERSION } from "@/lib/capture/quality";
+import type { CaptureQuality } from "@/lib/capture/types";
 
 export const MIN_REPAIR_TEXT_CHARS = 200;
 
@@ -26,12 +27,16 @@ export interface RepairItemWithTextInput {
   text: string;
   textKind?: RepairTextKind;
   title?: string | null;
+  captureQuality?: CaptureQuality;
+  extractionWarning?: string | null;
+  extractionMethod?: string;
+  extractionVersion?: string;
 }
 
 export interface RepairItemWithTextResult {
   item: ItemRow;
   beforeQuality: string | null;
-  afterQuality: "user_provided_full_text";
+  afterQuality: CaptureQuality;
   removedChunks: number;
   removedVectors: number;
   removedAutoTags: number;
@@ -63,7 +68,10 @@ export function repairItemWithText(
   const db = getDb();
   const textKind = input.textKind === "transcript" ? "transcript" : "text";
   const extractionMethod =
-    textKind === "transcript" ? "manual_repair_transcript" : "manual_repair_text";
+    input.extractionMethod ??
+    (textKind === "transcript" ? "manual_repair_transcript" : "manual_repair_text");
+  const captureQuality = input.captureQuality ?? "user_provided_full_text";
+  const extractionVersion = input.extractionVersion ?? CAPTURE_EXTRACTION_VERSION;
   const beforeQuality = existing.capture_quality ?? null;
 
   let removedChunks = 0;
@@ -110,8 +118,8 @@ export function repairItemWithText(
       `UPDATE items
        SET title = ?,
            body = ?,
-           extraction_warning = NULL,
-           capture_quality = 'user_provided_full_text',
+           extraction_warning = ?,
+           capture_quality = ?,
            extraction_method = ?,
            extraction_version = ?,
            total_chars = ?,
@@ -125,8 +133,10 @@ export function repairItemWithText(
     ).run(
       title,
       body,
+      input.extractionWarning ?? null,
+      captureQuality,
       extractionMethod,
-      CAPTURE_EXTRACTION_VERSION,
+      extractionVersion,
       body.length,
       input.itemId,
     );
@@ -157,7 +167,7 @@ export function repairItemWithText(
   return {
     item: getItem(input.itemId)!,
     beforeQuality,
-    afterQuality: "user_provided_full_text",
+    afterQuality: captureQuality,
     removedChunks,
     removedVectors,
     removedAutoTags,

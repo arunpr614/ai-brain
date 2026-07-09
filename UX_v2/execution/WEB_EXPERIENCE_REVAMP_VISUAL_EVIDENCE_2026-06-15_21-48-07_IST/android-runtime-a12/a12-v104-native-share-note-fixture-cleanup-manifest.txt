@@ -1,0 +1,7 @@
+marker=A12_SHARE_NOTE_FIXTURE_20260616_1847_IST
+before_count=0
+matched_count=0
+matched_rows_redacted=
+
+after_cleanup_count=0
+cleanup_method=PRAGMA foreign_keys=ON; DELETE FROM items by unique marker; cascades cover dependent rows.

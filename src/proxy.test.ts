@@ -155,6 +155,14 @@ describe("proxy — bearer path (BEARER_ROUTES)", () => {
     assert.notEqual(res.status, 429);
   });
 
+  it("valid bearer on /api/capture/transcript passes", () => {
+    const res = proxy(
+      mkReq("/api/capture/transcript", { bearer: GOOD_TOKEN, method: "POST" }),
+    );
+    assert.notEqual(res.status, 401);
+    assert.notEqual(res.status, 429);
+  });
+
   it("valid bearer on /api/health passes", () => {
     const res = proxy(mkReq("/api/health", { bearer: GOOD_TOKEN }));
     assert.notEqual(res.status, 401);

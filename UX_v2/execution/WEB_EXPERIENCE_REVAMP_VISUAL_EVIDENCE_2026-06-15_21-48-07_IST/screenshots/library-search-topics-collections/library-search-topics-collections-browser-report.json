@@ -1,0 +1,720 @@
+{
+  "manifest": {
+    "dbPath": "/tmp/ai-memory-lstc-qa.sqlite",
+    "searchHitQuery": "LSTC search beacon",
+    "searchMissQuery": "no-result-lstc-fixture-zzzz",
+    "tagName": "ux-v2-fixture",
+    "topicSlug": "ux-v2-source-health",
+    "populatedCollectionId": "7d5dda90b58da9ebffa65838",
+    "emptyCollectionId": "34a37da0643bf395ed654b85",
+    "itemIds": {
+      "article": "af40505ffb0f52ab769d3614",
+      "note": "8637e2190546849848104f54",
+      "youtube": "4d8cd93aa2840349011ec5a3",
+      "pdf": "d25967d32d98a1bf58d327b7",
+      "weak": "d3c3ef608697b47b5748d84d",
+      "stress": "5c43bb766c14033ed9bb05a7"
+    },
+    "routes": {
+      "library": "/library",
+      "libraryTagged": "/library?tag=ux-v2-fixture",
+      "searchEmpty": "/search",
+      "searchHit": "/search?q=LSTC%20search%20beacon",
+      "searchMiss": "/search?q=no-result-lstc-fixture-zzzz",
+      "searchProviderDown": "/search?q=LSTC%20search%20beacon&mode=semantic",
+      "topicPopulated": "/topics/ux-v2-source-health",
+      "topicMissing": "/topics/missing-lstc-fixture-topic",
+      "collectionPopulated": "/collections/7d5dda90b58da9ebffa65838",
+      "collectionEmpty": "/collections/34a37da0643bf395ed654b85",
+      "collectionMissing": "/collections/missing-lstc-fixture-collection"
+    }
+  },
+  "screenshots": [
+    {
+      "name": "library-default-390-light",
+      "route": "/library",
+      "width": 390,
+      "height": 844,
+      "theme": "light",
+      "file": "/Users/arun.prakash/Documents/arunvault/arun-cursor/Initiatives/Arun_AI_Projects/ai-brain/phase2/UX_v2/execution/WEB_EXPERIENCE_REVAMP_VISUAL_EVIDENCE_2026-06-15_21-48-07_IST/screenshots/library-search-topics-collections/library-default-390-light.png",
+      "state": {
+        "bodySample": "Library Capture Ask 1 More Library 6 sources captured 1 need upgrade Capture Filters All sources 6 UX v2 library fixture article queued Article · via Web · Full text · 10m ago · 127 chars UX v2 selected ask fixture note queued Note · via Web · Full text · 20m ago · 145 chars UX v2 transcript fixture video queued YouTube · via Web · Transcript · 50m ago · 85 chars UX v2 PDF fixture brief queued PDF · via Web · Full text · 2h ago · 92 chars UX v2 weak metadata fixture queued YouTube · via Web · Me",
+        "h1": "AI Memory",
+        "hasAiSearchUnavailable": false,
+        "hasDeleteText": false,
+        "hasOllamaCommand": false,
+        "hasScopeHealth": false,
+        "title": "AI Memory",
+        "url": "/library"
+      }
+    },
+    {
+      "name": "library-default-390-dark",
+      "route": "/library",
+      "width": 390,
+      "height": 844,
+      "theme": "dark",
+      "file": "/Users/arun.prakash/Documents/arunvault/arun-cursor/Initiatives/Arun_AI_Projects/ai-brain/phase2/UX_v2/execution/WEB_EXPERIENCE_REVAMP_VISUAL_EVIDENCE_2026-06-15_21-48-07_IST/screenshots/library-search-topics-collections/library-default-390-dark.png",
+      "state": {
+        "bodySample": "Library Capture Ask 1 More Library 6 sources captured 1 need upgrade Capture Filters All sources 6 UX v2 library fixture article queued Article · via Web · Full text · 10m ago · 127 chars UX v2 selected ask fixture note queued Note · via Web · Full text · 20m ago · 145 chars UX v2 transcript fixture video queued YouTube · via Web · Transcript · 50m ago · 85 chars UX v2 PDF fixture brief queued PDF · via Web · Full text · 2h ago · 92 chars UX v2 weak metadata fixture queued YouTube · via Web · Me",
+        "h1": "AI Memory",
+        "hasAiSearchUnavailable": false,
+        "hasDeleteText": false,
+        "hasOllamaCommand": false,
+        "hasScopeHealth": false,
+        "title": "AI Memory",
+        "url": "/library"
+      }
+    },
+    {
+      "name": "library-default-768-light",
+      "route": "/library",
+      "width": 768,
+      "height": 1024,
+      "theme": "light",
+      "file": "/Users/arun.prakash/Documents/arunvault/arun-cursor/Initiatives/Arun_AI_Projects/ai-brain/phase2/UX_v2/execution/WEB_EXPERIENCE_REVAMP_VISUAL_EVIDENCE_2026-06-15_21-48-07_IST/screenshots/library-search-topics-collections/library-default-768-light.png",
+      "state": {
+        "bodySample": "AI Memory v0.6.2 · private memory Navigation Search ⌘K Capture Library Needs Upgrade 1 Ask Settings Pair Device Privacy Controls SOON Library 6 sources captured 1 need upgrade Capture SOURCE All Articles YouTube PDFs Notes Telegram QUALITY All Full text Transcript Needs upgrade UX v2 library fixture article queued Article · via Web · Full text · 10m ago · 127 chars UX v2 selected ask fixture note queued Note · via Web · Full text · 20m ago · 145 chars UX v2 transcript fixture video queued YouTub",
+        "h1": "AI Memory",
+        "hasAiSearchUnavailable": false,
+        "hasDeleteText": false,
+        "hasOllamaCommand": false,
+        "hasScopeHealth": false,
+        "title": "AI Memory",
+        "url": "/library"
+      }
+    },
+    {
+      "name": "library-default-1024-light",
+      "route": "/library",
+      "width": 1024,
+      "height": 768,
+      "theme": "light",
+      "file": "/Users/arun.prakash/Documents/arunvault/arun-cursor/Initiatives/Arun_AI_Projects/ai-brain/phase2/UX_v2/execution/WEB_EXPERIENCE_REVAMP_VISUAL_EVIDENCE_2026-06-15_21-48-07_IST/screenshots/library-search-topics-collections/library-default-1024-light.png",
+      "state": {
+        "bodySample": "AI Memory v0.6.2 · private memory Navigation Search ⌘K Capture Library Needs Upgrade 1 Ask Settings Pair Device Privacy Controls SOON Library 6 sources captured 1 need upgrade Capture SOURCE All Articles YouTube PDFs Notes Telegram QUALITY All Full text Transcript Needs upgrade UX v2 library fixture article queued Article · via Web · Full text · 10m ago · 127 chars UX v2 selected ask fixture note queued Note · via Web · Full text · 20m ago · 145 chars UX v2 transcript fixture video queued YouTub",
+        "h1": "AI Memory",
+        "hasAiSearchUnavailable": false,
+        "hasDeleteText": false,
+        "hasOllamaCommand": false,
+        "hasScopeHealth": false,
+        "title": "AI Memory",
+        "url": "/library"
+      }
+    },
+    {
+      "name": "library-default-1280-light",
+      "route": "/library",
+      "width": 1280,
+      "height": 800,
+      "theme": "light",
+      "file": "/Users/arun.prakash/Documents/arunvault/arun-cursor/Initiatives/Arun_AI_Projects/ai-brain/phase2/UX_v2/execution/WEB_EXPERIENCE_REVAMP_VISUAL_EVIDENCE_2026-06-15_21-48-07_IST/screenshots/library-search-topics-collections/library-default-1280-light.png",
+      "state": {
+        "bodySample": "AI Memory v0.6.2 · private memory Navigation Search ⌘K Capture Library Needs Upgrade 1 Ask Settings Pair Device Privacy Controls SOON Library 6 sources captured 1 need upgrade Capture SOURCE All Articles YouTube PDFs Notes Telegram QUALITY All Full text Transcript Needs upgrade UX v2 library fixture article queued Article · via Web · Full text · 10m ago · 127 chars UX v2 selected ask fixture note queued Note · via Web · Full text · 20m ago · 145 chars UX v2 transcript fixture video queued YouTub",
+        "h1": "AI Memory",
+        "hasAiSearchUnavailable": false,
+        "hasDeleteText": false,
+        "hasOllamaCommand": false,
+        "hasScopeHealth": false,
+        "title": "AI Memory",
+        "url": "/library"
+      }
+    },
+    {
+      "name": "library-default-1440-dark",
+      "route": "/library",
+      "width": 1440,
+      "height": 900,
+      "theme": "dark",
+      "file": "/Users/arun.prakash/Documents/arunvault/arun-cursor/Initiatives/Arun_AI_Projects/ai-brain/phase2/UX_v2/execution/WEB_EXPERIENCE_REVAMP_VISUAL_EVIDENCE_2026-06-15_21-48-07_IST/screenshots/library-search-topics-collections/library-default-1440-dark.png",
+      "state": {
+        "bodySample": "AI Memory v0.6.2 · private memory Navigation Search ⌘K Capture Library Needs Upgrade 1 Ask Settings Pair Device Privacy Controls SOON Library 6 sources captured 1 need upgrade Capture SOURCE All Articles YouTube PDFs Notes Telegram QUALITY All Full text Transcript Needs upgrade UX v2 library fixture article queued Article · via Web · Full text · 10m ago · 127 chars UX v2 selected ask fixture note queued Note · via Web · Full text · 20m ago · 145 chars UX v2 transcript fixture video queued YouTub",
+        "h1": "AI Memory",
+        "hasAiSearchUnavailable": false,
+        "hasDeleteText": false,
+        "hasOllamaCommand": false,
+        "hasScopeHealth": false,
+        "title": "AI Memory",
+        "url": "/library"
+      }
+    },
+    {
+      "name": "library-tagged-390-sheet-light",
+      "route": "/library?tag=ux-v2-fixture",
+      "width": 390,
+      "height": 844,
+      "theme": "light",
+      "file": "/Users/arun.prakash/Documents/arunvault/arun-cursor/Initiatives/Arun_AI_Projects/ai-brain/phase2/UX_v2/execution/WEB_EXPERIENCE_REVAMP_VISUAL_EVIDENCE_2026-06-15_21-48-07_IST/screenshots/library-search-topics-collections/library-tagged-390-sheet-light.png",
+      "state": {
+        "bodySample": "Library Capture Ask 1 More Library 3 of 6 sources shown 1 need upgrade Capture Filters #ux-v2-fixture 3 Filters 3 sources shown TAG ux-v2-fixture Clear tag Ask tag SOURCE All All Articles YouTube PDFs Notes Telegram QUALITY All All Full text Transcript Needs upgrade Clear filters UX v2 library fixture article queued Article · via Web · Full text · 10m ago · 127 chars UX v2 selected ask fixture note queued Note · via Web · Full text · 20m ago · 145 chars UX v2 weak metadata fixture queued YouTube",
+        "h1": "AI Memory",
+        "hasAiSearchUnavailable": false,
+        "hasDeleteText": false,
+        "hasOllamaCommand": false,
+        "hasScopeHealth": false,
+        "title": "AI Memory",
+        "url": "/library?tag=ux-v2-fixture"
+      }
+    },
+    {
+      "name": "library-tagged-1280-light",
+      "route": "/library?tag=ux-v2-fixture",
+      "width": 1280,
+      "height": 800,
+      "theme": "light",
+      "file": "/Users/arun.prakash/Documents/arunvault/arun-cursor/Initiatives/Arun_AI_Projects/ai-brain/phase2/UX_v2/execution/WEB_EXPERIENCE_REVAMP_VISUAL_EVIDENCE_2026-06-15_21-48-07_IST/screenshots/library-search-topics-collections/library-tagged-1280-light.png",
+      "state": {
+        "bodySample": "AI Memory v0.6.2 · private memory Navigation Search ⌘K Capture Library Needs Upgrade 1 Ask Settings Pair Device Privacy Controls SOON Library 3 of 6 sources shown 1 need upgrade Capture TAG ux-v2-fixture Clear tag Ask tag SOURCE All Articles YouTube PDFs Notes Telegram QUALITY All Full text Transcript Needs upgrade UX v2 library fixture article queued Article · via Web · Full text · 10m ago · 127 chars UX v2 selected ask fixture note queued Note · via Web · Full text · 20m ago · 145 chars UX v2 ",
+        "h1": "AI Memory",
+        "hasAiSearchUnavailable": false,
+        "hasDeleteText": false,
+        "hasOllamaCommand": false,
+        "hasScopeHealth": false,
+        "title": "AI Memory",
+        "url": "/library?tag=ux-v2-fixture"
+      }
+    },
+    {
+      "name": "library-selected-390-light",
+      "route": "/library",
+      "width": 390,
+      "height": 844,
+      "theme": "light",
+      "file": "/Users/arun.prakash/Documents/arunvault/arun-cursor/Initiatives/Arun_AI_Projects/ai-brain/phase2/UX_v2/execution/WEB_EXPERIENCE_REVAMP_VISUAL_EVIDENCE_2026-06-15_21-48-07_IST/screenshots/library-search-topics-collections/library-selected-390-light.png",
+      "state": {
+        "bodySample": "Library Capture Ask 1 More Library 6 sources captured 1 need upgrade Capture Filters All sources 6 UX v2 library fixture article queued Article · via Web · Full text · 10m ago · 127 chars UX v2 selected ask fixture note queued Note · via Web · Full text · 20m ago · 145 chars UX v2 transcript fixture video queued YouTube · via Web · Transcript · 50m ago · 85 chars UX v2 PDF fixture brief queued PDF · via Web · Full text · 2h ago · 92 chars UX v2 weak metadata fixture queued YouTube · via Web · Me",
+        "h1": "AI Memory",
+        "hasAiSearchUnavailable": false,
+        "hasDeleteText": false,
+        "hasOllamaCommand": false,
+        "hasScopeHealth": false,
+        "title": "AI Memory",
+        "url": "/library"
+      }
+    },
+    {
+      "name": "library-selected-1280-light",
+      "route": "/library",
+      "width": 1280,
+      "height": 800,
+      "theme": "light",
+      "file": "/Users/arun.prakash/Documents/arunvault/arun-cursor/Initiatives/Arun_AI_Projects/ai-brain/phase2/UX_v2/execution/WEB_EXPERIENCE_REVAMP_VISUAL_EVIDENCE_2026-06-15_21-48-07_IST/screenshots/library-search-topics-collections/library-selected-1280-light.png",
+      "state": {
+        "bodySample": "AI Memory v0.6.2 · private memory Navigation Search ⌘K Capture Library Needs Upgrade 1 Ask Settings Pair Device Privacy Controls SOON Library 6 sources captured 1 need upgrade Capture SOURCE All Articles YouTube PDFs Notes Telegram QUALITY All Full text Transcript Needs upgrade UX v2 library fixture article queued Article · via Web · Full text · 10m ago · 127 chars UX v2 selected ask fixture note queued Note · via Web · Full text · 20m ago · 145 chars UX v2 transcript fixture video queued YouTub",
+        "h1": "AI Memory",
+        "hasAiSearchUnavailable": false,
+        "hasDeleteText": false,
+        "hasOllamaCommand": false,
+        "hasScopeHealth": false,
+        "title": "AI Memory",
+        "url": "/library"
+      }
+    },
+    {
+      "name": "search-empty-390-light",
+      "route": "/search",
+      "width": 390,
+      "height": 844,
+      "theme": "light",
+      "file": "/Users/arun.prakash/Documents/arunvault/arun-cursor/Initiatives/Arun_AI_Projects/ai-brain/phase2/UX_v2/execution/WEB_EXPERIENCE_REVAMP_VISUAL_EVIDENCE_2026-06-15_21-48-07_IST/screenshots/library-search-topics-collections/search-empty-390-light.png",
+      "state": {
+        "bodySample": "Library Capture Ask 1 More Back to Library Search Full-text Semantic Hybrid Type a query and press Enter.",
+        "h1": "AI Memory",
+        "hasAiSearchUnavailable": false,
+        "hasDeleteText": false,
+        "hasOllamaCommand": false,
+        "hasScopeHealth": false,
+        "title": "AI Memory",
+        "url": "/search"
+      }
+    },
+    {
+      "name": "search-hit-1280-light",
+      "route": "/search?q=LSTC%20search%20beacon",
+      "width": 1280,
+      "height": 800,
+      "theme": "light",
+      "file": "/Users/arun.prakash/Documents/arunvault/arun-cursor/Initiatives/Arun_AI_Projects/ai-brain/phase2/UX_v2/execution/WEB_EXPERIENCE_REVAMP_VISUAL_EVIDENCE_2026-06-15_21-48-07_IST/screenshots/library-search-topics-collections/search-hit-1280-light.png",
+      "state": {
+        "bodySample": "AI Memory v0.6.2 · private memory Navigation Search ⌘K Capture Library Needs Upgrade 1 Ask Settings Pair Device Privacy Controls SOON Back to Library Search Full-text Semantic Hybrid 1 result for “LSTC search beacon” · full-text UX v2 library fixture article URL·10m ago",
+        "h1": "AI Memory",
+        "hasAiSearchUnavailable": false,
+        "hasDeleteText": false,
+        "hasOllamaCommand": false,
+        "hasScopeHealth": false,
+        "title": "AI Memory",
+        "url": "/search?q=LSTC%20search%20beacon"
+      }
+    },
+    {
+      "name": "search-miss-1280-light",
+      "route": "/search?q=no-result-lstc-fixture-zzzz",
+      "width": 1280,
+      "height": 800,
+      "theme": "light",
+      "file": "/Users/arun.prakash/Documents/arunvault/arun-cursor/Initiatives/Arun_AI_Projects/ai-brain/phase2/UX_v2/execution/WEB_EXPERIENCE_REVAMP_VISUAL_EVIDENCE_2026-06-15_21-48-07_IST/screenshots/library-search-topics-collections/search-miss-1280-light.png",
+      "state": {
+        "bodySample": "AI Memory v0.6.2 · private memory Navigation Search ⌘K Capture Library Needs Upgrade 1 Ask Settings Pair Device Privacy Controls SOON Back to Library Search Full-text Semantic Hybrid No matches for “no-result-lstc-fixture-zzzz”.",
+        "h1": "AI Memory",
+        "hasAiSearchUnavailable": false,
+        "hasDeleteText": false,
+        "hasOllamaCommand": false,
+        "hasScopeHealth": false,
+        "title": "AI Memory",
+        "url": "/search?q=no-result-lstc-fixture-zzzz"
+      }
+    },
+    {
+      "name": "search-provider-down-1280-light",
+      "route": "/search?q=LSTC%20search%20beacon&mode=semantic",
+      "width": 1280,
+      "height": 800,
+      "theme": "light",
+      "file": "/Users/arun.prakash/Documents/arunvault/arun-cursor/Initiatives/Arun_AI_Projects/ai-brain/phase2/UX_v2/execution/WEB_EXPERIENCE_REVAMP_VISUAL_EVIDENCE_2026-06-15_21-48-07_IST/screenshots/library-search-topics-collections/search-provider-down-1280-light.png",
+      "state": {
+        "bodySample": "AI Memory v0.6.2 · private memory Navigation Search ⌘K Capture Library Needs Upgrade 1 Ask Settings Pair Device Privacy Controls SOON Back to Library Search Full-text Semantic Hybrid AI SEARCH IS UNAVAILABLE Semantic and hybrid search need the local AI service to be reachable. Check AI services in Settings, or switch to Full-text search.",
+        "h1": "AI Memory",
+        "hasAiSearchUnavailable": false,
+        "hasDeleteText": false,
+        "hasOllamaCommand": false,
+        "hasScopeHealth": false,
+        "title": "AI Memory",
+        "url": "/search?q=LSTC%20search%20beacon&mode=semantic"
+      }
+    },
+    {
+      "name": "topic-populated-390-light",
+      "route": "/topics/ux-v2-source-health",
+      "width": 390,
+      "height": 844,
+      "theme": "light",
+      "file": "/Users/arun.prakash/Documents/arunvault/arun-cursor/Initiatives/Arun_AI_Projects/ai-brain/phase2/UX_v2/execution/WEB_EXPERIENCE_REVAMP_VISUAL_EVIDENCE_2026-06-15_21-48-07_IST/screenshots/library-search-topics-collections/topic-populated-390-light.png",
+      "state": {
+        "bodySample": "Library Capture Ask 1 More Back to Library INCLUDED TOPIC UX V2 Source Health 3 sources matched by AI. Synthetic generated topic covering readable and weak source health states. 3 sources 2 readable 1 need upgrade Some sources in this topic may produce thinner answers until they are upgraded. Ask topic UX v2 library fixture article ARTICLE-Full text-10m ago LSTC search beacon. A full-text article about library filtering, topic health, and scoped answers for the AI Memory QA fixture. UX v2 weak m",
+        "h1": "AI Memory",
+        "hasAiSearchUnavailable": false,
+        "hasDeleteText": false,
+        "hasOllamaCommand": false,
+        "hasScopeHealth": true,
+        "title": "AI Memory",
+        "url": "/topics/ux-v2-source-health"
+      }
+    },
+    {
+      "name": "topic-populated-1280-light",
+      "route": "/topics/ux-v2-source-health",
+      "width": 1280,
+      "height": 800,
+      "theme": "light",
+      "file": "/Users/arun.prakash/Documents/arunvault/arun-cursor/Initiatives/Arun_AI_Projects/ai-brain/phase2/UX_v2/execution/WEB_EXPERIENCE_REVAMP_VISUAL_EVIDENCE_2026-06-15_21-48-07_IST/screenshots/library-search-topics-collections/topic-populated-1280-light.png",
+      "state": {
+        "bodySample": "AI Memory v0.6.2 · private memory Navigation Search ⌘K Capture Library Needs Upgrade 1 Ask Settings Pair Device Privacy Controls SOON Back to Library INCLUDED TOPIC UX V2 Source Health 3 sources matched by AI. Synthetic generated topic covering readable and weak source health states. 3 sources 2 readable 1 need upgrade Some sources in this topic may produce thinner answers until they are upgraded. Ask topic UX v2 library fixture article ARTICLE-Full text-10m ago LSTC search beacon. A full-text a",
+        "h1": "AI Memory",
+        "hasAiSearchUnavailable": false,
+        "hasDeleteText": false,
+        "hasOllamaCommand": false,
+        "hasScopeHealth": true,
+        "title": "AI Memory",
+        "url": "/topics/ux-v2-source-health"
+      }
+    },
+    {
+      "name": "topic-populated-1280-dark",
+      "route": "/topics/ux-v2-source-health",
+      "width": 1280,
+      "height": 800,
+      "theme": "dark",
+      "file": "/Users/arun.prakash/Documents/arunvault/arun-cursor/Initiatives/Arun_AI_Projects/ai-brain/phase2/UX_v2/execution/WEB_EXPERIENCE_REVAMP_VISUAL_EVIDENCE_2026-06-15_21-48-07_IST/screenshots/library-search-topics-collections/topic-populated-1280-dark.png",
+      "state": {
+        "bodySample": "AI Memory v0.6.2 · private memory Navigation Search ⌘K Capture Library Needs Upgrade 1 Ask Settings Pair Device Privacy Controls SOON Back to Library INCLUDED TOPIC UX V2 Source Health 3 sources matched by AI. Synthetic generated topic covering readable and weak source health states. 3 sources 2 readable 1 need upgrade Some sources in this topic may produce thinner answers until they are upgraded. Ask topic UX v2 library fixture article ARTICLE-Full text-10m ago LSTC search beacon. A full-text a",
+        "h1": "AI Memory",
+        "hasAiSearchUnavailable": false,
+        "hasDeleteText": false,
+        "hasOllamaCommand": false,
+        "hasScopeHealth": true,
+        "title": "AI Memory",
+        "url": "/topics/ux-v2-source-health"
+      }
+    },
+    {
+      "name": "topic-not-found-1280-light",
+      "route": "/topics/missing-lstc-fixture-topic",
+      "width": 1280,
+      "height": 800,
+      "theme": "light",
+      "file": "/Users/arun.prakash/Documents/arunvault/arun-cursor/Initiatives/Arun_AI_Projects/ai-brain/phase2/UX_v2/execution/WEB_EXPERIENCE_REVAMP_VISUAL_EVIDENCE_2026-06-15_21-48-07_IST/screenshots/library-search-topics-collections/topic-not-found-1280-light.png",
+      "state": {
+        "bodySample": "AI Memory v0.6.2 · private memory Navigation Search ⌘K Capture Library Needs Upgrade 1 Ask Settings Pair Device Privacy Controls SOON Not found The item or page you requested doesn’t exist. Back to Library",
+        "h1": "AI Memory",
+        "hasAiSearchUnavailable": false,
+        "hasDeleteText": false,
+        "hasOllamaCommand": false,
+        "hasScopeHealth": false,
+        "title": "AI Memory",
+        "url": "/topics/missing-lstc-fixture-topic"
+      }
+    },
+    {
+      "name": "collection-populated-390-light",
+      "route": "/collections/7d5dda90b58da9ebffa65838",
+      "width": 390,
+      "height": 844,
+      "theme": "light",
+      "file": "/Users/arun.prakash/Documents/arunvault/arun-cursor/Initiatives/Arun_AI_Projects/ai-brain/phase2/UX_v2/execution/WEB_EXPERIENCE_REVAMP_VISUAL_EVIDENCE_2026-06-15_21-48-07_IST/screenshots/library-search-topics-collections/collection-populated-390-light.png",
+      "state": {
+        "bodySample": "Library Capture Ask 1 More All collections UX v2 Fixture Collection 3 items Synthetic collection used for Library/Search/Topic/Collection browser QA. 3 items 2 readable 1 need upgrade Some items in this collection may need richer text before scoped Ask can use them well. Ask collection UX v2 library fixture article ARTICLE·Full text·10m ago UX v2 selected ask fixture note NOTE·Full text·20m ago UX v2 weak metadata fixture YOUTUBE·Metadata only·3h ago",
+        "h1": "AI Memory",
+        "hasAiSearchUnavailable": false,
+        "hasDeleteText": false,
+        "hasOllamaCommand": false,
+        "hasScopeHealth": true,
+        "title": "AI Memory",
+        "url": "/collections/7d5dda90b58da9ebffa65838"
+      }
+    },
+    {
+      "name": "collection-populated-1280-light",
+      "route": "/collections/7d5dda90b58da9ebffa65838",
+      "width": 1280,
+      "height": 800,
+      "theme": "light",
+      "file": "/Users/arun.prakash/Documents/arunvault/arun-cursor/Initiatives/Arun_AI_Projects/ai-brain/phase2/UX_v2/execution/WEB_EXPERIENCE_REVAMP_VISUAL_EVIDENCE_2026-06-15_21-48-07_IST/screenshots/library-search-topics-collections/collection-populated-1280-light.png",
+      "state": {
+        "bodySample": "AI Memory v0.6.2 · private memory Navigation Search ⌘K Capture Library Needs Upgrade 1 Ask Settings Pair Device Privacy Controls SOON All collections UX v2 Fixture Collection 3 items Synthetic collection used for Library/Search/Topic/Collection browser QA. 3 items 2 readable 1 need upgrade Some items in this collection may need richer text before scoped Ask can use them well. Ask collection UX v2 library fixture article ARTICLE·Full text·10m ago UX v2 selected ask fixture note NOTE·Full text·20m",
+        "h1": "AI Memory",
+        "hasAiSearchUnavailable": false,
+        "hasDeleteText": false,
+        "hasOllamaCommand": false,
+        "hasScopeHealth": true,
+        "title": "AI Memory",
+        "url": "/collections/7d5dda90b58da9ebffa65838"
+      }
+    },
+    {
+      "name": "collection-empty-1280-light",
+      "route": "/collections/34a37da0643bf395ed654b85",
+      "width": 1280,
+      "height": 800,
+      "theme": "light",
+      "file": "/Users/arun.prakash/Documents/arunvault/arun-cursor/Initiatives/Arun_AI_Projects/ai-brain/phase2/UX_v2/execution/WEB_EXPERIENCE_REVAMP_VISUAL_EVIDENCE_2026-06-15_21-48-07_IST/screenshots/library-search-topics-collections/collection-empty-1280-light.png",
+      "state": {
+        "bodySample": "AI Memory v0.6.2 · private memory Navigation Search ⌘K Capture Library Needs Upgrade 1 Ask Settings Pair Device Privacy Controls SOON All collections UX v2 Empty Fixture Collection 0 items Synthetic empty collection for browser QA. 0 items 0 readable No items in this collection yet.",
+        "h1": "AI Memory",
+        "hasAiSearchUnavailable": false,
+        "hasDeleteText": false,
+        "hasOllamaCommand": false,
+        "hasScopeHealth": true,
+        "title": "AI Memory",
+        "url": "/collections/34a37da0643bf395ed654b85"
+      }
+    },
+    {
+      "name": "collection-not-found-1280-light",
+      "route": "/collections/missing-lstc-fixture-collection",
+      "width": 1280,
+      "height": 800,
+      "theme": "light",
+      "file": "/Users/arun.prakash/Documents/arunvault/arun-cursor/Initiatives/Arun_AI_Projects/ai-brain/phase2/UX_v2/execution/WEB_EXPERIENCE_REVAMP_VISUAL_EVIDENCE_2026-06-15_21-48-07_IST/screenshots/library-search-topics-collections/collection-not-found-1280-light.png",
+      "state": {
+        "bodySample": "AI Memory v0.6.2 · private memory Navigation Search ⌘K Capture Library Needs Upgrade 1 Ask Settings Pair Device Privacy Controls SOON Not found The item or page you requested doesn’t exist. Back to Library",
+        "h1": "AI Memory",
+        "hasAiSearchUnavailable": false,
+        "hasDeleteText": false,
+        "hasOllamaCommand": false,
+        "hasScopeHealth": false,
+        "title": "AI Memory",
+        "url": "/collections/missing-lstc-fixture-collection"
+      }
+    }
+  ],
+  "tagInteraction": {
+    "status": null,
+    "textHasAppliedTag": false,
+    "url": "/library"
+  },
+  "collectionInteraction": {
+    "status": "Added 2 selected items to “UX v2 Empty Fixture Collection”.",
+    "textHasAdded": true,
+    "url": "/library"
+  },
+  "deleteCheck": {
+    "sourceScanExpectedClean": true,
+    "visibleDeleteFocusableCount": 0,
+    "visibleDeleteTextInSelectedState": false
+  },
+  "focusableReport": [
+    {
+      "href": null,
+      "role": null,
+      "tag": "button",
+      "text": "Navigation",
+      "type": "button"
+    },
+    {
+      "href": null,
+      "role": null,
+      "tag": "button",
+      "text": "Search\n⌘K",
+      "type": "button"
+    },
+    {
+      "href": "/capture",
+      "role": null,
+      "tag": "a",
+      "text": "Capture",
+      "type": null
+    },
+    {
+      "href": "/library",
+      "role": null,
+      "tag": "a",
+      "text": "Library",
+      "type": null
+    },
+    {
+      "href": "/needs-upgrade",
+      "role": null,
+      "tag": "a",
+      "text": "Needs Upgrade\n1",
+      "type": null
+    },
+    {
+      "href": "/ask",
+      "role": null,
+      "tag": "a",
+      "text": "Ask",
+      "type": null
+    },
+    {
+      "href": "/settings",
+      "role": null,
+      "tag": "a",
+      "text": "Settings",
+      "type": null
+    },
+    {
+      "href": "/settings/device-pairing",
+      "role": null,
+      "tag": "a",
+      "text": "Pair Device",
+      "type": null
+    },
+    {
+      "href": "/needs-upgrade",
+      "role": null,
+      "tag": "a",
+      "text": "1 need upgrade",
+      "type": null
+    },
+    {
+      "href": "/capture",
+      "role": null,
+      "tag": "a",
+      "text": "Capture",
+      "type": null
+    },
+    {
+      "href": null,
+      "role": null,
+      "tag": "input",
+      "text": "Search your library...",
+      "type": "search"
+    },
+    {
+      "href": "/library",
+      "role": null,
+      "tag": "a",
+      "text": "All",
+      "type": null
+    },
+    {
+      "href": "/library?source=article",
+      "role": null,
+      "tag": "a",
+      "text": "Articles",
+      "type": null
+    },
+    {
+      "href": "/library?source=youtube",
+      "role": null,
+      "tag": "a",
+      "text": "YouTube",
+      "type": null
+    },
+    {
+      "href": "/library?source=pdf",
+      "role": null,
+      "tag": "a",
+      "text": "PDFs",
+      "type": null
+    },
+    {
+      "href": "/library?source=note",
+      "role": null,
+      "tag": "a",
+      "text": "Notes",
+      "type": null
+    },
+    {
+      "href": "/library?source=telegram",
+      "role": null,
+      "tag": "a",
+      "text": "Telegram",
+      "type": null
+    },
+    {
+      "href": "/library",
+      "role": null,
+      "tag": "a",
+      "text": "All",
+      "type": null
+    },
+    {
+      "href": "/library?quality=full_text",
+      "role": null,
+      "tag": "a",
+      "text": "Full text",
+      "type": null
+    },
+    {
+      "href": "/library?quality=transcript",
+      "role": null,
+      "tag": "a",
+      "text": "Transcript",
+      "type": null
+    },
+    {
+      "href": "/library?quality=needs_upgrade",
+      "role": null,
+      "tag": "a",
+      "text": "Needs upgrade",
+      "type": null
+    },
+    {
+      "href": null,
+      "role": null,
+      "tag": "input",
+      "text": "Select UX v2 library fixture article",
+      "type": "checkbox"
+    },
+    {
+      "href": "/items/af40505ffb0f52ab769d3614",
+      "role": null,
+      "tag": "a",
+      "text": "UX v2 library fixture article\nqueued\nArticle\n·\nvia Web\n·\nFull text\n·\n10m ago\n·\n127 chars",
+      "type": null
+    },
+    {
+      "href": null,
+      "role": null,
+      "tag": "input",
+      "text": "Select UX v2 selected ask fixture note",
+      "type": "checkbox"
+    },
+    {
+      "href": "/items/8637e2190546849848104f54",
+      "role": null,
+      "tag": "a",
+      "text": "UX v2 selected ask fixture note\nqueued\nNote\n·\nvia Web\n·\nFull text\n·\n20m ago\n·\n145 chars",
+      "type": null
+    },
+    {
+      "href": null,
+      "role": null,
+      "tag": "input",
+      "text": "Select UX v2 transcript fixture video",
+      "type": "checkbox"
+    },
+    {
+      "href": "/items/4d8cd93aa2840349011ec5a3",
+      "role": null,
+      "tag": "a",
+      "text": "UX v2 transcript fixture video\nqueued\nYouTube\n·\nvia Web\n·\nTranscript\n·\n50m ago\n·\n85 chars",
+      "type": null
+    },
+    {
+      "href": null,
+      "role": null,
+      "tag": "input",
+      "text": "Select UX v2 PDF fixture brief",
+      "type": "checkbox"
+    },
+    {
+      "href": "/items/d25967d32d98a1bf58d327b7",
+      "role": null,
+      "tag": "a",
+      "text": "UX v2 PDF fixture brief\nqueued\nPDF\n·\nvia Web\n·\nFull text\n·\n2h ago\n·\n92 chars",
+      "type": null
+    },
+    {
+      "href": null,
+      "role": null,
+      "tag": "input",
+      "text": "Select UX v2 weak metadata fixture",
+      "type": "checkbox"
+    },
+    {
+      "href": "/items/d3c3ef608697b47b5748d84d",
+      "role": null,
+      "tag": "a",
+      "text": "UX v2 weak metadata fixture\nqueued\nYouTube\n·\nvia Web\n·\nMetadata only\n·\n3h ago\n·\n46 chars\n·\n⚠ metadata only",
+      "type": null
+    },
+    {
+      "href": null,
+      "role": null,
+      "tag": "input",
+      "text": "Select UX v2 long title stress fixture for wrapping behavior across library rows, search rows, topic rows, and collection rows",
+      "type": "checkbox"
+    },
+    {
+      "href": "/items/5c43bb766c14033ed9bb05a7",
+      "role": null,
+      "tag": "a",
+      "text": "UX v2 long title stress fixture for wrapping behavior across library rows, search rows, topic rows, and collection rows\nqueued\nArticle\n·\nvia Web\n·\nFull text\n·\n6h ago\n·\n149 chars",
+      "type": null
+    },
+    {
+      "href": null,
+      "role": null,
+      "tag": "button",
+      "text": "Ask",
+      "type": "button"
+    },
+    {
+      "href": null,
+      "role": null,
+      "tag": "input",
+      "text": "tag name",
+      "type": "text"
+    },
+    {
+      "href": null,
+      "role": null,
+      "tag": "select",
+      "text": "+ collection\nUX v2 Empty Fixture Collection\nUX v2 Fixture Collection",
+      "type": null
+    },
+    {
+      "href": null,
+      "role": null,
+      "tag": "button",
+      "text": "Clear selection",
+      "type": "button"
+    }
+  ],
+  "logs": [
+    {
+      "level": "error",
+      "message": "Encountered a script tag while rendering React component. Scripts inside React components are never executed when rendering on the client. Consider using template tag instead (https://developer.mozilla.org/en-US/docs/Web/HTML/Element/template).",
+      "timestamp": "2026-06-15T17:20:25.586Z",
+      "url": "http://127.0.0.1:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js"
+    },
+    {
+      "level": "error",
+      "message": "Encountered a script tag while rendering React component. Scripts inside React components are never executed when rendering on the client. Consider using template tag instead (https://developer.mozilla.org/en-US/docs/Web/HTML/Element/template).",
+      "timestamp": "2026-06-15T17:20:28.480Z",
+      "url": "http://127.0.0.1:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js"
+    }
+  ]
+}

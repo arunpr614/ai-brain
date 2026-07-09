@@ -1,0 +1,36 @@
+{
+  "dbPath": "/tmp/ai-memory-integrated-web-qa.sqlite",
+  "tagName": "ux-v2-capture-settings",
+  "collectionId": "e2561cae2b4c15f05180f12b",
+  "itemIds": {
+    "duplicateExistingItem": "7d225ca31d329f1ab882a1fd",
+    "fullTextItem": "aefa9aba3ffff07490c312a0",
+    "metadataOnlyItem": "82291c6299a7f76ecb340e62",
+    "previewOnlyItem": "ad9ff590769da55b6b9169cc",
+    "pdfItem": "bf4978118c71aeb152899c6e",
+    "noteItem": "1b541826ccb21bd6b5f551ea",
+    "exportCollisionOne": "cb5b1193d1d030b6a5fc051b",
+    "exportCollisionTwo": "64c317cba0691d6b8555ff6a"
+  },
+  "routes": {
+    "captureUrlPrefilled": "/capture?url=https%3A%2F%2Fexample.test%2Fux-v2-capture-duplicate",
+    "capturePdf": "/capture?tab=pdf",
+    "captureNote": "/capture?tab=note",
+    "savedFullText": "/items/aefa9aba3ffff07490c312a0?capture_state=created_full_text",
+    "savedMetadataOnly": "/items/82291c6299a7f76ecb340e62?capture_state=created_metadata_only",
+    "savedPreviewOnly": "/items/ad9ff590769da55b6b9169cc?capture_state=created_preview_only",
+    "duplicateExisting": "/items/7d225ca31d329f1ab882a1fd?capture_state=duplicate_existing",
+    "savedWithIssue": "/items/aefa9aba3ffff07490c312a0?capture_state=error_with_saved_item",
+    "pdfSaved": "/items/bf4978118c71aeb152899c6e?capture_state=created_full_text",
+    "needsUpgrade": "/needs-upgrade",
+    "settings": "/settings",
+    "settingsTags": "/settings/tags",
+    "settingsCollections": "/settings/collections",
+    "devicePairing": "/settings/device-pairing",
+    "exportZip": "/api/library/export.zip",
+    "providerStatus": "/api/settings/provider-status"
+  },
+  "nonScreenshotStates": {
+    "failedWithoutSavedItem": "Validated by API/form behavior only because no item detail page exists when capture saves nothing."
+  }
+}
