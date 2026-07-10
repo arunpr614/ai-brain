@@ -28242,3 +28242,10 @@ Integrate the attested production source without flattening Recall history, impl
 - **Active branch:** `codex/manual-content-notes` at deployed source `8654f29`.
 - **Production:** Feature enabled and healthy; real remote note AI remains consent-blocked until in-product acknowledgement.
 - **Data hygiene:** Synthetic smoke content fully removed; owner-only backup and content-free reports retained.
+
+### Publication closeout
+
+- Published the 63-file canonical wiki from source commit `463c56f` onto wiki base `a9f2734` as wiki commit `70f6fa8` using a normal non-force push after a remote-SHA concurrency check.
+- Fresh-clone privacy and structure checks passed with 63 required/actual/reachable pages, and the fresh clone matched `docs/wiki/` byte-for-byte.
+- Verified the rendered public Manual Content Notes page exposes the current production SHA, product contract, privacy boundary, and production release evidence.
+- GitHub PR #10 is ready, mergeable, and its Agent documentation validation check is green.
