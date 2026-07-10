@@ -247,4 +247,15 @@ describe("proxy — unauthenticated fallthrough", () => {
     assert.match(loc, /next=%2Fitems%2Fabc/);
     assert.match(loc, /reason=session-expired/);
   });
+
+  it("keeps the complete path and query inside next without leaking duplicate unlock params", () => {
+    const res = proxy(mkReq("/items/abc?tab=notes&note_mode=focus"));
+    assert.equal(res.status, 307);
+    const loc = new URL(res.headers.get("location") ?? "http://localhost");
+    assert.equal(loc.pathname, "/unlock");
+    assert.equal(loc.searchParams.get("next"), "/items/abc?tab=notes&note_mode=focus");
+    assert.equal(loc.searchParams.get("reason"), "session-expired");
+    assert.equal(loc.searchParams.has("tab"), false);
+    assert.equal(loc.searchParams.has("note_mode"), false);
+  });
 });
