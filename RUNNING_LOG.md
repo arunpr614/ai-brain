@@ -6127,3 +6127,117 @@ Per #56 action item #1: get explicit user decision on revert-vs-keep for `a799b1
 - **Tracker versions:** PROJECT_TRACKER v0.9.6, ROADMAP_TRACKER v0.9.7, BACKLOG v7.9 — all pushed.
 - **Open carry-overs to v0.6.3:** T-11b legacy `BRAIN_LAN_TOKEN` drop (date gate passed; standalone candidate), BUG-ENRICH-UNREACHABLE-LOOP log hygiene, Mac better-sqlite3 ABI, `tsx` removal, CSP nonces, HARDEN-HETZNER-SSH.
 - **Next milestone:** v0.6.3 hygiene plan drafting. Bundling decision (one phase vs v0.6.3+v0.6.4 split) pending.
+
+---
+
+## 2026-06-28 21:23 - Feature council planning worktree created; AI Brain vs note.md research mapped into five v2 planning packages
+
+**Entry author:** AI agent (Codex) · **Triggered by:** Codex goal objective file at `/Users/arun.prakash/.codex/attachments/e5e24561-04a9-47e2-acdf-0955721c188b/goal-objective.md`
+
+### Planned since last entry
+
+The supplied goal asked for a clean worktree/branch from `main` for an AI Brain feature strategy and implementation-planning effort, with no production code changes. Required work: audit live AI Brain, review the `Research-note.md` source, inventory and gap-map feature ideas, run an AI Expert Brainstorm Council feature-by-feature, create v1 artifacts, run adversarial review, create v2 planning packages for approved features, link everything from a master index, and append a running-log entry after the milestone.
+
+### Done
+
+- Created a fresh clone/worktree from `https://github.com/arunpr614/ai-brain.git` because the existing `ai-brain` folder in the vault was part of the broad parent vault repo, not a clean ai-brain Git checkout.
+- Created branch/worktree `codex/ai-brain-feature-council-20260628` at `/Users/arun.prakash/Documents/arunvault/arun-cursor/Initiatives/Arun_AI_Projects/ai-brain-feature-council-20260628` from `main` (`2b4db95`).
+- Inspected the live app: Next.js 16/React 19/SQLite/sqlite-vec app with capture, enrichment, Ask, FTS/semantic/hybrid search, review queue, item detail, tags/collections, export, Chrome extension, Capacitor Android shell, Hetzner deploy, and backup/off-site backup surfaces.
+- Read the research source. Important correction: `/Users/arun.prakash/Documents/arunvault/arun-cursor/Initiatives/Arun_AI_Projects/Research-note.md` is a directory, not a single Markdown file. The relevant corpus is `docs/note-md-exploration`, with note.md feature research F01-F17, PRDs, architecture docs, implementation plans, screenshot register, and adversarial reviews.
+- Used three read-only sub-agents:
+  - Research inventory agent extracted note.md F01-F17 plus AI Brain UX gaps.
+  - Live feature audit agent confirmed implemented flows, data/API, partial areas, docs drift, and mobile/extension behavior.
+  - Technical architecture audit agent flagged auth guard drift, enrichment worker/batch ambiguity, capture orchestration duplication, hardcoded public host, migration-deploy proof risk, usage accounting drift, Android multi-PDF mismatch, and extension/Android test gaps.
+- Ran the feature council and approved five planning packages:
+  - `FCP-001 Capture Quality And Repair Center` (P0, proceed).
+  - `FCP-002 Source Workspace And Reading Studio Lite` (P1, proceed reduced scope).
+  - `FCP-003 Contextual Ask And Evidence Scan` (P1, proceed reduced scope).
+  - `FCP-004 Relationship Graph And Connection Map` (P2, proceed reduced scope).
+  - `FCP-005 AI Services And Privacy Trust Center` (P0, proceed).
+- Parked/rejected broader note.md imports: multi-vault project model, full Markdown/slash-command editor, Matrix extraction, Neo4j export, existing Markdown vault adoption, subscription/paywall.
+- Created `docs/feature-council/` with required core artifacts, v1 package drafts, adversarial review reports, v2 PRD/UX/technical packages, three HTML prototypes, master index, project tracker, and final handoff.
+
+### Cross-lane notes
+
+No production code files were modified. This branch is documentation/planning only under `docs/feature-council/` plus this root `RUNNING_LOG.md` entry. Existing prior running-log content was preserved; this entry was appended only.
+
+### Learned
+
+- The current GitHub `main` repo is more advanced than parts of `README.md`: it has Hetzner/cloud provider status, capture quality hardening, review queue, transcript recovery, extension, Android shell, semantic/hybrid search, and off-site backup. Treat README as partially stale for live-state decisions.
+- The strongest next strategy is trust-first, not feature-copying: capture quality, weak-source repair, source eligibility, provider readiness, source-controlled Ask, and diagnostics redaction should precede heavier note.md-style features.
+- note.md research is valuable but has a different center of gravity: research-writing workspace vs AI Brain's personal memory/capture system. Copying note.md wholesale would create scope and identity drift.
+- Future implementation should not begin until proof packets exist for shared auth guard, capture result DTO, enrichment ownership, migration artifact presence, provider-aware usage accounting, extension/Android verification, and diagnostics redaction.
+
+### Deployed / Released
+
+Nothing deployed. No code implemented. No commit, push, tag, or PR was created this session.
+
+### Documents created or updated this period
+
+**Created under `docs/feature-council/`:**
+- `MASTER_FEATURE_COUNCIL_INDEX.md` - artifact map and reading order.
+- `LIVE_FEATURE_AUDIT.md` - current app capabilities, gaps, data model, deployment/test constraints.
+- `RESEARCH_FEATURE_INVENTORY.md` - note.md F01-F17 and AI Brain UX ideas with evidence confidence and disposition.
+- `FEATURE_GAP_MATRIX.md` - research/live-app mapping and council target packages.
+- `FEATURE_COUNCIL_DECISION_LOG.md` - feature-by-feature council outcomes and decision records.
+- `PROJECT_TRACKER.md` - package status, priorities, blockers, risks, milestones.
+- `FINAL_HANDOFF_SUMMARY.md` - next-agent handoff and recommended next goal.
+- `00_CORE_ARTIFACTS_v1.md` plus `reviews/CORE_ARTIFACTS_V1_ADVERSARIAL_REVIEW_2026-06-28_21-23-55_IST.md`.
+- Five v1 PRDs, five v1 UX docs, five v1 technical plans.
+- Five package adversarial review reports.
+- Five v2 PRDs, five v2 UX docs, five v2 technical plans.
+- Three static prototypes: `prototypes/fcp001-capture-repair-center.html`, `prototypes/fcp003-contextual-ask-evidence.html`, `prototypes/fcp005-trust-center.html`.
+
+**Updated:**
+- `RUNNING_LOG.md` - appended this milestone entry.
+
+### Current remaining to-do
+
+1. If the next goal is implementation planning continuation, start with `docs/feature-council/MASTER_FEATURE_COUNCIL_INDEX.md` and then `FINAL_HANDOFF_SUMMARY.md`.
+2. Recommended first implementation-adjacent goal: FCP-001 proof packet for canonical capture result DTO, capture application service boundary, derived-state reset transaction, shared auth guard, and channel parity plan.
+3. Before any production code: resolve shared verified auth guard, realtime-vs-batch enrichment ownership, deploy migration-file presence check, provider-aware usage accounting, and extension/Android test strategy.
+4. If the user wants GitHub workflow, stage/commit/push this branch and open a PR; none of that has been done yet.
+
+### Open questions / decisions needed
+
+1. Should FCP-001 become the next active build phase, or should FCP-005 Trust Center ship first to unblock provider/privacy copy and diagnostics?
+2. Should Graph/FCP-004 wait until anchors and Evidence Scan exist, or should an outline-only derived graph ship earlier from tags/collections/semantic relatedness?
+3. Should existing Markdown vault adoption remain parked indefinitely, or should it get a separate proof-packet goal?
+
+### Session self-critique
+
+- The package is intentionally comprehensive but still high-level in some v2 artifacts. It is suitable for planning handoff, not direct code execution without proof packets.
+- I did not run build/tests because no production code changed. I did run file discovery and targeted reads; artifact validation still needs a grep/link consistency pass before PR.
+- The adversarial reviews are package-level reports over each feature's v1 PRD/UX/technical set, not one report per individual file. That is a pragmatic interpretation of the goal; if stricter artifact governance is required, split those reviews per file before PR.
+- I created HTML prototypes but did not screenshot them in browser. Treat them as static concept artifacts, not verified responsive UI.
+
+### Action items for the next agent
+
+1. Read `docs/feature-council/MASTER_FEATURE_COUNCIL_INDEX.md`.
+2. Validate artifact links and counts with `find docs/feature-council -type f | sort`.
+3. If asked to implement, do not jump into code; first create FCP-001 proof packets and update the tracker.
+4. If asked to publish, run a docs-only review, then stage/commit/push `docs/feature-council/` and `RUNNING_LOG.md` from branch `codex/ai-brain-feature-council-20260628`.
+5. Preserve the planning-only constraint unless the user opens a later implementation goal.
+
+### State snapshot
+
+- **Current phase / version:** Feature council planning package complete; no production implementation.
+- **Active branch:** `codex/ai-brain-feature-council-20260628`.
+- **Working tree:** Dirty with new `docs/feature-council/` artifacts and appended `RUNNING_LOG.md`.
+- **Deployed/runtime state:** Unchanged; no services started or deployed.
+- **Next milestone:** User review or publish this planning package; likely next build strategy is FCP-001 Capture Quality And Repair Center proof packet.
+
+## 2026-06-28 21:52 - Throwaway master prototype added for AI Brain feature-council review
+
+### Completed
+
+- Added a self-contained static prototype at `docs/feature-council/prototypes/master-ai-brain-prototype.html`.
+- Covered the combined review flow across Command Center, Capture Studio, Library/Review Queue, Repair Center, Source Workspace, Ask/Evidence, Relationship Graph, Trust Center, and Feedback Board.
+- Included browser-local review notes with export, screen-level context, simulated capture/repair/source-set/diagnostics interactions, and no backend dependency.
+- Added the master prototype to `docs/feature-council/MASTER_FEATURE_COUNCIL_INDEX.md`.
+
+### Validation
+
+- Parsed the embedded script with Node syntax checking.
+- Scanned the prototype for TODO/FIXME/TBD/PLACEHOLDER markers; none were found.
+- Kept the prototype as throwaway docs-only code; no production app files, runtime services, deployments, staging, commits, or pushes were touched.
