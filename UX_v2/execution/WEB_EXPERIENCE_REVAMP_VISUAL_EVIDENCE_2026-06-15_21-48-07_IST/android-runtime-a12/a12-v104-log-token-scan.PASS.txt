@@ -1,0 +1,1 @@
+PASS: no brain_token, 64-hex token, or Capacitor methodData token pattern found in post-fix logcat.

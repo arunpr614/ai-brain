@@ -36,6 +36,35 @@ test("classifies invalid provider responses", () => {
   );
 });
 
+test("classifies generic provider failures as unknown", () => {
+  assert.equal(classifyLlmError(new Error("unexpected provider payload")), "unknown");
+  assert.equal(classifyEmbedError(new Error("unexpected embed payload")), "unknown");
+});
+
+test("provider status report exposes deterministic unknown states", async () => {
+  const report = await getProviderStatusReport({
+    now: () => 3000,
+    llmProbe: async () => ({
+      provider: "anthropic",
+      model: "claude",
+      status: "unknown",
+      message: "Provider status could not be confirmed.",
+    }),
+    embedProbe: async () => ({
+      provider: "gemini",
+      model: "gemini",
+      status: "unconfigured",
+      message: "Provider credentials are not configured.",
+    }),
+  });
+
+  assert.equal(report.llm.status, "unknown");
+  assert.equal(report.llm.lastCheckedAt, 3000);
+  assert.equal(report.llm.lastSuccessAt, null);
+  assert.equal(report.embed.status, "unconfigured");
+  assert.equal(report.embed.lastSuccessAt, null);
+});
+
 test("provider status report caches probe results", async () => {
   let llmCalls = 0;
   let embedCalls = 0;

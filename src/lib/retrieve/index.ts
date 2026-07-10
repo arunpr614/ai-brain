@@ -9,7 +9,7 @@
  * by vec0's deterministic cosine + bm25 tie-break on the chunks_vec side.
  *
  * Scope: `itemId` restricts to a single item's chunks (per-item chat, T-13).
- * Undefined = library-wide.
+ * `itemIds` restricts to a selected set of items. Undefined = library-wide.
  *
  * Threshold: chunks below `minSimilarity` are dropped. Default 0 (no floor).
  * Generator (T-9) uses this to refuse to hallucinate when nothing relevant
@@ -25,6 +25,10 @@ export interface RetrievedChunk {
   chunk_id: string;
   item_id: string;
   item_title: string;
+  item_source_type?: string;
+  item_source_platform?: string | null;
+  item_capture_quality?: string | null;
+  item_extraction_warning?: string | null;
   body: string;
   /**
    * Cosine similarity derived from vec0's L2 distance on unit-normalised
@@ -39,6 +43,8 @@ export interface RetrieveOptions {
   topK?: number;
   /** Restrict to chunks of a single item. Omit for library-wide. */
   itemId?: string;
+  /** Restrict to chunks of selected items. Ignored when itemId is present. */
+  itemIds?: string[];
   /** Drop chunks with similarity < this value. Default 0 (no floor). */
   minSimilarity?: number;
   /** Inject embed fn for tests. */
@@ -95,13 +101,21 @@ export async function retrieve(
   // approach ranked globally and filtered post-hoc, which dropped a 1-chunk
   // item entirely whenever its single chunk missed the global top-K under
   // generic queries. `idx_chunks_item_id` covers the rowid subquery.
-  const rows = opts.itemId
+  const selectedItemIds = opts.itemId
+    ? [opts.itemId]
+    : Array.from(new Set((opts.itemIds ?? []).filter(Boolean))).slice(0, 50);
+
+  const rows = selectedItemIds.length > 0
     ? (db
         .prepare(
           `SELECT
              c.id              AS chunk_id,
              c.item_id         AS item_id,
              i.title           AS item_title,
+             i.source_type     AS item_source_type,
+             i.source_platform AS item_source_platform,
+             i.capture_quality AS item_capture_quality,
+             i.extraction_warning AS item_extraction_warning,
              c.body            AS body,
              (1 - (inner.distance * inner.distance) / 2) AS similarity
            FROM (
@@ -109,11 +123,11 @@ export async function retrieve(
              FROM chunks_vec
              WHERE embedding MATCH ?
                AND rowid IN (
-                 SELECT r.rowid
-                 FROM chunks_rowid r
-                 JOIN chunks c ON c.id = r.chunk_id
-                 WHERE c.item_id = ?
-               )
+               SELECT r.rowid
+               FROM chunks_rowid r
+               JOIN chunks c ON c.id = r.chunk_id
+               WHERE c.item_id IN (${selectedItemIds.map(() => "?").join(", ")})
+             )
              ORDER BY distance
              LIMIT ?
            ) AS inner
@@ -124,7 +138,7 @@ export async function retrieve(
         )
         .all(
           Buffer.from(vec.buffer),
-          opts.itemId,
+          ...selectedItemIds,
           BigInt(topK),
         ) as RetrievedChunk[])
     : (db
@@ -133,6 +147,10 @@ export async function retrieve(
              c.id              AS chunk_id,
              c.item_id         AS item_id,
              i.title           AS item_title,
+             i.source_type     AS item_source_type,
+             i.source_platform AS item_source_platform,
+             i.capture_quality AS item_capture_quality,
+             i.extraction_warning AS item_extraction_warning,
              c.body            AS body,
              (1 - (inner.distance * inner.distance) / 2) AS similarity
            FROM (

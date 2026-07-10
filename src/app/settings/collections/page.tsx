@@ -1,4 +1,6 @@
 import Link from "next/link";
+import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
 import { ArrowLeft, Sparkles, Trash2 } from "lucide-react";
 import { countItemsInCollection, listCollections } from "@/db/collections";
 import {
@@ -6,8 +8,14 @@ import {
   deleteCollectionAction,
   renameCollectionAction,
 } from "@/app/taxonomy-actions";
+import { verifySessionCookie } from "@/lib/auth";
 
-export default function CollectionsSettingsPage() {
+export default async function CollectionsSettingsPage() {
+  const c = await cookies();
+  if (!verifySessionCookie(c)) {
+    redirect("/unlock?next=%2Fsettings%2Fcollections");
+  }
+
   const collections = listCollections();
 
   return (
@@ -33,7 +41,7 @@ export default function CollectionsSettingsPage() {
         />
         <button
           type="submit"
-          className="h-9 rounded-md bg-[var(--accent-9)] px-4 text-sm font-medium text-[var(--on-accent)] hover:bg-[var(--accent-10)]"
+          className="h-9 rounded-md bg-[var(--action-primary-bg)] px-4 text-sm font-medium text-[var(--action-primary-fg)] hover:bg-[var(--action-primary-bg-hover)]"
         >
           Create
         </button>
@@ -55,7 +63,7 @@ export default function CollectionsSettingsPage() {
                   <input
                     name="name"
                     defaultValue={c.name}
-                    className="flex-1 rounded-sm border border-transparent bg-transparent px-1 py-0.5 text-sm text-[var(--text-primary)] hover:border-[var(--border)] focus:border-[var(--accent-9)]"
+                    className="flex-1 rounded-sm border border-transparent bg-transparent px-1 py-0.5 text-sm text-[var(--text-primary)] hover:border-[var(--border)] focus:border-[var(--action-primary-focus)]"
                   />
                   <button
                     type="submit"

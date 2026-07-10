@@ -3,7 +3,7 @@
  */
 import { type NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-import { SESSION_COOKIE } from "@/lib/auth";
+import { verifySessionCookie } from "@/lib/auth";
 import { deleteThread, getThread, renameThread } from "@/db/chat";
 
 export const runtime = "nodejs";
@@ -21,7 +21,7 @@ export async function GET(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ) {
-  if (!req.cookies.get(SESSION_COOKIE)?.value) return unauthed();
+  if (!verifySessionCookie(req.cookies)) return unauthed();
   const { id } = await params;
   const thread = getThread(id);
   if (!thread) return NextResponse.json({ error: "not found" }, { status: 404 });
@@ -32,7 +32,7 @@ export async function PATCH(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ) {
-  if (!req.cookies.get(SESSION_COOKIE)?.value) return unauthed();
+  if (!verifySessionCookie(req.cookies)) return unauthed();
   const { id } = await params;
   if (!getThread(id)) return NextResponse.json({ error: "not found" }, { status: 404 });
   let body;
@@ -52,7 +52,7 @@ export async function DELETE(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ) {
-  if (!req.cookies.get(SESSION_COOKIE)?.value) return unauthed();
+  if (!verifySessionCookie(req.cookies)) return unauthed();
   const { id } = await params;
   deleteThread(id);
   return NextResponse.json({ ok: true });

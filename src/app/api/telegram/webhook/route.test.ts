@@ -208,7 +208,7 @@ describe("telegram/webhook handleTelegramWebhookPost", () => {
     );
     assert.equal(res.status, 503);
     assert.equal(t.sendCalls.length, 1);
-    assert.equal(t.sendCalls[0].text, "Capture failed. I logged the details in Brain.");
+    assert.equal(t.sendCalls[0].text, "Capture failed. I logged the details in AI Memory.");
     assert.deepEqual(t.failedMarks, [{ updateId: 1, error: "telegram.capture.unhandled" }]);
   });
 

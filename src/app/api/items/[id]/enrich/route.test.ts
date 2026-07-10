@@ -15,6 +15,9 @@ import { TEST_DB_DIR } from "./route.test.setup";
 import { POST } from "./route";
 import { getDb } from "@/db/client";
 import { insertCaptured } from "@/db/items";
+import { issueSessionToken, setPin } from "@/lib/auth";
+
+setPin("1234");
 
 test.after(() => {
   try {
@@ -28,7 +31,7 @@ function mkReq(id: string, opts: { force?: string; auth?: boolean } = {}): NextR
   const url = new URL(`http://localhost/api/items/${id}/enrich`);
   if (opts.force) url.searchParams.set("force", opts.force);
   const headers = new Headers();
-  if (opts.auth !== false) headers.set("cookie", "brain-session=stub-session");
+  if (opts.auth !== false) headers.set("cookie", `brain-session=${issueSessionToken()}`);
   return new NextRequest(url, { method: "POST", headers });
 }
 

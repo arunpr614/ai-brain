@@ -30,6 +30,7 @@
 
 import { getDb, type ItemRow } from "@/db/client";
 import { attachTagToItem, clearAutoTagsForItem, upsertTag } from "@/db/tags";
+import { replaceTopicsForItem } from "@/db/topics";
 import {
   ENRICHMENT_SYSTEM,
   enrichmentUserPrompt,
@@ -281,6 +282,9 @@ function applySucceeded(
       const row = upsertTag(name, "auto");
       attachTagToItem(item.id, row.id);
     }
+    replaceTopicsForItem(item.id, output.tags, {
+      evidence: `Detected during enrichment for ${output.category}.`,
+    });
 
     db.prepare(
       `INSERT INTO llm_usage

@@ -18,6 +18,8 @@ import {
   setPin,
   verifyPin,
   issueSessionToken,
+  getSessionCookieValue,
+  verifySessionCookie,
   verifySessionToken,
 } from "./auth";
 import { cleanupTmpDb } from "./auth.test.setup";
@@ -85,6 +87,32 @@ describe("auth module", () => {
       const [, mac] = tok.split(".");
       const tampered = `${Date.now() + 3_600_000}.${mac}`;
       assert.equal(verifySessionToken(tampered), false);
+    });
+
+    it("verifySessionCookie verifies the cookie value, not only presence", () => {
+      assert.equal(
+        verifySessionCookie({
+          get: (name) =>
+            name === SESSION_COOKIE ? { value: issueSessionToken() } : undefined,
+        }),
+        true,
+      );
+      assert.equal(
+        verifySessionCookie({
+          get: (name) =>
+            name === SESSION_COOKIE ? { value: "stub-session" } : undefined,
+        }),
+        false,
+      );
+    });
+
+    it("getSessionCookieValue only reads the named session cookie", () => {
+      assert.equal(
+        getSessionCookieValue({
+          get: (name) => (name === SESSION_COOKIE ? { value: "signed" } : undefined),
+        }),
+        "signed",
+      );
     });
   });
 });

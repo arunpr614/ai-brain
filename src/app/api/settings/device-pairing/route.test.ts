@@ -35,7 +35,9 @@ describe("/api/settings/device-pairing", () => {
     const saved = process.env.BRAIN_API_TOKEN;
     delete process.env.BRAIN_API_TOKEN;
     try {
-      const res = await handleDevicePairingGet(mkReq({ cookie: "stub" }));
+      const res = await handleDevicePairingGet(mkReq({ cookie: "stub" }), {
+        verifySession: () => true,
+      });
       assert.equal(res.status, 503);
       const body = await res.json();
       assert.equal(body.error, "token_not_configured");
@@ -44,11 +46,26 @@ describe("/api/settings/device-pairing", () => {
     }
   });
 
-  it("returns 200 with url + token on valid auth", async () => {
+  it("returns 401 for an unsigned session cookie before returning token data", async () => {
     const saved = process.env.BRAIN_API_TOKEN;
     process.env.BRAIN_API_TOKEN = "f".repeat(64);
     try {
       const res = await handleDevicePairingGet(mkReq({ cookie: "stub" }));
+      assert.equal(res.status, 401);
+      assert.deepEqual(await res.json(), { error: "unauthenticated" });
+    } finally {
+      if (saved === undefined) delete process.env.BRAIN_API_TOKEN;
+      else process.env.BRAIN_API_TOKEN = saved;
+    }
+  });
+
+  it("returns 200 with url + token on valid auth", async () => {
+    const saved = process.env.BRAIN_API_TOKEN;
+    process.env.BRAIN_API_TOKEN = "f".repeat(64);
+    try {
+      const res = await handleDevicePairingGet(mkReq({ cookie: "stub" }), {
+        verifySession: () => true,
+      });
       assert.equal(res.status, 200);
       assert.equal(res.headers.get("cache-control"), "no-store, no-cache, must-revalidate");
       assert.equal(res.headers.get("pragma"), "no-cache");
@@ -71,6 +88,7 @@ describe("/api/settings/device-pairing", () => {
 
   it("returns a temporary Android code on valid auth", async () => {
     const res = await handleDevicePairingPost(mkReq({ cookie: "stub" }), {
+      verifySession: () => true,
       createCode: () => ({
         ok: true,
         code: "ABCD-EFGH",
@@ -90,6 +108,7 @@ describe("/api/settings/device-pairing", () => {
 
   it("returns 503 when code creation cannot load the API token", async () => {
     const res = await handleDevicePairingPost(mkReq({ cookie: "stub" }), {
+      verifySession: () => true,
       createCode: () => ({ ok: false, reason: "token_not_configured" }),
     });
     assert.equal(res.status, 503);

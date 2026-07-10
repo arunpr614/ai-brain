@@ -1,0 +1,163 @@
+{
+  "checkedAt": "2026-06-17T12:05:03.206Z",
+  "environment": {
+    "packageName": "com.arunprakash.brain",
+    "apkVersion": "1.0.7",
+    "apkVersionCode": 8,
+    "androidVersion": "16",
+    "webview": "Chrome/133.0.6943.137",
+    "osNightMode": "yes",
+    "screenshotNote": "No Android Library screenshots captured; protected Library evidence is redacted DOM/route state from the emulator WebView."
+  },
+  "issueCount": 0,
+  "issues": [],
+  "settingsInitial": {
+    "href": "https://brain.arunp.in/settings",
+    "width": 412,
+    "height": 840,
+    "theme": "light",
+    "colorScheme": "light",
+    "hasSystemText": false,
+    "hasLightFirstCopy": true,
+    "controls": [
+      {
+        "ariaLabel": "Light theme",
+        "checked": "true",
+        "visible": true
+      },
+      {
+        "ariaLabel": "Dark theme",
+        "checked": "false",
+        "visible": true
+      }
+    ]
+  },
+  "settingsAfterDark": {
+    "theme": "dark",
+    "darkChecked": "true"
+  },
+  "settingsAfterLightRestore": {
+    "theme": "light",
+    "lightChecked": "true"
+  },
+  "libraryInitial": {
+    "width": 412,
+    "height": 840,
+    "theme": "light",
+    "cardCount": 34,
+    "visibleCheckboxes": 34,
+    "checkedVisible": 0,
+    "rows": [
+      {
+        "index": 0,
+        "mobileDisplay": "block",
+        "desktopDisplay": "none",
+        "mobileVisible": true,
+        "desktopVisible": false,
+        "hasVisibleCheckbox": true,
+        "titleHeight": 41,
+        "metadataHeight": 42,
+        "metadataHasSourceSvg": true,
+        "metadataTextSample": "Substack Metadata only enrichment failed 15m ago"
+      },
+      {
+        "index": 1,
+        "mobileDisplay": "block",
+        "desktopDisplay": "none",
+        "mobileVisible": true,
+        "desktopVisible": false,
+        "hasVisibleCheckbox": true,
+        "titleHeight": 41,
+        "metadataHeight": 22,
+        "metadataHasSourceSvg": true,
+        "metadataTextSample": "Substack Full text enrichment failed 21m ago"
+      },
+      {
+        "index": 2,
+        "mobileDisplay": "block",
+        "desktopDisplay": "none",
+        "mobileVisible": true,
+        "desktopVisible": false,
+        "hasVisibleCheckbox": true,
+        "titleHeight": 41,
+        "metadataHeight": 42,
+        "metadataHasSourceSvg": true,
+        "metadataTextSample": "YouTube Metadata only enrichment failed 9h ago"
+      },
+      {
+        "index": 3,
+        "mobileDisplay": "block",
+        "desktopDisplay": "none",
+        "mobileVisible": true,
+        "desktopVisible": false,
+        "hasVisibleCheckbox": true,
+        "titleHeight": 41,
+        "metadataHeight": 42,
+        "metadataHasSourceSvg": true,
+        "metadataTextSample": "YouTube Metadata only enrichment failed 17h ago"
+      },
+      {
+        "index": 4,
+        "mobileDisplay": "block",
+        "desktopDisplay": "none",
+        "mobileVisible": true,
+        "desktopVisible": false,
+        "hasVisibleCheckbox": true,
+        "titleHeight": 41,
+        "metadataHeight": 42,
+        "metadataHasSourceSvg": true,
+        "metadataTextSample": "YouTube Metadata only enrichment failed 18h ago"
+      },
+      {
+        "index": 5,
+        "mobileDisplay": "block",
+        "desktopDisplay": "none",
+        "mobileVisible": true,
+        "desktopVisible": false,
+        "hasVisibleCheckbox": true,
+        "titleHeight": 41,
+        "metadataHeight": 42,
+        "metadataHasSourceSvg": true,
+        "metadataTextSample": "LinkedIn Metadata only enrichment failed 21h ago"
+      },
+      {
+        "index": 6,
+        "mobileDisplay": "block",
+        "desktopDisplay": "none",
+        "mobileVisible": true,
+        "desktopVisible": false,
+        "hasVisibleCheckbox": true,
+        "titleHeight": 41,
+        "metadataHeight": 22,
+        "metadataHasSourceSvg": true,
+        "metadataTextSample": "Article Full text enrichment failed 1d ago"
+      },
+      {
+        "index": 7,
+        "mobileDisplay": "block",
+        "desktopDisplay": "none",
+        "mobileVisible": true,
+        "desktopVisible": false,
+        "hasVisibleCheckbox": true,
+        "titleHeight": 41,
+        "metadataHeight": 22,
+        "metadataHasSourceSvg": true,
+        "metadataTextSample": "Article Full text enrichment failed 1d ago"
+      }
+    ],
+    "hrefPattern": "https://brain.arunp.in/library"
+  },
+  "selectionAfterTwo": {
+    "checkedVisible": 2,
+    "hasMobileSelectionToolbar": true,
+    "toolbarText": "2 selected Ask"
+  },
+  "askSelectedRoute": {
+    "hasSelectedCopy": true,
+    "hrefPattern": "https://brain.arunp.in/ask?scope=selected&ids=[redacted]"
+  },
+  "cardNavigation": {
+    "hasDetailChrome": true,
+    "hrefPattern": "https://brain.arunp.in/items/[redacted]"
+  }
+}

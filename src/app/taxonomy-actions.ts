@@ -27,6 +27,7 @@ export async function createCollectionAction(formData: FormData): Promise<void> 
   createCollection(parsed.data.name);
   revalidatePath("/settings/collections");
   revalidatePath("/");
+  revalidatePath("/library");
 }
 
 export async function renameCollectionAction(formData: FormData): Promise<void> {
@@ -38,6 +39,7 @@ export async function renameCollectionAction(formData: FormData): Promise<void> 
   renameCollection(parsed.data.id, parsed.data.name);
   revalidatePath("/settings/collections");
   revalidatePath("/");
+  revalidatePath("/library");
 }
 
 export async function deleteCollectionAction(formData: FormData): Promise<void> {
@@ -46,6 +48,7 @@ export async function deleteCollectionAction(formData: FormData): Promise<void> 
   deleteCollection(parsed.data.id);
   revalidatePath("/settings/collections");
   revalidatePath("/");
+  revalidatePath("/library");
 }
 
 // --- Tag management ---
@@ -59,6 +62,7 @@ export async function renameTagAction(formData: FormData): Promise<void> {
   renameTag(parsed.data.id, parsed.data.name);
   revalidatePath("/settings/tags");
   revalidatePath("/");
+  revalidatePath("/library");
 }
 
 export async function deleteTagAction(formData: FormData): Promise<void> {
@@ -67,6 +71,7 @@ export async function deleteTagAction(formData: FormData): Promise<void> {
   deleteTag(parsed.data.id);
   revalidatePath("/settings/tags");
   revalidatePath("/");
+  revalidatePath("/library");
 }
 
 export async function promoteTagAction(formData: FormData): Promise<void> {
@@ -74,6 +79,7 @@ export async function promoteTagAction(formData: FormData): Promise<void> {
   if (!parsed.success) throw new Error("invalid id");
   promoteTagToManual(parsed.data.id);
   revalidatePath("/settings/tags");
+  revalidatePath("/library");
 }
 
 // --- Per-item tag/collection assignment ---
@@ -92,6 +98,7 @@ export async function addTagToItemAction(formData: FormData): Promise<void> {
   const tag = upsertTag(parsed.data.tag_name, "manual");
   attachTagToItem(parsed.data.item_id, tag.id);
   revalidatePath(`/items/${parsed.data.item_id}`);
+  revalidatePath("/library");
 }
 
 const ItemTagRef = z.object({
@@ -107,6 +114,7 @@ export async function removeTagFromItemAction(formData: FormData): Promise<void>
   if (!parsed.success) throw new Error("invalid");
   detachTagFromItem(parsed.data.item_id, parsed.data.tag_id);
   revalidatePath(`/items/${parsed.data.item_id}`);
+  revalidatePath("/library");
 }
 
 const ItemCollection = z.object({
@@ -122,6 +130,7 @@ export async function attachCollectionAction(formData: FormData): Promise<void> 
   if (!parsed.success) throw new Error("invalid");
   attachItemToCollection(parsed.data.item_id, parsed.data.collection_id);
   revalidatePath(`/items/${parsed.data.item_id}`);
+  revalidatePath("/library");
 }
 
 export async function detachCollectionAction(formData: FormData): Promise<void> {
@@ -132,4 +141,5 @@ export async function detachCollectionAction(formData: FormData): Promise<void> 
   if (!parsed.success) throw new Error("invalid");
   detachItemFromCollection(parsed.data.item_id, parsed.data.collection_id);
   revalidatePath(`/items/${parsed.data.item_id}`);
+  revalidatePath("/library");
 }

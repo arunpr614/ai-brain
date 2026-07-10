@@ -52,7 +52,11 @@ Before code:
 
 Any unresolved merge behavior, failed baseline test, or unexplained `rsync --delete` removal blocks feature implementation/release as applicable.
 
-## 3. Migration 021 — canonical notes and causal state
+## 3. Migration 021 integration hardening, then Migration 022 canonical notes
+
+The integrated baseline exposed a real sibling-branch ordering defect: `020_recall_sync` rebuilds `items` after `017_transcript_recovery`, dropping its weak-YouTube enqueue trigger. `021_restore_transcript_recovery_trigger.sql` recreates/backfills that trigger and has a regression test. It is deliberately isolated from F08 schema so production/main behavior is repaired before note tables are introduced.
+
+`022_item_notes.sql` then adds the canonical note model below.
 
 Exact SQL follows repository conventions, but the required schema is:
 
@@ -152,7 +156,7 @@ Add note FTS insert/update/delete triggers over `content_text`. Byte limit (100 
 - Before accepting `Use saved version`, retain the local conflict record until the user explicitly discards or its declared 30-day local retention expires; Copy is always available.
 - Minimal recent versions exposes manual, timed (≥5 min), pre-clear, conflict-server checkpoint, and restore checkpoints. Keep newest 25 and ≤30 days. Delete purges revisions; backups remain subject to backup retention copy.
 
-## 4. Migration 022 — honest source-aware chunks
+## 4. Migration 023 — honest source-aware chunks
 
 Rebuild `chunks` with:
 
@@ -320,8 +324,8 @@ Migrations still auto-apply at app startup. Therefore deploy runs a separate man
 Rollout:
 
 1. integrated baseline green;
-2. migrations/repositories/APIs/editor/search tests on disposable DB;
-3. latest production snapshot copy migration + audit/repair rehearsal;
+2. migrations 021/022/023, repositories, APIs, editor, and search tests on disposable DB;
+3. latest production snapshot copy migration 021/022/023 + audit/repair rehearsal;
 4. backup live DB; deploy flags off; startup migrations; integrity/Recall/health;
 5. controlled synthetic UI/write + exact search; conflict/recovery/delete/export/cache cleanup;
 6. approved live vec repair/reservation if required; enable worker only for synthetic item; Ask/Related/opt-out/cleanup;
@@ -333,7 +337,7 @@ Rollback: worker off, UI/write off, retain canonical rows; purge only manual-not
 
 Final paths follow the integrated tree. Expected additions/modifications:
 
-- migrations 021/022 and snapshot/fresh tests;
+- migration 021 trigger restoration plus F08 migrations 022/023 and snapshot/fresh tests;
 - `src/db/item-notes.ts`, source-aware `chunks.ts`, explicit vector cleanup, item/chat deletion;
 - `src/lib/notes/{markdown,save,local-journal,autosave,note-index,provider-policy}.ts`;
 - note worker integrated into queue coordinator;

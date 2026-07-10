@@ -1,15 +1,14 @@
 import { cookies, headers } from "next/headers";
 import { redirect } from "next/navigation";
-import { SESSION_COOKIE } from "@/lib/auth";
-import { loadApiToken } from "@/lib/auth/bearer";
+import { verifySessionCookie } from "@/lib/auth";
 import { BRAIN_TUNNEL_URL } from "@/lib/config/tunnel";
-import { AndroidPairingCodeActions, DevicePairingActions } from "./actions-client";
+import { AdvancedTokenSetup, AndroidPairingCodeActions } from "./actions-client";
 
 export const dynamic = "force-dynamic";
 
 export default async function DevicePairingPage() {
   const c = await cookies();
-  if (!c.get(SESSION_COOKIE)?.value) {
+  if (!verifySessionCookie(c)) {
     redirect("/unlock?next=/settings/device-pairing");
   }
   // Touch headers so this page is always rendered per-request; the
@@ -17,32 +16,16 @@ export default async function DevicePairingPage() {
   // explicit in the server bundle.
   await headers();
 
-  const token = loadApiToken();
-
-  if (!token) {
-    return (
-      <div className="mx-auto max-w-[680px] px-8 py-10">
-        <h1 className="mb-4 text-[30px] font-semibold tracking-[-0.01em] text-[var(--text-primary)]">
-          Device pairing
-        </h1>
-        <div className="rounded-lg border border-[var(--border)] bg-[var(--surface)] p-4 text-sm text-[var(--text-secondary)]">
-          <p>
-            The bearer token is not configured. Restart the server with{" "}
-            <code className="font-mono">npm run dev</code> to auto-generate, then reload this page.
-          </p>
-        </div>
-      </div>
-    );
-  }
-
   return (
-    <div className="mx-auto max-w-[680px] px-8 py-10">
-      <h1 className="mb-2 text-[30px] font-semibold leading-[1.2] tracking-[-0.01em] text-[var(--text-primary)]">
+    <div className="mx-auto max-w-[680px] px-5 pb-28 pt-8 md:px-8 md:pb-10 md:pt-10">
+      <h1 className="mb-2 text-[30px] font-semibold leading-[1.2] text-[var(--text-primary)]">
         Device pairing
       </h1>
       <p className="mb-8 text-sm text-[var(--text-secondary)]">
-        Your Brain is accessible at{" "}
-        <code className="font-mono text-[var(--text-primary)]">{BRAIN_TUNNEL_URL}</code>{" "}
+        AI Memory is accessible at{" "}
+        <code className="break-all font-mono text-[var(--text-primary)]">
+          {BRAIN_TUNNEL_URL}
+        </code>{" "}
         via the Cloudflare tunnel. Pair Android with a short-lived code, or use
         the advanced token flow for the Chrome extension.
       </p>
@@ -71,7 +54,7 @@ export default async function DevicePairingPage() {
         extension publishes an options page at a known
         chrome-extension://<id>/options.html the link will be updated —
         but for a locally-loaded unpacked extension, chrome://extensions
-        is the canonical entry point (click "Details" on the Brain row →
+        is the canonical entry point (click "Details" on the AI Memory row →
         "Extension options").
       */}
       <section className="mb-10">
@@ -81,7 +64,7 @@ export default async function DevicePairingPage() {
         <div className="rounded-lg border border-[var(--border)] bg-[var(--surface)] p-4">
           <ol className="mb-4 list-decimal space-y-1.5 pl-5 text-xs text-[var(--text-secondary)]">
             <li>
-              Install the Brain extension (see{" "}
+              Install the AI Memory extension (see{" "}
               <code className="font-mono text-[var(--text-primary)]">
                 extension/README.md
               </code>{" "}
@@ -95,18 +78,18 @@ export default async function DevicePairingPage() {
               >
                 chrome://extensions
               </a>
-              , find <strong>Brain</strong>, click <strong>Details → Extension options</strong>.
+              , find <strong>AI Memory</strong>, click <strong>Details → Extension options</strong>.
             </li>
             <li>
-              Set <strong>Brain URL</strong> to{" "}
-              <code className="font-mono text-[var(--text-primary)]">
+              Set <strong>AI Memory URL</strong> to{" "}
+              <code className="break-all font-mono text-[var(--text-primary)]">
                 {BRAIN_TUNNEL_URL}
               </code>{" "}
-              and paste the token below into the <strong>Token</strong> field.
+              and copy the token from advanced setup into the <strong>Token</strong> field.
             </li>
             <li>Click <strong>Test connection</strong>, then <strong>Save</strong>.</li>
           </ol>
-          <DevicePairingActions token={token} />
+          <AdvancedTokenSetup />
           <p className="mt-3 text-xs text-[var(--text-muted)]">
             Chrome does not allow a website to open an extension&apos;s options
             page automatically; <code className="font-mono">chrome://</code>{" "}

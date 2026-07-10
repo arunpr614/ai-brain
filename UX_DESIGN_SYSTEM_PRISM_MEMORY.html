@@ -1,0 +1,1145 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>AI Brain Design System - Prism Memory</title>
+    <style>
+      :root {
+        --ink-950: #14213d;
+        --ink-800: #24344f;
+        --surface: #fbfcfe;
+        --panel: #ffffff;
+        --line: #d7dfea;
+        --muted: #667085;
+        --ruby: #e63b6f;
+        --coral: #f26a4f;
+        --amber: #f6b73c;
+        --citrine: #f7e463;
+        --lime: #a7d957;
+        --teal: #18a999;
+        --cyan: #42c7e8;
+        --azure: #2f80ed;
+        --violet: #7e5bef;
+        --magenta: #c64acb;
+        --shadow: 0 16px 44px rgba(20, 33, 61, 0.08);
+        --radius-card: 6px;
+        --radius-control: 4px;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html {
+        scroll-behavior: smooth;
+      }
+
+      body {
+        margin: 0;
+        background: var(--surface);
+        color: var(--ink-950);
+        font-family:
+          Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
+          "Segoe UI", sans-serif;
+        line-height: 1.5;
+      }
+
+      a {
+        color: inherit;
+      }
+
+      .page {
+        display: grid;
+        grid-template-columns: 280px minmax(0, 1fr);
+        min-height: 100vh;
+      }
+
+      .sidebar {
+        position: sticky;
+        top: 0;
+        height: 100vh;
+        border-right: 1px solid var(--line);
+        background: rgba(255, 255, 255, 0.92);
+        backdrop-filter: blur(16px);
+        padding: 24px 18px;
+        overflow-y: auto;
+      }
+
+      .brand-lockup {
+        display: grid;
+        grid-template-columns: 48px 1fr;
+        gap: 12px;
+        align-items: center;
+        padding-bottom: 20px;
+        border-bottom: 1px solid var(--line);
+        margin-bottom: 20px;
+      }
+
+      .mini-mark {
+        width: 48px;
+        height: 48px;
+        border: 3px solid var(--ink-950);
+        clip-path: polygon(50% 0, 95% 25%, 95% 75%, 50% 100%, 5% 75%, 5% 25%);
+        background:
+          linear-gradient(135deg, var(--ruby) 0 18%, transparent 18%),
+          linear-gradient(40deg, transparent 0 24%, var(--amber) 24% 43%, transparent 43%),
+          linear-gradient(155deg, transparent 0 40%, var(--lime) 40% 58%, transparent 58%),
+          linear-gradient(215deg, transparent 0 50%, var(--cyan) 50% 72%, transparent 72%),
+          linear-gradient(315deg, transparent 0 62%, var(--violet) 62% 82%, var(--magenta) 82%);
+        box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.32);
+      }
+
+      .brand-lockup h1 {
+        margin: 0;
+        font-size: 18px;
+        line-height: 1.1;
+      }
+
+      .brand-lockup p {
+        margin: 4px 0 0;
+        color: var(--muted);
+        font-size: 12px;
+      }
+
+      .nav {
+        display: grid;
+        gap: 4px;
+      }
+
+      .nav a {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 9px 10px;
+        border-radius: var(--radius-control);
+        color: var(--ink-800);
+        font-size: 13px;
+        font-weight: 650;
+        text-decoration: none;
+      }
+
+      .nav a:hover {
+        background: #eef3f9;
+      }
+
+      .nav-index {
+        color: var(--muted);
+        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+        font-size: 11px;
+        font-weight: 700;
+      }
+
+      .main {
+        min-width: 0;
+      }
+
+      .hero {
+        position: relative;
+        display: grid;
+        grid-template-columns: minmax(0, 1.1fr) 420px;
+        gap: 48px;
+        align-items: center;
+        padding: 56px 64px 40px;
+        border-bottom: 1px solid var(--line);
+        background:
+          linear-gradient(180deg, rgba(255, 255, 255, 0.85), rgba(251, 252, 254, 0.96)),
+          linear-gradient(90deg, rgba(66, 199, 232, 0.08), rgba(126, 91, 239, 0.06));
+      }
+
+      .eyebrow {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 18px;
+        color: var(--ink-800);
+        font-size: 12px;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+
+      .eyebrow::before {
+        content: "";
+        width: 30px;
+        height: 4px;
+        border-radius: 2px;
+        background: linear-gradient(90deg, var(--ruby), var(--amber), var(--teal), var(--violet));
+      }
+
+      .hero h2 {
+        margin: 0;
+        max-width: 780px;
+        font-size: 42px;
+        line-height: 1.04;
+        letter-spacing: 0;
+      }
+
+      .hero-copy {
+        margin: 22px 0 0;
+        max-width: 740px;
+        color: var(--ink-800);
+        font-size: 18px;
+        line-height: 1.65;
+      }
+
+      .hero-card {
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: var(--panel);
+        box-shadow: var(--shadow);
+        padding: 18px;
+      }
+
+      .hero-card img {
+        display: block;
+        width: 100%;
+        aspect-ratio: 1;
+        object-fit: contain;
+      }
+
+      .caption {
+        margin: 12px 0 0;
+        color: var(--muted);
+        font-size: 12px;
+      }
+
+      .content {
+        padding: 44px 64px 80px;
+      }
+
+      .section {
+        margin: 0 0 44px;
+        padding: 28px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: var(--panel);
+        box-shadow: 0 6px 22px rgba(20, 33, 61, 0.04);
+      }
+
+      .section-head {
+        display: grid;
+        grid-template-columns: auto minmax(0, 1fr);
+        gap: 14px;
+        align-items: baseline;
+        margin-bottom: 22px;
+      }
+
+      .section-number {
+        color: var(--muted);
+        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+        font-size: 12px;
+        font-weight: 800;
+      }
+
+      .section h2 {
+        margin: 0;
+        font-size: 24px;
+        line-height: 1.2;
+      }
+
+      .section-intro {
+        margin: -8px 0 24px 42px;
+        max-width: 760px;
+        color: var(--ink-800);
+        font-size: 14px;
+      }
+
+      .grid-2,
+      .grid-3,
+      .grid-4 {
+        display: grid;
+        gap: 16px;
+      }
+
+      .grid-2 {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .grid-3 {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+
+      .grid-4 {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+      }
+
+      .principle-card,
+      .component-card,
+      .rule-card,
+      .sample-card {
+        border: 1px solid var(--line);
+        border-radius: var(--radius-card);
+        background: var(--surface);
+        padding: 16px;
+      }
+
+      .principle-card strong,
+      .component-card strong,
+      .rule-card strong {
+        display: block;
+        margin-bottom: 6px;
+        font-size: 14px;
+      }
+
+      .principle-card p,
+      .component-card p,
+      .rule-card p {
+        margin: 0;
+        color: var(--muted);
+        font-size: 13px;
+      }
+
+      .prism-strip {
+        display: grid;
+        grid-template-columns: repeat(8, minmax(0, 1fr));
+        height: 6px;
+        overflow: hidden;
+        border-radius: 3px;
+        margin: 20px 0;
+      }
+
+      .prism-strip span {
+        transform: skewX(-18deg) scaleX(1.2);
+      }
+
+      .swatch-grid {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 14px;
+      }
+
+      .swatch {
+        overflow: hidden;
+        border: 1px solid var(--line);
+        border-radius: var(--radius-card);
+        background: var(--panel);
+      }
+
+      .swatch-color {
+        height: 88px;
+        border-bottom: 1px solid rgba(20, 33, 61, 0.08);
+      }
+
+      .swatch-meta {
+        padding: 12px;
+      }
+
+      .swatch-name {
+        display: flex;
+        justify-content: space-between;
+        gap: 12px;
+        margin-bottom: 4px;
+        font-size: 13px;
+        font-weight: 800;
+      }
+
+      .hex {
+        color: var(--muted);
+        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+        font-size: 11px;
+        font-weight: 700;
+      }
+
+      .swatch-use {
+        margin: 0;
+        min-height: 34px;
+        color: var(--muted);
+        font-size: 12px;
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        overflow: hidden;
+        border: 1px solid var(--line);
+        border-radius: var(--radius-card);
+        font-size: 13px;
+      }
+
+      th,
+      td {
+        padding: 12px;
+        border-bottom: 1px solid var(--line);
+        text-align: left;
+        vertical-align: top;
+      }
+
+      th {
+        background: #eef3f9;
+        color: var(--ink-800);
+        font-size: 12px;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+      }
+
+      tr:last-child td {
+        border-bottom: 0;
+      }
+
+      .chip-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+
+      .chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        min-height: 28px;
+        padding: 5px 9px;
+        border: 1px solid currentColor;
+        border-radius: var(--radius-control);
+        background: var(--panel);
+        color: var(--ink-800);
+        font-size: 12px;
+        font-weight: 750;
+        white-space: nowrap;
+      }
+
+      .chip.fill {
+        color: #fff;
+        border-color: transparent;
+      }
+
+      .dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: currentColor;
+      }
+
+      .type-scale {
+        display: grid;
+        gap: 12px;
+      }
+
+      .type-row {
+        display: grid;
+        grid-template-columns: 160px minmax(0, 1fr);
+        gap: 20px;
+        align-items: baseline;
+        padding: 14px 0;
+        border-bottom: 1px solid var(--line);
+      }
+
+      .type-row:last-child {
+        border-bottom: 0;
+      }
+
+      .type-label {
+        color: var(--muted);
+        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+        font-size: 12px;
+      }
+
+      .shape-demo {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 14px;
+      }
+
+      .radius-box {
+        width: 120px;
+        min-height: 80px;
+        border: 1px solid var(--line);
+        background: var(--surface);
+        padding: 12px;
+        font-size: 12px;
+      }
+
+      .button-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+      }
+
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        min-height: 36px;
+        padding: 8px 12px;
+        border: 1px solid var(--line);
+        border-radius: var(--radius-control);
+        background: var(--panel);
+        color: var(--ink-950);
+        font-size: 13px;
+        font-weight: 800;
+      }
+
+      .btn.primary {
+        border-color: var(--ink-950);
+        background: var(--ink-950);
+        color: #fff;
+      }
+
+      .btn.destructive {
+        border-color: var(--ruby);
+        background: var(--ruby);
+        color: #fff;
+      }
+
+      .btn.tertiary {
+        border-color: transparent;
+        background: transparent;
+      }
+
+      .input-demo {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        min-height: 40px;
+        border: 1px solid var(--line);
+        border-radius: var(--radius-control);
+        background: var(--panel);
+        color: var(--muted);
+        padding: 0 12px;
+        font-size: 13px;
+      }
+
+      .capture-card {
+        border: 2px solid rgba(230, 59, 111, 0.3);
+        border-radius: var(--radius-card);
+        background: rgba(230, 59, 111, 0.04);
+        padding: 16px;
+      }
+
+      .ask-card {
+        border: 1px solid var(--line);
+        border-radius: var(--radius-card);
+        background: var(--panel);
+        padding: 16px;
+      }
+
+      .citation {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 18px;
+        height: 18px;
+        border-radius: 4px;
+        background: rgba(126, 91, 239, 0.12);
+        color: var(--violet);
+        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+        font-size: 11px;
+        font-weight: 900;
+      }
+
+      .web-preview {
+        display: grid;
+        grid-template-columns: 230px minmax(0, 1fr);
+        min-height: 500px;
+        overflow: hidden;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: var(--panel);
+      }
+
+      .web-nav {
+        border-right: 1px solid var(--line);
+        background: var(--surface);
+        padding: 14px;
+      }
+
+      .web-main {
+        display: grid;
+        grid-template-columns: 280px minmax(0, 1fr);
+        min-width: 0;
+      }
+
+      .web-list {
+        border-right: 1px solid var(--line);
+        background: #fff;
+      }
+
+      .web-detail {
+        min-width: 0;
+        padding: 24px;
+      }
+
+      .nav-item,
+      .item-row {
+        border-radius: var(--radius-control);
+        padding: 10px;
+        font-size: 13px;
+      }
+
+      .nav-item.active {
+        background: var(--ink-950);
+        color: #fff;
+      }
+
+      .item-row {
+        position: relative;
+        border-bottom: 1px solid var(--line);
+        border-radius: 0;
+        background: var(--panel);
+      }
+
+      .item-row.active::before {
+        content: "";
+        position: absolute;
+        inset: 0 auto 0 0;
+        width: 4px;
+        background: var(--azure);
+      }
+
+      .item-row h4 {
+        margin: 8px 0 4px;
+        font-size: 14px;
+      }
+
+      .item-row p,
+      .web-detail p {
+        color: var(--muted);
+        font-size: 13px;
+      }
+
+      .phone-wrap {
+        display: flex;
+        justify-content: center;
+      }
+
+      .phone {
+        width: 330px;
+        height: 650px;
+        overflow: hidden;
+        border: 8px solid var(--ink-950);
+        border-radius: 38px;
+        background: var(--surface);
+        box-shadow: var(--shadow);
+      }
+
+      .phone-status,
+      .phone-header,
+      .phone-bottom {
+        background: var(--panel);
+        border-bottom: 1px solid var(--line);
+        padding: 10px 16px;
+      }
+
+      .phone-status {
+        display: flex;
+        justify-content: space-between;
+        font-size: 11px;
+        font-weight: 800;
+      }
+
+      .phone-content {
+        height: 494px;
+        overflow: hidden;
+        padding: 12px;
+      }
+
+      .phone-bottom {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 4px;
+        border-top: 1px solid var(--line);
+        border-bottom: 0;
+        font-size: 11px;
+        text-align: center;
+      }
+
+      .mobile-card {
+        position: relative;
+        border: 1px solid var(--line);
+        border-radius: var(--radius-card);
+        background: var(--panel);
+        padding: 12px 12px 12px 16px;
+        margin-bottom: 10px;
+      }
+
+      .mobile-card::before {
+        content: "";
+        position: absolute;
+        inset: 0 auto 0 0;
+        width: 4px;
+        border-radius: 6px 0 0 6px;
+        background: var(--azure);
+      }
+
+      .usage-list {
+        display: grid;
+        gap: 10px;
+        margin: 0;
+        padding: 0;
+        list-style: none;
+      }
+
+      .usage-list li {
+        display: grid;
+        grid-template-columns: 24px 1fr;
+        gap: 10px;
+        align-items: start;
+        color: var(--ink-800);
+        font-size: 14px;
+      }
+
+      .check {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        background: rgba(24, 169, 153, 0.12);
+        color: var(--teal);
+        font-weight: 900;
+      }
+
+      .footer {
+        padding: 28px 64px;
+        border-top: 1px solid var(--line);
+        color: var(--muted);
+        font-size: 13px;
+      }
+
+      @media (max-width: 1100px) {
+        .page {
+          grid-template-columns: 1fr;
+        }
+
+        .sidebar {
+          position: relative;
+          height: auto;
+          border-right: 0;
+          border-bottom: 1px solid var(--line);
+        }
+
+        .nav {
+          grid-template-columns: repeat(3, minmax(0, 1fr));
+        }
+
+        .hero {
+          grid-template-columns: 1fr;
+          padding: 36px 28px;
+        }
+
+        .content,
+        .footer {
+          padding-left: 28px;
+          padding-right: 28px;
+        }
+
+        .grid-2,
+        .grid-3,
+        .grid-4,
+        .swatch-grid,
+        .web-main,
+        .web-preview {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      @media (max-width: 720px) {
+        .nav {
+          grid-template-columns: 1fr;
+        }
+
+        .hero h2 {
+          font-size: 32px;
+        }
+
+        .section {
+          padding: 20px;
+        }
+
+        .section-intro {
+          margin-left: 0;
+        }
+
+        .type-row {
+          grid-template-columns: 1fr;
+          gap: 6px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="page">
+      <aside class="sidebar">
+        <div class="brand-lockup">
+          <div class="mini-mark" aria-hidden="true"></div>
+          <div>
+            <h1>AI Brain</h1>
+            <p>Prism Memory System</p>
+          </div>
+        </div>
+        <nav class="nav" aria-label="Design system sections">
+          <a href="#foundation"><span class="nav-index">01</span> Foundation</a>
+          <a href="#colors"><span class="nav-index">02</span> Color Tokens</a>
+          <a href="#semantic"><span class="nav-index">03</span> Semantic Mapping</a>
+          <a href="#typography"><span class="nav-index">04</span> Typography</a>
+          <a href="#shape"><span class="nav-index">05</span> Shape and Layout</a>
+          <a href="#components"><span class="nav-index">06</span> Components</a>
+          <a href="#web"><span class="nav-index">07</span> Web Example</a>
+          <a href="#android"><span class="nav-index">08</span> Android Example</a>
+          <a href="#rules"><span class="nav-index">09</span> Usage Rules</a>
+        </nav>
+      </aside>
+
+      <main class="main">
+        <header class="hero">
+          <div>
+            <div class="eyebrow">Design System</div>
+            <h2>Prism Memory System for AI Brain</h2>
+            <p class="hero-copy">
+              A calm, source-aware UI language inspired by the faceted brain logo.
+              The system uses near-white work surfaces and deep ink structure,
+              with vivid prism colors reserved for source type, capture quality,
+              Ask scope, repair state, and focused moments.
+            </p>
+            <div class="prism-strip" aria-hidden="true">
+              <span style="background: var(--ruby)"></span>
+              <span style="background: var(--coral)"></span>
+              <span style="background: var(--amber)"></span>
+              <span style="background: var(--lime)"></span>
+              <span style="background: var(--teal)"></span>
+              <span style="background: var(--cyan)"></span>
+              <span style="background: var(--azure)"></span>
+              <span style="background: var(--violet)"></span>
+            </div>
+          </div>
+          <figure class="hero-card">
+            <img src="assets/ai-brain-prism-logo.png" alt="Faceted multicolor brain logo reference" />
+            <figcaption class="caption">
+              Logo reference translated into operational UI tokens, not a literal rainbow skin.
+            </figcaption>
+          </figure>
+        </header>
+
+        <div class="content">
+          <section class="section" id="foundation">
+            <div class="section-head">
+              <span class="section-number">01</span>
+              <h2>Brand Foundation</h2>
+            </div>
+            <p class="section-intro">
+              AI Brain is a private personal knowledge system. The interface should feel
+              trustworthy for long reading sessions, but still carry the energy of
+              intelligence, memory, and synthesis.
+            </p>
+            <div class="grid-3">
+              <div class="principle-card">
+                <strong>Private</strong>
+                <p>Use sober surfaces, clear provenance, and readable structure.</p>
+              </div>
+              <div class="principle-card">
+                <strong>Faceted</strong>
+                <p>Represent different source types and quality levels as named facets.</p>
+              </div>
+              <div class="principle-card">
+                <strong>Vivid When Useful</strong>
+                <p>Reserve saturated color for meaning, state, and orientation.</p>
+              </div>
+            </div>
+          </section>
+
+          <section class="section" id="colors">
+            <div class="section-head">
+              <span class="section-number">02</span>
+              <h2>Color Tokens</h2>
+            </div>
+            <p class="section-intro">
+              The base palette is restrained. The prism colors are semantic accents,
+              not page backgrounds.
+            </p>
+            <div class="swatch-grid">
+              <article class="swatch"><div class="swatch-color" style="background: var(--ink-950)"></div><div class="swatch-meta"><div class="swatch-name">Ink 950 <span class="hex">#14213D</span></div><p class="swatch-use">Primary text and structural outlines.</p></div></article>
+              <article class="swatch"><div class="swatch-color" style="background: var(--ink-800)"></div><div class="swatch-meta"><div class="swatch-name">Ink 800 <span class="hex">#24344F</span></div><p class="swatch-use">Navigation, secondary structure, strong borders.</p></div></article>
+              <article class="swatch"><div class="swatch-color" style="background: var(--surface)"></div><div class="swatch-meta"><div class="swatch-name">Surface <span class="hex">#FBFCFE</span></div><p class="swatch-use">App background.</p></div></article>
+              <article class="swatch"><div class="swatch-color" style="background: var(--panel)"></div><div class="swatch-meta"><div class="swatch-name">Panel <span class="hex">#FFFFFF</span></div><p class="swatch-use">Cards, sheets, reading surfaces.</p></div></article>
+              <article class="swatch"><div class="swatch-color" style="background: var(--line)"></div><div class="swatch-meta"><div class="swatch-name">Line <span class="hex">#D7DFEA</span></div><p class="swatch-use">Borders and separators.</p></div></article>
+              <article class="swatch"><div class="swatch-color" style="background: var(--muted)"></div><div class="swatch-meta"><div class="swatch-name">Muted <span class="hex">#667085</span></div><p class="swatch-use">Secondary text and metadata.</p></div></article>
+              <article class="swatch"><div class="swatch-color" style="background: var(--ruby)"></div><div class="swatch-meta"><div class="swatch-name">Ruby <span class="hex">#E63B6F</span></div><p class="swatch-use">Manual notes and needs upgrade states.</p></div></article>
+              <article class="swatch"><div class="swatch-color" style="background: var(--coral)"></div><div class="swatch-meta"><div class="swatch-name">Coral <span class="hex">#F26A4F</span></div><p class="swatch-use">Capture issues and YouTube source accents.</p></div></article>
+              <article class="swatch"><div class="swatch-color" style="background: var(--amber)"></div><div class="swatch-meta"><div class="swatch-name">Amber <span class="hex">#F6B73C</span></div><p class="swatch-use">Processing, preview-only, active intelligence.</p></div></article>
+              <article class="swatch"><div class="swatch-color" style="background: var(--citrine)"></div><div class="swatch-meta"><div class="swatch-name">Citrine <span class="hex">#F7E463</span></div><p class="swatch-use">Small attention highlights only.</p></div></article>
+              <article class="swatch"><div class="swatch-color" style="background: var(--lime)"></div><div class="swatch-meta"><div class="swatch-name">Lime <span class="hex">#A7D957</span></div><p class="swatch-use">Healthy, updated, organized states.</p></div></article>
+              <article class="swatch"><div class="swatch-color" style="background: var(--teal)"></div><div class="swatch-meta"><div class="swatch-name">Teal <span class="hex">#18A999</span></div><p class="swatch-use">Saved, verified, full text.</p></div></article>
+              <article class="swatch"><div class="swatch-color" style="background: var(--cyan)"></div><div class="swatch-meta"><div class="swatch-name">Cyan <span class="hex">#42C7E8</span></div><p class="swatch-use">Transcript, reading, web capture.</p></div></article>
+              <article class="swatch"><div class="swatch-color" style="background: var(--azure)"></div><div class="swatch-meta"><div class="swatch-name">Azure <span class="hex">#2F80ED</span></div><p class="swatch-use">PDFs, item detail, knowledge surfaces.</p></div></article>
+              <article class="swatch"><div class="swatch-color" style="background: var(--violet)"></div><div class="swatch-meta"><div class="swatch-name">Violet <span class="hex">#7E5BEF</span></div><p class="swatch-use">Ask, AI, selected items.</p></div></article>
+              <article class="swatch"><div class="swatch-color" style="background: var(--magenta)"></div><div class="swatch-meta"><div class="swatch-name">Magenta <span class="hex">#C64ACB</span></div><p class="swatch-use">Synthesis, collections, networked knowledge.</p></div></article>
+            </div>
+          </section>
+
+          <section class="section" id="semantic">
+            <div class="section-head">
+              <span class="section-number">03</span>
+              <h2>Semantic Mapping</h2>
+            </div>
+            <p class="section-intro">
+              Every colored element must also have a text label. Color supports
+              recognition; it never carries meaning alone.
+            </p>
+            <div class="grid-3">
+              <div class="component-card">
+                <strong>Source Platform</strong>
+                <div class="chip-row">
+                  <span class="chip" style="color: var(--coral)"><span class="dot"></span>YouTube</span>
+                  <span class="chip" style="color: var(--azure)"><span class="dot"></span>LinkedIn</span>
+                  <span class="chip" style="color: var(--amber)"><span class="dot"></span>Substack</span>
+                  <span class="chip" style="color: var(--azure)"><span class="dot"></span>PDF</span>
+                  <span class="chip" style="color: var(--ruby)"><span class="dot"></span>Manual note</span>
+                  <span class="chip" style="color: var(--teal)"><span class="dot"></span>Telegram</span>
+                  <span class="chip" style="color: var(--violet)"><span class="dot"></span>Chrome extension</span>
+                  <span class="chip" style="color: var(--cyan)"><span class="dot"></span>Web capture</span>
+                </div>
+              </div>
+              <div class="component-card">
+                <strong>Source Quality</strong>
+                <div class="chip-row">
+                  <span class="chip" style="color: var(--teal)">Full text</span>
+                  <span class="chip" style="color: var(--cyan)">Transcript</span>
+                  <span class="chip" style="color: var(--amber)">Preview only</span>
+                  <span class="chip" style="color: var(--coral)">Metadata only</span>
+                  <span class="chip" style="color: var(--ruby)">Needs upgrade</span>
+                  <span class="chip" style="color: var(--teal)">Saved</span>
+                  <span class="chip" style="color: var(--violet)">Enriching</span>
+                  <span class="chip" style="color: var(--lime)">Updated</span>
+                </div>
+              </div>
+              <div class="component-card">
+                <strong>Ask Scope</strong>
+                <div class="chip-row">
+                  <span class="chip fill" style="background: var(--ink-950)">All sources</span>
+                  <span class="chip fill" style="background: var(--azure)">This item</span>
+                  <span class="chip fill" style="background: var(--violet)">Selected items</span>
+                  <span class="chip fill" style="background: var(--magenta)">Tag/collection</span>
+                  <span class="chip fill" style="background: var(--teal)">High-quality only</span>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <section class="section" id="typography">
+            <div class="section-head">
+              <span class="section-number">04</span>
+              <h2>Typography</h2>
+            </div>
+            <div class="type-scale">
+              <div class="type-row"><div class="type-label">Display 32 / 40</div><div style="font-size:32px;line-height:40px;font-weight:800">Prism Memory System</div></div>
+              <div class="type-row"><div class="type-label">H1 24 / 32</div><div style="font-size:24px;line-height:32px;font-weight:800">Library</div></div>
+              <div class="type-row"><div class="type-label">H2 18 / 28</div><div style="font-size:18px;line-height:28px;font-weight:750">Source and Capture Details</div></div>
+              <div class="type-row"><div class="type-label">Body 14 / 22</div><div style="font-size:14px;line-height:22px">Ask answers, item summaries, and normal reading copy use this scale.</div></div>
+              <div class="type-row"><div class="type-label">Dense 13 / 18</div><div style="font-size:13px;line-height:18px">Metadata rows, list descriptions, compact navigation.</div></div>
+              <div class="type-row"><div class="type-label">Caption 12 / 16</div><div style="font-size:12px;line-height:16px">Captured via Telegram - Full text - Available offline</div></div>
+            </div>
+          </section>
+
+          <section class="section" id="shape">
+            <div class="section-head">
+              <span class="section-number">05</span>
+              <h2>Shape, Elevation, Layout</h2>
+            </div>
+            <p class="section-intro">
+              The product should feel crisp and operational. Use borders and compact
+              spacing before shadows. Cards stay at 8px radius or less.
+            </p>
+            <div class="shape-demo">
+              <div class="radius-box" style="border-radius:4px"><strong>4px</strong><br />Inputs and chips</div>
+              <div class="radius-box" style="border-radius:6px"><strong>6px</strong><br />Cards and rows</div>
+              <div class="radius-box" style="border-radius:8px"><strong>8px</strong><br />Modals and sheets</div>
+            </div>
+            <div class="prism-strip" aria-hidden="true">
+              <span style="background: var(--ruby)"></span>
+              <span style="background: var(--coral)"></span>
+              <span style="background: var(--amber)"></span>
+              <span style="background: var(--lime)"></span>
+              <span style="background: var(--teal)"></span>
+              <span style="background: var(--cyan)"></span>
+              <span style="background: var(--azure)"></span>
+              <span style="background: var(--violet)"></span>
+            </div>
+          </section>
+
+          <section class="section" id="components">
+            <div class="section-head">
+              <span class="section-number">06</span>
+              <h2>Core Components</h2>
+            </div>
+            <div class="grid-2">
+              <div class="component-card">
+                <strong>Buttons</strong>
+                <div class="button-row">
+                  <span class="btn primary">Primary</span>
+                  <span class="btn">Secondary</span>
+                  <span class="btn tertiary">Tertiary</span>
+                  <span class="btn destructive">Delete</span>
+                  <span class="btn" aria-label="Icon-only action">+</span>
+                </div>
+              </div>
+              <div class="component-card">
+                <strong>Search and Input</strong>
+                <div class="input-demo">Search your Brain...</div>
+              </div>
+              <div class="sample-card">
+                <strong>Item Row</strong>
+                <div style="margin-top:12px" class="chip-row">
+                  <span class="chip" style="color: var(--azure)">PDF</span>
+                  <span class="chip" style="color: var(--teal)">Full text</span>
+                </div>
+                <h3 style="margin:12px 0 4px;font-size:16px">Annual research report 2025.pdf</h3>
+                <p style="margin:0;color:var(--muted);font-size:13px">Captured via PDF upload - Available offline</p>
+              </div>
+              <div class="capture-card">
+                <strong>Needs Upgrade Repair Card</strong>
+                <p style="margin:8px 0;color:var(--ink-800);font-size:13px">
+                  This item was saved, but Ask cannot rely on it yet.
+                </p>
+                <div class="button-row">
+                  <span class="btn destructive">Paste text</span>
+                  <span class="btn">Open source</span>
+                </div>
+              </div>
+              <div class="ask-card" style="grid-column:1 / -1">
+                <strong>Ask Answer With Citations</strong>
+                <p style="font-size:14px;color:var(--ink-800)">
+                  The strongest pattern is to treat saved sources as inspectable memory,
+                  not anonymous chat context <span class="citation">1</span>. Weak
+                  sources should be flagged before the answer is trusted
+                  <span class="citation">2</span>.
+                </p>
+                <div class="chip-row">
+                  <span class="chip" style="color: var(--violet)">Ask: Selected items</span>
+                  <span class="chip" style="color: var(--cyan)">Citation 1</span>
+                  <span class="chip" style="color: var(--coral)">Metadata only included</span>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <section class="section" id="web">
+            <div class="section-head">
+              <span class="section-number">07</span>
+              <h2>Applied Web Example</h2>
+            </div>
+            <div class="web-preview">
+              <aside class="web-nav">
+                <div style="font-weight:900;margin-bottom:16px">AI Brain</div>
+                <div class="nav-item active">Library</div>
+                <div class="nav-item">Needs Upgrade</div>
+                <div class="nav-item">Ask</div>
+                <div class="nav-item">Settings</div>
+              </aside>
+              <div class="web-main">
+                <div class="web-list">
+                  <div style="padding:12px;border-bottom:1px solid var(--line);font-weight:800">Recent items</div>
+                  <div class="item-row active">
+                    <span class="chip" style="color: var(--azure)">PDF</span>
+                    <h4>Annual research report 2025.pdf</h4>
+                    <p>Captured via PDF upload</p>
+                  </div>
+                  <div class="item-row">
+                    <span class="chip" style="color: var(--coral)">YouTube</span>
+                    <h4>Designing calm software</h4>
+                    <p>Captured via Android share</p>
+                  </div>
+                  <div class="item-row">
+                    <span class="chip" style="color: var(--amber)">Substack</span>
+                    <h4>The quiet death of the homepage</h4>
+                    <p>Captured via Web capture</p>
+                  </div>
+                </div>
+                <article class="web-detail">
+                  <div class="chip-row">
+                    <span class="chip" style="color: var(--azure)">Source platform: PDF</span>
+                    <span class="chip" style="color: var(--teal)">Full text</span>
+                  </div>
+                  <h3 style="font-size:24px;margin:18px 0 8px">Annual research report 2025.pdf</h3>
+                  <p>Captured via PDF upload - Available offline - Searchable</p>
+                  <div class="ask-card">
+                    <strong>AI Digest</strong>
+                    <p>Complete PDF extracted. Contains market analysis, trends, and forecasts for the upcoming year.</p>
+                  </div>
+                  <div style="margin-top:16px" class="button-row">
+                    <span class="btn primary">Ask this item</span>
+                    <span class="btn">Open source</span>
+                  </div>
+                </article>
+              </div>
+            </div>
+          </section>
+
+          <section class="section" id="android">
+            <div class="section-head">
+              <span class="section-number">08</span>
+              <h2>Applied Android Example</h2>
+            </div>
+            <div class="phone-wrap">
+              <div class="phone">
+                <div class="phone-status"><span>9:41</span><span>5G 100%</span></div>
+                <div class="phone-header">
+                  <strong>Library</strong>
+                  <div class="chip-row" style="margin-top:10px;flex-wrap:nowrap;overflow:hidden">
+                    <span class="chip fill" style="background: var(--ink-950)">All</span>
+                    <span class="chip">PDF</span>
+                    <span class="chip">YouTube</span>
+                  </div>
+                </div>
+                <div class="phone-content">
+                  <div class="mobile-card">
+                    <div class="chip-row">
+                      <span class="chip" style="color: var(--azure)">PDF</span>
+                      <span class="chip" style="color: var(--teal)">Full text</span>
+                    </div>
+                    <h4 style="margin:10px 0 4px">Annual research report 2025.pdf</h4>
+                    <p style="margin:0;color:var(--muted);font-size:12px">Via PDF upload - Offline</p>
+                  </div>
+                  <div class="mobile-card" style="--azure: var(--coral)">
+                    <div class="chip-row">
+                      <span class="chip" style="color: var(--coral)">YouTube</span>
+                      <span class="chip" style="color: var(--coral)">Metadata only</span>
+                    </div>
+                    <h4 style="margin:10px 0 4px">Designing calm software</h4>
+                    <p style="margin:0;color:var(--muted);font-size:12px">Via Android share - Needs text</p>
+                  </div>
+                  <div class="capture-card" style="margin-top:14px">
+                    <strong>Capture result</strong>
+                    <p style="margin:6px 0 0;font-size:12px;color:var(--muted)">Saved, but needs upgrade before Ask can rely on it.</p>
+                  </div>
+                </div>
+                <div class="phone-bottom">
+                  <span>Library</span>
+                  <span>Capture</span>
+                  <span>Ask</span>
+                  <span>More</span>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <section class="section" id="rules">
+            <div class="section-head">
+              <span class="section-number">09</span>
+              <h2>Accessibility and Usage Rules</h2>
+            </div>
+            <div class="grid-2">
+              <ul class="usage-list">
+                <li><span class="check">1</span><span>Never rely on color alone. Pair color with text labels and icons where useful.</span></li>
+                <li><span class="check">2</span><span>Keep saturated colors below 15 percent of normal operational screens.</span></li>
+                <li><span class="check">3</span><span>Use Citrine only for highlights, never long body text.</span></li>
+                <li><span class="check">4</span><span>Use Ink text on pale tinted backgrounds for reliable contrast.</span></li>
+              </ul>
+              <ul class="usage-list">
+                <li><span class="check">5</span><span>Web can support denser rows, right rails, and bulk actions.</span></li>
+                <li><span class="check">6</span><span>Android should favor bottom nav, FAB capture, compact filters, and sheets.</span></li>
+                <li><span class="check">7</span><span>Capture result cards must show status, source platform, captured via, quality, and next action.</span></li>
+                <li><span class="check">8</span><span>Ask answers should stay sober: citations, scope, and source quality matter more than visual flourish.</span></li>
+              </ul>
+            </div>
+          </section>
+        </div>
+
+        <footer class="footer">
+          AI Brain Design System: Prism Memory. Created 2026-06-11. Local logo asset: assets/ai-brain-prism-logo.png.
+        </footer>
+      </main>
+    </div>
+  </body>
+</html>

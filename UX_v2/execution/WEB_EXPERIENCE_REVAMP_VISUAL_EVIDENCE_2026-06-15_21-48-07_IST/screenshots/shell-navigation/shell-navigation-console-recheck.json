@@ -1,0 +1,12 @@
+{
+  "routes": [
+    "/library",
+    "/settings/device-pairing",
+    "/capture"
+  ],
+  "startedAt": "2026-06-15T16:58:04.705Z",
+  "checkedAt": "2026-06-15T16:58:06.616Z",
+  "freshLogCount": 0,
+  "freshLogs": [],
+  "olderCapturedLogCount": 4
+}

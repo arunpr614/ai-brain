@@ -8,7 +8,7 @@
 
 | Finding | Disposition in v2 | Evidence/gate |
 |---|---|---|
-| Stale/deployed baseline | Accepted. `8178117` is the attested consolidated content baseline; 4d is not sufficient. | Production source attestation; merge + integrated baseline + full artifact/dry-run gate |
+| Stale/deployed baseline | Accepted. `8178117` is the attested consolidated content baseline; 4d is not sufficient. The merge exposed 020 dropping the 017 transcript trigger, so isolated integration migration 021 restores/backfills it before F08 migrations 022/023. | Production source attestation; merge + migration regression + integrated baseline + full artifact/dry-run gate |
 | 0 chunks / 44 vec rows | Accepted. Report-only rowid-set audit, backup, manifest repair/reservation, durable allocator, snapshot rehearsal precede worker. | MIG-02/MIG-03 and first-allocation evidence |
 | AI opt-out asynchronous leak | Accepted. Policy is its own generation; retrieval, Ask, Related, worker pre-call/pre-commit synchronously join/check current policy. Async deletion is cleanup only. | AI-02/AI-03/provider-spy tests |
 | Mutation ID lifecycle | Accepted. Payload-specific immutable save envelopes; exact retry keeps ID; any changed queued payload gets new ID; acknowledgements match envelope. | SAVE-02/03/04 fake-timer and reload tests |

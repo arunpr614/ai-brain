@@ -1,0 +1,664 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>AI Memory Android Library Card Options</title>
+    <style>
+      :root {
+        --ink: #14213d;
+        --ink-2: #24344f;
+        --muted: #667085;
+        --canvas: #fbfcfe;
+        --panel: #ffffff;
+        --line: #d7dfea;
+        --line-strong: #a9b8cd;
+        --ruby: #e63b6f;
+        --amber: #a66a00;
+        --teal: #18a999;
+        --nav: #ffffff;
+        --shadow: 0 12px 32px rgb(20 33 61 / 0.12);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        background: #eef2f7;
+        color: var(--ink);
+        font-family:
+          Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
+          "Segoe UI", sans-serif;
+      }
+
+      .page {
+        max-width: 1280px;
+        margin: 0 auto;
+        padding: 24px;
+      }
+
+      .page-header {
+        margin-bottom: 20px;
+      }
+
+      .page-header h1 {
+        margin: 0;
+        font-size: 26px;
+        line-height: 1.2;
+      }
+
+      .page-header p {
+        max-width: 760px;
+        margin: 8px 0 0;
+        color: var(--muted);
+        font-size: 14px;
+        line-height: 1.5;
+      }
+
+      .options {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(300px, 1fr));
+        gap: 18px;
+        align-items: start;
+      }
+
+      .option {
+        display: grid;
+        gap: 10px;
+      }
+
+      .option-copy {
+        min-height: 112px;
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        background: white;
+        padding: 14px;
+      }
+
+      .option-copy h2 {
+        margin: 0 0 6px;
+        font-size: 16px;
+      }
+
+      .option-copy p {
+        margin: 0;
+        color: var(--muted);
+        font-size: 13px;
+        line-height: 1.45;
+      }
+
+      .phone {
+        width: 360px;
+        max-width: 100%;
+        margin: 0 auto;
+        overflow: hidden;
+        border: 1px solid #cfd8e6;
+        border-radius: 28px;
+        background: var(--canvas);
+        box-shadow: var(--shadow);
+      }
+
+      .status-bar {
+        height: 28px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 18px;
+        background: #e5e7eb;
+        color: #111827;
+        font-size: 12px;
+        font-weight: 700;
+      }
+
+      .screen {
+        min-height: 690px;
+        padding: 22px 16px 92px;
+        position: relative;
+      }
+
+      .screen h3 {
+        margin: 0;
+        font-size: 30px;
+        line-height: 1.1;
+        letter-spacing: 0;
+      }
+
+      .count {
+        margin: 6px 0 18px;
+        font-size: 14px;
+        color: var(--ink-2);
+      }
+
+      .actions {
+        display: flex;
+        gap: 8px;
+        margin-bottom: 16px;
+      }
+
+      .pill-button {
+        min-height: 42px;
+        border-radius: 10px;
+        border: 1px solid var(--ruby);
+        background: white;
+        color: var(--ruby);
+        padding: 0 14px;
+        font-weight: 700;
+      }
+
+      .primary-button {
+        min-height: 42px;
+        border: 1px solid var(--ink);
+        border-radius: 10px;
+        background: var(--ink);
+        color: white;
+        padding: 0 16px;
+        font-weight: 700;
+      }
+
+      .search {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        height: 46px;
+        margin-bottom: 14px;
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        background: white;
+        padding: 0 14px;
+        color: var(--muted);
+        font-size: 15px;
+      }
+
+      .filter-card {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        min-height: 58px;
+        margin-bottom: 16px;
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        background: white;
+        padding: 12px 14px;
+      }
+
+      .filter-card strong {
+        display: block;
+        font-size: 15px;
+      }
+
+      .filter-card span {
+        color: var(--muted);
+        font-size: 12px;
+      }
+
+      .list {
+        display: grid;
+        gap: 10px;
+      }
+
+      .card {
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        background: white;
+      }
+
+      .tiny-icon {
+        width: 18px;
+        height: 18px;
+        flex: none;
+        border: 2px solid #6b7280;
+        border-radius: 50%;
+      }
+
+      .video-icon {
+        border-radius: 4px;
+      }
+
+      .check {
+        width: 20px;
+        height: 20px;
+        flex: none;
+        border: 2px solid #9aa1b1;
+        border-radius: 4px;
+      }
+
+      .title {
+        display: -webkit-box;
+        overflow: hidden;
+        -webkit-box-orient: vertical;
+        color: var(--ink);
+      }
+
+      .badge-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        align-items: center;
+      }
+
+      .badge {
+        display: inline-flex;
+        min-height: 24px;
+        align-items: center;
+        border: 1px solid var(--line);
+        border-radius: 999px;
+        background: #fff;
+        color: var(--ink-2);
+        padding: 0 8px;
+        font-size: 11px;
+        font-weight: 700;
+        white-space: nowrap;
+      }
+
+      .badge.ruby {
+        border-color: color-mix(in srgb, var(--ruby), white 25%);
+        color: var(--ruby);
+      }
+
+      .badge.amber {
+        border-color: #f3d59a;
+        color: var(--amber);
+      }
+
+      .badge.teal {
+        border-color: #b9eee4;
+        color: #0f766e;
+      }
+
+      .meta {
+        color: var(--muted);
+        font-size: 12px;
+        line-height: 1.35;
+      }
+
+      .option-a-card {
+        padding: 13px;
+      }
+
+      .option-a-card .row {
+        display: flex;
+        gap: 10px;
+        align-items: flex-start;
+      }
+
+      .option-a-card .content {
+        min-width: 0;
+        flex: 1;
+      }
+
+      .option-a-card .title {
+        -webkit-line-clamp: 2;
+        font-size: 15px;
+        font-weight: 700;
+        line-height: 1.25;
+      }
+
+      .option-a-card .badge-row {
+        margin-top: 8px;
+      }
+
+      .option-a-card .meta {
+        margin-top: 6px;
+      }
+
+      .option-b-card {
+        padding: 13px;
+      }
+
+      .option-b-card .top {
+        display: flex;
+        justify-content: space-between;
+        gap: 10px;
+        align-items: center;
+        margin-bottom: 8px;
+      }
+
+      .option-b-card .source {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        min-width: 0;
+        color: var(--muted);
+        font-size: 12px;
+        font-weight: 700;
+      }
+
+      .option-b-card .title {
+        -webkit-line-clamp: 2;
+        font-size: 16px;
+        font-weight: 700;
+        line-height: 1.25;
+      }
+
+      .option-b-card .badge-row {
+        margin-top: 8px;
+      }
+
+      .option-c-card {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: 8px;
+        align-items: center;
+        padding: 12px;
+        border-radius: 0;
+        border-left: none;
+        border-right: none;
+      }
+
+      .option-c-card:first-child {
+        border-top-left-radius: 12px;
+        border-top-right-radius: 12px;
+      }
+
+      .option-c-card:last-child {
+        border-bottom-left-radius: 12px;
+        border-bottom-right-radius: 12px;
+      }
+
+      .option-c-card .title {
+        -webkit-line-clamp: 2;
+        font-size: 14px;
+        font-weight: 700;
+        line-height: 1.24;
+      }
+
+      .option-c-card .meta {
+        margin-top: 5px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .dot-status {
+        width: 10px;
+        height: 10px;
+        border-radius: 999px;
+        background: var(--ruby);
+      }
+
+      .bottom-nav {
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        height: 78px;
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        align-items: center;
+        border-top: 1px solid var(--line);
+        background: rgba(255, 255, 255, 0.96);
+      }
+
+      .nav-item {
+        text-align: center;
+        color: var(--ink);
+        font-size: 12px;
+        font-weight: 600;
+      }
+
+      .fab {
+        width: 58px;
+        height: 58px;
+        margin: -34px auto 2px;
+        border-radius: 999px;
+        display: grid;
+        place-items: center;
+        background: var(--ink);
+        color: white;
+        border: 4px solid white;
+        font-size: 28px;
+        font-weight: 500;
+        box-shadow: 0 10px 24px rgb(20 33 61 / 0.22);
+      }
+
+      @media (max-width: 1050px) {
+        .options {
+          grid-template-columns: 1fr;
+        }
+
+        .option-copy {
+          min-height: auto;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="page">
+      <header class="page-header">
+        <h1>Android Library card options</h1>
+        <p>
+          Throwaway prototypes for fixing long titles that currently expand
+          each Library card into a giant block. Option A is the recommended
+          Magic Patterns-aligned direction.
+        </p>
+      </header>
+
+      <section class="options">
+        <article class="option">
+          <div class="option-copy">
+            <h2>Option A: Compact card</h2>
+            <p>
+              Recommended. Title clamps to two lines, status moves below the
+              title, and selection controls stay out of the browse layout.
+            </p>
+          </div>
+          <div class="phone">
+            <div class="status-bar"><span>8:18</span><span>AI Memory</span><span>31%</span></div>
+            <div class="screen">
+              <h3>Library</h3>
+              <div class="count">31 sources captured</div>
+              <div class="actions">
+                <button class="pill-button">13 need upgrade</button>
+                <button class="primary-button">+ Capture</button>
+              </div>
+              <div class="search">Search your library...</div>
+              <div class="filter-card">
+                <span class="tiny-icon"></span>
+                <div><strong>Filters</strong><span>All sources</span></div>
+              </div>
+              <div class="list">
+                <div class="card option-a-card">
+                  <div class="row">
+                    <span class="tiny-icon video-icon"></span>
+                    <div class="content">
+                      <div class="title">
+                        Andrej Karpathy on Code Agents, AutoResearch, and the Loopy Era of AI
+                      </div>
+                      <div class="badge-row">
+                        <span class="badge ruby">enrichment failed</span>
+                        <span class="badge ruby">Metadata only</span>
+                        <span class="badge amber">metadata only</span>
+                      </div>
+                      <div class="meta">YouTube · via Telegram · 8h ago · 353 chars</div>
+                    </div>
+                  </div>
+                </div>
+                <div class="card option-a-card">
+                  <div class="row">
+                    <span class="tiny-icon"></span>
+                    <div class="content">
+                      <div class="title">
+                        Building a 35x Net Worth Through Disciplined Machine-Like Investing: A Software Engineer's Financial Audit
+                      </div>
+                      <div class="badge-row">
+                        <span class="badge teal">Full text</span>
+                        <span class="badge ruby">enrichment failed</span>
+                      </div>
+                      <div class="meta">Article · via Telegram · 21h ago · 20,801 chars</div>
+                    </div>
+                  </div>
+                </div>
+                <div class="card option-a-card">
+                  <div class="row">
+                    <span class="tiny-icon"></span>
+                    <div class="content">
+                      <div class="title">
+                        How an Engineer Built an AI-Powered Math App to Help His Students Learn Faster
+                      </div>
+                      <div class="badge-row">
+                        <span class="badge teal">Full text</span>
+                      </div>
+                      <div class="meta">Article · via Telegram · 22h ago</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <nav class="bottom-nav">
+                <div class="nav-item">Library</div>
+                <div class="nav-item"><div class="fab">+</div>Capture</div>
+                <div class="nav-item">Ask</div>
+                <div class="nav-item">More</div>
+              </nav>
+            </div>
+          </div>
+        </article>
+
+        <article class="option">
+          <div class="option-copy">
+            <h2>Option B: Status-first card</h2>
+            <p>
+              Keeps status very visible, but moves it out of the title row.
+              Good if repair/failure state must stay prominent.
+            </p>
+          </div>
+          <div class="phone">
+            <div class="status-bar"><span>8:18</span><span>AI Memory</span><span>31%</span></div>
+            <div class="screen">
+              <h3>Library</h3>
+              <div class="count">31 sources captured</div>
+              <div class="actions">
+                <button class="pill-button">13 need upgrade</button>
+                <button class="primary-button">+ Capture</button>
+              </div>
+              <div class="search">Search your library...</div>
+              <div class="filter-card">
+                <span class="tiny-icon"></span>
+                <div><strong>Filters</strong><span>All sources</span></div>
+              </div>
+              <div class="list">
+                <div class="card option-b-card">
+                  <div class="top">
+                    <div class="source"><span class="tiny-icon video-icon"></span>YouTube</div>
+                    <span class="badge ruby">enrichment failed</span>
+                  </div>
+                  <div class="title">
+                    Andrej Karpathy on Code Agents, AutoResearch, and the Loopy Era of AI
+                  </div>
+                  <div class="badge-row">
+                    <span class="badge ruby">Metadata only</span>
+                    <span class="badge amber">metadata only</span>
+                    <span class="meta">via Telegram · 8h ago</span>
+                  </div>
+                </div>
+                <div class="card option-b-card">
+                  <div class="top">
+                    <div class="source"><span class="tiny-icon"></span>Article</div>
+                    <span class="badge ruby">enrichment failed</span>
+                  </div>
+                  <div class="title">
+                    Building a 35x Net Worth Through Disciplined Machine-Like Investing: A Software Engineer's Financial Audit
+                  </div>
+                  <div class="badge-row">
+                    <span class="badge teal">Full text</span>
+                    <span class="meta">21h ago · 20,801 chars</span>
+                  </div>
+                </div>
+                <div class="card option-b-card">
+                  <div class="top">
+                    <div class="source"><span class="tiny-icon"></span>Article</div>
+                    <span class="badge ruby">enrichment failed</span>
+                  </div>
+                  <div class="title">
+                    How an Engineer Built an AI-Powered Math App to Help His Students Learn Faster
+                  </div>
+                  <div class="badge-row">
+                    <span class="badge teal">Full text</span>
+                    <span class="meta">via Telegram</span>
+                  </div>
+                </div>
+              </div>
+              <nav class="bottom-nav">
+                <div class="nav-item">Library</div>
+                <div class="nav-item"><div class="fab">+</div>Capture</div>
+                <div class="nav-item">Ask</div>
+                <div class="nav-item">More</div>
+              </nav>
+            </div>
+          </div>
+        </article>
+
+        <article class="option">
+          <div class="option-copy">
+            <h2>Option C: Dense inbox row</h2>
+            <p>
+              Highest scan density. Best for power use, but it changes the
+              app feel more than the other options.
+            </p>
+          </div>
+          <div class="phone">
+            <div class="status-bar"><span>8:18</span><span>AI Memory</span><span>31%</span></div>
+            <div class="screen">
+              <h3>Library</h3>
+              <div class="count">31 sources captured</div>
+              <div class="actions">
+                <button class="pill-button">13 need upgrade</button>
+                <button class="primary-button">+ Capture</button>
+              </div>
+              <div class="search">Search your library...</div>
+              <div class="filter-card">
+                <span class="tiny-icon"></span>
+                <div><strong>Filters</strong><span>All sources</span></div>
+              </div>
+              <div class="list">
+                <div class="card option-c-card">
+                  <div>
+                    <div class="title">
+                      Andrej Karpathy on Code Agents, AutoResearch, and the Loopy Era of AI
+                    </div>
+                    <div class="meta">YouTube · Metadata only · 8h ago</div>
+                  </div>
+                  <span class="dot-status"></span>
+                </div>
+                <div class="card option-c-card">
+                  <div>
+                    <div class="title">
+                      Building a 35x Net Worth Through Disciplined Machine-Like Investing: A Software Engineer's Financial Audit
+                    </div>
+                    <div class="meta">Article · Full text · 20,801 chars</div>
+                  </div>
+                  <span class="dot-status"></span>
+                </div>
+                <div class="card option-c-card">
+                  <div>
+                    <div class="title">
+                      How an Engineer Built an AI-Powered Math App to Help His Students Learn Faster
+                    </div>
+                    <div class="meta">Article · Full text · via Telegram</div>
+                  </div>
+                  <span class="dot-status"></span>
+                </div>
+                <div class="card option-c-card">
+                  <div>
+                    <div class="title">
+                      How NotebookLM Helped Me Read 4.4 Million Words of The Wheel of Time Without Spoilers
+                    </div>
+                    <div class="meta">Article · Full text · 21h ago</div>
+                  </div>
+                  <span class="dot-status"></span>
+                </div>
+              </div>
+              <nav class="bottom-nav">
+                <div class="nav-item">Library</div>
+                <div class="nav-item"><div class="fab">+</div>Capture</div>
+                <div class="nav-item">Ask</div>
+                <div class="nav-item">More</div>
+              </nav>
+            </div>
+          </div>
+        </article>
+      </section>
+    </main>
+  </body>
+</html>

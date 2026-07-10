@@ -9,6 +9,18 @@ import { deleteArtifactsForItem } from "@/lib/capture/artifacts";
 
 export type SourceType = ItemRow["source_type"];
 export type CaptureSource = ItemRow["capture_source"];
+export type LibrarySourceFilter =
+  | "all"
+  | "article"
+  | "youtube"
+  | "pdf"
+  | "note"
+  | "telegram";
+export type LibraryQualityFilter =
+  | "all"
+  | "full_text"
+  | "transcript"
+  | "needs_upgrade";
 
 export interface CreateNoteInput {
   title: string;
@@ -75,7 +87,15 @@ export function insertCaptured(input: InsertCapturedInput): ItemRow {
 }
 
 export function createNote({ title, body }: CreateNoteInput): ItemRow {
-  return insertCaptured({ source_type: "note", title, body });
+  return insertCaptured({
+    source_type: "note",
+    title,
+    body,
+    source_platform: "note",
+    capture_quality: "user_provided_full_text",
+    extraction_method: "manual_note",
+    extraction_version: "capture-v0.7.5",
+  });
 }
 
 export function getItem(id: string): ItemRow | null {
@@ -86,21 +106,172 @@ export function getItem(id: string): ItemRow | null {
   return row ?? null;
 }
 
-export function listItems(options: { limit?: number; offset?: number } = {}): ItemRow[] {
+export function getItemsByIds(ids: string[]): ItemRow[] {
+  const uniqueIds = Array.from(new Set(ids.filter(Boolean)));
+  if (uniqueIds.length === 0) return [];
+  const db = getDb();
+  const placeholders = uniqueIds.map(() => "?").join(", ");
+  const rows = db
+    .prepare(`SELECT * FROM items WHERE id IN (${placeholders})`)
+    .all(...uniqueIds) as ItemRow[];
+  const byId = new Map(rows.map((item) => [item.id, item]));
+  return uniqueIds
+    .map((id) => byId.get(id))
+    .filter((item): item is ItemRow => Boolean(item));
+}
+
+export interface ListItemsOptions {
+  limit?: number;
+  offset?: number;
+  source?: LibrarySourceFilter;
+  quality?: LibraryQualityFilter;
+  tag?: string;
+}
+
+function needsUpgradeClause(): string {
+  return `(capture_quality IN ('metadata_only', 'paywall_preview', 'failed')
+          OR extraction_warning IN (
+            'youtube_antibot_metadata_only',
+            'youtube_transcript_fetch_metadata_only',
+            'no_transcript'
+          ))`;
+}
+
+function normalizeTagFilter(tag: string | undefined): string | null {
+  const normalized = tag?.trim().toLowerCase().replace(/\s+/g, "-") ?? "";
+  return normalized.length > 0 ? normalized : null;
+}
+
+function libraryWhere(options: Pick<ListItemsOptions, "source" | "quality" | "tag">): {
+  clause: string;
+  params: unknown[];
+} {
+  const clauses: string[] = [];
+  const params: unknown[] = [];
+
+  switch (options.source) {
+    case "article":
+      clauses.push("source_type = 'url'");
+      break;
+    case "youtube":
+      clauses.push(
+        "(source_type = 'youtube' OR source_platform IN ('youtube', 'youtube_short'))",
+      );
+      break;
+    case "pdf":
+      clauses.push("source_type = 'pdf'");
+      break;
+    case "note":
+      clauses.push("source_type = 'note'");
+      break;
+    case "telegram":
+      clauses.push("(source_type = 'telegram' OR capture_source = 'telegram')");
+      break;
+    case "all":
+    case undefined:
+      break;
+  }
+
+  switch (options.quality) {
+    case "full_text":
+      clauses.push(`(
+        capture_quality IN ('full_text', 'user_provided_full_text', 'client_dom', 'email_body')
+        OR (
+          capture_quality IS NULL
+          AND extraction_warning IS NULL
+          AND source_type IN ('url', 'pdf', 'note', 'telegram')
+        )
+      )`);
+      break;
+    case "transcript":
+      clauses.push(`(
+        capture_quality IN ('transcript', 'metadata_plus_transcript')
+        OR (
+          capture_quality = 'user_provided_full_text'
+          AND (source_type = 'youtube' OR source_platform IN ('youtube', 'youtube_short'))
+        )
+        OR (
+          capture_quality IS NULL
+          AND extraction_warning IS NULL
+          AND source_type = 'youtube'
+        )
+      )`);
+      break;
+    case "needs_upgrade":
+      clauses.push(needsUpgradeClause());
+      break;
+    case "all":
+    case undefined:
+      break;
+  }
+
+  const tag = normalizeTagFilter(options.tag);
+  if (tag) {
+    clauses.push(`EXISTS (
+      SELECT 1
+      FROM item_tags
+      JOIN tags ON tags.id = item_tags.tag_id
+      WHERE item_tags.item_id = items.id
+        AND tags.name = ?
+    )`);
+    params.push(tag);
+  }
+
+  return {
+    clause: clauses.length > 0 ? `WHERE ${clauses.join(" AND ")}` : "",
+    params,
+  };
+}
+
+export function listItems(options: ListItemsOptions = {}): ItemRow[] {
+  const { limit = 100, offset = 0 } = options;
+  const db = getDb();
+  const where = libraryWhere(options);
+  return db
+    .prepare(
+      `SELECT * FROM items
+       ${where.clause}
+       ORDER BY captured_at DESC
+       LIMIT ? OFFSET ?`,
+    )
+    .all(...where.params, limit, offset) as ItemRow[];
+}
+
+export function listNeedsUpgradeItems(
+  options: { limit?: number; offset?: number } = {},
+): ItemRow[] {
   const { limit = 100, offset = 0 } = options;
   const db = getDb();
   return db
     .prepare(
-      "SELECT * FROM items ORDER BY captured_at DESC LIMIT ? OFFSET ?",
+      `SELECT * FROM items
+       WHERE ${needsUpgradeClause()}
+       ORDER BY captured_at DESC
+       LIMIT ? OFFSET ?`,
     )
     .all(limit, offset) as ItemRow[];
 }
 
-export function countItems(): number {
+export function countItems(
+  options: Pick<ListItemsOptions, "source" | "quality" | "tag"> = {},
+): number {
   const db = getDb();
-  const row = db.prepare("SELECT COUNT(*) as n FROM items").get() as {
-    n: number;
-  };
+  const where = libraryWhere(options);
+  const row = db
+    .prepare(`SELECT COUNT(*) as n FROM items ${where.clause}`)
+    .get(...where.params) as {
+      n: number;
+    };
+  return row.n;
+}
+
+export function countNeedsUpgradeItems(): number {
+  const db = getDb();
+  const row = db
+    .prepare(
+      `SELECT COUNT(*) as n FROM items WHERE ${needsUpgradeClause()}`,
+    )
+    .get() as { n: number };
   return row.n;
 }
 

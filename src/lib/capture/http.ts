@@ -3,7 +3,7 @@ import { assertPublicHttpUrl, UrlSafetyError } from "./url-safety";
 const TIMEOUT_MS = 15_000;
 const MAX_BODY_BYTES = 5 * 1024 * 1024;
 const USER_AGENT =
-  "Mozilla/5.0 (Macintosh; Intel Mac OS X 14_0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Safari/537.36 AI-Brain/0.7.5";
+  "Mozilla/5.0 (Macintosh; Intel Mac OS X 14_0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Safari/537.36 AI-Memory/0.7.5";
 
 export class CaptureFetchError extends Error {
   code: "fetch_failed" | "too_large" | "timeout" | "unreadable" | "invalid_url";

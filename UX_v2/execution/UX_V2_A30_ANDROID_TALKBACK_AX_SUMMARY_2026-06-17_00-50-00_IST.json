@@ -1,0 +1,1900 @@
+{
+  "created": "2026-06-17 00:50:00 IST",
+  "package": "com.arunprakash.brain",
+  "apkCandidate": "data/artifacts/brain-debug-v1.0.5-code6.apk",
+  "evidenceTier": "platform_ax_equivalent_passed_with_residual_risk",
+  "spokenTalkBackCaptured": false,
+  "residualRisk": "CDP Accessibility.getFullAXTree proves Android WebView platform labels/order, but no human-heard TalkBack audio/transcript was captured.",
+  "targetSelection": {
+    "itemDetail": "first library item link selected in memory; raw id not persisted",
+    "itemRepair": "repair route derived in memory from selected item; raw id not persisted"
+  },
+  "screens": [
+    {
+      "screen": "locked_unlock_route",
+      "requestedPath": "/unlock",
+      "observedUrl": "https://brain.arunp.in/unlock",
+      "title": "AI Memory",
+      "evidenceTier": "platform_ax_equivalent_passed_with_residual_risk",
+      "routeState": "unlock route under current WebView session",
+      "result": "passed",
+      "blocker": null,
+      "expectationChecks": [
+        {
+          "label": "unlock screen has AI Memory/unlock copy",
+          "passed": true
+        },
+        {
+          "label": "bottom/mobile nav exposes Library",
+          "passed": true
+        },
+        {
+          "label": "bottom/mobile nav exposes Capture",
+          "passed": true
+        },
+        {
+          "label": "bottom/mobile nav exposes Ask",
+          "passed": true
+        },
+        {
+          "label": "bottom/mobile nav exposes More",
+          "passed": true
+        }
+      ],
+      "orderedLabels": [
+        {
+          "role": "RootWebArea",
+          "name": "AI Memory"
+        },
+        {
+          "role": "navigation",
+          "name": "Primary mobile"
+        },
+        {
+          "role": "link",
+          "name": "Open Library"
+        },
+        {
+          "role": "link",
+          "name": "Open Ask"
+        },
+        {
+          "role": "link",
+          "name": "Open More"
+        },
+        {
+          "role": "heading",
+          "name": "Unlock AI Memory"
+        },
+        {
+          "role": "link",
+          "name": "[redacted-private-or-content:4]"
+        },
+        {
+          "role": "StaticText",
+          "name": "Library"
+        },
+        {
+          "role": "link",
+          "name": "Open Capture"
+        },
+        {
+          "role": "StaticText",
+          "name": "Capture"
+        },
+        {
+          "role": "StaticText",
+          "name": "Ask"
+        },
+        {
+          "role": "StaticText",
+          "name": "More"
+        },
+        {
+          "role": "StaticText",
+          "name": "Unlock AI Memory"
+        },
+        {
+          "role": "StaticText",
+          "name": "[redacted-private-or-content:27]"
+        },
+        {
+          "role": "textbox",
+          "name": "[redacted-private-or-content:3]"
+        },
+        {
+          "role": "button",
+          "name": "Unlock"
+        },
+        {
+          "role": "StaticText",
+          "name": "Forgot your PIN? Reset requires access to the AI Memory server. After a server reset, you can create a new PIN on first run."
+        },
+        {
+          "role": "StaticText",
+          "name": "[redacted-private-or-content:4]"
+        },
+        {
+          "role": "StaticText",
+          "name": "[redacted-private-or-content:3]"
+        },
+        {
+          "role": "StaticText",
+          "name": "Unlock"
+        }
+      ],
+      "redactedPrivateNodeCount": 5,
+      "nodeCount": 20,
+      "lockedPrivacy": {
+        "passed": true,
+        "checkedPatterns": [
+          "source counts",
+          "item status",
+          "capture quality",
+          "source names",
+          "private route details"
+        ]
+      }
+    },
+    {
+      "screen": "library",
+      "requestedPath": "/library",
+      "observedUrl": "https://brain.arunp.in/library",
+      "title": "AI Memory",
+      "evidenceTier": "platform_ax_equivalent_passed_with_residual_risk",
+      "routeState": "authenticated route",
+      "result": "passed",
+      "blocker": null,
+      "expectationChecks": [
+        {
+          "label": "Library heading is exposed",
+          "passed": true
+        },
+        {
+          "label": "Capture action is exposed",
+          "passed": true
+        },
+        {
+          "label": "Search is exposed",
+          "passed": true
+        },
+        {
+          "label": "Filters control is exposed",
+          "passed": true
+        },
+        {
+          "label": "bottom/mobile nav exposes Library",
+          "passed": true
+        },
+        {
+          "label": "bottom/mobile nav exposes Capture",
+          "passed": true
+        },
+        {
+          "label": "bottom/mobile nav exposes Ask",
+          "passed": true
+        },
+        {
+          "label": "bottom/mobile nav exposes More",
+          "passed": true
+        }
+      ],
+      "orderedLabels": [
+        {
+          "role": "RootWebArea",
+          "name": "AI Memory"
+        },
+        {
+          "role": "navigation",
+          "name": "Primary mobile"
+        },
+        {
+          "role": "link",
+          "name": "Open Library"
+        },
+        {
+          "role": "link",
+          "name": "Open Ask"
+        },
+        {
+          "role": "link",
+          "name": "Open More"
+        },
+        {
+          "role": "button",
+          "name": "[redacted-private-or-content:27]"
+        },
+        {
+          "role": "StaticText",
+          "name": "Library"
+        },
+        {
+          "role": "link",
+          "name": "Open Capture"
+        },
+        {
+          "role": "StaticText",
+          "name": "Capture"
+        },
+        {
+          "role": "StaticText",
+          "name": "Ask"
+        },
+        {
+          "role": "StaticText",
+          "name": "More"
+        },
+        {
+          "role": "heading",
+          "name": "Library"
+        },
+        {
+          "role": "link",
+          "name": "[count] need upgrade"
+        },
+        {
+          "role": "link",
+          "name": "Capture"
+        },
+        {
+          "role": "StaticText",
+          "name": "Filters"
+        },
+        {
+          "role": "StaticText",
+          "name": "All sources"
+        },
+        {
+          "role": "StaticText",
+          "name": "[redacted-private-or-content:7]"
+        },
+        {
+          "role": "StaticText",
+          "name": "[count] sources captured"
+        },
+        {
+          "role": "StaticText",
+          "name": "[redacted-private-or-content:12]"
+        },
+        {
+          "role": "searchbox",
+          "name": "Search your library..."
+        },
+        {
+          "role": "link",
+          "name": "[redacted-private-or-content:170]"
+        },
+        {
+          "role": "link",
+          "name": "[redacted-private-or-content:163]"
+        },
+        {
+          "role": "link",
+          "name": "[redacted-private-or-content:179]"
+        },
+        {
+          "role": "link",
+          "name": "[redacted-private-or-content:164]"
+        },
+        {
+          "role": "link",
+          "name": "[redacted-private-or-content:184]"
+        },
+        {
+          "role": "link",
+          "name": "[redacted-private-or-content:166]"
+        },
+        {
+          "role": "link",
+          "name": "[redacted-private-or-content:193]"
+        },
+        {
+          "role": "link",
+          "name": "[redacted-private-or-content:158]"
+        },
+        {
+          "role": "link",
+          "name": "[redacted-private-or-content:161]"
+        },
+        {
+          "role": "link",
+          "name": "[redacted-private-or-content:148]"
+        },
+        {
+          "role": "link",
+          "name": "[redacted-private-or-content:182]"
+        },
+        {
+          "role": "link",
+          "name": "[redacted-private-or-content:136]"
+        },
+        {
+          "role": "link",
+          "name": "[redacted-private-or-content:175]"
+        },
+        {
+          "role": "link",
+          "name": "[redacted-private-or-content:149]"
+        },
+        {
+          "role": "link",
+          "name": "[redacted-private-or-content:126]"
+        },
+        {
+          "role": "link",
+          "name": "[redacted-private-or-content:123]"
+        },
+        {
+          "role": "link",
+          "name": "[redacted-private-or-content:145]"
+        },
+        {
+          "role": "link",
+          "name": "[redacted-private-or-content:147]"
+        },
+        {
+          "role": "link",
+          "name": "[redacted-private-or-content:155]"
+        },
+        {
+          "role": "link",
+          "name": "[redacted-private-or-content:159]"
+        },
+        {
+          "role": "link",
+          "name": "[redacted-private-or-content:124]"
+        },
+        {
+          "role": "link",
+          "name": "[redacted-private-or-content:120]"
+        },
+        {
+          "role": "link",
+          "name": "[redacted-private-or-content:95]"
+        },
+        {
+          "role": "link",
+          "name": "[redacted-private-or-content:142]"
+        },
+        {
+          "role": "link",
+          "name": "[redacted-private-or-content:128]"
+        },
+        {
+          "role": "link",
+          "name": "[redacted-private-or-content:167]"
+        },
+        {
+          "role": "link",
+          "name": "[redacted-private-or-content:146]"
+        },
+        {
+          "role": "checkbox",
+          "name": "[redacted-private-or-content:76]"
+        },
+        {
+          "role": "heading",
+          "name": "[redacted-private-or-content:69]"
+        },
+        {
+          "role": "StaticText",
+          "name": "[redacted-private-or-content:1]"
+        },
+        {
+          "role": "StaticText",
+          "name": "[redacted-private-or-content:3]"
+        },
+        {
+          "role": "StaticText",
+          "name": "[redacted-private-or-content:8]"
+        },
+        {
+          "role": "StaticText",
+          "name": "Metadata only"
+        },
+        {
+          "role": "StaticText",
+          "name": "[redacted-private-or-content:5]"
+        },
+        {
+          "role": "checkbox",
+          "name": "[redacted-private-or-content:70]"
+        },
+        {
+          "role": "heading",
+          "name": "[redacted-private-or-content:63]"
+        },
+        {
+          "role": "StaticText",
+          "name": "[redacted-private-or-content:6]"
+        },
+        {
+          "role": "checkbox",
+          "name": "[redacted-private-or-content:95]"
+        },
+        {
+          "role": "heading",
+          "name": "[redacted-private-or-content:88]"
+        },
+        {
+          "role": "StaticText",
+          "name": "[redacted-private-or-content:15]"
+        },
+        {
+          "role": "checkbox",
+          "name": "[redacted-private-or-content:84]"
+        },
+        {
+          "role": "heading",
+          "name": "[redacted-private-or-content:77]"
+        },
+        {
+          "role": "StaticText",
+          "name": "Full text"
+        },
+        {
+          "role": "checkbox",
+          "name": "[redacted-private-or-content:104]"
+        },
+        {
+          "role": "heading",
+          "name": "[redacted-private-or-content:97]"
+        },
+        {
+          "role": "checkbox",
+          "name": "[redacted-private-or-content:86]"
+        },
+        {
+          "role": "heading",
+          "name": "[redacted-private-or-content:79]"
+        },
+        {
+          "role": "checkbox",
+          "name": "[redacted-private-or-content:113]"
+        },
+        {
+          "role": "heading",
+          "name": "[redacted-private-or-content:106]"
+        },
+        {
+          "role": "checkbox",
+          "name": "[redacted-private-or-content:78]"
+        },
+        {
+          "role": "heading",
+          "name": "[redacted-private-or-content:71]"
+        },
+        {
+          "role": "checkbox",
+          "name": "[redacted-private-or-content:81]"
+        },
+        {
+          "role": "heading",
+          "name": "[redacted-private-or-content:74]"
+        },
+        {
+          "role": "checkbox",
+          "name": "[redacted-private-or-content:99]"
+        },
+        {
+          "role": "heading",
+          "name": "[redacted-private-or-content:92]"
+        },
+        {
+          "role": "checkbox",
+          "name": "[redacted-private-or-content:68]"
+        },
+        {
+          "role": "heading",
+          "name": "[redacted-private-or-content:61]"
+        },
+        {
+          "role": "checkbox",
+          "name": "[redacted-private-or-content:102]"
+        },
+        {
+          "role": "heading",
+          "name": "[redacted-private-or-content:95]"
+        },
+        {
+          "role": "checkbox",
+          "name": "[redacted-private-or-content:37]"
+        },
+        {
+          "role": "heading",
+          "name": "[redacted-private-or-content:30]"
+        },
+        {
+          "role": "StaticText",
+          "name": "[redacted-private-or-content:13]"
+        },
+        {
+          "role": "checkbox",
+          "name": "[redacted-private-or-content:82]"
+        },
+        {
+          "role": "heading",
+          "name": "[redacted-private-or-content:75]"
+        },
+        {
+          "role": "checkbox",
+          "name": "[redacted-private-or-content:56]"
+        },
+        {
+          "role": "heading",
+          "name": "[redacted-private-or-content:49]"
+        },
+        {
+          "role": "checkbox",
+          "name": "[redacted-private-or-content:65]"
+        },
+        {
+          "role": "heading",
+          "name": "[redacted-private-or-content:58]"
+        },
+        {
+          "role": "checkbox",
+          "name": "[redacted-private-or-content:48]"
+        },
+        {
+          "role": "heading",
+          "name": "[redacted-private-or-content:41]"
+        }
+      ],
+      "redactedPrivateNodeCount": 71,
+      "nodeCount": 528
+    },
+    {
+      "screen": "ask",
+      "requestedPath": "/ask",
+      "observedUrl": "https://brain.arunp.in/ask",
+      "title": "AI Memory",
+      "evidenceTier": "platform_ax_equivalent_passed_with_residual_risk",
+      "routeState": "authenticated route",
+      "result": "passed",
+      "blocker": null,
+      "expectationChecks": [
+        {
+          "label": "Ask screen is exposed",
+          "passed": true
+        },
+        {
+          "label": "Ask input/send affordance is exposed",
+          "passed": true
+        },
+        {
+          "label": "bottom/mobile nav exposes Library",
+          "passed": true
+        },
+        {
+          "label": "bottom/mobile nav exposes Capture",
+          "passed": true
+        },
+        {
+          "label": "bottom/mobile nav exposes Ask",
+          "passed": true
+        },
+        {
+          "label": "bottom/mobile nav exposes More",
+          "passed": true
+        }
+      ],
+      "orderedLabels": [
+        {
+          "role": "RootWebArea",
+          "name": "AI Memory"
+        },
+        {
+          "role": "navigation",
+          "name": "Primary mobile"
+        },
+        {
+          "role": "link",
+          "name": "Open Library"
+        },
+        {
+          "role": "link",
+          "name": "Open Capture"
+        },
+        {
+          "role": "link",
+          "name": "Open Ask"
+        },
+        {
+          "role": "link",
+          "name": "Open More"
+        },
+        {
+          "role": "heading",
+          "name": "Ask"
+        },
+        {
+          "role": "StaticText",
+          "name": "Library"
+        },
+        {
+          "role": "StaticText",
+          "name": "Capture"
+        },
+        {
+          "role": "StaticText",
+          "name": "Ask"
+        },
+        {
+          "role": "StaticText",
+          "name": "More"
+        },
+        {
+          "role": "textbox",
+          "name": "Ask anything about your library..."
+        },
+        {
+          "role": "button",
+          "name": "Send"
+        },
+        {
+          "role": "StaticText",
+          "name": "[redacted-private-or-content:7]"
+        },
+        {
+          "role": "StaticText",
+          "name": "ALL SOURCES"
+        },
+        {
+          "role": "StaticText",
+          "name": "all saved sources"
+        },
+        {
+          "role": "StaticText",
+          "name": "[count] sources"
+        },
+        {
+          "role": "StaticText",
+          "name": "Ask a question across all saved sources."
+        },
+        {
+          "role": "StaticText",
+          "name": "[redacted-private-or-content:11]"
+        },
+        {
+          "role": "StaticText",
+          "name": "[redacted-private-or-content:18]"
+        }
+      ],
+      "redactedPrivateNodeCount": 3,
+      "nodeCount": 22
+    },
+    {
+      "screen": "capture",
+      "requestedPath": "/capture",
+      "observedUrl": "https://brain.arunp.in/capture",
+      "title": "AI Memory",
+      "evidenceTier": "platform_ax_equivalent_passed_with_residual_risk",
+      "routeState": "authenticated route",
+      "result": "passed",
+      "blocker": null,
+      "expectationChecks": [
+        {
+          "label": "Capture screen is exposed",
+          "passed": true
+        },
+        {
+          "label": "capture source tabs are exposed",
+          "passed": true
+        },
+        {
+          "label": "URL input and save are exposed",
+          "passed": true
+        },
+        {
+          "label": "bottom/mobile nav exposes Library",
+          "passed": true
+        },
+        {
+          "label": "bottom/mobile nav exposes Capture",
+          "passed": true
+        },
+        {
+          "label": "bottom/mobile nav exposes Ask",
+          "passed": true
+        },
+        {
+          "label": "bottom/mobile nav exposes More",
+          "passed": true
+        }
+      ],
+      "orderedLabels": [
+        {
+          "role": "RootWebArea",
+          "name": "AI Memory"
+        },
+        {
+          "role": "navigation",
+          "name": "Primary mobile"
+        },
+        {
+          "role": "link",
+          "name": "Open Library"
+        },
+        {
+          "role": "link",
+          "name": "Open Capture"
+        },
+        {
+          "role": "link",
+          "name": "Open Ask"
+        },
+        {
+          "role": "link",
+          "name": "Open More"
+        },
+        {
+          "role": "link",
+          "name": "Back to Library"
+        },
+        {
+          "role": "tablist",
+          "name": "Capture source"
+        },
+        {
+          "role": "StaticText",
+          "name": "Library"
+        },
+        {
+          "role": "StaticText",
+          "name": "Capture"
+        },
+        {
+          "role": "StaticText",
+          "name": "Ask"
+        },
+        {
+          "role": "StaticText",
+          "name": "More"
+        },
+        {
+          "role": "StaticText",
+          "name": "Back to Library"
+        },
+        {
+          "role": "heading",
+          "name": "Capture"
+        },
+        {
+          "role": "tab",
+          "name": "URL"
+        },
+        {
+          "role": "tab",
+          "name": "PDF"
+        },
+        {
+          "role": "tab",
+          "name": "Note"
+        },
+        {
+          "role": "textbox",
+          "name": "URL"
+        },
+        {
+          "role": "button",
+          "name": "Save URL"
+        },
+        {
+          "role": "link",
+          "name": "Cancel"
+        },
+        {
+          "role": "StaticText",
+          "name": "Save a URL, PDF, or note to AI Memory."
+        },
+        {
+          "role": "StaticText",
+          "name": "URL"
+        },
+        {
+          "role": "StaticText",
+          "name": "PDF"
+        },
+        {
+          "role": "StaticText",
+          "name": "Note"
+        },
+        {
+          "role": "StaticText",
+          "name": "Paste a public article URL. AI Memory fetches, extracts clean text, and saves."
+        },
+        {
+          "role": "StaticText",
+          "name": "Save URL"
+        },
+        {
+          "role": "StaticText",
+          "name": "Cancel"
+        }
+      ],
+      "redactedPrivateNodeCount": 0,
+      "nodeCount": 29
+    },
+    {
+      "screen": "more",
+      "requestedPath": "/more",
+      "observedUrl": "https://brain.arunp.in/more",
+      "title": "AI Memory",
+      "evidenceTier": "platform_ax_equivalent_passed_with_residual_risk",
+      "routeState": "authenticated route",
+      "result": "passed",
+      "blocker": null,
+      "expectationChecks": [
+        {
+          "label": "More screen is exposed",
+          "passed": true
+        },
+        {
+          "label": "Device pairing entry is exposed",
+          "passed": true
+        },
+        {
+          "label": "bottom/mobile nav exposes Library",
+          "passed": true
+        },
+        {
+          "label": "bottom/mobile nav exposes Capture",
+          "passed": true
+        },
+        {
+          "label": "bottom/mobile nav exposes Ask",
+          "passed": true
+        },
+        {
+          "label": "bottom/mobile nav exposes More",
+          "passed": true
+        }
+      ],
+      "orderedLabels": [
+        {
+          "role": "RootWebArea",
+          "name": "AI Memory"
+        },
+        {
+          "role": "navigation",
+          "name": "Primary mobile"
+        },
+        {
+          "role": "link",
+          "name": "Open Library"
+        },
+        {
+          "role": "link",
+          "name": "Open Ask"
+        },
+        {
+          "role": "link",
+          "name": "Open More"
+        },
+        {
+          "role": "link",
+          "name": "[redacted-private-or-content:35]"
+        },
+        {
+          "role": "StaticText",
+          "name": "Library"
+        },
+        {
+          "role": "link",
+          "name": "Open Capture"
+        },
+        {
+          "role": "StaticText",
+          "name": "Capture"
+        },
+        {
+          "role": "StaticText",
+          "name": "Ask"
+        },
+        {
+          "role": "StaticText",
+          "name": "More"
+        },
+        {
+          "role": "heading",
+          "name": "More"
+        },
+        {
+          "role": "StaticText",
+          "name": "Needs upgrade"
+        },
+        {
+          "role": "StaticText",
+          "name": "[redacted-private-or-content:7]"
+        },
+        {
+          "role": "StaticText",
+          "name": "[redacted-private-or-content:4]"
+        },
+        {
+          "role": "StaticText",
+          "name": "[redacted-private-or-content:8]"
+        },
+        {
+          "role": "heading",
+          "name": "[redacted-private-or-content:11]"
+        },
+        {
+          "role": "link",
+          "name": "[redacted-private-or-content:10]"
+        },
+        {
+          "role": "link",
+          "name": "[redacted-private-or-content:4]"
+        },
+        {
+          "role": "link",
+          "name": "[redacted-private-or-content:11]"
+        },
+        {
+          "role": "heading",
+          "name": "[redacted-private-or-content:7]"
+        },
+        {
+          "role": "link",
+          "name": "Device pairing"
+        },
+        {
+          "role": "link",
+          "name": "[redacted-private-or-content:13]"
+        },
+        {
+          "role": "heading",
+          "name": "[redacted-private-or-content:14]"
+        },
+        {
+          "role": "link",
+          "name": "[redacted-private-or-content:15]"
+        },
+        {
+          "role": "StaticText",
+          "name": "[redacted-private-or-content:16]"
+        },
+        {
+          "role": "StaticText",
+          "name": "[redacted-private-or-content:74]"
+        },
+        {
+          "role": "StaticText",
+          "name": "[redacted-private-or-content:11]"
+        },
+        {
+          "role": "StaticText",
+          "name": "[redacted-private-or-content:14]"
+        },
+        {
+          "role": "StaticText",
+          "name": "[redacted-private-or-content:96]"
+        },
+        {
+          "role": "StaticText",
+          "name": "[redacted-private-or-content:15]"
+        },
+        {
+          "role": "heading",
+          "name": "[redacted-private-or-content:15]"
+        },
+        {
+          "role": "StaticText",
+          "name": "[redacted-private-or-content:17]"
+        },
+        {
+          "role": "StaticText",
+          "name": "[redacted-private-or-content:9]"
+        },
+        {
+          "role": "StaticText",
+          "name": "[redacted-private-or-content:1]"
+        },
+        {
+          "role": "StaticText",
+          "name": "[redacted-private-or-content:36]"
+        },
+        {
+          "role": "StaticText",
+          "name": "[redacted-private-or-content:24]"
+        },
+        {
+          "role": "StaticText",
+          "name": "[redacted-private-or-content:6]"
+        },
+        {
+          "role": "StaticText",
+          "name": "[redacted-private-or-content:23]"
+        },
+        {
+          "role": "StaticText",
+          "name": "[redacted-private-or-content:40]"
+        },
+        {
+          "role": "StaticText",
+          "name": "AI Memory"
+        },
+        {
+          "role": "StaticText",
+          "name": "[redacted-private-or-content:25]"
+        },
+        {
+          "role": "StaticText",
+          "name": "[redacted-private-or-content:10]"
+        },
+        {
+          "role": "StaticText",
+          "name": "Device pairing"
+        },
+        {
+          "role": "StaticText",
+          "name": "[redacted-private-or-content:13]"
+        }
+      ],
+      "redactedPrivateNodeCount": 30,
+      "nodeCount": 58
+    },
+    {
+      "screen": "device_pairing",
+      "requestedPath": "/settings/device-pairing",
+      "observedUrl": "https://brain.arunp.in/settings/device-pairing",
+      "title": "AI Memory",
+      "evidenceTier": "platform_ax_equivalent_passed_with_residual_risk",
+      "routeState": "authenticated route",
+      "result": "passed",
+      "blocker": null,
+      "expectationChecks": [
+        {
+          "label": "Device pairing heading is exposed",
+          "passed": true
+        },
+        {
+          "label": "Android app pairing section is exposed",
+          "passed": true
+        },
+        {
+          "label": "bottom/mobile nav exposes Library",
+          "passed": true
+        },
+        {
+          "label": "bottom/mobile nav exposes Capture",
+          "passed": true
+        },
+        {
+          "label": "bottom/mobile nav exposes Ask",
+          "passed": true
+        },
+        {
+          "label": "bottom/mobile nav exposes More",
+          "passed": true
+        }
+      ],
+      "orderedLabels": [
+        {
+          "role": "RootWebArea",
+          "name": "AI Memory"
+        },
+        {
+          "role": "navigation",
+          "name": "Primary mobile"
+        },
+        {
+          "role": "link",
+          "name": "Open Library"
+        },
+        {
+          "role": "link",
+          "name": "Open Ask"
+        },
+        {
+          "role": "link",
+          "name": "Open More"
+        },
+        {
+          "role": "heading",
+          "name": "Device pairing"
+        },
+        {
+          "role": "StaticText",
+          "name": "Library"
+        },
+        {
+          "role": "link",
+          "name": "Open Capture"
+        },
+        {
+          "role": "StaticText",
+          "name": "Capture"
+        },
+        {
+          "role": "StaticText",
+          "name": "Ask"
+        },
+        {
+          "role": "StaticText",
+          "name": "More"
+        },
+        {
+          "role": "StaticText",
+          "name": "Device pairing"
+        },
+        {
+          "role": "StaticText",
+          "name": "AI Memory is accessible at"
+        },
+        {
+          "role": "StaticText",
+          "name": "via the Cloudflare tunnel. Pair Android with a short-lived code, or use the advanced token flow for the Chrome extension."
+        },
+        {
+          "role": "heading",
+          "name": "[redacted-private-or-content:11]"
+        },
+        {
+          "role": "heading",
+          "name": "[redacted-private-or-content:18]"
+        },
+        {
+          "role": "heading",
+          "name": "Android app"
+        },
+        {
+          "role": "button",
+          "name": "Add Android device"
+        },
+        {
+          "role": "heading",
+          "name": "ADVANCED TOKEN SETUP"
+        },
+        {
+          "role": "button",
+          "name": "Show advanced token setup"
+        },
+        {
+          "role": "StaticText",
+          "name": "[redacted-private-or-content:22]"
+        },
+        {
+          "role": "StaticText",
+          "name": "[redacted-private-or-content:11]"
+        },
+        {
+          "role": "StaticText",
+          "name": "Already paired through your unlocked browser session."
+        },
+        {
+          "role": "StaticText",
+          "name": "[redacted-private-or-content:18]"
+        },
+        {
+          "role": "StaticText",
+          "name": "Android app"
+        },
+        {
+          "role": "StaticText",
+          "name": "[redacted-private-or-content:58]"
+        },
+        {
+          "role": "StaticText",
+          "name": "Add Android device"
+        },
+        {
+          "role": "StaticText",
+          "name": "ADVANCED TOKEN SETUP"
+        },
+        {
+          "role": "StaticText",
+          "name": "Show advanced token setup"
+        },
+        {
+          "role": "StaticText",
+          "name": "[redacted-private-or-content:82]"
+        },
+        {
+          "role": "StaticText",
+          "name": "[redacted-private-or-content:33]"
+        },
+        {
+          "role": "StaticText",
+          "name": "[redacted-private-or-content:36]"
+        },
+        {
+          "role": "StaticText",
+          "name": "[redacted-private-or-content:20]"
+        },
+        {
+          "role": "StaticText",
+          "name": "[redacted-private-or-content:4]"
+        },
+        {
+          "role": "link",
+          "name": "[redacted-private-or-content:19]"
+        },
+        {
+          "role": "StaticText",
+          "name": "[redacted-private-or-content:6]"
+        },
+        {
+          "role": "StaticText",
+          "name": "[redacted-private-or-content:7]"
+        },
+        {
+          "role": "StaticText",
+          "name": "[redacted-private-or-content:1]"
+        },
+        {
+          "role": "StaticText",
+          "name": "[redacted-private-or-content:3]"
+        },
+        {
+          "role": "StaticText",
+          "name": "[redacted-private-or-content:2]"
+        },
+        {
+          "role": "StaticText",
+          "name": "[redacted-private-or-content:47]"
+        },
+        {
+          "role": "StaticText",
+          "name": "[redacted-private-or-content:5]"
+        },
+        {
+          "role": "StaticText",
+          "name": "[redacted-private-or-content:9]"
+        },
+        {
+          "role": "StaticText",
+          "name": "[redacted-private-or-content:19]"
+        },
+        {
+          "role": "StaticText",
+          "name": "AI Memory"
+        },
+        {
+          "role": "StaticText",
+          "name": "[redacted-private-or-content:27]"
+        },
+        {
+          "role": "StaticText",
+          "name": "[redacted-private-or-content:13]"
+        },
+        {
+          "role": "StaticText",
+          "name": "[redacted-private-or-content:15]"
+        }
+      ],
+      "redactedPrivateNodeCount": 24,
+      "nodeCount": 55
+    },
+    {
+      "screen": "item_detail",
+      "requestedPath": "/items/[redacted]",
+      "observedUrl": "https://brain.arunp.in/items/[redacted]",
+      "title": "AI Memory",
+      "evidenceTier": "platform_ax_equivalent_passed_with_residual_risk",
+      "routeState": "authenticated item detail via redacted in-memory target",
+      "result": "passed",
+      "blocker": null,
+      "expectationChecks": [
+        {
+          "label": "item detail exposes private content area",
+          "passed": true
+        },
+        {
+          "label": "route exposes source/summary/action controls or navigation",
+          "passed": true
+        },
+        {
+          "label": "bottom/mobile nav exposes Library",
+          "passed": true
+        },
+        {
+          "label": "bottom/mobile nav exposes Capture",
+          "passed": true
+        },
+        {
+          "label": "bottom/mobile nav exposes Ask",
+          "passed": true
+        },
+        {
+          "label": "bottom/mobile nav exposes More",
+          "passed": true
+        }
+      ],
+      "orderedLabels": [
+        {
+          "role": "RootWebArea",
+          "name": "AI Memory"
+        },
+        {
+          "role": "navigation",
+          "name": "Primary mobile"
+        },
+        {
+          "role": "link",
+          "name": "Open Library"
+        },
+        {
+          "role": "link",
+          "name": "Open Ask"
+        },
+        {
+          "role": "link",
+          "name": "Open More"
+        },
+        {
+          "role": "link",
+          "name": "Back to Library"
+        },
+        {
+          "role": "StaticText",
+          "name": "Library"
+        },
+        {
+          "role": "link",
+          "name": "Open Capture"
+        },
+        {
+          "role": "StaticText",
+          "name": "Capture"
+        },
+        {
+          "role": "StaticText",
+          "name": "Ask"
+        },
+        {
+          "role": "StaticText",
+          "name": "More"
+        },
+        {
+          "role": "StaticText",
+          "name": "Back to Library"
+        },
+        {
+          "role": "navigation",
+          "name": "[redacted-private-or-content:20]"
+        },
+        {
+          "role": "link",
+          "name": "[redacted-private-or-content:8]"
+        },
+        {
+          "role": "link",
+          "name": "[redacted-private-or-content:6]"
+        },
+        {
+          "role": "link",
+          "name": "Ask"
+        },
+        {
+          "role": "link",
+          "name": "[redacted-private-or-content:7]"
+        },
+        {
+          "role": "StaticText",
+          "name": "[redacted-private-or-content:8]"
+        },
+        {
+          "role": "StaticText",
+          "name": "[redacted-private-or-content:6]"
+        },
+        {
+          "role": "StaticText",
+          "name": "[redacted-private-or-content:7]"
+        },
+        {
+          "role": "heading",
+          "name": "[redacted-private-or-content:69]"
+        },
+        {
+          "role": "StaticText",
+          "name": "[redacted-private-or-content:3]"
+        },
+        {
+          "role": "StaticText",
+          "name": "Metadata only"
+        },
+        {
+          "role": "StaticText",
+          "name": "[redacted-private-or-content:49]"
+        },
+        {
+          "role": "StaticText",
+          "name": "[redacted-private-or-content:5]"
+        },
+        {
+          "role": "StaticText",
+          "name": "[redacted-private-or-content:51]"
+        },
+        {
+          "role": "StaticText",
+          "name": "[redacted-private-or-content:1]"
+        },
+        {
+          "role": "StaticText",
+          "name": "[redacted-private-or-content:102]"
+        },
+        {
+          "role": "link",
+          "name": "Add text"
+        },
+        {
+          "role": "link",
+          "name": "Source"
+        },
+        {
+          "role": "StaticText",
+          "name": "[redacted-private-or-content:352]"
+        },
+        {
+          "role": "link",
+          "name": "[redacted-private-or-content:10]"
+        },
+        {
+          "role": "link",
+          "name": "[redacted-private-or-content:13]"
+        },
+        {
+          "role": "StaticText",
+          "name": "[redacted-private-or-content:69]"
+        },
+        {
+          "role": "StaticText",
+          "name": "[redacted-private-or-content:17]"
+        },
+        {
+          "role": "link",
+          "name": "[redacted-private-or-content:15]"
+        },
+        {
+          "role": "StaticText",
+          "name": "[redacted-private-or-content:16]"
+        },
+        {
+          "role": "StaticText",
+          "name": "[redacted-private-or-content:96]"
+        },
+        {
+          "role": "StaticText",
+          "name": "Add text"
+        },
+        {
+          "role": "StaticText",
+          "name": "Source"
+        },
+        {
+          "role": "StaticText",
+          "name": "[redacted-private-or-content:10]"
+        },
+        {
+          "role": "StaticText",
+          "name": "[redacted-private-or-content:13]"
+        },
+        {
+          "role": "StaticText",
+          "name": "[redacted-private-or-content:15]"
+        }
+      ],
+      "redactedPrivateNodeCount": 25,
+      "nodeCount": 53
+    },
+    {
+      "screen": "item_repair",
+      "requestedPath": "/items/[redacted]/repair",
+      "observedUrl": "https://brain.arunp.in/items/[redacted]/repair",
+      "title": "AI Memory",
+      "evidenceTier": "platform_ax_equivalent_passed_with_residual_risk",
+      "routeState": "authenticated repair via redacted in-memory target",
+      "result": "passed",
+      "blocker": null,
+      "expectationChecks": [
+        {
+          "label": "repair route exposes repair/save/text affordance",
+          "passed": true
+        },
+        {
+          "label": "route retains primary mobile navigation",
+          "passed": true
+        },
+        {
+          "label": "bottom/mobile nav exposes Library",
+          "passed": true
+        },
+        {
+          "label": "bottom/mobile nav exposes Capture",
+          "passed": true
+        },
+        {
+          "label": "bottom/mobile nav exposes Ask",
+          "passed": true
+        },
+        {
+          "label": "bottom/mobile nav exposes More",
+          "passed": true
+        }
+      ],
+      "orderedLabels": [
+        {
+          "role": "RootWebArea",
+          "name": "AI Memory"
+        },
+        {
+          "role": "navigation",
+          "name": "Primary mobile"
+        },
+        {
+          "role": "link",
+          "name": "Open Library"
+        },
+        {
+          "role": "link",
+          "name": "Open Ask"
+        },
+        {
+          "role": "link",
+          "name": "Open More"
+        },
+        {
+          "role": "link",
+          "name": "[redacted-private-or-content:12]"
+        },
+        {
+          "role": "StaticText",
+          "name": "Library"
+        },
+        {
+          "role": "link",
+          "name": "Open Capture"
+        },
+        {
+          "role": "StaticText",
+          "name": "Capture"
+        },
+        {
+          "role": "StaticText",
+          "name": "Ask"
+        },
+        {
+          "role": "StaticText",
+          "name": "More"
+        },
+        {
+          "role": "StaticText",
+          "name": "[redacted-private-or-content:12]"
+        },
+        {
+          "role": "StaticText",
+          "name": "[redacted-private-or-content:16]"
+        },
+        {
+          "role": "heading",
+          "name": "Repair source text"
+        },
+        {
+          "role": "StaticText",
+          "name": "[redacted-private-or-content:7]"
+        },
+        {
+          "role": "StaticText",
+          "name": "Metadata only"
+        },
+        {
+          "role": "StaticText",
+          "name": "[redacted-private-or-content:3]"
+        },
+        {
+          "role": "StaticText",
+          "name": "[redacted-private-or-content:8]"
+        },
+        {
+          "role": "link",
+          "name": "[redacted-private-or-content:11]"
+        },
+        {
+          "role": "textbox",
+          "name": "[redacted-private-or-content:5]"
+        },
+        {
+          "role": "textbox",
+          "name": "Source text"
+        },
+        {
+          "role": "button",
+          "name": "Save repair"
+        },
+        {
+          "role": "link",
+          "name": "Cancel"
+        },
+        {
+          "role": "StaticText",
+          "name": "Repair source text"
+        },
+        {
+          "role": "StaticText",
+          "name": "[redacted-private-or-content:69]"
+        },
+        {
+          "role": "StaticText",
+          "name": "[redacted-private-or-content:57]"
+        },
+        {
+          "role": "StaticText",
+          "name": "[redacted-private-or-content:11]"
+        },
+        {
+          "role": "StaticText",
+          "name": "[redacted-private-or-content:5]"
+        },
+        {
+          "role": "StaticText",
+          "name": "Source text"
+        },
+        {
+          "role": "StaticText",
+          "name": "[redacted-private-or-content:14]"
+        },
+        {
+          "role": "StaticText",
+          "name": "[redacted-private-or-content:63]"
+        },
+        {
+          "role": "StaticText",
+          "name": "Save repair"
+        },
+        {
+          "role": "StaticText",
+          "name": "Cancel"
+        },
+        {
+          "role": "StaticText",
+          "name": "[redacted-private-or-content:4]"
+        },
+        {
+          "role": "StaticText",
+          "name": "[redacted-private-or-content:10]"
+        }
+      ],
+      "redactedPrivateNodeCount": 16,
+      "nodeCount": 38
+    },
+    {
+      "screen": "share_result_saved_full_session_fixture",
+      "requestedPath": "/capture/share-result?key=[redacted]",
+      "observedUrl": "https://brain.arunp.in/capture/share-result?key=[redacted]",
+      "title": "AI Memory",
+      "evidenceTier": "platform_ax_equivalent_passed_with_residual_risk",
+      "routeState": "session-only non-production-mutation share-result payload",
+      "result": "passed",
+      "blocker": null,
+      "expectationChecks": [
+        {
+          "label": "Android share label is exposed",
+          "passed": true
+        },
+        {
+          "label": "Saved title is exposed",
+          "passed": true
+        },
+        {
+          "label": "quality badge is exposed",
+          "passed": true
+        },
+        {
+          "label": "Open item action is exposed",
+          "passed": true
+        },
+        {
+          "label": "Ask action is exposed",
+          "passed": true
+        },
+        {
+          "label": "Done action is exposed",
+          "passed": true
+        }
+      ],
+      "orderedLabels": [
+        {
+          "role": "RootWebArea",
+          "name": "AI Memory"
+        },
+        {
+          "role": "navigation",
+          "name": "Primary mobile"
+        },
+        {
+          "role": "link",
+          "name": "Open Library"
+        },
+        {
+          "role": "link",
+          "name": "Open Capture"
+        },
+        {
+          "role": "link",
+          "name": "Open Ask"
+        },
+        {
+          "role": "link",
+          "name": "Open More"
+        },
+        {
+          "role": "link",
+          "name": "Library"
+        },
+        {
+          "role": "StaticText",
+          "name": "Library"
+        },
+        {
+          "role": "StaticText",
+          "name": "Capture"
+        },
+        {
+          "role": "StaticText",
+          "name": "Ask"
+        },
+        {
+          "role": "StaticText",
+          "name": "More"
+        },
+        {
+          "role": "heading",
+          "name": "Saved to AI Memory"
+        },
+        {
+          "role": "StaticText",
+          "name": "full_text"
+        },
+        {
+          "role": "link",
+          "name": "Open item"
+        },
+        {
+          "role": "link",
+          "name": "Ask"
+        },
+        {
+          "role": "link",
+          "name": "Done"
+        },
+        {
+          "role": "StaticText",
+          "name": "ANDROID SHARE"
+        },
+        {
+          "role": "StaticText",
+          "name": "Saved to AI Memory"
+        },
+        {
+          "role": "StaticText",
+          "name": "This shared item was saved with readable text and is ready for search and Ask."
+        },
+        {
+          "role": "StaticText",
+          "name": "Open item"
+        },
+        {
+          "role": "StaticText",
+          "name": "Done"
+        }
+      ],
+      "redactedPrivateNodeCount": 0,
+      "nodeCount": 23
+    },
+    {
+      "screen": "share_result_url_failure_session_fixture",
+      "requestedPath": "/capture/share-result?key=[redacted]",
+      "observedUrl": "https://brain.arunp.in/capture/share-result?key=[redacted]",
+      "title": "AI Memory",
+      "evidenceTier": "platform_ax_equivalent_passed_with_residual_risk",
+      "routeState": "session-only non-production-mutation share-result payload",
+      "result": "passed",
+      "blocker": null,
+      "expectationChecks": [
+        {
+          "label": "Android share label is exposed",
+          "passed": true
+        },
+        {
+          "label": "URL failure title is exposed",
+          "passed": true
+        },
+        {
+          "label": "Capture manually action is exposed",
+          "passed": true
+        },
+        {
+          "label": "Done action is exposed",
+          "passed": true
+        }
+      ],
+      "orderedLabels": [
+        {
+          "role": "RootWebArea",
+          "name": "AI Memory"
+        },
+        {
+          "role": "navigation",
+          "name": "Primary mobile"
+        },
+        {
+          "role": "link",
+          "name": "Open Library"
+        },
+        {
+          "role": "link",
+          "name": "Open Capture"
+        },
+        {
+          "role": "link",
+          "name": "Open Ask"
+        },
+        {
+          "role": "link",
+          "name": "Open More"
+        },
+        {
+          "role": "link",
+          "name": "Library"
+        },
+        {
+          "role": "StaticText",
+          "name": "Library"
+        },
+        {
+          "role": "StaticText",
+          "name": "Capture"
+        },
+        {
+          "role": "StaticText",
+          "name": "Ask"
+        },
+        {
+          "role": "StaticText",
+          "name": "More"
+        },
+        {
+          "role": "heading",
+          "name": "Link could not be saved"
+        },
+        {
+          "role": "link",
+          "name": "Capture manually"
+        },
+        {
+          "role": "link",
+          "name": "Done"
+        },
+        {
+          "role": "StaticText",
+          "name": "ANDROID SHARE"
+        },
+        {
+          "role": "StaticText",
+          "name": "Link could not be saved"
+        },
+        {
+          "role": "StaticText",
+          "name": "AI Memory reached the server, but this link could not be captured. Try Capture manually or share a different source."
+        },
+        {
+          "role": "StaticText",
+          "name": "Capture manually"
+        },
+        {
+          "role": "StaticText",
+          "name": "Done"
+        }
+      ],
+      "redactedPrivateNodeCount": 0,
+      "nodeCount": 20
+    }
+  ],
+  "overall": "platform_ax_equivalent_passed_with_residual_risk",
+  "counts": {
+    "passed": 10
+  }
+}

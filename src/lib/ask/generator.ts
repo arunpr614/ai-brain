@@ -19,7 +19,7 @@ import type { RetrievedChunk } from "@/lib/retrieve";
 
 type StreamFn = (opts: GenerateStreamOptions) => AsyncIterable<string>;
 
-const SYSTEM_PROMPT = `You are AI Brain, a personal knowledge assistant. Answer ONLY from the provided library chunks below. If nothing in the chunks answers the question, say exactly: "I don't have anything on this in your library."
+const SYSTEM_PROMPT = `You are AI Memory, a personal knowledge assistant. Answer ONLY from the provided library chunks below. If nothing in the chunks answers the question, say exactly: "I don't have anything on this in your library."
 
 Cite every non-trivial claim with [CITE:chunk_id]. Never output a chunk_id that isn't in the list below. Keep answers concise (3–6 sentences unless the user asks for detail).`;
 

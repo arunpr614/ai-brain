@@ -1,5 +1,5 @@
 import { NextResponse, type NextRequest } from "next/server";
-import { SESSION_COOKIE } from "@/lib/auth";
+import { getSessionCookieValue, verifySessionToken } from "@/lib/auth";
 import { loadApiToken } from "@/lib/auth/bearer";
 import { BRAIN_TUNNEL_URL } from "@/lib/config/tunnel";
 import {
@@ -16,6 +16,7 @@ type CreateRouteDeps = {
   createCode?: () => CreatePairingCodeResult;
   loadToken?: () => string | null;
   tunnelUrl?: string;
+  verifySession?: (token: string | undefined | null) => boolean;
 };
 
 function unauth(): NextResponse {
@@ -25,15 +26,16 @@ function unauth(): NextResponse {
   );
 }
 
-function hasSession(req: NextRequest): boolean {
-  return Boolean(req.cookies.get(SESSION_COOKIE)?.value);
+function hasVerifiedSession(req: NextRequest, deps: CreateRouteDeps): boolean {
+  const verifySession = deps.verifySession ?? verifySessionToken;
+  return verifySession(getSessionCookieValue(req.cookies));
 }
 
 export async function handleDevicePairingGet(
   req: NextRequest,
   deps: CreateRouteDeps = {},
 ): Promise<NextResponse> {
-  if (!hasSession(req)) return unauth();
+  if (!hasVerifiedSession(req, deps)) return unauth();
 
   const token = (deps.loadToken ?? loadApiToken)();
   if (!token) {
@@ -53,7 +55,7 @@ export async function handleDevicePairingPost(
   req: NextRequest,
   deps: CreateRouteDeps = {},
 ): Promise<NextResponse> {
-  if (!hasSession(req)) return unauth();
+  if (!hasVerifiedSession(req, deps)) return unauth();
 
   const result = (deps.createCode ?? createPairingCode)();
   if (!result.ok) {

@@ -10,7 +10,10 @@ import assert from "node:assert/strict";
 import { rmSync } from "node:fs";
 import { TEST_DB_DIR } from "./route.test.setup";
 import { NextRequest } from "next/server";
+import { issueSessionToken, setPin } from "@/lib/auth";
 import { POST } from "./route";
+
+setPin("1234");
 
 test.after(() => {
   try {
@@ -18,7 +21,10 @@ test.after(() => {
   } catch {}
 });
 
-function mockRequest(body: unknown, cookieValue: string | null = "stub-session"): NextRequest {
+function mockRequest(
+  body: unknown,
+  cookieValue: string | null = issueSessionToken(),
+): NextRequest {
   const headers = new Headers({ "content-type": "application/json" });
   if (cookieValue) {
     headers.set("cookie", `brain-session=${cookieValue}`);
@@ -32,6 +38,14 @@ function mockRequest(body: unknown, cookieValue: string | null = "stub-session")
 
 test("returns 401 when no session cookie", async () => {
   const req = mockRequest({ question: "test" }, null);
+  const res = await POST(req);
+  assert.equal(res.status, 401);
+  const body = await res.text();
+  assert.match(body, /UNAUTHENTICATED/);
+});
+
+test("returns 401 when the session cookie is unsigned", async () => {
+  const req = mockRequest({ question: "test" }, "stub-session");
   const res = await POST(req);
   assert.equal(res.status, 401);
   const body = await res.text();
@@ -66,4 +80,24 @@ test("returns 400 when scope=item but item_id missing", async () => {
   assert.equal(res.status, 400);
   const body = await res.text();
   assert.match(body, /item_id/);
+});
+
+test("returns 400 when scope=items but item_ids missing", async () => {
+  const req = mockRequest({ question: "q", scope: "items" });
+  const res = await POST(req);
+  assert.equal(res.status, 400);
+  const body = await res.text();
+  assert.match(body, /item_ids/);
+});
+
+test("returns 400 when scope=items has too many ids", async () => {
+  const req = mockRequest({
+    question: "q",
+    scope: "items",
+    item_ids: Array.from({ length: 51 }, (_, index) => `item-${index}`),
+  });
+  const res = await POST(req);
+  assert.equal(res.status, 400);
+  const body = await res.text();
+  assert.match(body, /BAD_REQUEST/);
 });

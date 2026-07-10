@@ -1,0 +1,25 @@
+{
+  "url": "http://127.0.0.1:3000/library",
+  "tagValue": "browser-qa-recheck",
+  "tagButtonCount": 1,
+  "tagButtonEnabled": true,
+  "tagInteractionRecheck": {
+    "hasApplied": false,
+    "status": null,
+    "text": "AI Memory v0.6.2 · private memory Navigation Search ⌘K Capture Library Needs Upgrade 1 Ask Settings Pair Device Privacy Controls SOON Library 6 sources captured 1 need upgrade Capture SOURCE All Articles YouTube PDFs Notes Telegram QUALITY All Full text Transcript Needs upgrade UX v2 library fixture article queued Article · via Web · Full text · 12m ago · 127 chars UX v2 selected ask fixture note queued Note · via Web · Full text · 22m ago · 145 chars UX v2 transcript fixture video queued YouTube · via Web · Transcript · 52m ago · 85 chars UX v2 PDF fixture brief queued PDF · via Web · Full text · 2h ago · 92 chars UX v2 weak metadata fixture queued YouTube · via Web · Metadata only · 3h ago · 46 chars · ⚠ metadata only UX v2 long title stress fixture for wrapping behavior across library r"
+  },
+  "logs": [
+    {
+      "level": "error",
+      "message": "Encountered a script tag while rendering React component. Scripts inside React components are never executed when rendering on the client. Consider using template tag instead (https://developer.mozilla.org/en-US/docs/Web/HTML/Element/template).",
+      "timestamp": "2026-06-15T17:20:25.586Z",
+      "url": "http://127.0.0.1:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js"
+    },
+    {
+      "level": "error",
+      "message": "Encountered a script tag while rendering React component. Scripts inside React components are never executed when rendering on the client. Consider using template tag instead (https://developer.mozilla.org/en-US/docs/Web/HTML/Element/template).",
+      "timestamp": "2026-06-15T17:20:28.480Z",
+      "url": "http://127.0.0.1:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js"
+    }
+  ]
+}

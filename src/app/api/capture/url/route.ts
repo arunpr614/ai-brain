@@ -31,6 +31,11 @@ import { detectCapturePlatform } from "@/lib/capture/platform";
 import { isDuplicateShare, shareDedupKey } from "@/lib/capture/dedup";
 import { captureSourceFromTrustedHeader } from "@/lib/capture/source";
 import { saveCaptureArtifacts } from "@/lib/capture/artifacts";
+import {
+  toCaptureResultPayload,
+  toDuplicateCaptureResultPayload,
+  toFailedCaptureResultPayload,
+} from "@/lib/capture/result";
 import { logError } from "@/lib/errors/sink";
 import { classifyCaptureUpgrade } from "@/lib/capture/upgrade-policy";
 import { analyzeUserProvidedText } from "@/lib/capture/user-provided";
@@ -120,7 +125,16 @@ export async function POST(req: NextRequest) {
     });
     const existing = findItemByUrl(url);
     return NextResponse.json(
-      { duplicate: true, itemId: existing?.id ?? null, reason: "window", action: "duplicate" },
+      {
+        duplicate: true,
+        itemId: existing?.id ?? null,
+        reason: "window",
+        action: "duplicate",
+        capture_result: toDuplicateCaptureResultPayload(existing, {
+          sourcePlatform: detection.platform,
+          capturedVia: captureSource,
+        }),
+      },
       { status: 200 },
     );
   }
@@ -156,7 +170,13 @@ export async function POST(req: NextRequest) {
       reason: "exists",
     });
     return NextResponse.json(
-      { duplicate: true, itemId: existing.id, reason: "exists", action: "duplicate" },
+      {
+        duplicate: true,
+        itemId: existing.id,
+        reason: "exists",
+        action: "duplicate",
+        capture_result: toDuplicateCaptureResultPayload(existing),
+      },
       { status: 200 },
     );
   }
@@ -240,7 +260,16 @@ export async function POST(req: NextRequest) {
         ts: Date.now(),
       });
       return NextResponse.json(
-        { error: "capture_failed", message: err.message, code: err instanceof YoutubeCaptureError ? err.code : undefined },
+        {
+          error: "capture_failed",
+          message: err.message,
+          code: err instanceof YoutubeCaptureError ? err.code : undefined,
+          capture_result: toFailedCaptureResultPayload(err.message, {
+            sourcePlatform: detection.platform,
+            capturedVia: captureSource,
+            warningCode: err instanceof YoutubeCaptureError ? err.code : null,
+          }),
+        },
         { status: 422 },
       );
     }
@@ -273,10 +302,17 @@ export async function POST(req: NextRequest) {
         },
       );
       return NextResponse.json(
-        { duplicate: true, itemId: existing.id, reason: decision.reason, action: "duplicate" },
+        {
+          duplicate: true,
+          itemId: existing.id,
+          reason: decision.reason,
+          action: "duplicate",
+          capture_result: toDuplicateCaptureResultPayload(existing),
+        },
         { status: 200 },
       );
     }
+
     const item = await upgradeItemCaptureContent({
       itemId: existing.id,
       content: {
@@ -285,8 +321,16 @@ export async function POST(req: NextRequest) {
       },
       platform: extracted.detection.platform,
     });
+    const savedItem = item ?? existing;
     return NextResponse.json(
-      { id: item?.id ?? existing.id, duplicate: false, action: "upgraded" },
+      {
+        id: savedItem.id,
+        duplicate: false,
+        action: "upgraded",
+        capture_result: toCaptureResultPayload(savedItem, {
+          state: "updated_existing",
+        }),
+      },
       { status: 200 },
     );
   }
@@ -308,13 +352,15 @@ export async function POST(req: NextRequest) {
     thumbnail_url: content.thumbnail_url ?? null,
     description: content.description ?? null,
   });
+  let artifactError: string | null = null;
   try {
     await saveCaptureArtifacts(item.id, content.artifacts);
   } catch (err) {
+    artifactError = (err as Error).message;
     logError({
       type: "capture.artifact-save-failed",
       item_id: item.id,
-      message: (err as Error).message,
+      message: artifactError,
       ts: Date.now(),
     });
   }
@@ -332,7 +378,18 @@ export async function POST(req: NextRequest) {
     enqueueTranscriptJobForItem(item, { priority: 20 });
   }
 
-  return NextResponse.json({ id: item.id, duplicate: false, action: "created" }, { status: 201 });
+  return NextResponse.json(
+    {
+      id: item.id,
+      duplicate: false,
+      action: "created",
+      capture_result: toCaptureResultPayload(item, {
+        state: artifactError ? "error_with_saved_item" : undefined,
+        errorMessage: artifactError,
+      }),
+    },
+    { status: 201 },
+  );
 }
 
 function logCaptureDecision(type: string, fields: Record<string, unknown>): void {

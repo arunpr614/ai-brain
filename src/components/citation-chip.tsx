@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import type { AskRetrievedChunk } from "@/lib/client/use-ask-stream";
+import { platformLabel, qualityLabel } from "@/lib/capture/quality";
 
 interface CitationChipProps {
   chunk_id: string;
@@ -37,8 +38,8 @@ export function CitationChip({ chunk_id, chunks }: CitationChipProps) {
   return (
     <Link
       href={`/items/${chunk.item_id}?highlight=${encodeURIComponent(chunk_id)}#chunk-${encodeURIComponent(chunk_id)}`}
-      className="mx-0.5 inline-flex h-[18px] min-w-[18px] items-center justify-center rounded-full border border-[var(--accent-9)] bg-[var(--accent-3)] px-1.5 text-[10px] font-medium text-[var(--accent-11)] no-underline align-middle hover:bg-[var(--accent-3)] hover:border-[var(--accent-10)]"
-      title={chunk.item_title}
+      className="mx-0.5 inline-flex h-[18px] min-w-[18px] items-center justify-center rounded-full border border-[var(--control-selected-border)] bg-[var(--control-selected-bg)] px-1.5 text-[10px] font-medium text-[var(--control-selected-fg)] no-underline align-middle hover:border-[var(--action-primary-focus)]"
+      title={`${chunk.item_title} · ${platformLabel(chunk.item_source_platform, chunk.item_source_type)} · ${qualityLabel(chunk.item_capture_quality)}`}
     >
       {label}
     </Link>

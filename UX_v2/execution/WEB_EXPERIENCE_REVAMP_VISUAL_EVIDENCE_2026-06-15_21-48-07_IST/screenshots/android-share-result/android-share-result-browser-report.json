@@ -1,0 +1,112 @@
+{
+  "baseUrl": "http://127.0.0.1:3027",
+  "viewport": {
+    "width": 390,
+    "height": 844
+  },
+  "checkedAt": "2026-06-16T02:45:27.768Z",
+  "states": [
+    {
+      "state": "saved_full",
+      "expectedH1": "Saved to AI Memory",
+      "h1Text": "Saved to AI Memory",
+      "screenshotName": "android-share-result-saved_full-390-light.png",
+      "forbidden": false,
+      "overflow": false,
+      "issues": []
+    },
+    {
+      "state": "saved_limited",
+      "expectedH1": "Saved, but needs better text",
+      "h1Text": "Saved, but needs better text",
+      "screenshotName": "android-share-result-saved_limited-390-light.png",
+      "forbidden": false,
+      "overflow": false,
+      "issues": []
+    },
+    {
+      "state": "duplicate_existing",
+      "expectedH1": "Already saved",
+      "h1Text": "Already saved",
+      "screenshotName": "android-share-result-duplicate_existing-390-light.png",
+      "forbidden": false,
+      "overflow": false,
+      "issues": []
+    },
+    {
+      "state": "updated_existing",
+      "expectedH1": "Existing item updated",
+      "h1Text": "Existing item updated",
+      "screenshotName": "android-share-result-updated_existing-390-light.png",
+      "forbidden": false,
+      "overflow": false,
+      "issues": []
+    },
+    {
+      "state": "missing_token",
+      "expectedH1": "Pair this Android app",
+      "h1Text": "Pair this Android app",
+      "screenshotName": "android-share-result-missing_token-390-light.png",
+      "forbidden": false,
+      "overflow": false,
+      "issues": []
+    },
+    {
+      "state": "server_unreachable",
+      "expectedH1": "Could not reach AI Memory",
+      "h1Text": "Could not reach AI Memory",
+      "screenshotName": "android-share-result-server_unreachable-390-light.png",
+      "forbidden": false,
+      "overflow": false,
+      "issues": []
+    },
+    {
+      "state": "pdf_read_failed",
+      "expectedH1": "PDF could not be read",
+      "h1Text": "PDF could not be read",
+      "screenshotName": "android-share-result-pdf_read_failed-390-light.png",
+      "forbidden": false,
+      "overflow": false,
+      "issues": []
+    },
+    {
+      "state": "pdf_checksum_failed",
+      "expectedH1": "PDF upload needs a retry",
+      "h1Text": "PDF upload needs a retry",
+      "screenshotName": "android-share-result-pdf_checksum_failed-390-light.png",
+      "forbidden": false,
+      "overflow": false,
+      "issues": []
+    },
+    {
+      "state": "pdf_upload_failed",
+      "expectedH1": "PDF upload failed",
+      "h1Text": "PDF upload failed",
+      "screenshotName": "android-share-result-pdf_upload_failed-390-light.png",
+      "forbidden": false,
+      "overflow": false,
+      "issues": []
+    },
+    {
+      "state": "multi_pdf_rejected",
+      "expectedH1": "Share one PDF at a time",
+      "h1Text": "Share one PDF at a time",
+      "screenshotName": "android-share-result-multi_pdf_rejected-390-light.png",
+      "forbidden": false,
+      "overflow": false,
+      "issues": []
+    },
+    {
+      "state": "expired_result",
+      "expectedH1": "Share result expired",
+      "h1Text": "Share result expired",
+      "screenshotName": "android-share-result-expired_result-390-light.png",
+      "forbidden": false,
+      "overflow": false,
+      "issues": []
+    }
+  ],
+  "consoleMessages": [],
+  "issueCount": 0,
+  "consoleCount": 0
+}

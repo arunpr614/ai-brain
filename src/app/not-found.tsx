@@ -10,8 +10,8 @@ export default function NotFound() {
         The item or page you requested doesn&rsquo;t exist.
       </p>
       <Link
-        href="/"
-        className="mt-6 inline-flex h-9 items-center gap-2 rounded-md bg-[var(--accent-9)] px-4 text-sm font-medium text-[var(--on-accent)] transition-colors hover:bg-[var(--accent-10)]"
+        href="/library"
+        className="mt-6 inline-flex h-9 items-center gap-2 rounded-md bg-[var(--action-primary-bg)] px-4 text-sm font-medium text-[var(--action-primary-fg)] transition-colors hover:bg-[var(--action-primary-bg-hover)]"
       >
         Back to Library
       </Link>

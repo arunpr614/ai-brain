@@ -1,0 +1,1 @@
+offline_recovery_sequence=online baseline -> svc wifi/data disable -> force-stop launch -> screenshot -> svc wifi/data enable -> force-stop launch -> screenshot

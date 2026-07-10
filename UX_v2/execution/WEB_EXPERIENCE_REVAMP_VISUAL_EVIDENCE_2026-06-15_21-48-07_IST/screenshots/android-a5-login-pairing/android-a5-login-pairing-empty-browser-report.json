@@ -1,0 +1,141 @@
+{
+  "scenario": "empty",
+  "baseUrl": "http://127.0.0.1:3027",
+  "viewport": {
+    "width": 390,
+    "height": 844,
+    "isMobile": true
+  },
+  "states": [
+    {
+      "name": "setup-first-run",
+      "screenshot": "UX_v2/execution/WEB_EXPERIENCE_REVAMP_VISUAL_EVIDENCE_2026-06-15_21-48-07_IST/screenshots/android-a5-login-pairing/empty-setup-first-run.png",
+      "metrics": {
+        "title": "AI Memory",
+        "url": "/setup?next=/library",
+        "bodyTextSample": "Library\nCapture\nAsk\nMore\nWelcome to AI Memory\n\nSet a PIN to protect your library. You’ll enter it once per device.\n\nChoose PIN\nConfirm PIN\nCreate PIN\n\nYour PIN is hashed on the AI Memory server. Saved content stays in your private library; enrichment may send saved content to configured AI providers for processing.",
+        "scrollWidth": 390,
+        "clientWidth": 390,
+        "scrollHeight": 844,
+        "clientHeight": 844,
+        "horizontalOverflow": false,
+        "forbiddenMatches": [],
+        "expectedMissing": [],
+        "clippedControls": [],
+        "smallControls": [],
+        "controlResults": [
+          {
+            "selector": "#setup-pin",
+            "label": "setup PIN field",
+            "minHeight": 44,
+            "minWidth": 44,
+            "expectedInputMode": "numeric",
+            "expectedAutoComplete": "new-password",
+            "found": true,
+            "height": 48,
+            "width": 350,
+            "disabled": false,
+            "inputMode": "numeric",
+            "autoComplete": "new-password",
+            "ariaInvalid": null
+          },
+          {
+            "selector": "#setup-confirm",
+            "label": "setup confirm field",
+            "minHeight": 44,
+            "minWidth": 44,
+            "expectedInputMode": "numeric",
+            "expectedAutoComplete": "new-password",
+            "found": true,
+            "height": 48,
+            "width": 350,
+            "disabled": false,
+            "inputMode": "numeric",
+            "autoComplete": "new-password",
+            "ariaInvalid": null
+          },
+          {
+            "selector": "form button[type='submit']",
+            "label": "create PIN button",
+            "minHeight": 44,
+            "minWidth": 44,
+            "found": true,
+            "height": 48,
+            "width": 350,
+            "disabled": false,
+            "inputMode": null,
+            "autoComplete": null,
+            "ariaInvalid": null
+          }
+        ]
+      }
+    },
+    {
+      "name": "setup-mismatch-error",
+      "screenshot": "UX_v2/execution/WEB_EXPERIENCE_REVAMP_VISUAL_EVIDENCE_2026-06-15_21-48-07_IST/screenshots/android-a5-login-pairing/empty-setup-mismatch-error.png",
+      "metrics": {
+        "title": "AI Memory",
+        "url": "/setup?next=/library",
+        "bodyTextSample": "Library\nCapture\nAsk\nMore\nWelcome to AI Memory\n\nSet a PIN to protect your library. You’ll enter it once per device.\n\nChoose PIN\nConfirm PIN\n\nPINs don't match\n\nCreate PIN\n\nYour PIN is hashed on the AI Memory server. Saved content stays in your private library; enrichment may send saved content to configured AI providers for processing.",
+        "scrollWidth": 390,
+        "clientWidth": 390,
+        "scrollHeight": 844,
+        "clientHeight": 844,
+        "horizontalOverflow": false,
+        "forbiddenMatches": [],
+        "expectedMissing": [],
+        "clippedControls": [],
+        "smallControls": [],
+        "controlResults": [
+          {
+            "selector": "#setup-pin",
+            "label": "setup PIN field after error",
+            "minHeight": 44,
+            "minWidth": 44,
+            "expectedInputMode": "numeric",
+            "expectedAutoComplete": "new-password",
+            "found": true,
+            "height": 48,
+            "width": 350,
+            "disabled": false,
+            "inputMode": "numeric",
+            "autoComplete": "new-password",
+            "ariaInvalid": "true"
+          },
+          {
+            "selector": "#setup-confirm",
+            "label": "setup confirm field after error",
+            "minHeight": 44,
+            "minWidth": 44,
+            "expectedInputMode": "numeric",
+            "expectedAutoComplete": "new-password",
+            "found": true,
+            "height": 48,
+            "width": 350,
+            "disabled": false,
+            "inputMode": "numeric",
+            "autoComplete": "new-password",
+            "ariaInvalid": "true"
+          },
+          {
+            "selector": "form button[type='submit']",
+            "label": "create PIN button after error",
+            "minHeight": 44,
+            "minWidth": 44,
+            "found": true,
+            "height": 48,
+            "width": 350,
+            "disabled": false,
+            "inputMode": null,
+            "autoComplete": null,
+            "ariaInvalid": null
+          }
+        ]
+      }
+    }
+  ],
+  "fetchEvents": [],
+  "observations": [],
+  "issues": [],
+  "issueCount": 0
+}

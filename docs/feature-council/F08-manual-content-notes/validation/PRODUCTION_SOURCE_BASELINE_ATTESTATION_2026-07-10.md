@@ -43,7 +43,7 @@ The following live files exactly match both siblings, confirming the Recall laye
 
 1. Commit the F08 artifact milestone on the main-derived feature branch.
 2. Merge `8178117` into `codex/manual-content-notes`, preserving both `origin/main` improvements and the consolidated production UX/Recall/transcript source.
-3. Resolve conflicts without deleting either migration history; F08 migrations begin at 021.
+3. Resolve conflicts without deleting either migration history. Integration migration 021 restores the transcript-recovery trigger dropped by the 020 items rebuild; F08 schema begins at 022.
 4. Reinstall dependencies and pass the integrated baseline typecheck, lint, tests, production build, dependency audit, and Recall preflights before F08 code changes.
 5. Before deploy, compare the complete local artifact/explicit script inventory with `/opt/brain`; review every `rsync --delete` removal. Any unexplained difference remains a release blocker.
 

@@ -1,0 +1,10 @@
+Package,User goals,Scope,Web UX,Android UX,Interactions/states,Edge cases,Data needs,Analytics/events,Non-goals,Acceptance criteria,Open questions or N-A,Reviews/plans,Final status
+PRD-06-FU,Present,Present,Present,Present,Present,Present,Present,Present,Present,Present,Present,Complete,Complete
+PRD-09-FU,Present,Present,Present,Present,Present,Present,Present,Present,Present,Present,Present,Complete,"Complete decision-gated"
+PRD-10,Present,Present,Present,Present,Present,Present,Present,Present,Present,Present,Present,Complete,"Complete dependency/decision-gated"
+PRD-11-FU,Present,Present,Present,Present,Present,Present,Present,Present,Present,Present,Present,Complete,"Complete verification/decision-gated"
+PRD-12,Present,Present,Present,Present,Present,Present,Present,Present,Present,Present,Present,Complete,"Complete PRD-09-gated"
+PRD-13,Present,Present,"N/A rationale",Present,Present,Present,Present,Present,Present,Present,Present,Complete,"Complete PRD-06/device-gated"
+PRD-14,Present,Present,Present,Present,Present,Present,Present,Present,Present,Present,Present,Complete,"Complete active-offline decision-gated"
+PRD-15,Present,Present,Present,Present,Present,Present,Present,Present,Present,Present,Present,Complete,"Complete Android decision/device-gated"
+PRD-16,Present,Present,"Web UX QA equivalent","Android UX QA equivalent",Present,"N/A by QA scope",Present,Present,Present,Present,"N/A by QA scope",Complete,"Complete as QA gate only"

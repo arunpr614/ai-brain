@@ -188,7 +188,7 @@ The release must solve the trust problem, not just place a text box:
 ### Release
 
 - [ ] `8178117` is merged with main-derived work; integrated baseline checks/build/audit/Recall preflights pass before feature code.
-- [ ] Migrations 021+ pass fresh DB and latest production snapshot copy; migration history 018–020 and scheduler/runtime inventory are intact.
+- [ ] Integration-hardening migration 021 restores the transcript-recovery trigger lost by the 020 items rebuild; F08 migrations 022/023 pass fresh DB and latest production snapshot copy; history 018–020 and scheduler/runtime inventory are intact.
 - [ ] Every vec0 row is classified; backup+report+approved repair/reservation+parity pass before indexing.
 - [ ] Dry-run artifact sync has no unexplained removal; flags off is first rollback; no live down-migration.
 - [ ] Synthetic production create/edit/search/Ask/Related/opt-out/delete/cleanup and health/Recall checks pass before real use.

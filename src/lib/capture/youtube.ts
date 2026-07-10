@@ -590,7 +590,7 @@ function antiBotMetadataOnlyResult(
       sourceUrl,
       description: null,
       transcript:
-        "[Transcript unavailable: YouTube blocked Brain's server transcript request with an anti-bot sign-in check.]",
+        "[Transcript unavailable: YouTube blocked AI Memory's server transcript request with an anti-bot sign-in check.]",
       captureQuality: "metadata_only",
     }),
     extraction_warning: YOUTUBE_ANTIBOT_METADATA_WARNING,

@@ -1,0 +1,18 @@
+A26 share logcat scan (redacted)
+fixture_url_redacted=<A26_URL>
+global_fixture_url=False
+focused_fixture_url=False
+global_brain_token=False
+focused_brain_token=False
+global_bearer_literal=False
+focused_bearer_literal=False
+focused_64_hex=False
+share_target_count_only=True
+share_target_raw_payload=False
+
+Focused CapacitorShareTarget lines:
+06-16 23:37:10.261  4031  4031 D CapacitorShareTarget: Share received: texts=1 files=0
+06-16 23:37:10.289  4031  4031 D CapacitorShareTarget: Share received: texts=1 files=0
+
+Focused 64-hex lines:
+none

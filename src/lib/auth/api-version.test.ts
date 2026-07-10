@@ -57,6 +57,6 @@ describe("checkClientApiVersion", () => {
     assert.ok(res !== null);
     const body = (await res.json()) as { code: string; message: string };
     assert.equal(body.code, "version_mismatch");
-    assert.match(body.message, /Update Brain/);
+    assert.match(body.message, /Update AI Memory/);
   });
 });

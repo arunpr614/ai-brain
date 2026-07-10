@@ -1,0 +1,17 @@
+# Implementation Plan Tracker
+
+Created: 2026-06-14 07:40 IST
+
+Each feature package contains implementation plan v1, adversarial plan review, and implementation plan v2. `Plan v2` means reviewed planning exists; it is not permission to execute while a decision, dependency, or verification gate remains open. No implementation has started from these plans.
+
+| Plan | Status | Primary modules | Highest risk | Next implementation step |
+| --- | --- | --- | --- | --- |
+| PRD-06-FU | Plan v2 draft - next implementation candidate after shell verification | capture APIs, capture UI, item banner, share handler | Inconsistent result contracts across entry points | Define shared result type first |
+| PRD-09-FU | Plan v2 draft - blocked by D-001/D-002/D-003 | Ask page/client/API/retriever/chat schema | Attachment/history persistence ambiguity | Decide attachment persistence before schema |
+| PRD-10 | Plan v2 draft - blocked by PRD-06-FU and D-004 | items DB, chunks, embedding jobs, enrichment, Needs Upgrade | Stale derived state after repair | Make reset transaction mandatory; leave mark-good-enough gated |
+| PRD-11-FU | Plan v2 draft - blocked by PRD-11-SHELL smoke and D-005 | sidebar, library list, item detail responsive UI | Mobile tabs scope creep | Split tabs if scope expands |
+| PRD-12 | Plan v2 draft - blocked by PRD-09-FU decisions | mobile Ask client/sheets/history/composer | Keyboard/nav overlap | Prototype viewport QA early after scope model closes |
+| PRD-13 | Plan v2 draft - blocked by PRD-06-FU and Android device/emulator gate | share handler, capture APIs, result route/sheet | Alert-only failure paths | Introduce durable share-result state only after capture contract |
+| PRD-14 | Plan v2 draft - blocked by D-007 for active offline controls | settings, more, offline page, service worker | Privacy overclaims | Copy audit; implement informational offline only unless approved |
+| PRD-15 | Plan v2 draft - blocked by D-008/D-013 and Android device/emulator gate | setup, unlock, pairing, proxy/offline | Confusing session states | Entry-state matrix first |
+| PRD-16 | Plan v2 release gate - executable for evidence collection | test scripts, Browser QA, screenshots, builds | False release confidence | Treat failed evidence as blocker |

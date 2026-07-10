@@ -1,0 +1,569 @@
+{
+  "scenario": "paired",
+  "baseUrl": "http://127.0.0.1:3027",
+  "viewport": {
+    "width": 390,
+    "height": 844,
+    "isMobile": true
+  },
+  "states": [
+    {
+      "name": "device-pairing-unauthenticated-redirect",
+      "screenshot": "UX_v2/execution/WEB_EXPERIENCE_REVAMP_VISUAL_EVIDENCE_2026-06-15_21-48-07_IST/screenshots/android-a5-login-pairing/paired-device-pairing-unauthenticated-redirect.png",
+      "metrics": {
+        "title": "AI Memory",
+        "url": "/unlock?next=%2Fsettings%2Fdevice-pairing&reason=session-expired",
+        "bodyTextSample": "Library\nCapture\nAsk\nMore\nUnlock AI Memory\n\nEnter your PIN to continue.\n\nSession expired\n\nUnlock this device again to return to the page you requested.\n\nPIN\nUnlock\n\nForgot your PIN? Reset requires access to the AI Memory server. After a server reset, you can create a new PIN on first run.\n\nHome",
+        "scrollWidth": 390,
+        "clientWidth": 390,
+        "scrollHeight": 844,
+        "clientHeight": 844,
+        "horizontalOverflow": false,
+        "forbiddenMatches": [],
+        "expectedMissing": [],
+        "clippedControls": [],
+        "smallControls": [
+          {
+            "tag": "a",
+            "text": "Home",
+            "top": 39,
+            "bottom": 40,
+            "left": 19,
+            "right": 20,
+            "width": 1,
+            "height": 1
+          }
+        ],
+        "controlResults": []
+      }
+    },
+    {
+      "name": "unlock-normal",
+      "screenshot": "UX_v2/execution/WEB_EXPERIENCE_REVAMP_VISUAL_EVIDENCE_2026-06-15_21-48-07_IST/screenshots/android-a5-login-pairing/paired-unlock-normal.png",
+      "metrics": {
+        "title": "AI Memory",
+        "url": "/unlock?next=/library",
+        "bodyTextSample": "Library\nCapture\nAsk\nMore\nUnlock AI Memory\n\nEnter your PIN to continue.\n\nPIN\nUnlock\n\nForgot your PIN? Reset requires access to the AI Memory server. After a server reset, you can create a new PIN on first run.\n\nHome",
+        "scrollWidth": 390,
+        "clientWidth": 390,
+        "scrollHeight": 844,
+        "clientHeight": 844,
+        "horizontalOverflow": false,
+        "forbiddenMatches": [],
+        "expectedMissing": [],
+        "clippedControls": [],
+        "smallControls": [
+          {
+            "tag": "a",
+            "text": "Home",
+            "top": 39,
+            "bottom": 40,
+            "left": 19,
+            "right": 20,
+            "width": 1,
+            "height": 1
+          }
+        ],
+        "controlResults": [
+          {
+            "selector": "#unlock-pin",
+            "label": "unlock PIN field",
+            "minHeight": 44,
+            "minWidth": 44,
+            "expectedInputMode": "numeric",
+            "expectedAutoComplete": "current-password",
+            "found": true,
+            "height": 48,
+            "width": 350,
+            "disabled": false,
+            "inputMode": "numeric",
+            "autoComplete": "current-password",
+            "ariaInvalid": null
+          },
+          {
+            "selector": "form button[type='submit']",
+            "label": "unlock button",
+            "minHeight": 44,
+            "minWidth": 44,
+            "found": true,
+            "height": 48,
+            "width": 350,
+            "disabled": false,
+            "inputMode": null,
+            "autoComplete": null,
+            "ariaInvalid": null
+          }
+        ]
+      }
+    },
+    {
+      "name": "unlock-wrong-pin",
+      "screenshot": "UX_v2/execution/WEB_EXPERIENCE_REVAMP_VISUAL_EVIDENCE_2026-06-15_21-48-07_IST/screenshots/android-a5-login-pairing/paired-unlock-wrong-pin.png",
+      "metrics": {
+        "title": "AI Memory",
+        "url": "/unlock?next=/library",
+        "bodyTextSample": "Library\nCapture\nAsk\nMore\nUnlock AI Memory\n\nEnter your PIN to continue.\n\nPIN\n\nIncorrect PIN\n\nUnlock\n\nForgot your PIN? Reset requires access to the AI Memory server. After a server reset, you can create a new PIN on first run.\n\nHome",
+        "scrollWidth": 390,
+        "clientWidth": 390,
+        "scrollHeight": 844,
+        "clientHeight": 844,
+        "horizontalOverflow": false,
+        "forbiddenMatches": [],
+        "expectedMissing": [],
+        "clippedControls": [],
+        "smallControls": [
+          {
+            "tag": "a",
+            "text": "Home",
+            "top": 39,
+            "bottom": 40,
+            "left": 19,
+            "right": 20,
+            "width": 1,
+            "height": 1
+          }
+        ],
+        "controlResults": [
+          {
+            "selector": "#unlock-pin",
+            "label": "unlock PIN field after error",
+            "minHeight": 44,
+            "minWidth": 44,
+            "expectedInputMode": "numeric",
+            "expectedAutoComplete": "current-password",
+            "found": true,
+            "height": 48,
+            "width": 350,
+            "disabled": false,
+            "inputMode": "numeric",
+            "autoComplete": "current-password",
+            "ariaInvalid": "true"
+          }
+        ]
+      }
+    },
+    {
+      "name": "unlock-session-expired",
+      "screenshot": "UX_v2/execution/WEB_EXPERIENCE_REVAMP_VISUAL_EVIDENCE_2026-06-15_21-48-07_IST/screenshots/android-a5-login-pairing/paired-unlock-session-expired.png",
+      "metrics": {
+        "title": "AI Memory",
+        "url": "/unlock?next=/library&reason=session-expired",
+        "bodyTextSample": "Library\nCapture\nAsk\nMore\nUnlock AI Memory\n\nEnter your PIN to continue.\n\nSession expired\n\nUnlock this device again to return to the page you requested.\n\nPIN\nUnlock\n\nForgot your PIN? Reset requires access to the AI Memory server. After a server reset, you can create a new PIN on first run.\n\nHome",
+        "scrollWidth": 390,
+        "clientWidth": 390,
+        "scrollHeight": 844,
+        "clientHeight": 844,
+        "horizontalOverflow": false,
+        "forbiddenMatches": [],
+        "expectedMissing": [],
+        "clippedControls": [],
+        "smallControls": [
+          {
+            "tag": "a",
+            "text": "Home",
+            "top": 39,
+            "bottom": 40,
+            "left": 19,
+            "right": 20,
+            "width": 1,
+            "height": 1
+          }
+        ],
+        "controlResults": []
+      }
+    },
+    {
+      "name": "device-pairing-authenticated",
+      "screenshot": "UX_v2/execution/WEB_EXPERIENCE_REVAMP_VISUAL_EVIDENCE_2026-06-15_21-48-07_IST/screenshots/android-a5-login-pairing/paired-device-pairing-authenticated.png",
+      "metrics": {
+        "title": "AI Memory",
+        "url": "/settings/device-pairing",
+        "bodyTextSample": "Library\nCapture\nAsk\nMore\nDevice pairing\n\nAI Memory is accessible at https://brain.arunp.in via the Cloudflare tunnel. Pair Android with a short-lived code, or use the advanced token flow for the Chrome extension.\n\nTHIS DEVICE\n\nAlready paired through your unlocked browser session.\n\nADD ANDROID DEVICE\nAndroid app\n\nGenerate a temporary code, then enter it in Android setup.\n\nAdd Android device\nADVANCED TOKEN SETUP\nInstall the AI Memory extension (see extension/README.md for sideload steps).\nOpen chrome://extensions, find AI Memory, click Details → Extension options.\nSet AI Memory URL to https://brain.arunp.in and copy the token from advanced setup into the Token field.\nClick Test connection, then Save.\nShow advanced token setup\n\nChrome does not allow a website to open an extension's options page automatically; chrome:// links must be navigated manually.",
+        "scrollWidth": 390,
+        "clientWidth": 390,
+        "scrollHeight": 1084,
+        "clientHeight": 844,
+        "horizontalOverflow": false,
+        "forbiddenMatches": [],
+        "expectedMissing": [],
+        "clippedControls": [],
+        "smallControls": [
+          {
+            "tag": "a",
+            "text": "chrome://extensions",
+            "top": 635,
+            "bottom": 651,
+            "left": 91,
+            "right": 228,
+            "width": 137,
+            "height": 16
+          }
+        ],
+        "controlResults": []
+      }
+    },
+    {
+      "name": "device-pairing-generated-code",
+      "screenshot": "UX_v2/execution/WEB_EXPERIENCE_REVAMP_VISUAL_EVIDENCE_2026-06-15_21-48-07_IST/screenshots/android-a5-login-pairing/paired-device-pairing-generated-code.png",
+      "metrics": {
+        "title": "AI Memory",
+        "url": "/settings/device-pairing",
+        "bodyTextSample": "Library\nCapture\nAsk\nMore\nDevice pairing\n\nAI Memory is accessible at https://brain.arunp.in via the Cloudflare tunnel. Pair Android with a short-lived code, or use the advanced token flow for the Chrome extension.\n\nTHIS DEVICE\n\nAlready paired through your unlocked browser session.\n\nADD ANDROID DEVICE\nAndroid app\n\nGenerate a temporary code, then enter it in Android setup.\n\nRegenerate\n\nPairing code\n\n[pairing-code]\n\nExpires in 5:00. The code works once. Expires at 12:55 PM.\n\nADVANCED TOKEN SETUP\nInstall the AI Memory extension (see extension/README.md for sideload steps).\nOpen chrome://extensions, find AI Memory, click Details → Extension options.\nSet AI Memory URL to https://brain.arunp.in and copy the token from advanced setup into the Token field.\nClick Test connection, then Save.\nShow advanced token setup\n\nChrome does not allow a website to open an extension's options page automatically; chrome:// links must be navigated manually.",
+        "scrollWidth": 390,
+        "clientWidth": 390,
+        "scrollHeight": 1221,
+        "clientHeight": 844,
+        "horizontalOverflow": false,
+        "forbiddenMatches": [],
+        "expectedMissing": [],
+        "clippedControls": [],
+        "smallControls": [
+          {
+            "tag": "a",
+            "text": "chrome://extensions",
+            "top": 395,
+            "bottom": 411,
+            "left": 91,
+            "right": 228,
+            "width": 137,
+            "height": 16
+          }
+        ],
+        "controlResults": []
+      }
+    },
+    {
+      "name": "setup-apk-entry",
+      "screenshot": "UX_v2/execution/WEB_EXPERIENCE_REVAMP_VISUAL_EVIDENCE_2026-06-15_21-48-07_IST/screenshots/android-a5-login-pairing/paired-setup-apk-entry.png",
+      "metrics": {
+        "title": "AI Memory",
+        "url": "/setup-apk",
+        "bodyTextSample": "Library\nCapture\nAsk\nMore\n\nAndroid setup\n\nPair AI Memory\n\nEnter the Android code generated from Device pairing in the web app. Codes work once and expire quickly.\n\nPairing code\n\nOpen Device pairing in the web app and generate an Android code.\n\nPair device",
+        "scrollWidth": 390,
+        "clientWidth": 390,
+        "scrollHeight": 844,
+        "clientHeight": 844,
+        "horizontalOverflow": false,
+        "forbiddenMatches": [],
+        "expectedMissing": [],
+        "clippedControls": [],
+        "smallControls": [],
+        "controlResults": [
+          {
+            "selector": "#pairing-code",
+            "label": "pairing code field",
+            "minHeight": 44,
+            "minWidth": 44,
+            "expectedAutoComplete": "one-time-code",
+            "found": true,
+            "height": 48,
+            "width": 316,
+            "disabled": false,
+            "inputMode": "text",
+            "autoComplete": "one-time-code",
+            "ariaInvalid": null
+          },
+          {
+            "selector": "form button[type='submit']",
+            "label": "pair device disabled button",
+            "minHeight": 44,
+            "minWidth": 44,
+            "expectedDisabled": true,
+            "found": true,
+            "height": 48,
+            "width": 316,
+            "disabled": true,
+            "inputMode": null,
+            "autoComplete": null,
+            "ariaInvalid": null
+          }
+        ]
+      }
+    },
+    {
+      "name": "invalid-code-ready",
+      "screenshot": "UX_v2/execution/WEB_EXPERIENCE_REVAMP_VISUAL_EVIDENCE_2026-06-15_21-48-07_IST/screenshots/android-a5-login-pairing/paired-invalid-code-ready.png",
+      "metrics": {
+        "title": "AI Memory",
+        "url": "/setup-apk",
+        "bodyTextSample": "Library\nCapture\nAsk\nMore\n\nAndroid setup\n\nPair AI Memory\n\nEnter the Android code generated from Device pairing in the web app. Codes work once and expire quickly.\n\nPairing code\n\nOpen Device pairing in the web app and generate an Android code.\n\nPair device",
+        "scrollWidth": 390,
+        "clientWidth": 390,
+        "scrollHeight": 844,
+        "clientHeight": 844,
+        "horizontalOverflow": false,
+        "forbiddenMatches": [],
+        "expectedMissing": [],
+        "clippedControls": [],
+        "smallControls": [],
+        "controlResults": [
+          {
+            "selector": "#pairing-code",
+            "label": "invalid-code pairing code field",
+            "minHeight": 44,
+            "minWidth": 44,
+            "expectedAutoComplete": "one-time-code",
+            "found": true,
+            "height": 48,
+            "width": 316,
+            "disabled": false,
+            "inputMode": "text",
+            "autoComplete": "one-time-code",
+            "ariaInvalid": null
+          },
+          {
+            "selector": "form button[type='submit']",
+            "label": "invalid-code pair button",
+            "minHeight": 44,
+            "minWidth": 44,
+            "expectedDisabled": false,
+            "found": true,
+            "height": 48,
+            "width": 316,
+            "disabled": false,
+            "inputMode": null,
+            "autoComplete": null,
+            "ariaInvalid": null
+          }
+        ]
+      }
+    },
+    {
+      "name": "invalid-code",
+      "screenshot": "UX_v2/execution/WEB_EXPERIENCE_REVAMP_VISUAL_EVIDENCE_2026-06-15_21-48-07_IST/screenshots/android-a5-login-pairing/paired-invalid-code.png",
+      "metrics": {
+        "title": "AI Memory",
+        "url": "/setup-apk",
+        "bodyTextSample": "Library\nCapture\nAsk\nMore\n\nAndroid setup\n\nPair AI Memory\n\nEnter the Android code generated from Device pairing in the web app. Codes work once and expire quickly.\n\nPairing code\n\nOpen Device pairing in the web app and generate an Android code.\n\nPair device\n\nCould not pair\n\nThat code was not recognized. Check it and try again.\n\nTry again",
+        "scrollWidth": 390,
+        "clientWidth": 390,
+        "scrollHeight": 844,
+        "clientHeight": 844,
+        "horizontalOverflow": false,
+        "forbiddenMatches": [],
+        "expectedMissing": [],
+        "clippedControls": [],
+        "smallControls": [],
+        "controlResults": []
+      }
+    },
+    {
+      "name": "expired-code-ready",
+      "screenshot": "UX_v2/execution/WEB_EXPERIENCE_REVAMP_VISUAL_EVIDENCE_2026-06-15_21-48-07_IST/screenshots/android-a5-login-pairing/paired-expired-code-ready.png",
+      "metrics": {
+        "title": "AI Memory",
+        "url": "/setup-apk",
+        "bodyTextSample": "Library\nCapture\nAsk\nMore\n\nAndroid setup\n\nPair AI Memory\n\nEnter the Android code generated from Device pairing in the web app. Codes work once and expire quickly.\n\nPairing code\n\nOpen Device pairing in the web app and generate an Android code.\n\nPair device",
+        "scrollWidth": 390,
+        "clientWidth": 390,
+        "scrollHeight": 844,
+        "clientHeight": 844,
+        "horizontalOverflow": false,
+        "forbiddenMatches": [],
+        "expectedMissing": [],
+        "clippedControls": [],
+        "smallControls": [],
+        "controlResults": [
+          {
+            "selector": "#pairing-code",
+            "label": "expired-code pairing code field",
+            "minHeight": 44,
+            "minWidth": 44,
+            "expectedAutoComplete": "one-time-code",
+            "found": true,
+            "height": 48,
+            "width": 316,
+            "disabled": false,
+            "inputMode": "text",
+            "autoComplete": "one-time-code",
+            "ariaInvalid": null
+          },
+          {
+            "selector": "form button[type='submit']",
+            "label": "expired-code pair button",
+            "minHeight": 44,
+            "minWidth": 44,
+            "expectedDisabled": false,
+            "found": true,
+            "height": 48,
+            "width": 316,
+            "disabled": false,
+            "inputMode": null,
+            "autoComplete": null,
+            "ariaInvalid": null
+          }
+        ]
+      }
+    },
+    {
+      "name": "expired-code",
+      "screenshot": "UX_v2/execution/WEB_EXPERIENCE_REVAMP_VISUAL_EVIDENCE_2026-06-15_21-48-07_IST/screenshots/android-a5-login-pairing/paired-expired-code.png",
+      "metrics": {
+        "title": "AI Memory",
+        "url": "/setup-apk",
+        "bodyTextSample": "Library\nCapture\nAsk\nMore\n\nAndroid setup\n\nPair AI Memory\n\nEnter the Android code generated from Device pairing in the web app. Codes work once and expire quickly.\n\nPairing code\n\nOpen Device pairing in the web app and generate an Android code.\n\nPair device\n\nCould not pair\n\nThat code expired. Generate a fresh Android code from Device pairing in the web app.\n\nTry again",
+        "scrollWidth": 390,
+        "clientWidth": 390,
+        "scrollHeight": 844,
+        "clientHeight": 844,
+        "horizontalOverflow": false,
+        "forbiddenMatches": [],
+        "expectedMissing": [],
+        "clippedControls": [],
+        "smallControls": [],
+        "controlResults": []
+      }
+    },
+    {
+      "name": "used-code-ready",
+      "screenshot": "UX_v2/execution/WEB_EXPERIENCE_REVAMP_VISUAL_EVIDENCE_2026-06-15_21-48-07_IST/screenshots/android-a5-login-pairing/paired-used-code-ready.png",
+      "metrics": {
+        "title": "AI Memory",
+        "url": "/setup-apk",
+        "bodyTextSample": "Library\nCapture\nAsk\nMore\n\nAndroid setup\n\nPair AI Memory\n\nEnter the Android code generated from Device pairing in the web app. Codes work once and expire quickly.\n\nPairing code\n\nOpen Device pairing in the web app and generate an Android code.\n\nPair device",
+        "scrollWidth": 390,
+        "clientWidth": 390,
+        "scrollHeight": 844,
+        "clientHeight": 844,
+        "horizontalOverflow": false,
+        "forbiddenMatches": [],
+        "expectedMissing": [],
+        "clippedControls": [],
+        "smallControls": [],
+        "controlResults": [
+          {
+            "selector": "#pairing-code",
+            "label": "used-code pairing code field",
+            "minHeight": 44,
+            "minWidth": 44,
+            "expectedAutoComplete": "one-time-code",
+            "found": true,
+            "height": 48,
+            "width": 316,
+            "disabled": false,
+            "inputMode": "text",
+            "autoComplete": "one-time-code",
+            "ariaInvalid": null
+          },
+          {
+            "selector": "form button[type='submit']",
+            "label": "used-code pair button",
+            "minHeight": 44,
+            "minWidth": 44,
+            "expectedDisabled": false,
+            "found": true,
+            "height": 48,
+            "width": 316,
+            "disabled": false,
+            "inputMode": null,
+            "autoComplete": null,
+            "ariaInvalid": null
+          }
+        ]
+      }
+    },
+    {
+      "name": "used-code",
+      "screenshot": "UX_v2/execution/WEB_EXPERIENCE_REVAMP_VISUAL_EVIDENCE_2026-06-15_21-48-07_IST/screenshots/android-a5-login-pairing/paired-used-code.png",
+      "metrics": {
+        "title": "AI Memory",
+        "url": "/setup-apk",
+        "bodyTextSample": "Library\nCapture\nAsk\nMore\n\nAndroid setup\n\nPair AI Memory\n\nEnter the Android code generated from Device pairing in the web app. Codes work once and expire quickly.\n\nPairing code\n\nOpen Device pairing in the web app and generate an Android code.\n\nPair device\n\nCould not pair\n\nThat code was already used. Generate a fresh code.\n\nTry again",
+        "scrollWidth": 390,
+        "clientWidth": 390,
+        "scrollHeight": 844,
+        "clientHeight": 844,
+        "horizontalOverflow": false,
+        "forbiddenMatches": [],
+        "expectedMissing": [],
+        "clippedControls": [],
+        "smallControls": [],
+        "controlResults": []
+      }
+    },
+    {
+      "name": "accepted-unreachable-ready",
+      "screenshot": "UX_v2/execution/WEB_EXPERIENCE_REVAMP_VISUAL_EVIDENCE_2026-06-15_21-48-07_IST/screenshots/android-a5-login-pairing/paired-accepted-unreachable-ready.png",
+      "metrics": {
+        "title": "AI Memory",
+        "url": "/setup-apk",
+        "bodyTextSample": "Library\nCapture\nAsk\nMore\n\nAndroid setup\n\nPair AI Memory\n\nEnter the Android code generated from Device pairing in the web app. Codes work once and expire quickly.\n\nPairing code\n\nOpen Device pairing in the web app and generate an Android code.\n\nPair device",
+        "scrollWidth": 390,
+        "clientWidth": 390,
+        "scrollHeight": 844,
+        "clientHeight": 844,
+        "horizontalOverflow": false,
+        "forbiddenMatches": [],
+        "expectedMissing": [],
+        "clippedControls": [],
+        "smallControls": [],
+        "controlResults": [
+          {
+            "selector": "#pairing-code",
+            "label": "accepted-unreachable pairing code field",
+            "minHeight": 44,
+            "minWidth": 44,
+            "expectedAutoComplete": "one-time-code",
+            "found": true,
+            "height": 48,
+            "width": 316,
+            "disabled": false,
+            "inputMode": "text",
+            "autoComplete": "one-time-code",
+            "ariaInvalid": null
+          },
+          {
+            "selector": "form button[type='submit']",
+            "label": "accepted-unreachable pair button",
+            "minHeight": 44,
+            "minWidth": 44,
+            "expectedDisabled": false,
+            "found": true,
+            "height": 48,
+            "width": 316,
+            "disabled": false,
+            "inputMode": null,
+            "autoComplete": null,
+            "ariaInvalid": null
+          }
+        ]
+      }
+    },
+    {
+      "name": "accepted-unreachable",
+      "screenshot": "UX_v2/execution/WEB_EXPERIENCE_REVAMP_VISUAL_EVIDENCE_2026-06-15_21-48-07_IST/screenshots/android-a5-login-pairing/paired-accepted-unreachable.png",
+      "metrics": {
+        "title": "AI Memory",
+        "url": "/setup-apk",
+        "bodyTextSample": "Library\nCapture\nAsk\nMore\n\nAndroid setup\n\nPair AI Memory\n\nEnter the Android code generated from Device pairing in the web app. Codes work once and expire quickly.\n\nPairing code\n\nOpen Device pairing in the web app and generate an Android code.\n\nPair device\n\nPaired, but server is not reachable\n\nThe token is saved on this device. Try the connection again when the network is ready.\n\nCould not reach https://brain.arunp.in. Cannot reach AI Memory (Failed to fetch). Check your internet connection and retry.\n\nRetry connection\nReset pairing",
+        "scrollWidth": 390,
+        "clientWidth": 390,
+        "scrollHeight": 908,
+        "clientHeight": 844,
+        "horizontalOverflow": false,
+        "forbiddenMatches": [],
+        "expectedMissing": [],
+        "clippedControls": [],
+        "smallControls": [],
+        "controlResults": []
+      }
+    }
+  ],
+  "fetchEvents": [
+    {
+      "label": "reachability_health_probe",
+      "status": 401
+    }
+  ],
+  "observations": [
+    "device-pairing-unauthenticated-redirect: non-primary sub-32px controls [{\"tag\":\"a\",\"text\":\"Home\",\"top\":39,\"bottom\":40,\"left\":19,\"right\":20,\"width\":1,\"height\":1}]",
+    "unlock-normal: non-primary sub-32px controls [{\"tag\":\"a\",\"text\":\"Home\",\"top\":39,\"bottom\":40,\"left\":19,\"right\":20,\"width\":1,\"height\":1}]",
+    "unlock-wrong-pin: non-primary sub-32px controls [{\"tag\":\"a\",\"text\":\"Home\",\"top\":39,\"bottom\":40,\"left\":19,\"right\":20,\"width\":1,\"height\":1}]",
+    "unlock-session-expired: non-primary sub-32px controls [{\"tag\":\"a\",\"text\":\"Home\",\"top\":39,\"bottom\":40,\"left\":19,\"right\":20,\"width\":1,\"height\":1}]",
+    "device-pairing-authenticated: non-primary sub-32px controls [{\"tag\":\"a\",\"text\":\"chrome://extensions\",\"top\":635,\"bottom\":651,\"left\":91,\"right\":228,\"width\":137,\"height\":16}]",
+    "device-pairing-generated-code: non-primary sub-32px controls [{\"tag\":\"a\",\"text\":\"chrome://extensions\",\"top\":395,\"bottom\":411,\"left\":91,\"right\":228,\"width\":137,\"height\":16}]"
+  ],
+  "issues": [],
+  "sessionCookieInjected": true,
+  "issueCount": 0
+}
