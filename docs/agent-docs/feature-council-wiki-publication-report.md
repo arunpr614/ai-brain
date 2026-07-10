@@ -1,7 +1,7 @@
 # AI Brain Feature Council Wiki Publication Report
 
 Date: 2026-07-10 IST
-Status: Prepublication gates passed
+Status: Passed
 
 ## Canonical Source
 
@@ -13,6 +13,7 @@ Status: Prepublication gates passed
 | Feature Council artifact source | `9de8de87de915e874e8290aa556e2b6772d6fabf` |
 | Audited application baseline | `2b4db9540d0b76ee6d3aa2a9da5f788b69a8d02a` |
 | Wiki base before publication | `dab9267124b55571f03ad56c6776c6827723229a` |
+| Published wiki commit | `a9f27341fd48e88c6c9606a420d9b428dd9cc668` |
 
 The 44 generated research pages in the planned wiki commit are byte-for-byte outputs of the canonical content commit. Later evidence-only commits on the publication branch do not change those pages.
 
@@ -36,6 +37,10 @@ The 44 generated research pages in the planned wiki commit are byte-for-byte out
 | Command/source coverage | Passed: 216 inventory rows and 138 package scripts classified |
 | Synthetic documentation smokes | Passed |
 | Immutable prototype availability | Passed for all four source artifacts |
+| Pre-push concurrency gate | Passed: remote wiki matched `dab9267124b55571f03ad56c6776c6827723229a` |
+| Fresh-clone canonical comparison | Passed: byte-for-byte match at `a9f27341fd48e88c6c9606a420d9b428dd9cc668` |
+| Logged-out rendered sweep | Passed: 44 of 44 research URLs returned the expected lifecycle content |
+| Browser rendering | Passed: landing, current v2, and historical v1 pages; no horizontal overflow |
 
 ## Public Disclosure Decision
 
@@ -61,4 +66,11 @@ The pre-publication wiki SHA above remains the expected content state after a su
 
 ## Published Result
 
-The published wiki commit is recorded here only after the atomic wiki push and fresh-clone validation complete.
+The Feature Council research category is published at [AI Brain Feature Council Research](https://github.com/arunpr614/ai-brain/wiki/Feature-Council-Research).
+
+- One atomic wiki commit: `a9f27341fd48e88c6c9606a420d9b428dd9cc668`.
+- 44 research pages published alongside 18 core wiki files.
+- 62 canonical Markdown files and 61 rendered user-facing pages; `_Sidebar.md` supplies navigation rather than a standalone page.
+- All pages passed privacy, structure, reachability, checksum, disclosure, and fresh-clone comparison gates.
+- The public landing page, current v2 page, historical v1 page, lifecycle notices, successor links, tables, and sidebar category rendered correctly.
+- Rollback was not required.
