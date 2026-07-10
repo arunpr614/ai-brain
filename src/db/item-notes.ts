@@ -3,6 +3,7 @@ import type Database from "better-sqlite3";
 import { getDb, newId } from "./client";
 import { getItem } from "./items";
 import { deleteMessagesCitingManualNote } from "./chat";
+import { getEffectiveNoteAiDefault } from "@/lib/notes/default-ai-policy";
 import { normalizeMarkdown, type NormalizedNoteMarkdown } from "@/lib/notes/markdown";
 
 export type NoteSaveKind = "auto" | "manual" | "restore" | "recreate";
@@ -386,7 +387,7 @@ export function saveItemNote(input: SaveItemNoteInput): NoteMutationResult {
         1,
         normalized,
         input.saveKind,
-        0,
+        getEffectiveNoteAiDefault() ? 1 : 0,
         now,
       );
       queueDerivedAction(db, note, now);
@@ -413,7 +414,7 @@ export function saveItemNote(input: SaveItemNoteInput): NoteMutationResult {
         1,
         normalized,
         "recreate",
-        0,
+        getEffectiveNoteAiDefault() ? 1 : 0,
         now,
       );
       identity.epoch = state.epoch;

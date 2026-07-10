@@ -8,6 +8,7 @@ import { appendMessage, createThread } from "./chat";
 import { getDb } from "./client";
 import { insertChunkWithRowid } from "./chunks";
 import { EMBED_DIM } from "@/lib/embed/client";
+import { setNoteAiDefaultPreference } from "@/lib/notes/default-ai-policy";
 import {
   deleteItemNote,
   getItemNote,
@@ -56,6 +57,52 @@ test("a canonical save creates one attached note and immediate FTS", () => {
   assert.equal(saved.note?.include_in_ai, 0);
   assert.equal(saved.replayed, false);
   assert.equal(searchItemNotes("private insight")[0]?.item_id, item.id);
+});
+
+test("a newly created note inherits the global AI inclusion default", () => {
+  setNoteAiDefaultPreference(true);
+  const item = fixture("create-default-ai");
+
+  const saved = saveItemNote({
+    itemId: item.id,
+    editorInstanceId: "editor-default-ai",
+    mutationId: "mutation-create-default-ai",
+    epoch: null,
+    baseGeneration: null,
+    contentMarkdown: "This new note may improve Ask and connections.",
+    saveKind: "manual",
+  });
+
+  assert.equal(saved.note?.include_in_ai, 1);
+  setNoteAiDefaultPreference(false);
+});
+
+test("changing the global default does not change an existing note", () => {
+  const item = fixture("existing-note-default-ai");
+  const created = saveItemNote({
+    itemId: item.id,
+    editorInstanceId: "editor-existing-default-ai",
+    mutationId: "mutation-existing-default-ai-create",
+    epoch: null,
+    baseGeneration: null,
+    contentMarkdown: "Existing choice remains stable.",
+    saveKind: "manual",
+  });
+  assert.equal(created.note?.include_in_ai, 0);
+  setNoteAiDefaultPreference(true);
+
+  const updated = saveItemNote({
+    itemId: item.id,
+    editorInstanceId: "editor-existing-default-ai",
+    mutationId: "mutation-existing-default-ai-update",
+    epoch: 1,
+    baseGeneration: 1,
+    contentMarkdown: "Existing choice remains stable after an edit.",
+    saveKind: "manual",
+  });
+
+  assert.equal(updated.note?.include_in_ai, 0);
+  setNoteAiDefaultPreference(false);
 });
 
 test("save mutations are idempotent and reject payload reuse", () => {
@@ -239,6 +286,41 @@ test("delete leaves a tombstone and only explicit recreate advances the epoch", 
     }).replayed,
     true,
   );
+});
+
+test("an explicitly recreated note uses the current global AI inclusion default", () => {
+  const item = fixture("recreate-default-ai");
+  saveItemNote({
+    itemId: item.id,
+    editorInstanceId: "editor-recreate-default",
+    mutationId: "mutation-recreate-default-create",
+    epoch: null,
+    baseGeneration: null,
+    contentMarkdown: "Original excluded note",
+    saveKind: "manual",
+  });
+  deleteItemNote({
+    itemId: item.id,
+    editorInstanceId: "editor-recreate-default",
+    mutationId: "mutation-recreate-default-delete",
+    epoch: 1,
+    baseGeneration: 1,
+  });
+  setNoteAiDefaultPreference(true);
+
+  const recreated = saveItemNote({
+    itemId: item.id,
+    editorInstanceId: "editor-recreate-default",
+    mutationId: "mutation-recreate-default-save",
+    epoch: 1,
+    baseGeneration: 2,
+    operation: "recreate",
+    contentMarkdown: "Fresh note under the current default",
+    saveKind: "manual",
+  });
+
+  assert.equal(recreated.note?.include_in_ai, 1);
+  setNoteAiDefaultPreference(false);
 });
 
 test("item deletion removes vec0 rows and library-thread answers derived from its note", () => {

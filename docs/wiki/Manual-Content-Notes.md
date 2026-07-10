@@ -27,6 +27,8 @@ Migration 023 gives semantic chunks an explicit source kind: legacy saved contex
 
 Manual notes are excluded from AI and connections until the per-note switch is enabled. Retrieval rechecks deletion, inclusion, epoch, generation, rollout flags, and provider permission before prompt construction and again before answer persistence.
 
+Settings > My notes provides an owner-controlled **Include in AI & connections by default** preference. It applies only when a note is first saved or deliberately recreated; changing it never rewrites an existing note's per-note choice. The effective default remains off until every active note-consuming provider is eligible, while exact search continues independently.
+
 ## Privacy Boundary
 
 My notes are private application data, not end-to-end encrypted data. They are stored in the browser profile, server SQLite, and retained backups. Default library export excludes them. An explicit note export is authenticated and labeled.
@@ -34,6 +36,8 @@ My notes are private application data, not end-to-end encrypted data. They are s
 Note-bearing APIs are authenticated, dynamic, private/no-store, cookie-varying, and protected against cross-origin mutation. Raw note text is not placed in diagnostic reports or citation sidecars.
 
 Only loopback Ollama is treated as local. Any other configured destination requires a named acknowledgement tied to provider, normalized destination, purpose, and effective model before note text may be embedded or used by Ask. Revocation blocks retrieval synchronously and queues physical semantic cleanup.
+
+Provider revocation also clears the global new-note AI default. A stale stored preference cannot bypass provider eligibility during note creation.
 
 ## Deletion and Cleanup
 
@@ -50,6 +54,8 @@ The production safety sequence is conceptual: verified SQLite backup, flags-off 
 ## Verification
 
 Release evidence includes 785 passing tests, typecheck, lint, production build, dependency audit, interactive desktop/mobile autosave-search-conflict-preview checks, implementation adversarial review with every P0/P1 closed, and a byte-verified production-snapshot rehearsal. The guarded live rollout then passed verified backup, migrations through 023, exact content-free audit/repair, note save, exact search, remote semantic indexing, Related, Ask with manual-note citation provenance, opt-out, semantic purge, provider revocation, note/item deletion, and zero-leftover cleanup. The final production audit reports SQLite integrity OK, zero foreign-key/vector anomalies, and a safe monotonic allocator.
+
+The global-default follow-on release candidate passes 796 tests, client consent/cancellation interaction coverage, full type/lint/build checks, adversarial closure, documentation privacy/structure validation, and a zero-vulnerability production dependency audit. This is release-candidate evidence until the follow-on GitHub integration and production smoke are complete.
 
 Canonical implementation evidence lives in the repository under `docs/feature-council/F08-manual-content-notes/`. Public wiki publication intentionally summarizes the current product contract instead of copying private operational evidence or every internal review artifact.
 

@@ -11,6 +11,11 @@ import {
   noteAiProviderPolicy,
   setNoteAiProviderConsent,
 } from "./provider-policy";
+import {
+  getEffectiveNoteAiDefault,
+  getNoteAiDefaultPreference,
+  setNoteAiDefaultPreference,
+} from "./default-ai-policy";
 import { TEST_DB_DIR } from "./provider-policy.test.setup";
 
 after(() => rmSync(TEST_DB_DIR, { recursive: true, force: true }));
@@ -123,4 +128,23 @@ test("non-loopback Ollama requires destination-specific consent and exact effect
     restore("OLLAMA_EMBED_MODEL", previous.ollamaEmbedModel);
     restore("OLLAMA_DEFAULT_MODEL", previous.ollamaAskModel);
   }
+});
+
+test("the global note default remains consent-gated and revocation disables the preference", () => {
+  const providers = noteAiProviderPolicy().providers;
+  for (const provider of providers) {
+    setNoteAiProviderConsent({ fingerprint: provider.fingerprint, approved: false });
+  }
+  setNoteAiDefaultPreference(true);
+  assert.equal(getNoteAiDefaultPreference(), true);
+  assert.equal(getEffectiveNoteAiDefault(), false);
+
+  for (const provider of providers) {
+    setNoteAiProviderConsent({ fingerprint: provider.fingerprint, approved: true });
+  }
+  assert.equal(getEffectiveNoteAiDefault(), true);
+
+  setNoteAiProviderConsent({ fingerprint: providers[0]!.fingerprint, approved: false });
+  assert.equal(getNoteAiDefaultPreference(), false);
+  assert.equal(getEffectiveNoteAiDefault(), false);
 });

@@ -1,5 +1,6 @@
 import { createHash } from "node:crypto";
 import { getDb } from "@/db/client";
+import { setNoteAiDefaultPreference } from "./ai-default-preference";
 
 export interface NoteAiProvider {
   fingerprint: string;
@@ -148,6 +149,7 @@ export function setNoteAiProviderConsent(input: {
     );
 
     if (!input.approved) {
+      setNoteAiDefaultPreference(false);
       db.prepare(
         `INSERT INTO note_index_jobs (
            item_id, target_epoch, target_generation, desired_action, state,

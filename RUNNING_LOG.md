@@ -28260,3 +28260,95 @@ Integrate the attested production source without flattening Recall history, impl
 ### Current remaining to-do
 
 None after PR #11 validation and merge. Production, `main`, canonical documentation, and the GitHub Wiki are reconciled.
+
+---
+
+## 2026-07-10 20:18 - F08 Global Note AI Default Implementation Milestone
+
+**Entry author:** AI agent (Codex) · **Triggered by:** Arun asked to make “Include in AI & connections” a default setting after the F08 release.
+
+### Planned since last entry
+
+The prior F08 entry closed production release, main integration, and wiki publication. This follow-on adds a global Settings preference for newly created My notes while preserving the released per-note override, exact-search behavior, provider acknowledgement boundary, and existing-note state.
+
+### Done
+
+- Created branch `codex/note-ai-default-setting` from current `origin/main` (`840c06e`) while preserving the previously requested uncommitted brainstorm reports.
+- Added a persisted `notes.ai.include_by_default` preference with a fail-closed effective resolver:
+  - stored preference defaults off;
+  - effective inclusion requires every active note-consuming provider to remain eligible;
+  - explicit provider revocation clears the global preference.
+- Updated canonical note creation so the effective default applies only to first save and deliberate recreation. Existing notes and later edits retain their current per-note AI choice.
+- Added authenticated, same-origin, private/no-store `GET` and `PATCH /api/settings/note-ai-default` behavior.
+- Added a Settings > My notes control with explicit new-note scope, existing-note non-retroactivity, exact-search copy, saving/error status, and the same provider-named acknowledgement flow used by the per-note control.
+- Followed red/green behavior slices:
+  - new-note inheritance first failed `0 !== 1`, then passed;
+  - recreate inheritance first failed `0 !== 1`, then passed;
+  - revocation clearing first failed `true !== false`, then passed;
+  - the new route test first failed because the route did not exist, then passed after implementation.
+
+### Verification
+
+- Focused repository/provider tests: 14 passed, 0 failed.
+- New Settings route tests: 4 passed, 0 failed.
+- `npm run typecheck` passed.
+- Targeted ESLint over all touched implementation modules passed.
+
+### Cross-lane notes
+
+- Existing uncommitted `docs/feature-council/F08-manual-content-notes/brainstorm/` Markdown/HTML reports and the README artifact-map addition belong to Arun's immediately preceding documentation request and were preserved.
+- No existing note content, production database row, provider consent, scheduler state, or live runtime was mutated in this milestone.
+
+### Learned
+
+- Applying the default inside the note repository makes first-save and recreate behavior authoritative and prevents clients from bypassing consent through a forged creation payload.
+- Consent and preference storage must remain separated to avoid a circular module dependency; a pure preference module is shared by the effective policy and revocation path.
+- A checked preference can become ineffective after provider configuration changes, so the Settings control renders effective state and offers renewed permission instead of implying text can be sent.
+
+### Deployed / Released
+
+Nothing deployed, committed, pushed, or released in this milestone.
+
+### Documents created or updated this period
+
+**Created:**
+- `src/lib/notes/ai-default-preference.ts` - persisted preference boundary.
+- `src/lib/notes/default-ai-policy.ts` - provider-gated effective default.
+- `src/app/api/settings/note-ai-default/route.ts` and tests - authenticated setting API and privacy coverage.
+- `src/components/note-ai-default-setting.tsx` - Settings control and provider permission flow.
+
+**Updated:**
+- `src/db/item-notes.ts` and `src/db/item-notes.test.ts` - first-save/recreate behavior and regression coverage.
+- `src/lib/notes/provider-policy.ts` and test - revocation clears the default.
+- `src/app/settings/page.tsx` - My notes settings surface.
+- `RUNNING_LOG.md` - appended this milestone entry.
+
+### Current remaining to-do
+
+1. Add explicit existing-note non-retroactivity coverage and update canonical F08/wiki documentation.
+2. Run the complete test, lint, typecheck, production build, artifact/privacy, and dependency gates.
+3. Review the final diff and commit the brainstorm reports separately from the implementation if practical.
+4. Push the feature branch, open and merge a GitHub PR after checks pass, publish any required wiki update, then run the guarded production deploy and post-deploy health/default-setting smoke.
+
+### Open questions / decisions needed
+
+None. The privacy-safe interpretation is that this is a configurable default for new/recreated notes, off until enabled, and never retroactive.
+
+### Session self-critique
+
+- Visual browser inspection has not yet been run; the UI currently has type/lint coverage plus reuse of established Settings/editor styles.
+- The full suite/build/release gates remain pending, so this entry records an implementation milestone rather than release readiness.
+
+### Action items for the next agent
+
+1. Start in `Phase3` on `codex/note-ai-default-setting` and inspect `git status --short` before touching the preserved brainstorm reports.
+2. Run the full release gates before making release claims.
+3. Keep production provider consent unchanged; the global preference should remain off until the owner enables it in Settings.
+
+### State snapshot
+
+- **Current phase / version:** F08 follow-on implementation complete; broad validation and release pending.
+- **Active branch:** `codex/note-ai-default-setting` from `origin/main` `840c06e`.
+- **Working tree:** Dirty with the intended setting implementation/tests plus preserved brainstorm Markdown/HTML and README addition.
+- **Deployed/runtime state:** Production unchanged; released F08 remains active and remote provider consent remains revoked.
+- **Next milestone:** Full release validation, documentation closeout, GitHub PR/integration, and guarded production deployment.
