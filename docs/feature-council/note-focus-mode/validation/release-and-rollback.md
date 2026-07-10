@@ -11,6 +11,19 @@
 
 The deploy preflight refuses a first enabled deployment unless `BRAIN_NOTE_FOCUS_ALLOW_ENABLED_FLAG=1` is explicitly supplied. This makes the initial enablement visible and auditable.
 
+## Executed production release
+
+- PR #15 merged the feature and documentation package to `main` at `e2b44a2294e5aab6291e4e87e6f374ce8c4bb554` after the required documentation check passed.
+- The first production deploy ran with Focus disabled, created a verified SQLite backup, repeated the full 813-test gate, built/synced the standalone artifact, restarted cleanly, and passed authenticated health and strict provider checks.
+- The signed-out flag-off smoke found that the auth proxy placed item query parameters beside `/unlock` instead of inside `next`. Focus remained disabled.
+- PR #16 added the missing query-preservation regression and merged at `6858529ef179a51442d319c6c58e5ace79757619`. Its final gate passed 814 tests.
+- The corrected artifact was deployed with Focus still disabled. The exact deep link then redirected to `/unlock?next=<complete item path and focus query>`, preserving the request for post-unlock validation/canonicalization.
+- `NOTE_FOCUS_MODE_ENABLED=1` was installed through a restricted environment-file rewrite with a same-host backup, followed by a service restart.
+- Final read-only production smoke passed ordinary Notes, Focus control/route, missing-tab canonicalization, source-reading precedence, the global AI/connections default setting, authenticated health, strict Anthropic/Gemini providers, webhook rejection, active service, and enabled/active Recall timer.
+- No note text, note policy, global preference, provider consent, or item row was created or changed by the production smoke.
+
+One post-restart provider-check SSH connection was transiently refused after authenticated health had already passed. SSH immediately recovered; the strict provider and remaining post-deploy checks were rerun separately and passed. This was an operator-channel transient, not an application-health failure.
+
 ## Rollback
 
 ### Focus presentation/history defect

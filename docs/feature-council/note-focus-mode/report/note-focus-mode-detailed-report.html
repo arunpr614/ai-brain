@@ -77,13 +77,13 @@
 <body>
   <div class="shell">
     <header>
-      <p class="eyebrow">AI Brain · Release candidate · 10 July 2026</p>
+      <p class="eyebrow">AI Brain · Production release · 10 July 2026</p>
       <h1>Note Focus Mode</h1>
       <p class="lede">A larger, distraction-free writing canvas built from the same live My notes editor—without a second route, duplicate editor, new save path, or privacy-policy change.</p>
       <div class="pills" aria-label="Report highlights">
         <span class="pill">Normal Notes remains default</span>
         <span class="pill">2.57× wider desktop editor</span>
-        <span class="pill">813 tests passing</span>
+        <span class="pill">814 tests passing</span>
         <span class="pill">0 production dependency vulnerabilities</span>
         <span class="pill">Flag + artifact rollback rehearsed</span>
       </div>
@@ -174,7 +174,7 @@
       <section id="quality">
         <h2>Quality and release evidence</h2>
         <div class="grid">
-          <div class="card"><span class="metric">813</span><strong>Tests pass</strong><span>Across 92 suites.</span></div>
+          <div class="card"><span class="metric">814</span><strong>Tests pass</strong><span>Across 92 suites, including the production-smoke hotfix.</span></div>
           <div class="card"><span class="metric">0</span><strong>Vulnerabilities</strong><span>Production dependency audit.</span></div>
           <div class="card"><span class="metric">0</span><strong>Note requests</strong><span>During Focus/Back/Forward.</span></div>
         </div>
@@ -188,9 +188,15 @@
               <tr><td>Previous artifact rollback</td><td class="pass">Pass</td><td>Base SHA built, started, and served the prior normal Notes behavior.</td></tr>
               <tr><td>Android keyboard / TalkBack</td><td class="residual">Unverified</td><td>No device or emulator is available; no unsupported claim is made.</td></tr>
               <tr><td>Native undo shortcut automation</td><td class="residual">Residual</td><td>Same-node precondition is proven; modifier sequence could not be emitted by the browser-control layer.</td></tr>
+              <tr><td>GitHub and production</td><td class="pass">Released</td><td>PRs #15 and #16 merged; final main <code>6858529</code> enabled after corrected flag-off smoke.</td></tr>
             </tbody>
           </table>
         </div>
+        <details open>
+          <summary>Production release result</summary>
+          <p>The first flag-off deployment caught signed-out deep-link query loss before enablement. PR #16 fixed the auth redirect and added regression coverage. The corrected artifact preserved the complete post-unlock path, then Focus was deliberately enabled. Authenticated ordinary Notes, Focus control/route, canonicalization, source-reading precedence, the AI/connections default, health, strict providers, service, webhook boundary, and scheduler checks all passed without mutating note content or privacy settings.</p>
+          <p><a href="https://brain.arunp.in">Open production</a> · <a href="https://github.com/arunpr614/ai-brain/pull/15">Feature PR #15</a> · <a href="https://github.com/arunpr614/ai-brain/pull/16">Release hotfix PR #16</a></p>
+        </details>
       </section>
 
       <section id="roadmap">
@@ -237,7 +243,7 @@
         </ul>
       </section>
     </main>
-    <footer>Generated from the Note Focus Mode feature-council package. Evidence uses an isolated synthetic database and contains no private note content.</footer>
+    <footer>Generated from the released Note Focus Mode feature-council package. Visual evidence uses an isolated synthetic database; production smoke was read-only and printed no private note content.</footer>
   </div>
 </body>
 </html>

@@ -18,8 +18,8 @@ Legend: **Pass**, **Pass with residual**, **Deferred**, **Out of scope**
 | NFM-011 URL | Content-free marker; source precedence | Pure helpers; server canonical browser checks | Pass | None |
 | NFM-012 History | push/back/forward/direct/reload/normalize | Unit and production-build browser trace | Pass | None |
 | NFM-013 Load | Existing disabled loading path; direct Focus waits for ready | Production hydration observation; editor state machine | Pass | Slow/failure screenshot not retained |
-| NFM-014 Save states | Existing editor state machine unchanged and visible | 813-test regression; code/accessibility review | Pass with residual | Not every state forced manually while focused |
-| NFM-015 Unlock | Focus-aware `next`, Unlock/Copy/Exit | Code path + type/lint/build | Pass with residual | Expired-session browser flow not forced |
+| NFM-014 Save states | Existing editor state machine unchanged and visible | 814-test regression; code/accessibility review | Pass with residual | Not every state forced manually while focused |
+| NFM-015 Unlock | Focus-aware `next`, Unlock/Copy/Exit | Production smoke found/fixed proxy query loss; PR #16 regression; corrected deep-link smoke | Pass | PIN entry itself was not automated |
 | NFM-016 Unsafe navigation | Journal-failed + server-ahead classifier and guards | Unit test; editor/palette integration review | Pass with residual | Browser-native confirm/journal-failure flow not forced |
 | NFM-017 Input order | IME/229/ref filter, child priority, palette suppression | Focus handler review; lint/type/build | Pass with residual | Real IME/software-keyboard evidence unavailable |
 | NFM-018 Semantics | In-place labelled/described modal, exact isolation, trap | Isolation tests; keyboard wrap; WCAG review | Pass with residual | VoiceOver/TalkBack speech unavailable |
@@ -33,4 +33,4 @@ Legend: **Pass**, **Pass with residual**, **Deferred**, **Out of scope**
 
 ## Release judgment
 
-The web release candidate is **go for guarded production rollout**. No Critical/High accessibility or data-loss defect is open, all local automated/build/dependency gates pass, and both rollback paths were exercised. Android/software-keyboard/TalkBack certification and exact native undo shortcut evidence remain explicitly unclaimed follow-up evidence rather than fabricated pass results.
+The guarded web release is **live on production main `6858529`**. No Critical/High accessibility or data-loss defect is open, all automated/build/dependency gates pass, both rollback paths were exercised, and the flag-off smoke prevented enablement until the signed-out deep-link defect was fixed. Android/software-keyboard/TalkBack certification and exact native undo shortcut evidence remain explicitly unclaimed follow-up evidence rather than fabricated pass results.

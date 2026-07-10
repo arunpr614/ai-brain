@@ -89,3 +89,15 @@
 - **Status:** Decided at release-candidate review
 - **Decision:** The production web rollout may proceed after its complete browser and rollback gate. Do not claim physical Android keyboard/Back/TalkBack or real screen-reader speech as verified until those environments are available; retain them as explicit post-release device certification work.
 - **Reason:** The current environment provides a production Chromium browser and responsive viewport controls but no Android device/emulator or assistive-technology speech harness. Shipping a guarded web feature is distinct from inventing unavailable evidence.
+
+## D-NFM-016 — Preserve the complete deep link through unlock
+
+- **Status:** Decided from flag-off production smoke
+- **Decision:** The auth proxy must place pathname plus query inside the single encoded `next` value and clear the copied top-level query before redirecting to `/unlock`.
+- **Reason:** The item page cannot validate, normalize, or reconstruct `note_mode=focus` before authentication if the proxy separates the query from the post-unlock destination. The guarded rollout kept Focus disabled until this was fixed and regression-tested in PR #16.
+
+## D-NFM-017 — Enable only after corrected flag-off smoke
+
+- **Status:** Executed
+- **Decision:** Deploy PR #15 with Focus off, stop on the deep-link defect, merge/deploy PR #16 with Focus still off, prove the corrected redirect, then set `NOTE_FOCUS_MODE_ENABLED=1` and restart.
+- **Reason:** The release flag is useful only if it actually prevents exposure while newly discovered rollout defects are closed. Production health alone was insufficient; the exact entry link had to pass before enablement.

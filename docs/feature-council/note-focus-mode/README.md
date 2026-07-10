@@ -1,6 +1,6 @@
 # Note Focus Mode
 
-Status: release candidate implemented and locally verified; GitHub integration and guarded production rollout pending.
+Status: released to production after guarded flag-off deployment, deep-link hotfix, deliberate enablement, and authenticated smoke.
 
 ## Objective
 
@@ -32,4 +32,6 @@ Browser Fullscreen API, a dedicated route, and a conventional modal with a secon
 - The same section becomes an accessible full-viewport Focus surface; it is not cloned, portalled, or route-rendered.
 - Back, Forward, direct load, refresh, invalid markers, source-reading Focus precedence, and the default-off rollout flag are covered.
 - The existing **Settings → My notes → Include in AI & connections by default** preference remains the source of truth for new/recreated notes; Focus does not alter it.
-- The local gate passes 813 tests, lint, typecheck, optimized build, artifact/env checks, zero-vulnerability production audit, accessibility review, narrow/desktop comparisons, and production-build request tracing.
+- The final gate passes 814 tests, lint, typecheck, optimized build, artifact/env checks, zero-vulnerability production audit, accessibility review, narrow/desktop comparisons, and production-build request tracing.
+- PR #15 delivered the feature package; the flag-off smoke found and PR #16 fixed query loss across signed-out deep links before Focus was enabled.
+- Production serves merged main `6858529ef179a51442d319c6c58e5ace79757619` with `NOTE_FOCUS_MODE_ENABLED=1`; authenticated health, strict providers, route/control/canonicalization, AI-default presence, and service/scheduler checks pass.

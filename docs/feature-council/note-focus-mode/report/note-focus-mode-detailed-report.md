@@ -1,9 +1,12 @@
 # Note Focus Mode — Detailed Product, Design, Engineering, and Release Report
 
 Date: 2026-07-10
-Status: Local release candidate; GitHub merge and production rollout pending
+Status: Released to production after guarded flag-off deployment and hotfix
 Repository: `arunpr614/ai-brain`
-Branch: `feat/note-focus-mode`
+Feature PR: [#15](https://github.com/arunpr614/ai-brain/pull/15)
+Release hotfix PR: [#16](https://github.com/arunpr614/ai-brain/pull/16)
+Production main: `6858529ef179a51442d319c6c58e5ace79757619`
+Production: [AI Memory](https://brain.arunp.in)
 
 ## Executive summary
 
@@ -115,7 +118,7 @@ No Critical or High finding is open. The keyboard trap wraps Save → Exit and S
 
 | Gate | Result |
 |---|---|
-| Repository tests | 813 passing, 92 suites |
+| Repository tests | 814 passing, 92 suites |
 | Lint / typecheck / diff | Pass |
 | Optimized build | Pass |
 | Standalone artifact/env checks | Pass |
@@ -125,6 +128,8 @@ No Critical or High finding is open. The keyboard trap wraps Save → Exit and S
 | Focus flag rollback | Pass |
 | Previous artifact rollback | Build/start/normal Notes smoke pass |
 | 1440×900 and 320×800 visual checks | Pass |
+| GitHub integration | PRs #15 and #16 merged |
+| Guarded production rollout | Pass — flag-off smoke, deep-link fix, enablement, authenticated smoke |
 
 See [acceptance traceability](../validation/acceptance-traceability.md), [QA report](../validation/qa-report.md), [accessibility review](../validation/accessibility-review.md), and [release/rollback plan](../validation/release-and-rollback.md).
 
@@ -133,6 +138,12 @@ See [acceptance traceability](../validation/acceptance-traceability.md), [QA rep
 - Browser automation could not generate a verifiable native Cmd/Ctrl+Z combination; same-node evidence protects the undo precondition, but exact keyboard undo remains a manual smoke check.
 - Android software keyboard, first/second Back behavior, TalkBack, and real assistive-technology speech need device certification.
 - Real session-expiry, journal-failure, and every existing save-state visual were not individually forced in the production browser, though their state-machine paths remain regression-tested.
+
+## Production release result
+
+The feature was first deployed with Focus disabled. That exact smoke found a release-critical integration defect outside the item page: the auth proxy copied `tab` and `note_mode` beside `/unlock` while `next` contained only the pathname. Focus stayed off. PR #16 moved the complete pathname and query into `next`, cleared duplicate unlock query parameters, and raised the final suite to 814 tests.
+
+After the corrected flag-off deep link passed, Focus was deliberately enabled through a backed-up restricted environment-file update and service restart. Authenticated read-only smoke passed ordinary Notes, Focus control and route, missing-tab canonicalization, source-reading precedence, and the global AI/connections default. Health, strict Anthropic/Gemini providers, webhook rejection, the application service, and the Recall timer passed. No note content, AI setting, consent, or item row changed during production validation.
 
 ## Ideas to tighten the implementation
 
@@ -181,7 +192,7 @@ See [acceptance traceability](../validation/acceptance-traceability.md), [QA rep
 
 ## Recommended next sequence
 
-1. Release and observe web Focus Mode.
+1. Observe the guarded web Focus release and review operational/client errors.
 2. Complete Android/AT certification and deterministic journal-failure automation.
 3. Ship note outline + find as the highest-value low-risk Focus enhancements.
 4. Prototype provenance-aware highlight-to-note and backlinks.
