@@ -46,7 +46,15 @@ test("encodeSSE produces data: <json>\\n\\n", () => {
 });
 
 test("orchestrateAsk emits retrieve → token* → done in order", async () => {
-  const chunks = [stubChunk(), stubChunk({ chunk_id: "c2", item_title: "Two" })];
+  const chunks = [
+    stubChunk({
+      source_kind: "manual_note",
+      source_epoch: 3,
+      source_version: 7,
+      item_source_type: "note",
+    }),
+    stubChunk({ chunk_id: "c2", item_title: "Two" }),
+  ];
   async function* gen() {
     yield "hello ";
     yield "world";
@@ -65,6 +73,10 @@ test("orchestrateAsk emits retrieve → token* → done in order", async () => {
   assert.equal(frames[frames.length - 1].type, "done");
   if (frames[0].type === "retrieve") {
     assert.equal(frames[0].chunks.length, 2);
+    assert.equal(frames[0].chunks[0].source_kind, "manual_note");
+    assert.equal(frames[0].chunks[0].source_epoch, 3);
+    assert.equal(frames[0].chunks[0].source_version, 7);
+    assert.equal(frames[0].chunks[0].item_source_type, "note");
     // Must not leak chunk bodies into the retrieve frame.
     assert.equal((frames[0].chunks[0] as Record<string, unknown>).body, undefined);
   }

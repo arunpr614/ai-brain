@@ -11,7 +11,25 @@
 import type { RetrievedChunk } from "@/lib/retrieve";
 
 export type AskFrame =
-  | { type: "retrieve"; chunks: Array<Pick<RetrievedChunk, "chunk_id" | "item_id" | "item_title" | "similarity">> }
+  | {
+      type: "retrieve";
+      chunks: Array<
+        Pick<
+          RetrievedChunk,
+          | "chunk_id"
+          | "item_id"
+          | "item_title"
+          | "item_source_type"
+          | "item_source_platform"
+          | "item_capture_quality"
+          | "item_extraction_warning"
+          | "source_kind"
+          | "source_epoch"
+          | "source_version"
+          | "similarity"
+        >
+      >;
+    }
   | { type: "token"; text: string }
   | { type: "citation"; chunk_id: string }
   | { type: "done"; usage?: { input_tokens: number; output_tokens: number } }
@@ -110,6 +128,13 @@ export async function* orchestrateAsk(input: {
       chunk_id: c.chunk_id,
       item_id: c.item_id,
       item_title: c.item_title,
+      item_source_type: c.item_source_type,
+      item_source_platform: c.item_source_platform,
+      item_capture_quality: c.item_capture_quality,
+      item_extraction_warning: c.item_extraction_warning,
+      source_kind: c.source_kind,
+      source_epoch: c.source_epoch,
+      source_version: c.source_version,
       similarity: c.similarity,
     })),
   };
