@@ -16,7 +16,10 @@ import {
   ListChecks,
   ListOrdered,
   LockKeyhole,
+  LogIn,
+  Maximize2,
   Minus,
+  Minimize2,
   Pencil,
   Quote,
   RotateCcw,
@@ -48,6 +51,11 @@ import {
   type QueuedNoteOperation,
   type QueuedNoteSave,
 } from "@/lib/notes/save-queue";
+import { useNoteFocusSession } from "@/lib/notes/use-note-focus-session";
+import {
+  isUnsafeNoteNavigation,
+  UNSAFE_NOTE_NAVIGATION_MESSAGE,
+} from "@/lib/notes/navigation-safety";
 
 const NOTE_MAX_BYTES = 102_400;
 const NOTE_WARNING_BYTES = 92_160;
@@ -171,10 +179,12 @@ const TOOLBAR: Array<{
 
 export function ManualNoteEditor({
   itemId,
-  compact = false,
+  itemTitle,
+  focusEnabled = false,
 }: {
   itemId: string;
-  compact?: boolean;
+  itemTitle: string;
+  focusEnabled?: boolean;
 }) {
   const generatedEditorId = useId();
   const [editorInstanceId] = useState(generatedEditorId);
@@ -196,7 +206,11 @@ export function ManualNoteEditor({
     Array<{ id: string; sourceGeneration: number; saveKind: string; createdAt: number }>
   >([]);
   const [notice, setNotice] = useState<string | null>(null);
+  const [journalWriteFailed, setJournalWriteFailed] = useState(false);
+  const surfaceRef = useRef<HTMLElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const focusHeadingRef = useRef<HTMLHeadingElement>(null);
+  const focusTriggerRef = useRef<HTMLButtonElement>(null);
   const composingRef = useRef(false);
   const journalRef = useRef<LocalEditorJournal | null>(null);
   const localSequenceRef = useRef(0);
@@ -210,7 +224,17 @@ export function ManualNoteEditor({
   );
   const channelRef = useRef<BroadcastChannel | null>(null);
 
+  const focus = useNoteFocusSession({
+    enabled: focusEnabled,
+    ready: status !== "loading",
+    surfaceRef,
+    textareaRef,
+    headingRef: focusHeadingRef,
+    triggerRef: focusTriggerRef,
+  });
+
   const bytes = useMemo(() => byteLength(content), [content]);
+  const focusHeadingId = `${generatedEditorId}-focus-heading`;
 
   const applySnapshot = useCallback((next: NoteApiSnapshot) => {
     snapshotRef.current = next;
@@ -299,6 +323,7 @@ export function ManualNoteEditor({
           updatedAt: Date.now(),
         };
         const accepted = await putLatestJournal(record);
+        setJournalWriteFailed(false);
         if (accepted.localSequence === sequence) journalRef.current = accepted;
         return accepted;
       };
@@ -306,6 +331,7 @@ export function ManualNoteEditor({
       journalQueueRef.current = queued.catch(() => undefined);
       return queued.catch(() => {
         setLocalRecoveryAvailable(false);
+        setJournalWriteFailed(true);
         return null;
       });
     },
@@ -484,6 +510,61 @@ export function ManualNoteEditor({
     [],
   );
 
+  const unsafeNavigation = isUnsafeNoteNavigation({
+    journalWriteFailed,
+    contentMarkdown: content,
+    acknowledgedMarkdown: snapshot.note?.contentMarkdown ?? "",
+  });
+
+  useEffect(() => {
+    if (!unsafeNavigation) return;
+    const root = document.documentElement;
+    const previousMarker = root.dataset.noteUnsafeNavigation;
+    const hadMarker = Object.prototype.hasOwnProperty.call(
+      root.dataset,
+      "noteUnsafeNavigation",
+    );
+    let restoringHistory = false;
+    root.dataset.noteUnsafeNavigation = "true";
+
+    const shouldLeave = () => window.confirm(UNSAFE_NOTE_NAVIGATION_MESSAGE);
+    const beforeUnload = (event: BeforeUnloadEvent) => {
+      event.preventDefault();
+      event.returnValue = "";
+    };
+    const captureNavigation = (event: MouseEvent) => {
+      if (event.defaultPrevented || event.button !== 0) return;
+      const target = event.target;
+      if (!(target instanceof Element)) return;
+      const anchor = target.closest<HTMLAnchorElement>("a[href]");
+      if (!anchor || anchor.target === "_blank" || anchor.hasAttribute("download")) return;
+      if (shouldLeave()) return;
+      event.preventDefault();
+      event.stopImmediatePropagation();
+    };
+    const protectHistory = () => {
+      if (restoringHistory) {
+        restoringHistory = false;
+        return;
+      }
+      if (document.documentElement.dataset.noteFocusActive === "true") return;
+      if (shouldLeave()) return;
+      restoringHistory = true;
+      window.history.forward();
+    };
+
+    window.addEventListener("beforeunload", beforeUnload);
+    window.addEventListener("popstate", protectHistory);
+    document.addEventListener("click", captureNavigation, true);
+    return () => {
+      window.removeEventListener("beforeunload", beforeUnload);
+      window.removeEventListener("popstate", protectHistory);
+      document.removeEventListener("click", captureNavigation, true);
+      if (hadMarker) root.dataset.noteUnsafeNavigation = previousMarker ?? "";
+      else delete root.dataset.noteUnsafeNavigation;
+    };
+  }, [unsafeNavigation]);
+
   const formatSelection = (format: NoteFormat) => {
     const textarea = textareaRef.current;
     if (!textarea) return;
@@ -504,6 +585,54 @@ export function ManualNoteEditor({
     if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "s") {
       event.preventDefault();
       void performSave(true);
+    }
+  };
+
+  const onFocusSurfaceKeyDown = (event: KeyboardEvent<HTMLElement>) => {
+    if (!focus.isFocused) return;
+    if (event.key === "Escape") {
+      const nativeEvent = event.nativeEvent as globalThis.KeyboardEvent;
+      if (nativeEvent.isComposing || nativeEvent.keyCode === 229 || composingRef.current) return;
+      if (consentRequired.length > 0) {
+        event.preventDefault();
+        setConsentRequired([]);
+        return;
+      }
+      if (deleteConfirm) {
+        event.preventDefault();
+        setDeleteConfirm(false);
+        return;
+      }
+      if (showVersions) {
+        event.preventDefault();
+        setShowVersions(false);
+        return;
+      }
+      event.preventDefault();
+      event.stopPropagation();
+      focus.exitFocus("escape");
+      return;
+    }
+    if (event.key !== "Tab") return;
+    const focusable = Array.from(
+      event.currentTarget.querySelectorAll<HTMLElement>(
+        'a[href], button:not([disabled]), textarea:not([disabled]), input:not([disabled]), [tabindex]:not([tabindex="-1"])',
+      ),
+    ).filter(
+      (element) =>
+        !element.closest("[hidden]") &&
+        element.getAttribute("aria-hidden") !== "true" &&
+        !element.closest("[inert]"),
+    );
+    if (focusable.length === 0) return;
+    const first = focusable[0]!;
+    const last = focusable[focusable.length - 1]!;
+    if (event.shiftKey && document.activeElement === first) {
+      event.preventDefault();
+      last.focus();
+    } else if (!event.shiftKey && document.activeElement === last) {
+      event.preventDefault();
+      first.focus();
     }
   };
 
@@ -689,14 +818,65 @@ export function ManualNoteEditor({
 
   const disabled = status === "loading" || status === "session-expired";
   const deleted = snapshot.state?.deleted === true;
+  const focusBlocked = consentRequired.length > 0 || deleteConfirm || showVersions;
+  const unlockNext = focus.isFocused
+    ? `/items/${itemId}?tab=notes&note_mode=focus`
+    : `/items/${itemId}?tab=notes`;
 
   return (
     <section
-      aria-label="My notes"
-      className={`rounded-lg border border-[var(--border)] bg-[var(--surface)] font-sans ${compact ? "p-4 pb-28" : "p-5"}`}
+      ref={surfaceRef}
+      aria-label={focus.isFocused ? undefined : "My notes"}
+      aria-labelledby={focus.isFocused ? focusHeadingId : undefined}
+      aria-describedby={focus.isFocused ? `${focusHeadingId}-description` : undefined}
+      aria-modal={focus.isFocused ? true : undefined}
+      role={focus.isFocused ? "dialog" : undefined}
+      onKeyDownCapture={onFocusSurfaceKeyDown}
+      className={
+        focus.isFocused
+          ? "fixed inset-0 z-[70] h-[100dvh] scroll-pb-28 scroll-pt-24 overflow-y-auto overscroll-contain rounded-none border-0 bg-[var(--background)] p-0 font-sans"
+          : "rounded-lg border border-[var(--border)] bg-[var(--surface)] p-4 pb-28 font-sans md:p-5 md:pb-5"
+      }
     >
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <div>
+      <div
+        className={
+          focus.isFocused
+            ? "mx-auto flex min-h-full w-full max-w-[880px] flex-col px-3 pb-[max(env(safe-area-inset-bottom),0.75rem)] sm:px-5 md:px-8"
+            : ""
+        }
+      >
+      {focus.isFocused && (
+        <div className="sticky top-0 z-30 -mx-3 flex flex-wrap items-start gap-3 border-b border-[var(--border)] bg-[var(--surface)] px-3 pb-3 pt-[max(env(safe-area-inset-top),0.75rem)] sm:-mx-5 sm:px-5 md:-mx-8 md:px-8">
+          <button
+            type="button"
+            aria-keyshortcuts="Escape"
+            onClick={() => focus.exitFocus("button")}
+            className="inline-flex h-11 shrink-0 items-center gap-2 rounded-md border border-[var(--border)] px-3 text-sm font-medium text-[var(--text-secondary)] hover:border-[var(--border-strong)] hover:text-[var(--text-primary)]"
+          >
+            <Minimize2 className="h-4 w-4" strokeWidth={2} /> Exit focus
+          </button>
+          <div className="min-w-0 flex-1">
+            <h2
+              ref={focusHeadingRef}
+              id={focusHeadingId}
+              tabIndex={-1}
+              className="truncate text-base font-semibold text-[var(--text-primary)] outline-none"
+            >
+              My notes — {itemTitle}
+            </h2>
+            <p
+              id={`${focusHeadingId}-description`}
+              className="mt-1 flex items-start gap-1.5 text-xs text-[var(--text-muted)]"
+            >
+              <LockKeyhole className="mt-0.5 h-3 w-3 shrink-0" strokeWidth={2} />
+              Your writing · browser and private server storage · not end-to-end encrypted · Escape exits focus
+            </p>
+          </div>
+        </div>
+      )}
+
+      <div className={`flex flex-wrap items-start justify-between gap-3 ${focus.isFocused ? "mt-4" : ""}`}>
+        <div className={focus.isFocused ? "hidden" : ""}>
           <div className="flex items-center gap-2">
             <Pencil className="h-4 w-4 text-[var(--accent-11)]" strokeWidth={2} />
             <h2 className="text-base font-semibold text-[var(--text-primary)]">My notes</h2>
@@ -706,12 +886,13 @@ export function ManualNoteEditor({
             Your writing · browser and private server storage · not end-to-end encrypted
           </p>
         </div>
+        <div className="flex flex-wrap items-center gap-2">
         <div className="flex rounded-md border border-[var(--border)] bg-[var(--surface-raised)] p-0.5">
           <button
             type="button"
             onClick={() => setMode("write")}
             aria-pressed={mode === "write"}
-            className={`inline-flex items-center gap-1.5 rounded-sm px-3 text-xs font-medium ${compact ? "h-11" : "h-9"} ${
+            className={`inline-flex h-11 items-center gap-1.5 rounded-sm px-3 text-xs font-medium md:h-9 ${
               mode === "write"
                 ? "bg-[var(--control-selected-bg)] text-[var(--control-selected-fg)]"
                 : "text-[var(--text-secondary)]"
@@ -723,7 +904,7 @@ export function ManualNoteEditor({
             type="button"
             onClick={() => setMode("preview")}
             aria-pressed={mode === "preview"}
-            className={`inline-flex items-center gap-1.5 rounded-sm px-3 text-xs font-medium ${compact ? "h-11" : "h-9"} ${
+            className={`inline-flex h-11 items-center gap-1.5 rounded-sm px-3 text-xs font-medium md:h-9 ${
               mode === "preview"
                 ? "bg-[var(--control-selected-bg)] text-[var(--control-selected-fg)]"
                 : "text-[var(--text-secondary)]"
@@ -732,7 +913,26 @@ export function ManualNoteEditor({
             <Eye className="h-3.5 w-3.5" strokeWidth={2} /> Preview
           </button>
         </div>
+        {!focus.isFocused && focusEnabled && (
+          <button
+            ref={focusTriggerRef}
+            type="button"
+            disabled={focusBlocked}
+            aria-describedby={focusBlocked ? `${focusHeadingId}-blocked` : undefined}
+            onClick={(event) => focus.enterFocus(event.currentTarget)}
+            className="inline-flex h-11 items-center gap-2 rounded-md border border-[var(--border)] px-3 text-xs font-medium text-[var(--text-secondary)] hover:border-[var(--border-strong)] hover:text-[var(--text-primary)] disabled:cursor-not-allowed disabled:opacity-50 md:h-9"
+          >
+            <Maximize2 className="h-4 w-4" strokeWidth={2} /> Focus
+          </button>
+        )}
+        </div>
       </div>
+
+      {focusBlocked && focusEnabled && !focus.isFocused && (
+        <p id={`${focusHeadingId}-blocked`} className="mt-2 text-xs text-[var(--warning)]">
+          Finish the open note task before focusing.
+        </p>
+      )}
 
       {!localRecoveryAvailable && (
         <div className="mt-4 flex gap-2 rounded-md border border-[var(--warning)] bg-[var(--surface-raised)] p-3 text-xs text-[var(--warning)]">
@@ -780,11 +980,18 @@ export function ManualNoteEditor({
         </div>
       )}
 
-      {notice && (
-        <div role="status" className="mt-4 rounded-md border border-[var(--border)] bg-[var(--surface-raised)] px-3 py-2 text-xs leading-relaxed text-[var(--text-secondary)]">
-          {notice}
-        </div>
-      )}
+      <div
+        role="status"
+        aria-live="polite"
+        aria-atomic="true"
+        className={
+          notice
+            ? "mt-4 rounded-md border border-[var(--border)] bg-[var(--surface-raised)] px-3 py-2 text-xs leading-relaxed text-[var(--text-secondary)]"
+            : "sr-only"
+        }
+      >
+        {notice ?? ""}
+      </div>
 
       {conflict && (
         <div role="alert" className="mt-4 rounded-md border border-[var(--danger)] bg-[var(--surface-raised)] p-4">
@@ -885,7 +1092,7 @@ export function ManualNoteEditor({
                     disabled={disabled}
                     onMouseDown={(event) => event.preventDefault()}
                     onClick={() => formatSelection(format)}
-                    className={`inline-flex items-center justify-center rounded-sm text-[var(--text-secondary)] hover:bg-[var(--control-selected-bg)] hover:text-[var(--text-primary)] disabled:opacity-50 ${compact ? "h-11 w-11" : "h-10 w-10"}`}
+                    className="inline-flex h-11 w-11 items-center justify-center rounded-sm text-[var(--text-secondary)] hover:bg-[var(--control-selected-bg)] hover:text-[var(--text-primary)] disabled:opacity-50 md:h-10 md:w-10"
                   >
                     <Icon className="h-4 w-4" strokeWidth={2} />
                   </button>
@@ -916,12 +1123,22 @@ export function ManualNoteEditor({
                 }}
                 spellCheck
                 placeholder="What do you think, want to remember, or want to try?"
-                className={`mt-3 w-full resize-y rounded-md border border-[var(--border)] bg-[var(--background)] px-4 py-3 font-mono text-sm leading-6 text-[var(--text-primary)] outline-none transition-colors placeholder:text-[var(--text-muted)] focus:border-[var(--action-primary-focus)] focus:ring-2 focus:ring-[var(--action-primary-focus)]/25 disabled:opacity-60 ${compact ? "min-h-72" : "min-h-80"}`}
+                className={`mt-3 w-full rounded-md border border-[var(--border)] bg-[var(--background)] px-4 py-3 font-mono text-sm leading-6 text-[var(--text-primary)] outline-none transition-colors placeholder:text-[var(--text-muted)] focus:border-[var(--action-primary-focus)] focus:ring-2 focus:ring-[var(--action-primary-focus)]/25 disabled:opacity-60 ${
+                  focus.isFocused
+                    ? "min-h-[max(12rem,40dvh)] resize-none md:min-h-[max(20rem,55dvh)]"
+                    : "min-h-72 resize-y md:min-h-80"
+                }`}
               />
             </>
           )}
           {mode === "preview" && (
-            <div className="article mt-4 min-h-72 rounded-md border border-[var(--border)] bg-[var(--background)] p-4 text-sm">
+            <div
+              className={`article mt-4 rounded-md border border-[var(--border)] bg-[var(--background)] p-4 text-sm ${
+                focus.isFocused
+                  ? "min-h-[max(12rem,40dvh)] md:min-h-[max(20rem,55dvh)]"
+                  : "min-h-72"
+              }`}
+            >
               {content.trim() ? (
                 <ReactMarkdown
                   remarkPlugins={[remarkGfm]}
@@ -949,11 +1166,11 @@ export function ManualNoteEditor({
       )}
 
       <div
-        className={`mt-3 flex items-center justify-between ${compact ? "flex-nowrap gap-2" : "flex-wrap gap-3"} ${
-          compact
-            ? "fixed inset-x-5 bottom-[72px] z-20 rounded-md border border-[var(--border)] bg-[var(--surface)] p-2 shadow-lg"
-            : ""
-        }`}
+        className={
+          focus.isFocused
+            ? "sticky bottom-0 z-20 -mx-3 mt-auto flex flex-wrap items-center justify-between gap-2 border-y border-[var(--border)] bg-[var(--surface)] px-3 py-2 pb-[max(env(safe-area-inset-bottom),0.5rem)] shadow-lg sm:-mx-5 sm:px-5 md:-mx-8 md:px-8"
+            : "fixed inset-x-5 bottom-[72px] z-20 mt-3 flex flex-nowrap items-center justify-between gap-2 rounded-md border border-[var(--border)] bg-[var(--surface)] p-2 shadow-lg md:static md:flex-wrap md:gap-3 md:border-0 md:bg-transparent md:p-0 md:shadow-none"
+        }
       >
         <div className="min-w-0">
           <p
@@ -975,11 +1192,19 @@ export function ManualNoteEditor({
             {bytes.toLocaleString()} / {NOTE_MAX_BYTES.toLocaleString()} bytes
           </p>
         </div>
-        <div className={`flex flex-wrap ${compact ? "gap-1" : "gap-2"}`}>
+        <div className="flex flex-wrap gap-1 md:gap-2">
+          {status === "session-expired" && (
+            <a
+              href={`/unlock?next=${encodeURIComponent(unlockNext)}`}
+              className="inline-flex h-11 items-center gap-1.5 rounded-md border border-[var(--warning)] px-2 text-xs font-medium text-[var(--warning)] md:h-10 md:px-3"
+            >
+              <LogIn className="h-3.5 w-3.5" strokeWidth={2} /> Unlock to sync
+            </a>
+          )}
           <button
             type="button"
             onClick={() => void copyText(content, "Note copied.")}
-            className={`inline-flex items-center gap-1.5 rounded-md border border-[var(--border)] text-xs font-medium text-[var(--text-secondary)] hover:border-[var(--border-strong)] ${compact ? "h-11 px-2" : "h-10 px-3"}`}
+            className="inline-flex h-11 items-center gap-1.5 rounded-md border border-[var(--border)] px-2 text-xs font-medium text-[var(--text-secondary)] hover:border-[var(--border-strong)] md:h-10 md:px-3"
           >
             <Copy className="h-3.5 w-3.5" strokeWidth={2} /> Copy
           </button>
@@ -992,7 +1217,7 @@ export function ManualNoteEditor({
                   if (!snapshotRef.current.state?.deleted) setRecreating(false);
                 })
               }
-              className={`inline-flex items-center gap-1.5 rounded-md bg-[var(--action-primary-bg)] text-xs font-medium text-[var(--action-primary-fg)] disabled:opacity-50 ${compact ? "h-11 px-2" : "h-10 px-3"}`}
+              className="inline-flex h-11 items-center gap-1.5 rounded-md bg-[var(--action-primary-bg)] px-2 text-xs font-medium text-[var(--action-primary-fg)] disabled:opacity-50 md:h-10 md:px-3"
             >
               <RotateCcw className="h-3.5 w-3.5" strokeWidth={2} /> Recreate note
             </button>
@@ -1001,7 +1226,7 @@ export function ManualNoteEditor({
               type="button"
               disabled={disabled || status === "saving" || status === "oversize"}
               onClick={() => void performSave(true)}
-              className={`inline-flex items-center gap-1.5 rounded-md bg-[var(--action-primary-bg)] text-xs font-medium text-[var(--action-primary-fg)] disabled:opacity-50 ${compact ? "h-11 px-2" : "h-10 px-3"}`}
+              className="inline-flex h-11 items-center gap-1.5 rounded-md bg-[var(--action-primary-bg)] px-2 text-xs font-medium text-[var(--action-primary-fg)] disabled:opacity-50 md:h-10 md:px-3"
             >
               <Save className="h-3.5 w-3.5" strokeWidth={2} /> Save
             </button>
@@ -1010,7 +1235,7 @@ export function ManualNoteEditor({
       </div>
 
       {snapshot.note && !deleted && (
-        <div className="mt-4 border-t border-[var(--border)] pt-4">
+        <div hidden={focus.isFocused} className="mt-4 border-t border-[var(--border)] pt-4">
           <label className="flex min-h-11 cursor-pointer items-center justify-between gap-3 text-xs text-[var(--text-secondary)]">
             <span>
               <span className="block font-medium text-[var(--text-primary)]">Include in AI & connections</span>
@@ -1049,7 +1274,7 @@ export function ManualNoteEditor({
       )}
 
       {showVersions && (
-        <div className="mt-3 rounded-md border border-[var(--border)] bg-[var(--surface-raised)] p-3">
+        <div hidden={focus.isFocused} className="mt-3 rounded-md border border-[var(--border)] bg-[var(--surface-raised)] p-3">
           <p className="text-xs font-medium text-[var(--text-primary)]">Recent acknowledged versions</p>
           {versions.length ? (
             <ol className="mt-2 space-y-1 text-xs text-[var(--text-secondary)]">
@@ -1077,7 +1302,7 @@ export function ManualNoteEditor({
       )}
 
       {deleteConfirm && (
-        <div role="dialog" aria-label="Delete My notes" className="mt-4 rounded-md border border-[var(--danger)] bg-[var(--surface-raised)] p-4">
+        <div hidden={focus.isFocused} role="dialog" aria-label="Delete My notes" className="mt-4 rounded-md border border-[var(--danger)] bg-[var(--surface-raised)] p-4">
           <p className="text-sm font-semibold text-[var(--text-primary)]">Delete this attached note?</p>
           <p className="mt-1 text-xs leading-relaxed text-[var(--text-secondary)]">
             This removes current text, recent versions, exact-search content, and queued AI artifacts. A tombstone blocks delayed offline drafts. Retained backups age out under the server backup policy.
@@ -1088,6 +1313,7 @@ export function ManualNoteEditor({
           </div>
         </div>
       )}
+      </div>
     </section>
   );
 }

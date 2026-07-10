@@ -7,7 +7,8 @@
   "researchEvidenceDate": "2026-06-28",
   "sourceRoot": "docs/feature-council",
   "excludedSourceRoots": [
-    "docs/feature-council/F08-manual-content-notes"
+    "docs/feature-council/F08-manual-content-notes",
+    "docs/feature-council/note-focus-mode"
   ],
   "destinationRoot": "docs/wiki",
   "landingPage": "Feature-Council-Research.md",

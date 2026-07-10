@@ -65,7 +65,7 @@ import {
   type CaptureResultState,
 } from "@/lib/capture/result";
 import { verifySessionCookie } from "@/lib/auth";
-import { manualNotesUiEnabled } from "@/lib/notes/flags";
+import { manualNotesUiEnabled, noteFocusModeEnabled } from "@/lib/notes/flags";
 import { canUpgradeWithPastedText } from "@/lib/capture/upgrade-policy";
 import { findRelatedItems } from "@/lib/related";
 import { UpgradeTextForm } from "./upgrade-text-form";
@@ -146,13 +146,18 @@ export default async function ItemDetailPage({
     mode?: string;
     capture?: string;
     capture_state?: string;
+    note_mode?: string;
     repair?: string;
     tab?: string;
   }>;
 }) {
   const { id } = await params;
-  const { highlight, mode, capture, capture_state, repair, tab } =
+  const { highlight, mode, capture, capture_state, note_mode, repair, tab } =
     await searchParams;
+  const notesEnabled = manualNotesUiEnabled();
+  const focusEnabled = notesEnabled && noteFocusModeEnabled();
+  const validNoteFocusRequest =
+    focusEnabled && note_mode === "focus" && mode !== "focus";
   const c = await cookies();
   if (!verifySessionCookie(c)) {
     redirect(`/unlock?next=${encodeURIComponent(itemDetailNextPath({
@@ -161,9 +166,26 @@ export default async function ItemDetailPage({
       mode,
       capture,
       capture_state,
+      note_mode: validNoteFocusRequest ? "focus" : undefined,
       repair,
-      tab,
+      tab: validNoteFocusRequest ? "notes" : tab,
     }))}`);
+  }
+
+  if (
+    note_mode !== undefined &&
+    (!validNoteFocusRequest || tab !== "notes")
+  ) {
+    redirect(itemDetailNextPath({
+      id,
+      highlight,
+      mode,
+      capture,
+      capture_state,
+      note_mode: validNoteFocusRequest ? "focus" : undefined,
+      repair,
+      tab: validNoteFocusRequest ? "notes" : tab,
+    }));
   }
 
   const item = getItem(id);
@@ -219,7 +241,6 @@ export default async function ItemDetailPage({
     ? toCaptureResultPayload(item, { state: captureResultState })
     : null;
   const repairQueued = repair === "queued";
-  const notesEnabled = manualNotesUiEnabled();
   const activeTab = parseItemDetailTab(tab, notesEnabled);
 
   // T-12: when arriving via an Ask citation chip, resolve the chunk body so
@@ -325,9 +346,13 @@ export default async function ItemDetailPage({
         />
       </div>
 
-      <div className="hidden gap-10 md:grid lg:grid-cols-[minmax(0,68ch)_360px]">
+      <div
+        className={`gap-10 md:grid lg:grid-cols-[minmax(0,68ch)_360px] ${
+          notesEnabled && activeTab === "notes" ? "grid" : "hidden"
+        }`}
+      >
         {/* LEFT: original content */}
-        <article className="article">
+        <article className="article hidden md:block">
           <header className="mb-6 border-b border-[var(--border)] pb-5">
             <div className="flex flex-wrap items-start justify-between gap-3">
               <h1 className="font-sans text-[28px] font-semibold leading-[1.3] tracking-[-0.01em] text-[var(--text-primary)]">
@@ -422,12 +447,20 @@ export default async function ItemDetailPage({
         <aside className="flex flex-col gap-6 font-sans text-sm lg:sticky lg:top-8 lg:self-start">
           {notesEnabled ? (
             <ItemCompanionTabs
-              notes={<ManualNoteEditor itemId={item.id} />}
+              notes={
+                <ManualNoteEditor
+                  itemId={item.id}
+                  itemTitle={item.title}
+                  focusEnabled={focusEnabled}
+                />
+              }
               digest={<DesktopDigestPanel item={item} hasDigest={hasDigest} quotes={quotes} />}
+              mobileNotesOnly
             />
           ) : (
             <DesktopDigestPanel item={item} hasDigest={hasDigest} quotes={quotes} />
           )}
+          <div className="hidden flex-col gap-6 md:flex">
           {/* F-302: inline tag editor — always visible so the user can
               attach/detach tags without going to /settings/tags. */}
           <div className="rounded-lg border border-[var(--border)] bg-[var(--surface)] p-5">
@@ -522,6 +555,7 @@ export default async function ItemDetailPage({
               </p>
             )}
           </div>
+          </div>
 
         </aside>
       </div>
@@ -609,6 +643,7 @@ function itemDetailNextPath(params: {
   mode?: string;
   capture?: string;
   capture_state?: string;
+  note_mode?: string;
   repair?: string;
   tab?: string;
 }): string {
@@ -760,9 +795,6 @@ function MobileItemDetailTabs({
         />
       )}
       {activeTab === "related" && <MobileRelatedTab related={related} />}
-      {notesEnabled && activeTab === "notes" && (
-        <ManualNoteEditor itemId={item.id} compact />
-      )}
       {activeTab === "details" && (
         <MobileDetailsTab
           item={item}

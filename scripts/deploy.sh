@@ -120,6 +120,22 @@ done
 REMOTE_MANUAL_NOTES_ENV_PREFLIGHT
 }
 
+remote_note_focus_env_preflight() {
+  if [[ "${BRAIN_NOTE_FOCUS_ALLOW_ENABLED_FLAG:-0}" == "1" ]]; then
+    echo "[deploy] BRAIN_NOTE_FOCUS_ALLOW_ENABLED_FLAG=1; preserving approved Note Focus rollout flag."
+    return
+  fi
+
+  ssh "${SSH_HOST}" "sudo bash -s" <<'REMOTE_NOTE_FOCUS_ENV_PREFLIGHT' \
+    || die "NOTE_FOCUS_MODE_ENABLED must be disabled for the guarded first deploy."
+set -euo pipefail
+if grep -Eq "^(export[[:space:]]+)?NOTE_FOCUS_MODE_ENABLED[[:space:]]*=[[:space:]]*[\"']?(1|true|yes|on)[\"']?[[:space:]]*$" /etc/brain/.env; then
+  echo "[deploy] remote /etc/brain/.env has NOTE_FOCUS_MODE_ENABLED enabled" >&2
+  exit 1
+fi
+REMOTE_NOTE_FOCUS_ENV_PREFLIGHT
+}
+
 remote_database_backup() {
   local timestamp
   timestamp="$(date -u +%Y-%m-%d_%H-%M-%S)"
@@ -324,6 +340,7 @@ remote_env_preflight
 remote_recall_timer_preflight
 remote_recall_env_preflight
 remote_manual_notes_env_preflight
+remote_note_focus_env_preflight
 remote_recall_key_rotation_evidence_preflight
 remote_database_backup
 
