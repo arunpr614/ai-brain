@@ -2,8 +2,8 @@
 
 Purpose: Explain the private Markdown note attached to each saved library item.
 Audience: AI agents, engineers, product collaborators, and operators maintaining item notes.
-Verified against: `4403a487ba137bc080ec6070021aeafa1ec3dad4` and integrated baseline `a50ba828cded2442e8cb417693a40d81b45446f8`.
-Runtime evidence through: 2026-07-10 release-candidate validation; production enablement was not yet claimed at this review point.
+Verified against: `8654f293d0f8615617df883e4703c0ca098a6029` and integrated baseline `a50ba828cded2442e8cb417693a40d81b45446f8`.
+Runtime evidence through: 2026-07-10 production deployment, synthetic lifecycle smoke, cleanup, and final content-free integrity audit.
 Last reviewed: 2026-07-10.
 Owner: AI Brain maintainer.
 
@@ -49,7 +49,7 @@ The production safety sequence is conceptual: verified SQLite backup, flags-off 
 
 ## Verification
 
-Release-candidate evidence includes 785 passing tests, typecheck, lint, production build, dependency audit, interactive desktop/mobile autosave-search-conflict-preview checks, implementation adversarial review with every P0/P1 closed, and a byte-verified production-snapshot rehearsal ending with SQLite integrity OK, zero foreign-key/vector anomalies, and a safe allocator.
+Release evidence includes 785 passing tests, typecheck, lint, production build, dependency audit, interactive desktop/mobile autosave-search-conflict-preview checks, implementation adversarial review with every P0/P1 closed, and a byte-verified production-snapshot rehearsal. The guarded live rollout then passed verified backup, migrations through 023, exact content-free audit/repair, note save, exact search, remote semantic indexing, Related, Ask with manual-note citation provenance, opt-out, semantic purge, provider revocation, note/item deletion, and zero-leftover cleanup. The final production audit reports SQLite integrity OK, zero foreign-key/vector anomalies, and a safe monotonic allocator.
 
 Canonical implementation evidence lives in the repository under `docs/feature-council/F08-manual-content-notes/`. Public wiki publication intentionally summarizes the current product contract instead of copying private operational evidence or every internal review artifact.
 

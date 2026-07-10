@@ -28206,3 +28206,39 @@ Integrate the attested production source without flattening Recall history, impl
 - **Working tree:** Expected feature code/docs/screenshots are uncommitted; ignored private rehearsal databases/reports remain owner-only.
 - **Production:** Unchanged by F08 so far; app and Recall timer active; manual-note flags disabled.
 - **Next milestone:** GitHub publication, flags-off deploy, exact live repair, synthetic smoke, and staged enablement.
+
+---
+
+## 2026-07-10 19:25 - F08 Manual Content Notes Released to Production
+
+**Entry author:** AI agent (Codex) · **Triggered by:** autonomous end-to-end F08 feature goal
+
+### Done
+
+- Published the implementation branch and ready PR, integrated the canonical agent/wiki source, and added the sanitized Manual Content Notes wiki page.
+- Fixed a synthetic privacy-smoke fixture that collided with the repository token scanner; no real credential was present and the deploy stopped before sync.
+- Deployed flags off from the clean feature tree while preserving the enabled Recall timer and completed Recall flags. Verified backup, all 785 tests, lint, typecheck, build, authenticated health, and strict production Anthropic/Gemini checks passed.
+- Applied migrations through 023. The live audit exactly matched rehearsal audit `362a10a6e642abedfe937ed2ac5bbc24f5f552ad6eda220603f6b9471983e696`; the backup-confirmed atomic repair reached safe audit `233e85f3539ff3991dc6dd3c3b715ac1a6e1af7d4192dd76e974e22fb0eb5459`.
+- Enabled UI, write, and worker flags, then ran two isolated synthetic note lifecycles through save, exact search, provider acknowledgement, remote indexing, Related, Ask, opt-out, purge, revocation, delete, and parent cleanup.
+- The first live Ask smoke found missing source provenance in the retrieve stream. Fixed it with a regression test in `8654f29`, redeployed, and verified two manual-note provenance records and two citation markers in production.
+- Removed all synthetic items, notes, jobs, and semantic chunks; revoked both synthetic provider acknowledgements. Final audit `0168c4db26d9e1e92ed2dea8ead9738c27957b5e40d989c163b96434c060a90f` is safe with zero anomalies and allocator 47.
+
+### Verification
+
+- Production service and Recall timer active.
+- 25 migrations through `023_source_aware_chunks.sql`; SQLite quick check `ok`; zero foreign-key violations.
+- Strict production provider checks pass for Anthropic generation and Gemini embeddings.
+- Manual-note UI, write, and worker flags enabled; provider policy ineligible with zero current approvals until the owner acknowledges the displayed providers.
+- Local release gate repeated after the provenance fix: 785 tests, 92 suites, zero failures, typecheck, lint, build, build-artifact privacy, Recall static/public gates, and zero production dependency vulnerabilities.
+
+### Current remaining to-do
+
+1. Publish the sanitized canonical wiki to the GitHub Wiki with a remote-SHA concurrency check and fresh-clone verification.
+2. Update and integrate the ready GitHub PR after wiki publication evidence is committed.
+
+### State snapshot
+
+- **Current phase / version:** F08 production release complete; publication/integration closeout in progress.
+- **Active branch:** `codex/manual-content-notes` at deployed source `8654f29`.
+- **Production:** Feature enabled and healthy; real remote note AI remains consent-blocked until in-product acknowledgement.
+- **Data hygiene:** Synthetic smoke content fully removed; owner-only backup and content-free reports retained.

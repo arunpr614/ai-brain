@@ -2,8 +2,8 @@
 
 Purpose: Define the exact source revisions and status vocabulary used throughout this wiki.
 Audience: AI agents and release/documentation maintainers.
-Verified against: `2b4db9540d0b76ee6d3aa2a9da5f788b69a8d02a` and `8178117c80923e5724e355fb2684cbc836013d39`.
-Runtime evidence through: 2026-07-09; complete production tree SHA is Unknown.
+Verified against: `2b4db9540d0b76ee6d3aa2a9da5f788b69a8d02a`, `8178117c80923e5724e355fb2684cbc836013d39`, and production `8654f293d0f8615617df883e4703c0ca098a6029`.
+Runtime evidence through: 2026-07-10; production application tree verified at `8654f293d0f8615617df883e4703c0ca098a6029`.
 Last reviewed: 2026-07-10.
 Owner: AI Brain maintainer.
 
@@ -15,11 +15,11 @@ Owner: AI Brain maintainer.
 | Documentation worktree source | `8178117c80923e5724e355fb2684cbc836013d39` | UX v2 and Recall-oriented branch used for this documentation build |
 | Feature Council artifact source | `9de8de87de915e874e8290aa556e2b6772d6fabf` | Immutable source for the 44 planning and research documents published under Feature Council Research |
 | Wiki before Feature Council publication | `dab9267124b55571f03ad56c6776c6827723229a` | Published wiki base recorded before the research-category update |
-| Complete production tree | Unknown | Public-safe evidence does not prove one current complete production SHA |
+| Complete production application tree | `8654f293d0f8615617df883e4703c0ca098a6029` | Clean branch tree deployed and verified by authenticated health, strict provider checks, schema/audit evidence, and a cleaned synthetic note lifecycle |
 
 The default branch has 12 commits not present in the worktree baseline. The worktree baseline has 16 commits not present in the default branch. Neither is a descendant of the other.
 
-Default branch source: [main baseline](https://github.com/arunpr614/ai-brain/tree/2b4db9540d0b76ee6d3aa2a9da5f788b69a8d02a). Worktree source: [documentation baseline](https://github.com/arunpr614/ai-brain/tree/8178117c80923e5724e355fb2684cbc836013d39).
+Default branch source: [main baseline](https://github.com/arunpr614/ai-brain/tree/2b4db9540d0b76ee6d3aa2a9da5f788b69a8d02a). Worktree source: [documentation baseline](https://github.com/arunpr614/ai-brain/tree/8178117c80923e5724e355fb2684cbc836013d39). Production source: [verified deployed tree](https://github.com/arunpr614/ai-brain/tree/8654f293d0f8615617df883e4703c0ca098a6029).
 
 Feature Council source: [planning artifact baseline](https://github.com/arunpr614/ai-brain/tree/9de8de87de915e874e8290aa556e2b6772d6fabf/docs/feature-council). Its research evidence date is 2026-06-28. These documents are planning evidence; they do not update the production runtime baseline.
 

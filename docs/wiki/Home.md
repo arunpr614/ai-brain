@@ -2,8 +2,8 @@
 
 Purpose: Entry point for understanding and changing AI Brain safely.
 Audience: AI agents and engineers.
-Verified against: `2b4db9540d0b76ee6d3aa2a9da5f788b69a8d02a` and `8178117c80923e5724e355fb2684cbc836013d39`.
-Runtime evidence through: 2026-07-09; complete production tree SHA is Unknown.
+Verified against: `2b4db9540d0b76ee6d3aa2a9da5f788b69a8d02a`, `8178117c80923e5724e355fb2684cbc836013d39`, and production `8654f293d0f8615617df883e4703c0ca098a6029`.
+Runtime evidence through: 2026-07-10; production application tree verified at `8654f293d0f8615617df883e4703c0ca098a6029`.
 Last reviewed: 2026-07-10.
 Owner: AI Brain maintainer.
 
@@ -30,7 +30,7 @@ Sensitive operations are deliberately split out. Private owner runbooks are not 
 - A migration proves schema support, not a complete product feature.
 - A tracker proves intent or historical status, not current runtime state.
 - `origin/main` and the documentation worktree have diverged; neither contains the other.
-- The current complete production source SHA is not proven by public-safe evidence.
+- The current hosted application was deployed from `8654f293d0f8615617df883e4703c0ca098a6029`; feature-specific runtime status still requires its own dated evidence.
 - Unknown state is represented explicitly.
 
 ## Key Areas

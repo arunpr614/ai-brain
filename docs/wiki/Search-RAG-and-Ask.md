@@ -3,7 +3,7 @@
 Purpose: Explain indexing, retrieval, answer generation, citations, and chat persistence.
 Audience: AI agents working on search, embeddings, retrieval, or Ask.
 Verified against: `2b4db9540d0b76ee6d3aa2a9da5f788b69a8d02a` and `8178117c80923e5724e355fb2684cbc836013d39`.
-Runtime evidence through: 2026-06-17 for tied production Ask evidence; complete production tree SHA is Unknown.
+Runtime evidence through: 2026-07-10 for exact note search, remote semantic indexing, Related, and Ask manual-note citation provenance at `8654f293d0f8615617df883e4703c0ca098a6029`.
 Last reviewed: 2026-07-10.
 Owner: AI Brain maintainer.
 

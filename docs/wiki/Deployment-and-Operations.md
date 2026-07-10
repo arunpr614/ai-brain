@@ -2,8 +2,8 @@
 
 Purpose: Describe runtime, backup, scheduling, health, and rollback concepts without executable production instructions.
 Audience: AI agents and engineers diagnosing or preparing operational work.
-Verified against: `2b4db9540d0b76ee6d3aa2a9da5f788b69a8d02a` and `8178117c80923e5724e355fb2684cbc836013d39`.
-Runtime evidence through: 2026-07-09; complete production tree SHA is Unknown.
+Verified against: `2b4db9540d0b76ee6d3aa2a9da5f788b69a8d02a`, `8178117c80923e5724e355fb2684cbc836013d39`, and production `8654f293d0f8615617df883e4703c0ca098a6029`.
+Runtime evidence through: 2026-07-10; production application tree verified at `8654f293d0f8615617df883e4703c0ca098a6029`.
 Last reviewed: 2026-07-10.
 Owner: AI Brain maintainer.
 
@@ -15,7 +15,7 @@ Pinned source: [deployment script](https://github.com/arunpr614/ai-brain/blob/81
 
 ## Deployment Evidence
 
-Public records tie UX v2 production behavior through Android attribution source `60d670741522a25db33545ee23fc2881774347e2`. Later records show Recall deployment and scheduler operation but do not prove one complete current production Git tree. Therefore this wiki does not claim a current production SHA.
+Public records tie UX v2 production behavior through Android attribution source `60d670741522a25db33545ee23fc2881774347e2`. The 2026-07-10 attached-notes release established a new complete application baseline: clean source `8654f293d0f8615617df883e4703c0ca098a6029`, authenticated health, strict Anthropic/Gemini reachability, migrations through 023, Recall timer continuity, exact vector repair, and a fully cleaned synthetic lifecycle.
 
 ## Backups and Restore
 

@@ -3,7 +3,7 @@
 Purpose: Describe persistent domains, migration history, and item lifecycle.
 Audience: AI agents and engineers changing storage or data flow.
 Verified against: `2b4db9540d0b76ee6d3aa2a9da5f788b69a8d02a` and `8178117c80923e5724e355fb2684cbc836013d39`.
-Runtime evidence through: 2026-07-09; production schema revision is Unknown.
+Runtime evidence through: 2026-07-10; production migrations verified through `023_source_aware_chunks.sql`.
 Last reviewed: 2026-07-10.
 Owner: AI Brain maintainer.
 
