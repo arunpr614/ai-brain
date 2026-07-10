@@ -24,6 +24,8 @@ The deploy preflight refuses a first enabled deployment unless `BRAIN_NOTE_FOCUS
 
 One post-restart provider-check SSH connection was transiently refused after authenticated health had already passed. SSH immediately recovered; the strict provider and remaining post-deploy checks were rerun separately and passed. This was an operator-channel transient, not an application-health failure.
 
+Production closeout documentation merged through PR #17 at `47968ec03be1e887e027fb875d317d4d1f274df1`. The canonical 63-page GitHub Wiki was then published from remote base `7347060` to `3d578c3f66e61de3f124a855253e713758f6a49b` with a pre-push remote-SHA concurrency check. A fresh clone passed privacy, structure/reachability, and byte-for-byte comparison with `docs/wiki/`.
+
 ## Rollback
 
 ### Focus presentation/history defect

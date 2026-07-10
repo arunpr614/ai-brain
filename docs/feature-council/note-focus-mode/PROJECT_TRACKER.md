@@ -1,6 +1,6 @@
 # Note Focus Mode — Project Tracker
 
-Updated: 2026-07-10 22:46 IST
+Updated: 2026-07-10 22:51 IST
 
 | Phase | Exit condition | Status |
 |---|---|---|
@@ -15,7 +15,7 @@ Updated: 2026-07-10 22:46 IST
 | 8. Acceptance/visual QA | Desktop/mobile/reflow/history/network/accessibility traceability and comparison evidence | Complete for web; physical Android/TalkBack unavailable |
 | 9. GitHub integration | Intentional commits, pushed branch, green PR, merge to `main` | Complete — PRs #15 and #16 |
 | 10. Production release | Guarded deploy, health/provider/scheduler checks, production focus smoke, cleanup | Complete — main `6858529` enabled |
-| 11. Documentation closeout | Canonical docs/wiki published and verified; running log appended | In progress — final closeout branch/wiki publication |
+| 11. Documentation closeout | Canonical docs/wiki published and verified; running log appended | Complete — PR #17 and wiki `3d578c3` |
 
 ## Non-negotiable gates
 
@@ -39,6 +39,7 @@ Updated: 2026-07-10 22:46 IST
 - Real Android keyboard/Back/TalkBack and real desktop screen-reader speech remain unexecuted environment-specific evidence; the release report does not claim those platforms as verified.
 - PR #15 merged at `e2b44a2`; flag-off production smoke exposed query loss in the auth proxy, PR #16 fixed it, and final production main is `6858529`.
 - Production Focus is deliberately enabled. Authenticated server-rendered smoke passes ordinary Notes, Focus control/route, URL canonicalization, source-reading precedence, and the AI/connections default setting; strict Anthropic/Gemini checks, health, webhook boundary, service, and Recall timer pass.
+- Production closeout documentation merged through PR #17 at `47968ec`; the 63-page GitHub Wiki was published at `3d578c3`, then passed fresh-clone privacy, structure/reachability, and byte-for-byte canonical comparison.
 
 ## Current owners
 

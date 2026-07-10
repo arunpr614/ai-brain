@@ -7,6 +7,7 @@ Feature PR: [#15](https://github.com/arunpr614/ai-brain/pull/15)
 Release hotfix PR: [#16](https://github.com/arunpr614/ai-brain/pull/16)
 Production main: `6858529ef179a51442d319c6c58e5ace79757619`
 Production: [AI Memory](https://brain.arunp.in)
+Wiki: [Manual Content Notes](https://github.com/arunpr614/ai-brain/wiki/Manual-Content-Notes) · published `3d578c3`
 
 ## Executive summary
 
@@ -210,3 +211,4 @@ After the corrected flag-off deep link passed, Focus was deliberately enabled th
 - [QA report](../validation/qa-report.md)
 - [Accessibility review](../validation/accessibility-review.md)
 - [Release and rollback](../validation/release-and-rollback.md)
+- [Published Manual Content Notes wiki](https://github.com/arunpr614/ai-brain/wiki/Manual-Content-Notes)

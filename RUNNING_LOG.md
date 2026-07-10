@@ -28857,3 +28857,47 @@ None for the guarded web release. Device/AT certification remains a separately e
 - **Working tree:** Dirty only with intended production closeout documentation.
 - **Deployed/runtime state:** Production healthy; Focus enabled; strict providers pass; Recall timer enabled/active; AI default behavior preserved.
 - **Next milestone:** Merge closeout docs, publish/verify GitHub Wiki, and complete the goal.
+
+---
+
+## 2026-07-10 22:51 - Note Focus Mode Wiki and Release Closeout
+
+**Entry author:** AI agent (Codex) · **Triggered by:** Final canonical documentation publication after the Note Focus production release.
+
+### Done
+
+- Committed production evidence and final Markdown/HTML report updates as `0d20f1e` on `codex/note-focus-release-closeout`.
+- Opened PR #17, waited for the required Agent documentation check to pass, promoted it, and merged it to `main` at `47968ec03be1e887e027fb875d317d4d1f274df1`.
+- Cloned `https://github.com/arunpr614/ai-brain.wiki.git` fresh at base `734706050a9b2efba58d51e666f33e3fbe6ca404`.
+- Synced all 63 canonical `docs/wiki/` pages; only `Manual-Content-Notes.md` changed.
+- Passed wiki privacy with zero findings, structure/reachability with all 63 pages, canonical-to-clone byte comparison, and staged whitespace checks.
+- Re-fetched the wiki remote immediately before push and confirmed it still matched the recorded base.
+- Published wiki commit `3d578c3f66e61de3f124a855253e713758f6a49b` with a normal non-force push.
+- Cloned the wiki again after publication; privacy, structure/reachability, published-SHA, and byte-for-byte canonical comparisons all passed.
+- Updated the Note Focus tracker and detailed reports with the production closeout and published wiki link.
+
+### Deployed / Released
+
+- Application production main: `6858529` with Note Focus enabled.
+- Production documentation main: PR #17 merge `47968ec`.
+- GitHub Wiki: `3d578c3`.
+
+### Current remaining to-do
+
+1. Merge this final publication record and confirm the terminal production/main/wiki state.
+
+### Open questions / decisions needed
+
+None.
+
+### Session self-critique
+
+- The final publication used two documentation commits so the wiki source could merge before the wiki was published and the publication SHA could then be recorded without creating a recursive wiki-update requirement.
+
+### State snapshot
+
+- **Current phase / version:** Note Focus Mode application, reports, repository docs, production, and wiki complete.
+- **Active branch:** `codex/note-focus-final` from production-closeout main `47968ec`.
+- **Working tree:** Dirty only with this final publication record.
+- **Deployed/runtime state:** Production healthy; Focus enabled; final application main `6858529`; strict providers and Recall timer healthy.
+- **Next milestone:** Merge final record and close the active goal.
