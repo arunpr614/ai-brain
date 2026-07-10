@@ -10,7 +10,7 @@ const checker = resolve("scripts/check-agent-wiki-privacy.mjs");
 
 const syntheticSecrets = [
   "sk-ant-syntheticprivacyvalue1234567890",
-  "123456789:syntheticTelegramTokenValue123456",
+  "123456789" + ":syntheticTelegramTokenValue123456",
   "syntheticBearerValue1234567890",
   "syntheticCookieValue1234567890",
   "syntheticSignedValue1234567890",
