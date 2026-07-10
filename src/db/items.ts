@@ -6,6 +6,8 @@
 import { getDb, newId, type ItemRow } from "./client";
 import type { CapturePlatform, CaptureQuality } from "@/lib/capture/types";
 import { deleteArtifactsForItem } from "@/lib/capture/artifacts";
+import { deleteChunksAndVectors } from "./chunks";
+import { deleteMessagesCitingManualNote } from "./chat";
 
 export type SourceType = ItemRow["source_type"];
 export type CaptureSource = ItemRow["capture_source"];
@@ -278,7 +280,13 @@ export function countNeedsUpgradeItems(): number {
 export function deleteItem(id: string): void {
   const db = getDb();
   deleteArtifactsForItem(id);
-  db.prepare("DELETE FROM items WHERE id = ?").run(id);
+  db.transaction(() => {
+    // vec0 is not a foreign-key child. Delete vector rows before cascades erase
+    // the bridge that identifies them.
+    deleteChunksAndVectors(id);
+    deleteMessagesCitingManualNote(id);
+    db.prepare("DELETE FROM items WHERE id = ?").run(id);
+  })();
 }
 
 export interface UpdateItemCaptureContentInput {

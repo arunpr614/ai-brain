@@ -4,7 +4,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { verifySessionCookie } from "@/lib/auth";
 import { getEmbedProvider } from "@/lib/embed/factory";
-import { searchUnified, type SearchMode } from "@/lib/search";
+import { searchUnifiedDetailed, type SearchMode } from "@/lib/search";
 
 function formatRelative(ts: number): string {
   const diff = Date.now() - ts;
@@ -49,7 +49,7 @@ export default async function SearchPage({
   const needsEmbed = mode === "semantic" || mode === "hybrid";
   const ollamaDown = needsEmbed && !(await getEmbedProvider().isAlive());
 
-  const results = query && !ollamaDown ? await searchUnified(query, { mode, limit: 100 }) : [];
+  const results = query && !ollamaDown ? await searchUnifiedDetailed(query, { mode, limit: 100 }) : [];
 
   return (
     <div className="mx-auto max-w-[960px] px-8 py-10">
@@ -129,7 +129,7 @@ export default async function SearchPage({
               return (
                 <li key={it.id}>
                   <Link
-                    href={`/items/${it.id}`}
+                    href={`/items/${it.id}${it.matchedSources.includes("manual_note") ? "?tab=notes" : ""}`}
                     className="flex items-start gap-3 rounded-lg border border-[var(--border)] bg-[var(--surface)] p-4 hover:border-[var(--border-strong)] hover:bg-[var(--surface-raised)]"
                   >
                     <span className="mt-0.5 shrink-0 text-[var(--text-muted)]">
@@ -144,6 +144,18 @@ export default async function SearchPage({
                         <span className="mx-2 text-[var(--text-muted)]">·</span>
                         {formatRelative(it.captured_at)}
                       </p>
+                      {it.matchedSources.includes("manual_note") && (
+                        <div className="mt-2 rounded-md border border-[var(--border)] bg-[var(--surface-raised)] px-3 py-2">
+                          <p className="text-[11px] font-medium uppercase tracking-wider text-[var(--accent-11)]">
+                            Matched in My notes
+                          </p>
+                          {it.noteSnippet && (
+                            <p className="mt-1 line-clamp-2 text-xs leading-relaxed text-[var(--text-secondary)]">
+                              {it.noteSnippet}
+                            </p>
+                          )}
+                        </div>
+                      )}
                     </div>
                   </Link>
                 </li>

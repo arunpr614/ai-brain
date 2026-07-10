@@ -23,6 +23,8 @@ import { deleteItemAction } from "@/app/actions";
 import { ignoreTranscriptJobAction, retryTranscriptJobAction } from "@/app/review/actions";
 import { CollectionEditor } from "@/components/collection-editor";
 import { ItemEnrichmentWatch } from "@/components/item-enrichment-watch";
+import { ItemCompanionTabs } from "@/components/item-companion-tabs";
+import { ManualNoteEditor } from "@/components/manual-note-editor";
 import { RelatedItems } from "@/components/related-items";
 import { ScrollToHash } from "@/components/scroll-to-hash";
 import { TagEditor } from "@/components/tag-editor";
@@ -63,6 +65,7 @@ import {
   type CaptureResultState,
 } from "@/lib/capture/result";
 import { verifySessionCookie } from "@/lib/auth";
+import { manualNotesUiEnabled } from "@/lib/notes/flags";
 import { canUpgradeWithPastedText } from "@/lib/capture/upgrade-policy";
 import { findRelatedItems } from "@/lib/related";
 import { UpgradeTextForm } from "./upgrade-text-form";
@@ -98,7 +101,7 @@ function isYoutubeSource(item: ItemRow): boolean {
 }
 
 type CaptureResultKind = "url" | "pdf" | "note";
-type ItemDetailTab = "original" | "digest" | "ask" | "related" | "details";
+type ItemDetailTab = "original" | "digest" | "ask" | "related" | "details" | "notes";
 const TRANSCRIPT_PANEL_SEGMENT_PREVIEW_LIMIT = 200;
 
 type TranscriptPreview = {
@@ -112,12 +115,13 @@ function parseCaptureResultKind(value: string | undefined): CaptureResultKind | 
   return null;
 }
 
-function parseItemDetailTab(value: string | undefined): ItemDetailTab {
+function parseItemDetailTab(value: string | undefined, notesEnabled: boolean): ItemDetailTab {
   if (
     value === "digest" ||
     value === "ask" ||
     value === "related" ||
-    value === "details"
+    value === "details" ||
+    (notesEnabled && value === "notes")
   ) {
     return value;
   }
@@ -215,14 +219,19 @@ export default async function ItemDetailPage({
     ? toCaptureResultPayload(item, { state: captureResultState })
     : null;
   const repairQueued = repair === "queued";
-  const activeTab = parseItemDetailTab(tab);
+  const notesEnabled = manualNotesUiEnabled();
+  const activeTab = parseItemDetailTab(tab, notesEnabled);
 
   // T-12: when arriving via an Ask citation chip, resolve the chunk body so
   // we can render a highlight panel with an anchor the scroll-to-hash hook
   // can find. Silently ignore invalid/foreign chunk_ids — the chip just
   // looks like a regular item link.
   const highlightedChunk = highlight
-    ? listChunksForItem(item.id).find((c) => c.id === highlight) ?? null
+    ? listChunksForItem(item.id).find(
+        (chunk) =>
+          chunk.id === highlight &&
+          (notesEnabled || chunk.source_kind !== "manual_note"),
+      ) ?? null
     : null;
 
   // T-15 (EXP-3): pure DB operation — no network / Ollama. Safe on every
@@ -274,7 +283,13 @@ export default async function ItemDetailPage({
         >
           <div className="mb-2 flex items-center gap-2 text-[11px] font-medium uppercase tracking-wider text-[var(--accent-11)]">
             <Quote className="h-3.5 w-3.5" strokeWidth={2} />
-            Cited passage
+            {highlightedChunk.source_kind === "manual_note"
+              ? "Your note"
+              : highlightedChunk.source_kind === "ai_summary"
+                ? "AI digest"
+                : highlightedChunk.source_kind === "original_content"
+                  ? "Original source"
+                  : "Saved item context"}
           </div>
           <p className="whitespace-pre-wrap text-sm text-[var(--text-primary)]">
             {highlightedChunk.body}
@@ -305,6 +320,7 @@ export default async function ItemDetailPage({
           transcriptJob={transcriptJob}
           transcriptAttempts={transcriptAttempts}
           canUpgradeWithText={canUpgradeWithText}
+          notesEnabled={notesEnabled}
           preserveQuery={{ capture_state, repair, highlight }}
         />
       </div>
@@ -404,6 +420,14 @@ export default async function ItemDetailPage({
 
         {/* RIGHT: Collections + AI digest */}
         <aside className="flex flex-col gap-6 font-sans text-sm lg:sticky lg:top-8 lg:self-start">
+          {notesEnabled ? (
+            <ItemCompanionTabs
+              notes={<ManualNoteEditor itemId={item.id} />}
+              digest={<DesktopDigestPanel item={item} hasDigest={hasDigest} quotes={quotes} />}
+            />
+          ) : (
+            <DesktopDigestPanel item={item} hasDigest={hasDigest} quotes={quotes} />
+          )}
           {/* F-302: inline tag editor — always visible so the user can
               attach/detach tags without going to /settings/tags. */}
           <div className="rounded-lg border border-[var(--border)] bg-[var(--surface)] p-5">
@@ -499,55 +523,6 @@ export default async function ItemDetailPage({
             )}
           </div>
 
-          {hasDigest ? (
-            <div className="flex flex-col gap-6 rounded-lg border border-[var(--border)] bg-[var(--surface)] p-5">
-              {item.category && (
-                <div>
-                  <p className="mb-1 text-[11px] font-medium uppercase tracking-wider text-[var(--text-muted)]">
-                    Category
-                  </p>
-                  <span className="inline-flex rounded-full bg-[var(--control-selected-bg)] px-2.5 py-0.5 text-xs font-medium text-[var(--control-selected-fg)]">
-                    {item.category}
-                  </span>
-                </div>
-              )}
-
-              {item.summary && (
-                <div>
-                  <p className="mb-1.5 text-[11px] font-medium uppercase tracking-wider text-[var(--text-muted)]">
-                    Summary
-                  </p>
-                  <div className="whitespace-pre-wrap leading-relaxed text-[var(--text-primary)]">
-                    {item.summary}
-                  </div>
-                </div>
-              )}
-
-              {quotes.length > 0 && (
-                <div>
-                  <p className="mb-1.5 text-[11px] font-medium uppercase tracking-wider text-[var(--text-muted)]">
-                    Key quotes
-                  </p>
-                  <ul className="flex flex-col gap-2">
-                    {quotes.map((q, i) => (
-                      <li
-                        key={i}
-                        className="border-l-2 border-[var(--action-primary-focus)] pl-3 italic text-[var(--text-secondary)]"
-                      >
-                        &ldquo;{q}&rdquo;
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-
-              <p className="text-[11px] text-[var(--text-muted)]">
-                AI-generated summary.
-              </p>
-            </div>
-          ) : (
-            <DigestPlaceholder state={item.enrichment_state} />
-          )}
         </aside>
       </div>
     </div>
@@ -700,6 +675,7 @@ function MobileItemDetailTabs({
   transcriptJob,
   transcriptAttempts,
   canUpgradeWithText,
+  notesEnabled,
   preserveQuery,
 }: {
   item: ItemRow;
@@ -723,19 +699,25 @@ function MobileItemDetailTabs({
   transcriptJob: TranscriptJobRow | null;
   transcriptAttempts: TranscriptAttemptRow[];
   canUpgradeWithText: boolean;
+  notesEnabled: boolean;
   preserveQuery: {
     capture_state?: string;
     repair?: string;
     highlight?: string;
   };
 }) {
+  const tabs = notesEnabled
+    ? [...ITEM_TABS, { id: "notes" as const, label: "Notes" }]
+    : ITEM_TABS;
   return (
     <section aria-label="Item detail mobile tabs" className="space-y-5">
       <nav
         aria-label="Item detail sections"
-        className="grid grid-cols-5 gap-1 rounded-md border border-[var(--border)] bg-[var(--surface-raised)] p-1"
+        className={`grid gap-1 rounded-md border border-[var(--border)] bg-[var(--surface-raised)] p-1 ${
+          notesEnabled ? "grid-cols-6" : "grid-cols-5"
+        }`}
       >
-        {ITEM_TABS.map((tab) => (
+        {tabs.map((tab) => (
           <Link
             key={tab.id}
             href={itemTabHref({
@@ -744,7 +726,7 @@ function MobileItemDetailTabs({
               preserveQuery,
             })}
             aria-current={activeTab === tab.id ? "page" : undefined}
-            className={`inline-flex h-11 min-w-0 items-center justify-center rounded-sm px-1 text-xs font-medium md:h-10 ${
+            className={`inline-flex h-11 min-w-0 items-center justify-center rounded-sm px-0 text-[11px] font-medium sm:px-1 sm:text-xs md:h-10 ${
               activeTab === tab.id
                 ? "bg-[var(--control-selected-bg)] text-[var(--control-selected-fg)]"
                 : "text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
@@ -778,6 +760,9 @@ function MobileItemDetailTabs({
         />
       )}
       {activeTab === "related" && <MobileRelatedTab related={related} />}
+      {notesEnabled && activeTab === "notes" && (
+        <ManualNoteEditor itemId={item.id} compact />
+      )}
       {activeTab === "details" && (
         <MobileDetailsTab
           item={item}
@@ -1705,6 +1690,60 @@ function DigestPlaceholder({
   return (
     <div className="rounded-lg border border-dashed border-[var(--border)] bg-[var(--surface)] p-5 font-sans text-sm text-[var(--text-secondary)]">
       {copy}
+    </div>
+  );
+}
+
+function DesktopDigestPanel({
+  item,
+  hasDigest,
+  quotes,
+}: {
+  item: ItemRow;
+  hasDigest: boolean;
+  quotes: string[];
+}) {
+  if (!hasDigest) return <DigestPlaceholder state={item.enrichment_state} />;
+  return (
+    <div className="flex flex-col gap-6 rounded-lg border border-[var(--border)] bg-[var(--surface)] p-5">
+      {item.category && (
+        <div>
+          <p className="mb-1 text-[11px] font-medium uppercase tracking-wider text-[var(--text-muted)]">
+            Category
+          </p>
+          <span className="inline-flex rounded-full bg-[var(--control-selected-bg)] px-2.5 py-0.5 text-xs font-medium text-[var(--control-selected-fg)]">
+            {item.category}
+          </span>
+        </div>
+      )}
+      {item.summary && (
+        <div>
+          <p className="mb-1.5 text-[11px] font-medium uppercase tracking-wider text-[var(--text-muted)]">
+            Summary
+          </p>
+          <div className="whitespace-pre-wrap leading-relaxed text-[var(--text-primary)]">
+            {item.summary}
+          </div>
+        </div>
+      )}
+      {quotes.length > 0 && (
+        <div>
+          <p className="mb-1.5 text-[11px] font-medium uppercase tracking-wider text-[var(--text-muted)]">
+            Key quotes
+          </p>
+          <ul className="flex flex-col gap-2">
+            {quotes.map((quote, index) => (
+              <li
+                key={index}
+                className="border-l-2 border-[var(--action-primary-focus)] pl-3 italic text-[var(--text-secondary)]"
+              >
+                &ldquo;{quote}&rdquo;
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+      <p className="text-[11px] text-[var(--text-muted)]">AI-generated summary.</p>
     </div>
   );
 }

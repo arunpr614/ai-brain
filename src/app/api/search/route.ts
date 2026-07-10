@@ -7,10 +7,11 @@
  * the configured embedding provider, so a 503 is returned when that
  * provider is unreachable.
  */
-import { type NextRequest, NextResponse } from "next/server";
+import { type NextRequest } from "next/server";
 import { verifySessionCookie } from "@/lib/auth";
 import { getEmbedProvider } from "@/lib/embed/factory";
-import { searchUnified, type SearchMode } from "@/lib/search";
+import { searchUnifiedDetailed, type SearchMode } from "@/lib/search";
+import { noteJson } from "@/lib/notes/http";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -19,15 +20,15 @@ const VALID_MODES = new Set<SearchMode>(["fts", "semantic", "hybrid"]);
 
 export async function GET(req: NextRequest) {
   if (!verifySessionCookie(req.cookies)) {
-    return NextResponse.json({ error: "unauthenticated" }, { status: 401 });
+    return noteJson({ error: "unauthenticated" }, { status: 401 });
   }
   const { searchParams } = new URL(req.url);
   const q = (searchParams.get("q") ?? "").trim();
-  if (!q) return NextResponse.json({ items: [] });
+  if (!q) return noteJson({ items: [] });
 
   const rawMode = searchParams.get("mode") ?? "fts";
   if (!VALID_MODES.has(rawMode as SearchMode)) {
-    return NextResponse.json(
+    return noteJson(
       { error: `invalid mode: ${rawMode}` },
       { status: 400 },
     );
@@ -36,7 +37,7 @@ export async function GET(req: NextRequest) {
   const limit = Math.min(Math.max(1, Number(searchParams.get("limit") ?? 50)), 200);
 
   if ((mode === "semantic" || mode === "hybrid") && !(await getEmbedProvider().isAlive())) {
-    return NextResponse.json(
+    return noteJson(
       {
         error: "EMBED_PROVIDER_OFFLINE",
         legacy_error: "OLLAMA_OFFLINE",
@@ -48,10 +49,10 @@ export async function GET(req: NextRequest) {
   }
 
   try {
-    const items = await searchUnified(q, { mode, limit });
-    return NextResponse.json({ items, mode, count: items.length });
+    const items = await searchUnifiedDetailed(q, { mode, limit });
+    return noteJson({ items, mode, count: items.length });
   } catch (err) {
-    return NextResponse.json(
+    return noteJson(
       { error: err instanceof Error ? err.message : "search failed" },
       { status: 500 },
     );

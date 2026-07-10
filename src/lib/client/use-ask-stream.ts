@@ -22,6 +22,9 @@ export interface AskRetrievedChunk {
   item_source_platform?: string | null;
   item_capture_quality?: string | null;
   item_extraction_warning?: string | null;
+  source_kind?: "legacy_item_context" | "original_content" | "ai_summary" | "manual_note";
+  source_epoch?: number;
+  source_version?: number;
   similarity: number;
 }
 
@@ -108,6 +111,7 @@ export function useAskStream(): UseAskStreamResult {
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify(body),
+        cache: "no-store",
         signal: ctrl.signal,
       });
     } catch (err) {

@@ -19,7 +19,11 @@
 import { type NextRequest } from "next/server";
 import { z } from "zod";
 import { verifySessionCookie } from "@/lib/auth";
-import { retrieve } from "@/lib/retrieve";
+import {
+  filterCurrentlyEligibleChunks,
+  manualCitationsRemainEligible,
+  retrieve,
+} from "@/lib/retrieve";
 import { orchestrateAsk, toSSEStream, encodeSSE } from "@/lib/ask/sse";
 import { ollamaGenerator } from "@/lib/ask/generator";
 import { getAskProvider } from "@/lib/llm/factory";
@@ -105,12 +109,12 @@ export async function POST(req: NextRequest) {
 
   let chunks;
   try {
-    chunks = await retrieve(parsed.question, {
+    chunks = filterCurrentlyEligibleChunks(await retrieve(parsed.question, {
       topK: parsed.top_k,
       itemId: parsed.scope === "item" ? parsed.item_id : undefined,
       itemIds: parsed.scope === "items" ? parsed.item_ids : undefined,
       minSimilarity: parsed.min_similarity,
-    });
+    }));
   } catch (err) {
     const message = err instanceof Error ? err.message : "Retrieval failed";
     return new Response(
@@ -127,6 +131,9 @@ export async function POST(req: NextRequest) {
     item_source_platform: c.item_source_platform,
     item_capture_quality: c.item_capture_quality,
     item_extraction_warning: c.item_extraction_warning,
+    source_kind: c.source_kind,
+    source_epoch: c.source_epoch,
+    source_version: c.source_version,
     similarity: c.similarity,
   }));
 
@@ -138,6 +145,10 @@ export async function POST(req: NextRequest) {
       signal: req.signal,
       onComplete: ({ answer, aborted }) => {
         if (!threadId) return;
+        // Delete/opt-out/edit may race an already-started provider stream. The
+        // remote request cannot be recalled, but stale private-note-derived
+        // text must never be written back after the privacy boundary changed.
+        if (!manualCitationsRemainEligible(chunks)) return;
         // Persist whatever was generated even on abort — the user might
         // want to see a partial response rendered after reload. Flag it
         // in the citations-metadata sidecar via a role='system' marker
@@ -160,7 +171,8 @@ export async function POST(req: NextRequest) {
 function sseHeaders(): HeadersInit {
   return {
     "content-type": "text/event-stream; charset=utf-8",
-    "cache-control": "no-cache, no-transform",
+    "cache-control": "private, no-store, max-age=0, no-transform",
+    vary: "Cookie",
     connection: "keep-alive",
     // Disable Next/Vercel compression for SSE. Harmless on localhost; matters
     // at deploy time (v1.0.0+).

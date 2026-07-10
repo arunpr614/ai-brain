@@ -89,6 +89,14 @@ function RetrievedSourceChip({
     capture_quality: chunk.item_capture_quality,
     extraction_warning: chunk.item_extraction_warning,
   });
+  const sourceLabel =
+    chunk.source_kind === "manual_note"
+      ? "Your note"
+      : chunk.source_kind === "ai_summary"
+        ? "AI digest"
+        : chunk.source_kind === "original_content"
+          ? "Original source"
+          : "Saved item context";
   return (
     <li
       className={`max-w-full rounded-full border bg-[var(--surface-raised)] px-2 py-0.5 text-[11px] ${
@@ -96,14 +104,14 @@ function RetrievedSourceChip({
           ? "border-[var(--quality-needs-upgrade)] text-[var(--quality-needs-upgrade)]"
           : "border-[var(--border)] text-[var(--text-secondary)]"
       }`}
-      title={`${platform} · ${quality} · similarity ${chunk.similarity.toFixed(3)}`}
+      title={`${sourceLabel} · ${platform} · ${quality} · similarity ${chunk.similarity.toFixed(3)}`}
     >
       <span className="mr-1 font-mono text-[var(--text-muted)]">{index + 1}.</span>
       <span>{chunk.item_title}</span>
       <span className="mx-1 text-[var(--text-muted)]">·</span>
-      <span>{platform}</span>
+      <span>{sourceLabel}</span>
       <span className="mx-1 text-[var(--text-muted)]">·</span>
-      <span>{quality}</span>
+      <span>{platform}</span>
     </li>
   );
 }

@@ -23,6 +23,14 @@ export function CitationChip({ chunk_id, chunks }: CitationChipProps) {
   const idx = chunks.findIndex((c) => c.chunk_id === chunk_id);
   const chunk = idx >= 0 ? chunks[idx] : null;
   const label = idx >= 0 ? String(idx + 1) : "?";
+  const sourceLabel =
+    chunk?.source_kind === "manual_note"
+      ? "Your note"
+      : chunk?.source_kind === "ai_summary"
+        ? "AI digest"
+        : chunk?.source_kind === "original_content"
+          ? "Original source"
+          : "Saved item context";
 
   if (!chunk) {
     return (
@@ -37,9 +45,13 @@ export function CitationChip({ chunk_id, chunks }: CitationChipProps) {
 
   return (
     <Link
-      href={`/items/${chunk.item_id}?highlight=${encodeURIComponent(chunk_id)}#chunk-${encodeURIComponent(chunk_id)}`}
+      href={
+        chunk.source_kind === "manual_note"
+          ? `/items/${chunk.item_id}?tab=notes`
+          : `/items/${chunk.item_id}?highlight=${encodeURIComponent(chunk_id)}#chunk-${encodeURIComponent(chunk_id)}`
+      }
       className="mx-0.5 inline-flex h-[18px] min-w-[18px] items-center justify-center rounded-full border border-[var(--control-selected-border)] bg-[var(--control-selected-bg)] px-1.5 text-[10px] font-medium text-[var(--control-selected-fg)] no-underline align-middle hover:border-[var(--action-primary-focus)]"
-      title={`${chunk.item_title} · ${platformLabel(chunk.item_source_platform, chunk.item_source_type)} · ${qualityLabel(chunk.item_capture_quality)}`}
+      title={`${sourceLabel} · ${chunk.item_title} · ${platformLabel(chunk.item_source_platform, chunk.item_source_type)} · ${qualityLabel(chunk.item_capture_quality)}`}
     >
       {label}
     </Link>

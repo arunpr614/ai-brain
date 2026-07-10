@@ -18,11 +18,15 @@ import { getDb } from "@/db/client";
 import { getItem } from "@/db/items";
 import { EMBED_DIM } from "@/lib/embed/client";
 import type { ItemRow } from "@/db/client";
+import type { ChunkSourceKind } from "@/db/chunks";
+import { manualNotesUiEnabled } from "@/lib/notes/flags";
+import { noteAiProviderPolicy } from "@/lib/notes/provider-policy";
 
 export interface RelatedItem {
   item: ItemRow;
   similarity: number;
   matched_chunk_id: string;
+  matched_source_kind: ChunkSourceKind;
 }
 
 export interface FindRelatedOptions {
@@ -36,6 +40,15 @@ const DEFAULT_LIMIT = 5;
 const MAX_LIMIT = 20;
 const DEFAULT_POOL = 40;
 
+interface SemanticVectorRow {
+  chunk_id: string;
+  item_id: string;
+  source_kind: ChunkSourceKind;
+  source_epoch: number;
+  source_version: number;
+  embedding: Buffer;
+}
+
 export function findRelatedItems(
   item_id: string,
   opts: FindRelatedOptions = {},
@@ -44,60 +57,102 @@ export function findRelatedItems(
   const poolSize = opts.poolSize ?? DEFAULT_POOL;
 
   const db = getDb();
-  // Pull every chunks_vec row for this item's chunks (could be many for
-  // long items; fine at personal-library scale). Typed as Buffer because
-  // better-sqlite3 returns BLOBs as Node Buffers.
+  const manualAllowed = manualNotesUiEnabled() && noteAiProviderPolicy().eligible;
+  // At personal-library scale, computing one normalized centroid per source
+  // and item is cheap and prevents a long/duplicated note from winning merely
+  // by contributing more chunks.
   const rows = db
     .prepare(
-      `SELECT v.embedding AS embedding
+      `SELECT c.id AS chunk_id, c.item_id, c.source_kind,
+              c.source_epoch, c.source_version, v.embedding AS embedding
        FROM chunks_vec v
        JOIN chunks_rowid r ON r.rowid = v.rowid
        JOIN chunks c        ON c.id   = r.chunk_id
-       WHERE c.item_id = ?`,
+       WHERE c.source_kind != 'manual_note'
+          OR (
+            ? = 1
+            AND EXISTS (
+              SELECT 1 FROM item_note_state s
+              JOIN item_notes n ON n.item_id = s.item_id
+              WHERE s.item_id = c.item_id AND s.is_deleted = 0
+                AND n.include_in_ai = 1
+                AND n.epoch = c.source_epoch
+                AND n.generation = c.source_version
+            )
+          )`,
     )
-    .all(item_id) as { embedding: Buffer }[];
+    .all(manualAllowed ? 1 : 0) as SemanticVectorRow[];
 
-  if (rows.length === 0) return [];
-
-  const centroid = meanCentroid(rows.map((r) => bufferToF32(r.embedding)));
-  if (!centroid) return [];
-
-  // Scan vec0 for the nearest N chunks against the centroid, excluding
-  // chunks belonging to the source item. Over-fetch because multiple chunks
-  // per item are likely to cluster at the top.
-  const hits = db
-    .prepare(
-      `SELECT c.id AS chunk_id, c.item_id AS item_id,
-              (1 - (inner.distance * inner.distance) / 2) AS similarity
-       FROM (
-         SELECT rowid, distance
-         FROM chunks_vec
-         WHERE embedding MATCH ?
-         ORDER BY distance
-         LIMIT ?
-       ) AS inner
-       JOIN chunks_rowid r ON r.rowid = inner.rowid
-       JOIN chunks c        ON c.id   = r.chunk_id
-       WHERE c.item_id != ?
-       ORDER BY inner.distance`,
-    )
-    .all(Buffer.from(centroid.buffer), BigInt(poolSize), item_id) as {
-    chunk_id: string;
-    item_id: string;
-    similarity: number;
-  }[];
-
-  const seen = new Set<string>();
-  const out: RelatedItem[] = [];
-  for (const h of hits) {
-    if (seen.has(h.item_id)) continue;
-    seen.add(h.item_id);
-    const item = getItem(h.item_id);
-    if (!item) continue;
-    out.push({ item, similarity: h.similarity, matched_chunk_id: h.chunk_id });
-    if (out.length >= limit) break;
+  const grouped = new Map<
+    string,
+    { baseline: Float32Array[]; manual: Float32Array[]; chunkId: string; sourceKind: ChunkSourceKind }
+  >();
+  for (const row of rows) {
+    const group = grouped.get(row.item_id) ?? {
+      baseline: [],
+      manual: [],
+      chunkId: row.chunk_id,
+      sourceKind: row.source_kind,
+    };
+    if (row.source_kind === "manual_note") {
+      group.manual.push(bufferToF32(row.embedding));
+      if (group.baseline.length === 0) {
+        group.chunkId = row.chunk_id;
+        group.sourceKind = row.source_kind;
+      }
+    } else {
+      group.baseline.push(bufferToF32(row.embedding));
+      group.chunkId = row.chunk_id;
+      group.sourceKind = row.source_kind;
+    }
+    grouped.set(row.item_id, group);
   }
-  return out;
+
+  const targetGroup = grouped.get(item_id);
+  if (!targetGroup) return [];
+  const target = combinedCentroid(targetGroup.baseline, targetGroup.manual);
+  if (!target) return [];
+
+  const out: RelatedItem[] = [];
+  for (const [candidateId, group] of grouped) {
+    if (candidateId === item_id) continue;
+    const candidate = combinedCentroid(group.baseline, group.manual);
+    if (!candidate) continue;
+    const item = getItem(candidateId);
+    if (!item) continue;
+    out.push({
+      item,
+      similarity: cosine(target, candidate),
+      matched_chunk_id: group.chunkId,
+      matched_source_kind: group.sourceKind,
+    });
+  }
+  return out
+    .sort((a, b) => b.similarity - a.similarity || b.item.captured_at - a.item.captured_at)
+    .slice(0, Math.min(limit, poolSize));
+}
+
+export function combinedCentroid(
+  baselineVectors: Float32Array[],
+  manualVectors: Float32Array[],
+): Float32Array | null {
+  const baseline = meanCentroid(baselineVectors);
+  const manual = meanCentroid(manualVectors);
+  if (!baseline) return manual;
+  if (!manual) return baseline;
+  const combined = new Float32Array(baseline.length);
+  for (let index = 0; index < combined.length; index += 1) {
+    combined[index] = baseline[index] * 0.7 + manual[index] * 0.3;
+  }
+  return meanCentroid([combined]);
+}
+
+function cosine(a: Float32Array, b: Float32Array): number {
+  let score = 0;
+  for (let index = 0; index < Math.min(a.length, b.length); index += 1) {
+    score += a[index] * b[index];
+  }
+  return score;
 }
 
 /** Mean of input vectors, then L2-normalised. Returns null for an empty array. */

@@ -18,6 +18,9 @@
 import { getDb } from "@/db/client";
 import { EMBED_DIM } from "@/lib/embed/client";
 import { getEmbedProvider } from "@/lib/embed/factory";
+import { manualNotesUiEnabled } from "@/lib/notes/flags";
+import { noteAiProviderPolicy } from "@/lib/notes/provider-policy";
+import type { ChunkSourceKind } from "@/db/chunks";
 
 type EmbedFn = (inputs: string[]) => Promise<Float32Array[]>;
 
@@ -30,6 +33,9 @@ export interface RetrievedChunk {
   item_capture_quality?: string | null;
   item_extraction_warning?: string | null;
   body: string;
+  source_kind?: ChunkSourceKind;
+  source_epoch?: number;
+  source_version?: number;
   /**
    * Cosine similarity derived from vec0's L2 distance on unit-normalised
    * vectors: `1 - L2²/2`. Range [−1, 1], higher = more similar. For real
@@ -74,6 +80,7 @@ export async function retrieve(
   if (!vec || vec.length !== EMBED_DIM) return [];
 
   const db = getDb();
+  const manualAllowed = manualNotesUiEnabled() && noteAiProviderPolicy().eligible;
 
   // Empty library short-circuit: vec0 MATCH against an empty virtual table
   // returns 0 rows, which is correct — but we save the serialisation cost.
@@ -117,6 +124,9 @@ export async function retrieve(
              i.capture_quality AS item_capture_quality,
              i.extraction_warning AS item_extraction_warning,
              c.body            AS body,
+             c.source_kind     AS source_kind,
+             c.source_epoch    AS source_epoch,
+             c.source_version  AS source_version,
              (1 - (inner.distance * inner.distance) / 2) AS similarity
            FROM (
              SELECT rowid, distance
@@ -127,6 +137,22 @@ export async function retrieve(
                FROM chunks_rowid r
                JOIN chunks c ON c.id = r.chunk_id
                WHERE c.item_id IN (${selectedItemIds.map(() => "?").join(", ")})
+                 AND (
+                   c.source_kind != 'manual_note'
+                   OR (
+                     ? = 1
+                     AND EXISTS (
+                       SELECT 1
+                       FROM item_note_state ns
+                       JOIN item_notes nn ON nn.item_id = ns.item_id
+                       WHERE ns.item_id = c.item_id
+                         AND ns.is_deleted = 0
+                         AND nn.include_in_ai = 1
+                         AND nn.epoch = c.source_epoch
+                         AND nn.generation = c.source_version
+                     )
+                   )
+                 )
              )
              ORDER BY distance
              LIMIT ?
@@ -139,6 +165,7 @@ export async function retrieve(
         .all(
           Buffer.from(vec.buffer),
           ...selectedItemIds,
+          manualAllowed ? 1 : 0,
           BigInt(topK),
         ) as RetrievedChunk[])
     : (db
@@ -152,11 +179,33 @@ export async function retrieve(
              i.capture_quality AS item_capture_quality,
              i.extraction_warning AS item_extraction_warning,
              c.body            AS body,
+             c.source_kind     AS source_kind,
+             c.source_epoch    AS source_epoch,
+             c.source_version  AS source_version,
              (1 - (inner.distance * inner.distance) / 2) AS similarity
            FROM (
              SELECT rowid, distance
              FROM chunks_vec
              WHERE embedding MATCH ?
+               AND rowid IN (
+                 SELECT r.rowid
+                 FROM chunks_rowid r
+                 JOIN chunks c ON c.id = r.chunk_id
+                 WHERE c.source_kind != 'manual_note'
+                    OR (
+                      ? = 1
+                      AND EXISTS (
+                        SELECT 1
+                        FROM item_note_state ns
+                        JOIN item_notes nn ON nn.item_id = ns.item_id
+                        WHERE ns.item_id = c.item_id
+                          AND ns.is_deleted = 0
+                          AND nn.include_in_ai = 1
+                          AND nn.epoch = c.source_epoch
+                          AND nn.generation = c.source_version
+                      )
+                    )
+               )
              ORDER BY distance
              LIMIT ?
            ) AS inner
@@ -165,8 +214,47 @@ export async function retrieve(
            JOIN items  i        ON i.id    = c.item_id
            ORDER BY inner.distance`,
         )
-        .all(Buffer.from(vec.buffer), BigInt(topK)) as RetrievedChunk[]);
+        .all(Buffer.from(vec.buffer), manualAllowed ? 1 : 0, BigInt(topK)) as RetrievedChunk[]);
 
   const filtered = rows.filter((r) => r.similarity >= minSim);
   return filtered.slice(0, topK);
+}
+
+/** Re-check the privacy boundary immediately before prompt construction. */
+export function filterCurrentlyEligibleChunks(chunks: RetrievedChunk[]): RetrievedChunk[] {
+  if (!chunks.some((chunk) => chunk.source_kind === "manual_note")) return chunks;
+  if (!manualNotesUiEnabled() || !noteAiProviderPolicy().eligible) {
+    return chunks.filter((chunk) => chunk.source_kind !== "manual_note");
+  }
+  const db = getDb();
+  const eligible = db.prepare(
+    `SELECT 1 AS ok
+     FROM item_note_state s
+     JOIN item_notes n ON n.item_id = s.item_id
+     WHERE s.item_id = ? AND s.is_deleted = 0 AND n.include_in_ai = 1
+       AND n.epoch = ? AND n.generation = ?`,
+  );
+  return chunks.filter(
+    (chunk) =>
+      chunk.source_kind !== "manual_note" ||
+      Boolean(
+        eligible.get(
+          chunk.item_id,
+          chunk.source_epoch ?? 0,
+          chunk.source_version ?? 0,
+        ),
+      ),
+  );
+}
+
+/** Do not persist an answer if any manual-note source became stale mid-stream. */
+export function manualCitationsRemainEligible(chunks: RetrievedChunk[]): boolean {
+  const manualIds = chunks
+    .filter((chunk) => chunk.source_kind === "manual_note")
+    .map((chunk) => chunk.chunk_id);
+  if (manualIds.length === 0) return true;
+  const currentIds = new Set(
+    filterCurrentlyEligibleChunks(chunks).map((chunk) => chunk.chunk_id),
+  );
+  return manualIds.every((chunkId) => currentIds.has(chunkId));
 }

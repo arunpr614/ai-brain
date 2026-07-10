@@ -15,7 +15,7 @@ import { getDb } from "@/db/client";
 import { getAskProvider } from "@/lib/llm/factory";
 import type { GenerateStreamOptions } from "@/lib/llm/types";
 import { logError } from "@/lib/errors/sink";
-import type { RetrievedChunk } from "@/lib/retrieve";
+import { filterCurrentlyEligibleChunks, type RetrievedChunk } from "@/lib/retrieve";
 
 type StreamFn = (opts: GenerateStreamOptions) => AsyncIterable<string>;
 
@@ -23,12 +23,21 @@ const SYSTEM_PROMPT = `You are AI Memory, a personal knowledge assistant. Answer
 
 Cite every non-trivial claim with [CITE:chunk_id]. Never output a chunk_id that isn't in the list below. Keep answers concise (3–6 sentences unless the user asks for detail).`;
 
+function sourceLabel(chunk: RetrievedChunk): string {
+  if (chunk.source_kind === "original_content") return "Original source";
+  if (chunk.source_kind === "ai_summary") return "AI digest";
+  if (chunk.source_kind === "manual_note") return "Your note";
+  return "Saved item context";
+}
+
 function buildPrompt(question: string, chunks: RetrievedChunk[]): string {
   if (chunks.length === 0) {
     return `=== Library chunks ===\n(none)\n\n=== User question ===\n${question}`;
   }
   const parts = chunks.map(
-    (c) => `[id=${c.chunk_id}] from "${c.item_title}"\n${c.body}`,
+    (c) =>
+      `[id=${c.chunk_id}] ${sourceLabel(c)} for "${c.item_title}" ` +
+      `(source_version=${c.source_version ?? 0})\n${c.body}`,
   );
   return `=== Library chunks ===\n${parts.join("\n---\n")}\n\n=== User question ===\n${question}`;
 }
@@ -53,8 +62,9 @@ export function ollamaGenerator(opts: OllamaGeneratorOptions = {}) {
     chunks: RetrievedChunk[];
     signal?: AbortSignal;
   }): AsyncIterable<string> {
-    const validIds = new Set(input.chunks.map((c) => c.chunk_id));
-    const prompt = buildPrompt(input.question, input.chunks);
+    const eligibleChunks = filterCurrentlyEligibleChunks(input.chunks);
+    const validIds = new Set(eligibleChunks.map((c) => c.chunk_id));
+    const prompt = buildPrompt(input.question, eligibleChunks);
     const model = opts.model ?? process.env.OLLAMA_DEFAULT_MODEL;
 
     const streamImpl: StreamFn =

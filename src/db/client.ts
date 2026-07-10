@@ -76,7 +76,26 @@ export function getDb(): Database.Database {
  * Apply all unapplied migrations in order. Tracked in `_migrations`.
  * Idempotent. Throws on any failure.
  */
-function runMigrations(db: Database.Database): void {
+interface ForeignKeyCheckRow {
+  table: string;
+  rowid: number | bigint | null;
+  parent: string;
+  fkid: number;
+}
+
+function stableForeignKeyCheck(db: Database.Database): string {
+  const rows = (db.pragma("foreign_key_check") as ForeignKeyCheckRow[])
+    .map((row) => ({ ...row, rowid: row.rowid === null ? null : String(row.rowid) }))
+    .sort((a, b) =>
+      a.table.localeCompare(b.table) ||
+      (a.rowid ?? "").localeCompare(b.rowid ?? "") ||
+      a.parent.localeCompare(b.parent) ||
+      a.fkid - b.fkid,
+    );
+  return JSON.stringify(rows);
+}
+
+export function runMigrations(db: Database.Database): void {
   db.exec(`
     CREATE TABLE IF NOT EXISTS _migrations (
       id         INTEGER PRIMARY KEY,
@@ -103,8 +122,20 @@ function runMigrations(db: Database.Database): void {
     const insert = db.prepare(
       "INSERT INTO _migrations (name) VALUES (?)",
     );
+    // SQLite ignores PRAGMA foreign_keys changes made after BEGIN. Migrations
+    // that rebuild a referenced table therefore declare the OFF pragma in SQL,
+    // and the runner applies it before opening the transaction. The migration
+    // must not introduce any new FK violations; pre-existing violations are
+    // compared exactly so legacy cleanup can remain a separate audited step.
+    const needsForeignKeysOff = /PRAGMA\s+foreign_keys\s*=\s*OFF/i.test(sql);
+    const foreignKeysWereEnabled = Number(db.pragma("foreign_keys", { simple: true })) === 1;
+    const foreignKeysBefore = needsForeignKeysOff ? stableForeignKeyCheck(db) : null;
+    if (needsForeignKeysOff && foreignKeysWereEnabled) db.pragma("foreign_keys = OFF");
     const tx = db.transaction(() => {
       db.exec(sql);
+      if (foreignKeysBefore !== null && stableForeignKeyCheck(db) !== foreignKeysBefore) {
+        throw new Error("migration changed the foreign-key violation manifest");
+      }
       insert.run(file);
     });
     try {
@@ -113,6 +144,8 @@ function runMigrations(db: Database.Database): void {
     } catch (err) {
       console.error(`[db] migration ${file} failed:`, (err as Error).message);
       throw err;
+    } finally {
+      if (needsForeignKeysOff && foreignKeysWereEnabled) db.pragma("foreign_keys = ON");
     }
   }
 }
