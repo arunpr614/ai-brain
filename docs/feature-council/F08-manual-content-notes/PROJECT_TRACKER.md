@@ -37,10 +37,11 @@
 | M6 | Search, AI, related/graph integration | Complete | Provenance, consent, opt-out, convergence, stale-job, and cleanup tests pass |
 | M7 | Release readiness | Complete | Verified backup copy, snapshot migration, exact audit/repair, rollback gates, and 785-test build pass |
 | M8 | Production release | Complete | Synthetic end-to-end smoke and cleanup pass; health, providers, and Recall timer stable |
+| M9 | Publication and main integration | Complete | Wiki fresh-clone verification passed; PR #10 merged to `main` at `b5910b2` |
 
 ## Current blockers
 
-Only final PR integration remains. Production feature behavior and documentation have no open release blocker.
+None. Production feature behavior, public documentation, and main integration have no open release blocker.
 
 ## Release rule
 

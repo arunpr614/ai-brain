@@ -8,6 +8,7 @@ Result: Passed
 | Artifact | Revision |
 |---|---|
 | Application branch | `codex/manual-content-notes` |
+| Main integration | PR #10, merge commit `b5910b250ea4de62bae7af2059324786a3e23410` |
 | Canonical documentation commit | `463c56ffa8293e2b6d37d6084bea9b2d5472d03c` |
 | Wiki base before publication | `a9f27341fd48e88c6c9606a420d9b428dd9cc668` |
 | Published wiki commit | `70f6fa8c041bf3f86ca67129ce5240d2d253af2a` |
