@@ -28446,3 +28446,68 @@ None. The global preference intentionally remains off until Arun enables it in S
 - **Working tree:** Dirty only with intended production closeout documentation.
 - **Deployed/runtime state:** Production healthy; global preference off/effective off; two current provider approvals preserved; `brain` and Recall timer active.
 - **Next milestone:** Merge closeout docs, publish/verify final wiki, and complete the active goal.
+
+---
+
+## 2026-07-10 20:44 - F08 Global Note AI Default Wiki and Goal Closeout
+
+**Entry author:** AI agent (Codex) · **Triggered by:** Final publication step after the production release milestone.
+
+### Planned since last entry
+
+The previous entry left only production-closeout documentation merge, final canonical wiki publication, and goal handoff.
+
+### Done
+
+- Committed production evidence as `194e8fa` on `codex/note-ai-default-closeout`.
+- Opened PR #13 as draft, waited for the required Agent documentation check to pass, promoted it, and merged it to `main` at `eefd09a71226ebf591ad826278a9c23b8418613f`.
+- Cloned `https://github.com/arunpr614/ai-brain.wiki.git` fresh at base `a9c1214b7a19c47bba5248998d207e95dd84fa18`.
+- Synced the 63 canonical `docs/wiki/` Markdown files; only `Manual-Content-Notes.md` changed.
+- Ran canonical-to-wiki byte comparison, wiki privacy scan, structure/reachability validation, and staged diff whitespace check.
+- Re-fetched the wiki remote immediately before push and proved it still matched the recorded base.
+- Published wiki commit `734706050a9b2efba58d51e666f33e3fbe6ca404` using a normal non-force push.
+- Cloned the wiki again after publication; all 63 files passed privacy and structure checks and matched canonical source byte-for-byte.
+
+### Deployed / Released
+
+- Application implementation: PR #12 merged and production deployed.
+- Production documentation closeout: PR #13 merged.
+- Public GitHub Wiki: final global-default page published at `734706050a9b2efba58d51e666f33e3fbe6ca404`.
+
+### Verification
+
+- Production service active and authenticated health passed.
+- Strict production Anthropic/Gemini checks passed.
+- Global preference remains absent/off and effective off; existing provider approvals were preserved.
+- Authenticated note-default API and Settings HTML smokes passed.
+- Recall timer remains enabled and active.
+- Final wiki privacy: 63 files, zero findings.
+- Final wiki structure: 63 required, actual, and reachable files.
+- Canonical versus fresh-clone wiki diff: empty.
+
+### Current remaining to-do
+
+None for the global note AI default goal.
+
+### Open questions / decisions needed
+
+None. Arun can enable the default from Settings > My notes when desired.
+
+### Session self-critique
+
+- Pixel-level browser review remains unperformed because no browser choice was provided; behavior is covered by client interaction tests plus authenticated production HTML/API smoke.
+- The optional cross-tab Settings freshness improvement remains a documented P2, but server enforcement is fail-closed.
+
+### Action items for the next agent
+
+1. Start from `origin/main` at or after `eefd09a`.
+2. Treat wiki commit `7347060` as the current canonical publication.
+3. Do not alter the global preference or provider approvals unless Arun explicitly asks.
+
+### State snapshot
+
+- **Current phase / version:** F08 global note AI default complete.
+- **Active branch:** `codex/note-ai-default-final` from merged `origin/main` for this final publication record only.
+- **Working tree:** Dirty only with final wiki-publication report and running-log closeout.
+- **Deployed/runtime state:** Production healthy; default off; provider approvals preserved; Recall scheduler active.
+- **Next milestone:** None; goal handoff.

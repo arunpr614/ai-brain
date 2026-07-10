@@ -41,3 +41,9 @@ Result: Passed
 ## Safety result
 
 Only the public GitHub Wiki repository was changed during publication. The publication included no credentials, private host paths, raw user content, production commands, or owner-only audit/backup locations. The normal non-force push followed a fetch-and-compare concurrency gate.
+
+## Global-default follow-on publication
+
+The global **Include in AI & connections by default** follow-on merged through PR #12 at `01721d1c2bbb686b9768d38c688352f78933205f`, was production released, and received its final canonical closeout through PR #13 at `eefd09a71226ebf591ad826278a9c23b8418613f`.
+
+The final `Manual-Content-Notes.md` update was published from wiki base `a9c1214b7a19c47bba5248998d207e95dd84fa18` as wiki commit `734706050a9b2efba58d51e666f33e3fbe6ca404`. The normal non-force push was protected by a fetch-and-compare remote-SHA gate. A fresh clone passed privacy and structure checks with 63 required, actual, and reachable Markdown files, and matched canonical `docs/wiki/` byte-for-byte.
