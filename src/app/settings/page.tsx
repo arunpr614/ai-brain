@@ -13,8 +13,12 @@ import {
   WifiOff,
 } from "lucide-react";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { NoteAiDefaultSetting } from "@/components/note-ai-default-setting";
 import { getJsonSetting } from "@/db/settings";
 import { verifySessionCookie } from "@/lib/auth";
+import { getNoteAiDefaultPreference } from "@/lib/notes/default-ai-policy";
+import { manualNotesUiEnabled } from "@/lib/notes/flags";
+import { noteAiProviderPolicy } from "@/lib/notes/provider-policy";
 import { getProviderStatusReport, type ProviderStatus } from "@/lib/providers/status";
 import {
   BACKUP_TRUST_COPY,
@@ -47,6 +51,8 @@ export default async function SettingsPage() {
   const themePref: Theme = resolveThemePreference(raw);
   const backup = getJsonSetting<BackupConfig>("backup", BACKUP_DEFAULTS);
   const providerStatus = await getProviderStatusReport();
+  const noteAiDefault = getNoteAiDefaultPreference();
+  const noteAiPolicy = noteAiProviderPolicy();
 
   return (
     <div className="mx-auto max-w-[680px] px-8 py-10">
@@ -151,6 +157,18 @@ export default async function SettingsPage() {
           </p>
         </div>
       </section>
+
+      {manualNotesUiEnabled() && (
+        <section className="mb-10">
+          <h2 className="mb-3 text-sm font-medium uppercase tracking-wide text-[var(--text-secondary)]">
+            My notes
+          </h2>
+          <NoteAiDefaultSetting
+            initialEnabled={noteAiDefault}
+            initialEligible={noteAiPolicy.eligible}
+          />
+        </section>
+      )}
 
       <section className="mb-10">
         <h2 className="mb-3 text-sm font-medium uppercase tracking-wide text-[var(--text-secondary)]">

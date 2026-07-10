@@ -13,6 +13,7 @@ The requested feature is an **attached note**, distinct from the existing standa
 - `prototype/` — high-fidelity HTML prototype, source, screenshots, and visual QA.
 - `reviews/` — QA and adversarial reports.
 - `validation/` — implementation, migration, security, design, release, and production evidence.
+- `brainstorm/` — post-release tightening, future-feature, and annotation-tool opportunity reports in Markdown and standalone HTML.
 - `PROJECT_TRACKER.md` — milestones, owners, gates, and live state.
 - `DECISION_LOG.md` — durable decisions and changes.
 
@@ -32,9 +33,15 @@ Implementation may proceed only after merging attested production snapshot `8178
 
 - `reviews/F08_MANUAL_CONTENT_NOTES_IMPLEMENTATION_ADVERSARIAL_REVIEW_2026-07-10_18-44-33_IST.md`
 - `reviews/IMPLEMENTATION_REVIEW_DISPOSITION.md`
+- `reviews/GLOBAL_NOTE_AI_DEFAULT_ADVERSARIAL_REVIEW_DISPOSITION_2026-07-10.md`
 - `validation/IMPLEMENTATION_VALIDATION_2026-07-10.md`
 - `validation/IMPLEMENTATION_DESIGN_QA_2026-07-10.md`
 - `validation/PRODUCTION_SNAPSHOT_REHEARSAL_2026-07-10.md`
 - `validation/PRODUCTION_RELEASE_2026-07-10.md`
+- `validation/GLOBAL_NOTE_AI_DEFAULT_SETTING_VALIDATION_2026-07-10.md`
 
 The release is production-verified at `8654f293d0f8615617df883e4703c0ca098a6029`: 785 tests, typecheck, lint, production build, dependency audit, interactive desktop/mobile validation, adversarial closure, snapshot rehearsal, verified live backup, migrations through 023, exact content-free audit/repair, and a fully cleaned synthetic save/search/index/Related/Ask/opt-out/delete lifecycle all pass. UI, write, and worker flags are enabled; remote note AI remains consent-blocked until the owner acknowledges the effective providers in-product.
+
+## Global AI inclusion default follow-on
+
+The post-release Settings > My notes preference makes `Include in AI & connections` an owner-controlled default for first save and explicit recreation. It is not retroactive: every existing note keeps its current per-note choice. The setting defaults off, cannot be enabled until all active remote providers are acknowledged by name, and is cleared when provider consent is revoked. Exact note search is unchanged. The follow-on release candidate passes 796 tests, full type/lint/build gates, client consent-flow coverage, adversarial closure, documentation/privacy validation, and a zero-vulnerability production dependency audit.

@@ -1,0 +1,746 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="Detailed product brainstorm for tightening AI Brain manual notes, future knowledge features, and the annotation tool."
+    />
+    <title>AI Brain — Manual Notes and Annotation Tool Brainstorm</title>
+    <style>
+      :root {
+        color-scheme: light;
+        --ink-950: #14213d;
+        --ink-800: #24344f;
+        --bg: #fbfcfe;
+        --surface: #ffffff;
+        --surface-soft: #f5f8fc;
+        --border: #d7dfea;
+        --border-strong: #a9b8cd;
+        --muted: #667085;
+        --accent: #2f80ed;
+        --violet: #7e5bef;
+        --teal: #18a999;
+        --amber: #a66a00;
+        --ruby: #e63b6f;
+        --highlight: #fff4a3;
+        --shadow: 0 18px 48px rgb(20 33 61 / 0.1);
+        --shadow-sm: 0 4px 14px rgb(20 33 61 / 0.07);
+        --radius-sm: 6px;
+        --radius-md: 8px;
+        --radius-lg: 12px;
+        --font-ui: Inter, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+        --font-article: Charter, "Iowan Old Style", Cambria, Georgia, serif;
+        --font-mono: "JetBrains Mono", Menlo, Consolas, monospace;
+      }
+
+      html[data-theme="dark"] {
+        color-scheme: dark;
+        --ink-950: #f4f7fb;
+        --ink-800: #d8e0ec;
+        --bg: #101825;
+        --surface: #162235;
+        --surface-soft: #1b2a40;
+        --border: #2b3b52;
+        --border-strong: #52647c;
+        --muted: #96a4b7;
+        --accent: #7ccffd;
+        --violet: #a58cf4;
+        --teal: #4dd7c8;
+        --amber: #f1a10d;
+        --ruby: #ff6d98;
+        --highlight: #4a3f10;
+        --shadow: 0 18px 48px rgb(0 0 0 / 0.45);
+        --shadow-sm: 0 4px 14px rgb(0 0 0 / 0.32);
+      }
+
+      * { box-sizing: border-box; }
+      html { scroll-behavior: smooth; }
+      body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--ink-950);
+        font: 16px/1.58 var(--font-ui);
+        -webkit-font-smoothing: antialiased;
+      }
+      a { color: var(--accent); text-underline-offset: 3px; }
+      a:hover { text-decoration-thickness: 2px; }
+      :where(a, button):focus-visible {
+        outline: 3px solid var(--accent);
+        outline-offset: 3px;
+        border-radius: var(--radius-sm);
+      }
+      .skip-link {
+        position: fixed;
+        z-index: 20;
+        left: 16px;
+        top: -80px;
+        padding: 10px 14px;
+        background: var(--ink-950);
+        color: var(--bg);
+        border-radius: var(--radius-sm);
+      }
+      .skip-link:focus { top: 16px; }
+      .shell {
+        display: grid;
+        grid-template-columns: minmax(220px, 280px) minmax(0, 1fr);
+        min-height: 100vh;
+      }
+      aside {
+        position: sticky;
+        top: 0;
+        height: 100vh;
+        overflow-y: auto;
+        padding: 28px 22px;
+        border-right: 1px solid var(--border);
+        background: color-mix(in srgb, var(--surface) 94%, transparent);
+      }
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 28px;
+      }
+      .brand img {
+        width: 42px;
+        height: 42px;
+        object-fit: contain;
+        border-radius: 10px;
+      }
+      .brand strong { display: block; font-size: 15px; }
+      .brand span { display: block; color: var(--muted); font-size: 12px; }
+      nav ol { list-style: none; padding: 0; margin: 0; }
+      nav li + li { margin-top: 4px; }
+      nav a {
+        display: block;
+        padding: 8px 10px;
+        border-radius: var(--radius-sm);
+        color: var(--ink-800);
+        text-decoration: none;
+        font-size: 14px;
+      }
+      nav a:hover { background: var(--surface-soft); color: var(--ink-950); }
+      .side-actions {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+        margin-top: 24px;
+      }
+      button, .button-link {
+        appearance: none;
+        min-height: 38px;
+        border: 1px solid var(--border-strong);
+        border-radius: var(--radius-sm);
+        background: var(--surface);
+        color: var(--ink-950);
+        padding: 8px 10px;
+        font: 600 13px/1.2 var(--font-ui);
+        text-align: center;
+        text-decoration: none;
+        cursor: pointer;
+      }
+      button:hover, .button-link:hover { background: var(--surface-soft); }
+      main { min-width: 0; }
+      .hero {
+        padding: 72px clamp(24px, 6vw, 84px) 56px;
+        border-bottom: 1px solid var(--border);
+        background:
+          linear-gradient(135deg, color-mix(in srgb, var(--accent) 10%, transparent), transparent 45%),
+          var(--surface);
+      }
+      .eyebrow {
+        display: inline-flex;
+        margin-bottom: 18px;
+        padding: 5px 9px;
+        border: 1px solid var(--border-strong);
+        border-radius: 999px;
+        color: var(--ink-800);
+        font-size: 12px;
+        font-weight: 700;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+      }
+      h1, h2, h3 { text-wrap: balance; }
+      h1 {
+        max-width: 920px;
+        margin: 0;
+        font: 700 clamp(38px, 6vw, 70px)/1.03 var(--font-article);
+        letter-spacing: -0.035em;
+      }
+      .hero p {
+        max-width: 790px;
+        margin: 24px 0 0;
+        color: var(--ink-800);
+        font: 20px/1.55 var(--font-article);
+      }
+      .meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px 22px;
+        margin-top: 28px;
+        color: var(--muted);
+        font-size: 13px;
+      }
+      .content {
+        width: min(1120px, calc(100% - 48px));
+        margin: 0 auto;
+        padding: 56px 0 96px;
+      }
+      section { scroll-margin-top: 24px; }
+      section + section { margin-top: 72px; }
+      h2 {
+        margin: 0 0 20px;
+        font: 700 clamp(29px, 4vw, 42px)/1.12 var(--font-article);
+        letter-spacing: -0.02em;
+      }
+      h3 {
+        margin: 34px 0 10px;
+        font: 700 22px/1.3 var(--font-article);
+      }
+      p { max-width: 78ch; }
+      .lead { color: var(--ink-800); font-size: 18px; }
+      .callout {
+        margin: 28px 0;
+        padding: 22px 24px;
+        border-left: 4px solid var(--accent);
+        border-radius: 0 var(--radius-md) var(--radius-md) 0;
+        background: var(--surface-soft);
+        box-shadow: var(--shadow-sm);
+      }
+      .callout strong { display: block; margin-bottom: 5px; }
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 16px;
+        margin: 24px 0;
+      }
+      .grid.three { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+      .card {
+        padding: 22px;
+        border: 1px solid var(--border);
+        border-radius: var(--radius-lg);
+        background: var(--surface);
+        box-shadow: var(--shadow-sm);
+      }
+      .card h3 { margin-top: 0; font-size: 20px; }
+      .card p:last-child, .card ul:last-child { margin-bottom: 0; }
+      .tag {
+        display: inline-flex;
+        margin-bottom: 12px;
+        padding: 4px 8px;
+        border-radius: 999px;
+        background: var(--surface-soft);
+        color: var(--ink-800);
+        font-size: 12px;
+        font-weight: 700;
+      }
+      .tag.now { color: var(--teal); }
+      .tag.next { color: var(--accent); }
+      .tag.later { color: var(--violet); }
+      ul, ol { padding-left: 22px; }
+      li + li { margin-top: 7px; }
+      table {
+        width: 100%;
+        margin: 24px 0;
+        border-collapse: collapse;
+        border: 1px solid var(--border);
+        background: var(--surface);
+        font-size: 14px;
+      }
+      th, td {
+        padding: 12px 14px;
+        border-bottom: 1px solid var(--border);
+        text-align: left;
+        vertical-align: top;
+      }
+      th { background: var(--surface-soft); color: var(--ink-800); }
+      tbody tr:last-child td { border-bottom: 0; }
+      code {
+        padding: 2px 5px;
+        border-radius: 4px;
+        background: var(--surface-soft);
+        font: 0.9em var(--font-mono);
+      }
+      .sequence {
+        margin: 28px 0;
+        padding: 20px 22px;
+        border: 1px solid var(--border-strong);
+        border-radius: var(--radius-lg);
+        background: var(--surface);
+        font: 700 clamp(17px, 2vw, 22px)/1.55 var(--font-article);
+        text-align: center;
+      }
+      .priority-list {
+        counter-reset: priority;
+        list-style: none;
+        padding: 0;
+      }
+      .priority-list li {
+        counter-increment: priority;
+        display: grid;
+        grid-template-columns: 36px minmax(0, 1fr);
+        gap: 12px;
+        align-items: start;
+        margin-top: 12px;
+        padding: 16px;
+        border: 1px solid var(--border);
+        border-radius: var(--radius-md);
+        background: var(--surface);
+      }
+      .priority-list li::before {
+        content: counter(priority);
+        display: grid;
+        place-items: center;
+        width: 30px;
+        height: 30px;
+        border-radius: 999px;
+        background: var(--ink-950);
+        color: var(--bg);
+        font-weight: 800;
+      }
+      .avoid { border-left: 4px solid var(--ruby); }
+      footer {
+        padding: 32px clamp(24px, 6vw, 84px);
+        border-top: 1px solid var(--border);
+        color: var(--muted);
+        background: var(--surface);
+        font-size: 13px;
+      }
+      @media (max-width: 920px) {
+        .shell { display: block; }
+        aside {
+          position: static;
+          height: auto;
+          border-right: 0;
+          border-bottom: 1px solid var(--border);
+        }
+        nav ol { columns: 2; column-gap: 20px; }
+        .side-actions { max-width: 340px; }
+        .hero { padding-top: 48px; }
+        .grid.three { grid-template-columns: 1fr; }
+      }
+      @media (max-width: 680px) {
+        nav ol { columns: 1; }
+        .grid { grid-template-columns: 1fr; }
+        .content { width: min(100% - 28px, 1120px); padding-top: 40px; }
+        .hero { padding-inline: 18px; }
+        table { display: block; overflow-x: auto; white-space: nowrap; }
+        .meta { display: grid; gap: 6px; }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        html { scroll-behavior: auto; }
+      }
+      @media print {
+        :root { color-scheme: light; }
+        body { background: #fff; color: #14213d; }
+        .shell { display: block; }
+        aside, .side-actions { display: none !important; }
+        .hero { padding: 32px 0; background: #fff; }
+        .content { width: 100%; padding: 24px 0; }
+        section + section { margin-top: 36px; }
+        .card, .callout, table { box-shadow: none; break-inside: avoid; }
+        a { color: inherit; }
+        footer { padding-inline: 0; }
+      }
+    </style>
+  </head>
+  <body>
+    <a class="skip-link" href="#main-content">Skip to report</a>
+    <div class="shell">
+      <aside aria-label="Report navigation">
+        <div class="brand">
+          <img src="../prototype/public/ai-memory-logo.png" alt="AI Memory logo" />
+          <div><strong>AI Brain</strong><span>Product opportunity report</span></div>
+        </div>
+        <nav>
+          <ol>
+            <li><a href="#summary">Executive summary</a></li>
+            <li><a href="#principles">Working principles</a></li>
+            <li><a href="#tighten">1. Tighten implementation</a></li>
+            <li><a href="#features">2. Additional features</a></li>
+            <li><a href="#annotations">3. Annotation tool</a></li>
+            <li><a href="#priorities">4. Opportunity map</a></li>
+            <li><a href="#experiments">5. Experiments</a></li>
+            <li><a href="#defer">6. Avoid or defer</a></li>
+            <li><a href="#decisions">7. Decision prompts</a></li>
+          </ol>
+        </nav>
+        <div class="side-actions">
+          <button id="theme-toggle" type="button" aria-label="Switch report theme">Dark theme</button>
+          <button id="print-report" type="button">Print</button>
+          <a class="button-link" href="./F08_TIGHTENING_FUTURE_FEATURES_AND_ANNOTATION_TOOL_BRAINSTORM_2026-07-10.md">Markdown</a>
+          <a class="button-link" href="#summary">Top</a>
+        </div>
+      </aside>
+
+      <main id="main-content">
+        <header class="hero">
+          <span class="eyebrow">Detailed brainstorm · 2026-07-10</span>
+          <h1>From a note editor to a personal thinking layer</h1>
+          <p>
+            Opportunities to tighten the production manual-notes experience, extend AI Brain with
+            explainable knowledge workflows, and evolve the annotation tool into verified product intent.
+          </p>
+          <div class="meta">
+            <span>Baseline: production-verified F08 manual notes</span>
+            <span>Audience: Product, design, engineering, QA</span>
+            <span>Status: Brainstorm, not implementation commitment</span>
+          </div>
+        </header>
+
+        <div class="content">
+          <section id="summary">
+            <h2>Executive summary</h2>
+            <p class="lead">
+              The hard foundations are already present: canonical Markdown, autosave and recovery,
+              conflicts, versions, exact search, opt-in semantic indexing, provider-specific consent,
+              source-aware citations, Related influence, and verified cleanup. The next release should
+              focus on trust, explainability, and stronger connection to the act of reading.
+            </p>
+            <div class="callout">
+              <strong>Core product thesis</strong>
+              The note should become the place where evidence, interpretation, questions, decisions,
+              and future review meet—without blurring user writing, source material, and AI output.
+            </div>
+            <ol class="priority-list">
+              <li><div><strong>Tighten trust.</strong> Clarify local safety, server save, AI permission, and semantic-index state.</div></li>
+              <li><div><strong>Connect notes to reading.</strong> Add source-linked highlights and annotations.</div></li>
+              <li><div><strong>Make retrieval controllable.</strong> Add My notes only, Original only, and mixed Ask policies.</div></li>
+              <li><div><strong>Build explicit connections.</strong> Add wikilinks, backlinks, and typed relationships.</div></li>
+              <li><div><strong>Compound into learning.</strong> Add review, synthesis, and explainable graph workflows.</div></li>
+            </ol>
+          </section>
+
+          <section id="principles">
+            <h2>Working principles</h2>
+            <div class="grid three">
+              <article class="card"><h3>Portable by default</h3><p>Canonical Markdown remains the source of truth. Complexity must not compromise export, recovery, or long-term ownership.</p></article>
+              <article class="card"><h3>Authorship stays visible</h3><p>User writing, quotations, AI digests, and AI suggestions remain labeled and separately controllable.</p></article>
+              <article class="card"><h3>Privacy is a state</h3><p>The UI continuously communicates whether content is local, saved, eligible, indexed, or being removed.</p></article>
+              <article class="card"><h3>Edges explain themselves</h3><p>Every connection must expose the passages, explicit link, or semantic reason that created it.</p></article>
+              <article class="card"><h3>Recovery is reversible</h3><p>Restore, merge, AI acceptance, and bulk actions should create new state without silently destroying old state.</p></article>
+              <article class="card"><h3>Mobile is first-class</h3><p>Optimize mobile for quick capture, highlighting, review, and follow-up—not merely a compressed desktop editor.</p></article>
+            </div>
+          </section>
+
+          <section id="tighten">
+            <h2>1. Tighten the current implementation</h2>
+            <p class="lead">Prioritize confidence and comprehension before expanding the editor into a larger workspace.</p>
+
+            <h3>Unified save, sync, permission, and index status</h3>
+            <table>
+              <thead><tr><th>Layer</th><th>Useful states</th><th>User meaning</th></tr></thead>
+              <tbody>
+                <tr><td>Local draft</td><td>Drafting, recovered, waiting</td><td>The browser has the newest safe copy.</td></tr>
+                <tr><td>Canonical save</td><td>Saving, saved, failed, conflict</td><td>The server’s canonical Markdown state.</td></tr>
+                <tr><td>AI eligibility</td><td>Private, permission needed, included</td><td>Whether remote or semantic use is permitted.</td></tr>
+                <tr><td>Semantic index</td><td>Waiting, indexing, indexed, removing, failed</td><td>Whether Ask and Related can use this generation.</td></tr>
+              </tbody>
+            </table>
+            <p>Keep the default presentation compact. Put epoch, generation, provider, and recovery detail in an optional status popover.</p>
+
+            <div class="grid">
+              <article class="card">
+                <span class="tag now">High-value polish</span>
+                <h3>Version history as a working tool</h3>
+                <ul>
+                  <li>Inline or side-by-side Markdown diff.</li>
+                  <li>Preview without restoring.</li>
+                  <li>Copy a paragraph from an older version.</li>
+                  <li>Compare any two versions.</li>
+                  <li>Restore as a new reversible version.</li>
+                  <li>User-authored checkpoint labels.</li>
+                </ul>
+              </article>
+              <article class="card">
+                <span class="tag now">Editor polish</span>
+                <h3>Better Markdown, not a block editor</h3>
+                <ul>
+                  <li>Slash commands and discoverable shortcuts.</li>
+                  <li>Find/replace and heading outline.</li>
+                  <li>Tasks, tables, quotes, links, and code blocks.</li>
+                  <li>Smart lists and normalized paste.</li>
+                  <li>Focus mode and word count.</li>
+                  <li>Sticky mobile toolbar above the keyboard.</li>
+                </ul>
+              </article>
+            </div>
+
+            <h3>Search and Ask explainability</h3>
+            <div class="grid">
+              <article class="card">
+                <h3>Search</h3>
+                <ul>
+                  <li>Original, AI digest, and My notes filters.</li>
+                  <li>My notes only preset.</li>
+                  <li>Exact phrase versus related-concept reasons.</li>
+                  <li>Deep link to the matching heading or paragraph.</li>
+                  <li>Show when exact search is current but indexing is pending.</li>
+                </ul>
+              </article>
+              <article class="card">
+                <h3>Ask</h3>
+                <ul>
+                  <li>All, Original only, My notes only, and mixed policies.</li>
+                  <li>Prefer My notes without hiding original evidence.</li>
+                  <li>Heading-aware citation labels.</li>
+                  <li>Retrieval summary by source kind.</li>
+                  <li>Rerun with a different source policy.</li>
+                </ul>
+              </article>
+            </div>
+
+            <h3>Privacy and consent</h3>
+            <ul>
+              <li>Show provider, effective model, destination class, and purpose together.</li>
+              <li>Place permission disclosure beside the per-note AI switch.</li>
+              <li>Show “Removing from AI…” until purge converges.</li>
+              <li>Add a content-free privacy dashboard for counts, jobs, purges, and approvals.</li>
+              <li>Add a guarded “Revoke and remove all manual-note AI data” operation.</li>
+              <li>Investigate encrypted note-only export and later encryption at rest.</li>
+            </ul>
+
+            <h3>Operational confidence and metrics</h3>
+            <p>
+              Add chaos coverage for disconnects, IndexedDB failure, multi-tab delete/restore races,
+              large-note mobile performance, provider-model consent changes, and full backup restoration.
+              Useful private metrics include recovery usage, conflict resolution, search-to-note opens,
+              note-context Ask usage, opt-in/revocation, and version restores. Raw note text and queries
+              should never become general analytics.
+            </p>
+          </section>
+
+          <section id="features">
+            <h2>2. Additional features</h2>
+            <p class="lead">Build features that deepen the read–think–connect–review loop.</p>
+
+            <article class="callout">
+              <strong>Best next major feature: source-linked highlights and annotations</strong>
+              Select text in an article, transcript, PDF, or captured body and attach a comment,
+              question, takeaway, counterargument, evidence label, task, or card link. Preserve a stable
+              source locator, quote context, source version, user commentary, and an orphaned state.
+            </article>
+
+            <div class="grid three">
+              <article class="card"><span class="tag next">Connections</span><h3>Wikilinks and backlinks</h3><p>Use <code>[[</code> autocomplete to create explicit links. Support typed relationships such as supports, contradicts, expands, and example of.</p></article>
+              <article class="card"><span class="tag later">Connections</span><h3>Explainable graph</h3><p>Expose why every edge exists and let users inspect passages, approve suggestions, rename relationships, or remove edges.</p></article>
+              <article class="card"><span class="tag later">Synthesis</span><h3>Cross-card workspace</h3><p>Compare selected cards, find agreement and contradiction, build an outline, and create a cited synthesis card.</p></article>
+              <article class="card"><span class="tag next">Learning</span><h3>Review engine</h3><p>Resurface notes, unresolved questions, checklists, flashcards, and changes in the user’s thinking.</p></article>
+              <article class="card"><span class="tag next">Structure</span><h3>Note templates</h3><p>Insert editable Markdown for research, meetings, decisions, retrospectives, learning summaries, and claim/evidence analysis.</p></article>
+              <article class="card"><span class="tag next">Action</span><h3>Task aggregation</h3><p>Collect open Markdown tasks with stable links back to their source lines while preserving clean export.</p></article>
+              <article class="card"><span class="tag next">AI assistance</span><h3>Proposals, not rewrites</h3><p>Suggest structure, questions, claims, action items, or clarity edits with Accept, Reject, and Insert controls.</p></article>
+              <article class="card"><span class="tag next">Capture</span><h3>Voice and append</h3><p>Dictate notes, append selected browser text, share into an existing card, or OCR a screenshot.</p></article>
+              <article class="card"><span class="tag later">Portability</span><h3>Markdown ecosystem</h3><p>Support Markdown-folder import/export, stable URLs, and optional Obsidian-style wikilinks and frontmatter.</p></article>
+            </div>
+
+            <h3>Smart collections powered by notes</h3>
+            <ul>
+              <li>Notes with open questions or incomplete tasks.</li>
+              <li>Recently changed thinking.</li>
+              <li>AI-enabled versus private-only notes.</li>
+              <li>Notes mentioning a project, person, or concept.</li>
+              <li>Cards with manual notes but no recent review.</li>
+            </ul>
+            <p>Every smart collection should expose an understandable, editable rule.</p>
+          </section>
+
+          <section id="annotations">
+            <h2>3. Annotation tool updates</h2>
+            <p class="lead">
+              Evolve the visual annotation tool from a pin on a screenshot into a semantically anchored,
+              context-rich, verifiable change request.
+            </p>
+
+            <div class="grid">
+              <article class="card">
+                <span class="tag now">Foundation</span>
+                <h3>Semantic anchors</h3>
+                <ul>
+                  <li>DOM or accessibility node.</li>
+                  <li>Component identity when discoverable.</li>
+                  <li>Selected text range or field/label pair.</li>
+                  <li>Route, viewport, theme, and state.</li>
+                  <li>Uncertain remapping when a target disappears.</li>
+                </ul>
+              </article>
+              <article class="card">
+                <span class="tag now">Context</span>
+                <h3>Automatic evidence capture</h3>
+                <ul>
+                  <li>Screenshot, crop, element text, role, and name.</li>
+                  <li>Computed styles and scroll position.</li>
+                  <li>Open dialog, menu, loading, or validation state.</li>
+                  <li>Preceding interaction steps.</li>
+                  <li>Candidate component and source file.</li>
+                </ul>
+              </article>
+              <article class="card">
+                <span class="tag now">Intent</span>
+                <h3>Type and scope</h3>
+                <ul>
+                  <li>Polish, copy, behavior, accessibility, responsive, data, question, feature.</li>
+                  <li>This element versus every component instance.</li>
+                  <li>Current breakpoint versus all supported widths.</li>
+                  <li>Current state versus every equivalent state.</li>
+                </ul>
+              </article>
+              <article class="card">
+                <span class="tag now">Definition of done</span>
+                <h3>Acceptance criteria</h3>
+                <ul>
+                  <li>Exact copy or alignment.</li>
+                  <li>Breakpoint and non-regression boundaries.</li>
+                  <li>Focus behavior and accessibility.</li>
+                  <li>Timing or state-transition expectations.</li>
+                  <li>Asset and crop preservation.</li>
+                </ul>
+              </article>
+            </div>
+
+            <h3>Preview and verification workflow</h3>
+            <ol class="priority-list">
+              <li><div>User anchors an annotation and specifies intent.</div></li>
+              <li><div>Agent summarizes the interpretation and affected scope.</div></li>
+              <li><div>Tool identifies likely components and files.</div></li>
+              <li><div>User reviews a proposed visual or behavioral preview.</div></li>
+              <li><div>Agent applies the accepted change.</div></li>
+              <li><div>Tool captures a same-state before/after comparison.</div></li>
+              <li><div>Acceptance checks run; the annotation becomes Verified or Reopened.</div></li>
+            </ol>
+
+            <h3>Durable work-item lifecycle</h3>
+            <p>
+              Support Open, Clarification needed, Ready, In progress, Applied, Verified, Rejected,
+              and Reopened. Add comment threads, batching, duplicate/conflict detection, commit and PR
+              linkage, original/final screenshots, and export to GitHub or Jira.
+            </p>
+
+            <h3>Interaction, responsive, and time-based feedback</h3>
+            <ul>
+              <li>Annotate hover, focus, drag, dialogs, menus, and loading transitions.</li>
+              <li>Capture keyboard navigation and mobile software-keyboard behavior.</li>
+              <li>Attach feedback to a short recording and timestamp.</li>
+              <li>Preserve the action sequence needed to reproduce the state.</li>
+              <li>Preview the same semantic target across representative viewports.</li>
+            </ul>
+
+            <article class="callout">
+              <strong>Long-term differentiator: annotation-to-test generation</strong>
+              Responsive feedback can become a viewport test; accessibility feedback can become a
+              focus or role assertion; behavior feedback can become an interaction test; and visual
+              feedback can become a stable before/after checkpoint.
+            </article>
+
+            <h3>Privacy and sharing</h3>
+            <ul>
+              <li>Detect and redact secrets, private names, account data, and sensitive content.</li>
+              <li>Let users crop or mask evidence before sharing.</li>
+              <li>Distinguish private annotations from team-visible annotations.</li>
+              <li>Show what screenshot, DOM text, and metadata will be sent to an agent.</li>
+              <li>Support a local-only mode for sensitive applications.</li>
+            </ul>
+          </section>
+
+          <section id="priorities">
+            <h2>4. Prioritized opportunity map</h2>
+            <table>
+              <thead><tr><th>Opportunity</th><th>Impact</th><th>Effort</th><th>Risk</th><th>Horizon</th></tr></thead>
+              <tbody>
+                <tr><td>Unified trust/status bar</td><td>High</td><td>Low–Medium</td><td>Low</td><td>Now</td></tr>
+                <tr><td>Version diff and preview</td><td>High</td><td>Medium</td><td>Low</td><td>Now</td></tr>
+                <tr><td>Ask source filters</td><td>High</td><td>Medium</td><td>Low</td><td>Now</td></tr>
+                <tr><td>Mobile editor polish</td><td>Medium–High</td><td>Medium</td><td>Low</td><td>Now</td></tr>
+                <tr><td>Source-linked annotations</td><td>Very high</td><td>High</td><td>Medium</td><td>Next major feature</td></tr>
+                <tr><td>Wikilinks and backlinks</td><td>High</td><td>Medium</td><td>Medium</td><td>Next</td></tr>
+                <tr><td>Explainable graph</td><td>High</td><td>High</td><td>Medium</td><td>Later</td></tr>
+                <tr><td>Cross-card synthesis</td><td>Very high</td><td>High</td><td>Medium–High</td><td>Later</td></tr>
+                <tr><td>Semantic annotation anchors</td><td>Very high</td><td>High</td><td>Medium</td><td>Annotation tool: Now</td></tr>
+                <tr><td>Annotation acceptance criteria</td><td>High</td><td>Medium</td><td>Low</td><td>Annotation tool: Now</td></tr>
+                <tr><td>Before/after verification</td><td>Very high</td><td>High</td><td>Medium</td><td>Annotation tool: Next</td></tr>
+                <tr><td>Annotation-to-test generation</td><td>Very high</td><td>Very high</td><td>High</td><td>Annotation tool: Later</td></tr>
+              </tbody>
+            </table>
+
+            <div class="grid three">
+              <article class="card"><span class="tag now">Now</span><h3>Trust package</h3><p>Status bar, version diff, Ask source filters, mobile recovery clarity, semantic annotation anchors, and acceptance criteria.</p></article>
+              <article class="card"><span class="tag next">Next</span><h3>Connection package</h3><p>Source highlights, wikilinks, backlinks, templates, tasks, smart review, annotation batching, and PR linkage.</p></article>
+              <article class="card"><span class="tag later">Later</span><h3>Compounding package</h3><p>Explainable graph, cross-card synthesis, learning engine, encryption investigation, and annotation-generated tests.</p></article>
+            </div>
+          </section>
+
+          <section id="experiments">
+            <h2>5. Suggested experiments</h2>
+            <div class="grid">
+              <article class="card"><h3>Trust-bar comprehension</h3><p>Test whether users can identify if text is safe locally, saved, eligible for AI, indexed, or failed. Target 90% correct interpretation without help.</p></article>
+              <article class="card"><h3>Source annotation flow</h3><p>Test highlight → annotate → view in My notes → revisit source across article, transcript, and PDF. Target creation in under 15 seconds.</p></article>
+              <article class="card"><h3>Ask source policy</h3><p>Test whether users can predict which evidence is used by All, My notes only, Original only, and Prefer My notes modes.</p></article>
+              <article class="card"><h3>Annotation acceptance criteria</h3><p>Compare clarification turns, rework, completion time, and cross-breakpoint regressions with and without structured criteria.</p></article>
+            </div>
+          </section>
+
+          <section id="defer">
+            <h2>6. Ideas to avoid or defer</h2>
+            <div class="callout avoid">
+              <strong>Complexity that does not yet earn its cost</strong>
+              <ul>
+                <li>A full Notion-style block editor.</li>
+                <li>Multiple independent notes per card before the single-note model is exhausted.</li>
+                <li>Automatic AI rewriting of canonical notes.</li>
+                <li>A graph-first redesign without edge explanations.</li>
+                <li>Automatic remote processing of every note.</li>
+                <li>Real-time collaboration before the personal workflow is excellent.</li>
+                <li>Pixel-only annotation anchors.</li>
+                <li>Broad annotation-driven changes without preview.</li>
+              </ul>
+            </div>
+          </section>
+
+          <section id="decisions">
+            <h2>7. Decision prompts</h2>
+            <ol>
+              <li>Is the next release about trust and polish, reading-linked annotation, or knowledge connections?</li>
+              <li>Are source annotations structured records, canonical Markdown, or a hybrid reference model?</li>
+              <li>Should My notes only Ask be global, item-level, or both?</li>
+              <li>Which explicit relationship types must ship before a graph?</li>
+              <li>Are note tasks personal reminders or integrations with another task system?</li>
+              <li>What minimum context must an annotation capture before an agent can act without clarification?</li>
+              <li>Which acceptance checks can be generated reliably today?</li>
+              <li>Which low-risk annotations may apply directly, and which always require preview?</li>
+            </ol>
+
+            <div class="sequence">Read → highlight → interpret → connect → ask → revisit → refine</div>
+            <div class="sequence">Observe → anchor → specify intent → preview → apply → verify → preserve as a test</div>
+
+            <p class="lead">
+              These loops reinforce the same product value: turning informal human intent into durable,
+              trustworthy, and explainable knowledge.
+            </p>
+          </section>
+        </div>
+
+        <footer>
+          AI Brain product brainstorm · F08 manual content notes · Generated 2026-07-10 ·
+          <a href="./F08_TIGHTENING_FUTURE_FEATURES_AND_ANNOTATION_TOOL_BRAINSTORM_2026-07-10.md">Open the Markdown report</a>
+        </footer>
+      </main>
+    </div>
+    <script>
+      const root = document.documentElement;
+      const themeButton = document.getElementById("theme-toggle");
+      const printButton = document.getElementById("print-report");
+      const preferred = window.localStorage.getItem("f08-brainstorm-theme");
+      if (preferred === "dark") root.dataset.theme = "dark";
+      const syncThemeLabel = () => {
+        themeButton.textContent = root.dataset.theme === "dark" ? "Light theme" : "Dark theme";
+      };
+      syncThemeLabel();
+      themeButton.addEventListener("click", () => {
+        root.dataset.theme = root.dataset.theme === "dark" ? "light" : "dark";
+        window.localStorage.setItem("f08-brainstorm-theme", root.dataset.theme);
+        syncThemeLabel();
+      });
+      printButton.addEventListener("click", () => window.print());
+    </script>
+  </body>
+</html>

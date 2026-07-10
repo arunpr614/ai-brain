@@ -3,9 +3,10 @@
 **Coordinator / integration owner:** Codex primary agent
 **Repository:** `arunpr614/ai-brain`
 **Worktree:** `Phase3`
-**Branch:** `codex/manual-content-notes`
+**Original release branch:** `codex/manual-content-notes`
+**Active follow-on branch:** `codex/note-ai-default-setting`
 **Started:** 2026-07-10
-**Current recommendation:** Production GO; release verified and synthetic data fully cleaned.
+**Current recommendation:** Original F08 release verified; global AI-default follow-on is local release candidate GO and pending GitHub/production integration.
 
 ## Workstreams and owners
 
@@ -38,6 +39,7 @@
 | M7 | Release readiness | Complete | Verified backup copy, snapshot migration, exact audit/repair, rollback gates, and 785-test build pass |
 | M8 | Production release | Complete | Synthetic end-to-end smoke and cleanup pass; health, providers, and Recall timer stable |
 | M9 | Publication and main integration | Complete | Wiki fresh-clone verification passed; PR #10 merged to `main` at `b5910b2` |
+| M10 | Global AI inclusion default | Release ready | New/recreated-note inheritance, non-retroactivity, provider gate/revocation, Settings UX, 796-test/full release checks pass; GitHub and production smoke pending |
 
 ## Current blockers
 
