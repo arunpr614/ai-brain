@@ -55,34 +55,54 @@ export async function embedItem(
   const started = Date.now();
   const db = getDb();
   const item = db
-    .prepare("SELECT id, title, body, summary FROM items WHERE id = ?")
-    .get(item_id) as { id: string; title: string; body: string; summary: string | null } | undefined;
+    .prepare("SELECT id, title, body, summary, enriched_at FROM items WHERE id = ?")
+    .get(item_id) as {
+      id: string;
+      title: string;
+      body: string;
+      summary: string | null;
+      enriched_at: number | null;
+    } | undefined;
 
   if (!item) {
     return failed(item_id, "EMBED_ITEM_NOT_FOUND", `Item ${item_id} not found`, opts.attempt ?? 1);
   }
 
   const existing = db
-    .prepare("SELECT COUNT(*) AS n FROM chunks WHERE item_id = ?")
+    .prepare(
+      `SELECT COUNT(*) AS n FROM chunks
+       WHERE item_id = ? AND source_kind IN ('legacy_item_context', 'original_content')`,
+    )
     .get(item_id) as { n: number };
   if (existing.n > 0) {
     return { ok: true, item_id, chunk_count: existing.n, duration_ms: 0 };
   }
 
-  // Embed on body + (summary || "") so questions that quote the summary still
-  // retrieve the item. Body is the primary signal.
-  const sourceText = item.summary
-    ? `${item.title}\n\n${item.summary}\n\n${item.body}`
-    : `${item.title}\n\n${item.body}`;
-  const chunks = chunkBody(sourceText, opts.chunkOpts);
-  if (chunks.length === 0) {
+  // New indexes keep captured source and AI summary separate so citations can
+  // state where a claim came from. Existing mixed chunks remain explicitly
+  // labeled legacy_item_context by migration 023.
+  const sourceChunks = [
+    ...chunkBody(`${item.title}\n\n${item.body}`, opts.chunkOpts).map((chunk) => ({
+      ...chunk,
+      source_kind: "original_content" as const,
+      source_version: 0,
+    })),
+    ...(item.summary
+      ? chunkBody(`${item.title}\n\n${item.summary}`, opts.chunkOpts).map((chunk) => ({
+          ...chunk,
+          source_kind: "ai_summary" as const,
+          source_version: item.enriched_at ?? 1,
+        }))
+      : []),
+  ];
+  if (sourceChunks.length === 0) {
     return { ok: true, item_id, chunk_count: 0, duration_ms: Date.now() - started };
   }
 
   const embedFn: EmbedFn = opts.embedFn ?? ((inputs) => getEmbedProvider().embed(inputs));
   const vectors: Float32Array[] = [];
-  for (let i = 0; i < chunks.length; i += BATCH_SIZE) {
-    const batch = chunks.slice(i, i + BATCH_SIZE).map((c) => c.body);
+  for (let i = 0; i < sourceChunks.length; i += BATCH_SIZE) {
+    const batch = sourceChunks.slice(i, i + BATCH_SIZE).map((c) => c.body);
     let got: Float32Array[];
     try {
       got = await embedFn(batch);
@@ -115,12 +135,14 @@ export async function embedItem(
     const insertVec = db.prepare(
       "INSERT INTO chunks_vec(rowid, embedding) VALUES (?, ?)",
     );
-    for (let i = 0; i < chunks.length; i++) {
+    for (let i = 0; i < sourceChunks.length; i++) {
       const { rowid } = insertChunkWithRowid({
         item_id,
-        idx: chunks[i].idx,
-        body: chunks[i].body,
-        token_count: chunks[i].token_count,
+        source_kind: sourceChunks[i].source_kind,
+        source_version: sourceChunks[i].source_version,
+        idx: sourceChunks[i].idx,
+        body: sourceChunks[i].body,
+        token_count: sourceChunks[i].token_count,
       });
       insertVec.run(rowid, Buffer.from(vectors[i].buffer));
     }
@@ -130,7 +152,7 @@ export async function embedItem(
   return {
     ok: true,
     item_id,
-    chunk_count: chunks.length,
+    chunk_count: sourceChunks.length,
     duration_ms: Date.now() - started,
   };
 }

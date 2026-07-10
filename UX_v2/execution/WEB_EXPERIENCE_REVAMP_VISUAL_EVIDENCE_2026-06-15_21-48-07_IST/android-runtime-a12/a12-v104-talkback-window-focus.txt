@@ -1,0 +1,2 @@
+  mCurrentFocus=Window{c9634c7 u0 com.arunprakash.brain/com.arunprakash.brain.MainActivity}
+  mFocusedApp=ActivityRecord{154666723 u0 com.arunprakash.brain/.MainActivity t52}

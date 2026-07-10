@@ -1,0 +1,236 @@
+{
+  "startedAt": "2026-06-15T17:56:45.338Z",
+  "baseUrl": "http://127.0.0.1:3000",
+  "dbPath": "/tmp/ai-memory-item-ask-needs-qa.sqlite",
+  "files": [
+    "/Users/arun.prakash/Documents/arunvault/arun-cursor/Initiatives/Arun_AI_Projects/ai-brain/phase2/UX_v2/execution/WEB_EXPERIENCE_REVAMP_VISUAL_EVIDENCE_2026-06-15_21-48-07_IST/screenshots/item-ask-needs-upgrade/full-item-390-light.png",
+    "/Users/arun.prakash/Documents/arunvault/arun-cursor/Initiatives/Arun_AI_Projects/ai-brain/phase2/UX_v2/execution/WEB_EXPERIENCE_REVAMP_VISUAL_EVIDENCE_2026-06-15_21-48-07_IST/screenshots/item-ask-needs-upgrade/full-item-1280-light.png",
+    "/Users/arun.prakash/Documents/arunvault/arun-cursor/Initiatives/Arun_AI_Projects/ai-brain/phase2/UX_v2/execution/WEB_EXPERIENCE_REVAMP_VISUAL_EVIDENCE_2026-06-15_21-48-07_IST/screenshots/item-ask-needs-upgrade/weak-item-390-light.png",
+    "/Users/arun.prakash/Documents/arunvault/arun-cursor/Initiatives/Arun_AI_Projects/ai-brain/phase2/UX_v2/execution/WEB_EXPERIENCE_REVAMP_VISUAL_EVIDENCE_2026-06-15_21-48-07_IST/screenshots/item-ask-needs-upgrade/weak-item-1280-light.png",
+    "/Users/arun.prakash/Documents/arunvault/arun-cursor/Initiatives/Arun_AI_Projects/ai-brain/phase2/UX_v2/execution/WEB_EXPERIENCE_REVAMP_VISUAL_EVIDENCE_2026-06-15_21-48-07_IST/screenshots/item-ask-needs-upgrade/weak-focus-390-light.png",
+    "/Users/arun.prakash/Documents/arunvault/arun-cursor/Initiatives/Arun_AI_Projects/ai-brain/phase2/UX_v2/execution/WEB_EXPERIENCE_REVAMP_VISUAL_EVIDENCE_2026-06-15_21-48-07_IST/screenshots/item-ask-needs-upgrade/weak-focus-1280-light.png",
+    "/Users/arun.prakash/Documents/arunvault/arun-cursor/Initiatives/Arun_AI_Projects/ai-brain/phase2/UX_v2/execution/WEB_EXPERIENCE_REVAMP_VISUAL_EVIDENCE_2026-06-15_21-48-07_IST/screenshots/item-ask-needs-upgrade/needs-upgrade-before-repair-390-light.png",
+    "/Users/arun.prakash/Documents/arunvault/arun-cursor/Initiatives/Arun_AI_Projects/ai-brain/phase2/UX_v2/execution/WEB_EXPERIENCE_REVAMP_VISUAL_EVIDENCE_2026-06-15_21-48-07_IST/screenshots/item-ask-needs-upgrade/needs-upgrade-before-repair-1280-light.png",
+    "/Users/arun.prakash/Documents/arunvault/arun-cursor/Initiatives/Arun_AI_Projects/ai-brain/phase2/UX_v2/execution/WEB_EXPERIENCE_REVAMP_VISUAL_EVIDENCE_2026-06-15_21-48-07_IST/screenshots/item-ask-needs-upgrade/repair-short-text-validation-1280-light.png",
+    "/Users/arun.prakash/Documents/arunvault/arun-cursor/Initiatives/Arun_AI_Projects/ai-brain/phase2/UX_v2/execution/WEB_EXPERIENCE_REVAMP_VISUAL_EVIDENCE_2026-06-15_21-48-07_IST/screenshots/item-ask-needs-upgrade/repair-success-item-detail-1280-light.png",
+    "/Users/arun.prakash/Documents/arunvault/arun-cursor/Initiatives/Arun_AI_Projects/ai-brain/phase2/UX_v2/execution/WEB_EXPERIENCE_REVAMP_VISUAL_EVIDENCE_2026-06-15_21-48-07_IST/screenshots/item-ask-needs-upgrade/needs-upgrade-after-repair-1280-light.png",
+    "/Users/arun.prakash/Documents/arunvault/arun-cursor/Initiatives/Arun_AI_Projects/ai-brain/phase2/UX_v2/execution/WEB_EXPERIENCE_REVAMP_VISUAL_EVIDENCE_2026-06-15_21-48-07_IST/screenshots/item-ask-needs-upgrade/ask-item-provider-down-1280-light.png",
+    "/Users/arun.prakash/Documents/arunvault/arun-cursor/Initiatives/Arun_AI_Projects/ai-brain/phase2/UX_v2/execution/WEB_EXPERIENCE_REVAMP_VISUAL_EVIDENCE_2026-06-15_21-48-07_IST/screenshots/item-ask-needs-upgrade/ask-item-provider-down-390-light.png",
+    "/Users/arun.prakash/Documents/arunvault/arun-cursor/Initiatives/Arun_AI_Projects/ai-brain/phase2/UX_v2/execution/WEB_EXPERIENCE_REVAMP_VISUAL_EVIDENCE_2026-06-15_21-48-07_IST/screenshots/item-ask-needs-upgrade/ask-library-scope-1280-light.png",
+    "/Users/arun.prakash/Documents/arunvault/arun-cursor/Initiatives/Arun_AI_Projects/ai-brain/phase2/UX_v2/execution/WEB_EXPERIENCE_REVAMP_VISUAL_EVIDENCE_2026-06-15_21-48-07_IST/screenshots/item-ask-needs-upgrade/ask-selected-scope-1280-light.png",
+    "/Users/arun.prakash/Documents/arunvault/arun-cursor/Initiatives/Arun_AI_Projects/ai-brain/phase2/UX_v2/execution/WEB_EXPERIENCE_REVAMP_VISUAL_EVIDENCE_2026-06-15_21-48-07_IST/screenshots/item-ask-needs-upgrade/ask-tag-scope-1280-light.png",
+    "/Users/arun.prakash/Documents/arunvault/arun-cursor/Initiatives/Arun_AI_Projects/ai-brain/phase2/UX_v2/execution/WEB_EXPERIENCE_REVAMP_VISUAL_EVIDENCE_2026-06-15_21-48-07_IST/screenshots/item-ask-needs-upgrade/ask-topic-scope-1280-light.png",
+    "/Users/arun.prakash/Documents/arunvault/arun-cursor/Initiatives/Arun_AI_Projects/ai-brain/phase2/UX_v2/execution/WEB_EXPERIENCE_REVAMP_VISUAL_EVIDENCE_2026-06-15_21-48-07_IST/screenshots/item-ask-needs-upgrade/ask-collection-scope-1280-light.png",
+    "/Users/arun.prakash/Documents/arunvault/arun-cursor/Initiatives/Arun_AI_Projects/ai-brain/phase2/UX_v2/execution/WEB_EXPERIENCE_REVAMP_VISUAL_EVIDENCE_2026-06-15_21-48-07_IST/screenshots/item-ask-needs-upgrade/ask-missing-topic-recovery-1280-light.png",
+    "/Users/arun.prakash/Documents/arunvault/arun-cursor/Initiatives/Arun_AI_Projects/ai-brain/phase2/UX_v2/execution/WEB_EXPERIENCE_REVAMP_VISUAL_EVIDENCE_2026-06-15_21-48-07_IST/screenshots/item-ask-needs-upgrade/full-item-1440-dark.png"
+  ],
+  "checks": {
+    "fullItem390.deleteControls": [],
+    "fullItem390": {
+      "hasAskLink": true,
+      "hasFocusLink": true,
+      "hasExportLink": true
+    },
+    "fullItem1280.deleteControls": [],
+    "weakItem390.deleteControls": [],
+    "weakItem1280.deleteControls": [],
+    "weakItem": {
+      "hasNeedsTranscript": true,
+      "hasRepairAction": true
+    },
+    "weakFocus390.deleteControls": [],
+    "weakFocus1280.deleteControls": [],
+    "needsUpgradeBefore390.deleteControls": [],
+    "needsUpgradeBefore1280.deleteControls": [],
+    "needsUpgradeBefore": {
+      "hasRepairTarget": true,
+      "hasWeakMetadata": false,
+      "hasWeakPreview": false,
+      "headings": [
+        "Needs transcript",
+        "Preview only",
+        "Needs pasted post text"
+      ]
+    },
+    "repairShortText": {
+      "hasInstruction": true,
+      "tooShort": false,
+      "url": "http://127.0.0.1:3000/items/df7468f7653de56204df1821/repair",
+      "validationMessage": "Please fill out this field."
+    },
+    "repairSuccess": {
+      "url": "http://127.0.0.1:3000/items/df7468f7653de56204df1821?repair=queued",
+      "hasBanner": true,
+      "hasUserProvidedQuality": false,
+      "hasRepairedBeacon": true
+    },
+    "needsUpgradeAfter1280.deleteControls": [],
+    "needsUpgradeAfter": {
+      "hasRepairTarget": false,
+      "hasWeakMetadata": false,
+      "hasWeakPreview": false,
+      "headings": [
+        "Needs transcript",
+        "Preview only"
+      ]
+    },
+    "askProviderDown": {
+      "url": "http://127.0.0.1:3000/items/7679396305ab80a4e974a9a9/ask?thread=eeb703cc355c9db7030c692e",
+      "hasTitle": true,
+      "hasMessage": true,
+      "hasScope": true
+    },
+    "askScopes": {
+      "ask-library-scope-1280-light.png": {
+        "route": "/ask",
+        "expectedLabels": [
+          "All sources",
+          "all saved sources"
+        ],
+        "hasExpectedScope": true,
+        "hasComposer": true,
+        "excerpt": "Ask\nALL SOURCES\nall saved sources\n4 sources\n\n2 sources may have limited text.\n\nAsk a question across all saved sources."
+      },
+      "ask-selected-scope-1280-light.png": {
+        "route": "/ask?scope=selected&ids=7679396305ab80a4e974a9a9%2Cafd8e004e33577d0c809bd83",
+        "expectedLabels": [
+          "Selected"
+        ],
+        "hasExpectedScope": true,
+        "hasComposer": true,
+        "excerpt": "Ask selected\nSELECTED\n2 selected sources\n2 sources\nUX v2 item detail full-text fixture\nUX v2 needs transcript fixture\n\n1 source may have limited text. Needs transcript.\n\nAsk a question across 2 selected sources."
+      },
+      "ask-tag-scope-1280-light.png": {
+        "route": "/ask?scope=tag&tag=ux-v2-item-ask",
+        "expectedLabels": [
+          "Tag"
+        ],
+        "hasExpectedScope": true,
+        "hasComposer": true,
+        "excerpt": "Ask ux-v2-item-ask\nTAG\nthe ux-v2-item-ask tag\n2 sources\nUX v2 item detail full-text fixture\nUX v2 needs transcript fixture\n\n1 source may have limited text. Needs transcript.\n\nAsk a question across the ux-v2-item-ask tag."
+      },
+      "ask-topic-scope-1280-light.png": {
+        "route": "/ask?scope=topic&topic=ux-v2-item-ask-topic",
+        "expectedLabels": [
+          "Topic"
+        ],
+        "hasExpectedScope": true,
+        "hasComposer": true,
+        "excerpt": "Ask UX V2 Item Ask Topic\nTOPIC\nthe UX V2 Item Ask Topic topic\n2 sources\nUX v2 item detail full-text fixture\nUX v2 needs transcript fixture\n\n1 source may have limited text. Needs transcript.\n\nAsk a question across the UX V2 Item Ask Topic topic."
+      },
+      "ask-collection-scope-1280-light.png": {
+        "route": "/ask?scope=collection&collection=ae53f6efa235665773705768",
+        "expectedLabels": [
+          "Collection"
+        ],
+        "hasExpectedScope": true,
+        "hasComposer": true,
+        "excerpt": "Ask UX v2 Item Ask Collection\nCOLLECTION\nthe UX v2 Item Ask Collection collection\n2 sources\nUX v2 item detail full-text fixture\nUX v2 needs transcript fixture\n\n1 source may have limited text. Needs transcript.\n\nAsk a question across the UX v2 Item Ask Collection collection."
+      }
+    },
+    "missingScopes": {
+      "missing-selected": {
+        "route": "/ask?scope=selected&ids=missing-ux-v2-item",
+        "hasBackToLibrary": true,
+        "composerCount": 0,
+        "sendCount": 0,
+        "excerpt": "Ask\n\nThe selected sources could not be found.\n\nBack to Library"
+      },
+      "missing-topic": {
+        "route": "/ask?scope=topic&topic=missing-ux-v2-topic",
+        "hasBackToLibrary": true,
+        "composerCount": 0,
+        "sendCount": 0,
+        "excerpt": "Ask\n\nThis topic has no available sources.\n\nBack to Library"
+      },
+      "missing-collection": {
+        "route": "/ask?scope=collection&collection=missing-ux-v2-collection",
+        "hasBackToLibrary": true,
+        "composerCount": 0,
+        "sendCount": 0,
+        "excerpt": "Ask\n\nThis collection has no available sources.\n\nBack to Library"
+      }
+    },
+    "fullItem1440Dark.deleteControls": [],
+    "consoleSweep": {
+      "sweepStartedAt": "2026-06-15T17:57:07.899Z",
+      "routes": [
+        {
+          "route": "/items/7679396305ab80a4e974a9a9",
+          "url": "http://127.0.0.1:3000/items/7679396305ab80a4e974a9a9",
+          "title": "AI Memory",
+          "hasMain": true,
+          "hasErrorBoundary": false
+        },
+        {
+          "route": "/items/afd8e004e33577d0c809bd83",
+          "url": "http://127.0.0.1:3000/items/afd8e004e33577d0c809bd83",
+          "title": "AI Memory",
+          "hasMain": true,
+          "hasErrorBoundary": false
+        },
+        {
+          "route": "/items/afd8e004e33577d0c809bd83?mode=focus",
+          "url": "http://127.0.0.1:3000/items/afd8e004e33577d0c809bd83?mode=focus",
+          "title": "AI Memory",
+          "hasMain": true,
+          "hasErrorBoundary": false
+        },
+        {
+          "route": "/needs-upgrade",
+          "url": "http://127.0.0.1:3000/needs-upgrade",
+          "title": "AI Memory",
+          "hasMain": true,
+          "hasErrorBoundary": false
+        },
+        {
+          "route": "/ask",
+          "url": "http://127.0.0.1:3000/ask",
+          "title": "AI Memory",
+          "hasMain": true,
+          "hasErrorBoundary": false
+        },
+        {
+          "route": "/items/7679396305ab80a4e974a9a9/ask",
+          "url": "http://127.0.0.1:3000/items/7679396305ab80a4e974a9a9/ask",
+          "title": "AI Memory",
+          "hasMain": true,
+          "hasErrorBoundary": false
+        },
+        {
+          "route": "/ask?scope=selected&ids=7679396305ab80a4e974a9a9%2Cafd8e004e33577d0c809bd83",
+          "url": "http://127.0.0.1:3000/ask?scope=selected&ids=7679396305ab80a4e974a9a9%2Cafd8e004e33577d0c809bd83",
+          "title": "AI Memory",
+          "hasMain": true,
+          "hasErrorBoundary": false
+        },
+        {
+          "route": "/ask?scope=tag&tag=ux-v2-item-ask",
+          "url": "http://127.0.0.1:3000/ask?scope=tag&tag=ux-v2-item-ask",
+          "title": "AI Memory",
+          "hasMain": true,
+          "hasErrorBoundary": false
+        },
+        {
+          "route": "/ask?scope=topic&topic=ux-v2-item-ask-topic",
+          "url": "http://127.0.0.1:3000/ask?scope=topic&topic=ux-v2-item-ask-topic",
+          "title": "AI Memory",
+          "hasMain": true,
+          "hasErrorBoundary": false
+        },
+        {
+          "route": "/ask?scope=collection&collection=ae53f6efa235665773705768",
+          "url": "http://127.0.0.1:3000/ask?scope=collection&collection=ae53f6efa235665773705768",
+          "title": "AI Memory",
+          "hasMain": true,
+          "hasErrorBoundary": false
+        }
+      ],
+      "freshWarningOrErrorCount": 0,
+      "freshLogs": []
+    }
+  },
+  "errors": [],
+  "finishedAt": "2026-06-15T17:57:09.402Z",
+  "status": "passed"
+}

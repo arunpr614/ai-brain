@@ -117,7 +117,7 @@ export class OpenRouterProvider implements LLMProvider {
       // for behavior. Hardcoded so it shows up in OR's dashboards under
       // a stable name.
       "http-referer": "https://brain.arunp.in",
-      "x-title": "AI Brain",
+      "x-title": "AI Memory",
     };
   }
 

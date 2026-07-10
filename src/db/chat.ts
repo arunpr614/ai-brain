@@ -33,6 +33,9 @@ export interface Citation {
   item_id: string;
   item_title: string;
   similarity: number;
+  source_kind?: "legacy_item_context" | "original_content" | "ai_summary" | "manual_note";
+  source_epoch?: number;
+  source_version?: number;
 }
 
 export interface CreateThreadInput {
@@ -86,6 +89,25 @@ export function renameThread(id: string, title: string): void {
 
 export function deleteThread(id: string): void {
   getDb().prepare(`DELETE FROM chat_threads WHERE id = ?`).run(id);
+}
+
+/**
+ * Generated answers may paraphrase private note text. Remove every persisted
+ * answer whose citation sidecar proves it consumed this item's manual note.
+ */
+export function deleteMessagesCitingManualNote(itemId: string): number {
+  return getDb()
+    .prepare(
+      `DELETE FROM chat_messages
+       WHERE citations IS NOT NULL
+         AND json_valid(citations)
+         AND EXISTS (
+           SELECT 1 FROM json_each(chat_messages.citations)
+           WHERE json_extract(json_each.value, '$.item_id') = ?
+             AND json_extract(json_each.value, '$.source_kind') = 'manual_note'
+         )`,
+    )
+    .run(itemId).changes;
 }
 
 export interface AppendMessageInput {

@@ -13,7 +13,7 @@
  * rotation endpoint itself must not be bearer-reachable.
  */
 import { NextResponse, type NextRequest } from "next/server";
-import { SESSION_COOKIE } from "@/lib/auth";
+import { verifySessionCookie } from "@/lib/auth";
 import { tokenFingerprint } from "@/lib/auth/bearer";
 import { logError } from "@/lib/errors/sink";
 import { rotateApiToken } from "@/lib/lan/info";
@@ -27,7 +27,7 @@ const NO_STORE: Record<string, string> = {
 };
 
 export async function POST(req: NextRequest) {
-  if (!req.cookies.get(SESSION_COOKIE)?.value) {
+  if (!verifySessionCookie(req.cookies)) {
     return NextResponse.json(
       { error: "unauthenticated" },
       { status: 401, headers: NO_STORE },

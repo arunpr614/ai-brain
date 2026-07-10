@@ -1,0 +1,208 @@
+{
+  "checkedAt": "2026-06-15T17:32:24.484Z",
+  "cutoff": "2026-06-15T17:32:22.104Z",
+  "routesChecked": 10,
+  "failedExpectations": [],
+  "freshConsoleEntries": [],
+  "routeResults": [
+    {
+      "name": "library",
+      "path": "/library",
+      "url": "http://127.0.0.1:3000/library",
+      "expects": [
+        {
+          "needle": "UX v2 library fixture article",
+          "present": true
+        },
+        {
+          "needle": "Full text",
+          "present": true
+        }
+      ],
+      "rejects": [
+        {
+          "needle": "Delete",
+          "present": false
+        }
+      ],
+      "roleStatus": null
+    },
+    {
+      "name": "libraryTagged",
+      "path": "/library?tag=ux-v2-fixture",
+      "url": "http://127.0.0.1:3000/library?tag=ux-v2-fixture",
+      "expects": [
+        {
+          "needle": "ux-v2-fixture",
+          "present": true
+        },
+        {
+          "needle": "UX v2 library fixture article",
+          "present": true
+        }
+      ],
+      "rejects": [
+        {
+          "needle": "Delete",
+          "present": false
+        }
+      ],
+      "roleStatus": null
+    },
+    {
+      "name": "searchHit",
+      "path": "/search?q=LSTC%20search%20beacon",
+      "url": "http://127.0.0.1:3000/search?q=LSTC%20search%20beacon",
+      "expects": [
+        {
+          "needle": "LSTC search beacon",
+          "present": true
+        }
+      ],
+      "rejects": [
+        {
+          "needle": "Ollama offline",
+          "present": false
+        },
+        {
+          "needle": "ollama serve",
+          "present": false
+        }
+      ],
+      "roleStatus": null
+    },
+    {
+      "name": "searchMiss",
+      "path": "/search?q=no-result-lstc-fixture-zzzz",
+      "url": "http://127.0.0.1:3000/search?q=no-result-lstc-fixture-zzzz",
+      "expects": [
+        {
+          "needle": "No matches",
+          "present": true
+        }
+      ],
+      "rejects": [
+        {
+          "needle": "Ollama offline",
+          "present": false
+        },
+        {
+          "needle": "ollama serve",
+          "present": false
+        }
+      ],
+      "roleStatus": null
+    },
+    {
+      "name": "searchProviderDown",
+      "path": "/search?q=LSTC%20search%20beacon&mode=semantic",
+      "url": "http://127.0.0.1:3000/search?q=LSTC%20search%20beacon&mode=semantic",
+      "expects": [
+        {
+          "needle": "AI SEARCH IS UNAVAILABLE",
+          "present": true
+        },
+        {
+          "needle": "Full-text search",
+          "present": true
+        }
+      ],
+      "rejects": [
+        {
+          "needle": "Ollama offline",
+          "present": false
+        },
+        {
+          "needle": "ollama serve",
+          "present": false
+        }
+      ],
+      "roleStatus": null
+    },
+    {
+      "name": "topicPopulated",
+      "path": "/topics/ux-v2-source-health",
+      "url": "http://127.0.0.1:3000/topics/ux-v2-source-health",
+      "expects": [
+        {
+          "needle": "UX V2 Source Health",
+          "present": true
+        },
+        {
+          "needle": "readable",
+          "present": true
+        },
+        {
+          "needle": "need upgrade",
+          "present": true
+        }
+      ],
+      "rejects": [],
+      "roleStatus": null
+    },
+    {
+      "name": "topicMissing",
+      "path": "/topics/missing-lstc-fixture-topic",
+      "url": "http://127.0.0.1:3000/topics/missing-lstc-fixture-topic",
+      "expects": [
+        {
+          "needle": "Not found",
+          "present": true
+        }
+      ],
+      "rejects": [],
+      "roleStatus": null
+    },
+    {
+      "name": "collectionPopulated",
+      "path": "/collections/7d5dda90b58da9ebffa65838",
+      "url": "http://127.0.0.1:3000/collections/7d5dda90b58da9ebffa65838",
+      "expects": [
+        {
+          "needle": "UX v2 Fixture Collection",
+          "present": true
+        },
+        {
+          "needle": "Full text",
+          "present": true
+        }
+      ],
+      "rejects": [],
+      "roleStatus": null
+    },
+    {
+      "name": "collectionEmptyAfterAdd",
+      "path": "/collections/34a37da0643bf395ed654b85",
+      "url": "http://127.0.0.1:3000/collections/34a37da0643bf395ed654b85",
+      "expects": [
+        {
+          "needle": "UX v2 Empty Fixture Collection",
+          "present": true
+        },
+        {
+          "needle": "2 items",
+          "present": true
+        },
+        {
+          "needle": "readable",
+          "present": true
+        }
+      ],
+      "rejects": [],
+      "roleStatus": null
+    },
+    {
+      "name": "collectionMissing",
+      "path": "/collections/missing-lstc-fixture-collection",
+      "url": "http://127.0.0.1:3000/collections/missing-lstc-fixture-collection",
+      "expects": [
+        {
+          "needle": "Not found",
+          "present": true
+        }
+      ],
+      "rejects": [],
+      "roleStatus": null
+    }
+  ]
+}

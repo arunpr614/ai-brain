@@ -1,11 +1,25 @@
 # AI Brain — Project Tracker
 
-**Document version:** v0.9.6-tracker
-**Date:** 2026-06-02
+**Document version:** v0.9.8-tracker
+**Date:** 2026-06-17
 **Owner:** Arun
 **Update cadence:** at phase start, at phase end, and whenever a blocker appears.
 
 **Purpose:** Living operational view of where Brain stands *today*. `ROADMAP_TRACKER.md` is strategic (what's sequenced); this file is tactical (what's in flight, what's blocked, what's next).
+
+## Current tactical overlay - A34 UX v2 private sideload APK
+
+Current tactical status is `web_production_deployed_a34_android_1_0_6_private_sideload_debug_apk_ready`.
+
+| Gate | Current state | Evidence |
+| --- | --- | --- |
+| Web UX v2 | Production deployed and smoke-tested. | `UX_v2/execution/UX_V2_A7_RELEASE_READINESS_PACKET_2026-06-16_13-18-00_IST.md` |
+| Android private sideload APK | Ready locally as `1.0.6/code7`, package `com.arunprakash.brain`, SHA-256 `17030972de432b5448a8898a19b1cc06645c24a943e931daa2e7c355f5fb2c37`, size `7856713` bytes. | `UX_v2/execution/UX_V2_A34_PRIVATE_SIDELOAD_DEBUG_APK_BUILD_QA_2026-06-17_08-05-00_IST.md` |
+| Install notes | Separate private-sideload notes created for Arun. | `UX_v2/execution/UX_V2_A34_PRIVATE_SIDELOAD_APK_INSTALL_NOTES_2026-06-17_08-05-00_IST.md` |
+| APK publication | Private local sideload artifact ready; no hosted/external/public distribution. | APK binary remains ignored under `data/artifacts/`; source/docs branch should be pushed after commit. |
+| Accessibility | A30 platform AX equivalent residual risk accepted for private sideload only; true spoken TalkBack was not captured. | Public/store or wider distribution still needs a separate accessibility decision or spoken TalkBack audit. |
+
+Older v0.6.3 hygiene sequencing below is historical/deferred until the UX v2 private-sideload handoff is complete or Arun explicitly reorders the roadmap.
 
 ---
 
@@ -28,6 +42,7 @@ Legend: `○` not started · `◐` in progress · `●` complete · `✖` blocke
 | v0.6.1 Cloud-cleanup | 0.6.1 | ● | 2026-05-19 | 2026-05-19 | **SHIPPED 2026-05-19, validated 2026-05-20.** All 20 tasks (T-1..T-20) landed across 6 commits (`5a0f2f1` → `17e32e0`); tag `v0.6.1` on `17e32e0`. User-side validation 2026-05-20: D-15 PASS (APK share), D-16 PASS (cloud Ask), D-17 PASS (overnight batch cron), T-2 PASS (Secure cookie after fresh re-issue). RUNNING_LOG entries #45–#51. |
 | v0.6.1.1 Hotfix (Anthropic 529 retry + retrieve scope) | 0.6.2-hotfix.1 | ● | 2026-05-21 | 2026-05-21 | **SHIPPED 2026-05-21.** Tag `v0.6.1.1` on commit `790827e`. Deployed to Hetzner 23:26 IST 2026-05-20. T-1 (Anthropic retry) + T-6 (retrieve item-scope KNN). Verified live: 14/14 anthropic tests, 9/9 retrieve tests on Hetzner; 1-chunk repro returns 1 chunk for 3 generic queries (was 0). RUNNING_LOG entry #54. Plan: [`docs/plans/v0.6.1.1-hotfix.md`](./docs/plans/v0.6.1.1-hotfix.md). |
 | v0.6.2 Off-site backup | 0.6.2 | ● | 2026-06-02 | 2026-06-02 | **SHIPPED 2026-06-02.** Tag `v0.6.2` on commit `90b6c61`. D-18 live: `sqlite3 .backup → gpg → rclone` to B2 bucket `ai-brain-backups-arunpr614` every 6h via `/etc/cron.d/brain-backup` on Hetzner. First off-site blob: `2026-06-02_0929.sqlite.gpg` (739 KB encrypted). Round-trip verified: B2→Mac→`gpg --decrypt`→`sqlite3 'select count(*) from items'` = 9 (matches live). GPG private key + revoke cert + passphrase escrowed in 1Password (T-G two-wall). T-11b legacy `BRAIN_LAN_TOKEN` drop deferred to v0.6.3 (date gate already passed). Plan: [`docs/plans/v0.6.2-backup-only.md`](./docs/plans/v0.6.2-backup-only.md). |
+| UX v2 release gate | ux-v2 | ◐ | 2026-06-15 | — | **CURRENT PRIVATE SIDELOAD READY WORK.** Web UX v2 is production deployed; Android debug APK `1.0.6/code7` is ready locally for Arun's private sideload with fresh-install posture. Public/store distribution, release signing, and true spoken TalkBack remain separate future decisions. |
 | v0.6.x Augmented Browsing | 0.6.x | ○ | — | — | Plan: [`docs/plans/v0.6.x-augmented-browsing.md`](./docs/plans/v0.6.x-augmented-browsing.md) v2.0 (AUG-1..7, ~5 commits). Desktop Chrome only, paused since 2026-05-15 lane collapse. Sequencing TBD — currently unscheduled. |
 | v0.6.x Knowledge Graph View | 0.6.x | ○ | — | — | Plan: [`docs/plans/v0.6.x-graph-view.md`](./docs/plans/v0.6.x-graph-view.md) v2.1 (GRAPH-1..10, sigma.js + graphology). Desktop only. Paused since 2026-05-15 lane collapse. Sequencing TBD. |
 | v0.6.x Library-Offline-from-DB | 0.6.x | ○ | — | — | Plan: [`docs/plans/v0.6.x-library-offline-from-db.md`](./docs/plans/v0.6.x-library-offline-from-db.md) DRAFT (LIBOFF-1..12). Replicates library to IndexedDB for full APK offline reads. Companion to v0.5.5 outbox writes (already shipped). Sequencing TBD. |
@@ -42,7 +57,16 @@ Legend: `○` not started · `◐` in progress · `●` complete · `✖` blocke
 
 ---
 
-## 2. Current phase details — v0.6.2 SHIPPED 2026-06-02; v0.6.3 hygiene NEXT
+## 2. Current phase details — UX v2 private sideload ready; v0.6.3 hygiene deferred
+
+**Current tactical gate:** A34 private-sideload debug APK is built and documented. Web production is live. Android debug APK `1.0.6/code7` is ready locally for fresh-install private sideload. Public/store publication is not authorized.
+
+| Current task | Status | Exit gate |
+| --- | --- | --- |
+| A34 private sideload APK | Ready | `data/artifacts/brain-debug-v1.0.6-code7.apk` exists locally, checksum verified, and emulator fresh install passed. |
+| A34 install notes | Ready | `UX_v2/execution/UX_V2_A34_PRIVATE_SIDELOAD_APK_INSTALL_NOTES_2026-06-17_08-05-00_IST.md` has the private install posture and limits. |
+| Public/store APK publication | Blocked | Do not release-sign, upload, publish, or externally distribute without a new explicit owner decision. |
+| v0.6.3 hygiene lane | Deferred | Resume only after UX v2 publication gate closes or Arun explicitly reprioritizes it. |
 
 **v0.6.0 closed 2026-05-19** (Mac→Hetzner cutover). RUNNING_LOG entry #44.
 
@@ -183,12 +207,25 @@ Blocking spikes must land before the phase they block. Non-blocking can run in p
 | D-2 | GitHub repo name + visibility | ✅ `arunpr614/ai-brain`, **public** | Arun | — | **closed 2026-05-07** |
 | D-3 | Mac hardware specs | ✅ MacBook Pro 16" 2021, M1 Pro, 32 GB RAM, macOS 26.4.1, 455 GB free | Arun | — | **closed 2026-05-07** |
 | D-4 | Obsidian vault path | New vault / existing vault / none | Arun | before v0.10.0 | open |
+| D-5 | UX v2 APK publication approval | Approved for private debug APK build only; public/store distribution deferred | Arun | A34 private sideload | closed for A34 |
+| D-6 | UX v2 distribution and signing path | Local private sideload; debug APK; existing debug keystore | Arun | A34 private sideload | closed for A34 |
+| D-7 | UX v2 accessibility path | Accept A30 AX-equivalent residual risk for private sideload only; true spoken TalkBack still not captured | Arun + Codex | A34 private sideload | closed for A34 |
+| D-8 | UX v2 artifact/version and install posture | Bumped to `1.0.6/code7`; fresh install; rollback would use prior debug artifact if needed | Arun + Codex | A34 private sideload | closed for A34 |
 
 ---
 
 ## 5. Blockers
 
-- **None.** R-VEC cleared GREEN on 2026-05-08; v0.4.0 Ask (RAG) is ready to plan. Findings: [`docs/research/vector-bench.md`](./docs/research/vector-bench.md).
+Current blockers as of A34:
+
+| Blocker | Owner | Required close |
+| --- | --- | --- |
+| User-side private sideload/use is not yet confirmed | Arun | Fresh-install `data/artifacts/brain-debug-v1.0.6-code7.apk`, re-pair, and report any device-only issue. |
+| Public/store APK publication is not authorized | Arun | Make a separate decision for release signing, external distribution, Google Play, or public accessibility posture. |
+| True spoken TalkBack was not captured | Arun + Codex | Only required if Arun wants public/store or a stricter private accessibility gate later. |
+| Full active goal completion is unproven | Codex + Arun | Do not call the original end-to-end goal complete until the chosen private-sideload or any future public path is verified with final evidence. |
+
+Historical note: R-VEC cleared GREEN on 2026-05-08; v0.4.0 Ask (RAG) was unblocked and later shipped. Findings: [`docs/research/vector-bench.md`](./docs/research/vector-bench.md).
 
 ### Critique-derived risks — all closed as of v0.3.1 release
 
@@ -219,6 +256,9 @@ Blocking spikes must land before the phase they block. Non-blocking can run in p
 
 | Risk | Indicator | Trigger point |
 |---|---|---|
+| UX v2 public distribution decision stalls | A34 private sideload is ready but no public/store path is selected | Before any external APK action |
+| Accessibility overclaim | A30 is described as `talkback_spoken_passed` instead of AX-equivalent residual risk | Any release note, PR, or publication packet |
+| Debug APK treated as public release | `brain-debug-v1.0.6-code7.apk` is uploaded or shared externally without explicit public distribution approval | Any Android distribution action |
 | Local LLM quality insufficient | Manual review of 10 summaries gives <6/10 | v0.3.0 mid-phase |
 | sqlite-vec perf collapses at scale | p50 query > 200ms on 10k chunks | R-VEC outcome |
 | Capacitor share plugin broken on Android 14 | Spike APK fails to receive intent | R-CAP outcome |
@@ -250,5 +290,7 @@ These aren't measured yet — added to remind future-me:
 - **2026-05-09 (release)** — v0.4.0 SHIPPED. All 21 tasks closed (T-0..T-19). 107 unit tests + 29 smoke assertions (v0.3.1 + v0.4.0) green. `package.json` 0.3.1 → 0.4.0; tag `v0.4.0` annotated on `main`; 23 commits + tag pushed to `origin/main`. Next lane: v0.5.0 APK + extension — no blockers. SC-7 live bench (first-token + full-answer p95) is a user-side measurement task pending; code paths + preflights verified.
 - **2026-05-11 (pivot execution)** — v0.5.0 Cloudflare-tunnel pivot plan v2.1 shipped + 8 of 15 T-CF-* tasks landed in a single session. Plan v2.0 drafted via gsd-planner agent → cross-AI review produced `v0.5.0-apk-extension-v2-REVIEW.md` with 5 HIGH + 5 MEDIUM findings (bearer vs cookie on `/api/settings/lan-info`, unowned `scripts/smoke-sse.sh` creation, missing `data/test.pdf`, uncoordinated `parseSetupUri` return type, orphan `buildSetupUri` signature change) → all absorbed into v2.1 with inline `(REVIEW ...)` annotations. Executed: T-CF-2 (delete mDNS + bonjour-service dep + simplify share-handler URL to `BRAIN_TUNNEL_URL` constant), T-CF-3 (delete `network_security_config.xml`), T-CF-4..6 (QR schema `url=`+`token=` + single-probe reachability), T-CF-8 (rebuild APK with tunnel URL baked in; 8.9 MB at `data/artifacts/brain-debug-0.4.0.apk`), T-CF-9 (pairing page + API for tunnel), T-CF-10 (README rewrite for cloudflared setup + privacy note), T-CF-12 (grep cleanup + drop `@capacitor/camera` + kill `BRAIN_LAN_MODE`/`dev:lan`/`start:lan`). Tests: 233/233 green throughout. Remaining: T-CF-11 AVD smoke (interactive), T-CF-14 physical Pixel (user-gated), T-CF-15..21 Chrome extension wave, T-CF-22..25 release wave.
 - **2026-06-02 (release)** — v0.6.2 Off-site backup SHIPPED. Tag `v0.6.2` on commit `90b6c61`, pushed to `origin/main` + tag. Locked-design path (rclone+cron, not in-process SDK) per `S-7-MIGRATION-RUNBOOK.md`. SDK-path attempt `a799b16` reverted in `f6208e1` before deploy. Deployed on Hetzner: rclone v1.74.2 installed; B2 remote `b2` configured against existing `/etc/brain/.env` vars; `/opt/brain/scripts/backup-offsite.sh` (brain:brain 755); `/etc/cron.d/brain-backup` (root:root 644, every 6h); `/var/log/brain-backup.log` pre-created. D-18 smoke PASS: manual run uploaded 739,579-byte encrypted blob; Mac round-trip via `rclone cat` + `gpg --decrypt` produced 5,046,272-byte SQLite; `select count(*) from items` = 9 (matches live). T-G escrow: GPG private key + revoke cert + passphrase pasted into 1Password `Brain — secrets`; `/tmp` files secure-deleted with `rm -P`. No new npm deps. v0.6.3 hygiene NEXT (T-11b legacy env drop, BUG-ENRICH log hygiene, Mac better-sqlite3 ABI, `tsx` removal, CSP nonces, HARDEN-HETZNER-SSH).
+- **2026-06-17 (A33 UX v2 completion audit)** — Root tactical tracker reconciled to current UX v2 status. Web production is deployed; Android debug candidate `1.0.5/code6` is validated; A31 owner publication packet is ready; A33 completion audit is complete; full active goal remains owner-gated and not complete. v0.6.3 hygiene is deferred until the UX v2 publication gate closes or Arun explicitly reorders the roadmap.
+- **2026-06-17 (A34 private sideload debug APK)** — Arun approved a private debug APK build only. Android was bumped to `1.0.6/code7`, `npm run build:apk` passed, `data/artifacts/brain-debug-v1.0.6-code7.apk` was created locally with SHA-256 `17030972de432b5448a8898a19b1cc06645c24a943e931daa2e7c355f5fb2c37`, and a fresh emulator install passed. Notes live at `UX_v2/execution/UX_V2_A34_PRIVATE_SIDELOAD_APK_INSTALL_NOTES_2026-06-17_08-05-00_IST.md`; public/store distribution remains unauthorized.
 
 **Update rule:** every phase transition appends one row here with date + what changed.

@@ -1,0 +1,267 @@
+{
+  "baseUrl": "http://127.0.0.1:3027",
+  "viewport": {
+    "width": 390,
+    "height": 844,
+    "isMobile": true
+  },
+  "dbPath": "/tmp/ai-memory-android-a3-ask-item-detail.sqlite",
+  "itemIds": {
+    "full": "7fdb71ebf30e15085f1c566c",
+    "weak": "fbd4018abc8086dd52442295",
+    "noRelated": "85a8a4a46b4be35e7e6d811d"
+  },
+  "states": [
+    {
+      "name": "390x844-ask-empty-disabled",
+      "path": "/ask",
+      "screenshot": "/Users/arun.prakash/Library/CloudStorage/GoogleDrive-arun.prakash@toasttab.com/Other computers/My MacBook Pro M1 2025/arun-cursor/Initiatives/Arun_AI_Projects/ai-brain/phase2/UX_v2/execution/WEB_EXPERIENCE_REVAMP_VISUAL_EVIDENCE_2026-06-15_21-48-07_IST/screenshots/android-a3-ask-item-detail/390x844-ask-empty-disabled.png",
+      "metrics": {
+        "title": "AI Memory",
+        "url": "/ask",
+        "bodyTextSample": "Library\nCapture\nAsk\nMore\nAsk\nHistory\nALL SOURCES\nall saved sources\n4 sources\n\n1 source may have limited text.\n\nAsk a question across all saved sources.",
+        "scrollWidth": 390,
+        "clientWidth": 390,
+        "scrollHeight": 852,
+        "clientHeight": 844,
+        "horizontalOverflow": false,
+        "forbiddenMatches": [],
+        "expectedMissing": [],
+        "clippedControls": []
+      }
+    },
+    {
+      "name": "390x844-ask-empty-disabled-send-state",
+      "metrics": {
+        "disabled": true,
+        "ariaDisabled": "true",
+        "hasText": false
+      }
+    },
+    {
+      "name": "390x844-ask-text-enabled",
+      "path": "/ask?scope=selected&ids=7fdb71ebf30e15085f1c566c",
+      "screenshot": "/Users/arun.prakash/Library/CloudStorage/GoogleDrive-arun.prakash@toasttab.com/Other computers/My MacBook Pro M1 2025/arun-cursor/Initiatives/Arun_AI_Projects/ai-brain/phase2/UX_v2/execution/WEB_EXPERIENCE_REVAMP_VISUAL_EVIDENCE_2026-06-15_21-48-07_IST/screenshots/android-a3-ask-item-detail/390x844-ask-text-enabled.png",
+      "metrics": {
+        "title": "AI Memory",
+        "url": "/ask?scope=selected&ids=7fdb71ebf30e15085f1c566c",
+        "bodyTextSample": "Library\nCapture\nAsk\nMore\nAsk selected\nHistory\nSELECTED\n1 selected source\n1 source\nA3 full item with digest and related\n\nAsk a question across 1 selected source.",
+        "scrollWidth": 390,
+        "clientWidth": 390,
+        "scrollHeight": 852,
+        "clientHeight": 844,
+        "horizontalOverflow": false,
+        "forbiddenMatches": [],
+        "expectedMissing": [],
+        "clippedControls": []
+      }
+    },
+    {
+      "name": "390x844-ask-text-enabled-send-state",
+      "metrics": {
+        "disabled": false,
+        "ariaDisabled": "false",
+        "hasText": true
+      }
+    },
+    {
+      "name": "390x844-ask-provider-error",
+      "path": "/ask?scope=selected&ids=7fdb71ebf30e15085f1c566c",
+      "screenshot": "/Users/arun.prakash/Library/CloudStorage/GoogleDrive-arun.prakash@toasttab.com/Other computers/My MacBook Pro M1 2025/arun-cursor/Initiatives/Arun_AI_Projects/ai-brain/phase2/UX_v2/execution/WEB_EXPERIENCE_REVAMP_VISUAL_EVIDENCE_2026-06-15_21-48-07_IST/screenshots/android-a3-ask-item-detail/390x844-ask-provider-error.png",
+      "metrics": {
+        "title": "AI Memory",
+        "url": "/ask?scope=selected&ids=7fdb71ebf30e15085f1c566c",
+        "bodyTextSample": "Library\nCapture\nAsk\nMore\nAsk selected\nHistory\nSELECTED\n1 selected source\n1 source\nA3 full item with digest and related\nYOU\nWhat does A3 prove?\nAI SERVICES UNAVAILABLE\n\nAI services are unavailable. Check AI services in Settings, then try again.",
+        "scrollWidth": 390,
+        "clientWidth": 390,
+        "scrollHeight": 852,
+        "clientHeight": 844,
+        "horizontalOverflow": false,
+        "forbiddenMatches": [],
+        "expectedMissing": [],
+        "clippedControls": []
+      }
+    },
+    {
+      "name": "390x844-item-ask-scoped",
+      "path": "/items/7fdb71ebf30e15085f1c566c/ask",
+      "screenshot": "/Users/arun.prakash/Library/CloudStorage/GoogleDrive-arun.prakash@toasttab.com/Other computers/My MacBook Pro M1 2025/arun-cursor/Initiatives/Arun_AI_Projects/ai-brain/phase2/UX_v2/execution/WEB_EXPERIENCE_REVAMP_VISUAL_EVIDENCE_2026-06-15_21-48-07_IST/screenshots/android-a3-ask-item-detail/390x844-item-ask-scoped.png",
+      "metrics": {
+        "title": "AI Memory",
+        "url": "/items/7fdb71ebf30e15085f1c566c/ask",
+        "bodyTextSample": "Library\nCapture\nAsk\nMore\nBack to item\nAsk this item\n\nA3 full item with digest and related\n\nTHIS ITEM\nthis item\n1 source\nA3 full item with digest and related\n\nAsk a question across this item.",
+        "scrollWidth": 390,
+        "clientWidth": 390,
+        "scrollHeight": 852,
+        "clientHeight": 844,
+        "horizontalOverflow": false,
+        "forbiddenMatches": [],
+        "expectedMissing": [],
+        "clippedControls": []
+      }
+    },
+    {
+      "name": "390x844-item-original-tab",
+      "path": "/items/7fdb71ebf30e15085f1c566c",
+      "screenshot": "/Users/arun.prakash/Library/CloudStorage/GoogleDrive-arun.prakash@toasttab.com/Other computers/My MacBook Pro M1 2025/arun-cursor/Initiatives/Arun_AI_Projects/ai-brain/phase2/UX_v2/execution/WEB_EXPERIENCE_REVAMP_VISUAL_EVIDENCE_2026-06-15_21-48-07_IST/screenshots/android-a3-ask-item-detail/390x844-item-original-tab.png",
+      "metrics": {
+        "title": "AI Memory",
+        "url": "/items/7fdb71ebf30e15085f1c566c",
+        "bodyTextSample": "Library\nCapture\nAsk\nMore\nBack to Library\nOriginal\nDigest\nAsk\nRelated\nDetails\nA3 full item with digest and related\n\nSemantic indexing ready\n\nArticle\nvia Web\nFull text\nA3 Fixture Author\nSaved 6/16/2026, 11:53:01 AM\n303 chars\n\nexample.test\n\nA3 mobile ask evidence covers scoped retrieval, citations, item detail tabs, and related sources. The saved source explains that Android users need a compact composer with disabled empty send behavior. It also describes digest, related, and details panels that stay readable on a narrow mobile viewport.\nFocus mode\nAsk this item\nExport as .md",
+        "scrollWidth": 390,
+        "clientWidth": 390,
+        "scrollHeight": 1075,
+        "clientHeight": 844,
+        "horizontalOverflow": false,
+        "forbiddenMatches": [],
+        "expectedMissing": [],
+        "clippedControls": [
+          {
+            "tag": "a",
+            "text": "Ask this item",
+            "top": 819,
+            "bottom": 859,
+            "left": 20,
+            "right": 370,
+            "width": 350,
+            "height": 40
+          }
+        ]
+      }
+    },
+    {
+      "name": "390x844-item-digest-tab",
+      "path": "/items/7fdb71ebf30e15085f1c566c?tab=digest",
+      "screenshot": "/Users/arun.prakash/Library/CloudStorage/GoogleDrive-arun.prakash@toasttab.com/Other computers/My MacBook Pro M1 2025/arun-cursor/Initiatives/Arun_AI_Projects/ai-brain/phase2/UX_v2/execution/WEB_EXPERIENCE_REVAMP_VISUAL_EVIDENCE_2026-06-15_21-48-07_IST/screenshots/android-a3-ask-item-detail/390x844-item-digest-tab.png",
+      "metrics": {
+        "title": "AI Memory",
+        "url": "/items/7fdb71ebf30e15085f1c566c?tab=digest",
+        "bodyTextSample": "Library\nCapture\nAsk\nMore\nBack to Library\nOriginal\nDigest\nAsk\nRelated\nDetails\n\nCATEGORY\n\nGeneral\n\nSUMMARY\n\nThis A3 fixture source documents the Android Ask composer and mobile Item Detail experience. It verifies that the composer disables empty sends, scopes item questions correctly, and shows provider errors in the visible chat stream. It also verifies that item detail content is split into Original, Digest, Ask, Related, and Details tabs on narrow screens.\n\nKEY QUOTES\n\n“Android users need a compact composer with disabled empty send behavior.”\n“Item detail tabs stay readable on a narrow mobile viewport.”\n“Related sources should come from the real vector query.”\n\nAI-generated summary.",
+        "scrollWidth": 390,
+        "clientWidth": 390,
+        "scrollHeight": 847,
+        "clientHeight": 844,
+        "horizontalOverflow": false,
+        "forbiddenMatches": [],
+        "expectedMissing": [],
+        "clippedControls": []
+      }
+    },
+    {
+      "name": "390x844-item-ask-tab",
+      "path": "/items/7fdb71ebf30e15085f1c566c?tab=ask",
+      "screenshot": "/Users/arun.prakash/Library/CloudStorage/GoogleDrive-arun.prakash@toasttab.com/Other computers/My MacBook Pro M1 2025/arun-cursor/Initiatives/Arun_AI_Projects/ai-brain/phase2/UX_v2/execution/WEB_EXPERIENCE_REVAMP_VISUAL_EVIDENCE_2026-06-15_21-48-07_IST/screenshots/android-a3-ask-item-detail/390x844-item-ask-tab.png",
+      "metrics": {
+        "title": "AI Memory",
+        "url": "/items/7fdb71ebf30e15085f1c566c?tab=ask",
+        "bodyTextSample": "Library\nCapture\nAsk\nMore\nBack to Library\nOriginal\nDigest\nAsk\nRelated\nDetails\nAsk this item\n\nAsk questions using this saved source as the active scope.\n\nOpen scoped Ask",
+        "scrollWidth": 390,
+        "clientWidth": 390,
+        "scrollHeight": 844,
+        "clientHeight": 844,
+        "horizontalOverflow": false,
+        "forbiddenMatches": [],
+        "expectedMissing": [],
+        "clippedControls": []
+      }
+    },
+    {
+      "name": "390x844-item-related-tab",
+      "path": "/items/7fdb71ebf30e15085f1c566c?tab=related",
+      "screenshot": "/Users/arun.prakash/Library/CloudStorage/GoogleDrive-arun.prakash@toasttab.com/Other computers/My MacBook Pro M1 2025/arun-cursor/Initiatives/Arun_AI_Projects/ai-brain/phase2/UX_v2/execution/WEB_EXPERIENCE_REVAMP_VISUAL_EVIDENCE_2026-06-15_21-48-07_IST/screenshots/android-a3-ask-item-detail/390x844-item-related-tab.png",
+      "metrics": {
+        "title": "AI Memory",
+        "url": "/items/7fdb71ebf30e15085f1c566c?tab=related",
+        "bodyTextSample": "Library\nCapture\nAsk\nMore\nBack to Library\nOriginal\nDigest\nAsk\nRelated\nDetails\nRELATED\n\nA3 related mobile companion source\n\n100% match",
+        "scrollWidth": 390,
+        "clientWidth": 390,
+        "scrollHeight": 844,
+        "clientHeight": 844,
+        "horizontalOverflow": false,
+        "forbiddenMatches": [],
+        "expectedMissing": [],
+        "clippedControls": []
+      }
+    },
+    {
+      "name": "390x844-item-details-tab",
+      "path": "/items/7fdb71ebf30e15085f1c566c?tab=details",
+      "screenshot": "/Users/arun.prakash/Library/CloudStorage/GoogleDrive-arun.prakash@toasttab.com/Other computers/My MacBook Pro M1 2025/arun-cursor/Initiatives/Arun_AI_Projects/ai-brain/phase2/UX_v2/execution/WEB_EXPERIENCE_REVAMP_VISUAL_EVIDENCE_2026-06-15_21-48-07_IST/screenshots/android-a3-ask-item-detail/390x844-item-details-tab.png",
+      "metrics": {
+        "title": "AI Memory",
+        "url": "/items/7fdb71ebf30e15085f1c566c?tab=details",
+        "bodyTextSample": "Library\nCapture\nAsk\nMore\nBack to Library\nOriginal\nDigest\nAsk\nRelated\nDetails\n\nCAPTURE\n\nPlatform\nArticle\nQuality\nFull text\nMethod\na3-fixture\nVia\nweb\n\nINCLUDED TOPICS\n\nAI\nA3 Mobile QA\n\nAI-detected from this source.\n\nTAGS\n\na3-mobile-qa\nAdd\n\nCOLLECTIONS\n\nA3 Mobile QA Collection",
+        "scrollWidth": 390,
+        "clientWidth": 390,
+        "scrollHeight": 864,
+        "clientHeight": 844,
+        "horizontalOverflow": false,
+        "forbiddenMatches": [],
+        "expectedMissing": [],
+        "clippedControls": []
+      }
+    },
+    {
+      "name": "390x844-item-weak-original-tab",
+      "path": "/items/fbd4018abc8086dd52442295",
+      "screenshot": "/Users/arun.prakash/Library/CloudStorage/GoogleDrive-arun.prakash@toasttab.com/Other computers/My MacBook Pro M1 2025/arun-cursor/Initiatives/Arun_AI_Projects/ai-brain/phase2/UX_v2/execution/WEB_EXPERIENCE_REVAMP_VISUAL_EVIDENCE_2026-06-15_21-48-07_IST/screenshots/android-a3-ask-item-detail/390x844-item-weak-original-tab.png",
+      "metrics": {
+        "title": "AI Memory",
+        "url": "/items/fbd4018abc8086dd52442295",
+        "bodyTextSample": "Library\nCapture\nAsk\nMore\nBack to Library\nOriginal\nDigest\nAsk\nRelated\nDetails\nA3 weak YouTube item needs transcript\nqueued\n\nSaved\n\nYouTube\nvia Android\nMetadata only\nSaved 6/16/2026, 11:33:01 AM\n68 chars\n\nwww.youtube.com\n\n⚠ Transcript extraction was blocked by YouTube's sign-in check. This video was saved with metadata only.\n\nNeeds transcript\n\nAdd source text or a transcript to rebuild search, Ask, and AI topics from the repaired content.\n\nAdd text\nSource\nMetadata-only A3 mobile item detail fixture. Transcript unavailable.\nFocus mode\nAsk this item\nExport as .md",
+        "scrollWidth": 390,
+        "clientWidth": 390,
+        "scrollHeight": 1201,
+        "clientHeight": 844,
+        "horizontalOverflow": false,
+        "forbiddenMatches": [],
+        "expectedMissing": [],
+        "clippedControls": []
+      }
+    },
+    {
+      "name": "390x844-item-related-empty-tab",
+      "path": "/items/85a8a4a46b4be35e7e6d811d?tab=related",
+      "screenshot": "/Users/arun.prakash/Library/CloudStorage/GoogleDrive-arun.prakash@toasttab.com/Other computers/My MacBook Pro M1 2025/arun-cursor/Initiatives/Arun_AI_Projects/ai-brain/phase2/UX_v2/execution/WEB_EXPERIENCE_REVAMP_VISUAL_EVIDENCE_2026-06-15_21-48-07_IST/screenshots/android-a3-ask-item-detail/390x844-item-related-empty-tab.png",
+      "metrics": {
+        "title": "AI Memory",
+        "url": "/items/85a8a4a46b4be35e7e6d811d?tab=related",
+        "bodyTextSample": "Library\nCapture\nAsk\nMore\nBack to Library\nOriginal\nDigest\nAsk\nRelated\nDetails\nNo related sources yet.\n\nRelated sources appear after this item and nearby library items have semantic indexes.",
+        "scrollWidth": 390,
+        "clientWidth": 390,
+        "scrollHeight": 844,
+        "clientHeight": 844,
+        "horizontalOverflow": false,
+        "forbiddenMatches": [],
+        "expectedMissing": [],
+        "clippedControls": []
+      }
+    },
+    {
+      "name": "390x844-item-focus-mode",
+      "path": "/items/7fdb71ebf30e15085f1c566c?mode=focus",
+      "screenshot": "/Users/arun.prakash/Library/CloudStorage/GoogleDrive-arun.prakash@toasttab.com/Other computers/My MacBook Pro M1 2025/arun-cursor/Initiatives/Arun_AI_Projects/ai-brain/phase2/UX_v2/execution/WEB_EXPERIENCE_REVAMP_VISUAL_EVIDENCE_2026-06-15_21-48-07_IST/screenshots/android-a3-ask-item-detail/390x844-item-focus-mode.png",
+      "metrics": {
+        "title": "AI Memory",
+        "url": "/items/7fdb71ebf30e15085f1c566c?mode=focus",
+        "bodyTextSample": "Library\nCapture\nAsk\nMore\nExit focus\nAsk\nSource\nA3 full item with digest and related\nArticle\nvia Web\nFull text\nA3 Fixture Author\nSaved 6/16/2026, 11:53:01 AM\n303 chars\nA3 mobile ask evidence covers scoped retrieval, citations, item detail tabs, and related sources. The saved source explains that Android users need a compact composer with disabled empty send behavior. It also describes digest, related, and details panels that stay readable on a narrow mobile viewport.",
+        "scrollWidth": 390,
+        "clientWidth": 390,
+        "scrollHeight": 844,
+        "clientHeight": 844,
+        "horizontalOverflow": false,
+        "forbiddenMatches": [],
+        "expectedMissing": [],
+        "clippedControls": []
+      }
+    }
+  ],
+  "fetchEvents": [
+    {
+      "url": "http://127.0.0.1:3027/api/ask",
+      "interceptedAsk": true
+    }
+  ],
+  "issues": [],
+  "issueCount": 0
+}

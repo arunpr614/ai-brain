@@ -1,5 +1,5 @@
 /*
- * Brain app-shell service worker (v0.5.6).
+ * AI Memory app-shell service worker (v0.5.6).
  *
  * Why this exists: Capacitor's APK is a thin WebView pointed at
  * server.url=https://brain.arunp.in. With no SW, cold-start offline =
@@ -9,7 +9,7 @@
  * Plan: docs/plans/v0.5.6-app-shell-sw.md (SHELL-1).
  *
  * Strategy by route family:
- *   - precache URLs (/offline.html, /favicon.ico) → installed at SW
+ *   - precache URLs (/offline.html, /favicon-32x32.png) → installed at SW
  *     activation; auth-public so cache.add never rejects on a redirect
  *   - shell runtime URLs (/, /share-target, /capture) → not
  *     precached (middleware redirects unauthenticated SW fetches);
@@ -32,10 +32,12 @@
 // (c) skip caching of RSC requests entirely (they're prefetch streams,
 //     not consumable as standalone HTML)
 // activate handler purges all v1+v2 entries automatically.
-const SHELL_CACHE = "brain-shell-v4";
-const STATIC_CACHE = "brain-static-v4";
-const PAGES_CACHE = "brain-pages-v4";
+const SHELL_CACHE = "ai-memory-shell-v5";
+const STATIC_CACHE = "ai-memory-static-v5";
+const PAGES_CACHE = "ai-memory-pages-v5";
 const KNOWN_CACHES = [SHELL_CACHE, STATIC_CACHE, PAGES_CACHE];
+const LOCAL_DEV_HOSTS = new Set(["localhost", "127.0.0.1", "::1"]);
+const IS_LOCAL_DEV = LOCAL_DEV_HOSTS.has(self.location.hostname);
 
 // Precache only auth-public, static URLs. Protected routes (/,
 // /share-target, /capture) are middleware-gated — they redirect to
@@ -47,7 +49,7 @@ const KNOWN_CACHES = [SHELL_CACHE, STATIC_CACHE, PAGES_CACHE];
 // list rejected with "Failed to execute 'addAll' on 'Cache': Request
 // failed", which prevented SW activation. See
 // docs/research/inspect-webview-output-2026-05-14.md.
-const PRECACHE_URLS = ["/offline.html", "/favicon.ico"];
+const PRECACHE_URLS = ["/offline.html", "/favicon-32x32.png"];
 
 const NETWORK_ONLY_PATHS = [
   "/api/",
@@ -103,7 +105,7 @@ self.addEventListener("install", (event) => {
           } catch (err) {
             // Non-fatal — install continues with whatever cached.
             // Self-log via console for chrome://inspect debugging.
-            console.warn("[brain-sw] precache failed:", url, err?.message);
+            console.warn("[ai-memory-sw] precache failed:", url, err?.message);
           }
         }),
       );
@@ -118,7 +120,11 @@ self.addEventListener("activate", (event) => {
       const names = await caches.keys();
       await Promise.all(
         names
-          .filter((n) => n.startsWith("brain-") && !KNOWN_CACHES.includes(n))
+          .filter(
+            (n) =>
+              (n.startsWith("brain-") || n.startsWith("ai-memory-")) &&
+              !KNOWN_CACHES.includes(n),
+          )
           .map((n) => caches.delete(n)),
       );
       // claim() makes this SW the controller for ALL existing clients,
@@ -234,6 +240,10 @@ self.addEventListener("fetch", (event) => {
   if (request.method !== "GET") return;
   const url = new URL(request.url);
   if (url.origin !== self.location.origin) return;
+  if (IS_LOCAL_DEV) {
+    event.respondWith(fetch(request));
+    return;
+  }
   const path = url.pathname;
 
   if (isNetworkOnly(path)) {

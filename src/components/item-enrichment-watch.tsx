@@ -11,9 +11,11 @@ import { EnrichingPill } from "./enriching-pill";
 export function ItemEnrichmentWatch({
   itemId,
   initialState,
+  compact = false,
 }: {
   itemId: string;
   initialState: "pending" | "running" | "batched" | "done" | "error";
+  compact?: boolean;
 }) {
   const router = useRouter();
   return (
@@ -21,6 +23,7 @@ export function ItemEnrichmentWatch({
       itemId={itemId}
       initialState={initialState}
       onDone={() => router.refresh()}
+      compact={compact}
     />
   );
 }

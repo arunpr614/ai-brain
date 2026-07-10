@@ -16,8 +16,10 @@
  */
 import { searchItems } from "@/db/items";
 import { getItem } from "@/db/items";
+import { searchItemNotes } from "@/db/item-notes";
 import { retrieve } from "@/lib/retrieve";
 import type { ItemRow } from "@/db/client";
+import { manualNotesUiEnabled } from "@/lib/notes/flags";
 
 type EmbedFn = (inputs: string[]) => Promise<Float32Array[]>;
 
@@ -36,16 +38,36 @@ const DEFAULT_LIMIT = 50;
 const DEFAULT_VECTOR_POOL = 40;
 const RRF_K = 60;
 
+export type SearchMatchedSource = "saved_item" | "manual_note" | "semantic";
+
+export interface DetailedSearchResult extends ItemRow {
+  matchedSources: SearchMatchedSource[];
+  noteSnippet?: string;
+  searchScore: number;
+}
+
 export async function searchUnified(
   query: string,
   opts: SearchOptions = {},
 ): Promise<ItemRow[]> {
+  return searchUnifiedDetailed(query, opts);
+}
+
+export async function searchUnifiedDetailed(
+  query: string,
+  opts: SearchOptions = {},
+): Promise<DetailedSearchResult[]> {
   const q = query.trim();
   if (!q) return [];
   const mode = opts.mode ?? "fts";
   const limit = opts.limit ?? DEFAULT_LIMIT;
+  const includeNotes = manualNotesUiEnabled();
 
-  if (mode === "fts") return searchItems(q, limit);
+  const noteHits = includeNotes && mode !== "semantic" ? searchItemNotes(q, limit) : [];
+
+  if (mode === "fts") {
+    return fuseDetailed(searchItems(q, limit), [], noteHits, limit);
+  }
 
   if (mode === "semantic") {
     const items = await semanticItems(
@@ -53,7 +75,11 @@ export async function searchUnified(
       opts.vectorPoolSize ?? DEFAULT_VECTOR_POOL,
       opts.embedFn,
     );
-    return items.slice(0, limit);
+    return items.slice(0, limit).map((item, index) => ({
+      ...item,
+      matchedSources: ["semantic"],
+      searchScore: 1 / (RRF_K + index + 1),
+    }));
   }
 
   // hybrid
@@ -62,29 +88,52 @@ export async function searchUnified(
     semanticItems(q, opts.vectorPoolSize ?? DEFAULT_VECTOR_POOL, opts.embedFn),
   ]);
 
-  const ftsRank = new Map<string, number>();
-  ftsHits.forEach((it, idx) => ftsRank.set(it.id, idx + 1));
-  const semRank = new Map<string, number>();
-  semItems.forEach((it, idx) => semRank.set(it.id, idx + 1));
+  return fuseDetailed(ftsHits, semItems, noteHits, limit);
+}
 
-  const ids = new Set<string>([...ftsRank.keys(), ...semRank.keys()]);
-  const scored: { id: string; score: number }[] = [];
-  for (const id of ids) {
-    const f = ftsRank.get(id);
-    const s = semRank.get(id);
-    const score = (f ? 1 / (RRF_K + f) : 0) + (s ? 1 / (RRF_K + s) : 0);
-    scored.push({ id, score });
-  }
-  scored.sort((a, b) => b.score - a.score);
-
+function fuseDetailed(
+  ftsHits: ItemRow[],
+  semanticHits: ItemRow[],
+  noteHits: ReturnType<typeof searchItemNotes>,
+  limit: number,
+): DetailedSearchResult[] {
+  const ftsRank = new Map(ftsHits.map((item, index) => [item.id, index + 1]));
+  const semanticRank = new Map(semanticHits.map((item, index) => [item.id, index + 1]));
+  const noteRank = new Map(noteHits.map((hit, index) => [hit.item_id, index + 1]));
+  const noteByItem = new Map(noteHits.map((hit) => [hit.item_id, hit]));
+  const ids = new Set([...ftsRank.keys(), ...semanticRank.keys(), ...noteRank.keys()]);
   const byId = new Map<string, ItemRow>();
-  for (const it of ftsHits) byId.set(it.id, it);
-  for (const it of semItems) byId.set(it.id, it);
+  for (const item of [...ftsHits, ...semanticHits]) byId.set(item.id, item);
+  for (const id of noteRank.keys()) {
+    const item = getItem(id);
+    if (item) byId.set(id, item);
+  }
 
-  return scored
-    .slice(0, limit)
-    .map((s) => byId.get(s.id))
-    .filter((x): x is ItemRow => Boolean(x));
+  const results: DetailedSearchResult[] = [];
+  for (const id of ids) {
+    const fts = ftsRank.get(id);
+    const semantic = semanticRank.get(id);
+    const note = noteRank.get(id);
+    const item = byId.get(id);
+    if (!item) continue;
+    const matchedSources: SearchMatchedSource[] = [];
+    if (fts) matchedSources.push("saved_item");
+    if (note) matchedSources.push("manual_note");
+    if (semantic) matchedSources.push("semantic");
+    const noteHit = noteByItem.get(id);
+    results.push({
+      ...item,
+      matchedSources,
+      ...(noteHit ? { noteSnippet: noteHit.snippet } : {}),
+      searchScore:
+        (fts ? 1 / (RRF_K + fts) : 0) +
+        (note ? 1 / (RRF_K + note) : 0) +
+        (semantic ? 1 / (RRF_K + semantic) : 0),
+    });
+  }
+  return results
+    .sort((a, b) => b.searchScore - a.searchScore || b.captured_at - a.captured_at)
+    .slice(0, limit);
 }
 
 /**

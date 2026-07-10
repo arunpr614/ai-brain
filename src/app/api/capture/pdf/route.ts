@@ -29,10 +29,15 @@
 import crypto from "node:crypto";
 import { NextResponse, type NextRequest } from "next/server";
 import { capturePdfAction } from "@/app/capture-actions";
-import { SESSION_COOKIE } from "@/lib/auth";
-import { validateOrigin } from "@/lib/auth/bearer";
+import { getItem } from "@/db/items";
+import { verifySessionCookie } from "@/lib/auth";
+import { validateOrigin, verifyBearerToken } from "@/lib/auth/bearer";
 import { checkClientApiVersion } from "@/lib/auth/api-version";
 import { captureSourceFromTrustedHeader } from "@/lib/capture/source";
+import {
+  toCaptureResultPayload,
+  toFailedCaptureResultPayload,
+} from "@/lib/capture/result";
 import { logError } from "@/lib/errors/sink";
 
 export const runtime = "nodejs";
@@ -42,11 +47,13 @@ const AUTHENTICATED_ERROR_STATUS = 401;
 
 export async function POST(req: NextRequest) {
   // Cookie path (web form, existing v0.2.0 behaviour)
-  const hasCookie = Boolean(req.cookies.get(SESSION_COOKIE)?.value);
+  const hasCookie = verifySessionCookie(req.cookies);
 
   // Bearer path (APK share-handler, Chrome extension). The proxy has
-  // already verified the token; we only re-check Origin here.
-  const hasBearer = (req.headers.get("authorization") ?? "").startsWith("Bearer ");
+  // already rate-limited valid tokens; the handler re-validates the token
+  // without consuming rate-limit budget so direct invocation cannot bypass
+  // auth with a forged session cookie.
+  const hasBearer = verifyBearerToken(req.headers.get("authorization")).ok;
 
   if (!hasCookie && !hasBearer) {
     return NextResponse.json(
@@ -96,7 +103,18 @@ export async function POST(req: NextRequest) {
       ts: Date.now(),
     });
     return NextResponse.json(
-      { error: "sha256_mismatch", expected, actual: serverSha },
+      {
+        error: "sha256_mismatch",
+        expected,
+        actual: serverSha,
+        capture_result: toFailedCaptureResultPayload("PDF upload was corrupted in transit.", {
+          sourcePlatform: "pdf",
+          capturedVia: hasBearer
+            ? captureSourceFromTrustedHeader(req.headers.get("x-brain-capture-source"))
+            : "web",
+          warningCode: "sha256_mismatch",
+        }),
+      },
       { status: 422 },
     );
   }
@@ -109,7 +127,21 @@ export async function POST(req: NextRequest) {
       ? captureSourceFromTrustedHeader(req.headers.get("x-brain-capture-source"))
       : "web";
     const { id } = await capturePdfAction(innerForm, { capture_source: captureSource });
-    return NextResponse.json({ id, sha256: serverSha }, { status: 201 });
+    const item = getItem(id);
+    return NextResponse.json(
+      {
+        id,
+        sha256: serverSha,
+        capture_result: item
+          ? toCaptureResultPayload(item)
+          : toFailedCaptureResultPayload("PDF saved but could not be reloaded for result details.", {
+              itemId: id,
+              sourcePlatform: "pdf",
+              capturedVia: captureSource,
+            }),
+      },
+      { status: 201 },
+    );
   } catch (err) {
     const message = err instanceof Error ? err.message : "Upload failed";
     logError({
@@ -118,6 +150,17 @@ export async function POST(req: NextRequest) {
       size: bytes.byteLength,
       ts: Date.now(),
     });
-    return NextResponse.json({ error: message }, { status: 400 });
+    return NextResponse.json(
+      {
+        error: message,
+        capture_result: toFailedCaptureResultPayload(message, {
+          sourcePlatform: "pdf",
+          capturedVia: hasBearer
+            ? captureSourceFromTrustedHeader(req.headers.get("x-brain-capture-source"))
+            : "web",
+        }),
+      },
+      { status: 400 },
+    );
   }
 }

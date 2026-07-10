@@ -23,9 +23,11 @@ const TABS: { id: Tab; label: string; icon: typeof Globe }[] = [
 export function CaptureTabs({
   active,
   prefilledUrl,
+  initialDuplicate,
 }: {
   active: Tab;
   prefilledUrl: string;
+  initialDuplicate: { itemId: string; url: string } | null;
 }) {
   const router = useRouter();
   const params = useSearchParams();
@@ -41,7 +43,7 @@ export function CaptureTabs({
       <div
         role="tablist"
         aria-label="Capture source"
-        className="mb-6 inline-flex items-center gap-1 rounded-md border border-[var(--border)] bg-[var(--surface-raised)] p-1"
+        className="mb-6 grid w-full grid-cols-3 items-center gap-1 rounded-md border border-[var(--border)] bg-[var(--surface-raised)] p-1 md:inline-grid md:w-auto"
       >
         {TABS.map(({ id, label, icon: Icon }) => (
           <button
@@ -51,9 +53,9 @@ export function CaptureTabs({
             aria-selected={active === id}
             onClick={() => setTab(id)}
             className={cn(
-              "inline-flex h-8 items-center gap-1.5 rounded-sm px-3 text-sm font-medium transition-colors",
+              "inline-flex h-11 min-w-0 items-center justify-center gap-1.5 rounded-sm px-2 text-sm font-medium transition-colors md:h-8 md:px-3",
               active === id
-                ? "bg-[var(--accent-3)] text-[var(--accent-11)]"
+                ? "bg-[var(--control-selected-bg)] text-[var(--control-selected-fg)]"
                 : "text-[var(--text-secondary)] hover:text-[var(--text-primary)]",
             )}
           >
@@ -63,21 +65,35 @@ export function CaptureTabs({
         ))}
       </div>
 
-      {active === "url" && <UrlPanel prefilled={prefilledUrl} />}
+      {active === "url" && (
+        <UrlPanel prefilled={prefilledUrl} initialDuplicate={initialDuplicate} />
+      )}
       {active === "pdf" && <PdfDropzone />}
       {active === "note" && <NotePanel />}
     </div>
   );
 }
 
-function UrlPanel({ prefilled }: { prefilled: string }) {
+function UrlPanel({
+  prefilled,
+  initialDuplicate,
+}: {
+  prefilled: string;
+  initialDuplicate: { itemId: string; url: string } | null;
+}) {
   const [state, action, pending] = useActionState<CaptureState, FormData>(
     captureUrlAction,
-    null,
+    initialDuplicate
+      ? {
+          status: "duplicate",
+          itemId: initialDuplicate.itemId,
+          url: initialDuplicate.url,
+        }
+      : null,
   );
 
   return (
-    <form action={action} className="flex flex-col gap-4">
+    <form action={action} className="flex flex-col gap-5">
       <div>
         <label
           htmlFor="url"
@@ -92,11 +108,11 @@ function UrlPanel({ prefilled }: { prefilled: string }) {
           required
           defaultValue={prefilled}
           placeholder="https://example.com/article"
-          className="h-9 w-full rounded-md border border-[var(--border)] bg-[var(--surface-raised)] px-3 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)]"
+          className="h-11 w-full rounded-md border border-[var(--border)] bg-[var(--surface-raised)] px-3 text-base text-[var(--text-primary)] placeholder:text-[var(--text-muted)] md:h-9 md:text-sm"
           autoFocus
         />
         <p className="mt-1.5 text-xs text-[var(--text-muted)]">
-          Paste a public article URL. AI Brain fetches, extracts clean text, and saves.
+          Paste a public article URL. AI Memory fetches, extracts clean text, and saves.
         </p>
       </div>
 
@@ -109,10 +125,10 @@ function UrlPanel({ prefilled }: { prefilled: string }) {
           <p className="text-[var(--text-primary)]">
             You&rsquo;ve already saved this URL.
           </p>
-          <div className="mt-2 flex gap-3">
+          <div className="mt-3 flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-3">
             <Link
               href={`/items/${state.itemId}`}
-              className="text-[var(--accent-11)] underline"
+              className="inline-flex h-11 items-center justify-center rounded-md bg-[var(--action-primary-bg)] px-3 text-sm font-medium text-[var(--action-primary-fg)] hover:bg-[var(--action-primary-bg-hover)] sm:h-9"
             >
               Open existing
             </Link>
@@ -120,7 +136,7 @@ function UrlPanel({ prefilled }: { prefilled: string }) {
               type="submit"
               name="allow_duplicate"
               value="1"
-              className="text-[var(--text-secondary)] underline hover:text-[var(--text-primary)]"
+              className="inline-flex h-11 items-center justify-center rounded-md border border-[var(--border)] px-3 text-sm font-medium text-[var(--text-secondary)] hover:border-[var(--border-strong)] hover:text-[var(--text-primary)] sm:h-9"
             >
               Save again anyway
             </button>
@@ -128,17 +144,17 @@ function UrlPanel({ prefilled }: { prefilled: string }) {
         </div>
       )}
 
-      <div className="flex items-center gap-3">
+      <div className="flex flex-col gap-2 pt-1 sm:flex-row sm:items-center sm:gap-3">
         <button
           type="submit"
           disabled={pending}
-          className="inline-flex h-9 items-center gap-2 rounded-md bg-[var(--accent-9)] px-4 text-sm font-medium text-[var(--on-accent)] transition-colors hover:bg-[var(--accent-10)] disabled:opacity-60"
+          className="inline-flex h-11 items-center justify-center gap-2 rounded-md bg-[var(--action-primary-bg)] px-4 text-sm font-medium text-[var(--action-primary-fg)] transition-colors hover:bg-[var(--action-primary-bg-hover)] disabled:opacity-60 sm:h-9"
         >
           {pending ? "Fetching..." : "Save URL"}
         </button>
         <Link
-          href="/"
-          className="text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
+          href="/library"
+          className="inline-flex h-11 items-center justify-center rounded-md border border-[var(--border)] px-4 text-sm font-medium text-[var(--text-secondary)] hover:border-[var(--border-strong)] hover:text-[var(--text-primary)] sm:h-auto sm:border-0 sm:px-0"
         >
           Cancel
         </Link>
@@ -167,7 +183,7 @@ function NotePanel() {
           type="text"
           required
           maxLength={200}
-          className="h-9 w-full rounded-md border border-[var(--border)] bg-[var(--surface-raised)] px-3 text-sm text-[var(--text-primary)]"
+          className="h-11 w-full rounded-md border border-[var(--border)] bg-[var(--surface-raised)] px-3 text-base text-[var(--text-primary)] md:h-9 md:text-sm"
         />
       </div>
       <div>
@@ -181,24 +197,24 @@ function NotePanel() {
           id="body"
           name="body"
           required
-          rows={14}
-          className="w-full rounded-md border border-[var(--border)] bg-[var(--surface-raised)] p-3 font-mono text-[13px] leading-[1.55] text-[var(--text-primary)]"
+          rows={12}
+          className="min-h-[220px] w-full rounded-md border border-[var(--border)] bg-[var(--surface-raised)] p-3 font-mono text-[13px] leading-[1.55] text-[var(--text-primary)] md:min-h-[320px]"
         />
       </div>
       {state?.error && (
         <p className="text-sm text-[var(--danger)]">{state.error}</p>
       )}
-      <div className="flex items-center gap-3">
+      <div className="flex flex-col gap-2 pt-1 sm:flex-row sm:items-center sm:gap-3">
         <button
           type="submit"
           disabled={pending}
-          className="inline-flex h-9 items-center gap-2 rounded-md bg-[var(--accent-9)] px-4 text-sm font-medium text-[var(--on-accent)] transition-colors hover:bg-[var(--accent-10)] disabled:opacity-60"
+          className="inline-flex h-11 items-center justify-center gap-2 rounded-md bg-[var(--action-primary-bg)] px-4 text-sm font-medium text-[var(--action-primary-fg)] transition-colors hover:bg-[var(--action-primary-bg-hover)] disabled:opacity-60 sm:h-9"
         >
           {pending ? "Saving..." : "Save note"}
         </button>
         <Link
-          href="/"
-          className="text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
+          href="/library"
+          className="inline-flex h-11 items-center justify-center rounded-md border border-[var(--border)] px-4 text-sm font-medium text-[var(--text-secondary)] hover:border-[var(--border-strong)] hover:text-[var(--text-primary)] sm:h-auto sm:border-0 sm:px-0"
         >
           Cancel
         </Link>

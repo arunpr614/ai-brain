@@ -2,23 +2,28 @@
  * /api/ask — RAG chat endpoint.
  *
  * POST body:
- *   { question: string, scope?: "library" | "item", item_id?: string,
- *     thread_id?: string, top_k?: number, min_similarity?: number }
+ *   { question: string, scope?: "library" | "item" | "items",
+ *     item_id?: string, item_ids?: string[], thread_id?: string,
+ *     top_k?: number, min_similarity?: number }
  *
  * Response: text/event-stream with frames:
  *   retrieve | token | citation | done | error
  *
  * Error codes:
  *   UNAUTHENTICATED   — no session cookie
- *   BAD_REQUEST       — body schema / scope/item_id mismatch
+ *   BAD_REQUEST       — body schema / scope mismatch
  *   LLM_PROVIDER_OFFLINE — configured generation provider unreachable
  *   RETRIEVE_FAILED   — vec0 query threw
  *   STREAM_FAILED     — generator threw mid-stream (wrapped by toSSEStream)
  */
 import { type NextRequest } from "next/server";
 import { z } from "zod";
-import { SESSION_COOKIE } from "@/lib/auth";
-import { retrieve } from "@/lib/retrieve";
+import { verifySessionCookie } from "@/lib/auth";
+import {
+  filterCurrentlyEligibleChunks,
+  manualCitationsRemainEligible,
+  retrieve,
+} from "@/lib/retrieve";
 import { orchestrateAsk, toSSEStream, encodeSSE } from "@/lib/ask/sse";
 import { ollamaGenerator } from "@/lib/ask/generator";
 import { getAskProvider } from "@/lib/llm/factory";
@@ -29,15 +34,16 @@ export const dynamic = "force-dynamic";
 
 const BodySchema = z.object({
   question: z.string().min(1).max(2000),
-  scope: z.enum(["library", "item"]).default("library"),
+  scope: z.enum(["library", "item", "items"]).default("library"),
   item_id: z.string().optional(),
+  item_ids: z.array(z.string().min(1)).max(50).optional(),
   thread_id: z.string().optional(),
   top_k: z.number().int().min(1).max(50).default(8),
   min_similarity: z.number().min(-1).max(1).optional(),
 });
 
 export async function POST(req: NextRequest) {
-  if (!req.cookies.get(SESSION_COOKIE)?.value) {
+  if (!verifySessionCookie(req.cookies)) {
     return new Response(
       encodeSSE({ type: "error", code: "UNAUTHENTICATED", message: "Sign in first." }),
       { status: 401, headers: sseHeaders() },
@@ -59,6 +65,13 @@ export async function POST(req: NextRequest) {
   if (parsed.scope === "item" && !parsed.item_id) {
     return new Response(
       encodeSSE({ type: "error", code: "BAD_REQUEST", message: "scope=item requires item_id" }),
+      { status: 400, headers: sseHeaders() },
+    );
+  }
+
+  if (parsed.scope === "items" && (!parsed.item_ids || parsed.item_ids.length === 0)) {
+    return new Response(
+      encodeSSE({ type: "error", code: "BAD_REQUEST", message: "scope=items requires item_ids" }),
       { status: 400, headers: sseHeaders() },
     );
   }
@@ -96,11 +109,12 @@ export async function POST(req: NextRequest) {
 
   let chunks;
   try {
-    chunks = await retrieve(parsed.question, {
+    chunks = filterCurrentlyEligibleChunks(await retrieve(parsed.question, {
       topK: parsed.top_k,
       itemId: parsed.scope === "item" ? parsed.item_id : undefined,
+      itemIds: parsed.scope === "items" ? parsed.item_ids : undefined,
       minSimilarity: parsed.min_similarity,
-    });
+    }));
   } catch (err) {
     const message = err instanceof Error ? err.message : "Retrieval failed";
     return new Response(
@@ -113,6 +127,13 @@ export async function POST(req: NextRequest) {
     chunk_id: c.chunk_id,
     item_id: c.item_id,
     item_title: c.item_title,
+    item_source_type: c.item_source_type,
+    item_source_platform: c.item_source_platform,
+    item_capture_quality: c.item_capture_quality,
+    item_extraction_warning: c.item_extraction_warning,
+    source_kind: c.source_kind,
+    source_epoch: c.source_epoch,
+    source_version: c.source_version,
     similarity: c.similarity,
   }));
 
@@ -124,6 +145,10 @@ export async function POST(req: NextRequest) {
       signal: req.signal,
       onComplete: ({ answer, aborted }) => {
         if (!threadId) return;
+        // Delete/opt-out/edit may race an already-started provider stream. The
+        // remote request cannot be recalled, but stale private-note-derived
+        // text must never be written back after the privacy boundary changed.
+        if (!manualCitationsRemainEligible(chunks)) return;
         // Persist whatever was generated even on abort — the user might
         // want to see a partial response rendered after reload. Flag it
         // in the citations-metadata sidecar via a role='system' marker
@@ -146,7 +171,8 @@ export async function POST(req: NextRequest) {
 function sseHeaders(): HeadersInit {
   return {
     "content-type": "text/event-stream; charset=utf-8",
-    "cache-control": "no-cache, no-transform",
+    "cache-control": "private, no-store, max-age=0, no-transform",
+    vary: "Cookie",
     connection: "keep-alive",
     // Disable Next/Vercel compression for SSE. Harmless on localhost; matters
     // at deploy time (v1.0.0+).

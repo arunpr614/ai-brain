@@ -15,6 +15,9 @@ import { TEST_DB_DIR } from "./route.test.setup";
 import { GET } from "./route";
 import { getDb } from "@/db/client";
 import { insertCaptured } from "@/db/items";
+import { issueSessionToken, setPin } from "@/lib/auth";
+
+setPin("1234");
 
 test.after(() => {
   try {
@@ -26,7 +29,7 @@ test.after(() => {
 
 function mkReq(id: string, opts: { auth?: boolean } = {}): NextRequest {
   const headers = new Headers();
-  if (opts.auth !== false) headers.set("cookie", "brain-session=stub");
+  if (opts.auth !== false) headers.set("cookie", `brain-session=${issueSessionToken()}`);
   return new NextRequest(
     `http://localhost/api/items/${id}/enrichment-status`,
     { method: "GET", headers },

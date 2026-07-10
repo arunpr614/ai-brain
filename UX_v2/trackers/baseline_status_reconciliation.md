@@ -1,0 +1,22 @@
+# Baseline Status Reconciliation
+
+Created: 2026-06-14 08:14 IST
+
+Purpose: prevent older `UX_v2` baseline docs from being mistaken for current implementation authority. Current planning status is governed by `00_PLANNING_PACKAGE_INDEX.md`, `06_ROADMAP_AND_EXECUTION_PLAN.md`, `07_FEATURE_CLASSIFICATION_AND_GAP_ANALYSIS.md`, and the trackers in this folder.
+
+| Artifact or slice | Historical role | Current status authority | Current status | Implementation instruction |
+| --- | --- | --- | --- | --- |
+| `01_MASTER_PLAN.md` | Original UX v2 execution plan from 2026-06-13 | `06_ROADMAP_AND_EXECUTION_PLAN.md` | Superseded for sequencing | Use only for historical context unless a newer tracker cites it |
+| `02_REQUIREMENTS_PRD_BACKLOG.md` | Original PRD backlog | `07_FEATURE_CLASSIFICATION_AND_GAP_ANALYSIS.md`, `master_feature_inventory.md` | Baseline requirements | Do not treat listed PRDs as current readiness state |
+| `03_IMPLEMENTATION_PROGRESS.md` | Historical completed-slice evidence | `testing_qa_readiness_tracker.md`, PRD-16 package | Historical evidence, not release proof | Re-verify any slice before marking complete now |
+| `04_FEATURE_DELIVERY_PROTOCOL.md` | Workflow protocol created before consolidated packages | This reconciliation file plus feature packages | Still useful workflow, but old folder expectations may differ | Consolidated `features/*-package.md` files satisfy PRD/review/plan sections for this package |
+| `05_MISSING_FEATURE_TODO.md` | Initial missing-feature list | `master_feature_inventory.md`, `prd_tracker.md`, `implementation_plan_tracker.md` | Superseded for active status | Use tracker rows for current status and blockers |
+| PRD-01/02 brand and design foundation | Completed slice in old progress file | PRD-16 QA gate, brand-copy lightweight spec | Implemented historically, evidence must be refreshed before release | Run brand/icon screenshot and copy checks before release |
+| PRD-03 web shell/navigation | Completed slice in old progress file | PRD-11-SHELL blocker and roadmap Phase 1 | Coded, partially unverified | Finish mobile/desktop shell smoke first |
+| PRD-04 Library filters and Ask selected | Completed slice in old progress file | Feature inventory LIB/ASK rows | Existing, needs fresh QA evidence | Re-smoke before dependent Ask work |
+| PRD-05 Needs Upgrade queue | Completed slice in old progress file | PRD-10 package | Existing queue, repair flow missing | Do not call Needs Upgrade complete until repair behavior is handled or explicitly deferred |
+| PRD-06 basic capture result banners | Completed slice in old progress file | PRD-06-FU package | Partial | Implement canonical result contract before share/extension parity |
+| PRD-07 item focus mode | Completed slice in old progress file | PRD-11-FU and QA tracker | Partial Android evidence | Re-smoke web and mobile focus/read mode |
+| PRD-08 topics/collections | Completed slice in old progress file | Feature inventory TAX/COLL rows | Existing, needs fresh QA evidence | Verify topic/collection Ask and item chips before release |
+| PRD-09 scope clarity/history | Completed slice in old progress file | PRD-09-FU package | Partial/Missing | Do not implement attachment/history changes until product decisions are closed |
+| PRD-11 mobile Library filters | Completed slice in old progress file | PRD-11-SHELL and PRD-11-FU | Partial | Complete mobile shell smoke and decide Android item tabs scope |

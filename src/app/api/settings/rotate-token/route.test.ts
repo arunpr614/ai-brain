@@ -1,12 +1,16 @@
 /**
  * Tests for POST /api/settings/rotate-token (v0.5.0 T-8 / F-037).
  */
-import { describe, it, afterEach } from "node:test";
+import "./route.test.setup";
+
+import { after, afterEach, beforeEach, describe, it } from "node:test";
 import assert from "node:assert/strict";
 import { mkdtempSync, readFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { NextRequest } from "next/server";
+import { issueSessionToken, setPin } from "@/lib/auth";
+import { cleanupTmpDb } from "./route.test.setup";
 import { POST } from "./route";
 
 const ORIGINAL_TOKEN = process.env.BRAIN_API_TOKEN;
@@ -24,6 +28,10 @@ function mkReq(opts: { cookie?: string } = {}): NextRequest {
 }
 
 describe("/api/settings/rotate-token", () => {
+  beforeEach(() => {
+    setPin("1234");
+  });
+
   afterEach(() => {
     process.chdir(ORIGINAL_CWD);
     if (tmpDir) {
@@ -32,6 +40,10 @@ describe("/api/settings/rotate-token", () => {
     }
     if (ORIGINAL_TOKEN === undefined) delete process.env.BRAIN_API_TOKEN;
     else process.env.BRAIN_API_TOKEN = ORIGINAL_TOKEN;
+  });
+
+  after(() => {
+    cleanupTmpDb();
   });
 
   it("returns 401 without session cookie", async () => {
@@ -47,7 +59,7 @@ describe("/api/settings/rotate-token", () => {
     const before = "a".repeat(64);
     process.env.BRAIN_API_TOKEN = before;
 
-    const res = await POST(mkReq({ cookie: "stub" }));
+    const res = await POST(mkReq({ cookie: issueSessionToken() }));
     assert.equal(res.status, 200);
     const body = await res.json();
     assert.equal(body.ok, true);

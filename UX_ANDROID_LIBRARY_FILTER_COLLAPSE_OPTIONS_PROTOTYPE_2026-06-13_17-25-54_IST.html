@@ -1,0 +1,731 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>AI Brain Android Library Filter UX Options</title>
+  <style>
+    :root {
+      --ink: #111827;
+      --muted: #667085;
+      --soft: #f4f7fb;
+      --line: #dbe3ee;
+      --navy: #111827;
+      --violet: #6d4aff;
+      --blue: #2563eb;
+      --teal: #0f9f8f;
+      --amber: #c46a10;
+      --paper: #ffffff;
+      --phone: #f8fafc;
+      --shadow: 0 18px 45px rgba(15, 23, 42, 0.16);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      color: var(--ink);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: linear-gradient(180deg, #f9fbff 0%, #eef3f8 100%);
+    }
+
+    .page {
+      max-width: 1440px;
+      margin: 0 auto;
+      padding: 32px 24px 48px;
+    }
+
+    .hero {
+      display: grid;
+      grid-template-columns: minmax(0, 1.2fr) minmax(280px, 0.8fr);
+      gap: 24px;
+      align-items: end;
+      margin-bottom: 28px;
+    }
+
+    h1 {
+      margin: 0 0 10px;
+      font-size: clamp(32px, 5vw, 56px);
+      line-height: 1;
+      letter-spacing: 0;
+    }
+
+    .lead {
+      margin: 0;
+      max-width: 760px;
+      color: var(--muted);
+      font-size: 17px;
+      line-height: 1.6;
+    }
+
+    .decision {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.82);
+      padding: 16px;
+      box-shadow: 0 10px 28px rgba(15, 23, 42, 0.08);
+    }
+
+    .decision strong {
+      display: block;
+      margin-bottom: 6px;
+      font-size: 13px;
+      color: var(--violet);
+      text-transform: uppercase;
+      letter-spacing: .08em;
+    }
+
+    .decision p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.5;
+    }
+
+    .options {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(320px, 1fr));
+      gap: 24px;
+      align-items: start;
+    }
+
+    .option {
+      min-width: 0;
+    }
+
+    .option-head {
+      margin-bottom: 12px;
+      min-height: 104px;
+    }
+
+    .eyebrow {
+      margin: 0 0 6px;
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      color: var(--violet);
+    }
+
+    h2 {
+      margin: 0 0 6px;
+      font-size: 22px;
+      line-height: 1.2;
+      letter-spacing: 0;
+    }
+
+    .option-copy {
+      margin: 0;
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.45;
+    }
+
+    .phone {
+      position: relative;
+      width: min(100%, 390px);
+      height: 760px;
+      margin: 0 auto;
+      border: 10px solid #0d1325;
+      border-radius: 34px;
+      background: var(--phone);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .speaker {
+      position: absolute;
+      top: 9px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 86px;
+      height: 19px;
+      border-radius: 0 0 14px 14px;
+      background: #0d1325;
+      z-index: 12;
+    }
+
+    .screen {
+      position: absolute;
+      inset: 0;
+      overflow: hidden;
+      background: var(--phone);
+    }
+
+    .library {
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .top {
+      background: var(--paper);
+      border-bottom: 1px solid var(--line);
+      padding: 36px 18px 12px;
+      z-index: 2;
+    }
+
+    .title-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 14px;
+    }
+
+    .title-row h3 {
+      margin: 0;
+      font-size: 30px;
+      line-height: 1;
+      letter-spacing: 0;
+    }
+
+    .icon-button,
+    .text-button {
+      border: 1px solid var(--line);
+      background: #fff;
+      color: #344054;
+      min-height: 38px;
+      border-radius: 8px;
+      font-weight: 800;
+      cursor: pointer;
+    }
+
+    .icon-button {
+      width: 42px;
+      display: grid;
+      place-items: center;
+    }
+
+    .search {
+      position: relative;
+      margin-bottom: 10px;
+    }
+
+    .search input {
+      width: 100%;
+      height: 48px;
+      border: 0;
+      border-radius: 16px;
+      background: #eef3f8;
+      color: #475467;
+      font-size: 15px;
+      padding: 0 14px 0 44px;
+      outline: 0;
+    }
+
+    .search svg {
+      position: absolute;
+      left: 15px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #98a2b3;
+    }
+
+    .compact-bar {
+      min-height: 42px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      overflow: hidden;
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      min-height: 34px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: #fff;
+      color: #344054;
+      padding: 0 12px;
+      font-size: 13px;
+      font-weight: 800;
+      white-space: nowrap;
+      cursor: pointer;
+    }
+
+    .pill.dark {
+      border-color: var(--navy);
+      background: var(--navy);
+      color: #fff;
+    }
+
+    .pill.violet {
+      border-color: #d8ccff;
+      background: #f2efff;
+      color: #5237d8;
+    }
+
+    .pill.teal {
+      border-color: #bdebe3;
+      background: #ecfbf8;
+      color: #087b6f;
+    }
+
+    .filter-panel {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px;
+      margin-top: 10px;
+    }
+
+    .filter-panel[hidden],
+    .optional[hidden],
+    .sheet[hidden] {
+      display: none;
+    }
+
+    .filter-tile {
+      min-height: 42px;
+      border-radius: 12px;
+      border: 1px solid var(--line);
+      background: #fff;
+      color: #344054;
+      font-size: 13px;
+      font-weight: 800;
+      cursor: pointer;
+    }
+
+    .filter-tile.active {
+      color: #fff;
+      background: var(--navy);
+      border-color: var(--navy);
+    }
+
+    .list {
+      flex: 1;
+      overflow: auto;
+      padding: 16px 16px 82px;
+    }
+
+    .section-label {
+      margin: 2px 0 10px;
+      color: #98a2b3;
+      font-size: 12px;
+      font-weight: 900;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+    }
+
+    .item {
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      background: #fff;
+      padding: 14px;
+      margin-bottom: 12px;
+    }
+
+    .item h4 {
+      margin: 0 0 8px;
+      font-size: 16px;
+      line-height: 1.3;
+      letter-spacing: 0;
+    }
+
+    .item p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.4;
+    }
+
+    .badge-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-bottom: 8px;
+    }
+
+    .badge {
+      border-radius: 999px;
+      padding: 4px 8px;
+      background: #e7f8f5;
+      color: #087b6f;
+      font-size: 11px;
+      font-weight: 800;
+    }
+
+    .badge.warn {
+      background: #fff2df;
+      color: var(--amber);
+    }
+
+    .bottom-nav {
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      height: 66px;
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      border-top: 1px solid var(--line);
+      background: rgba(255, 255, 255, .96);
+      backdrop-filter: blur(10px);
+      z-index: 5;
+    }
+
+    .nav-item {
+      display: grid;
+      place-items: center;
+      color: #667085;
+      font-size: 11px;
+      font-weight: 800;
+    }
+
+    .nav-item.active {
+      color: var(--navy);
+    }
+
+    .sheet {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: flex-end;
+      background: rgba(15, 23, 42, .28);
+      z-index: 20;
+    }
+
+    .sheet-panel {
+      width: 100%;
+      border-radius: 28px 28px 0 0;
+      background: #fff;
+      padding: 18px 18px 22px;
+      box-shadow: 0 -24px 42px rgba(15, 23, 42, .2);
+    }
+
+    .sheet-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+
+    .sheet-head h3 {
+      margin: 0 0 3px;
+      font-size: 22px;
+    }
+
+    .sheet-head p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .sheet-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px;
+    }
+
+    .handle {
+      position: absolute;
+      left: 50%;
+      bottom: 72px;
+      transform: translateX(-50%);
+      z-index: 8;
+      border: 0;
+      border-radius: 999px;
+      background: var(--navy);
+      color: #fff;
+      min-height: 42px;
+      padding: 0 16px;
+      font-weight: 900;
+      box-shadow: 0 12px 28px rgba(15, 23, 42, .25);
+      cursor: pointer;
+    }
+
+    .scroll-state .filter-panel,
+    .scroll-state .optional {
+      display: none;
+    }
+
+    .scroll-state .top {
+      padding-bottom: 8px;
+    }
+
+    .scroll-state .search {
+      margin-bottom: 0;
+    }
+
+    .auto-chip {
+      display: none;
+      position: absolute;
+      top: 112px;
+      right: 18px;
+      z-index: 9;
+      border: 0;
+      border-radius: 999px;
+      background: var(--navy);
+      color: #fff;
+      min-height: 36px;
+      padding: 0 13px;
+      font-size: 12px;
+      font-weight: 900;
+      box-shadow: 0 10px 24px rgba(15, 23, 42, .25);
+      cursor: pointer;
+    }
+
+    .scroll-state .auto-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .notes {
+      margin-top: 14px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: rgba(255,255,255,.8);
+      padding: 13px;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.45;
+    }
+
+    .notes strong {
+      color: var(--ink);
+    }
+
+    @media (max-width: 1120px) {
+      .options {
+        grid-template-columns: 1fr;
+      }
+
+      .option-head {
+        min-height: auto;
+      }
+    }
+
+    @media (max-width: 760px) {
+      .page {
+        padding: 22px 14px 40px;
+      }
+
+      .hero {
+        grid-template-columns: 1fr;
+      }
+
+      .phone {
+        height: 720px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <section class="hero">
+      <div>
+        <h1>Android Library Filter UX Options</h1>
+        <p class="lead">The current filter block solves discoverability but takes over the first mobile viewport. These throwaway prototypes compare three directions where filters are available by default, then can get out of the user's way.</p>
+      </div>
+      <aside class="decision">
+        <strong>My recommendation</strong>
+        <p>Use Option B as the final pattern: keep search and current filter state visible, move filter choice into an explicit bottom sheet. It uses the least vertical space and feels native to Android.</p>
+      </aside>
+    </section>
+
+    <section class="options">
+      <article class="option">
+        <div class="option-head">
+          <p class="eyebrow">Option A</p>
+          <h2>Expandable Filter Tray</h2>
+          <p class="option-copy">Shows one compact status row by default. The user can expand filters, choose a value, then collapse the tray.</p>
+        </div>
+
+        <div class="phone" id="optionA">
+          <div class="speaker"></div>
+          <div class="screen">
+            <div class="library">
+              <header class="top">
+                <div class="title-row">
+                  <h3>Library</h3>
+                  <button class="icon-button" aria-label="Filter settings" data-toggle-panel="aPanel">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 21v-7"/><path d="M4 10V3"/><path d="M12 21v-9"/><path d="M12 8V3"/><path d="M20 21v-5"/><path d="M20 12V3"/><path d="M2 14h4"/><path d="M10 8h4"/><path d="M18 16h4"/></svg>
+                  </button>
+                </div>
+                <div class="search">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+                  <input value="" placeholder="Search your Brain..." />
+                </div>
+                <div class="compact-bar">
+                  <button class="pill dark">All</button>
+                  <button class="pill violet" data-toggle-panel="aPanel">Filters</button>
+                  <span class="pill">9 saved</span>
+                </div>
+                <div id="aPanel" class="filter-panel optional" hidden>
+                  <button class="filter-tile active">All</button>
+                  <button class="filter-tile">Needs Upgrade</button>
+                  <button class="filter-tile">Offline</button>
+                  <button class="filter-tile">Full text</button>
+                  <button class="filter-tile">YouTube</button>
+                  <button class="filter-tile">PDF</button>
+                </div>
+              </header>
+              <div class="list">
+                <p class="section-label">Recent items</p>
+                <div class="item"><div class="badge-row"><span class="badge">Transcript</span></div><h4>How transformers actually work</h4><p>YouTube / Via Telegram</p></div>
+                <div class="item"><div class="badge-row"><span class="badge warn">Metadata only</span></div><h4>Designing calm software</h4><p>LinkedIn / Via Chrome extension</p></div>
+                <div class="item"><div class="badge-row"><span class="badge">Full text</span></div><h4>AI memory architecture notes</h4><p>PDF / Via Android</p></div>
+              </div>
+              <nav class="bottom-nav"><div class="nav-item">Ask</div><div class="nav-item active">Library</div><div class="nav-item">Capture</div><div class="nav-item">More</div></nav>
+            </div>
+          </div>
+        </div>
+        <div class="notes"><strong>Best when:</strong> you want filters visible on first load, but collapsible. <strong>Tradeoff:</strong> still needs a control row plus expanded tray.</div>
+      </article>
+
+      <article class="option">
+        <div class="option-head">
+          <p class="eyebrow">Option B</p>
+          <h2>Compact Status + Bottom Sheet</h2>
+          <p class="option-copy">Search stays prominent, selected filters are summarized, and all filter selection happens in a bottom sheet.</p>
+        </div>
+
+        <div class="phone" id="optionB">
+          <div class="speaker"></div>
+          <div class="screen">
+            <div class="library">
+              <header class="top">
+                <div class="title-row">
+                  <h3>Library</h3>
+                  <button class="icon-button" data-open-sheet="bSheet" aria-label="Open filters">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 21v-7"/><path d="M4 10V3"/><path d="M12 21v-9"/><path d="M12 8V3"/><path d="M20 21v-5"/><path d="M20 12V3"/><path d="M2 14h4"/><path d="M10 8h4"/><path d="M18 16h4"/></svg>
+                  </button>
+                </div>
+                <div class="search">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+                  <input value="" placeholder="Search your Brain..." />
+                </div>
+                <div class="compact-bar">
+                  <button class="pill dark">All</button>
+                  <button class="pill teal">Offline available</button>
+                  <button class="pill violet" data-open-sheet="bSheet">Change</button>
+                </div>
+              </header>
+              <div class="list">
+                <p class="section-label">Recent items</p>
+                <div class="item"><div class="badge-row"><span class="badge">Transcript</span></div><h4>How transformers actually work</h4><p>YouTube / Via Telegram</p></div>
+                <div class="item"><div class="badge-row"><span class="badge warn">Metadata only</span></div><h4>Designing calm software</h4><p>LinkedIn / Via Chrome extension</p></div>
+                <div class="item"><div class="badge-row"><span class="badge">Full text</span></div><h4>AI memory architecture notes</h4><p>PDF / Via Android</p></div>
+                <div class="item"><div class="badge-row"><span class="badge">Preview</span></div><h4>Knowledge management survey</h4><p>Substack / Via Web app</p></div>
+              </div>
+              <nav class="bottom-nav"><div class="nav-item">Ask</div><div class="nav-item active">Library</div><div class="nav-item">Capture</div><div class="nav-item">More</div></nav>
+              <div class="sheet" id="bSheet" hidden>
+                <div class="sheet-panel">
+                  <div class="sheet-head">
+                    <div><h3>Filters</h3><p>One compact place for type, quality, and availability.</p></div>
+                    <button class="icon-button" data-close-sheet="bSheet" aria-label="Close filters">
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+                    </button>
+                  </div>
+                  <div class="sheet-grid">
+                    <button class="filter-tile active">All</button>
+                    <button class="filter-tile">Needs Upgrade</button>
+                    <button class="filter-tile">Offline</button>
+                    <button class="filter-tile">Full text</button>
+                    <button class="filter-tile">YouTube</button>
+                    <button class="filter-tile">LinkedIn</button>
+                    <button class="filter-tile">Substack</button>
+                    <button class="filter-tile">PDF</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="notes"><strong>Best when:</strong> content should start high on the screen. <strong>Tradeoff:</strong> filtering is one tap deeper, but the selected state remains visible.</div>
+      </article>
+
+      <article class="option">
+        <div class="option-head">
+          <p class="eyebrow">Option C</p>
+          <h2>Auto-Hide On Scroll</h2>
+          <p class="option-copy">Filters are visible initially, then collapse to a small floating handle once the user starts reading the list.</p>
+        </div>
+
+        <div class="phone" id="optionC">
+          <div class="speaker"></div>
+          <div class="screen">
+            <div class="library" id="autoState">
+              <button class="auto-chip" data-reset-scroll>Filters</button>
+              <header class="top">
+                <div class="title-row">
+                  <h3>Library</h3>
+                  <button class="text-button" data-simulate-scroll>Simulate scroll</button>
+                </div>
+                <div class="search">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+                  <input value="" placeholder="Search your Brain..." />
+                </div>
+                <div class="compact-bar optional">
+                  <button class="pill dark">All</button>
+                  <button class="pill">Needs Upgrade</button>
+                  <button class="pill">Offline</button>
+                </div>
+                <div class="filter-panel">
+                  <button class="filter-tile active">All</button>
+                  <button class="filter-tile">Full text</button>
+                </div>
+              </header>
+              <div class="list">
+                <p class="section-label">Recent items</p>
+                <div class="item"><div class="badge-row"><span class="badge">Transcript</span></div><h4>How transformers actually work</h4><p>YouTube / Via Telegram</p></div>
+                <div class="item"><div class="badge-row"><span class="badge warn">Metadata only</span></div><h4>Designing calm software</h4><p>LinkedIn / Via Chrome extension</p></div>
+                <div class="item"><div class="badge-row"><span class="badge">Full text</span></div><h4>AI memory architecture notes</h4><p>PDF / Via Android</p></div>
+                <div class="item"><div class="badge-row"><span class="badge">Preview</span></div><h4>Knowledge management survey</h4><p>Substack / Via Web app</p></div>
+              </div>
+              <button class="handle" data-simulate-scroll>Hide filters</button>
+              <nav class="bottom-nav"><div class="nav-item">Ask</div><div class="nav-item active">Library</div><div class="nav-item">Capture</div><div class="nav-item">More</div></nav>
+            </div>
+          </div>
+        </div>
+        <div class="notes"><strong>Best when:</strong> you want full filters initially and an automatic content-first state after scrolling. <strong>Tradeoff:</strong> more stateful behavior to explain and test.</div>
+      </article>
+    </section>
+  </main>
+
+  <script>
+    document.querySelectorAll('[data-toggle-panel]').forEach((button) => {
+      button.addEventListener('click', () => {
+        const panel = document.getElementById(button.getAttribute('data-toggle-panel'));
+        panel.hidden = !panel.hidden;
+      });
+    });
+
+    document.querySelectorAll('[data-open-sheet]').forEach((button) => {
+      button.addEventListener('click', () => {
+        const sheet = document.getElementById(button.getAttribute('data-open-sheet'));
+        sheet.hidden = false;
+      });
+    });
+
+    document.querySelectorAll('[data-close-sheet]').forEach((button) => {
+      button.addEventListener('click', () => {
+        const sheet = document.getElementById(button.getAttribute('data-close-sheet'));
+        sheet.hidden = true;
+      });
+    });
+
+    document.querySelectorAll('.sheet').forEach((sheet) => {
+      sheet.addEventListener('click', (event) => {
+        if (event.target === sheet) sheet.hidden = true;
+      });
+    });
+
+    document.querySelectorAll('[data-simulate-scroll]').forEach((button) => {
+      button.addEventListener('click', () => {
+        document.getElementById('autoState').classList.add('scroll-state');
+      });
+    });
+
+    document.querySelectorAll('[data-reset-scroll]').forEach((button) => {
+      button.addEventListener('click', () => {
+        document.getElementById('autoState').classList.remove('scroll-state');
+      });
+    });
+  </script>
+</body>
+</html>

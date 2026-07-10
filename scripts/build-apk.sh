@@ -10,11 +10,14 @@
 #      not bundled into the APK — but `next build` is still our strongest
 #      pre-flight signal (route collisions, dynamic config errors, strict
 #      TS failures that `tsc --noEmit` alone can miss).
-#   2. `npx cap sync android` — copies capacitor.config.json + plugin
+#   2. `node scripts/patch-capgo-share-target-privacy.mjs` — patches the
+#      Capgo share-target Android plugin so native logcat never receives raw
+#      shared URLs, text, filenames, or URI payload JSON.
+#   3. `npx cap sync android` — copies capacitor.config.json + plugin
 #      manifests into android/app/. Safe to run repeatedly; idempotent.
-#   3. `./gradlew assembleDebug` inside android/. Android's Gradle plugin
+#   4. `./gradlew assembleDebug` inside android/. Android's Gradle plugin
 #      reuses incremental output; cold build ~90s, warm build ~2s.
-#   4. Copy android/app/build/outputs/apk/debug/brain-debug-v<versionName>-code<versionCode>.apk →
+#   5. Copy android/app/build/outputs/apk/debug/brain-debug-v<versionName>-code<versionCode>.apk →
 #      data/artifacts/brain-debug-v<versionName>-code<versionCode>.apk.
 #      The version tag comes from Android's installable version metadata,
 #      so the filename matches what Android reports after installation.
@@ -50,16 +53,43 @@ echo "[build-apk] versionName=${VERSION_NAME}"
 echo "[build-apk] versionCode=${VERSION_CODE}"
 echo "[build-apk] artifact=${ARTIFACT_PATH}"
 
-# APK versioning rule: every newly shared APK should have a fresh Android
-# versionName + versionCode. The output filename includes both values, so
-# an existing artifact at this path means this version was already built.
-# Use ALLOW_REBUILD_SAME_APK_VERSION=1 only for a local throwaway rebuild
-# that will not be handed to a tester/device as a new APK.
-if [[ -f "$ARTIFACT_PATH" && "${ALLOW_REBUILD_SAME_APK_VERSION:-0}" != "1" ]]; then
-  echo "[build-apk] FAIL: $ARTIFACT_PATH already exists." >&2
-  echo "[build-apk]       Bump android/app/build.gradle versionName and versionCode before creating a new APK." >&2
-  echo "[build-apk]       For a local-only rebuild, set ALLOW_REBUILD_SAME_APK_VERSION=1." >&2
-  exit 1
+is_java21_home() {
+  local candidate="$1"
+  [[ -x "$candidate/bin/java" ]] || return 1
+  "$candidate/bin/java" -version 2>&1 | grep -Eq 'version "21(\.|")'
+}
+
+# Android Gradle requires Java 21. Respect an explicit JAVA_HOME first, then
+# try the macOS Java locator and common Homebrew locations used on Apple
+# Silicon / Intel Macs. This keeps `npm run build:apk` reproducible without
+# requiring callers to remember the long Homebrew OpenJDK path.
+if [[ -n "${JAVA_HOME:-}" ]] && ! is_java21_home "$JAVA_HOME"; then
+  echo "[build-apk]         JAVA_HOME is not Java 21; searching for Java 21"
+  unset JAVA_HOME
+fi
+
+if [[ -z "${JAVA_HOME:-}" ]]; then
+  if [[ -x /usr/libexec/java_home ]]; then
+    JAVA_HOME_CANDIDATE="$(/usr/libexec/java_home -v 21 2>/dev/null || true)"
+    if [[ -n "$JAVA_HOME_CANDIDATE" ]] && is_java21_home "$JAVA_HOME_CANDIDATE"; then
+      export JAVA_HOME="$JAVA_HOME_CANDIDATE"
+    fi
+  fi
+fi
+
+if [[ -z "${JAVA_HOME:-}" ]]; then
+  for JAVA_HOME_CANDIDATE in \
+    /opt/homebrew/opt/openjdk@21/libexec/openjdk.jdk/Contents/Home \
+    /usr/local/opt/openjdk@21/libexec/openjdk.jdk/Contents/Home; do
+    if is_java21_home "$JAVA_HOME_CANDIDATE"; then
+      export JAVA_HOME="$JAVA_HOME_CANDIDATE"
+      break
+    fi
+  done
+fi
+
+if [[ -n "${JAVA_HOME:-}" ]]; then
+  echo "[build-apk] javaHome=${JAVA_HOME}"
 fi
 
 # v0.5.0 T-19 / F-018 — ensure a project-local debug keystore exists.
@@ -113,10 +143,13 @@ echo "[build-apk] step 1/5  typecheck + next build"
 npx tsc --noEmit
 npm run build
 
-echo "[build-apk] step 2/5  capacitor sync"
+echo "[build-apk] step 2/6  patch share-target privacy"
+node scripts/patch-capgo-share-target-privacy.mjs
+
+echo "[build-apk] step 3/6  capacitor sync"
 npx cap sync android
 
-echo "[build-apk] step 3/5  gradle assembleDebug"
+echo "[build-apk] step 4/6  gradle assembleDebug"
 cd "$REPO_ROOT/android"
 ./gradlew assembleDebug
 cd "$REPO_ROOT"
@@ -126,8 +159,25 @@ if [[ ! -f "$GRADLE_OUTPUT" ]]; then
   exit 1
 fi
 
-echo "[build-apk] step 4/5  copy APK to data/artifacts"
+echo "[build-apk] step 5/6  copy APK to data/artifacts"
 mkdir -p "$ARTIFACT_DIR"
+
+# APK versioning rule: every newly shared APK should have a fresh Android
+# versionName + versionCode. The output filename includes both values, so
+# an existing artifact at this path means this version was already built.
+# Keep this guard at the publication step, after typecheck/build/cap sync/
+# Gradle, so release-gate validation can still exercise the generated Android
+# assets without overwriting the shared APK artifact.
+# Use ALLOW_REBUILD_SAME_APK_VERSION=1 only for a local throwaway rebuild
+# that will not be handed to a tester/device as a new APK.
+if [[ -f "$ARTIFACT_PATH" && "${ALLOW_REBUILD_SAME_APK_VERSION:-0}" != "1" ]]; then
+  echo "[build-apk] FAIL: $ARTIFACT_PATH already exists." >&2
+  echo "[build-apk]       Build validation passed, but shared artifact publication is blocked." >&2
+  echo "[build-apk]       Bump android/app/build.gradle versionName and versionCode before creating a new APK." >&2
+  echo "[build-apk]       For a local-only rebuild, set ALLOW_REBUILD_SAME_APK_VERSION=1." >&2
+  exit 1
+fi
+
 cp "$GRADLE_OUTPUT" "$ARTIFACT_PATH"
 
 APK_SIZE_BYTES="$(wc -c < "$ARTIFACT_PATH")"

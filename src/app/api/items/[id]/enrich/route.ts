@@ -1,7 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { getDb } from "@/db/client";
 import { getItem } from "@/db/items";
-import { SESSION_COOKIE } from "@/lib/auth";
+import { verifySessionCookie } from "@/lib/auth";
 import { enrichItem } from "@/lib/enrich/pipeline";
 
 export const runtime = "nodejs";
@@ -45,7 +45,7 @@ export async function POST(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ) {
-  if (!req.cookies.get(SESSION_COOKIE)?.value) {
+  if (!verifySessionCookie(req.cookies)) {
     return NextResponse.json({ error: "unauthenticated" }, { status: 401 });
   }
 

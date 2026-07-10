@@ -1,0 +1,19 @@
+# Risks, Blockers, And Decisions Tracker
+
+Created: 2026-06-14 10:15 IST
+Source of truth: this Markdown file. CSV is a convenience export.
+
+| ID | Type | Severity | Status | Owner | Description | Resolution path |
+| --- | --- | --- | --- | --- | --- | --- |
+| R-001 | Risk | P1 | Open | Implementation agent | Dirty worktree may be mistaken for verified completion. | Recreate snapshot before each implementation slice. |
+| R-002 | Risk | P1 | Open | Implementation agent | Prototype source contains legacy AI Brain copy. | Apply brand-copy migration and copy search. |
+| R-003 | Risk | P1 | Open | Implementation agent | Repair updates can leave stale chunks, embeddings, summaries, topics, and related items. | Use PRD-10 derived-state reset gate. |
+| R-004 | Risk | P1 | Open | Implementation agent | Attached context may leak outside intended Ask scope if retriever and UI disagree. | Make effective scope explicit in API and citations. |
+| R-005 | Blocker | P0 | Open | Implementation agent | PRD-11-SHELL mobile/desktop smoke is incomplete. | Finish smoke before any feature implementation. |
+| R-006 | Decision | P1 | Open | Arun/Product | Attachment persistence model is undecided. | Decide before PRD-09-FU and PRD-12. |
+| R-007 | Decision | P2 | Open | Arun/Product | Offline controls may imply active queue/download. | Keep informational unless D-007 closes. |
+| R-008 | Decision | P2 | Open | Arun/Product | Android item tabs scope is undecided. | Split into separate PRD unless approved. |
+| R-009 | Risk | P1 | Open | Implementation agent | Privacy controls may look active if disabled copy is weak. | Copy audit and disabled state QA. |
+| R-010 | Blocker | P1 | Open | Arun/Product | Transcript fallback strategy is not UI-only. | Separate research PRD before provider changes. |
+| R-011 | Risk | P1 | Open | Implementation agent | Android share currently has alert/direct routing risk. | PRD-13 durable result surface plus device evidence. |
+| R-012 | Decision | P3 | Open | Arun/Product | Analytics/events may conflict with private app expectations. | Default to no product analytics. |

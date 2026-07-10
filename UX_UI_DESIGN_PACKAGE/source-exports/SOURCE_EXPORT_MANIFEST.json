@@ -1,0 +1,327 @@
+{
+  "android": {
+    "artifactId": "d7eeaec6-0272-40fa-a7ca-4de7871182e7",
+    "exportedFileCount": 32,
+    "files": [
+      {
+        "bytes": 165,
+        "path": "source-exports/android/magic-patterns-exact/index.tsx",
+        "sha256": "d5699a914cfbe2a92877822ade2e99b5dd69c0d27691c0c3c8a588cfd42045a6"
+      },
+      {
+        "bytes": 2286,
+        "path": "source-exports/android/magic-patterns-exact/App.tsx",
+        "sha256": "07ec13ad521d067c959c7bd098aa7caccc18e991c6f89c9dddeca9cfe6107d66"
+      },
+      {
+        "bytes": 323,
+        "path": "source-exports/android/magic-patterns-exact/package.json",
+        "sha256": "b055ca55234a3cbe08084b38106656d2e84baa161c69f3b71437b9136a06532d"
+      },
+      {
+        "bytes": 415,
+        "path": "source-exports/android/magic-patterns-exact/index.css",
+        "sha256": "af0b6ed4d79347df408c2dd38c61ba569ccf32e7b19c9bdb14295834f9ac702e"
+      },
+      {
+        "bytes": 17,
+        "path": "source-exports/android/magic-patterns-exact/tailwind.config.js",
+        "sha256": "9aeb8d59b4d483ca6298e9a450fbf37dfd2b4c63990135ab1d040d76314087ec"
+      },
+      {
+        "bytes": 2905,
+        "path": "source-exports/android/magic-patterns-exact/canvas.manifest.js",
+        "sha256": "ae1fdd62654b34d56da1ec20586512b23b942f7fb2f95c59a1c680df0698f8cd"
+      },
+      {
+        "bytes": 365,
+        "path": "source-exports/android/magic-patterns-exact/useScreenInit.js",
+        "sha256": "3bf41cf15ebfe8009cd4a44a014979c3ffb03c85d3927ea9642a0598cfbcb381"
+      },
+      {
+        "bytes": 795,
+        "path": "source-exports/android/magic-patterns-exact/components/ui/Select.tsx",
+        "sha256": "a277408db52eeb4b756a7dc5b4f4f37e557cbaef45a5eb647b36cae9bc5470b9"
+      },
+      {
+        "bytes": 1458,
+        "path": "source-exports/android/magic-patterns-exact/components/ui/Drawer.tsx",
+        "sha256": "82fa00aa30bcabc12d2240982efea0a41ae8c02efad628726f77de728cead2da"
+      },
+      {
+        "bytes": 2192,
+        "path": "source-exports/android/magic-patterns-exact/components/ui/Card.tsx",
+        "sha256": "a47598426dc4d361e3f1df479be70f31b4b1e7b1122bdc957e0be9b19bb9df04"
+      },
+      {
+        "bytes": 1463,
+        "path": "source-exports/android/magic-patterns-exact/components/ui/Input.tsx",
+        "sha256": "be32e00943a1208fef2fc08e93223dfd158182b15db484fec4f859b18af8e6d6"
+      },
+      {
+        "bytes": 2387,
+        "path": "source-exports/android/magic-patterns-exact/components/ui/Tabs.tsx",
+        "sha256": "3a112c48c0eb3b55688e4fa09cc65950dd1371544ff91f8c9e99a7e461ca70a4"
+      },
+      {
+        "bytes": 2972,
+        "path": "source-exports/android/magic-patterns-exact/components/ui/Badge.tsx",
+        "sha256": "0821286036ec9e80a96c13acc18af4a10848b2b711f8a59988226304a09dbbeb"
+      },
+      {
+        "bytes": 375,
+        "path": "source-exports/android/magic-patterns-exact/components/ui/Checkbox.tsx",
+        "sha256": "65efab766bf0e5aebdcc219a1efc590a785e303663144829ad9b1167565c0d51"
+      },
+      {
+        "bytes": 2042,
+        "path": "source-exports/android/magic-patterns-exact/components/ui/Button.tsx",
+        "sha256": "a9322405f7842130b4ef05bed1f7c7bd4b0c0c8f5a726ac7e484dd43a037495a"
+      },
+      {
+        "bytes": 730,
+        "path": "source-exports/android/magic-patterns-exact/components/ui/Separator.tsx",
+        "sha256": "95a3b9c28a16e5b2f38554971227797011b26315e035ae3111113d88b2f0de00"
+      },
+      {
+        "bytes": 10174,
+        "path": "source-exports/android/magic-patterns-exact/data/sources.ts",
+        "sha256": "a73d139f0b2871f35f2d62b8da6d76b05e8b68a9ccfdee7d657ab741356d0ab7"
+      },
+      {
+        "bytes": 1185,
+        "path": "source-exports/android/magic-patterns-exact/components/MobileFrame.tsx",
+        "sha256": "7d875eec319d6fce8690e13b32e7f4eb884f6a1ec33b2286f9b6519c1f6edcc4"
+      },
+      {
+        "bytes": 2567,
+        "path": "source-exports/android/magic-patterns-exact/components/MobileBottomNav.tsx",
+        "sha256": "545d7f79a6fd3b61aa602d1f96fea6ccffb25cf81e0ed2d1ee5eac78cd2324aa"
+      },
+      {
+        "bytes": 10416,
+        "path": "source-exports/android/magic-patterns-exact/pages/MobileLibrary.tsx",
+        "sha256": "f459cca5afaa31b2d4dd0a08ab3a3c16fd4b3363161fbc25b10b3b9a72c47b1c"
+      },
+      {
+        "bytes": 4140,
+        "path": "source-exports/android/magic-patterns-exact/pages/MobileShareCapture.tsx",
+        "sha256": "3508be915cb8e0d668f1778c30f8f5f8149bb74820fa672e22eb1ebcb3db7e5e"
+      },
+      {
+        "bytes": 4184,
+        "path": "source-exports/android/magic-patterns-exact/pages/MobileRepair.tsx",
+        "sha256": "b5a251a81e6790216063c7bafe8cec70f00fc2e34baa370cf83c6a3175a1f66c"
+      },
+      {
+        "bytes": 13474,
+        "path": "source-exports/android/magic-patterns-exact/pages/MobileItemDetail.tsx",
+        "sha256": "356ca41bf4c4aa468db7160dd4fd5b4cbe8f5163b67da0b01abf8d4bf799446c"
+      },
+      {
+        "bytes": 4111,
+        "path": "source-exports/android/magic-patterns-exact/pages/MobileOffline.tsx",
+        "sha256": "3d53dcd4359d4e61e64799c90d60ad28d34c54daf1df02c5b9deb575924755ea"
+      },
+      {
+        "bytes": 34943,
+        "path": "source-exports/android/magic-patterns-exact/pages/MobileAsk.tsx",
+        "sha256": "6efe9554eab10d8060c2fe69c4ae42448044b2acd1f8566e4a3408eebf9b1465"
+      },
+      {
+        "bytes": 8852,
+        "path": "source-exports/android/magic-patterns-exact/pages/MobileCapture.tsx",
+        "sha256": "cc4c1ec1c5a70d7a68fe80dcc2ad21abcc7c173297c8a7274ecc1f173fe10a86"
+      },
+      {
+        "bytes": 12208,
+        "path": "source-exports/android/magic-patterns-exact/pages/MobileMore.tsx",
+        "sha256": "0e6d3c90c0e42cbdcfe0e7ee1d496babea9cc6f3089f432331329277d3a3c126"
+      },
+      {
+        "bytes": 12170,
+        "path": "source-exports/android/magic-patterns-exact/pages/MobileLogin.tsx",
+        "sha256": "f0f912e8729a5877e3eb13bf3d4bcde1c8ece64c56a5d2d7cd776a09dc82e3b3"
+      },
+      {
+        "bytes": 2252,
+        "path": "source-exports/android/magic-patterns-exact/data/conversations.ts",
+        "sha256": "c85f6101a5039c3a3cf013506c902afb8f317b7c310e04f4d548df6671a8a044"
+      },
+      {
+        "bytes": 3236,
+        "path": "source-exports/android/magic-patterns-exact/pages/MobileNeedsUpgrade.tsx",
+        "sha256": "ab4657e8a1048e9d6118cc1d20fe10fcd56c897ea49d0efda8cb073c29dd8ba4"
+      },
+      {
+        "bytes": 4537,
+        "path": "source-exports/android/magic-patterns-exact/pages/MobileTopic.tsx",
+        "sha256": "264a3efea947b105673f225b4799ace0b9f9a8b9d9af4fdf6137b61a27b68522"
+      },
+      {
+        "bytes": 3624,
+        "path": "source-exports/android/magic-patterns-exact/pages/MobileCollection.tsx",
+        "sha256": "dc89da9c0863dd25f73b80ce4979c788ff52c50b986c0916bed18fd9c1560183"
+      }
+    ],
+    "requestedFileCount": 32,
+    "retrievedAt": "2026-06-13T16:52:01.652Z",
+    "sessionLine": 4635,
+    "source": "Magic Patterns MCP read_artifact_files"
+  },
+  "web": {
+    "artifactId": "f3312489-9172-4c3f-bcf8-2352ece9d417",
+    "exportedFileCount": 29,
+    "files": [
+      {
+        "bytes": 165,
+        "path": "source-exports/web/magic-patterns-exact/index.tsx",
+        "sha256": "d5699a914cfbe2a92877822ade2e99b5dd69c0d27691c0c3c8a588cfd42045a6"
+      },
+      {
+        "bytes": 2155,
+        "path": "source-exports/web/magic-patterns-exact/App.tsx",
+        "sha256": "8ca0ddc7287f653c3cf3fe9f7283123e542b119fd71265ee4ce5cf503674e527"
+      },
+      {
+        "bytes": 323,
+        "path": "source-exports/web/magic-patterns-exact/package.json",
+        "sha256": "b055ca55234a3cbe08084b38106656d2e84baa161c69f3b71437b9136a06532d"
+      },
+      {
+        "bytes": 415,
+        "path": "source-exports/web/magic-patterns-exact/index.css",
+        "sha256": "af0b6ed4d79347df408c2dd38c61ba569ccf32e7b19c9bdb14295834f9ac702e"
+      },
+      {
+        "bytes": 2026,
+        "path": "source-exports/web/magic-patterns-exact/tailwind.config.js",
+        "sha256": "74879d68972c4fe29a6ee58351925fd1fd3aff2f8b18cc8df659ff6350db6b53"
+      },
+      {
+        "bytes": 3361,
+        "path": "source-exports/web/magic-patterns-exact/canvas.manifest.js",
+        "sha256": "af9528a6bd7b374f3de66828fd9daaa2dec85024294e0c9fd1287d112568dcc3"
+      },
+      {
+        "bytes": 365,
+        "path": "source-exports/web/magic-patterns-exact/useScreenInit.js",
+        "sha256": "3bf41cf15ebfe8009cd4a44a014979c3ffb03c85d3927ea9642a0598cfbcb381"
+      },
+      {
+        "bytes": 796,
+        "path": "source-exports/web/magic-patterns-exact/components/ui/Select.tsx",
+        "sha256": "fdf73dfec81b582e98d04bb49496ae1dcc708244316c73b0080d889077efaa4c"
+      },
+      {
+        "bytes": 1468,
+        "path": "source-exports/web/magic-patterns-exact/components/ui/Drawer.tsx",
+        "sha256": "6257a1ff47719f4f4acd20d9a6bb15707932164518f82edbc3206eccfcb68ab2"
+      },
+      {
+        "bytes": 2166,
+        "path": "source-exports/web/magic-patterns-exact/components/ui/Card.tsx",
+        "sha256": "5e68e9c93063516760407cfc4a50ce064b1268795fd3393a91c617f9cb63c9ee"
+      },
+      {
+        "bytes": 1465,
+        "path": "source-exports/web/magic-patterns-exact/components/ui/Input.tsx",
+        "sha256": "aecfd23f2d92e7fc60f41b3e4612b20104e9ca8c2b0880506c6fc5fbddba0421"
+      },
+      {
+        "bytes": 2377,
+        "path": "source-exports/web/magic-patterns-exact/components/ui/Tabs.tsx",
+        "sha256": "f3ed781c5ef7eee011e2f053bf394263fb470d04bb6caa130f9e089af3c86064"
+      },
+      {
+        "bytes": 3311,
+        "path": "source-exports/web/magic-patterns-exact/components/ui/Badge.tsx",
+        "sha256": "6517e97d45ffe6edafd86b46e9f2978424c58b78ae57d4945f32cef02bc02fb5"
+      },
+      {
+        "bytes": 383,
+        "path": "source-exports/web/magic-patterns-exact/components/ui/Checkbox.tsx",
+        "sha256": "2f0b29db9370850df90a5258a4f2c153024f67ccb2e984c7e13f3bcc935867f8"
+      },
+      {
+        "bytes": 2112,
+        "path": "source-exports/web/magic-patterns-exact/components/ui/Button.tsx",
+        "sha256": "f57453478192b896b1b9c12529a246804ec648ec91a0812bb1f72666aa4fcb53"
+      },
+      {
+        "bytes": 816,
+        "path": "source-exports/web/magic-patterns-exact/components/ui/Separator.tsx",
+        "sha256": "17d5670e41abd340711e08094946f8dca98bb2eeef677a221365a93343cd7956"
+      },
+      {
+        "bytes": 10751,
+        "path": "source-exports/web/magic-patterns-exact/data/sources.ts",
+        "sha256": "ef0900c0ce1e3c4a864ec34a07fbae771e3093825e212666690b29a65f74dc74"
+      },
+      {
+        "bytes": 6477,
+        "path": "source-exports/web/magic-patterns-exact/components/DesktopLayout.tsx",
+        "sha256": "2ace3b17b3e2a54bd5c05826d5db9f1f021e082ccb77eec1258bab45eb3fd7b2"
+      },
+      {
+        "bytes": 9188,
+        "path": "source-exports/web/magic-patterns-exact/pages/DesktopLibrary.tsx",
+        "sha256": "11d6ee117d3c018ab4369eb5e9caf3d3382767ad54e2fb69c7c46f933195448a"
+      },
+      {
+        "bytes": 5176,
+        "path": "source-exports/web/magic-patterns-exact/pages/DesktopNeedsUpgrade.tsx",
+        "sha256": "3d10e45319dcdc0d72b2364dea84dc5ef462bba8700085eaf4a9b0793e2e4ec3"
+      },
+      {
+        "bytes": 16606,
+        "path": "source-exports/web/magic-patterns-exact/pages/DesktopItemDetail.tsx",
+        "sha256": "954fb94347ba8598c998958e9ac62a2625c96ccef6e4ae8a1f4248f41e83f5ea"
+      },
+      {
+        "bytes": 5911,
+        "path": "source-exports/web/magic-patterns-exact/pages/DesktopAsk.tsx",
+        "sha256": "dabaa73095d71eb1a51b2acc5f6f2db3f1dc7fa2e40d320d6f1f70fc9382b958"
+      },
+      {
+        "bytes": 8335,
+        "path": "source-exports/web/magic-patterns-exact/pages/DesktopCapture.tsx",
+        "sha256": "3c48b8b8ec062dfee4417f5d13bb97ddac4d248079bc3470badbb9506fd4a822"
+      },
+      {
+        "bytes": 26154,
+        "path": "source-exports/web/magic-patterns-exact/pages/DesktopSettings.tsx",
+        "sha256": "9230d47e3c38a87040adefee5f1211ce72cf046bcfb0b3c29a4777913a263946"
+      },
+      {
+        "bytes": 6976,
+        "path": "source-exports/web/magic-patterns-exact/pages/DesktopLogin.tsx",
+        "sha256": "3e2aa105e527bdffa8c33289f20d86090f40a12bed0dbc302457ea3016a62acc"
+      },
+      {
+        "bytes": 2252,
+        "path": "source-exports/web/magic-patterns-exact/data/conversations.ts",
+        "sha256": "c85f6101a5039c3a3cf013506c902afb8f317b7c310e04f4d548df6671a8a044"
+      },
+      {
+        "bytes": 4563,
+        "path": "source-exports/web/magic-patterns-exact/pages/DesktopPairDevice.tsx",
+        "sha256": "42febba01e091364ea911fcba5dd4749112454793516245fbe65b1def6a4d6d2"
+      },
+      {
+        "bytes": 5363,
+        "path": "source-exports/web/magic-patterns-exact/pages/DesktopTopic.tsx",
+        "sha256": "a5c3795bc95f388e93abaab9da012d7b4a51a217851bbb579e7d1944fcd2ef98"
+      },
+      {
+        "bytes": 4810,
+        "path": "source-exports/web/magic-patterns-exact/pages/DesktopCollection.tsx",
+        "sha256": "4b86bd28f2de96bdb9a79166ae29cebb085d5c6c2fb4a450d4477e833b551210"
+      }
+    ],
+    "requestedFileCount": 29,
+    "retrievedAt": "2026-06-13T16:46:57.750Z",
+    "sessionLine": 4523,
+    "source": "Magic Patterns MCP read_artifact_files"
+  }
+}

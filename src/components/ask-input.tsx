@@ -60,13 +60,13 @@ export function AskInput({ onSubmit, onStop, busy, autoFocus }: AskInputProps) {
         placeholder="Ask anything about your library..."
         rows={1}
         autoFocus={autoFocus}
-        className="flex-1 resize-none bg-transparent px-2 py-1.5 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none"
+        className="min-h-11 flex-1 resize-none bg-transparent px-2 py-3 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none md:min-h-8 md:py-1.5"
       />
       {busy ? (
         <button
           type="button"
           onClick={onStop}
-          className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-[var(--surface)] text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
+          className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-md bg-[var(--surface)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] md:h-9 md:w-9"
           aria-label="Stop"
         >
           <Square className="h-4 w-4" strokeWidth={2} />
@@ -75,9 +75,11 @@ export function AskInput({ onSubmit, onStop, busy, autoFocus }: AskInputProps) {
         <button
           type="button"
           onClick={submit}
+          disabled={!hasText}
+          aria-disabled={!hasText}
           className={
-            "inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-[var(--accent-9)] text-[var(--on-accent)] hover:bg-[var(--accent-10)] " +
-            (hasText ? "" : "opacity-40")
+            "inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-md bg-[var(--action-primary-bg)] text-[var(--action-primary-fg)] hover:bg-[var(--action-primary-bg-hover)] md:h-9 md:w-9 " +
+            (hasText ? "" : "cursor-not-allowed opacity-40")
           }
           aria-label="Send"
         >

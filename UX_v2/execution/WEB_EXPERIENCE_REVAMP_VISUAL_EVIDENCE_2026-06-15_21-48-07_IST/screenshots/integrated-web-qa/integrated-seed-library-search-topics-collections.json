@@ -1,0 +1,30 @@
+{
+  "dbPath": "/tmp/ai-memory-integrated-web-qa.sqlite",
+  "searchHitQuery": "LSTC search beacon",
+  "searchMissQuery": "no-result-lstc-fixture-zzzz",
+  "tagName": "ux-v2-fixture",
+  "topicSlug": "ux-v2-source-health",
+  "populatedCollectionId": "2e5013960b5c021caf2271b6",
+  "emptyCollectionId": "52bbfd76d1a12a39386f7e49",
+  "itemIds": {
+    "article": "c4ea10e640793dfcb83457c1",
+    "note": "c3fe013230c3392618e97e4a",
+    "youtube": "e4d2911017523fb09f317ebe",
+    "pdf": "d201b0b8fdce50e0b48672ff",
+    "weak": "ad5899b2ae636f1f0c0e7823",
+    "stress": "126d1d9eee178f3cb67699d2"
+  },
+  "routes": {
+    "library": "/library",
+    "libraryTagged": "/library?tag=ux-v2-fixture",
+    "searchEmpty": "/search",
+    "searchHit": "/search?q=LSTC%20search%20beacon",
+    "searchMiss": "/search?q=no-result-lstc-fixture-zzzz",
+    "searchProviderDown": "/search?q=LSTC%20search%20beacon&mode=semantic",
+    "topicPopulated": "/topics/ux-v2-source-health",
+    "topicMissing": "/topics/missing-lstc-fixture-topic",
+    "collectionPopulated": "/collections/2e5013960b5c021caf2271b6",
+    "collectionEmpty": "/collections/52bbfd76d1a12a39386f7e49",
+    "collectionMissing": "/collections/missing-lstc-fixture-collection"
+  }
+}

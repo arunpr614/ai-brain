@@ -11,6 +11,7 @@ import { rmSync } from "node:fs";
 import { TEST_DB_DIR } from "./enrichment-batch.test.setup";
 import { getDb } from "@/db/client";
 import { insertCaptured } from "@/db/items";
+import { listTopicsForItem } from "@/db/topics";
 import {
   BATCH_SIZE_CAP,
   MAX_BATCH_ATTEMPTS,
@@ -288,6 +289,10 @@ test("pollAllInFlightBatches: succeeded result writes summary + tags + state='do
   assert.equal(row.category, "General");
   assert.equal(row.title, "Cleaned Up Title");
   assert.match(row.summary, /Paragraph one/);
+  assert.deepEqual(
+    listTopicsForItem(item.id).map((topic) => topic.slug),
+    ["tag-one", "tag-three", "tag-two"],
+  );
 
   const job = getDb()
     .prepare("SELECT state FROM enrichment_jobs WHERE item_id = ?")

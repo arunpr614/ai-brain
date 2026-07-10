@@ -1,0 +1,1496 @@
+{
+  "generatedAt": "2026-06-15T18:37:39.694Z",
+  "baseUrl": "http://localhost:3025",
+  "dbPaths": {
+    "integrated": "/tmp/ai-memory-integrated-web-qa.sqlite",
+    "empty": "/tmp/ai-memory-integrated-web-empty-qa.sqlite"
+  },
+  "routesVisited": [
+    {
+      "label": "integrated-library-populated-1280-light",
+      "route": "/library",
+      "viewport": {
+        "height": 720,
+        "width": 1280
+      },
+      "screenshotPath": "/Users/arun.prakash/Documents/arunvault/arun-cursor/Initiatives/Arun_AI_Projects/ai-brain/phase2/UX_v2/execution/WEB_EXPERIENCE_REVAMP_VISUAL_EVIDENCE_2026-06-15_21-48-07_IST/screenshots/integrated-web-qa/integrated-library-populated-1280-light.png",
+      "metrics": {
+        "bearerTextVisible": false,
+        "h1": "AI Memory",
+        "overflowElements": [],
+        "pageHorizontalOverflow": false,
+        "rawHexTokenVisible": false,
+        "smallTouchTargets": [
+          {
+            "height": 32,
+            "role": null,
+            "tag": "button",
+            "text": "Navigation",
+            "visible": true,
+            "width": 215
+          },
+          {
+            "height": 32,
+            "role": null,
+            "tag": "button",
+            "text": "Search⌘K",
+            "visible": true,
+            "width": 215
+          },
+          {
+            "height": 36,
+            "role": null,
+            "tag": "a",
+            "text": "Capture",
+            "visible": true,
+            "width": 215
+          },
+          {
+            "height": 32,
+            "role": null,
+            "tag": "a",
+            "text": "Library",
+            "visible": true,
+            "width": 215
+          },
+          {
+            "height": 32,
+            "role": null,
+            "tag": "a",
+            "text": "Needs Upgrade6",
+            "visible": true,
+            "width": 215
+          },
+          {
+            "height": 32,
+            "role": null,
+            "tag": "a",
+            "text": "Ask",
+            "visible": true,
+            "width": 215
+          },
+          {
+            "height": 32,
+            "role": null,
+            "tag": "a",
+            "text": "Settings",
+            "visible": true,
+            "width": 215
+          },
+          {
+            "height": 32,
+            "role": null,
+            "tag": "a",
+            "text": "Pair Device",
+            "visible": true,
+            "width": 215
+          },
+          {
+            "height": 36,
+            "role": null,
+            "tag": "a",
+            "text": "6 need upgrade",
+            "visible": true,
+            "width": 132
+          },
+          {
+            "height": 36,
+            "role": null,
+            "tag": "a",
+            "text": "Capture",
+            "visible": true,
+            "width": 109
+          },
+          {
+            "height": 36,
+            "role": null,
+            "tag": "input",
+            "text": "",
+            "visible": true,
+            "width": 896
+          },
+          {
+            "height": 32,
+            "role": null,
+            "tag": "a",
+            "text": "All",
+            "visible": true,
+            "width": 43
+          },
+          {
+            "height": 32,
+            "role": null,
+            "tag": "a",
+            "text": "Articles",
+            "visible": true,
+            "width": 77
+          },
+          {
+            "height": 32,
+            "role": null,
+            "tag": "a",
+            "text": "YouTube",
+            "visible": true,
+            "width": 84
+          },
+          {
+            "height": 32,
+            "role": null,
+            "tag": "a",
+            "text": "PDFs",
+            "visible": true,
+            "width": 61
+          },
+          {
+            "height": 32,
+            "role": null,
+            "tag": "a",
+            "text": "Notes",
+            "visible": true,
+            "width": 65
+          },
+          {
+            "height": 32,
+            "role": null,
+            "tag": "a",
+            "text": "Telegram",
+            "visible": true,
+            "width": 88
+          },
+          {
+            "height": 32,
+            "role": null,
+            "tag": "a",
+            "text": "All",
+            "visible": true,
+            "width": 43
+          },
+          {
+            "height": 32,
+            "role": null,
+            "tag": "a",
+            "text": "Full text",
+            "visible": true,
+            "width": 78
+          },
+          {
+            "height": 32,
+            "role": null,
+            "tag": "a",
+            "text": "Transcript",
+            "visible": true,
+            "width": 94
+          }
+        ],
+        "targetSampleCount": 57,
+        "url": "http://localhost:3025/library",
+        "viewport": {
+          "height": 720,
+          "width": 1280
+        }
+      },
+      "name": "integrated-library-populated-1280-light",
+      "path": "/library",
+      "finalUrl": "http://localhost:3025/library",
+      "screenshot": "/Users/arun.prakash/Documents/arunvault/arun-cursor/Initiatives/Arun_AI_Projects/ai-brain/phase2/UX_v2/execution/WEB_EXPERIENCE_REVAMP_VISUAL_EVIDENCE_2026-06-15_21-48-07_IST/screenshots/integrated-web-qa/integrated-library-populated-1280-light.png",
+      "overflowX": false,
+      "bottomOverflow": []
+    },
+    {
+      "label": "integrated-search-no-results-1280-light",
+      "route": "/search?q=no-result-lstc-fixture-zzzz",
+      "viewport": {
+        "height": 720,
+        "width": 1280
+      },
+      "screenshotPath": "/Users/arun.prakash/Documents/arunvault/arun-cursor/Initiatives/Arun_AI_Projects/ai-brain/phase2/UX_v2/execution/WEB_EXPERIENCE_REVAMP_VISUAL_EVIDENCE_2026-06-15_21-48-07_IST/screenshots/integrated-web-qa/integrated-search-no-results-1280-light.png",
+      "metrics": {
+        "bearerTextVisible": false,
+        "h1": "AI Memory",
+        "overflowElements": [],
+        "pageHorizontalOverflow": false,
+        "rawHexTokenVisible": false,
+        "smallTouchTargets": [
+          {
+            "height": 32,
+            "role": null,
+            "tag": "button",
+            "text": "Navigation",
+            "visible": true,
+            "width": 215
+          },
+          {
+            "height": 32,
+            "role": null,
+            "tag": "button",
+            "text": "Search⌘K",
+            "visible": true,
+            "width": 215
+          },
+          {
+            "height": 36,
+            "role": null,
+            "tag": "a",
+            "text": "Capture",
+            "visible": true,
+            "width": 215
+          },
+          {
+            "height": 32,
+            "role": null,
+            "tag": "a",
+            "text": "Library",
+            "visible": true,
+            "width": 215
+          },
+          {
+            "height": 32,
+            "role": null,
+            "tag": "a",
+            "text": "Needs Upgrade6",
+            "visible": true,
+            "width": 215
+          },
+          {
+            "height": 32,
+            "role": null,
+            "tag": "a",
+            "text": "Ask",
+            "visible": true,
+            "width": 215
+          },
+          {
+            "height": 32,
+            "role": null,
+            "tag": "a",
+            "text": "Settings",
+            "visible": true,
+            "width": 215
+          },
+          {
+            "height": 32,
+            "role": null,
+            "tag": "a",
+            "text": "Pair Device",
+            "visible": true,
+            "width": 215
+          },
+          {
+            "height": 20,
+            "role": null,
+            "tag": "a",
+            "text": "Back to Library",
+            "visible": true,
+            "width": 120
+          },
+          {
+            "height": 40,
+            "role": null,
+            "tag": "input",
+            "text": "",
+            "visible": true,
+            "width": 896
+          },
+          {
+            "height": 26,
+            "role": null,
+            "tag": "a",
+            "text": "Full-text",
+            "visible": true,
+            "width": 73
+          },
+          {
+            "height": 26,
+            "role": null,
+            "tag": "a",
+            "text": "Semantic",
+            "visible": true,
+            "width": 80
+          },
+          {
+            "height": 26,
+            "role": null,
+            "tag": "a",
+            "text": "Hybrid",
+            "visible": true,
+            "width": 65
+          }
+        ],
+        "targetSampleCount": 13,
+        "url": "http://localhost:3025/search?q=no-result-lstc-fixture-zzzz",
+        "viewport": {
+          "height": 720,
+          "width": 1280
+        }
+      },
+      "name": "integrated-search-no-results-1280-light",
+      "path": "/search?q=no-result-lstc-fixture-zzzz",
+      "finalUrl": "http://localhost:3025/search?q=no-result-lstc-fixture-zzzz",
+      "screenshot": "/Users/arun.prakash/Documents/arunvault/arun-cursor/Initiatives/Arun_AI_Projects/ai-brain/phase2/UX_v2/execution/WEB_EXPERIENCE_REVAMP_VISUAL_EVIDENCE_2026-06-15_21-48-07_IST/screenshots/integrated-web-qa/integrated-search-no-results-1280-light.png",
+      "overflowX": false,
+      "bottomOverflow": []
+    },
+    {
+      "label": "integrated-topic-populated-1280-light",
+      "route": "/topics/ux-v2-source-health",
+      "viewport": {
+        "height": 720,
+        "width": 1280
+      },
+      "screenshotPath": "/Users/arun.prakash/Documents/arunvault/arun-cursor/Initiatives/Arun_AI_Projects/ai-brain/phase2/UX_v2/execution/WEB_EXPERIENCE_REVAMP_VISUAL_EVIDENCE_2026-06-15_21-48-07_IST/screenshots/integrated-web-qa/integrated-topic-populated-1280-light.png",
+      "metrics": {
+        "bearerTextVisible": false,
+        "h1": "AI Memory",
+        "overflowElements": [],
+        "pageHorizontalOverflow": false,
+        "rawHexTokenVisible": false,
+        "smallTouchTargets": [
+          {
+            "height": 32,
+            "role": null,
+            "tag": "button",
+            "text": "Navigation",
+            "visible": true,
+            "width": 215
+          },
+          {
+            "height": 32,
+            "role": null,
+            "tag": "button",
+            "text": "Search⌘K",
+            "visible": true,
+            "width": 215
+          },
+          {
+            "height": 36,
+            "role": null,
+            "tag": "a",
+            "text": "Capture",
+            "visible": true,
+            "width": 215
+          },
+          {
+            "height": 32,
+            "role": null,
+            "tag": "a",
+            "text": "Library",
+            "visible": true,
+            "width": 215
+          },
+          {
+            "height": 32,
+            "role": null,
+            "tag": "a",
+            "text": "Needs Upgrade6",
+            "visible": true,
+            "width": 215
+          },
+          {
+            "height": 32,
+            "role": null,
+            "tag": "a",
+            "text": "Ask",
+            "visible": true,
+            "width": 215
+          },
+          {
+            "height": 32,
+            "role": null,
+            "tag": "a",
+            "text": "Settings",
+            "visible": true,
+            "width": 215
+          },
+          {
+            "height": 32,
+            "role": null,
+            "tag": "a",
+            "text": "Pair Device",
+            "visible": true,
+            "width": 215
+          },
+          {
+            "height": 20,
+            "role": null,
+            "tag": "a",
+            "text": "Back to Library",
+            "visible": true,
+            "width": 120
+          },
+          {
+            "height": 36,
+            "role": null,
+            "tag": "a",
+            "text": "Ask topic",
+            "visible": true,
+            "width": 118
+          }
+        ],
+        "targetSampleCount": 13,
+        "url": "http://localhost:3025/topics/ux-v2-source-health",
+        "viewport": {
+          "height": 720,
+          "width": 1280
+        }
+      },
+      "name": "integrated-topic-populated-1280-light",
+      "path": "/topics/ux-v2-source-health",
+      "finalUrl": "http://localhost:3025/topics/ux-v2-source-health",
+      "screenshot": "/Users/arun.prakash/Documents/arunvault/arun-cursor/Initiatives/Arun_AI_Projects/ai-brain/phase2/UX_v2/execution/WEB_EXPERIENCE_REVAMP_VISUAL_EVIDENCE_2026-06-15_21-48-07_IST/screenshots/integrated-web-qa/integrated-topic-populated-1280-light.png",
+      "overflowX": false,
+      "bottomOverflow": []
+    },
+    {
+      "label": "integrated-collection-populated-1280-light",
+      "route": "/collections/2e5013960b5c021caf2271b6",
+      "viewport": {
+        "height": 720,
+        "width": 1280
+      },
+      "screenshotPath": "/Users/arun.prakash/Documents/arunvault/arun-cursor/Initiatives/Arun_AI_Projects/ai-brain/phase2/UX_v2/execution/WEB_EXPERIENCE_REVAMP_VISUAL_EVIDENCE_2026-06-15_21-48-07_IST/screenshots/integrated-web-qa/integrated-collection-populated-1280-light.png",
+      "metrics": {
+        "bearerTextVisible": false,
+        "h1": "AI Memory",
+        "overflowElements": [],
+        "pageHorizontalOverflow": false,
+        "rawHexTokenVisible": false,
+        "smallTouchTargets": [
+          {
+            "height": 32,
+            "role": null,
+            "tag": "button",
+            "text": "Navigation",
+            "visible": true,
+            "width": 215
+          },
+          {
+            "height": 32,
+            "role": null,
+            "tag": "button",
+            "text": "Search⌘K",
+            "visible": true,
+            "width": 215
+          },
+          {
+            "height": 36,
+            "role": null,
+            "tag": "a",
+            "text": "Capture",
+            "visible": true,
+            "width": 215
+          },
+          {
+            "height": 32,
+            "role": null,
+            "tag": "a",
+            "text": "Library",
+            "visible": true,
+            "width": 215
+          },
+          {
+            "height": 32,
+            "role": null,
+            "tag": "a",
+            "text": "Needs Upgrade6",
+            "visible": true,
+            "width": 215
+          },
+          {
+            "height": 32,
+            "role": null,
+            "tag": "a",
+            "text": "Ask",
+            "visible": true,
+            "width": 215
+          },
+          {
+            "height": 32,
+            "role": null,
+            "tag": "a",
+            "text": "Settings",
+            "visible": true,
+            "width": 215
+          },
+          {
+            "height": 32,
+            "role": null,
+            "tag": "a",
+            "text": "Pair Device",
+            "visible": true,
+            "width": 215
+          },
+          {
+            "height": 20,
+            "role": null,
+            "tag": "a",
+            "text": "All collections",
+            "visible": true,
+            "width": 112
+          },
+          {
+            "height": 36,
+            "role": null,
+            "tag": "a",
+            "text": "Ask collection",
+            "visible": true,
+            "width": 150
+          }
+        ],
+        "targetSampleCount": 13,
+        "url": "http://localhost:3025/collections/2e5013960b5c021caf2271b6",
+        "viewport": {
+          "height": 720,
+          "width": 1280
+        }
+      },
+      "name": "integrated-collection-populated-1280-light",
+      "path": "/collections/2e5013960b5c021caf2271b6",
+      "finalUrl": "http://localhost:3025/collections/2e5013960b5c021caf2271b6",
+      "screenshot": "/Users/arun.prakash/Documents/arunvault/arun-cursor/Initiatives/Arun_AI_Projects/ai-brain/phase2/UX_v2/execution/WEB_EXPERIENCE_REVAMP_VISUAL_EVIDENCE_2026-06-15_21-48-07_IST/screenshots/integrated-web-qa/integrated-collection-populated-1280-light.png",
+      "overflowX": false,
+      "bottomOverflow": []
+    },
+    {
+      "label": "integrated-ask-collection-1280-light",
+      "route": "/ask?scope=collection&collection=74c53642aa04100a6152061d",
+      "viewport": {
+        "height": 720,
+        "width": 1280
+      },
+      "screenshotPath": "/Users/arun.prakash/Documents/arunvault/arun-cursor/Initiatives/Arun_AI_Projects/ai-brain/phase2/UX_v2/execution/WEB_EXPERIENCE_REVAMP_VISUAL_EVIDENCE_2026-06-15_21-48-07_IST/screenshots/integrated-web-qa/integrated-ask-collection-1280-light.png",
+      "metrics": {
+        "bearerTextVisible": false,
+        "h1": "AI Memory",
+        "overflowElements": [],
+        "pageHorizontalOverflow": false,
+        "rawHexTokenVisible": false,
+        "smallTouchTargets": [
+          {
+            "height": 32,
+            "role": null,
+            "tag": "button",
+            "text": "Navigation",
+            "visible": true,
+            "width": 215
+          },
+          {
+            "height": 32,
+            "role": null,
+            "tag": "button",
+            "text": "Search⌘K",
+            "visible": true,
+            "width": 215
+          },
+          {
+            "height": 36,
+            "role": null,
+            "tag": "a",
+            "text": "Capture",
+            "visible": true,
+            "width": 215
+          },
+          {
+            "height": 32,
+            "role": null,
+            "tag": "a",
+            "text": "Library",
+            "visible": true,
+            "width": 215
+          },
+          {
+            "height": 32,
+            "role": null,
+            "tag": "a",
+            "text": "Needs Upgrade6",
+            "visible": true,
+            "width": 215
+          },
+          {
+            "height": 32,
+            "role": null,
+            "tag": "a",
+            "text": "Ask",
+            "visible": true,
+            "width": 215
+          },
+          {
+            "height": 32,
+            "role": null,
+            "tag": "a",
+            "text": "Settings",
+            "visible": true,
+            "width": 215
+          },
+          {
+            "height": 32,
+            "role": null,
+            "tag": "a",
+            "text": "Pair Device",
+            "visible": true,
+            "width": 215
+          },
+          {
+            "height": 32,
+            "role": null,
+            "tag": "textarea",
+            "text": "",
+            "visible": true,
+            "width": 930
+          },
+          {
+            "height": 36,
+            "role": null,
+            "tag": "button",
+            "text": "Send",
+            "visible": true,
+            "width": 36
+          }
+        ],
+        "targetSampleCount": 10,
+        "url": "http://localhost:3025/ask?scope=collection&collection=74c53642aa04100a6152061d",
+        "viewport": {
+          "height": 720,
+          "width": 1280
+        }
+      },
+      "name": "integrated-ask-collection-1280-light",
+      "path": "/ask?scope=collection&collection=74c53642aa04100a6152061d",
+      "finalUrl": "http://localhost:3025/ask?scope=collection&collection=74c53642aa04100a6152061d",
+      "screenshot": "/Users/arun.prakash/Documents/arunvault/arun-cursor/Initiatives/Arun_AI_Projects/ai-brain/phase2/UX_v2/execution/WEB_EXPERIENCE_REVAMP_VISUAL_EVIDENCE_2026-06-15_21-48-07_IST/screenshots/integrated-web-qa/integrated-ask-collection-1280-light.png",
+      "overflowX": false,
+      "bottomOverflow": []
+    },
+    {
+      "label": "integrated-capture-url-390-light",
+      "route": "/capture?url=https%3A%2F%2Fexample.test%2Fux-v2-capture-duplicate",
+      "viewport": {
+        "height": 844,
+        "width": 390
+      },
+      "screenshotPath": "/Users/arun.prakash/Documents/arunvault/arun-cursor/Initiatives/Arun_AI_Projects/ai-brain/phase2/UX_v2/execution/WEB_EXPERIENCE_REVAMP_VISUAL_EVIDENCE_2026-06-15_21-48-07_IST/screenshots/integrated-web-qa/integrated-capture-url-390-light.png",
+      "metrics": {
+        "bearerTextVisible": false,
+        "h1": "AI Memory",
+        "overflowElements": [],
+        "pageHorizontalOverflow": false,
+        "rawHexTokenVisible": false,
+        "smallTouchTargets": [
+          {
+            "height": 20,
+            "role": null,
+            "tag": "a",
+            "text": "Back to Library",
+            "visible": true,
+            "width": 120
+          },
+          {
+            "height": 32,
+            "role": "tab",
+            "tag": "button",
+            "text": "URL",
+            "visible": true,
+            "width": 71
+          },
+          {
+            "height": 32,
+            "role": "tab",
+            "tag": "button",
+            "text": "PDF",
+            "visible": true,
+            "width": 71
+          },
+          {
+            "height": 32,
+            "role": "tab",
+            "tag": "button",
+            "text": "Note",
+            "visible": true,
+            "width": 76
+          },
+          {
+            "height": 36,
+            "role": null,
+            "tag": "input",
+            "text": "",
+            "visible": true,
+            "width": 326
+          },
+          {
+            "height": 36,
+            "role": null,
+            "tag": "button",
+            "text": "Save URL",
+            "visible": true,
+            "width": 96
+          },
+          {
+            "height": 20,
+            "role": null,
+            "tag": "a",
+            "text": "Cancel",
+            "visible": true,
+            "width": 46
+          }
+        ],
+        "targetSampleCount": 11,
+        "url": "http://localhost:3025/capture?url=https%3A%2F%2Fexample.test%2Fux-v2-capture-duplicate",
+        "viewport": {
+          "height": 844,
+          "width": 390
+        }
+      },
+      "name": "integrated-capture-url-390-light",
+      "path": "/capture?url=https%3A%2F%2Fexample.test%2Fux-v2-capture-duplicate",
+      "finalUrl": "http://localhost:3025/capture?url=https%3A%2F%2Fexample.test%2Fux-v2-capture-duplicate",
+      "screenshot": "/Users/arun.prakash/Documents/arunvault/arun-cursor/Initiatives/Arun_AI_Projects/ai-brain/phase2/UX_v2/execution/WEB_EXPERIENCE_REVAMP_VISUAL_EVIDENCE_2026-06-15_21-48-07_IST/screenshots/integrated-web-qa/integrated-capture-url-390-light.png",
+      "overflowX": false,
+      "bottomOverflow": []
+    },
+    {
+      "label": "integrated-more-390-light",
+      "route": "/more",
+      "viewport": {
+        "height": 844,
+        "width": 390
+      },
+      "screenshotPath": "/Users/arun.prakash/Documents/arunvault/arun-cursor/Initiatives/Arun_AI_Projects/ai-brain/phase2/UX_v2/execution/WEB_EXPERIENCE_REVAMP_VISUAL_EVIDENCE_2026-06-15_21-48-07_IST/screenshots/integrated-web-qa/integrated-more-390-light.png",
+      "metrics": {
+        "bearerTextVisible": false,
+        "h1": "AI Memory",
+        "overflowElements": [],
+        "pageHorizontalOverflow": false,
+        "rawHexTokenVisible": false,
+        "smallTouchTargets": [],
+        "targetSampleCount": 11,
+        "url": "http://localhost:3025/more",
+        "viewport": {
+          "height": 844,
+          "width": 390
+        }
+      },
+      "name": "integrated-more-390-light",
+      "path": "/more",
+      "finalUrl": "http://localhost:3025/more",
+      "screenshot": "/Users/arun.prakash/Documents/arunvault/arun-cursor/Initiatives/Arun_AI_Projects/ai-brain/phase2/UX_v2/execution/WEB_EXPERIENCE_REVAMP_VISUAL_EVIDENCE_2026-06-15_21-48-07_IST/screenshots/integrated-web-qa/integrated-more-390-light.png",
+      "overflowX": false,
+      "bottomOverflow": []
+    },
+    {
+      "label": "integrated-device-pairing-390-light",
+      "route": "/settings/device-pairing",
+      "viewport": {
+        "height": 844,
+        "width": 390
+      },
+      "screenshotPath": "/Users/arun.prakash/Documents/arunvault/arun-cursor/Initiatives/Arun_AI_Projects/ai-brain/phase2/UX_v2/execution/WEB_EXPERIENCE_REVAMP_VISUAL_EVIDENCE_2026-06-15_21-48-07_IST/screenshots/integrated-web-qa/integrated-device-pairing-390-light.png",
+      "metrics": {
+        "bearerTextVisible": false,
+        "h1": "AI Memory",
+        "overflowElements": [],
+        "pageHorizontalOverflow": false,
+        "rawHexTokenVisible": false,
+        "smallTouchTargets": [
+          {
+            "height": 36,
+            "role": null,
+            "tag": "button",
+            "text": "Add Android device",
+            "visible": true,
+            "width": 292
+          },
+          {
+            "height": 16,
+            "role": null,
+            "tag": "a",
+            "text": "chrome://extensions",
+            "visible": true,
+            "width": 137
+          },
+          {
+            "height": 32,
+            "role": null,
+            "tag": "button",
+            "text": "Show advanced token setup",
+            "visible": true,
+            "width": 208
+          }
+        ],
+        "targetSampleCount": 7,
+        "url": "http://localhost:3025/settings/device-pairing",
+        "viewport": {
+          "height": 844,
+          "width": 390
+        }
+      },
+      "name": "integrated-device-pairing-390-light",
+      "path": "/settings/device-pairing",
+      "finalUrl": "http://localhost:3025/settings/device-pairing",
+      "screenshot": "/Users/arun.prakash/Documents/arunvault/arun-cursor/Initiatives/Arun_AI_Projects/ai-brain/phase2/UX_v2/execution/WEB_EXPERIENCE_REVAMP_VISUAL_EVIDENCE_2026-06-15_21-48-07_IST/screenshots/integrated-web-qa/integrated-device-pairing-390-light.png",
+      "overflowX": false,
+      "bottomOverflow": []
+    },
+    {
+      "name": "setup-first-run",
+      "path": "/setup?next=%2Flibrary",
+      "finalUrl": "http://localhost:3026/setup?next=%2Flibrary",
+      "title": "AI Memory",
+      "screenshot": "/Users/arun.prakash/Documents/arunvault/arun-cursor/Initiatives/Arun_AI_Projects/ai-brain/phase2/UX_v2/execution/WEB_EXPERIENCE_REVAMP_VISUAL_EVIDENCE_2026-06-15_21-48-07_IST/screenshots/integrated-web-qa/integrated-setup-first-run-1280-light.png",
+      "viewport": {
+        "width": 1280,
+        "height": 720
+      },
+      "overflowX": false,
+      "bottomOverflow": []
+    },
+    {
+      "name": "library-empty",
+      "path": "/library",
+      "finalUrl": "http://localhost:3026/library",
+      "title": "AI Memory",
+      "screenshot": "/Users/arun.prakash/Documents/arunvault/arun-cursor/Initiatives/Arun_AI_Projects/ai-brain/phase2/UX_v2/execution/WEB_EXPERIENCE_REVAMP_VISUAL_EVIDENCE_2026-06-15_21-48-07_IST/screenshots/integrated-web-qa/integrated-library-empty-1280-light.png",
+      "viewport": {
+        "width": 1280,
+        "height": 720
+      },
+      "overflowX": false,
+      "bottomOverflow": []
+    },
+    {
+      "name": "needs-upgrade-empty",
+      "path": "/needs-upgrade",
+      "finalUrl": "http://localhost:3026/needs-upgrade",
+      "title": "AI Memory",
+      "screenshot": "/Users/arun.prakash/Documents/arunvault/arun-cursor/Initiatives/Arun_AI_Projects/ai-brain/phase2/UX_v2/execution/WEB_EXPERIENCE_REVAMP_VISUAL_EVIDENCE_2026-06-15_21-48-07_IST/screenshots/integrated-web-qa/integrated-needs-upgrade-empty-1280-light.png",
+      "viewport": {
+        "width": 1280,
+        "height": 720
+      },
+      "overflowX": false,
+      "bottomOverflow": []
+    },
+    {
+      "name": "unlock-pin-entry",
+      "path": "/unlock?next=%2Flibrary&reason=session-expired",
+      "finalUrl": "http://localhost:3026/unlock?next=%2Flibrary&reason=session-expired",
+      "title": "AI Memory",
+      "screenshot": "/Users/arun.prakash/Documents/arunvault/arun-cursor/Initiatives/Arun_AI_Projects/ai-brain/phase2/UX_v2/execution/WEB_EXPERIENCE_REVAMP_VISUAL_EVIDENCE_2026-06-15_21-48-07_IST/screenshots/integrated-web-qa/integrated-unlock-pin-entry-390-light.png",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "overflowX": false,
+      "bottomOverflow": [],
+      "bodyProbe": "Library\nCapture\nAsk\nMore\nUnlock AI Memory\n\nEnter your PIN to continue.\n\nYour session expired, or this device is not unlocked yet. Unlock to return to the page you requested.\nUnlock\n\nForgot it? SSH into your AI Memory server and remove /opt/brain/data/brain.sqlite, then restart brain.service. A new PIN can then be set on first run.\n\nHome"
+    }
+  ],
+  "apiChecks": {
+    "protected": {
+      "exportZip": {
+        "status": 200,
+        "contentType": "application/zip",
+        "cacheControl": "no-store",
+        "byteLength": 8416
+      },
+      "providerStatus": {
+        "status": 200,
+        "cacheControl": "no-store, no-cache, must-revalidate",
+        "pragma": "no-cache",
+        "llmStatus": "unreachable",
+        "embedStatus": "unreachable"
+      }
+    },
+    "publicAssets": {
+      "/setup-apk": {
+        "status": 200,
+        "contentType": "text/html; charset=utf-8",
+        "location": null,
+        "byteLength": 28812
+      },
+      "/offline.html": {
+        "status": 200,
+        "contentType": "text/html; charset=UTF-8",
+        "location": null,
+        "byteLength": 9324
+      },
+      "/manifest.webmanifest": {
+        "status": 200,
+        "contentType": "application/manifest+json",
+        "location": null,
+        "byteLength": 524
+      },
+      "/favicon-32x32.png": {
+        "status": 200,
+        "contentType": "image/png",
+        "location": null,
+        "byteLength": 1442
+      },
+      "/favicon-16x16.png": {
+        "status": 200,
+        "contentType": "image/png",
+        "location": null,
+        "byteLength": 570
+      },
+      "/apple-touch-icon.png": {
+        "status": 200,
+        "contentType": "image/png",
+        "location": null,
+        "byteLength": 39074
+      },
+      "/web-app-icon-192.png": {
+        "status": 200,
+        "contentType": "image/png",
+        "location": null,
+        "byteLength": 44962
+      },
+      "/web-app-icon-512.png": {
+        "status": 200,
+        "contentType": "image/png",
+        "location": null,
+        "byteLength": 228386
+      },
+      "/ai-memory-logo.png": {
+        "status": 200,
+        "contentType": "image/png",
+        "location": null,
+        "byteLength": 2837864
+      }
+    },
+    "protectedRedirects": {
+      "/library": {
+        "status": 307,
+        "location": "/unlock?next=%2Flibrary&reason=session-expired",
+        "contentType": null
+      },
+      "/settings": {
+        "status": 307,
+        "location": "/unlock?next=%2Fsettings&reason=session-expired",
+        "contentType": null
+      },
+      "/api/library/export.zip": {
+        "status": 401,
+        "location": null,
+        "contentType": "application/json"
+      }
+    }
+  },
+  "accessibilityChecks": {
+    "keyboard": [
+      {
+        "route": "/library",
+        "steps": [
+          {
+            "boxShadow": "none",
+            "height": 720,
+            "outline": "none",
+            "role": null,
+            "tag": "BODY",
+            "text": "AI Memoryv0.6.2 · private memoryNavigationSearch⌘KCaptureLib",
+            "width": 1280
+          },
+          {
+            "boxShadow": "none",
+            "height": 720,
+            "outline": "none",
+            "role": null,
+            "tag": "BODY",
+            "text": "AI Memoryv0.6.2 · private memoryNavigationSearch⌘KCaptureLib",
+            "width": 1280
+          },
+          {
+            "boxShadow": "none",
+            "height": 720,
+            "outline": "none",
+            "role": null,
+            "tag": "BODY",
+            "text": "AI Memoryv0.6.2 · private memoryNavigationSearch⌘KCaptureLib",
+            "width": 1280
+          },
+          {
+            "boxShadow": "none",
+            "height": 720,
+            "outline": "none",
+            "role": null,
+            "tag": "BODY",
+            "text": "AI Memoryv0.6.2 · private memoryNavigationSearch⌘KCaptureLib",
+            "width": 1280
+          },
+          {
+            "boxShadow": "none",
+            "height": 720,
+            "outline": "none",
+            "role": null,
+            "tag": "BODY",
+            "text": "AI Memoryv0.6.2 · private memoryNavigationSearch⌘KCaptureLib",
+            "width": 1280
+          },
+          {
+            "boxShadow": "none",
+            "height": 720,
+            "outline": "none",
+            "role": null,
+            "tag": "BODY",
+            "text": "AI Memoryv0.6.2 · private memoryNavigationSearch⌘KCaptureLib",
+            "width": 1280
+          },
+          {
+            "boxShadow": "none",
+            "height": 720,
+            "outline": "none",
+            "role": null,
+            "tag": "BODY",
+            "text": "AI Memoryv0.6.2 · private memoryNavigationSearch⌘KCaptureLib",
+            "width": 1280
+          },
+          {
+            "boxShadow": "none",
+            "height": 720,
+            "outline": "none",
+            "role": null,
+            "tag": "BODY",
+            "text": "AI Memoryv0.6.2 · private memoryNavigationSearch⌘KCaptureLib",
+            "width": 1280
+          }
+        ],
+        "reachedNonBody": false
+      },
+      {
+        "route": "/ask",
+        "steps": [
+          {
+            "boxShadow": "none",
+            "height": 32,
+            "outline": "none",
+            "role": null,
+            "tag": "TEXTAREA",
+            "text": "Ask anything about your library...",
+            "width": 930
+          },
+          {
+            "boxShadow": "none",
+            "height": 32,
+            "outline": "none",
+            "role": null,
+            "tag": "TEXTAREA",
+            "text": "Ask anything about your library...",
+            "width": 930
+          },
+          {
+            "boxShadow": "none",
+            "height": 32,
+            "outline": "none",
+            "role": null,
+            "tag": "TEXTAREA",
+            "text": "Ask anything about your library...",
+            "width": 930
+          },
+          {
+            "boxShadow": "none",
+            "height": 32,
+            "outline": "none",
+            "role": null,
+            "tag": "TEXTAREA",
+            "text": "Ask anything about your library...",
+            "width": 930
+          },
+          {
+            "boxShadow": "none",
+            "height": 32,
+            "outline": "none",
+            "role": null,
+            "tag": "TEXTAREA",
+            "text": "Ask anything about your library...",
+            "width": 930
+          },
+          {
+            "boxShadow": "none",
+            "height": 32,
+            "outline": "none",
+            "role": null,
+            "tag": "TEXTAREA",
+            "text": "Ask anything about your library...",
+            "width": 930
+          },
+          {
+            "boxShadow": "none",
+            "height": 32,
+            "outline": "none",
+            "role": null,
+            "tag": "TEXTAREA",
+            "text": "Ask anything about your library...",
+            "width": 930
+          },
+          {
+            "boxShadow": "none",
+            "height": 32,
+            "outline": "none",
+            "role": null,
+            "tag": "TEXTAREA",
+            "text": "Ask anything about your library...",
+            "width": 930
+          }
+        ],
+        "reachedNonBody": true
+      },
+      {
+        "route": "/capture",
+        "steps": [
+          {
+            "boxShadow": "none",
+            "height": 36,
+            "outline": "none",
+            "role": null,
+            "tag": "INPUT",
+            "text": "https://example.com/article",
+            "width": 616
+          },
+          {
+            "boxShadow": "none",
+            "height": 36,
+            "outline": "none",
+            "role": null,
+            "tag": "INPUT",
+            "text": "https://example.com/article",
+            "width": 616
+          },
+          {
+            "boxShadow": "none",
+            "height": 36,
+            "outline": "none",
+            "role": null,
+            "tag": "INPUT",
+            "text": "https://example.com/article",
+            "width": 616
+          },
+          {
+            "boxShadow": "none",
+            "height": 36,
+            "outline": "none",
+            "role": null,
+            "tag": "INPUT",
+            "text": "https://example.com/article",
+            "width": 616
+          },
+          {
+            "boxShadow": "none",
+            "height": 36,
+            "outline": "none",
+            "role": null,
+            "tag": "INPUT",
+            "text": "https://example.com/article",
+            "width": 616
+          },
+          {
+            "boxShadow": "none",
+            "height": 36,
+            "outline": "none",
+            "role": null,
+            "tag": "INPUT",
+            "text": "https://example.com/article",
+            "width": 616
+          },
+          {
+            "boxShadow": "none",
+            "height": 36,
+            "outline": "none",
+            "role": null,
+            "tag": "INPUT",
+            "text": "https://example.com/article",
+            "width": 616
+          },
+          {
+            "boxShadow": "none",
+            "height": 36,
+            "outline": "none",
+            "role": null,
+            "tag": "INPUT",
+            "text": "https://example.com/article",
+            "width": 616
+          }
+        ],
+        "reachedNonBody": true
+      },
+      {
+        "route": "/settings/device-pairing",
+        "steps": [
+          {
+            "boxShadow": "none",
+            "height": 720,
+            "outline": "none",
+            "role": null,
+            "tag": "BODY",
+            "text": "AI Memoryv0.6.2 · private memoryNavigationSearch⌘KCaptureLib",
+            "width": 1280
+          },
+          {
+            "boxShadow": "none",
+            "height": 720,
+            "outline": "none",
+            "role": null,
+            "tag": "BODY",
+            "text": "AI Memoryv0.6.2 · private memoryNavigationSearch⌘KCaptureLib",
+            "width": 1280
+          },
+          {
+            "boxShadow": "none",
+            "height": 720,
+            "outline": "none",
+            "role": null,
+            "tag": "BODY",
+            "text": "AI Memoryv0.6.2 · private memoryNavigationSearch⌘KCaptureLib",
+            "width": 1280
+          },
+          {
+            "boxShadow": "none",
+            "height": 720,
+            "outline": "none",
+            "role": null,
+            "tag": "BODY",
+            "text": "AI Memoryv0.6.2 · private memoryNavigationSearch⌘KCaptureLib",
+            "width": 1280
+          },
+          {
+            "boxShadow": "none",
+            "height": 720,
+            "outline": "none",
+            "role": null,
+            "tag": "BODY",
+            "text": "AI Memoryv0.6.2 · private memoryNavigationSearch⌘KCaptureLib",
+            "width": 1280
+          },
+          {
+            "boxShadow": "none",
+            "height": 720,
+            "outline": "none",
+            "role": null,
+            "tag": "BODY",
+            "text": "AI Memoryv0.6.2 · private memoryNavigationSearch⌘KCaptureLib",
+            "width": 1280
+          },
+          {
+            "boxShadow": "none",
+            "height": 720,
+            "outline": "none",
+            "role": null,
+            "tag": "BODY",
+            "text": "AI Memoryv0.6.2 · private memoryNavigationSearch⌘KCaptureLib",
+            "width": 1280
+          },
+          {
+            "boxShadow": "none",
+            "height": 720,
+            "outline": "none",
+            "role": null,
+            "tag": "BODY",
+            "text": "AI Memoryv0.6.2 · private memoryNavigationSearch⌘KCaptureLib",
+            "width": 1280
+          }
+        ],
+        "reachedNonBody": false
+      }
+    ],
+    "touchTargets": [
+      {
+        "label": "integrated-capture-url-390-light",
+        "smallTouchTargets": [
+          {
+            "height": 20,
+            "role": null,
+            "tag": "a",
+            "text": "Back to Library",
+            "visible": true,
+            "width": 120
+          },
+          {
+            "height": 32,
+            "role": "tab",
+            "tag": "button",
+            "text": "URL",
+            "visible": true,
+            "width": 71
+          },
+          {
+            "height": 32,
+            "role": "tab",
+            "tag": "button",
+            "text": "PDF",
+            "visible": true,
+            "width": 71
+          },
+          {
+            "height": 32,
+            "role": "tab",
+            "tag": "button",
+            "text": "Note",
+            "visible": true,
+            "width": 76
+          },
+          {
+            "height": 36,
+            "role": null,
+            "tag": "input",
+            "text": "",
+            "visible": true,
+            "width": 326
+          },
+          {
+            "height": 36,
+            "role": null,
+            "tag": "button",
+            "text": "Save URL",
+            "visible": true,
+            "width": 96
+          },
+          {
+            "height": 20,
+            "role": null,
+            "tag": "a",
+            "text": "Cancel",
+            "visible": true,
+            "width": 46
+          }
+        ],
+        "sampled": 11
+      },
+      {
+        "label": "integrated-more-390-light",
+        "smallTouchTargets": [],
+        "sampled": 11
+      },
+      {
+        "label": "integrated-device-pairing-390-light",
+        "smallTouchTargets": [
+          {
+            "height": 36,
+            "role": null,
+            "tag": "button",
+            "text": "Add Android device",
+            "visible": true,
+            "width": 292
+          },
+          {
+            "height": 16,
+            "role": null,
+            "tag": "a",
+            "text": "chrome://extensions",
+            "visible": true,
+            "width": 137
+          },
+          {
+            "height": 32,
+            "role": null,
+            "tag": "button",
+            "text": "Show advanced token setup",
+            "visible": true,
+            "width": 208
+          }
+        ],
+        "sampled": 7
+      }
+    ],
+    "horizontalOverflowIssues": [],
+    "zoom200": {
+      "status": "Needs release follow-up",
+      "reason": "No clean browser zoom capability available in current in-app browser tool; viewport overflow checks completed instead."
+    },
+    "reducedMotion": {
+      "status": "Not applicable in smoke",
+      "reason": "No essential user information in checked routes depended on animation."
+    }
+  },
+  "tokenSafety": {
+    "rawTokenTextVisible": false
+  },
+  "console": {
+    "relevantWarningErrorCount": 0,
+    "relevantWarningErrors": []
+  },
+  "layout": {
+    "issueCount": 0,
+    "issues": []
+  },
+  "routeDiscovery": {
+    "reviewRouteExists": false,
+    "evidence": "rg --files src/app | rg review returned no matches"
+  },
+  "blockers": [
+    {
+      "id": "A11Y-KEYBOARD-FOCUS-SMOKE",
+      "severity": "release-follow-up",
+      "description": "Keyboard smoke did not move focus from body on Library and Device Pairing in current browser method; Ask and Capture reached form controls."
+    },
+    {
+      "id": "A11Y-TOUCH-TARGETS",
+      "severity": "release-follow-up",
+      "description": "Some compact mobile controls sample below 44px target guidance; more route primary nav passed."
+    },
+    {
+      "id": "A11Y-ZOOM-200",
+      "severity": "release-follow-up",
+      "description": "Current browser tool lacks clean zoom control; 200 percent zoom remains manual release sweep item."
+    }
+  ],
+  "publicAssetFix": {
+    "status": "fixed",
+    "evidence": "src/proxy.ts public path allow-list updated; src/proxy.test.ts public asset test passed; live dev server asset checks returned 200."
+  },
+  "emptyStateChecks": {
+    "serverBaseUrl": "http://localhost:3026",
+    "tempDb": "/tmp/ai-memory-integrated-web-empty-qa.sqlite",
+    "capturedAt": "2026-06-15T18:41:40.203Z",
+    "routesVisited": [
+      {
+        "name": "setup-first-run",
+        "path": "/setup?next=%2Flibrary",
+        "finalUrl": "http://localhost:3026/setup?next=%2Flibrary",
+        "title": "AI Memory",
+        "screenshot": "/Users/arun.prakash/Documents/arunvault/arun-cursor/Initiatives/Arun_AI_Projects/ai-brain/phase2/UX_v2/execution/WEB_EXPERIENCE_REVAMP_VISUAL_EVIDENCE_2026-06-15_21-48-07_IST/screenshots/integrated-web-qa/integrated-setup-first-run-1280-light.png",
+        "overflowX": false,
+        "bottomOverflow": [],
+        "bodyProbe": "AI Memory\n\nv0.6.2 · private memory\n\nNavigation\nSearch\n⌘K\nCapture\nLibrary\nNeeds Upgrade\nAsk\nSettings\nPair Device\nPrivacy Controls\nSOON\nWelcome to AI Memory\n\nSet a PIN to protect your library. You’ll enter it once per device.\n\nCreate PIN\n\nYour PIN is hashed on the server. Your library is stored on your AI Memory server (Hetzner). AI enrichment uses Anthropic a"
+      },
+      {
+        "name": "library-empty",
+        "path": "/library",
+        "finalUrl": "http://localhost:3026/library",
+        "title": "AI Memory",
+        "screenshot": "/Users/arun.prakash/Documents/arunvault/arun-cursor/Initiatives/Arun_AI_Projects/ai-brain/phase2/UX_v2/execution/WEB_EXPERIENCE_REVAMP_VISUAL_EVIDENCE_2026-06-15_21-48-07_IST/screenshots/integrated-web-qa/integrated-library-empty-1280-light.png",
+        "overflowX": false,
+        "bottomOverflow": [],
+        "bodyProbe": "AI Memory\n\nv0.6.2 · private memory\n\nNavigation\nSearch\n⌘K\nCapture\nLibrary\nNeeds Upgrade\nAsk\nSettings\nPair Device\nPrivacy Controls\nSOON\nLibrary\n\n0 sources captured\n\nCapture\nSOURCE\nAll\nArticles\nYouTube\nPDFs\nNotes\nTelegram\nQUALITY\nAll\nFull text\nTranscript\nNeeds upgrade\nYour library is empty\n\nCapture a URL, drop a PDF, or write a note.\n\nCapture"
+      },
+      {
+        "name": "needs-upgrade-empty",
+        "path": "/needs-upgrade",
+        "finalUrl": "http://localhost:3026/needs-upgrade",
+        "title": "AI Memory",
+        "screenshot": "/Users/arun.prakash/Documents/arunvault/arun-cursor/Initiatives/Arun_AI_Projects/ai-brain/phase2/UX_v2/execution/WEB_EXPERIENCE_REVAMP_VISUAL_EVIDENCE_2026-06-15_21-48-07_IST/screenshots/integrated-web-qa/integrated-needs-upgrade-empty-1280-light.png",
+        "overflowX": false,
+        "bottomOverflow": [],
+        "bodyProbe": "AI Memory\n\nv0.6.2 · private memory\n\nNavigation\nSearch\n⌘K\nCapture\nLibrary\nNeeds Upgrade\nAsk\nSettings\nPair Device\nPrivacy Controls\nSOON\nBack to Library\nCapture quality\nNeeds Upgrade\n\nThese saves are still useful as bookmarks, but they do not have enough readable source text for reliable search or Ask. Add text or open the source.\n\nNo captures need attention.\n\n"
+      }
+    ],
+    "consoleWarningsOrErrors": []
+  },
+  "issueCount": 0,
+  "consoleWarningsOrErrors": [],
+  "consoleCount": 0,
+  "updatedAt": "2026-06-15T18:43:19.788Z",
+  "authRouteChecks": {
+    "tempPinSetup": true,
+    "tempPinValue": "redacted",
+    "unlockRoute": {
+      "name": "unlock-pin-entry",
+      "path": "/unlock?next=%2Flibrary&reason=session-expired",
+      "finalUrl": "http://localhost:3026/unlock?next=%2Flibrary&reason=session-expired",
+      "title": "AI Memory",
+      "screenshot": "/Users/arun.prakash/Documents/arunvault/arun-cursor/Initiatives/Arun_AI_Projects/ai-brain/phase2/UX_v2/execution/WEB_EXPERIENCE_REVAMP_VISUAL_EVIDENCE_2026-06-15_21-48-07_IST/screenshots/integrated-web-qa/integrated-unlock-pin-entry-390-light.png",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "overflowX": false,
+      "bottomOverflow": [],
+      "bodyProbe": "Library\nCapture\nAsk\nMore\nUnlock AI Memory\n\nEnter your PIN to continue.\n\nYour session expired, or this device is not unlocked yet. Unlock to return to the page you requested.\nUnlock\n\nForgot it? SSH into your AI Memory server and remove /opt/brain/data/brain.sqlite, then restart brain.service. A new PIN can then be set on first run.\n\nHome"
+    }
+  }
+}

@@ -1,0 +1,77 @@
+{
+  "sweepStartedAt": "2026-06-15T17:57:07.899Z",
+  "routes": [
+    {
+      "route": "/items/7679396305ab80a4e974a9a9",
+      "url": "http://127.0.0.1:3000/items/7679396305ab80a4e974a9a9",
+      "title": "AI Memory",
+      "hasMain": true,
+      "hasErrorBoundary": false
+    },
+    {
+      "route": "/items/afd8e004e33577d0c809bd83",
+      "url": "http://127.0.0.1:3000/items/afd8e004e33577d0c809bd83",
+      "title": "AI Memory",
+      "hasMain": true,
+      "hasErrorBoundary": false
+    },
+    {
+      "route": "/items/afd8e004e33577d0c809bd83?mode=focus",
+      "url": "http://127.0.0.1:3000/items/afd8e004e33577d0c809bd83?mode=focus",
+      "title": "AI Memory",
+      "hasMain": true,
+      "hasErrorBoundary": false
+    },
+    {
+      "route": "/needs-upgrade",
+      "url": "http://127.0.0.1:3000/needs-upgrade",
+      "title": "AI Memory",
+      "hasMain": true,
+      "hasErrorBoundary": false
+    },
+    {
+      "route": "/ask",
+      "url": "http://127.0.0.1:3000/ask",
+      "title": "AI Memory",
+      "hasMain": true,
+      "hasErrorBoundary": false
+    },
+    {
+      "route": "/items/7679396305ab80a4e974a9a9/ask",
+      "url": "http://127.0.0.1:3000/items/7679396305ab80a4e974a9a9/ask",
+      "title": "AI Memory",
+      "hasMain": true,
+      "hasErrorBoundary": false
+    },
+    {
+      "route": "/ask?scope=selected&ids=7679396305ab80a4e974a9a9%2Cafd8e004e33577d0c809bd83",
+      "url": "http://127.0.0.1:3000/ask?scope=selected&ids=7679396305ab80a4e974a9a9%2Cafd8e004e33577d0c809bd83",
+      "title": "AI Memory",
+      "hasMain": true,
+      "hasErrorBoundary": false
+    },
+    {
+      "route": "/ask?scope=tag&tag=ux-v2-item-ask",
+      "url": "http://127.0.0.1:3000/ask?scope=tag&tag=ux-v2-item-ask",
+      "title": "AI Memory",
+      "hasMain": true,
+      "hasErrorBoundary": false
+    },
+    {
+      "route": "/ask?scope=topic&topic=ux-v2-item-ask-topic",
+      "url": "http://127.0.0.1:3000/ask?scope=topic&topic=ux-v2-item-ask-topic",
+      "title": "AI Memory",
+      "hasMain": true,
+      "hasErrorBoundary": false
+    },
+    {
+      "route": "/ask?scope=collection&collection=ae53f6efa235665773705768",
+      "url": "http://127.0.0.1:3000/ask?scope=collection&collection=ae53f6efa235665773705768",
+      "title": "AI Memory",
+      "hasMain": true,
+      "hasErrorBoundary": false
+    }
+  ],
+  "freshWarningOrErrorCount": 0,
+  "freshLogs": []
+}

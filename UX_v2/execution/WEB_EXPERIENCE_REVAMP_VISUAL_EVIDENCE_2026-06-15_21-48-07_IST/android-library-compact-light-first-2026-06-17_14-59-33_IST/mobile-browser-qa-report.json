@@ -1,0 +1,445 @@
+{
+  "stamp": "2026-06-17_14-59-33_IST",
+  "outDir": "/Users/arun.prakash/Library/CloudStorage/GoogleDrive-arun.prakash@toasttab.com/Other computers/My MacBook Pro M1 2025/arun-cursor/Initiatives/Arun_AI_Projects/ai-brain/phase2/UX_v2/execution/WEB_EXPERIENCE_REVAMP_VISUAL_EVIDENCE_2026-06-15_21-48-07_IST/android-library-compact-light-first-2026-06-17_14-59-33_IST",
+  "screenshots": {
+    "libraryInitial": "/Users/arun.prakash/Library/CloudStorage/GoogleDrive-arun.prakash@toasttab.com/Other computers/My MacBook Pro M1 2025/arun-cursor/Initiatives/Arun_AI_Projects/ai-brain/phase2/UX_v2/execution/WEB_EXPERIENCE_REVAMP_VISUAL_EVIDENCE_2026-06-15_21-48-07_IST/android-library-compact-light-first-2026-06-17_14-59-33_IST/library-mobile-initial.png",
+    "librarySelectedTwo": "/Users/arun.prakash/Library/CloudStorage/GoogleDrive-arun.prakash@toasttab.com/Other computers/My MacBook Pro M1 2025/arun-cursor/Initiatives/Arun_AI_Projects/ai-brain/phase2/UX_v2/execution/WEB_EXPERIENCE_REVAMP_VISUAL_EVIDENCE_2026-06-15_21-48-07_IST/android-library-compact-light-first-2026-06-17_14-59-33_IST/library-mobile-selected-two.png",
+    "askSelectedRoute": "/Users/arun.prakash/Library/CloudStorage/GoogleDrive-arun.prakash@toasttab.com/Other computers/My MacBook Pro M1 2025/arun-cursor/Initiatives/Arun_AI_Projects/ai-brain/phase2/UX_v2/execution/WEB_EXPERIENCE_REVAMP_VISUAL_EVIDENCE_2026-06-15_21-48-07_IST/android-library-compact-light-first-2026-06-17_14-59-33_IST/ask-selected-route.png",
+    "itemDetailFromCard": "/Users/arun.prakash/Library/CloudStorage/GoogleDrive-arun.prakash@toasttab.com/Other computers/My MacBook Pro M1 2025/arun-cursor/Initiatives/Arun_AI_Projects/ai-brain/phase2/UX_v2/execution/WEB_EXPERIENCE_REVAMP_VISUAL_EVIDENCE_2026-06-15_21-48-07_IST/android-library-compact-light-first-2026-06-17_14-59-33_IST/item-detail-from-card.png",
+    "settingsOsDarkNoTheme": "/Users/arun.prakash/Library/CloudStorage/GoogleDrive-arun.prakash@toasttab.com/Other computers/My MacBook Pro M1 2025/arun-cursor/Initiatives/Arun_AI_Projects/ai-brain/phase2/UX_v2/execution/WEB_EXPERIENCE_REVAMP_VISUAL_EVIDENCE_2026-06-15_21-48-07_IST/android-library-compact-light-first-2026-06-17_14-59-33_IST/settings-os-dark-no-theme-light.png",
+    "settingsExplicitDark": "/Users/arun.prakash/Library/CloudStorage/GoogleDrive-arun.prakash@toasttab.com/Other computers/My MacBook Pro M1 2025/arun-cursor/Initiatives/Arun_AI_Projects/ai-brain/phase2/UX_v2/execution/WEB_EXPERIENCE_REVAMP_VISUAL_EVIDENCE_2026-06-15_21-48-07_IST/android-library-compact-light-first-2026-06-17_14-59-33_IST/settings-explicit-dark.png",
+    "settingsLightRestored": "/Users/arun.prakash/Library/CloudStorage/GoogleDrive-arun.prakash@toasttab.com/Other computers/My MacBook Pro M1 2025/arun-cursor/Initiatives/Arun_AI_Projects/ai-brain/phase2/UX_v2/execution/WEB_EXPERIENCE_REVAMP_VISUAL_EVIDENCE_2026-06-15_21-48-07_IST/android-library-compact-light-first-2026-06-17_14-59-33_IST/settings-light-restored.png"
+  },
+  "library": {
+    "initial": {
+      "href": "http://127.0.0.1:3048/library",
+      "width": 390,
+      "height": 844,
+      "theme": "light",
+      "cardCount": 9,
+      "checkboxCount": 18,
+      "checked": 0,
+      "visibleChecked": 0,
+      "rows": [
+        {
+          "index": 0,
+          "height": 81,
+          "text": "UX v2 library fixture articleArticleFull textqueued36m agoUX v2 library fixture articlequeuedArticle·via Web·Full text·36m ago·127 chars",
+          "title": "UX v2 library fixture article",
+          "titleHeight": 21,
+          "metaHeight": 22,
+          "mobileDisplay": "block",
+          "desktopDisplay": "none"
+        },
+        {
+          "index": 1,
+          "height": 127,
+          "text": "QA compact card YouTube title fixture with a deliberately long title that should clamp cleanly to exactly two lines on Android mobile without making the Library card explode verticallyYouTubeMetadata onlyenrichment faile",
+          "title": "QA compact card YouTube title fixture with a deliberately long title that should clamp cleanly to exactly two lines on Android mobile without making the Library card explode vertically",
+          "titleHeight": 41,
+          "metaHeight": 48,
+          "mobileDisplay": "block",
+          "desktopDisplay": "none"
+        },
+        {
+          "index": 2,
+          "height": 101,
+          "text": "QA LinkedIn source logo compact card fixtureLinkedInMetadata only44m agoQA LinkedIn source logo compact card fixtureLinkedIn·via Web·Metadata only·44m ago·120 chars",
+          "title": "QA LinkedIn source logo compact card fixture",
+          "titleHeight": 41,
+          "metaHeight": 22,
+          "mobileDisplay": "block",
+          "desktopDisplay": "none"
+        },
+        {
+          "index": 3,
+          "height": 101,
+          "text": "QA Substack source logo compact card fixtureSubstackPreview only45m agoQA Substack source logo compact card fixtureSubstack·via Web·Preview only·45m ago·120 chars",
+          "title": "QA Substack source logo compact card fixture",
+          "titleHeight": 41,
+          "metaHeight": 22,
+          "mobileDisplay": "block",
+          "desktopDisplay": "none"
+        },
+        {
+          "index": 4,
+          "height": 81,
+          "text": "UX v2 selected ask fixture noteNoteFull textqueued46m agoUX v2 selected ask fixture notequeuedNote·via Web·Full text·46m ago·145 chars",
+          "title": "UX v2 selected ask fixture note",
+          "titleHeight": 21,
+          "metaHeight": 22,
+          "mobileDisplay": "block",
+          "desktopDisplay": "none"
+        },
+        {
+          "index": 5,
+          "height": 81,
+          "text": "UX v2 transcript fixture videoYouTubeTranscriptqueued1h agoUX v2 transcript fixture videoqueuedYouTube·via Web·Transcript·1h ago·85 chars",
+          "title": "UX v2 transcript fixture video",
+          "titleHeight": 21,
+          "metaHeight": 22,
+          "mobileDisplay": "block",
+          "desktopDisplay": "none"
+        },
+        {
+          "index": 6,
+          "height": 81,
+          "text": "UX v2 PDF fixture briefPDFFull textqueued3h agoUX v2 PDF fixture briefqueuedPDF·via Web·Full text·3h ago·92 chars",
+          "title": "UX v2 PDF fixture brief",
+          "titleHeight": 21,
+          "metaHeight": 22,
+          "mobileDisplay": "block",
+          "desktopDisplay": "none"
+        },
+        {
+          "index": 7,
+          "height": 81,
+          "text": "UX v2 weak metadata fixtureYouTubeMetadata onlyqueued4h agoUX v2 weak metadata fixturequeuedYouTube·via Web·Metadata only·4h ago·46 chars·⚠ metadata only",
+          "title": "UX v2 weak metadata fixture",
+          "titleHeight": 21,
+          "metaHeight": 22,
+          "mobileDisplay": "block",
+          "desktopDisplay": "none"
+        },
+        {
+          "index": 8,
+          "height": 101,
+          "text": "UX v2 long title stress fixture for wrapping behavior across library rows, search rows, topic rows, and collection rowsArticleFull textqueued7h agoUX v2 long title stress fixture for wrapping behavior across library rows",
+          "title": "UX v2 long title stress fixture for wrapping behavior across library rows, search rows, topic rows, and collection rows",
+          "titleHeight": 41,
+          "metaHeight": 22,
+          "mobileDisplay": "block",
+          "desktopDisplay": "none"
+        }
+      ]
+    },
+    "visibleCheckboxesInitial": [
+      {
+        "index": 0,
+        "checked": false,
+        "x": 42,
+        "y": 343,
+        "width": 18,
+        "height": 18,
+        "visible": true,
+        "center": {
+          "x": 51,
+          "y": 352
+        }
+      },
+      {
+        "index": 2,
+        "checked": false,
+        "x": 42,
+        "y": 435.625,
+        "width": 18,
+        "height": 18,
+        "visible": true,
+        "center": {
+          "x": 51,
+          "y": 444.625
+        }
+      },
+      {
+        "index": 4,
+        "checked": false,
+        "x": 42,
+        "y": 574.875,
+        "width": 18,
+        "height": 18,
+        "visible": true,
+        "center": {
+          "x": 51,
+          "y": 583.875
+        }
+      },
+      {
+        "index": 6,
+        "checked": false,
+        "x": 42,
+        "y": 688.125,
+        "width": 18,
+        "height": 18,
+        "visible": true,
+        "center": {
+          "x": 51,
+          "y": 697.125
+        }
+      },
+      {
+        "index": 8,
+        "checked": false,
+        "x": 42,
+        "y": 801.375,
+        "width": 18,
+        "height": 18,
+        "visible": true,
+        "center": {
+          "x": 51,
+          "y": 810.375
+        }
+      },
+      {
+        "index": 10,
+        "checked": false,
+        "x": 42,
+        "y": 894,
+        "width": 18,
+        "height": 18,
+        "visible": true,
+        "center": {
+          "x": 51,
+          "y": 903
+        }
+      },
+      {
+        "index": 12,
+        "checked": false,
+        "x": 42,
+        "y": 986.625,
+        "width": 18,
+        "height": 18,
+        "visible": true,
+        "center": {
+          "x": 51,
+          "y": 995.625
+        }
+      },
+      {
+        "index": 14,
+        "checked": false,
+        "x": 42,
+        "y": 1079.25,
+        "width": 18,
+        "height": 18,
+        "visible": true,
+        "center": {
+          "x": 51,
+          "y": 1088.25
+        }
+      },
+      {
+        "index": 16,
+        "checked": false,
+        "x": 42,
+        "y": 1171.875,
+        "width": 18,
+        "height": 18,
+        "visible": true,
+        "center": {
+          "x": 51,
+          "y": 1180.875
+        }
+      }
+    ],
+    "afterOne": {
+      "checked": 2,
+      "visibleChecked": 1,
+      "text": "ext·7h ago·149 chars1 selectedAsk1 selectedAskTag+"
+    },
+    "afterTwo": {
+      "checked": 4,
+      "visibleChecked": 2,
+      "text": "5m ago·120 charsUX v2 selected ask fixture noteNot"
+    },
+    "askCandidates": [
+      {
+        "text": "Ask",
+        "parentText": "LibraryCaptureAskMore",
+        "href": "/ask",
+        "label": "Open Ask",
+        "x": 187,
+        "y": 787.25,
+        "width": 97.5,
+        "height": 46.5,
+        "visible": true
+      },
+      {
+        "text": "Ask",
+        "parentText": "2 selectedAsk",
+        "href": null,
+        "label": null,
+        "x": 249.75,
+        "y": 723,
+        "width": 71.25,
+        "height": 36,
+        "visible": true
+      }
+    ],
+    "askRoute": {
+      "href": "http://127.0.0.1:3048/ask?scope=selected&ids=ce18127903df3751552ba933%2Cqa_long_youtube_compact_20260617",
+      "heading": "AI Memory",
+      "selectedText": "cy ControlssoonLibraryCaptureAskMoreAsk selectedSelected2 selected sources2 sourcesUX v2 library fixture articleQA compact card "
+    },
+    "firstCardLink": {
+      "text": "UX v2 library fixture articleArticleFull textqueued36m ago",
+      "href": "/items/ce18127903df3751552ba933",
+      "x": 77,
+      "y": 341,
+      "width": 278,
+      "height": 50.625,
+      "visible": true,
+      "center": {
+        "x": 216,
+        "y": 365
+      }
+    },
+    "cardNavigation": {
+      "href": "http://127.0.0.1:3048/items/ce18127903df3751552ba933",
+      "heading": "AI Memory",
+      "bodySample": "AI Memoryv0.6.2 · private memoryNavigationSearch⌘KCaptureLibraryNeeds Upgrade4AskSettingsPair DevicePrivacy ControlssoonLibraryCaptureAskMoreBack to LibraryOriginalDigestAskRelatedDetailsUX v2 library fixture articlequeuedSavedArticlevia We"
+    }
+  },
+  "settings": {
+    "osDarkNoTheme": {
+      "href": "http://127.0.0.1:3048/settings",
+      "width": 390,
+      "theme": "light",
+      "radios": [
+        {
+          "label": "Light theme",
+          "title": "Light",
+          "text": "",
+          "checked": "true",
+          "x": 244,
+          "y": 354,
+          "width": 44,
+          "height": 44,
+          "center": {
+            "x": 266,
+            "y": 376
+          }
+        },
+        {
+          "label": "Dark theme",
+          "title": "Dark",
+          "text": "",
+          "checked": "false",
+          "x": 292,
+          "y": 354,
+          "width": 44,
+          "height": 44,
+          "center": {
+            "x": 314,
+            "y": 376
+          }
+        }
+      ],
+      "hasSystemText": false,
+      "hasLightFirstCopy": true
+    },
+    "afterDarkClick": {
+      "href": "http://127.0.0.1:3048/settings",
+      "width": 390,
+      "theme": "dark",
+      "radios": [
+        {
+          "label": "Light theme",
+          "title": "Light",
+          "text": "",
+          "checked": "false",
+          "x": 244,
+          "y": 354,
+          "width": 44,
+          "height": 44,
+          "center": {
+            "x": 266,
+            "y": 376
+          }
+        },
+        {
+          "label": "Dark theme",
+          "title": "Dark",
+          "text": "",
+          "checked": "true",
+          "x": 292,
+          "y": 354,
+          "width": 44,
+          "height": 44,
+          "center": {
+            "x": 314,
+            "y": 376
+          }
+        }
+      ],
+      "hasSystemText": false,
+      "hasLightFirstCopy": true
+    },
+    "afterDarkReload": {
+      "href": "http://127.0.0.1:3048/settings",
+      "width": 390,
+      "theme": "dark",
+      "radios": [
+        {
+          "label": "Light theme",
+          "title": "Light",
+          "text": "",
+          "checked": "false",
+          "x": 244,
+          "y": 354,
+          "width": 44,
+          "height": 44,
+          "center": {
+            "x": 266,
+            "y": 376
+          }
+        },
+        {
+          "label": "Dark theme",
+          "title": "Dark",
+          "text": "",
+          "checked": "true",
+          "x": 292,
+          "y": 354,
+          "width": 44,
+          "height": 44,
+          "center": {
+            "x": 314,
+            "y": 376
+          }
+        }
+      ],
+      "hasSystemText": false,
+      "hasLightFirstCopy": true
+    },
+    "afterLightRestore": {
+      "href": "http://127.0.0.1:3048/settings",
+      "width": 390,
+      "theme": "light",
+      "radios": [
+        {
+          "label": "Light theme",
+          "title": "Light",
+          "text": "",
+          "checked": "true",
+          "x": 244,
+          "y": 354,
+          "width": 44,
+          "height": 44,
+          "center": {
+            "x": 266,
+            "y": 376
+          }
+        },
+        {
+          "label": "Dark theme",
+          "title": "Dark",
+          "text": "",
+          "checked": "false",
+          "x": 292,
+          "y": 354,
+          "width": 44,
+          "height": 44,
+          "center": {
+            "x": 314,
+            "y": 376
+          }
+        }
+      ],
+      "hasSystemText": false,
+      "hasLightFirstCopy": true
+    }
+  },
+  "issues": [],
+  "issueCount": 0
+}

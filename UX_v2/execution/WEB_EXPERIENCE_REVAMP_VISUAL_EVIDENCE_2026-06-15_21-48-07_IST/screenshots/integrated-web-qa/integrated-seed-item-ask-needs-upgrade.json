@@ -1,0 +1,28 @@
+{
+  "dbPath": "/tmp/ai-memory-integrated-web-qa.sqlite",
+  "tagName": "ux-v2-item-ask",
+  "topicSlug": "ux-v2-item-ask-topic",
+  "collectionId": "74c53642aa04100a6152061d",
+  "itemIds": {
+    "fullItem": "5f46cde863c4833237e21917",
+    "weakMetadataItem": "f7af2e446c668000a36e6f26",
+    "weakPreviewItem": "ae2bd3125061321c89630a9c",
+    "repairTargetItem": "b0600182610c1c1d8f9cb5d9"
+  },
+  "routes": {
+    "fullItem": "/items/5f46cde863c4833237e21917",
+    "weakItem": "/items/f7af2e446c668000a36e6f26",
+    "weakFocus": "/items/f7af2e446c668000a36e6f26?mode=focus",
+    "repairTarget": "/items/b0600182610c1c1d8f9cb5d9/repair",
+    "needsUpgrade": "/needs-upgrade",
+    "askLibrary": "/ask",
+    "askItem": "/items/5f46cde863c4833237e21917/ask",
+    "askSelected": "/ask?scope=selected&ids=5f46cde863c4833237e21917%2Cf7af2e446c668000a36e6f26",
+    "askTag": "/ask?scope=tag&tag=ux-v2-item-ask",
+    "askTopic": "/ask?scope=topic&topic=ux-v2-item-ask-topic",
+    "askCollection": "/ask?scope=collection&collection=74c53642aa04100a6152061d",
+    "askMissingSelected": "/ask?scope=selected&ids=missing-ux-v2-item",
+    "askMissingTopic": "/ask?scope=topic&topic=missing-ux-v2-topic",
+    "askMissingCollection": "/ask?scope=collection&collection=missing-ux-v2-collection"
+  }
+}

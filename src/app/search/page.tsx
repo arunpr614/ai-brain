@@ -1,7 +1,10 @@
 import { ArrowLeft, FileText, StickyNote, Globe } from "lucide-react";
+import { cookies } from "next/headers";
 import Link from "next/link";
+import { redirect } from "next/navigation";
+import { verifySessionCookie } from "@/lib/auth";
 import { getEmbedProvider } from "@/lib/embed/factory";
-import { searchUnified, type SearchMode } from "@/lib/search";
+import { searchUnifiedDetailed, type SearchMode } from "@/lib/search";
 
 function formatRelative(ts: number): string {
   const diff = Date.now() - ts;
@@ -33,6 +36,11 @@ export default async function SearchPage({
   searchParams: Promise<{ q?: string; mode?: string }>;
 }) {
   const { q = "", mode: modeParam } = await searchParams;
+  const c = await cookies();
+  if (!verifySessionCookie(c)) {
+    redirect(`/unlock?next=${encodeURIComponent(searchNextPath({ q, mode: modeParam }))}`);
+  }
+
   const query = q.trim();
   const mode: SearchMode = (VALID_MODES as string[]).includes(modeParam ?? "")
     ? (modeParam as SearchMode)
@@ -41,12 +49,12 @@ export default async function SearchPage({
   const needsEmbed = mode === "semantic" || mode === "hybrid";
   const ollamaDown = needsEmbed && !(await getEmbedProvider().isAlive());
 
-  const results = query && !ollamaDown ? await searchUnified(query, { mode, limit: 100 }) : [];
+  const results = query && !ollamaDown ? await searchUnifiedDetailed(query, { mode, limit: 100 }) : [];
 
   return (
     <div className="mx-auto max-w-[960px] px-8 py-10">
       <Link
-        href="/"
+        href="/library"
         className="mb-6 inline-flex items-center gap-1.5 text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
       >
         <ArrowLeft className="h-3.5 w-3.5" strokeWidth={2} />
@@ -78,7 +86,7 @@ export default async function SearchPage({
               href={href}
               className={`rounded-md border px-3 py-1 text-xs font-medium transition-colors ${
                 active
-                  ? "border-[var(--accent-9)] bg-[var(--accent-3)] text-[var(--accent-11)]"
+                  ? "border-[var(--control-selected-border)] bg-[var(--control-selected-bg)] text-[var(--control-selected-fg)]"
                   : "border-[var(--border)] bg-transparent text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
               }`}
             >
@@ -91,11 +99,11 @@ export default async function SearchPage({
       {ollamaDown ? (
         <div className="rounded-lg border border-[var(--danger)] bg-[var(--surface)] p-4 text-sm text-[var(--danger)]">
           <div className="mb-1 text-[11px] font-medium uppercase tracking-wider">
-            Ollama offline
+            AI search is unavailable
           </div>
           <p className="text-[var(--text-primary)]">
-            Semantic and hybrid modes need a running Ollama daemon. Start it with{" "}
-            <code className="font-mono">ollama serve</code> and refresh.
+            Semantic and hybrid search need the local AI service to be reachable.
+            Check AI services in Settings, or switch to Full-text search.
           </p>
         </div>
       ) : !query ? (
@@ -121,14 +129,14 @@ export default async function SearchPage({
               return (
                 <li key={it.id}>
                   <Link
-                    href={`/items/${it.id}`}
+                    href={`/items/${it.id}${it.matchedSources.includes("manual_note") ? "?tab=notes" : ""}`}
                     className="flex items-start gap-3 rounded-lg border border-[var(--border)] bg-[var(--surface)] p-4 hover:border-[var(--border-strong)] hover:bg-[var(--surface-raised)]"
                   >
                     <span className="mt-0.5 shrink-0 text-[var(--text-muted)]">
                       <Icon className="h-4 w-4" strokeWidth={2} />
                     </span>
                     <div className="min-w-0 flex-1">
-                      <h2 className="truncate text-[16px] font-medium text-[var(--text-primary)]">
+                      <h2 className="break-words text-[16px] font-medium leading-snug text-[var(--text-primary)]">
                         {it.title}
                       </h2>
                       <p className="mt-1 text-xs text-[var(--text-secondary)]">
@@ -136,6 +144,18 @@ export default async function SearchPage({
                         <span className="mx-2 text-[var(--text-muted)]">·</span>
                         {formatRelative(it.captured_at)}
                       </p>
+                      {it.matchedSources.includes("manual_note") && (
+                        <div className="mt-2 rounded-md border border-[var(--border)] bg-[var(--surface-raised)] px-3 py-2">
+                          <p className="text-[11px] font-medium uppercase tracking-wider text-[var(--accent-11)]">
+                            Matched in My notes
+                          </p>
+                          {it.noteSnippet && (
+                            <p className="mt-1 line-clamp-2 text-xs leading-relaxed text-[var(--text-secondary)]">
+                              {it.noteSnippet}
+                            </p>
+                          )}
+                        </div>
+                      )}
                     </div>
                   </Link>
                 </li>
@@ -146,4 +166,12 @@ export default async function SearchPage({
       )}
     </div>
   );
+}
+
+function searchNextPath(params: { q?: string; mode?: string }): string {
+  const qs = new URLSearchParams();
+  if (params.q) qs.set("q", params.q);
+  if (params.mode) qs.set("mode", params.mode);
+  const query = qs.toString();
+  return query ? `/search?${query}` : "/search";
 }

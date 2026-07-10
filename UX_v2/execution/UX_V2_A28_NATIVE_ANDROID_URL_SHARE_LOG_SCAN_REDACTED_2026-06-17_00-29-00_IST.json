@@ -1,0 +1,16 @@
+{
+  "created": "2026-06-17T00:29:00+05:30",
+  "scope": "A28 native Android URL-share log scan",
+  "rawLogPath": "/tmp/ai-brain-a28-evidence/a28-logcat-raw.txt",
+  "rawLogTracked": false,
+  "fixtureUrl": "https://www.iana.org/help/example-domains?ai_brain_qa=a28-20260617-001203",
+  "exactFixtureUrlMatches": 0,
+  "brainTokenLiteralMatches": 0,
+  "bearerLiteralMatches": 0,
+  "focused64HexMatches": 7,
+  "focused64HexClassification": "Android launcher/system certificate/debug lines; no AI Memory bearer token or brain_token literal observed.",
+  "capgoShareTargetLines": 2,
+  "capgoShareTargetClassification": "count-only lines: Share received: texts=1 files=0",
+  "rawSharePayloadObserved": false,
+  "verdict": "pass_for_log_hygiene"
+}

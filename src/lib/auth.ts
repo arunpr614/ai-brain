@@ -52,6 +52,10 @@ interface PinSetting {
 
 export const SESSION_COOKIE = "brain-session";
 
+export interface SessionCookieSource {
+  get(name: string): { value?: string } | undefined;
+}
+
 export function isPinConfigured(): boolean {
   const s = getJsonSetting<PinSetting | null>("auth.pin", null);
   return s !== null && !!s.hash;
@@ -108,6 +112,16 @@ export function verifySessionToken(token: string | undefined | null): boolean {
   const expires = Number(payload);
   if (!Number.isFinite(expires) || expires < Date.now()) return false;
   return true;
+}
+
+export function getSessionCookieValue(
+  cookies: SessionCookieSource,
+): string | undefined {
+  return cookies.get(SESSION_COOKIE)?.value;
+}
+
+export function verifySessionCookie(cookies: SessionCookieSource): boolean {
+  return verifySessionToken(getSessionCookieValue(cookies));
 }
 
 export const SESSION_COOKIE_OPTIONS = {

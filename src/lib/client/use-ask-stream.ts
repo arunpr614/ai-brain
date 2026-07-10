@@ -18,6 +18,13 @@ export interface AskRetrievedChunk {
   chunk_id: string;
   item_id: string;
   item_title: string;
+  item_source_type?: string;
+  item_source_platform?: string | null;
+  item_capture_quality?: string | null;
+  item_extraction_warning?: string | null;
+  source_kind?: "legacy_item_context" | "original_content" | "ai_summary" | "manual_note";
+  source_epoch?: number;
+  source_version?: number;
   similarity: number;
 }
 
@@ -43,8 +50,9 @@ export interface UseAskStreamResult {
 
 export interface AskRequestBody {
   question: string;
-  scope?: "library" | "item";
+  scope?: "library" | "item" | "items";
   item_id?: string;
+  item_ids?: string[];
   thread_id?: string;
   top_k?: number;
   min_similarity?: number;
@@ -103,6 +111,7 @@ export function useAskStream(): UseAskStreamResult {
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify(body),
+        cache: "no-store",
         signal: ctrl.signal,
       });
     } catch (err) {

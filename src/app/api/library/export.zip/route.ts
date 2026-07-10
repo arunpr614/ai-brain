@@ -3,7 +3,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { type ItemRow } from "@/db/client";
 import { listItems } from "@/db/items";
 import { listTagsForItem } from "@/db/tags";
-import { SESSION_COOKIE } from "@/lib/auth";
+import { verifySessionCookie } from "@/lib/auth";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -56,7 +56,7 @@ function itemToMarkdown(item: ItemRow, tags: { name: string }[]): string {
  * Streams a zip of every item as a markdown file, grouped by source_type.
  */
 export async function GET(req: NextRequest) {
-  if (!req.cookies.get(SESSION_COOKIE)?.value) {
+  if (!verifySessionCookie(req.cookies)) {
     return NextResponse.json({ error: "unauthenticated" }, { status: 401 });
   }
 
@@ -80,7 +80,7 @@ export async function GET(req: NextRequest) {
   // Top-level README so the zip is self-describing when opened.
   zip.file(
     "README.md",
-    `# AI Brain — Library export\n\nGenerated ${new Date().toISOString()}\n\n${items.length} item${items.length === 1 ? "" : "s"}, grouped by source type.\n\nEach \`.md\` file has YAML frontmatter compatible with Obsidian.\n`,
+    `# AI Memory — Library export\n\nGenerated ${new Date().toISOString()}\n\n${items.length} item${items.length === 1 ? "" : "s"}, grouped by source type.\n\nEach \`.md\` file has YAML frontmatter compatible with Obsidian.\n`,
   );
 
   const buf = await zip.generateAsync({ type: "uint8array", compression: "DEFLATE" });
@@ -88,7 +88,7 @@ export async function GET(req: NextRequest) {
     status: 200,
     headers: {
       "content-type": "application/zip",
-      "content-disposition": `attachment; filename="ai-brain-library-${new Date()
+      "content-disposition": `attachment; filename="ai-memory-library-${new Date()
         .toISOString()
         .slice(0, 10)}.zip"`,
       "cache-control": "no-store",

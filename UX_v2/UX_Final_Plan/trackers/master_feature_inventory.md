@@ -1,0 +1,24 @@
+# Master Feature Inventory Tracker
+
+Created: 2026-06-14 10:15 IST
+Source of truth: this Markdown file. CSV is a convenience export.
+
+| ID | Feature | Classification | Priority | Owner | Artifact | Next action |
+| --- | --- | --- | --- | --- | --- | --- |
+| PRD-06-FU | Capture duplicate, updated-existing, error-with-save result states | Partial | P1 | Implementation agent | `../../features/PRD-06-FU-capture-result-states-package.md` | No-go until PRD-11-SHELL verification; then define shared result type first |
+| PRD-09-FU | Attached context, high-quality-only scope, extended Ask history | Partial/Missing | P1 | Arun/Product + implementation agent | `../../features/PRD-09-FU-ask-context-scope-history-package.md` | Blocked by D-001/D-002/D-003 |
+| PRD-10 | Weak-source repair workflow | Partial | P1 | Arun/Product + implementation agent | `../../features/PRD-10-weak-source-repair-package.md` | Blocked by PRD-06-FU contract and D-004 for mark-good-enough |
+| PRD-11-SHELL | Mobile bottom nav, route-aware Capture, More | Coded-unverified | P0 | Implementation agent | Handover and PRD-11-FU | No-go until mobile and desktop smoke evidence exists |
+| PRD-11-FU | Mobile select mode, long press, mobile item tabs/focus polish | Partial/Missing | P2 | Arun/Product + implementation agent | `../../features/PRD-11-FU-mobile-shell-select-item-package.md` | Blocked by PRD-11-SHELL smoke and D-005 |
+| PRD-12 | Android unified Ask composer and add-context sheets | Missing | P1 | Implementation agent | `../../features/PRD-12-android-unified-ask-composer-package.md` | Blocked by PRD-09-FU decisions |
+| PRD-13 | Android share capture landing and result states | Partial/Missing | P1 | Implementation agent | `../../features/PRD-13-android-share-capture-package.md` | Blocked by PRD-06-FU and Android device/emulator gate |
+| PRD-14 | Settings, privacy, offline, trust states | Partial | P2 | Arun/Product + implementation agent | `../../features/PRD-14-settings-privacy-offline-package.md` | Informational-only unless D-007 approves active offline |
+| PRD-15 | Login, unlock, pairing, session, offline entry states | Partial/Missing | P2 | Arun/Product + implementation agent | `../../features/PRD-15-entry-pairing-session-offline-package.md` | Blocked by D-008/D-013 and Android device/emulator gate |
+| PRD-16 | QA evidence and release gates | Missing | P1 release gate | Implementation agent | `../../features/PRD-16-qa-evidence-release-gates-package.md` | Ready for QA planning only; not release evidence |
+| OPS-01 | Transcript operator visibility | Needs user decision | P3 | Arun/Product | `../../lightweight-specs/OPS-01-transcript-operator-visibility.md` | Decide if in UX v2 or ops/admin track |
+| OPS-02 | Transcript provider fallback strategy | Needs user decision | P3 | Arun/Product | `../../lightweight-specs/OPS-02-transcript-fallback-strategy.md` | Research separately before implementation |
+| COPY-01 | Prototype legacy copy migration | UX redesign only | P1 QA | Implementation agent | `../../lightweight-specs/COPY-01-brand-copy-and-prototype-normalization.md` | Block literal AI Brain copy |
+| DS-01 | Design-system visual parity | UX redesign only | P2 | Implementation agent | `../../lightweight-specs/DS-01-design-system-visual-parity.md` | Recheck Magic Patterns or confirm frozen design authority first |
+| YT-01 | YouTube item detail and media metadata polish | Partial | P2 | Arun/Product + implementation agent | `../../lightweight-specs/YT-01-youtube-item-detail-and-media-metadata.md` | Decide thumbnail/player scope |
+| EXT-01 | Browser extension parity with capture result contracts | Partial | P3 | Implementation agent | `../../lightweight-specs/EXT-01-browser-extension-parity.md` | Keep extension compatible if capture API changes |
+| ANALYTICS-01 | Analytics/events for UX flows | Needs user decision | P3 | Arun/Product | `../../lightweight-specs/ANALYTICS-01-events-and-privacy.md` | Default to no product analytics unless approved |

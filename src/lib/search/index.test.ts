@@ -10,9 +10,10 @@ import assert from "node:assert/strict";
 import { rmSync } from "node:fs";
 import { TEST_DB_DIR } from "./index.test.setup";
 import { insertCaptured } from "@/db/items";
+import { saveItemNote } from "@/db/item-notes";
 import { embedItem } from "@/lib/embed/pipeline";
 import { EMBED_DIM } from "@/lib/embed/client";
-import { searchUnified } from "./index";
+import { searchUnified, searchUnifiedDetailed } from "./index";
 
 test.after(() => {
   try {
@@ -54,6 +55,27 @@ test("fts mode returns exact-match ranked results", async () => {
   const hits = await searchUnified("growth loops", { mode: "fts" });
   assert.ok(hits.length >= 1);
   assert.match(hits[0].title, /Growth loops/i);
+});
+
+test("fts mode returns the parent once with private-note provenance and snippet", async () => {
+  const item = insertCaptured({
+    source_type: "url",
+    title: "Source wording does not match",
+    body: "Captured material without the personal vocabulary.",
+  });
+  saveItemNote({
+    itemId: item.id,
+    editorInstanceId: "search-test-editor",
+    mutationId: "50db3a39-74d7-4f3c-a58f-e7d78736e40a",
+    epoch: null,
+    baseGeneration: null,
+    contentMarkdown: "My private phrase is **blue orchard strategy**.",
+    saveKind: "manual",
+  });
+  const hits = await searchUnifiedDetailed("blue orchard", { mode: "fts" });
+  assert.equal(hits.filter((hit) => hit.id === item.id).length, 1);
+  assert.deepEqual(hits.find((hit) => hit.id === item.id)?.matchedSources, ["manual_note"]);
+  assert.match(hits.find((hit) => hit.id === item.id)?.noteSnippet ?? "", /blue orchard/i);
 });
 
 test("empty query returns [] regardless of mode", async () => {

@@ -2,6 +2,7 @@
 
 import { useCallback, useState } from "react";
 import type { FormEvent } from "react";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { resolveBaseUrl } from "@/lib/client/reachability-decision";
 import {
@@ -52,7 +53,7 @@ export default function SetupApkPage() {
         if (!token) {
           setStage({
             kind: "verify-error",
-            message: "Brain did not return a valid pairing token.",
+            message: "AI Memory did not return a valid pairing token.",
           });
           return;
         }
@@ -80,7 +81,7 @@ export default function SetupApkPage() {
 
   const retryConnection = useCallback(
     async (token: string) => {
-      setStage({ kind: "verifying", message: "Checking cloud connection..." });
+      setStage({ kind: "verifying", message: "Checking server connection..." });
       try {
         const resolution = await resolveBaseUrl({ token });
         if (!resolution.ok) {
@@ -104,48 +105,75 @@ export default function SetupApkPage() {
   }, []);
 
   return (
-    <div className="space-y-4">
-      <form
-        onSubmit={handleSubmit}
-        className="rounded-md border border-[var(--border)] bg-[var(--surface)] p-4"
-      >
-        <label
-          htmlFor="pairing-code"
-          className="text-sm font-medium text-[var(--text-primary)]"
-        >
-          Pairing code
-        </label>
-        <input
-          id="pairing-code"
-          value={code}
-          onChange={(event) => setCode(event.target.value.toUpperCase())}
-          autoCapitalize="characters"
-          autoComplete="one-time-code"
-          inputMode="text"
-          placeholder="ABCD-EFGH"
-          className="mt-2 w-full rounded-md border border-[var(--border)] bg-[var(--background)] px-3 py-2 font-mono text-lg text-[var(--text-primary)] outline-none focus:border-[var(--accent-8)]"
-          disabled={stage.kind === "verifying"}
+    <main className="mx-auto flex min-h-[calc(100svh-3.5rem)] max-w-[480px] flex-col px-5 pb-28 pt-8 md:min-h-screen md:justify-center md:px-8 md:py-10">
+      <header className="mb-6">
+        <Image
+          src="/ai-memory-logo.png"
+          alt=""
+          width={56}
+          height={56}
+          className="mb-4 rounded-xl"
+          unoptimized
         />
-        <p className="mt-2 text-xs text-[var(--text-muted)]">
-          Open Device pairing in the web app and generate an Android code.
+        <p className="text-sm font-medium text-[var(--text-secondary)]">
+          Android setup
         </p>
-        <button
-          type="submit"
-          disabled={stage.kind === "verifying" || code.trim().length === 0}
-          className="mt-4 inline-flex h-9 items-center rounded-md border border-[var(--border)] bg-[var(--surface-raised)] px-3 text-sm font-medium text-[var(--text-primary)] hover:border-[var(--border-strong)] disabled:opacity-50"
+        <h1 className="mt-1 text-2xl font-semibold text-[var(--text-primary)]">
+          Pair AI Memory
+        </h1>
+        <p className="mt-2 text-sm text-[var(--text-secondary)]">
+          Enter the Android code generated from Device pairing in the web app.
+          Codes work once and expire quickly.
+        </p>
+      </header>
+
+      <div className="space-y-4">
+        <form
+          onSubmit={handleSubmit}
+          className="rounded-md border border-[var(--border)] bg-[var(--surface)] p-4"
         >
-          Pair device
-        </button>
-      </form>
+          <label
+            htmlFor="pairing-code"
+            className="text-sm font-medium text-[var(--text-primary)]"
+          >
+            Pairing code
+          </label>
+          <input
+            id="pairing-code"
+            value={code}
+            onChange={(event) => setCode(event.target.value.toUpperCase())}
+            autoCapitalize="characters"
+            autoComplete="one-time-code"
+            inputMode="text"
+            placeholder="ABCD-EFGH"
+            aria-invalid={stage.kind === "verify-error" ? "true" : undefined}
+            aria-describedby="pairing-code-help"
+            className="mt-2 h-12 w-full rounded-md border border-[var(--border)] bg-[var(--background)] px-3 text-center font-mono text-lg text-[var(--text-primary)] outline-none focus:border-[var(--accent-8)]"
+            disabled={stage.kind === "verifying"}
+          />
+          <p id="pairing-code-help" className="mt-2 text-xs text-[var(--text-muted)]">
+            Open Device pairing in the web app and generate an Android code.
+          </p>
+          <button
+            type="submit"
+            disabled={stage.kind === "verifying" || code.trim().length === 0}
+            className="mt-4 inline-flex h-12 w-full items-center justify-center rounded-md bg-[var(--action-primary-bg)] px-3 text-sm font-medium text-[var(--action-primary-fg)] transition-colors hover:bg-[var(--action-primary-bg-hover)] disabled:opacity-50"
+          >
+            {stage.kind === "verifying" ? "Checking..." : "Pair device"}
+          </button>
+        </form>
 
       {stage.kind === "verify-error" && (
-        <div className="rounded-md border border-[var(--border)] bg-[var(--surface)] p-4 text-sm">
+        <div
+          role="alert"
+          className="rounded-md border border-[var(--border)] bg-[var(--surface)] p-4 text-sm"
+        >
           <p className="font-medium text-[var(--text-primary)]">Could not pair</p>
           <p className="mt-1 text-[var(--text-muted)]">{stage.message}</p>
           <button
             type="button"
             onClick={retry}
-            className="mt-3 rounded-md border border-[var(--border)] bg-[var(--surface-raised)] px-3 py-1.5 text-sm font-medium text-[var(--text-primary)] hover:border-[var(--border-strong)]"
+            className="mt-3 inline-flex h-10 w-full items-center justify-center rounded-md border border-[var(--border)] bg-[var(--surface-raised)] px-3 text-sm font-medium text-[var(--text-primary)] hover:border-[var(--border-strong)] sm:w-auto"
           >
             Try again
           </button>
@@ -153,27 +181,30 @@ export default function SetupApkPage() {
       )}
 
       {stage.kind === "paired-unreachable" && (
-        <div className="rounded-md border border-[var(--border)] bg-[var(--surface)] p-4 text-sm">
+        <div
+          role="status"
+          className="rounded-md border border-[var(--border)] bg-[var(--surface)] p-4 text-sm"
+        >
           <p className="font-medium text-[var(--text-primary)]">
-            Paired, but cloud is not reachable
+            Paired, but server is not reachable
           </p>
           <p className="mt-1 text-[var(--text-muted)]">
             The token is saved on this device. Try the connection again when the
             network is ready.
           </p>
           <p className="mt-2 text-xs text-[var(--text-muted)]">{stage.message}</p>
-          <div className="mt-3 flex flex-wrap gap-2">
+          <div className="mt-3 flex flex-col gap-2 sm:flex-row">
             <button
               type="button"
               onClick={() => retryConnection(stage.token)}
-              className="rounded-md border border-[var(--border)] bg-[var(--surface-raised)] px-3 py-1.5 text-sm font-medium text-[var(--text-primary)] hover:border-[var(--border-strong)]"
+              className="inline-flex h-10 w-full items-center justify-center rounded-md border border-[var(--border)] bg-[var(--surface-raised)] px-3 text-sm font-medium text-[var(--text-primary)] hover:border-[var(--border-strong)] sm:w-auto"
             >
               Retry connection
             </button>
             <button
               type="button"
               onClick={resetPairing}
-              className="rounded-md border border-[var(--border)] px-3 py-1.5 text-sm font-medium text-[var(--text-secondary)] hover:border-[var(--border-strong)]"
+              className="inline-flex h-10 w-full items-center justify-center rounded-md border border-[var(--border)] px-3 text-sm font-medium text-[var(--text-secondary)] hover:border-[var(--border-strong)] sm:w-auto"
             >
               Reset pairing
             </button>
@@ -182,35 +213,42 @@ export default function SetupApkPage() {
       )}
 
       {stage.kind === "verifying" && (
-        <div className="rounded-md border border-[var(--border)] bg-[var(--surface)] p-4 text-sm text-[var(--text-secondary)]">
+        <div
+          role="status"
+          className="rounded-md border border-[var(--border)] bg-[var(--surface)] p-4 text-sm text-[var(--text-secondary)]"
+        >
           {stage.message}
         </div>
       )}
 
       {stage.kind === "paired" && (
-        <div className="rounded-md border border-[var(--accent-7)] bg-[var(--accent-3)] p-4 text-sm">
+        <div
+          role="status"
+          className="rounded-md border border-[var(--accent-7)] bg-[var(--accent-3)] p-4 text-sm"
+        >
           <p className="font-medium text-[var(--accent-11)]">
-            Paired — redirecting…
+            Paired. Redirecting...
           </p>
           <p className="mt-1 text-xs text-[var(--accent-11)] opacity-80">
             Using {stage.base}
           </p>
         </div>
       )}
-    </div>
+      </div>
+    </main>
   );
 }
 
 function formatExchangeError(error: unknown, status: number): string {
   switch (error) {
     case "expired_code":
-      return "That code expired. Generate a fresh code in the web app.";
+      return "That code expired. Generate a fresh Android code from Device pairing in the web app.";
     case "used_code":
       return "That code was already used. Generate a fresh code.";
     case "rate_limited":
       return "Too many attempts. Wait a few minutes, then generate a fresh code.";
     case "token_not_configured":
-      return "Brain is missing its API token. Open settings on the web app first.";
+      return "AI Memory is missing its API token. Open settings on the web app first.";
     case "invalid_code":
       return "That code was not recognized. Check it and try again.";
     default:

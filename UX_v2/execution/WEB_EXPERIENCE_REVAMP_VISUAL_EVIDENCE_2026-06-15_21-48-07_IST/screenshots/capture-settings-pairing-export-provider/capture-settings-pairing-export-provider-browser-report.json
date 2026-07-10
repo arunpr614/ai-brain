@@ -1,0 +1,437 @@
+{
+  "generatedAt": "2026-06-15T18:21:50.439Z",
+  "baseUrl": "http://localhost:3024",
+  "dbPath": "/tmp/ai-memory-capture-settings-qa.sqlite",
+  "screenshots": [
+    {
+      "label": "desktop-capture-url-prefilled-light",
+      "route": "/capture?url=https%3A%2F%2Fexample.test%2Fux-v2-capture-duplicate",
+      "path": "/Users/arun.prakash/Documents/arunvault/arun-cursor/Initiatives/Arun_AI_Projects/ai-brain/phase2/UX_v2/execution/WEB_EXPERIENCE_REVAMP_VISUAL_EVIDENCE_2026-06-15_21-48-07_IST/screenshots/capture-settings-pairing-export-provider/desktop-capture-url-prefilled-light.png",
+      "viewport": "desktop",
+      "metrics": {
+        "activeElementTag": "INPUT",
+        "bearerTextVisible": false,
+        "h1": "AI Memory",
+        "overflowElements": [],
+        "pageHorizontalOverflow": false,
+        "rawHexTokenVisible": false,
+        "title": "AI Memory",
+        "url": "http://localhost:3024/capture?url=https%3A%2F%2Fexample.test%2Fux-v2-capture-duplicate",
+        "viewport": {
+          "height": 720,
+          "width": 1280
+        }
+      }
+    },
+    {
+      "label": "desktop-item-created-full-text-light",
+      "route": "/items/37b638a6e3874c0945480953?capture_state=created_full_text",
+      "path": "/Users/arun.prakash/Documents/arunvault/arun-cursor/Initiatives/Arun_AI_Projects/ai-brain/phase2/UX_v2/execution/WEB_EXPERIENCE_REVAMP_VISUAL_EVIDENCE_2026-06-15_21-48-07_IST/screenshots/capture-settings-pairing-export-provider/desktop-item-created-full-text-light.png",
+      "viewport": "desktop",
+      "metrics": {
+        "activeElementTag": "BODY",
+        "bearerTextVisible": false,
+        "h1": "AI Memory",
+        "overflowElements": [],
+        "pageHorizontalOverflow": false,
+        "rawHexTokenVisible": false,
+        "title": "AI Memory",
+        "url": "http://localhost:3024/items/37b638a6e3874c0945480953?capture_state=created_full_text",
+        "viewport": {
+          "height": 720,
+          "width": 1280
+        }
+      }
+    },
+    {
+      "label": "desktop-item-created-metadata-only-light",
+      "route": "/items/78fff6ec868f5aac99ddf4c0?capture_state=created_metadata_only",
+      "path": "/Users/arun.prakash/Documents/arunvault/arun-cursor/Initiatives/Arun_AI_Projects/ai-brain/phase2/UX_v2/execution/WEB_EXPERIENCE_REVAMP_VISUAL_EVIDENCE_2026-06-15_21-48-07_IST/screenshots/capture-settings-pairing-export-provider/desktop-item-created-metadata-only-light.png",
+      "viewport": "desktop",
+      "metrics": {
+        "activeElementTag": "BODY",
+        "bearerTextVisible": false,
+        "h1": "AI Memory",
+        "overflowElements": [],
+        "pageHorizontalOverflow": false,
+        "rawHexTokenVisible": false,
+        "title": "AI Memory",
+        "url": "http://localhost:3024/items/78fff6ec868f5aac99ddf4c0?capture_state=created_metadata_only",
+        "viewport": {
+          "height": 720,
+          "width": 1280
+        }
+      }
+    },
+    {
+      "label": "desktop-item-created-preview-only-light",
+      "route": "/items/0ffdde30022f773b52f9c106?capture_state=created_preview_only",
+      "path": "/Users/arun.prakash/Documents/arunvault/arun-cursor/Initiatives/Arun_AI_Projects/ai-brain/phase2/UX_v2/execution/WEB_EXPERIENCE_REVAMP_VISUAL_EVIDENCE_2026-06-15_21-48-07_IST/screenshots/capture-settings-pairing-export-provider/desktop-item-created-preview-only-light.png",
+      "viewport": "desktop",
+      "metrics": {
+        "activeElementTag": "BODY",
+        "bearerTextVisible": false,
+        "h1": "AI Memory",
+        "overflowElements": [],
+        "pageHorizontalOverflow": false,
+        "rawHexTokenVisible": false,
+        "title": "AI Memory",
+        "url": "http://localhost:3024/items/0ffdde30022f773b52f9c106?capture_state=created_preview_only",
+        "viewport": {
+          "height": 720,
+          "width": 1280
+        }
+      }
+    },
+    {
+      "label": "desktop-item-duplicate-existing-light",
+      "route": "/items/a6f2015581e3bc1471d98bbd?capture_state=duplicate_existing",
+      "path": "/Users/arun.prakash/Documents/arunvault/arun-cursor/Initiatives/Arun_AI_Projects/ai-brain/phase2/UX_v2/execution/WEB_EXPERIENCE_REVAMP_VISUAL_EVIDENCE_2026-06-15_21-48-07_IST/screenshots/capture-settings-pairing-export-provider/desktop-item-duplicate-existing-light.png",
+      "viewport": "desktop",
+      "metrics": {
+        "activeElementTag": "BODY",
+        "bearerTextVisible": false,
+        "h1": "AI Memory",
+        "overflowElements": [],
+        "pageHorizontalOverflow": false,
+        "rawHexTokenVisible": false,
+        "title": "AI Memory",
+        "url": "http://localhost:3024/items/a6f2015581e3bc1471d98bbd?capture_state=duplicate_existing",
+        "viewport": {
+          "height": 720,
+          "width": 1280
+        }
+      }
+    },
+    {
+      "label": "desktop-item-error-with-saved-item-light",
+      "route": "/items/37b638a6e3874c0945480953?capture_state=error_with_saved_item",
+      "path": "/Users/arun.prakash/Documents/arunvault/arun-cursor/Initiatives/Arun_AI_Projects/ai-brain/phase2/UX_v2/execution/WEB_EXPERIENCE_REVAMP_VISUAL_EVIDENCE_2026-06-15_21-48-07_IST/screenshots/capture-settings-pairing-export-provider/desktop-item-error-with-saved-item-light.png",
+      "viewport": "desktop",
+      "metrics": {
+        "activeElementTag": "BODY",
+        "bearerTextVisible": false,
+        "h1": "AI Memory",
+        "overflowElements": [],
+        "pageHorizontalOverflow": false,
+        "rawHexTokenVisible": false,
+        "title": "AI Memory",
+        "url": "http://localhost:3024/items/37b638a6e3874c0945480953?capture_state=error_with_saved_item",
+        "viewport": {
+          "height": 720,
+          "width": 1280
+        }
+      }
+    },
+    {
+      "label": "desktop-item-pdf-saved-light",
+      "route": "/items/21478edba7a1efcd9b639007?capture_state=created_full_text",
+      "path": "/Users/arun.prakash/Documents/arunvault/arun-cursor/Initiatives/Arun_AI_Projects/ai-brain/phase2/UX_v2/execution/WEB_EXPERIENCE_REVAMP_VISUAL_EVIDENCE_2026-06-15_21-48-07_IST/screenshots/capture-settings-pairing-export-provider/desktop-item-pdf-saved-light.png",
+      "viewport": "desktop",
+      "metrics": {
+        "activeElementTag": "BODY",
+        "bearerTextVisible": false,
+        "h1": "AI Memory",
+        "overflowElements": [],
+        "pageHorizontalOverflow": false,
+        "rawHexTokenVisible": false,
+        "title": "AI Memory",
+        "url": "http://localhost:3024/items/21478edba7a1efcd9b639007?capture_state=created_full_text",
+        "viewport": {
+          "height": 720,
+          "width": 1280
+        }
+      }
+    },
+    {
+      "label": "desktop-needs-upgrade-light",
+      "route": "/needs-upgrade",
+      "path": "/Users/arun.prakash/Documents/arunvault/arun-cursor/Initiatives/Arun_AI_Projects/ai-brain/phase2/UX_v2/execution/WEB_EXPERIENCE_REVAMP_VISUAL_EVIDENCE_2026-06-15_21-48-07_IST/screenshots/capture-settings-pairing-export-provider/desktop-needs-upgrade-light.png",
+      "viewport": "desktop",
+      "metrics": {
+        "activeElementTag": "BODY",
+        "bearerTextVisible": false,
+        "h1": "AI Memory",
+        "overflowElements": [],
+        "pageHorizontalOverflow": false,
+        "rawHexTokenVisible": false,
+        "title": "AI Memory",
+        "url": "http://localhost:3024/needs-upgrade",
+        "viewport": {
+          "height": 720,
+          "width": 1280
+        }
+      }
+    },
+    {
+      "label": "desktop-settings-light",
+      "route": "/settings",
+      "path": "/Users/arun.prakash/Documents/arunvault/arun-cursor/Initiatives/Arun_AI_Projects/ai-brain/phase2/UX_v2/execution/WEB_EXPERIENCE_REVAMP_VISUAL_EVIDENCE_2026-06-15_21-48-07_IST/screenshots/capture-settings-pairing-export-provider/desktop-settings-light.png",
+      "viewport": "desktop",
+      "metrics": {
+        "activeElementTag": "BODY",
+        "bearerTextVisible": false,
+        "h1": "AI Memory",
+        "overflowElements": [],
+        "pageHorizontalOverflow": false,
+        "rawHexTokenVisible": false,
+        "title": "AI Memory",
+        "url": "http://localhost:3024/settings",
+        "viewport": {
+          "height": 720,
+          "width": 1280
+        }
+      }
+    },
+    {
+      "label": "desktop-settings-tags-light",
+      "route": "/settings/tags",
+      "path": "/Users/arun.prakash/Documents/arunvault/arun-cursor/Initiatives/Arun_AI_Projects/ai-brain/phase2/UX_v2/execution/WEB_EXPERIENCE_REVAMP_VISUAL_EVIDENCE_2026-06-15_21-48-07_IST/screenshots/capture-settings-pairing-export-provider/desktop-settings-tags-light.png",
+      "viewport": "desktop",
+      "metrics": {
+        "activeElementTag": "BODY",
+        "bearerTextVisible": false,
+        "h1": "AI Memory",
+        "overflowElements": [],
+        "pageHorizontalOverflow": false,
+        "rawHexTokenVisible": false,
+        "title": "AI Memory",
+        "url": "http://localhost:3024/settings/tags",
+        "viewport": {
+          "height": 720,
+          "width": 1280
+        }
+      }
+    },
+    {
+      "label": "desktop-settings-collections-light",
+      "route": "/settings/collections",
+      "path": "/Users/arun.prakash/Documents/arunvault/arun-cursor/Initiatives/Arun_AI_Projects/ai-brain/phase2/UX_v2/execution/WEB_EXPERIENCE_REVAMP_VISUAL_EVIDENCE_2026-06-15_21-48-07_IST/screenshots/capture-settings-pairing-export-provider/desktop-settings-collections-light.png",
+      "viewport": "desktop",
+      "metrics": {
+        "activeElementTag": "BODY",
+        "bearerTextVisible": false,
+        "h1": "AI Memory",
+        "overflowElements": [],
+        "pageHorizontalOverflow": false,
+        "rawHexTokenVisible": false,
+        "title": "AI Memory",
+        "url": "http://localhost:3024/settings/collections",
+        "viewport": {
+          "height": 720,
+          "width": 1280
+        }
+      }
+    },
+    {
+      "label": "desktop-device-pairing-collapsed-light",
+      "route": "/settings/device-pairing",
+      "path": "/Users/arun.prakash/Documents/arunvault/arun-cursor/Initiatives/Arun_AI_Projects/ai-brain/phase2/UX_v2/execution/WEB_EXPERIENCE_REVAMP_VISUAL_EVIDENCE_2026-06-15_21-48-07_IST/screenshots/capture-settings-pairing-export-provider/desktop-device-pairing-collapsed-light.png",
+      "viewport": "desktop",
+      "metrics": {
+        "activeElementTag": "BODY",
+        "bearerTextVisible": false,
+        "h1": "AI Memory",
+        "overflowElements": [],
+        "pageHorizontalOverflow": false,
+        "rawHexTokenVisible": false,
+        "title": "AI Memory",
+        "url": "http://localhost:3024/settings/device-pairing",
+        "viewport": {
+          "height": 720,
+          "width": 1280
+        }
+      }
+    },
+    {
+      "label": "desktop-device-pairing-advanced-token-masked-light",
+      "route": "/settings/device-pairing",
+      "path": "/Users/arun.prakash/Documents/arunvault/arun-cursor/Initiatives/Arun_AI_Projects/ai-brain/phase2/UX_v2/execution/WEB_EXPERIENCE_REVAMP_VISUAL_EVIDENCE_2026-06-15_21-48-07_IST/screenshots/capture-settings-pairing-export-provider/desktop-device-pairing-advanced-token-masked-light.png",
+      "viewport": "desktop",
+      "metrics": {
+        "activeElementTag": "BUTTON",
+        "bearerTextVisible": false,
+        "h1": "AI Memory",
+        "overflowElements": [],
+        "pageHorizontalOverflow": false,
+        "rawHexTokenVisible": false,
+        "title": "AI Memory",
+        "url": "http://localhost:3024/settings/device-pairing",
+        "viewport": {
+          "height": 720,
+          "width": 1280
+        }
+      }
+    },
+    {
+      "label": "desktop-device-pairing-android-code-light",
+      "route": "/settings/device-pairing",
+      "path": "/Users/arun.prakash/Documents/arunvault/arun-cursor/Initiatives/Arun_AI_Projects/ai-brain/phase2/UX_v2/execution/WEB_EXPERIENCE_REVAMP_VISUAL_EVIDENCE_2026-06-15_21-48-07_IST/screenshots/capture-settings-pairing-export-provider/desktop-device-pairing-android-code-light.png",
+      "viewport": "desktop",
+      "metrics": {
+        "activeElementTag": "BODY",
+        "bearerTextVisible": false,
+        "h1": "AI Memory",
+        "overflowElements": [],
+        "pageHorizontalOverflow": false,
+        "rawHexTokenVisible": false,
+        "title": "AI Memory",
+        "url": "http://localhost:3024/settings/device-pairing",
+        "viewport": {
+          "height": 720,
+          "width": 1280
+        }
+      },
+      "sensitiveScreenshot": "local-only temporary pairing code visible"
+    },
+    {
+      "label": "mobile-capture-url-prefilled-light",
+      "route": "/capture?url=https%3A%2F%2Fexample.test%2Fux-v2-capture-duplicate",
+      "path": "/Users/arun.prakash/Documents/arunvault/arun-cursor/Initiatives/Arun_AI_Projects/ai-brain/phase2/UX_v2/execution/WEB_EXPERIENCE_REVAMP_VISUAL_EVIDENCE_2026-06-15_21-48-07_IST/screenshots/capture-settings-pairing-export-provider/mobile-capture-url-prefilled-light.png",
+      "viewport": "mobile",
+      "metrics": {
+        "activeElementTag": "INPUT",
+        "bearerTextVisible": false,
+        "h1": "AI Memory",
+        "overflowElements": [],
+        "pageHorizontalOverflow": false,
+        "rawHexTokenVisible": false,
+        "title": "AI Memory",
+        "url": "http://localhost:3024/capture?url=https%3A%2F%2Fexample.test%2Fux-v2-capture-duplicate",
+        "viewport": {
+          "height": 844,
+          "width": 390
+        }
+      }
+    },
+    {
+      "label": "mobile-capture-pdf-light",
+      "route": "/capture?tab=pdf",
+      "path": "/Users/arun.prakash/Documents/arunvault/arun-cursor/Initiatives/Arun_AI_Projects/ai-brain/phase2/UX_v2/execution/WEB_EXPERIENCE_REVAMP_VISUAL_EVIDENCE_2026-06-15_21-48-07_IST/screenshots/capture-settings-pairing-export-provider/mobile-capture-pdf-light.png",
+      "viewport": "mobile",
+      "metrics": {
+        "activeElementTag": "BODY",
+        "bearerTextVisible": false,
+        "h1": "AI Memory",
+        "overflowElements": [],
+        "pageHorizontalOverflow": false,
+        "rawHexTokenVisible": false,
+        "title": "AI Memory",
+        "url": "http://localhost:3024/capture?tab=pdf",
+        "viewport": {
+          "height": 844,
+          "width": 390
+        }
+      }
+    },
+    {
+      "label": "mobile-capture-note-light",
+      "route": "/capture?tab=note",
+      "path": "/Users/arun.prakash/Documents/arunvault/arun-cursor/Initiatives/Arun_AI_Projects/ai-brain/phase2/UX_v2/execution/WEB_EXPERIENCE_REVAMP_VISUAL_EVIDENCE_2026-06-15_21-48-07_IST/screenshots/capture-settings-pairing-export-provider/mobile-capture-note-light.png",
+      "viewport": "mobile",
+      "metrics": {
+        "activeElementTag": "BODY",
+        "bearerTextVisible": false,
+        "h1": "AI Memory",
+        "overflowElements": [],
+        "pageHorizontalOverflow": false,
+        "rawHexTokenVisible": false,
+        "title": "AI Memory",
+        "url": "http://localhost:3024/capture?tab=note",
+        "viewport": {
+          "height": 844,
+          "width": 390
+        }
+      }
+    },
+    {
+      "label": "mobile-device-pairing-collapsed-light",
+      "route": "/settings/device-pairing",
+      "path": "/Users/arun.prakash/Documents/arunvault/arun-cursor/Initiatives/Arun_AI_Projects/ai-brain/phase2/UX_v2/execution/WEB_EXPERIENCE_REVAMP_VISUAL_EVIDENCE_2026-06-15_21-48-07_IST/screenshots/capture-settings-pairing-export-provider/mobile-device-pairing-collapsed-light.png",
+      "viewport": "mobile",
+      "metrics": {
+        "activeElementTag": "BODY",
+        "bearerTextVisible": false,
+        "h1": "AI Memory",
+        "overflowElements": [],
+        "pageHorizontalOverflow": false,
+        "rawHexTokenVisible": false,
+        "title": "AI Memory",
+        "url": "http://localhost:3024/settings/device-pairing",
+        "viewport": {
+          "height": 844,
+          "width": 390
+        }
+      }
+    },
+    {
+      "label": "desktop-settings-dark",
+      "route": "/settings",
+      "path": "/Users/arun.prakash/Documents/arunvault/arun-cursor/Initiatives/Arun_AI_Projects/ai-brain/phase2/UX_v2/execution/WEB_EXPERIENCE_REVAMP_VISUAL_EVIDENCE_2026-06-15_21-48-07_IST/screenshots/capture-settings-pairing-export-provider/desktop-settings-dark.png",
+      "viewport": "desktop",
+      "metrics": {
+        "activeElementTag": "BODY",
+        "bearerTextVisible": false,
+        "h1": "AI Memory",
+        "overflowElements": [],
+        "pageHorizontalOverflow": false,
+        "rawHexTokenVisible": false,
+        "title": "AI Memory",
+        "url": "http://localhost:3024/settings",
+        "viewport": {
+          "height": 720,
+          "width": 1280
+        }
+      }
+    },
+    {
+      "label": "desktop-device-pairing-collapsed-dark",
+      "route": "/settings/device-pairing",
+      "path": "/Users/arun.prakash/Documents/arunvault/arun-cursor/Initiatives/Arun_AI_Projects/ai-brain/phase2/UX_v2/execution/WEB_EXPERIENCE_REVAMP_VISUAL_EVIDENCE_2026-06-15_21-48-07_IST/screenshots/capture-settings-pairing-export-provider/desktop-device-pairing-collapsed-dark.png",
+      "viewport": "desktop",
+      "metrics": {
+        "activeElementTag": "BODY",
+        "bearerTextVisible": false,
+        "h1": "AI Memory",
+        "overflowElements": [],
+        "pageHorizontalOverflow": false,
+        "rawHexTokenVisible": false,
+        "title": "AI Memory",
+        "url": "http://localhost:3024/settings/device-pairing",
+        "viewport": {
+          "height": 720,
+          "width": 1280
+        }
+      }
+    }
+  ],
+  "screenshotCount": 20,
+  "tokenSafety": {
+    "advancedSetupExpanded": true,
+    "copyButtonClicked": true,
+    "rawTokenTextVisibleBeforeCopy": false,
+    "rawTokenTextVisibleAfterCopy": false,
+    "screenshotStoresMaskedTokenOnly": true
+  },
+  "apiChecks": {
+    "exportZip": {
+      "status": 200,
+      "contentType": "application/zip",
+      "contentDisposition": "attachment; filename=\"ai-memory-library-2026-06-15.zip\"",
+      "cacheControl": "no-store",
+      "byteLength": 3947
+    },
+    "providerStatus": {
+      "status": 200,
+      "cacheControl": "no-store, no-cache, must-revalidate",
+      "pragma": "no-cache",
+      "llmStatus": "unreachable",
+      "embedStatus": "unreachable"
+    }
+  },
+  "console": {
+    "relevantWarningErrorCount": 0,
+    "relevantWarningErrors": []
+  },
+  "issues": []
+}

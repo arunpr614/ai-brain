@@ -66,6 +66,7 @@ export type BearerVerdict = { ok: true } | { ok: false; reason: BearerRejection 
  */
 export const BEARER_ROUTES: ReadonlyArray<string> = [
   "/api/capture/url",
+  "/api/capture/transcript",
   "/api/capture/pdf",
   "/api/capture/note",
   "/api/items",

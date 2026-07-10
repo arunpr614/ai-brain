@@ -1,0 +1,304 @@
+{
+  "createdAt": "2026-06-16T15:12:19.497Z",
+  "projectRoot": "/Users/arun.prakash/Library/CloudStorage/GoogleDrive-arun.prakash@toasttab.com/Other computers/My MacBook Pro M1 2025/arun-cursor/Initiatives/Arun_AI_Projects/ai-brain/phase2",
+  "statuses": [
+    "preflight_passed",
+    "runtime_blocked",
+    "release_blocked"
+  ],
+  "preflightPassed": true,
+  "runtimeBlocked": true,
+  "releaseBlocked": true,
+  "runtimeBlockedReasons": [
+    "adb was not found in PATH or bounded SDK locations.",
+    "No fresh A6 APK build was run; existing APK artifacts predate the current UX v2 execution evidence.",
+    "Direct Android VIEW launch into /setup-apk is not supported by the manifest."
+  ],
+  "sourceFiles": {
+    "gradle": "android/app/build.gradle",
+    "capacitor": "capacitor.config.ts",
+    "manifest": "android/app/src/main/AndroidManifest.xml",
+    "offline": "public/offline.html",
+    "sw": "public/sw.js"
+  },
+  "androidMetadata": {
+    "gradle": {
+      "namespace": "com.arunprakash.brain",
+      "applicationId": "com.arunprakash.brain",
+      "versionName": "1.0.4",
+      "versionCode": 5,
+      "apkOutputName": "brain-debug-v1.0.4-code5.apk"
+    },
+    "capacitor": {
+      "appId": "com.arunprakash.brain",
+      "appName": "AI Memory",
+      "webDir": "public",
+      "serverUrl": "https://brain.arunp.in",
+      "androidScheme": "https",
+      "errorPath": "offline.html",
+      "capacitorHttpEnabled": false
+    }
+  },
+  "apk": {
+    "expectedGradleOutput": {
+      "path": "android/app/build/outputs/apk/debug/brain-debug-v1.0.4-code5.apk",
+      "exists": true,
+      "sizeBytes": 7856705,
+      "mtimeIso": "2026-06-16T13:13:59.184Z",
+      "sha256": "a4be82c4d8d51de81345e27441af250bc1a8300f4646388dbd50522875c021b7"
+    },
+    "expectedPublishedArtifact": {
+      "path": "data/artifacts/brain-debug-v1.0.4-code5.apk",
+      "exists": true,
+      "sizeBytes": 7856705,
+      "mtimeIso": "2026-06-16T14:58:05.313Z",
+      "sha256": "a4be82c4d8d51de81345e27441af250bc1a8300f4646388dbd50522875c021b7"
+    },
+    "apkFreshness": "stale_or_unproven",
+    "freshnessReason": "Existing APK output/artifact exists, but A6 did not run a fresh APK build or Android install."
+  },
+  "tooling": {
+    "sdkRoots": [
+      {
+        "path": "/Users/arun.prakash/Library/Android/sdk",
+        "exists": false
+      },
+      {
+        "path": "/opt/android-sdk",
+        "exists": false
+      },
+      {
+        "path": "/usr/local/share/android-sdk",
+        "exists": false
+      }
+    ],
+    "adb": {
+      "name": "adb",
+      "found": false
+    },
+    "emulator": {
+      "name": "emulator",
+      "found": false
+    },
+    "java": {
+      "name": "java",
+      "found": true,
+      "path": "/usr/bin/java",
+      "source": "PATH",
+      "version": "openjdk version \"17.0.19\" 2026-04-21"
+    },
+    "keytool": {
+      "name": "keytool",
+      "found": true,
+      "path": "/usr/bin/keytool",
+      "source": "PATH",
+      "version": "Key and Certificate Management Tool"
+    },
+    "adbDevices": {
+      "attempted": false,
+      "deviceCount": 0,
+      "devices": [],
+      "note": "adb was not found, so no Android runtime was inspected."
+    }
+  },
+  "manifestSupport": {
+    "launcher": true,
+    "shareText": true,
+    "sharePdf": true,
+    "shareMultiplePdf": true,
+    "cameraPermission": true,
+    "cameraRequiredFalse": true,
+    "directViewSetup": false,
+    "directViewSetupStatus": "not_supported_by_manifest"
+  },
+  "offlineServiceWorker": {
+    "offlineTitlePresent": true,
+    "serverRequiredFallbackCopy": true,
+    "noOfflineQueueCopy": true,
+    "activeOfflineSyncClaimAbsent": true,
+    "offlineReadClaimAbsent": true,
+    "retryHealthProbe": true,
+    "productionOriginMapping": true,
+    "capacitorLocalOriginMapping": true,
+    "cacheNames": {
+      "SHELL_CACHE": "ai-memory-shell-v5",
+      "STATIC_CACHE": "ai-memory-static-v5",
+      "PAGES_CACHE": "ai-memory-pages-v5"
+    },
+    "precacheOfflineHtml": true,
+    "networkOnlyApi": true,
+    "networkOnlyUnlock": true,
+    "networkOnlySetupApk": true,
+    "localDevBypass": true,
+    "purgesLegacyCaches": true,
+    "staleWhileRevalidatePages": true
+  },
+  "evidenceLabels": [
+    {
+      "surface": "/library",
+      "currentLabel": "Browser mobile only",
+      "runtimeRequired": true,
+      "status": "browser_validated",
+      "note": "Validated in mobile browser harness only; Android WebView runtime evidence is still required."
+    },
+    {
+      "surface": "/ask",
+      "currentLabel": "Browser mobile only",
+      "runtimeRequired": true,
+      "status": "browser_validated",
+      "note": "Validated in mobile browser harness only; Android WebView runtime evidence is still required."
+    },
+    {
+      "surface": "/capture",
+      "currentLabel": "Browser mobile only",
+      "runtimeRequired": true,
+      "status": "browser_validated",
+      "note": "Validated in mobile browser harness only; Android WebView runtime evidence is still required."
+    },
+    {
+      "surface": "/capture/share-result",
+      "currentLabel": "Browser mobile only",
+      "runtimeRequired": true,
+      "status": "browser_validated",
+      "note": "Validated in mobile browser harness only; Android WebView runtime evidence is still required."
+    },
+    {
+      "surface": "/items/[id]",
+      "currentLabel": "Browser mobile only",
+      "runtimeRequired": true,
+      "status": "browser_validated",
+      "note": "Validated in mobile browser harness only; Android WebView runtime evidence is still required."
+    },
+    {
+      "surface": "/items/[id]/ask",
+      "currentLabel": "Browser mobile only",
+      "runtimeRequired": true,
+      "status": "browser_validated",
+      "note": "Validated in mobile browser harness only; Android WebView runtime evidence is still required."
+    },
+    {
+      "surface": "/items/[id]/repair",
+      "currentLabel": "Browser mobile only",
+      "runtimeRequired": true,
+      "status": "browser_validated",
+      "note": "Validated in mobile browser harness only; Android WebView runtime evidence is still required."
+    },
+    {
+      "surface": "/needs-upgrade",
+      "currentLabel": "Browser mobile only",
+      "runtimeRequired": true,
+      "status": "browser_validated",
+      "note": "Validated in mobile browser harness only; Android WebView runtime evidence is still required."
+    },
+    {
+      "surface": "/more",
+      "currentLabel": "Browser mobile only",
+      "runtimeRequired": true,
+      "status": "browser_validated",
+      "note": "Validated in mobile browser harness only; Android WebView runtime evidence is still required."
+    },
+    {
+      "surface": "/topics/[slug]",
+      "currentLabel": "Browser mobile only",
+      "runtimeRequired": true,
+      "status": "browser_validated",
+      "note": "Validated in mobile browser harness only; Android WebView runtime evidence is still required."
+    },
+    {
+      "surface": "/collections/[id]",
+      "currentLabel": "Browser mobile only",
+      "runtimeRequired": true,
+      "status": "browser_validated",
+      "note": "Validated in mobile browser harness only; Android WebView runtime evidence is still required."
+    },
+    {
+      "surface": "/settings/device-pairing",
+      "currentLabel": "Browser mobile only",
+      "runtimeRequired": true,
+      "status": "browser_validated",
+      "note": "Validated in mobile browser harness only; Android WebView runtime evidence is still required."
+    },
+    {
+      "surface": "/setup",
+      "currentLabel": "Browser mobile only",
+      "runtimeRequired": true,
+      "status": "browser_validated",
+      "note": "Validated in mobile browser harness only; Android WebView runtime evidence is still required."
+    },
+    {
+      "surface": "/unlock",
+      "currentLabel": "Browser mobile only",
+      "runtimeRequired": true,
+      "status": "browser_validated",
+      "note": "Validated in mobile browser harness only; Android WebView runtime evidence is still required."
+    },
+    {
+      "surface": "/setup-apk",
+      "currentLabel": "Browser mobile only",
+      "runtimeRequired": true,
+      "status": "browser_validated",
+      "note": "Validated in mobile browser harness only; Android WebView runtime evidence is still required."
+    },
+    {
+      "surface": "offline fallback",
+      "currentLabel": "Android runtime blocked",
+      "runtimeRequired": true,
+      "status": "runtime_blocked",
+      "note": "Offline page and service worker were inspected statically; WebView offline launch and cache behavior still need device proof."
+    },
+    {
+      "surface": "native share URL",
+      "currentLabel": "Android manifest inspected",
+      "runtimeRequired": true,
+      "status": "preflight_only",
+      "note": "text/plain SEND filter exists, but Android share-sheet delivery into the app was not run."
+    },
+    {
+      "surface": "native share PDF",
+      "currentLabel": "Android manifest inspected",
+      "runtimeRequired": true,
+      "status": "preflight_only",
+      "note": "application/pdf SEND and SEND_MULTIPLE filters exist, but WebView memory/runtime handling was not run."
+    },
+    {
+      "surface": "pairing token persistence",
+      "currentLabel": "Android runtime blocked",
+      "runtimeRequired": true,
+      "status": "runtime_blocked",
+      "note": "Browser cookie injection does not prove Capacitor/WebView storage persistence after restart."
+    },
+    {
+      "surface": "WebView asset pickup",
+      "currentLabel": "APK artifact stale or unproven",
+      "runtimeRequired": true,
+      "status": "release_blocked",
+      "note": "Existing APK artifacts were inspected, but no fresh A6 build or device install was run."
+    },
+    {
+      "surface": "stale cache recovery",
+      "currentLabel": "Android runtime blocked",
+      "runtimeRequired": true,
+      "status": "runtime_blocked",
+      "note": "Service-worker cache cleanup was inspected statically; stale-cache recovery needs WebView runtime proof."
+    },
+    {
+      "surface": "direct VIEW /setup-apk",
+      "currentLabel": "Not supported by manifest",
+      "runtimeRequired": false,
+      "status": "not_supported_by_manifest",
+      "note": "No Android VIEW intent filter targets /setup-apk; do not claim direct deep-link support."
+    }
+  ],
+  "validationNextCommands": [
+    "ALLOW_REBUILD_SAME_APK_VERSION=1 npm run build:apk",
+    "adb devices -l",
+    "adb install -r data/artifacts/brain-debug-v1.0.4-code5.apk",
+    "adb shell monkey -p com.arunprakash.brain 1",
+    "Use chrome://inspect or equivalent WebView inspection to verify loaded origin, cookies, service worker, and cache behavior."
+  ],
+  "noBehaviorChangeExpected": true,
+  "notes": [
+    "A6 is a preflight evidence gate, not a substitute for Android device or emulator validation.",
+    "Do not promote the APK to production until runtime validation, backup/rollback, live smoke, WebView asset pickup, and stale-cache recovery are complete."
+  ]
+}

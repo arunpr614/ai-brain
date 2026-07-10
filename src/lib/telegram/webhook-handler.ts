@@ -143,7 +143,7 @@ export async function handleTelegramWebhookPost(
     });
     await deps.sendMessage(
       msg.chat.id,
-      "Capture failed. I logged the details in Brain.",
+      "Capture failed. I logged the details in AI Memory.",
     ).catch(() => {});
     return NextResponse.json({ error: "retryable_capture_failure" }, { status: 503 });
   }
