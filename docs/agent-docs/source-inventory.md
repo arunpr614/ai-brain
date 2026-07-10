@@ -216,5 +216,7 @@ Generated from the fetched `origin/main` baseline and the documentation worktree
 | `src/lib/telegram/webhook-handler.ts` | Main + Worktree | Library module | Telegram | Supporting implementation | Telegram | Capture-and-Ingestion | 2b4db9540d0b76ee6d3aa2a9da5f788b69a8d02a |
 | `src/lib/telegram/webhook-rate-limit.ts` | Main + Worktree | Library module | Telegram | Supporting implementation | Telegram | Capture-and-Ingestion | 2b4db9540d0b76ee6d3aa2a9da5f788b69a8d02a |
 | `src/lib/theme.ts` | Main + Worktree | Library module | Application shell | Supporting implementation | Application shell | System-Architecture | 2b4db9540d0b76ee6d3aa2a9da5f788b69a8d02a |
+| `docs/feature-council/**/*.md` | Feature Council artifact | Planning evidence | Product planning | Planned only | Feature Council research | Feature-Council-Research | 9de8de87de915e874e8290aa556e2b6772d6fabf |
+| `scripts/build-feature-council-wiki.mjs` | Documentation branch | Documentation generator | Documentation | Operational tool | Feature Council publication | Documentation-Maintenance | Manifest-driven deterministic generation and checksum validation |
 | `package.json#scripts` | Main + Worktree | Script registry | Operations | Operational tool | Command safety | Command-Safety | command-safety-registry.md |
 | `ROADMAP_TRACKER.md` planned lanes | Main + Worktree | Planning evidence | Product roadmap | Planned only | Future parity | Product-Overview | Tracker evidence only; never implementation proof |

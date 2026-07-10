@@ -17,6 +17,8 @@ Review documentation when a change touches routes/actions, migrations/database b
 
 Feature changes update the coverage ledger. Script changes update the command-safety registry. Baseline changes update page metadata and pinned source links.
 
+Feature Council research pages are generated from `docs/feature-council/` through the versioned manifest at `docs/agent-docs/feature-council-wiki-manifest.json`. Update the source artifacts and manifest, regenerate, then commit the generated `Feature-Council-*.md` pages. Do not hand-edit generated research pages.
+
 ## Canonical Validation
 
 ```bash
@@ -26,16 +28,18 @@ npm run check:agent-docs
 
 The privacy check must scan actual canonical Markdown and fail when no files exist. Structure validates the exact page set, metadata, links, source revisions, tables, and Mermaid fences. Coverage validates inventory classifications, feature status, every package script, and public command safety.
 
+The Feature Council generator check additionally proves one-to-one source mapping, checksums, lifecycle successors, sanitized disclosure state, immutable prototype references, and normalized wiki filenames.
+
 ## Publication Sequence
 
 1. Commit and push canonical documentation.
 2. Clone the wiki and record its base SHA.
-3. Replace its page set from `docs/wiki/` and remove the temporary test page.
+3. Replace its page set from `docs/wiki/` and remove the temporary test page. The expected set is 18 core files plus 44 Feature Council research files.
 4. Run privacy and structure checks against the clone.
 5. Fetch the wiki remote again and verify the remote SHA still equals the recorded base.
 6. Commit and push normally; never force-push.
 7. Fresh-clone and rerun checks.
-8. Inspect every rendered page, sidebar link, table, code block, pinned source link, and Mermaid diagram.
+8. Inspect every rendered page, sidebar link, table, code block, pinned source link, Feature Council lifecycle banner, and Mermaid diagram.
 9. Record canonical, before-wiki, and after-wiki SHAs in the publication report.
 
 ## Rollback

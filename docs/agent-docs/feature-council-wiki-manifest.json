@@ -1,0 +1,477 @@
+{
+  "version": 1,
+  "artifactSourceCommit": "9de8de87de915e874e8290aa556e2b6772d6fabf",
+  "artifactSourceBranch": "codex/ai-brain-feature-council-20260628",
+  "auditedApplicationBaseline": "2b4db9540d0b76ee6d3aa2a9da5f788b69a8d02a",
+  "researchEvidenceDate": "2026-06-28",
+  "sourceRoot": "docs/feature-council",
+  "destinationRoot": "docs/wiki",
+  "landingPage": "Feature-Council-Research.md",
+  "disclosurePolicy": {
+    "classification": "public technical planning",
+    "sanitizedPatterns": [
+      "absolute local filesystem paths",
+      "personal user names",
+      "live AI Brain hostnames",
+      "vendor-specific deployment topology"
+    ]
+  },
+  "prototypeSources": [
+    "docs/feature-council/prototypes/master-ai-brain-prototype.html",
+    "docs/feature-council/prototypes/fcp001-capture-repair-center.html",
+    "docs/feature-council/prototypes/fcp003-contextual-ask-evidence.html",
+    "docs/feature-council/prototypes/fcp005-trust-center.html"
+  ],
+  "documents": [
+    {
+      "source": "docs/feature-council/00_CORE_ARTIFACTS_v1.md",
+      "destination": "Feature-Council-Core-Artifacts-v1.md",
+      "lifecycle": "historical",
+      "successors": [
+        "Feature-Council-Research.md"
+      ],
+      "disclosure": "reviewed-sanitized",
+      "sourceSha256": "2281b8cd354de7830c307aca3b71844e41694bb002fff9e8773bbaee78b03627",
+      "destinationSha256": "6b7aede711494c77e333046a013430e4c0537eea81568a755610633b7f8433d1"
+    },
+    {
+      "source": "docs/feature-council/FEATURE_COUNCIL_DECISION_LOG.md",
+      "destination": "Feature-Council-Decision-Log.md",
+      "lifecycle": "current",
+      "successors": [],
+      "disclosure": "reviewed-sanitized",
+      "sourceSha256": "76821868d97599a09e8871f2522117b7d039a79d6bd0efa178652f1a10c946c0",
+      "destinationSha256": "1103af0aaf8d7437c6b23e5fa52a4fa5f289a9fcc124d0b4033ef50b5888633e"
+    },
+    {
+      "source": "docs/feature-council/FEATURE_GAP_MATRIX.md",
+      "destination": "Feature-Council-Feature-Gap-Matrix.md",
+      "lifecycle": "current",
+      "successors": [],
+      "disclosure": "reviewed-sanitized",
+      "sourceSha256": "c1ad65012f2f7ea1d6207e4ebf1ff5d15b6259a90342946140fbac25d1a74d2e",
+      "destinationSha256": "53251b320827821b0149694ac6a8ddead04489cd26a369725612e9b5b21139c1"
+    },
+    {
+      "source": "docs/feature-council/FINAL_HANDOFF_SUMMARY.md",
+      "destination": "Feature-Council-Final-Handoff-Summary.md",
+      "lifecycle": "current",
+      "successors": [],
+      "disclosure": "reviewed-sanitized",
+      "sourceSha256": "8ce9dce15bfff55bd265c7b1d26334f57d0cfbde22ec2f82ecb61d95b779558f",
+      "destinationSha256": "0c21763772a0374bbbc21d5b4abac3ba0b9174fb49e902994088dc004bc66d40"
+    },
+    {
+      "source": "docs/feature-council/LIVE_FEATURE_AUDIT.md",
+      "destination": "Feature-Council-Live-Feature-Audit.md",
+      "lifecycle": "current",
+      "successors": [],
+      "disclosure": "reviewed-sanitized",
+      "sourceSha256": "1e0715f548e751c536c3322ba15f717e2acd646afbe04e22fa0015767928ea52",
+      "destinationSha256": "d331c9f513f7f8c84866166ba00ea91fb0147be3713b4e04ae19caa8eb33172c"
+    },
+    {
+      "source": "docs/feature-council/MASTER_FEATURE_COUNCIL_INDEX.md",
+      "destination": "Feature-Council-Research.md",
+      "lifecycle": "current",
+      "successors": [],
+      "disclosure": "reviewed-sanitized",
+      "sourceSha256": "85b04473277205ae6f06b0ff3717d3ba0db23c263af413e1769a3fd4cb64c02b",
+      "destinationSha256": "35296fcce9a6bc2a61160f822496e8ebebcf9ced34e2ce0039819e2965125e14"
+    },
+    {
+      "source": "docs/feature-council/PROJECT_TRACKER.md",
+      "destination": "Feature-Council-Project-Tracker.md",
+      "lifecycle": "current",
+      "successors": [],
+      "disclosure": "reviewed-sanitized",
+      "sourceSha256": "328f9dece58bfba547ce07eb8530c846d13ba79b503baa7863b801ce7cbe7223",
+      "destinationSha256": "3deb04e02d3c46c59a0b72945b6e290b8706378f864b55e3e29dd4085f633258"
+    },
+    {
+      "source": "docs/feature-council/RESEARCH_FEATURE_INVENTORY.md",
+      "destination": "Feature-Council-Research-Feature-Inventory.md",
+      "lifecycle": "current",
+      "successors": [],
+      "disclosure": "reviewed-sanitized",
+      "sourceSha256": "e32fa9c129f67d91ce373ce4c71320c714e1fe088f5df840aedca5e2e2384964",
+      "destinationSha256": "8d71d36140a8b8e65ca11296c97636b2bb7f05871166d15ce2f32278db792a21"
+    },
+    {
+      "source": "docs/feature-council/prd/PRD_FCP001_CAPTURE_QUALITY_REPAIR_CENTER_v1.md",
+      "destination": "Feature-Council-FCP-001-Capture-Quality-Repair-Center-PRD-v1.md",
+      "lifecycle": "historical",
+      "successors": [
+        "Feature-Council-FCP-001-Capture-Quality-Repair-Center-PRD-v2.md"
+      ],
+      "disclosure": "reviewed-sanitized",
+      "sourceSha256": "f9c2d9b7daba3f49d1ba5128c3e7cd7b03830bcfff2f58bf5dbecd78862b9ee9",
+      "destinationSha256": "fcf0b1d3e0d52483df6ea8eafde02b018b57a5de5aa27f85ae0d97bd54c357b3"
+    },
+    {
+      "source": "docs/feature-council/prd/PRD_FCP001_CAPTURE_QUALITY_REPAIR_CENTER_v2.md",
+      "destination": "Feature-Council-FCP-001-Capture-Quality-Repair-Center-PRD-v2.md",
+      "lifecycle": "current",
+      "successors": [],
+      "disclosure": "reviewed-sanitized",
+      "sourceSha256": "716f4002371cfe7e27d358b1160b9646f572db87e85477a8917d303ff45a0aec",
+      "destinationSha256": "5a7e5c999e61806c426e97fbea8c650a90a81959555ea8de821a2b9fe2f1ac3e"
+    },
+    {
+      "source": "docs/feature-council/prd/PRD_FCP002_SOURCE_WORKSPACE_READING_STUDIO_LITE_v1.md",
+      "destination": "Feature-Council-FCP-002-Source-Workspace-Reading-Studio-Lite-PRD-v1.md",
+      "lifecycle": "historical",
+      "successors": [
+        "Feature-Council-FCP-002-Source-Workspace-Reading-Studio-Lite-PRD-v2.md"
+      ],
+      "disclosure": "reviewed-sanitized",
+      "sourceSha256": "ca934019eca08a78f3f180c23e0ee48cf5e1a10608f7c812536aad7a81cb6e8c",
+      "destinationSha256": "936af68ac6d833b544248f669f884b738049e12ee3112b89c1106d8c5385f454"
+    },
+    {
+      "source": "docs/feature-council/prd/PRD_FCP002_SOURCE_WORKSPACE_READING_STUDIO_LITE_v2.md",
+      "destination": "Feature-Council-FCP-002-Source-Workspace-Reading-Studio-Lite-PRD-v2.md",
+      "lifecycle": "current",
+      "successors": [],
+      "disclosure": "reviewed-sanitized",
+      "sourceSha256": "d967cd536267b81dbeb21e4b83d411b248c063267ee0fc13ca4340fb4a7d3108",
+      "destinationSha256": "b5ae37349d813b5742c661983fe67844df4486144cdea70a29f2ff3f7bd4275a"
+    },
+    {
+      "source": "docs/feature-council/prd/PRD_FCP003_CONTEXTUAL_ASK_EVIDENCE_SCAN_v1.md",
+      "destination": "Feature-Council-FCP-003-Contextual-Ask-Evidence-Scan-PRD-v1.md",
+      "lifecycle": "historical",
+      "successors": [
+        "Feature-Council-FCP-003-Contextual-Ask-Evidence-Scan-PRD-v2.md"
+      ],
+      "disclosure": "reviewed-sanitized",
+      "sourceSha256": "f3869bec2d8406e8c760ec5bc21464095160cff2fd66d69036899573fc163379",
+      "destinationSha256": "350d5e31fbf7bf30cb580b089d4d55caa56dbfa9aeb86e0b649a3a77c4d272e0"
+    },
+    {
+      "source": "docs/feature-council/prd/PRD_FCP003_CONTEXTUAL_ASK_EVIDENCE_SCAN_v2.md",
+      "destination": "Feature-Council-FCP-003-Contextual-Ask-Evidence-Scan-PRD-v2.md",
+      "lifecycle": "current",
+      "successors": [],
+      "disclosure": "reviewed-sanitized",
+      "sourceSha256": "750449e2eb970b57e5ca9f2b640c800be5063995c9d7366486ad5eda0878bce5",
+      "destinationSha256": "c0162e51b35004ebcac2e6dc43a0f9f6e250634a5a283aefd6035719598b6a17"
+    },
+    {
+      "source": "docs/feature-council/prd/PRD_FCP004_RELATIONSHIP_GRAPH_CONNECTION_MAP_v1.md",
+      "destination": "Feature-Council-FCP-004-Relationship-Graph-Connection-Map-PRD-v1.md",
+      "lifecycle": "historical",
+      "successors": [
+        "Feature-Council-FCP-004-Relationship-Graph-Connection-Map-PRD-v2.md"
+      ],
+      "disclosure": "reviewed-sanitized",
+      "sourceSha256": "0c3d8a34b00c5d8a64a02554350b5b269860874397700bc2a159aa339e3d8657",
+      "destinationSha256": "0d0b300cca6d9225bec585c3330169d15e1c2f4f0dbd77b9f60398e088594d26"
+    },
+    {
+      "source": "docs/feature-council/prd/PRD_FCP004_RELATIONSHIP_GRAPH_CONNECTION_MAP_v2.md",
+      "destination": "Feature-Council-FCP-004-Relationship-Graph-Connection-Map-PRD-v2.md",
+      "lifecycle": "current",
+      "successors": [],
+      "disclosure": "reviewed-sanitized",
+      "sourceSha256": "cafae98c393ed8a599d01c3623c9a5f1db41ff502398fec06507ce4bb662c2b3",
+      "destinationSha256": "9e74920f6460f1993a92ec73e6b154c20a09fd5220aa9565546902fe4fe542d1"
+    },
+    {
+      "source": "docs/feature-council/prd/PRD_FCP005_AI_SERVICES_PRIVACY_TRUST_CENTER_v1.md",
+      "destination": "Feature-Council-FCP-005-Ai-Services-Privacy-Trust-Center-PRD-v1.md",
+      "lifecycle": "historical",
+      "successors": [
+        "Feature-Council-FCP-005-Ai-Services-Privacy-Trust-Center-PRD-v2.md"
+      ],
+      "disclosure": "reviewed-sanitized",
+      "sourceSha256": "be6ded58f414f91aab0b1bf63bf22941c4b86d175676924d3e7797ed00dcf31d",
+      "destinationSha256": "8ed6dc5d09a90fb0705b4af9982c77a3567e4be19b6b51319941a05c59b88b0f"
+    },
+    {
+      "source": "docs/feature-council/prd/PRD_FCP005_AI_SERVICES_PRIVACY_TRUST_CENTER_v2.md",
+      "destination": "Feature-Council-FCP-005-Ai-Services-Privacy-Trust-Center-PRD-v2.md",
+      "lifecycle": "current",
+      "successors": [],
+      "disclosure": "reviewed-sanitized",
+      "sourceSha256": "8dd73fccd955cf7e813644d3d1b5cd16e4b1f4d9dbf9008eaaaba562cb9848a9",
+      "destinationSha256": "f0192330c52ac7af4ecda3ba36ff73a57a9e22045c8c2a572e1c674f50cd6c6b"
+    },
+    {
+      "source": "docs/feature-council/reviews/CORE_ARTIFACTS_V1_ADVERSARIAL_REVIEW_2026-06-28_21-23-55_IST.md",
+      "destination": "Feature-Council-Core-v1-Adversarial-Review.md",
+      "lifecycle": "review",
+      "successors": [
+        "Feature-Council-Research.md"
+      ],
+      "disclosure": "reviewed-sanitized",
+      "sourceSha256": "0878b4cacd1c6ddc4e3609c0253b199abfcb74f1df906265bdcf471eeafac7b6",
+      "destinationSha256": "e6874b5dc114c0712780180806f0b31eb3863e8d8c96f189534257d5cc78e884"
+    },
+    {
+      "source": "docs/feature-council/reviews/FCP001_PACKAGE_V1_ADVERSARIAL_REVIEW_2026-06-28_21-23-55_IST.md",
+      "destination": "Feature-Council-FCP-001-v1-Adversarial-Review.md",
+      "lifecycle": "review",
+      "successors": [
+        "Feature-Council-FCP-001-Capture-Quality-Repair-Center-PRD-v2.md",
+        "Feature-Council-FCP-001-Capture-Quality-Repair-Center-Technical-v2.md",
+        "Feature-Council-FCP-001-Capture-Quality-Repair-Center-UX-v2.md"
+      ],
+      "disclosure": "reviewed-sanitized",
+      "sourceSha256": "05a9a2af8bf23fed1a777cdcb554164230e4978b7b840f0ce6b4f5bb0e3553d3",
+      "destinationSha256": "58d5fc875b269a8dd48710b82ad30524b01b74d69680be62c652c76a2d3e0c13"
+    },
+    {
+      "source": "docs/feature-council/reviews/FCP002_PACKAGE_V1_ADVERSARIAL_REVIEW_2026-06-28_21-23-55_IST.md",
+      "destination": "Feature-Council-FCP-002-v1-Adversarial-Review.md",
+      "lifecycle": "review",
+      "successors": [
+        "Feature-Council-FCP-002-Source-Workspace-Reading-Studio-Lite-PRD-v2.md",
+        "Feature-Council-FCP-002-Source-Workspace-Reading-Studio-Lite-Technical-v2.md",
+        "Feature-Council-FCP-002-Source-Workspace-Reading-Studio-Lite-UX-v2.md"
+      ],
+      "disclosure": "reviewed-sanitized",
+      "sourceSha256": "f1bfbb8f8b410d996a6debdd74a44e2ab49d7494b2316f7b6135e8f91cd2ecfa",
+      "destinationSha256": "912e3f8342ef61e866f17c59d8a372f322e7958e246809598f9e18bbd3f0681d"
+    },
+    {
+      "source": "docs/feature-council/reviews/FCP003_PACKAGE_V1_ADVERSARIAL_REVIEW_2026-06-28_21-23-55_IST.md",
+      "destination": "Feature-Council-FCP-003-v1-Adversarial-Review.md",
+      "lifecycle": "review",
+      "successors": [
+        "Feature-Council-FCP-003-Contextual-Ask-Evidence-Scan-PRD-v2.md",
+        "Feature-Council-FCP-003-Contextual-Ask-Evidence-Scan-Technical-v2.md",
+        "Feature-Council-FCP-003-Contextual-Ask-Evidence-Scan-UX-v2.md"
+      ],
+      "disclosure": "reviewed-sanitized",
+      "sourceSha256": "1978e2bb31a81daccaaefbf6d78297f38e86c240b6b61cdc59f566de15176a56",
+      "destinationSha256": "bd8361b55a375865051bd92b16067fd4a9806f3fc5c69a7bd6c2b32262f825ea"
+    },
+    {
+      "source": "docs/feature-council/reviews/FCP004_PACKAGE_V1_ADVERSARIAL_REVIEW_2026-06-28_21-23-55_IST.md",
+      "destination": "Feature-Council-FCP-004-v1-Adversarial-Review.md",
+      "lifecycle": "review",
+      "successors": [
+        "Feature-Council-FCP-004-Relationship-Graph-Connection-Map-PRD-v2.md",
+        "Feature-Council-FCP-004-Relationship-Graph-Connection-Map-Technical-v2.md",
+        "Feature-Council-FCP-004-Relationship-Graph-Connection-Map-UX-v2.md"
+      ],
+      "disclosure": "reviewed-sanitized",
+      "sourceSha256": "397335169075c32f3667a84c786e277739acbf157d3f022ee7a8b4e679fe4525",
+      "destinationSha256": "8c92ff7d44c5b4bf428413c713c5d22a03e0e7ea4200e7c63e4e257acfc9351f"
+    },
+    {
+      "source": "docs/feature-council/reviews/FCP005_PACKAGE_V1_ADVERSARIAL_REVIEW_2026-06-28_21-23-55_IST.md",
+      "destination": "Feature-Council-FCP-005-v1-Adversarial-Review.md",
+      "lifecycle": "review",
+      "successors": [
+        "Feature-Council-FCP-005-Ai-Services-Privacy-Trust-Center-PRD-v2.md",
+        "Feature-Council-FCP-005-Ai-Services-Privacy-Trust-Center-Technical-v2.md",
+        "Feature-Council-FCP-005-Ai-Services-Privacy-Trust-Center-UX-v2.md"
+      ],
+      "disclosure": "reviewed-sanitized",
+      "sourceSha256": "e3633380f77af2faec9ef82938d75f1ec63bdd1e2abd567fcd1db32ce11bd943",
+      "destinationSha256": "321c843f275b1bf0cf6d8590501a8b9cab73707818e38c4420e7bc7d3a3f135b"
+    },
+    {
+      "source": "docs/feature-council/technical/TECH_FCP001_CAPTURE_QUALITY_REPAIR_CENTER_v1.md",
+      "destination": "Feature-Council-FCP-001-Capture-Quality-Repair-Center-Technical-v1.md",
+      "lifecycle": "historical",
+      "successors": [
+        "Feature-Council-FCP-001-Capture-Quality-Repair-Center-Technical-v2.md"
+      ],
+      "disclosure": "reviewed-sanitized",
+      "sourceSha256": "b5260dfda2d3587d74f4f38aa424fa2965ce65c979d19cabe47405945fdb89b1",
+      "destinationSha256": "61321de66fe4b57ff86e283733516ae518ec8f06b315c68e69901ab800762905"
+    },
+    {
+      "source": "docs/feature-council/technical/TECH_FCP001_CAPTURE_QUALITY_REPAIR_CENTER_v2.md",
+      "destination": "Feature-Council-FCP-001-Capture-Quality-Repair-Center-Technical-v2.md",
+      "lifecycle": "current",
+      "successors": [],
+      "disclosure": "reviewed-sanitized",
+      "sourceSha256": "8552ed0a934dab50390a80bdac2f9873609f9984dfa0895362c6a5d233241d87",
+      "destinationSha256": "38f6c1efdceb3f36477dc341732d5e7c7582fda0f1cdbf66787e0c7b7e3ee188"
+    },
+    {
+      "source": "docs/feature-council/technical/TECH_FCP002_SOURCE_WORKSPACE_READING_STUDIO_LITE_v1.md",
+      "destination": "Feature-Council-FCP-002-Source-Workspace-Reading-Studio-Lite-Technical-v1.md",
+      "lifecycle": "historical",
+      "successors": [
+        "Feature-Council-FCP-002-Source-Workspace-Reading-Studio-Lite-Technical-v2.md"
+      ],
+      "disclosure": "reviewed-sanitized",
+      "sourceSha256": "23f679803d66f810e0d61c8afe6334f37f4eed96963d251061a231279493170f",
+      "destinationSha256": "ae3d6b8c6b8e92c359b382587b1cf41de5a9a56ecfdce53a568846dffc5f6766"
+    },
+    {
+      "source": "docs/feature-council/technical/TECH_FCP002_SOURCE_WORKSPACE_READING_STUDIO_LITE_v2.md",
+      "destination": "Feature-Council-FCP-002-Source-Workspace-Reading-Studio-Lite-Technical-v2.md",
+      "lifecycle": "current",
+      "successors": [],
+      "disclosure": "reviewed-sanitized",
+      "sourceSha256": "2025396e203f0797722bad3f5486b08b35a9e57bacb14de0a341b7d7c36db286",
+      "destinationSha256": "2f9893b13901f9cdc80c9c70957bb6e241517c7eee22540efa5be90c8de8581f"
+    },
+    {
+      "source": "docs/feature-council/technical/TECH_FCP003_CONTEXTUAL_ASK_EVIDENCE_SCAN_v1.md",
+      "destination": "Feature-Council-FCP-003-Contextual-Ask-Evidence-Scan-Technical-v1.md",
+      "lifecycle": "historical",
+      "successors": [
+        "Feature-Council-FCP-003-Contextual-Ask-Evidence-Scan-Technical-v2.md"
+      ],
+      "disclosure": "reviewed-sanitized",
+      "sourceSha256": "2b1fff591a8e35f54467219e36a5fa91bec30a4a19a7f68286830b91d2278938",
+      "destinationSha256": "dd1e5ef303e2229ea84158ae099969e3bf99693451d01d3eb6bbba85a86b1244"
+    },
+    {
+      "source": "docs/feature-council/technical/TECH_FCP003_CONTEXTUAL_ASK_EVIDENCE_SCAN_v2.md",
+      "destination": "Feature-Council-FCP-003-Contextual-Ask-Evidence-Scan-Technical-v2.md",
+      "lifecycle": "current",
+      "successors": [],
+      "disclosure": "reviewed-sanitized",
+      "sourceSha256": "2176b774a18c4fde34a3916335c719863ee2b40ee473085610c570e8f0e460d1",
+      "destinationSha256": "a1a434d71a93756d265f4ed18240eb97db2869160f8d251dcd0ba87d3ba00450"
+    },
+    {
+      "source": "docs/feature-council/technical/TECH_FCP004_RELATIONSHIP_GRAPH_CONNECTION_MAP_v1.md",
+      "destination": "Feature-Council-FCP-004-Relationship-Graph-Connection-Map-Technical-v1.md",
+      "lifecycle": "historical",
+      "successors": [
+        "Feature-Council-FCP-004-Relationship-Graph-Connection-Map-Technical-v2.md"
+      ],
+      "disclosure": "reviewed-sanitized",
+      "sourceSha256": "ee560ddbe4e4729caf6e829ed6e7706100ed5ef36a3ae5bdcbfc2bf193f60b99",
+      "destinationSha256": "44cc4f401d9501afb9cd17a741c011c22e6f7a84b59f25ca1e8cf48d8b34e83c"
+    },
+    {
+      "source": "docs/feature-council/technical/TECH_FCP004_RELATIONSHIP_GRAPH_CONNECTION_MAP_v2.md",
+      "destination": "Feature-Council-FCP-004-Relationship-Graph-Connection-Map-Technical-v2.md",
+      "lifecycle": "current",
+      "successors": [],
+      "disclosure": "reviewed-sanitized",
+      "sourceSha256": "6680e332c476e4b45fbc171c366f67203f9c437e577cb5d3b2167781b1c17fb2",
+      "destinationSha256": "379a49d979ed2221dea8542683db363742853b8ad3f0ef7208271bfbf2fdf95e"
+    },
+    {
+      "source": "docs/feature-council/technical/TECH_FCP005_AI_SERVICES_PRIVACY_TRUST_CENTER_v1.md",
+      "destination": "Feature-Council-FCP-005-Ai-Services-Privacy-Trust-Center-Technical-v1.md",
+      "lifecycle": "historical",
+      "successors": [
+        "Feature-Council-FCP-005-Ai-Services-Privacy-Trust-Center-Technical-v2.md"
+      ],
+      "disclosure": "reviewed-sanitized",
+      "sourceSha256": "7506b507e0e8a31a966ecb774d10aef52eeab866816eb6db0966c17b7d241235",
+      "destinationSha256": "d36a7480fefca1267aa9e686f36904101952f9bcf4305cd81ebd51bf99f42740"
+    },
+    {
+      "source": "docs/feature-council/technical/TECH_FCP005_AI_SERVICES_PRIVACY_TRUST_CENTER_v2.md",
+      "destination": "Feature-Council-FCP-005-Ai-Services-Privacy-Trust-Center-Technical-v2.md",
+      "lifecycle": "current",
+      "successors": [],
+      "disclosure": "reviewed-sanitized",
+      "sourceSha256": "0e103fcfac032d770b6a86dd186df8052ecddf308c9b3765b7a3c77c7a072a49",
+      "destinationSha256": "8c8196439649cfc2572bc33bb1ef315542db06ca19ff9b90d664979ebc23cc6f"
+    },
+    {
+      "source": "docs/feature-council/ux/UX_FCP001_CAPTURE_QUALITY_REPAIR_CENTER_v1.md",
+      "destination": "Feature-Council-FCP-001-Capture-Quality-Repair-Center-UX-v1.md",
+      "lifecycle": "historical",
+      "successors": [
+        "Feature-Council-FCP-001-Capture-Quality-Repair-Center-UX-v2.md"
+      ],
+      "disclosure": "reviewed-sanitized",
+      "sourceSha256": "ad50273f88216d8a0d9f2f7b203b7eb00d6e38f7208590ef53c666dc7195c070",
+      "destinationSha256": "fe41c4853cac43035cd82e97820a6cdd8f05644384d21b2947bb898de6a1b638"
+    },
+    {
+      "source": "docs/feature-council/ux/UX_FCP001_CAPTURE_QUALITY_REPAIR_CENTER_v2.md",
+      "destination": "Feature-Council-FCP-001-Capture-Quality-Repair-Center-UX-v2.md",
+      "lifecycle": "current",
+      "successors": [],
+      "disclosure": "reviewed-sanitized",
+      "sourceSha256": "c2d6efe5ce8f94acd326a573ac840d16f04de9dfd72d115ba6dbe250eb679feb",
+      "destinationSha256": "3baca8bae03db018661659093c9a7718f931a80e66106ac9ff717be319717473"
+    },
+    {
+      "source": "docs/feature-council/ux/UX_FCP002_SOURCE_WORKSPACE_READING_STUDIO_LITE_v1.md",
+      "destination": "Feature-Council-FCP-002-Source-Workspace-Reading-Studio-Lite-UX-v1.md",
+      "lifecycle": "historical",
+      "successors": [
+        "Feature-Council-FCP-002-Source-Workspace-Reading-Studio-Lite-UX-v2.md"
+      ],
+      "disclosure": "reviewed-sanitized",
+      "sourceSha256": "fe392aa4295cf21e7af9d6374d81268f240018ba8966a5cdf46fe5f717c25819",
+      "destinationSha256": "984d532bf52a82b668a629ef07b1366f21f2856719e0df263346313de9174bf8"
+    },
+    {
+      "source": "docs/feature-council/ux/UX_FCP002_SOURCE_WORKSPACE_READING_STUDIO_LITE_v2.md",
+      "destination": "Feature-Council-FCP-002-Source-Workspace-Reading-Studio-Lite-UX-v2.md",
+      "lifecycle": "current",
+      "successors": [],
+      "disclosure": "reviewed-sanitized",
+      "sourceSha256": "767e3c0740100f6e9dda81b39597073c61ff4ef76719e42fe55e4e9687c0bc75",
+      "destinationSha256": "e067be8a765c3144f228248f33ff826433a1bc56ead05ae04f33da1fe4a44b01"
+    },
+    {
+      "source": "docs/feature-council/ux/UX_FCP003_CONTEXTUAL_ASK_EVIDENCE_SCAN_v1.md",
+      "destination": "Feature-Council-FCP-003-Contextual-Ask-Evidence-Scan-UX-v1.md",
+      "lifecycle": "historical",
+      "successors": [
+        "Feature-Council-FCP-003-Contextual-Ask-Evidence-Scan-UX-v2.md"
+      ],
+      "disclosure": "reviewed-sanitized",
+      "sourceSha256": "480d209890b0d247dba7f9b140e5311f8b81d6fa5a1bf0e051cccb0593f43586",
+      "destinationSha256": "dd10d24fec82d333b139fe48afbf60d3fa01cf01859c655f5009f4060cc74574"
+    },
+    {
+      "source": "docs/feature-council/ux/UX_FCP003_CONTEXTUAL_ASK_EVIDENCE_SCAN_v2.md",
+      "destination": "Feature-Council-FCP-003-Contextual-Ask-Evidence-Scan-UX-v2.md",
+      "lifecycle": "current",
+      "successors": [],
+      "disclosure": "reviewed-sanitized",
+      "sourceSha256": "5a4bf8c0e9e834368f5da0e9dcd786af82d2127be872947396afdd0d7d63174c",
+      "destinationSha256": "1a2df04b105df506493cfa7fe1fe6f5520a3c717578a34063c824016e37c78c3"
+    },
+    {
+      "source": "docs/feature-council/ux/UX_FCP004_RELATIONSHIP_GRAPH_CONNECTION_MAP_v1.md",
+      "destination": "Feature-Council-FCP-004-Relationship-Graph-Connection-Map-UX-v1.md",
+      "lifecycle": "historical",
+      "successors": [
+        "Feature-Council-FCP-004-Relationship-Graph-Connection-Map-UX-v2.md"
+      ],
+      "disclosure": "reviewed-sanitized",
+      "sourceSha256": "7bcebd2532a83f441a4e48f6b6ddaaea349a8df0b8dd59b40358905db52ac103",
+      "destinationSha256": "cd5341f49ce01ab2ede64352fa883dfe0d905b8da08bb0a1e897fed3e958c68a"
+    },
+    {
+      "source": "docs/feature-council/ux/UX_FCP004_RELATIONSHIP_GRAPH_CONNECTION_MAP_v2.md",
+      "destination": "Feature-Council-FCP-004-Relationship-Graph-Connection-Map-UX-v2.md",
+      "lifecycle": "current",
+      "successors": [],
+      "disclosure": "reviewed-sanitized",
+      "sourceSha256": "696fe686ebc2ef552924bc09c8bb6851c13ce964f91530409d745edae9c01523",
+      "destinationSha256": "f545f37be72a28bfd2a7ed5762006ade27d9e505267ddfc771fe3881bcb5a99e"
+    },
+    {
+      "source": "docs/feature-council/ux/UX_FCP005_AI_SERVICES_PRIVACY_TRUST_CENTER_v1.md",
+      "destination": "Feature-Council-FCP-005-Ai-Services-Privacy-Trust-Center-UX-v1.md",
+      "lifecycle": "historical",
+      "successors": [
+        "Feature-Council-FCP-005-Ai-Services-Privacy-Trust-Center-UX-v2.md"
+      ],
+      "disclosure": "reviewed-sanitized",
+      "sourceSha256": "157f5640f5ec244dab0584986db0d067baadb21810d530f25dea60168c3c67e8",
+      "destinationSha256": "6679c1ad4f30ce3741e5e66fdf9dccaf9cd5bf8cee48e23ba551aae862744be1"
+    },
+    {
+      "source": "docs/feature-council/ux/UX_FCP005_AI_SERVICES_PRIVACY_TRUST_CENTER_v2.md",
+      "destination": "Feature-Council-FCP-005-Ai-Services-Privacy-Trust-Center-UX-v2.md",
+      "lifecycle": "current",
+      "successors": [],
+      "disclosure": "reviewed-sanitized",
+      "sourceSha256": "c805bf45c37226046fec2afbe3de31f591b2f9ac51a6333564373f2e246f9506",
+      "destinationSha256": "230016226affeb5f6d2545e287290d29445cc3fe640dcb748f791d2fa2e4943b"
+    }
+  ]
+}

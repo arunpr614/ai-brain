@@ -12,5 +12,8 @@
   "productionEvidence": null,
   "productionStatus": "unknown",
   "productionNotes": "Public records verify deployments of multiple revisions, including UX v2 source through 60d670741522a25db33545ee23fc2881774347e2 and later Recall operational updates, but no single public-safe record proves the complete current production tree SHA.",
-  "wikiBaseSha": "c149c22c002cbcc0174bb6ab702d6e4e763a1986"
+  "featureCouncilArtifactBranch": "codex/ai-brain-feature-council-20260628",
+  "featureCouncilArtifactSha": "9de8de87de915e874e8290aa556e2b6772d6fabf",
+  "featureCouncilResearchEvidenceDate": "2026-06-28",
+  "wikiBaseSha": "dab9267124b55571f03ad56c6776c6827723229a"
 }

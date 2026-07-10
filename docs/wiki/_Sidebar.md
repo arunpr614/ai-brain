@@ -9,6 +9,10 @@
 - [Product Overview](Product-Overview)
 - [Feature Catalog](Feature-Catalog)
 
+## Research and Planning
+
+- [AI Brain Feature Council Research](Feature-Council-Research)
+
 ## Architecture
 
 - [System Architecture](System-Architecture)

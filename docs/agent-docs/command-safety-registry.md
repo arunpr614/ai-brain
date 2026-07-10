@@ -17,6 +17,7 @@ This registry classifies every package script at the documentation baseline. Com
 | `check:ai-providers` | R1 network read | Yes | No application state | No | Intentional network use | Provider reachability/status probe |
 | `check:build-artifacts` | R0 read-only local | No | No | No | No | Local source/config inspection |
 | `check:env` | R0 read-only local | No | No | No | No | Local source/config inspection |
+| `check:feature-council-wiki` | R0 read-only local | No | No | No | No | Deterministic source/manifest/generated-page comparison |
 | `check:recall-apply-report` | R0 read-only local | No | No | No | No | Static or local-evidence checker; live variants remain prohibited by project gate |
 | `check:recall-approval-packet` | R0 read-only local | No | No | No | No | Static or local-evidence checker; live variants remain prohibited by project gate |
 | `check:recall-controlled-samples` | R0 read-only local | No | No | No | No | Static or local-evidence checker; live variants remain prohibited by project gate |

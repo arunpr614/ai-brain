@@ -32,6 +32,10 @@ try {
       "-----BEGIN PRIVATE KEY-----",
       "I approve this synthetic production scheduler apply operation.",
       "production host: 203.0.113.42",
+      "/Users/synthetic.owner/private/project",
+      "synthetic.owner@example.invalid",
+      "Arun is the synthetic owner.",
+      "brain.arunp.in",
     ].join("\n"),
     "utf8",
   );
@@ -45,6 +49,10 @@ try {
   assert.match(output, /dangerous_approval_text/);
   assert.match(output, /private_key_block/);
   assert.match(output, /live_host_ip/);
+  assert.match(output, /local_user_path/);
+  assert.match(output, /email_address/);
+  assert.match(output, /personal_owner_name/);
+  assert.match(output, /live_owner_hostname/);
 
   const empty = mkdtempSync(join(tmpdir(), "agent-wiki-privacy-empty-"));
   try {

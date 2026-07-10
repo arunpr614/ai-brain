@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>FCP-005 Trust Center Prototype</title>
+  <style>
+    body { margin: 0; font-family: Inter, system-ui, sans-serif; background: #f6f7f4; color: #20251f; }
+    main { max-width: 1080px; margin: 0 auto; padding: 32px; }
+    h1 { margin: 0 0 8px; font-size: 30px; }
+    .muted { color: #687267; }
+    .grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; margin-top: 22px; }
+    .card { background: #fff; border: 1px solid #d8ded5; border-radius: 8px; padding: 18px; }
+    .row { display: flex; justify-content: space-between; gap: 16px; padding: 10px 0; border-top: 1px solid #edf0ea; }
+    .row:first-child { border-top: 0; }
+    .ok { color: #247849; font-weight: 700; }
+    .warn { color: #8d6200; font-weight: 700; }
+    .bad { color: #aa3d34; font-weight: 700; }
+    button { border: 1px solid #247849; background: #247849; color: #fff; border-radius: 6px; padding: 8px 12px; font-weight: 700; }
+    @media (max-width: 760px) { main { padding: 20px; } .grid { grid-template-columns: 1fr; } .row { display: block; } }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>Trust Center</h1>
+    <p class="muted">AI service readiness, source health, privacy, diagnostics, backups, and offline limits.</p>
+    <section class="grid">
+      <article class="card">
+        <h2>AI Services</h2>
+        <div class="row"><span>Claude generation</span><span class="ok">Available</span></div>
+        <div class="row"><span>Gemini embeddings</span><span class="ok">Available</span></div>
+        <div class="row"><span>Transcript recovery</span><span class="warn">2 waiting</span></div>
+      </article>
+      <article class="card">
+        <h2>Source Readiness</h2>
+        <div class="row"><span>Full text</span><span>128</span></div>
+        <div class="row"><span>Weak / metadata only</span><span class="warn">5</span></div>
+        <div class="row"><span>Unindexed</span><span class="bad">3</span></div>
+      </article>
+      <article class="card">
+        <h2>Privacy And Data Flow</h2>
+        <p>Ask may send your question and retrieved excerpts to the configured generation provider. Embeddings may send chunks or query text to the configured embedding provider.</p>
+        <button>View data flow</button>
+      </article>
+      <article class="card">
+        <h2>Diagnostics</h2>
+        <p>Diagnostics include provider names, status codes, counts, and timestamps. They exclude prompts, source excerpts, transcript text, tokens, and API keys by default.</p>
+        <button>Preview export</button>
+      </article>
+      <article class="card">
+        <h2>Backups And Export</h2>
+        <div class="row"><span>Off-site backup</span><span class="ok">Configured</span></div>
+        <div class="row"><span>Library export</span><span>Available</span></div>
+      </article>
+      <article class="card">
+        <h2>Offline</h2>
+        <p>The Android app can show an offline fallback page. Offline capture queue and full offline library are not enabled.</p>
+      </article>
+    </section>
+  </main>
+</body>
+</html>
