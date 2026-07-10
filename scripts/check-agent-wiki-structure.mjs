@@ -9,6 +9,7 @@ const CORE_REQUIRED_PAGES = [
   "Product-Overview.md",
   "Source-Baselines-and-Status.md",
   "Feature-Catalog.md",
+  "Manual-Content-Notes.md",
   "System-Architecture.md",
   "Data-Model.md",
   "Capture-and-Ingestion.md",
@@ -79,7 +80,7 @@ if (existsSync(manifestPath)) {
 }
 
 const researchEntries = Array.isArray(researchManifest?.documents) ? researchManifest.documents : [];
-if (researchEntries.length !== 44) {
+if (researchEntries.length !== researchManifest?.expectedDocumentCount) {
   findings.push(finding(manifestPath, null, "wrong_research_page_count", String(researchEntries.length)));
 }
 const researchPageSet = new Set(researchEntries.map((entry) => entry.destination));

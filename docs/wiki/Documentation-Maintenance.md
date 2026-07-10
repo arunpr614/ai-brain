@@ -19,6 +19,8 @@ Feature changes update the coverage ledger. Script changes update the command-sa
 
 Feature Council research pages are generated from `docs/feature-council/` through the versioned manifest at `docs/agent-docs/feature-council-wiki-manifest.json`. Update the source artifacts and manifest, regenerate, then commit the generated `Feature-Council-*.md` pages. Do not hand-edit generated research pages.
 
+The F08 implementation package is explicitly excluded from the historical research generator. Its public, current product summary is the maintained core page [Manual Content Notes](Manual-Content-Notes); internal v1/v2/review/validation artifacts remain repository evidence and are not copied wholesale into the wiki.
+
 ## Canonical Validation
 
 ```bash

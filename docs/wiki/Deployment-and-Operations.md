@@ -40,4 +40,6 @@ Operational checks distinguish:
 
 Every authorized production change needs a known previous revision, compatible database state, current backup, decision owner, and post-rollback checks. Do not assume code rollback is sufficient after a migration or backfill. Do not use historical production commands when runtime identity is Unknown.
 
+The attached-notes rollout adds three default-off gates for UI, writes, and semantic processing. First deployment applies schema with all three disabled. A content-free audit must classify chunks, row-id bridge, vec0 rows, allocator, integrity, and foreign keys before semantic writers are enabled. Repair is backup-confirmed, exact-audit-ID, allowlisted, and atomic; unexplained manifest drift blocks enablement. Rollback begins by disabling the three gates and may require purging manual-note vectors before a prolonged old-code rollback. Schema down-migration is not supported.
+
 See [Command Safety](Command-Safety), [Security, Privacy, and Redaction](Security-Privacy-and-Redaction), and the private owner runbooks when available.

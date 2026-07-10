@@ -8,6 +8,7 @@
 
 - [Product Overview](Product-Overview)
 - [Feature Catalog](Feature-Catalog)
+- [Manual Content Notes](Manual-Content-Notes)
 
 ## Research and Planning
 

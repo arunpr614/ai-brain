@@ -4,12 +4,16 @@ This registry classifies every package script at the documentation baseline. Com
 
 | Command | Classification | Network | Writes | Production | Approval | Evidence |
 |---|---|---|---|---|---|---|
+| `audit:vectors` | W2 local persistent write | No | Optional owner-only audit report | Possible | Explicit database review | Content-free vector and queue integrity audit; target database determines scope |
 | `backfill:embeddings` | W2 local persistent write | Provider dependent | Local database | No | Explicit local data approval | Writes embedding/chunk state |
 | `backfill:embeddings:prod` | W4 production write | Yes | Production database | Yes | Explicit private approval | Production embedding backfill |
+| `backfill:youtube-transcripts` | W2 local persistent write | Provider dependent | Local database and artifacts | No | Explicit local data approval | Transcript recovery can call configured providers and persist results |
+| `backfill:youtube-transcripts:prod` | W4 production write | Yes | Production database and artifacts | Yes | Exact private approval | Guarded production transcript recovery |
 | `bench:ask` | W2 local persistent write | Provider dependent | Benchmark output/local reads | No | Explicit local data approval | Uses library/provider data and writes results |
 | `build` | W2 local persistent write | Dependency dependent | Generated artifacts | No | No | Build output written locally |
 | `build:apk` | W2 local persistent write | Dependency dependent | Generated artifacts | No | No | Build output written locally |
 | `build:recall-cli` | W2 local persistent write | Dependency dependent | Generated artifacts | No | No | Build output written locally |
+| `build:vector-tools` | W2 local persistent write | Dependency dependent | Generated artifacts | No | No | Bundles vector audit and repair tools for deployment |
 | `check:agent-doc-coverage` | R0 read-only local | No | No | No | No | Local source/config inspection |
 | `check:agent-docs` | R0 read-only local | No | No | No | No | Local source/config inspection |
 | `check:agent-wiki-privacy` | R0 read-only local | No | No | No | No | Local source/config inspection |
@@ -75,6 +79,7 @@ This registry classifies every package script at the documentation baseline. Com
 | `recall:second-manual:readiness` | R0 read-only local | No | No | No | Private context required | Reads local/private evidence metadata |
 | `recall:second-manual:remote-runtime-preflight` | W4 production write | Yes | Possible production/private state | Yes | Exact private approval | Guarded Recall operational path; never public executable guidance |
 | `recall:second-manual:runtime-preflight` | W4 production write | Yes | Possible production/private state | Yes | Exact private approval | Guarded Recall operational path; never public executable guidance |
+| `repair:vectors` | W4 production write | No | SQLite vector and queue state | Possible | Exact audit ID plus verified-backup approval | Guarded repair refuses stale audits and records a content-free post-audit |
 | `smoke` | W1 local ephemeral write | No | Temporary/fixture state | No | No | Test or rehearsal source inspected; keep isolated |
 | `smoke:0.3.1` | W1 local ephemeral write | No | Temporary/fixture state | No | No | Test or rehearsal source inspected; keep isolated |
 | `smoke:0.4.0` | W1 local ephemeral write | No | Temporary/fixture state | No | No | Test or rehearsal source inspected; keep isolated |

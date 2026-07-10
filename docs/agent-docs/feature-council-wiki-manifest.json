@@ -1,10 +1,14 @@
 {
   "version": 1,
+  "expectedDocumentCount": 44,
   "artifactSourceCommit": "9de8de87de915e874e8290aa556e2b6772d6fabf",
   "artifactSourceBranch": "codex/ai-brain-feature-council-20260628",
   "auditedApplicationBaseline": "2b4db9540d0b76ee6d3aa2a9da5f788b69a8d02a",
   "researchEvidenceDate": "2026-06-28",
   "sourceRoot": "docs/feature-council",
+  "excludedSourceRoots": [
+    "docs/feature-council/F08-manual-content-notes"
+  ],
   "destinationRoot": "docs/wiki",
   "landingPage": "Feature-Council-Research.md",
   "disclosurePolicy": {

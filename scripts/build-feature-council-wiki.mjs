@@ -96,12 +96,22 @@ if (!result.ok) {
 console.log(JSON.stringify(result, null, 2));
 
 function validateManifest() {
-  if (!Array.isArray(manifest.documents) || manifest.documents.length !== 44) {
-    errors.push(`Expected 44 manifest documents; found ${manifest.documents?.length ?? 0}`);
+  if (
+    !Number.isInteger(manifest.expectedDocumentCount) ||
+    !Array.isArray(manifest.documents) ||
+    manifest.documents.length !== manifest.expectedDocumentCount
+  ) {
+    errors.push(
+      `Expected ${manifest.expectedDocumentCount ?? "a declared number of"} manifest documents; ` +
+        `found ${manifest.documents?.length ?? 0}`,
+    );
     return;
   }
 
-  const actualSources = collectMarkdown(sourceRoot).map((path) => relative(root, path));
+  const excludedRoots = (manifest.excludedSourceRoots ?? []).map((path) => resolve(root, path));
+  const actualSources = collectMarkdown(sourceRoot)
+    .filter((path) => !excludedRoots.some((excluded) => path === excluded || path.startsWith(`${excluded}/`)))
+    .map((path) => relative(root, path));
   const manifestSources = manifest.documents.map((entry) => entry.source).sort();
   if (JSON.stringify(actualSources) !== JSON.stringify(manifestSources)) {
     errors.push("Manifest sources do not exactly match the Feature Council Markdown corpus.");

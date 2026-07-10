@@ -22,6 +22,10 @@ Pinned source: [session auth](https://github.com/arunpr614/ai-brain/blob/8178117
 
 Library content, captured URLs, transcripts, Recall card data, chat messages, provider payloads, session values, client credentials, webhook material, private evidence, and production identifiers are sensitive. Error handling and diagnostics should minimize content, redact token-like strings, and avoid persisting raw provider responses.
 
+Attached My notes are private application data but are not end-to-end encrypted. Note responses are authenticated and private/no-store; browser mutations require exact same origin. Default library export excludes notes. Remote note processing requires an acknowledgement fingerprinted to the provider, destination, purpose, and effective model; only parsed loopback Ollama is considered local.
+
+Deletion has a broader boundary than deleting the current note row: FTS, semantic chunks/vectors, recent versions, queued work, and assistant answers proven to cite the note are cleaned up. Backup retention and already-started remote requests remain explicit residual limits.
+
 ## Public Documentation Denylist
 
 Do not publish:

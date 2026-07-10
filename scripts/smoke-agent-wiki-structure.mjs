@@ -8,6 +8,7 @@ import { spawnSync } from "node:child_process";
 const pages = [
   "Home.md", "_Sidebar.md", "Agent-Onboarding.md", "Product-Overview.md",
   "Source-Baselines-and-Status.md", "Feature-Catalog.md", "System-Architecture.md",
+  "Manual-Content-Notes.md",
   "Data-Model.md", "Capture-and-Ingestion.md", "Search-RAG-and-Ask.md",
   "Enrichment-and-AI-Providers.md", "Mobile-Extension-and-Pairing.md",
   "Security-Privacy-and-Redaction.md", "Command-Safety.md", "Deployment-and-Operations.md",
