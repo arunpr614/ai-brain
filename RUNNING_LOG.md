@@ -6127,3 +6127,211 @@ Per #56 action item #1: get explicit user decision on revert-vs-keep for `a799b1
 - **Tracker versions:** PROJECT_TRACKER v0.9.6, ROADMAP_TRACKER v0.9.7, BACKLOG v7.9 — all pushed.
 - **Open carry-overs to v0.6.3:** T-11b legacy `BRAIN_LAN_TOKEN` drop (date gate passed; standalone candidate), BUG-ENRICH-UNREACHABLE-LOOP log hygiene, Mac better-sqlite3 ABI, `tsx` removal, CSP nonces, HARDEN-HETZNER-SSH.
 - **Next milestone:** v0.6.3 hygiene plan drafting. Bundling decision (one phase vs v0.6.3+v0.6.4 split) pending.
+
+---
+
+## 2026-07-10 17:24 - F08 attached manual notes kickoff and isolated baseline
+
+**Entry author:** AI agent (Codex) · **Triggered by:** autonomous end-to-end request to design, implement, validate, document, and release per-item private manual notes with rich Markdown editing, autosave, search, and AI/graph participation
+
+### Planned since last entry
+
+Start from current `origin/main`, preserve unrelated work, create the requested isolated `Phase3` worktree, inspect the existing F08 evidence and live code paths, convene the product/architecture/UX council, produce v1 artifacts, adversarially review them into v2, implement with tests, update the public wiki, and release through the repository's guarded production path.
+
+### Done
+
+- Confirmed `/Users/arun.prakash/Documents/arunvault/arun-cursor/Initiatives/Arun_AI_Projects/ai-brain/Phase3` was an empty folder inside an unrelated modified parent repository, not an AI Brain checkout.
+- Located the clean canonical clone at `ai-brain-git-main`, verified its remote is `https://github.com/arunpr614/ai-brain.git`, fetched `origin/main`, and proved local `main` equals `origin/main` at `2b4db95`.
+- Created clean worktree `Phase3` on new branch `codex/manual-content-notes` from `main`. Existing user changes and existing worktrees were not touched.
+- Read `AGENTS.md`; no Android artifact is being built yet, so the APK versioning rule is not active at this milestone.
+- Read the supplied F08 PRD V2 and inspected its reference screenshot. The source is useful for editor-state and autosave hazards, but describes standalone note creation rather than an attached note on every existing library item.
+- Mapped the current item-detail route, SQLite schema/migrations, FTS5 search, chunk/vector embedding, semantic retrieval, related-item calculation, design tokens, tests, and guarded Hetzner deployment script.
+- Confirmed the product gap: standalone note items exist, but attached per-item user notes do not. Reusing `items.body` would merge source material with private interpretation and violate the requested separation.
+- Started three isolated council workstreams: product/project-management council with Growth, Platform/Data, and Power User lenses; technical architecture; and UX/UI design plus prototype. Codex remains coordinator and integration owner. QA/reviewer follows after v1.
+- Loaded the Codex running-log, adversarial-review, clean-worktree, and Product Design workflows. Product Design saved context was absent, so the existing repo, design system, and F08 screenshot are the visual baseline.
+
+### Cross-lane notes
+
+- Council agents may write only under `docs/feature-council/F08-manual-content-notes/` and must not edit code, root trackers, or this log.
+- Codex owns shared integration, v1/v2 synthesis, production implementation, root documentation, git history, and release.
+
+### Learned
+
+- The requested `Phase3` path resolves through Google Drive but is a valid git worktree location.
+- AI Brain is SQLite/local-first, not Supabase; the design must use additive SQLite migrations and the existing local queue/search systems.
+- Search currently indexes only item title/body. Semantic retrieval and related items use `chunks`/`chunks_vec`, and `embedItem()` is intentionally no-op once chunks exist. Attached-note edits therefore need both an independent textual index and an explicit safe re-index path.
+- Production deployment is guarded by typecheck, lint, tests, environment checks, provider checks, a standalone build, artifact-safety checks, authenticated health checks, and service restart through `scripts/deploy.sh`.
+
+### Deployed / Released
+
+Nothing deployed this milestone.
+
+### Documents created or updated this period
+
+**Updated:**
+- `RUNNING_LOG.md` - appended this kickoff and baseline entry.
+
+### Current remaining to-do
+
+1. Receive and reconcile council inputs; create PRD, UX, and technical-plan v1 plus decision tracker.
+2. Run evidence-based adversarial review of the full v1 package and resolve all P0/P1/P2 inputs into v2.
+3. Implement attached-note storage, optimistic concurrency, autosave/manual save, Markdown editor/preview, search, and semantic/related integration with migrations and tests.
+4. Run local functional, accessibility, responsive, security, data-integrity, and release gates; validate design against the reference and accepted v2 package.
+5. Update canonical/public wiki documentation, commit/push/PR/merge, deploy to production, and run production smokes with rollback evidence.
+
+### Open questions / decisions needed
+
+1. No user decision is currently required; the goal explicitly authorizes autonomous defaults. The council must resolve exact note revision retention, autosave interval, Markdown renderer dependency, and semantic re-index strategy before v2.
+
+### Session self-critique
+
+- The inherited `RUNNING_LOG.md` baseline ends in June and does not reflect all commits now on `main`; this entry records only verified current git and runtime-planning facts and does not infer missing history.
+- Production state has not yet been probed in this goal; code presence and deploy scripts are not being treated as proof of current production runtime.
+
+### Action items for the next agent
+
+1. Work only in `/Users/arun.prakash/Documents/arunvault/arun-cursor/Initiatives/Arun_AI_Projects/ai-brain/Phase3` on `codex/manual-content-notes`.
+2. Inspect council files under `docs/feature-council/F08-manual-content-notes/council/` before drafting v1.
+3. Do not store attached notes in `items.body`; preserve a separate source of truth and join it into search/AI explicitly.
+4. Do not deploy until the full v2 package, tests, backup/item-count baseline, and rollback plan are complete.
+
+### State snapshot
+
+- **Current phase / version:** F08 attached manual notes discovery and council phase; v1 artifacts in progress.
+- **Active branch(es):** `codex/manual-content-notes` at `2b4db95` in the `Phase3` worktree.
+- **Working tree:** clean before this append; only this append is coordinator-owned at this snapshot.
+- **Deployed/runtime state:** not changed or newly verified in this milestone.
+- **Next milestone:** approved and adversarially reviewed PRD/UX/technical v2 package ready for implementation.
+
+---
+
+## 2026-07-10 17:47 - F08 three-lens council, formal v1 package, and adversarial gate
+
+**Entry author:** AI agent (Codex) · **Triggered by:** completion of the Product/AI/PM, UX, and Technical council milestone and the required adversarial review of every major v1 artifact
+
+### Planned since last entry
+
+Complete the three council lanes, reconcile them into formal PRD/UX/technical v1 artifacts plus a tracker/decision log, validate the high-fidelity responsive prototype, run an independent QA review and the adversarial-review skill, then revise every accepted finding into v2 before implementation.
+
+### Done
+
+- Completed a Product/AI/PM council with Growth/Engagement, Platform/Data, and Power User/Workflow lenses. The 3–0 decision is a conditional GO for one attached note per existing item and a no-go on implementing the supplied standalone-note PRD unchanged.
+- Completed technical architecture covering separate SQLite storage, canonical Markdown, optimistic/idempotent save, bounded recovery, IndexedDB local durability, note FTS, source-aware chunks, asynchronous indexing, Ask/Related/future-graph provenance, security/privacy, migration, testing, rollout, and rollback.
+- Completed UX direction aligned to candidate production source `4d97c45`, including the current AI Memory shell, two-column item view, all five existing mobile item tabs plus Notes, mobile bottom navigation, formatting, truthful save/offline/conflict states, and accessibility behavior.
+- Built and visually tested a self-contained high-fidelity HTML prototype at desktop 1440x900 and mobile 390x844. Production build, Write-Markdown-Write interaction, manual Save, offline return, conflict review/Keep mine, six mobile tabs, bottom nav, no-overflow, and zero browser console errors passed. Prototype dependency caches were removed.
+- Created formal PRD v1, UX/UI v1, Technical Plan v1, artifact README, project tracker, and decision log under `docs/feature-council/F08-manual-content-notes/`.
+- Ran the adversarial-review skill and wrote a timestamped evidence-first report. Verdict: no-go for implementation from the stale-main branch and no-go for production until three P0s are closed.
+- Started the independent QA/reviewer pass over the entire v1 package; its report will be incorporated with the adversarial findings into v2.
+- Performed a read-only production/source audit: production has 22 migrations through `020_recall_sync`, 122 items, 0 relational chunks, and 44 vec0 rows. `origin/main` is behind the deployed Recall line, and `rsync --delete` makes a stale-main release destructive.
+
+### Council and review decisions
+
+1. The manual note is one separate attached document per item; it never overwrites original/AI fields and never creates a second card/node.
+2. Exact search is synchronous with a successful server save; semantic/Ask/Related convergence is asynchronous and source-labeled.
+3. Manual Save and autosave share a no-loss contract with local durability, versions, idempotency, and explicit conflicts.
+4. Private means authenticated/non-shared by default, with honest browser/server/backup/provider disclosure; it does not claim end-to-end encryption.
+5. Notes are excluded from share/export by default; explicit inclusion must show provenance/privacy.
+6. Production migrations begin at 021 only after the deployed Recall history is integrated.
+
+### Adversarial P0 findings
+
+1. A single IndexedDB draft keyed only by `item_id` can let one tab overwrite another tab's only crash-recovery copy. V2 must key/journal dirty drafts per editor instance and prove both survive a forced two-tab crash.
+2. Production's 0 chunks / 44 vec rows can collide with the first bridge rowid or be deleted unsafely. A manifest-based report-only audit, backup, approved repair/reservation, and parity proof must precede note indexing.
+3. The current feature branch does not yet contain the source/migrations/scheduler runtime that production uses. The candidate `4d97c45` source line must be positively inventoried/integrated, baseline-tested, and dry-run compared before any implementation deployment.
+
+### Other required v2 revisions
+
+- Resolve the provenance contradiction: current item embeddings concatenate original body and AI summary, while v1 claims Original/AI/My-note separation.
+- Apply `private, no-store` to every note-bearing surface, including search snippets, Ask/citations, conflicts, revisions, and explicit exports.
+- Select the editor only after a fixed React/Next/Capacitor/IME/a11y/round-trip/bundle spike; revise the UX deliberately if the visual editor is rejected.
+- Add provider-specific first-use acknowledgement before remote transmission, supervised single-worker lifecycle, durable delete/AI-opt-out tombstones, evaluated Related weighting, a 100 KiB default cap unless measured otherwise, and a minimal revision recovery surface.
+
+### Deployed / Released
+
+Nothing deployed or mutated in production. All production work in this milestone was read-only.
+
+### Documents created or updated this period
+
+**Created:**
+- `docs/feature-council/F08-manual-content-notes/README.md`
+- `docs/feature-council/F08-manual-content-notes/PROJECT_TRACKER.md`
+- `docs/feature-council/F08-manual-content-notes/DECISION_LOG.md`
+- Three council reports under `council/`
+- Formal PRD/UX/technical v1 artifacts
+- Responsive HTML prototype, screenshots, and prototype design QA
+- Timestamped adversarial v1 review under `reviews/`
+
+**Updated:**
+- `RUNNING_LOG.md` - appended this v1 and adversarial milestone entry.
+
+### Current remaining to-do
+
+1. Receive the independent QA report and reconcile it with the adversarial report.
+2. Create final v2 PRD, UX, and Technical Plan with every P0/P1/P2 disposition and updated tracker/decision log.
+3. Commit the documentation milestone, integrate the candidate deployed Recall source line, and prove the merged baseline before implementation.
+4. Implement and test the approved persistence, editor, search, semantic, privacy, cleanup, and operational plan behind flags.
+5. Complete implementation design QA, production-snapshot migration/repair evidence, wiki publication, GitHub PR/merge, guarded deploy, synthetic production smoke, cleanup, and rollback verification.
+
+### State snapshot
+
+- **Current phase:** v1 council/review complete; independent QA running; v2 revision next.
+- **Active branch:** `codex/manual-content-notes`, still based on `2b4db95` until the documentation milestone is committed and the deployed source line is integrated.
+- **Working tree:** coordinator-owned `RUNNING_LOG.md` changes and new `docs/feature-council/F08-manual-content-notes/` artifacts only.
+- **Production:** unchanged; service active; schema/runtime divergence and vector-integrity gates recorded.
+- **Next milestone:** adversarially and independently reviewed v2 package with no open design P0, ready for source-line integration and implementation.
+
+---
+
+## 2026-07-10 18:08 - F08 QA-reviewed v2 contract and attested production baseline
+
+**Entry author:** AI agent (Codex) · **Triggered by:** completion of independent QA, resolution of all specification P0/P1 findings into v2, and live hash attestation of the production source snapshot
+
+### Done
+
+- Received independent QA review with seven P0 findings, prioritized P1-P3 findings, requirements traceability, a 36-test matrix, and nine release gates. Verdict was v1/production no-go and immediate v2 remediation go.
+- Positively distinguished the consolidated production content baseline. Live `/opt/brain/public/manifest.webmanifest` and `offline.html` hashes exactly match commit `8178117` and differ from `4d97c45`; live schema includes 018/019/020, while 4d lacks 018/019. Common Recall service/timer/scripts/logo/service-worker also hash-match. Recorded a source attestation report.
+- Finalized PRD v2, UX/UI v2, and Technical Plan v2 and wrote a review-disposition matrix. The v2 package resolves every specification P0 and makes every remaining risk an executable no-go gate.
+
+### Final v2 changes
+
+- Replaced one item-keyed local draft with per-editor-instance monotonic IndexedDB journals so two dirty tabs survive a crash independently.
+- Added an item-scoped content-free note epoch/tombstone retained until parent deletion; delayed null-base/offline drafts cannot resurrect a deleted note, and explicit recreation starts a new epoch.
+- Defined immutable payload-specific save envelopes: exact retry reuses the mutation ID; any changed queued content gets a new ID; edit/manual-save during flight never overlaps or mutates the request.
+- Made AI opt-out a versioned synchronous eligibility boundary in retrieval, Ask, Related, and worker pre-call/pre-commit checks. Vector deletion is cleanup, not the privacy boundary.
+- Finalized remote-provider behavior: exact search is independent; any remote note-consuming provider requires provider-named one-time acknowledgement before note transmission; per-note opt-out remains.
+- Finalized v1 editor as a native controlled Markdown textarea with selection-aware toolbar and safe Preview, using a defined Markdown/GFM subset and 100 KiB UTF-8 cap. WYSIWYG is deferred.
+- Expanded semantic provenance to `legacy_item_context`, `original_content`, `ai_summary`, and `manual_note`; legacy title/summary/body chunks are labeled Saved item context, never Original.
+- Defined streamed/persisted citation source/version behavior and truthful degradation. Note Delete also accounts for item-chat turns derived from the deleted note.
+- Defined a supervised leased concurrency-one worker, explicit vec0 cleanup, durable/safe rowid allocation, and report-only production vector audit/repair gates.
+- Scoped shipped connection behavior honestly to evaluated note-aware Related plus a future graph event contract; no nonexistent persisted graph is claimed.
+- Finalized privacy/export/revision/cache behavior and distinguished current-client cleanup, offline-client tombstone reconciliation/copy-only drafts, and backup retention.
+- Added independent default-off UI, write, and worker flags while explicitly recognizing that migration preflight must happen before startup because flags do not stop auto-migrations.
+
+### Artifacts
+
+- `prd/PRD_F08_MANUAL_CONTENT_NOTES_v2.md`
+- `ux/UX_F08_MANUAL_CONTENT_NOTES_v2.md`
+- `technical/TECH_F08_MANUAL_CONTENT_NOTES_v2.md`
+- `reviews/QA_REVIEW_v1.md`
+- `reviews/V1_REVIEW_DISPOSITION.md`
+- `validation/PRODUCTION_SOURCE_BASELINE_ATTESTATION_2026-07-10.md`
+- Updated tracker, decision log, README, and this running log.
+
+### Deployed / Released
+
+Nothing deployed or mutated. Production evidence remained read-only.
+
+### Remaining gates
+
+1. Commit this immutable documentation milestone and merge `8178117` into the main-derived feature branch.
+2. Pass integrated baseline dependencies/typecheck/lint/tests/audit/build/Recall preflights before feature code.
+3. Implement v2 behind default-off flags with the QA matrix as the executable acceptance suite.
+4. Rehearse migrations/vector audit/repair on the latest production snapshot copy and prove rollback/artifact safety.
+5. Complete implementation browser/design/accessibility/mobile/cache/security QA, wiki publication, GitHub PR/merge, guarded deploy, synthetic production lifecycle/cleanup, and health verification.
+
+### State snapshot
+
+- **Current phase:** v2 specification complete; production-source integration next.
+- **Branch:** `codex/manual-content-notes` at main-derived `2b4db95` before documentation commit/817 merge.
+- **Production baseline:** attested consolidated content snapshot `8178117`; live service unchanged.
+- **Release status:** implementation GO after integrated baseline; semantic worker and production real-note use remain NO-GO until their gates pass.
