@@ -13,6 +13,18 @@ Every saved item can have one owner-authored **My notes** document. It is an att
 
 The note uses canonical UTF-8 Markdown. The editor provides basic formatting controls, Write and safe Preview modes, explicit Save, autosave, offline-local recovery, conflict review, recent checkpoints, restore, clear, delete, recreate, and explicit note-only export. Opening an empty editor does not create a record.
 
+## Focus Mode
+
+The ordinary item experience remains the default. When the rollout flag is enabled, **My notes** exposes a named **Focus** control that expands the already-mounted editor into an opaque full-viewport writing surface. It does not open browser fullscreen, navigate through the app router, mount a second editor, or create a new persistence path.
+
+Focus keeps Exit, item identity, privacy copy, Write/Preview, Markdown formatting, save status and byte count, Copy, and Save reachable. Routine AI-policy, version, export, clear, and delete management returns after exit. The same content controller, journal, save queue, and Write textarea remain alive across Focus, Escape, Back, Forward, and supported responsive changes.
+
+The content-free URL marker is `tab=notes&note_mode=focus`. Browser Back exits and Forward re-enters an owned Focus history entry. Direct load and refresh reconcile the normal saved note and local recovery journal before editing. Invalid or disabled markers normalize away, and the existing source-reading `mode=focus` view takes precedence.
+
+While focused, the editor section has dialog semantics and an item-aware accessible name. Background branches become inert and `aria-hidden`, focus stays contained, and exact prior accessibility state is restored on exit. At narrow widths, Exit/title and status/Copy/Save remain persistent while mode and formatting controls scroll with the canvas.
+
+`NOTE_FOCUS_MODE_ENABLED` controls only Focus presentation/history. The single responsive Notes host is a structural correction and requires the previous known-good artifact for emergency rollback.
+
 ## Data and No-Loss Model
 
 Migration 022 adds separate note state, current note, revision, idempotency receipt, semantic job, provider-consent, and note FTS tables. An item-scoped epoch/generation record survives note deletion as a content-free tombstone so delayed offline drafts cannot silently recreate deleted text.
@@ -28,6 +40,8 @@ Migration 023 gives semantic chunks an explicit source kind: legacy saved contex
 Manual notes are excluded from AI and connections until the per-note switch is enabled. Retrieval rechecks deletion, inclusion, epoch, generation, rollout flags, and provider permission before prompt construction and again before answer persistence.
 
 Settings > My notes provides an owner-controlled **Include in AI & connections by default** preference. It applies only when a note is first saved or deliberately recreated; changing it never rewrites an existing note's per-note choice. The effective default remains off until every active note-consuming provider is eligible, while exact search continues independently.
+
+Focus Mode does not change this preference. The per-note management switch is intentionally hidden during focused writing and returns unchanged after exit.
 
 ## Privacy Boundary
 

@@ -11,6 +11,7 @@ import {
   useMemo,
   useState,
 } from "react";
+import { UNSAFE_NOTE_NAVIGATION_MESSAGE } from "@/lib/notes/navigation-safety";
 
 interface CommandPaletteCtx {
   open: () => void;
@@ -36,6 +37,7 @@ export function CommandPaletteProvider({ children }: { children: React.ReactNode
     const handler = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
         e.preventDefault();
+        if (document.documentElement.dataset.noteFocusActive === "true") return;
         setOpen((prev) => !prev);
       } else if (e.key === "Escape" && isOpen) {
         setOpen(false);
@@ -47,6 +49,12 @@ export function CommandPaletteProvider({ children }: { children: React.ReactNode
 
   const go = useCallback(
     (href: string) => {
+      if (
+        document.documentElement.dataset.noteUnsafeNavigation === "true" &&
+        !window.confirm(UNSAFE_NOTE_NAVIGATION_MESSAGE)
+      ) {
+        return;
+      }
       close();
       router.push(href);
     },

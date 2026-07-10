@@ -15,6 +15,10 @@ export function manualNotesWorkerEnabled(): boolean {
   return enabled("MANUAL_NOTES_WORKER_ENABLED");
 }
 
+export function noteFocusModeEnabled(): boolean {
+  return enabled("NOTE_FOCUS_MODE_ENABLED");
+}
+
 /** Private note text may reach semantic providers only in the full rollout state. */
 export function manualNotesSemanticProcessingEnabled(): boolean {
   return (

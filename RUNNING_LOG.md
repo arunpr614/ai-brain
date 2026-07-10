@@ -28511,3 +28511,262 @@ None. Arun can enable the default from Settings > My notes when desired.
 - **Working tree:** Dirty only with final wiki-publication report and running-log closeout.
 - **Deployed/runtime state:** Production healthy; default off; provider approvals preserved; Recall scheduler active.
 - **Next milestone:** None; goal handoff.
+
+---
+
+## 2026-07-10 20:51 - Note Focus Mode Isolated Discovery Workspace
+
+**Entry author:** AI agent (Codex) · **Triggered by:** Autonomous Note Focus Mode design, implementation, production-release, and documentation objective.
+
+### Planned since last entry
+
+The prior entry closed the global Note AI default follow-on. The new objective requires a production-ready Focus Mode for the existing **My notes** editor while leaving the current item experience as the default, preserving note content and editor state across entry/exit, completing a feature-council and adversarial design process, verifying acceptance criteria, and publishing the implementation, documentation, wiki, and production evidence.
+
+### Done
+
+- Read the supplied Note Focus Mode objective before continuing.
+- Fetched the latest repository state and created a clean isolated worktree at `Phase3-note-focus-mode` from `origin/main` commit `870dc5ab3c9294ba749e218831fcb922098b447d`.
+- Created and checked out branch `feat/note-focus-mode`; the original `Phase3` folder remains untouched.
+- Read the repository agent rules and required Product Design and running-log workflows.
+- Ran Product Design context preflight; no saved product/browser context was available.
+- Started three required feature-council lanes against the clean worktree: product/growth/platform/power-user, UX/accessibility, and technical architecture/reliability.
+- Began codebase discovery across the current manual-note editor, item-detail surfaces, design conventions, shortcuts, tests, rollout, and documentation.
+
+### Cross-lane notes
+
+- Council agents have isolated document ownership under `docs/feature-council/note-focus-mode/council/`; the primary agent owns all other files and integration.
+- No application code, production state, user note data, settings, provider approvals, or scheduler state has been changed.
+
+### Learned
+
+- The existing editor entry point is `src/components/manual-note-editor.tsx`, with the surrounding desktop/mobile companion experience centered in `src/components/item-companion-tabs.tsx` and `src/app/items/[id]/page.tsx`.
+- The current product already has explicit save/autosave, recovery, formatting shortcuts, provider/privacy boundaries, and extensive F08 documentation that the Focus Mode contract must preserve rather than reimplement.
+- The repository baseline includes 796 tests across 92 suites from the immediately preceding production release; the new feature must establish and verify its own current baseline before release.
+
+### Deployed / Released
+
+Nothing deployed, pushed, or released in this milestone.
+
+### Documents created or updated this period
+
+**Updated:**
+- `RUNNING_LOG.md` - appended the isolated-workspace and discovery milestone.
+
+### Current remaining to-do
+
+1. Complete current-product evidence capture and write the discovery report.
+2. Integrate the three council recommendations and record the layout/fullscreen decision.
+3. Produce PRD, UX, and technical v1 documents; run adversarial reviews; publish resolved v2 documents and acceptance traceability.
+4. Implement test-first, verify behavior and visual states across desktop/mobile/accessibility/error paths, and run the full release gate.
+5. Commit, push, open and merge the GitHub PR, deploy with existing safety controls, smoke production, publish canonical wiki updates, and append release closeout evidence.
+
+### Open questions / decisions needed
+
+None from the user. The council must decide whether in-app layout expansion, a dedicated route, browser fullscreen, or a hybrid gives the simplest reliable Focus Mode without editor remount/data-loss risk.
+
+### Session self-critique
+
+- No current-run visual screenshots have been captured yet; visual claims remain pending browser evidence.
+- Discovery is early and no implementation claim has been made.
+
+### Action items for the next agent
+
+1. Continue in `Phase3-note-focus-mode` on `feat/note-focus-mode`.
+2. Preserve the existing My notes editor behavior and treat no-loss editor-state continuity as the primary invariant.
+3. Do not touch production until the complete local acceptance and release gates pass.
+
+### State snapshot
+
+- **Current phase / version:** Note Focus Mode discovery and feature council in progress.
+- **Active branch:** `feat/note-focus-mode` at `870dc5a`.
+- **Working tree:** Clean before this append; now dirty only with this running-log milestone until council documents arrive.
+- **Deployed/runtime state:** Production unchanged; prior Notes release remains active and healthy.
+- **Next milestone:** Evidence-backed council decision and discovery report.
+
+---
+
+## 2026-07-10 21:22 - Note Focus Mode Council and V2 Specification Milestone
+
+**Entry author:** AI agent (Codex) · **Triggered by:** Completion of required discovery, specialist council, v1 adversarial reviews, and resolved v2 product/design/engineering contracts.
+
+### Planned since last entry
+
+Complete current-product visual/code evidence, decide app layout versus route/modal/browser fullscreen, publish v1 PRD/UX/technical packages, adversarially challenge them, and produce consistent v2 sources of truth before implementation.
+
+### Done
+
+- Audited the current Notes UI against an isolated synthetic SQLite database on current `origin/main`; production correctly stopped at private PIN unlock and no production credential/data was accessed.
+- Saved current-run evidence for normal desktop Notes, normal 390×844 mobile Notes, and existing source-reading Focus mode.
+- Completed product, UX, and technical council briefs. All selected a same-DOM app-level full-viewport surface plus content-free shallow History state; all rejected a route editor, duplicate modal/portal, Browser Fullscreen API, and fullscreen hybrid for v1.
+- Identified a P0 baseline lifecycle defect: the item page can mount desktop and mobile note editors simultaneously, and desktop Digest unmounts Notes. V2 requires one responsive persistent host before Focus can enable.
+- Published `discovery.md`, artifact map, tracker, and decision log.
+- Created PRD v1, UX/UI v1, and technical plan v1.
+- Ran three separate evidence-first adversarial reviews. V1 was no-go because of false flag-only rollback, compound acceptance, undefined native browser proof, accessibility semantic conflict, narrow/zoom infeasibility, unsafe journal-failure navigation, nested Escape/IME ambiguity, mobile keyboard geometry, and session-expiry recovery gaps.
+- Published consistent v2 sources of truth resolving every material review finding:
+  - in-place modal semantics without portal/duplicate;
+  - sticky Exit/title and trust/actions with scrolling mode/toolbar at narrow widths;
+  - exact one-host responsive/tab DOM contract;
+  - controller versus Write-textarea identity distinctions;
+  - exact URL/history schemas and input arbitration;
+  - Unlock-to-sync and unsafe-navigation recovery;
+  - executable browser/device/AT evidence matrix;
+  - Focus configuration rollback plus shared-host artifact rollback.
+- Selected test-first vertical slices, starting with the existing Digest unmount/duplicate responsive lifecycle defect.
+
+### Cross-lane notes
+
+- Product council owns `council/product-council.md` and the PRD v1 adversarial report.
+- UX owns `council/ux-direction.md` and the UX/UI v1 adversarial report.
+- Technical architecture owns `council/technical-architecture.md`; the coordinator completed the technical v1 adversarial report after the review lane was interrupted for timing.
+- No application implementation file or production state has changed yet.
+
+### Learned
+
+- The highest feature risk is not fixed positioning; it is preserving one live editor/controller and native textarea through responsive and history transitions.
+- `NOTE_FOCUS_MODE_ENABLED=0` cannot rollback the shared-host prerequisite. Previous-artifact rollback must be tested separately.
+- A fixed takeover should use modal semantics because background content is unavailable, while still avoiding the conventional portalled/duplicated modal architecture rejected by council.
+- At 320px/400% zoom, keeping the full toolbar sticky would erase the canvas. V2 keeps only Exit/title and trust/actions sticky; mode/toolbar scroll.
+- Current journal failure can leave the newest edit only in React memory. Focus Exit is safe, but later page navigation needs a targeted guard.
+- Screenshots can validate layout but cannot prove same DOM, native undo, IME, network/journal side effects, keyboard geometry, or assistive-technology containment.
+
+### Deployed / Released
+
+Nothing deployed, pushed, or released in this milestone.
+
+### Documents created or updated this period
+
+**Created:**
+- `docs/feature-council/note-focus-mode/README.md`, `PROJECT_TRACKER.md`, `DECISION_LOG.md`, `discovery.md`, and three current-run screenshots.
+- Three council briefs under `council/`.
+- `prd/prd-v1.md`, its timestamped adversarial review, and `prd-v2.md`.
+- `ux/ux-ui-v1.md`, its timestamped adversarial review, and `ux-ui-v2.md`.
+- `technical/technical-plan-v1.md`, its timestamped adversarial review, and `technical-plan-v2.md`.
+
+**Updated:**
+- `RUNNING_LOG.md` - appended this specification milestone.
+
+### Current remaining to-do
+
+1. Write the first failing behavior test for persistent Notes across Digest and implement the single responsive host.
+2. Run the production-build History/DOM-identity tracer and select visible-query or same-URL history before the complete overlay.
+3. Implement helpers, same-node Focus surface, isolation, input arbitration, session recovery, unsafe navigation, flag, and responsive behavior in test-first slices.
+4. Produce acceptance traceability and browser/device/accessibility evidence, then run the complete release gate.
+5. Commit/push/PR/merge, deploy flag-off then enable, production smoke/cleanup, publish wiki/docs, and append final log evidence.
+
+### Open questions / decisions needed
+
+No product decisions remain. Execution gates are Next history identity, Capacitor keyboard geometry, and availability of required physical Android/AT evidence.
+
+### Session self-critique
+
+- Current-run visual evidence is strong for the baseline but implementation comparison does not exist yet.
+- The selected browser can prove web behavior; physical Android keyboard/TalkBack evidence may become an external access blocker and must not be waived silently.
+- The unsafe-navigation guard extends slightly beyond layout, but is required by the objective's no-loss navigation/error-recovery contract and a confirmed baseline journal-failure path.
+
+### Action items for the next agent
+
+1. Treat `prd/prd-v2.md`, `ux/ux-ui-v2.md`, and `technical/technical-plan-v2.md` as normative.
+2. Use repository `node:test`/jsdom conventions even though the generic TDD skill examples use Vitest/RTL.
+3. Do not enable Focus or claim rollback until the shared host and previous-artifact rollback are proven.
+
+### State snapshot
+
+- **Current phase / version:** Note Focus Mode v2 specifications complete; test-first implementation starting.
+- **Active branch:** `feat/note-focus-mode` at `870dc5a`.
+- **Working tree:** Dirty with intended feature documents/screenshots and append-only running log; no code changes yet.
+- **Deployed/runtime state:** Production unchanged; isolated local synthetic dev server used only for evidence.
+- **Next milestone:** One persistent responsive editor and production History identity tracer.
+
+---
+
+## 2026-07-10 22:22 - Note Focus Mode Implementation and Local Release-Candidate Milestone
+
+**Entry author:** AI agent (Codex) · **Triggered by:** Completion of test-first implementation, full local release gate, production-build browser trace, accessibility remediation, visual comparison, rollback rehearsal, and detailed report package.
+
+### Planned since last entry
+
+Implement the single responsive Notes host, same-editor Focus surface, native History contract, transactional accessibility isolation, input arbitration, recovery and unsafe-navigation paths, flag/deploy guard, automated coverage, production-build trace, responsive comparisons, acceptance report, and honest rollback evidence.
+
+### Done
+
+- Consolidated the item page to one responsive persistent `ManualNoteEditor`; Notes remains mounted through Digest and desktop/mobile breakpoints.
+- Added default-off `NOTE_FOCUS_MODE_ENABLED` behavior plus deploy preflight acknowledgement.
+- Added content-free URL/history helpers, exact transactional background isolation, current textarea-view snapshots, and the local Focus session hook.
+- Promoted the same editor section into an in-place labelled/described modal semantic surface with Focus/Exit, sticky trust chrome, 320px reflow, IME-aware Escape, focus containment, Unlock-to-sync, and safe navigation when the journal fails.
+- Suppressed Cmd/Ctrl+K while Focus is active and made command navigation respect the unsafe-note marker.
+- Preserved the existing Settings-level **Include in AI & connections by default** preference for new/recreated notes; Focus never mutates it.
+- Closed implementation findings discovered during browser/accessibility review:
+  - companion ARIA tabs now support roving focus and Arrow/Home/End;
+  - sticky Focus regions receive scroll padding;
+  - notice live region stays mounted before announcements;
+  - exit captures the latest caret/selection/scroll view rather than overwriting it with entry state;
+  - invalid/source/disabled markers normalize even when the note editor is not mounted;
+  - server canonicalization forces `tab=notes` for direct note Focus and preserves source-reading Focus precedence.
+- Passed 813 tests across 92 suites, full ESLint, TypeScript, diff check, optimized production build, standalone artifact/env checks, deploy shell syntax, and a zero-vulnerability production dependency audit.
+- Completed production-build browser evidence on the isolated synthetic database:
+  - one textarea and identical content across Focus, Back, and Forward;
+  - zero note GET/PUT requests during presentation-only transitions;
+  - direct focused refresh performs one expected note GET and returns Saved;
+  - Preview/Write and keyboard tab transitions preserve the controller/value;
+  - Focus-off restart removes the control and canonicalizes stale markers.
+- Measured 318px normal versus 816px Focus desktop width (2.57×) and zero horizontal overflow with 44px toolbar targets at 320×800.
+- Created and visually reviewed matched desktop/mobile normal-versus-Focus comparison images.
+- Rehearsed both rollback paths: flag-off restart and prior artifact `870dc5a` build/start/normal Notes smoke. The prior artifact honestly restores the known two-controller DOM baseline with one visible editor.
+- Created detailed Markdown and standalone HTML reports plus implementation, QA, WCAG, acceptance-traceability, and release/rollback evidence.
+- Updated the Manual Content Notes wiki source, Note Focus tracker/decision log, and Feature Council wiki exclusion boundary.
+
+### Learned
+
+- Production standalone validation must include the deployment-equivalent `.next/static` and `public` copy before starting the server; otherwise SSR appears but hydration assets return 404 and the note remains in Loading.
+- Visual comparison briefly caught a stale pre-paint desktop capture; recapturing after the actual Focus state and reviewing the combined image prevented a false layout defect.
+- A valid direct `note_mode=focus` URL must be server-canonicalized to `tab=notes`; source-reading Focus and flag-off paths require server normalization because they may not mount the note editor hook.
+- Browser automation could not generate a verifiable Cmd/Ctrl+Z modifier sequence. Same-node continuity is proven, but exact native undo remains a transparent manual residual.
+- No Android device/emulator or real screen-reader speech harness is available. Web release evidence is strong; Android keyboard/Back/TalkBack claims remain explicitly unverified.
+
+### Deployed / Released
+
+Nothing pushed, merged, or deployed in this milestone. The built artifact was exercised only on localhost with a synthetic database. Production remains unchanged.
+
+### Documents created or updated this period
+
+**Created:**
+- Validation implementation summary, QA report, accessibility review, PRD traceability, and release/rollback report.
+- Matched desktop and mobile normal-versus-Focus captures.
+- Detailed shareable Markdown and HTML report under `docs/feature-council/note-focus-mode/report/`.
+- Focus/history/isolation/navigation-safety helpers and tests; persistent companion test.
+
+**Updated:**
+- Item page, companion tabs, manual editor, command palette, flags, deploy preflight, `.env.example`.
+- Feature README, tracker, decision log, Manual Content Notes wiki source, Feature Council wiki manifest, and this append-only running log.
+
+### Current remaining to-do
+
+1. Rerun documentation/privacy/structure gates on the completed report/wiki corpus.
+2. Complete implementation adversarial review and final diff/privacy inspection.
+3. Commit intentionally, push, open the PR, observe checks, merge to `main`.
+4. Deploy flag-off, smoke normal production, enable Focus, smoke Focus/normal behavior, and inspect operations.
+5. Publish/verify the GitHub Wiki update and append final release closeout evidence.
+
+### Open questions / decisions needed
+
+None for the web release. Android device certification and real assistive-technology speech require environments not present in this session; they are post-release evidence work and are not represented as passed.
+
+### Session self-critique
+
+- The local evidence matrix is materially stronger than the initial plan, but session-expiry, forced IndexedDB failure, every save-state visual, native undo shortcut, and real AT/device behavior are not all end-to-end browser proofs.
+- The emergency prior artifact is safe as a rollback but intentionally returns to a known duplicate-controller baseline; it should not be described as structurally equivalent to the new host.
+- The reports are release-candidate documents and must be updated with actual PR, merge, deployment, and production smoke identifiers before closeout.
+
+### Action items for the next agent
+
+1. Do not weaken or omit the residual evidence labels during GitHub/release closeout.
+2. Keep `NOTE_FOCUS_MODE_ENABLED=0` for the first production artifact deployment; enable only after normal Notes smoke.
+3. Use synthetic content for production Focus smoke and remove it afterward if a new production item is created.
+
+### State snapshot
+
+- **Current phase / version:** Note Focus Mode local release candidate complete; GitHub and production release pending.
+- **Active branch:** `feat/note-focus-mode` from base `870dc5a`.
+- **Working tree:** Dirty only with intended implementation, documents, screenshots, tests, deploy/env updates, and append-only log entries.
+- **Deployed/runtime state:** Production unchanged; local production artifact stopped after synthetic evidence except the current localhost verification server.
+- **Next milestone:** Green documentation/review gate and intentional GitHub PR.
