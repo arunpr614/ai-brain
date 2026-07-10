@@ -1,0 +1,53 @@
+name: Agent documentation
+
+on:
+  pull_request:
+    paths:
+      - "docs/wiki/**"
+      - "docs/agent-docs/**"
+      - "docs/feature-council/**"
+      - "scripts/check-agent-*.mjs"
+      - "scripts/build-feature-council-wiki.mjs"
+      - "scripts/smoke-agent-*.mjs"
+      - "src/app/**"
+      - "src/db/**"
+      - "src/lib/**"
+      - "android/**"
+      - "extension/**"
+      - "scripts/deploy/**"
+      - "package.json"
+      - ".github/workflows/agent-docs.yml"
+  push:
+    branches:
+      - main
+    paths:
+      - "docs/wiki/**"
+      - "docs/agent-docs/**"
+      - "docs/feature-council/**"
+      - "scripts/check-agent-*.mjs"
+      - "scripts/build-feature-council-wiki.mjs"
+      - "scripts/smoke-agent-*.mjs"
+      - "src/app/**"
+      - "src/db/**"
+      - "src/lib/**"
+      - "android/**"
+      - "extension/**"
+      - "scripts/deploy/**"
+      - "package.json"
+      - ".github/workflows/agent-docs.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run smoke:agent-docs
+      - run: npm run check:agent-docs

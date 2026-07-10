@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>FCP-003 Contextual Ask Prototype</title>
+  <style>
+    body { margin: 0; font-family: Inter, system-ui, sans-serif; background: #f5f7f8; color: #1f2528; }
+    main { max-width: 1040px; margin: 0 auto; padding: 32px; display: grid; grid-template-columns: minmax(0,1fr) 320px; gap: 20px; }
+    .panel { background: #fff; border: 1px solid #d7dee2; border-radius: 8px; padding: 18px; }
+    h1, h2 { margin-top: 0; }
+    .chips { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0; }
+    .chip { border: 1px solid #bfd0d8; border-radius: 999px; padding: 5px 10px; font-size: 13px; background: #f9fbfc; }
+    textarea { width: 100%; min-height: 92px; border: 1px solid #cbd6dc; border-radius: 8px; padding: 12px; font: inherit; box-sizing: border-box; }
+    button { border: 1px solid #2b6f8c; background: #2b6f8c; color: #fff; border-radius: 6px; padding: 9px 13px; font-weight: 700; }
+    .secondary { background: #fff; color: #2b6f8c; }
+    .verdict { border-left: 4px solid #2b6f8c; padding: 10px 12px; background: #f8fbfc; margin: 10px 0; }
+    .contradicts { border-left-color: #b3403a; }
+    .nuance { border-left-color: #9b6a1d; }
+    .muted { color: #66747b; }
+    @media (max-width: 820px) { main { display: block; padding: 20px; } .panel { margin-bottom: 14px; } }
+  </style>
+</head>
+<body>
+  <main>
+    <section class="panel">
+      <h1>Ask with Sources</h1>
+      <div class="chips">
+        <span class="chip">Product strategy notes</span>
+        <span class="chip">3 high-quality sources</span>
+        <span class="chip">2 weak skipped</span>
+      </div>
+      <textarea>What do my saved sources say about durable AI memory?</textarea>
+      <p><button>Ask selected sources</button> <button class="secondary">Choose sources</button></p>
+      <h2>Evidence Scan</h2>
+      <textarea>The strongest AI memory systems preserve user-authored context and cite source evidence.</textarea>
+      <p><button>Scan claim</button></p>
+      <div class="verdict">
+        <strong>Supports</strong>
+        <p>Two selected sources say memory systems are more trustworthy when grounded in user-owned notes and citations.</p>
+        <p class="muted">Cites: AI Brain strategy note, note.md local AI article</p>
+      </div>
+      <div class="verdict nuance">
+        <strong>Nuances</strong>
+        <p>One source frames generated summaries as useful but not authoritative.</p>
+      </div>
+      <div class="verdict contradicts">
+        <strong>Contradicts</strong>
+        <p>No direct contradiction found in selected sources.</p>
+      </div>
+    </section>
+    <aside class="panel">
+      <h2>Source Readiness</h2>
+      <p><strong>Included:</strong> 3</p>
+      <p><strong>Skipped:</strong> 2 metadata-only YouTube captures</p>
+      <p><strong>Mode:</strong> High-quality only</p>
+      <p class="muted">Evidence Scan classifies support from selected local sources only.</p>
+    </aside>
+  </main>
+</body>
+</html>
