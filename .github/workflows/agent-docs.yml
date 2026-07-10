@@ -5,7 +5,9 @@ on:
     paths:
       - "docs/wiki/**"
       - "docs/agent-docs/**"
+      - "docs/feature-council/**"
       - "scripts/check-agent-*.mjs"
+      - "scripts/build-feature-council-wiki.mjs"
       - "scripts/smoke-agent-*.mjs"
       - "src/app/**"
       - "src/db/**"
@@ -21,7 +23,9 @@ on:
     paths:
       - "docs/wiki/**"
       - "docs/agent-docs/**"
+      - "docs/feature-council/**"
       - "scripts/check-agent-*.mjs"
+      - "scripts/build-feature-council-wiki.mjs"
       - "scripts/smoke-agent-*.mjs"
       - "src/app/**"
       - "src/db/**"

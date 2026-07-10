@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 import assert from "node:assert/strict";
-import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { spawnSync } from "node:child_process";
@@ -16,12 +16,20 @@ const pages = [
 const root = mkdtempSync(join(tmpdir(), "agent-wiki-structure-"));
 const wiki = join(root, "wiki");
 const baseline = join(root, "baseline.json");
+const manifestPath = join(root, "feature-council-wiki-manifest.json");
 const checker = resolve("scripts/check-agent-wiki-structure.mjs");
 const sha = "a".repeat(40);
+const sourceManifest = JSON.parse(readFileSync(resolve("docs/agent-docs/feature-council-wiki-manifest.json"), "utf8"));
 
 try {
   mkdirSync(wiki, { recursive: true });
-  writeFileSync(baseline, JSON.stringify({ defaultBranchSha: sha, worktreeSha: "b".repeat(40), productionSha: null }));
+  writeFileSync(baseline, JSON.stringify({
+    defaultBranchSha: sha,
+    worktreeSha: "b".repeat(40),
+    productionSha: null,
+    featureCouncilArtifactSha: sourceManifest.artifactSourceCommit,
+  }));
+  writeFileSync(manifestPath, JSON.stringify(sourceManifest));
   const metadata = [
     "Purpose: Synthetic page",
     "Audience: Tests",
@@ -34,7 +42,10 @@ try {
   for (const page of pages) {
     const target = join(wiki, page);
     if (page === "_Sidebar.md") {
-      writeFileSync(target, pages.filter((name) => name !== "_Sidebar.md").map((name) => `- [${name}](${name})`).join("\n"));
+      writeFileSync(target, [
+        ...pages.filter((name) => name !== "_Sidebar.md").map((name) => `- [${name}](${name})`),
+        `- [Feature Council Research](${sourceManifest.landingPage})`,
+      ].join("\n"));
     } else if (page === "Feature-Catalog.md") {
       writeFileSync(target, `${metadata}\n\n# Feature Catalog\n\n| Feature | Product status | Code status | Runtime status | User surface | API/action entrypoint | Core modules | Data touched | Jobs/scripts | Verification | Baseline SHA | Known gaps |\n|---|---|---|---|---|---|---|---|---|---|---|---|\n| Synthetic | Internal | Main | Unknown | None | None | None | None | None | None | ${sha} | None |\n`);
     } else if (page === "System-Architecture.md") {
@@ -44,11 +55,34 @@ try {
     }
   }
 
-  const valid = run(wiki, baseline);
+  const researchMetadata = (entry) => [
+    "Purpose: Synthetic research page",
+    "Audience: Tests",
+    `Artifact source commit: \`${sourceManifest.artifactSourceCommit}\``,
+    `Audited application baseline: \`${sourceManifest.auditedApplicationBaseline}\``,
+    `Research evidence date: ${sourceManifest.researchEvidenceDate}.`,
+    `Lifecycle: ${{ current: "Current feature-council artifact", historical: "Historical draft - do not implement", review: "Review record" }[entry.lifecycle]}.`,
+    "Runtime verification: Not provided.",
+    `Superseded by: ${entry.successors.length ? entry.successors.map((page) => `[${page}](${page.replace(/\.md$/, "")})`).join(", ") : "None"}.`,
+    "Public disclosure: Reviewed and sanitized.",
+    "Owner: AI Brain maintainer.",
+  ].join("\n");
+
+  for (const entry of sourceManifest.documents) {
+    const allResearchLinks = entry.destination === sourceManifest.landingPage
+      ? `\n\n${sourceManifest.documents.map((document) => `[${document.destination}](${document.destination.replace(/\.md$/, "")})`).join("\n")}`
+      : "";
+    writeFileSync(
+      join(wiki, entry.destination),
+      `# ${entry.destination}\n\n${researchMetadata(entry)}${allResearchLinks}\n`,
+    );
+  }
+
+  const valid = run(wiki, baseline, manifestPath);
   assert.equal(valid.status, 0, valid.stderr);
 
   writeFileSync(join(wiki, "Home.md"), `${metadata}\n\n# Home\n\n[Broken](Missing-Page)\n`);
-  const broken = run(wiki, baseline);
+  const broken = run(wiki, baseline, manifestPath);
   assert.equal(broken.status, 1, "broken internal links must fail");
   assert.match(broken.stderr, /broken_internal_link/);
 
@@ -57,6 +91,6 @@ try {
   rmSync(root, { recursive: true, force: true });
 }
 
-function run(wiki, baselinePath) {
-  return spawnSync(process.execPath, [checker, wiki, baselinePath], { encoding: "utf8" });
+function run(wiki, baselinePath, researchManifestPath) {
+  return spawnSync(process.execPath, [checker, wiki, baselinePath, researchManifestPath], { encoding: "utf8" });
 }

@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>FCP-001 Capture Repair Center Prototype</title>
+  <style>
+    body { margin: 0; font-family: Inter, system-ui, sans-serif; background: #f7f8f6; color: #1d2520; }
+    main { max-width: 1120px; margin: 0 auto; padding: 32px; }
+    header { display: flex; justify-content: space-between; align-items: end; gap: 24px; margin-bottom: 24px; }
+    h1 { margin: 0; font-size: 30px; line-height: 1.2; }
+    .muted { color: #637168; }
+    .grid { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 12px; margin-bottom: 24px; }
+    .stat, .row, .panel { border: 1px solid #d7ddd6; background: #fff; border-radius: 8px; }
+    .stat { padding: 14px; }
+    .stat strong { display: block; font-size: 24px; }
+    .toolbar { display: flex; gap: 8px; margin-bottom: 14px; flex-wrap: wrap; }
+    button { border: 1px solid #b7c2b9; background: #fff; border-radius: 6px; padding: 8px 12px; font-weight: 600; color: #26332c; }
+    button.primary { background: #1f7a4f; border-color: #1f7a4f; color: #fff; }
+    .row { padding: 16px; margin-bottom: 10px; display: grid; grid-template-columns: 1fr auto; gap: 16px; }
+    .badges { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 8px; }
+    .badge { font-size: 12px; border-radius: 999px; padding: 3px 8px; border: 1px solid #cdd7ce; }
+    .warning { color: #8a5a00; border-color: #d9b45f; }
+    .danger { color: #a33a32; border-color: #df9a94; }
+    .ok { color: #1f7a4f; border-color: #8fc9a8; }
+    .actions { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; justify-content: end; }
+    @media (max-width: 760px) {
+      main { padding: 20px; }
+      header, .row { display: block; }
+      .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .actions { justify-content: start; margin-top: 12px; }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <div>
+        <h1>Repair Center</h1>
+        <p class="muted">Captures that need text, transcripts, indexing, or source cleanup.</p>
+      </div>
+      <button class="primary">Capture</button>
+    </header>
+    <section class="grid" aria-label="Repair summary">
+      <div class="stat"><strong>3</strong><span class="muted">Need text</span></div>
+      <div class="stat"><strong>2</strong><span class="muted">Transcripts</span></div>
+      <div class="stat"><strong>1</strong><span class="muted">Search gaps</span></div>
+      <div class="stat"><strong>4</strong><span class="muted">Warnings</span></div>
+      <div class="stat"><strong>0</strong><span class="muted">Failed</span></div>
+    </section>
+    <nav class="toolbar" aria-label="Filters">
+      <button class="primary">Needs action</button>
+      <button>Metadata only</button>
+      <button>Transcript</button>
+      <button>Indexing</button>
+      <button>Duplicates</button>
+    </nav>
+    <article class="row">
+      <div>
+        <div class="badges"><span class="badge warning">Metadata only</span><span class="badge">YouTube</span><span class="badge danger">Not usable in Ask</span></div>
+        <h2>How to build better product strategy</h2>
+        <p class="muted">Saved from Android. Transcript was blocked; only title, channel, and thumbnail are available.</p>
+      </div>
+      <div class="actions"><button class="primary">Retry transcript</button><button>Paste text</button><button>Ignore</button></div>
+    </article>
+    <article class="row">
+      <div>
+        <div class="badges"><span class="badge warning">Preview text</span><span class="badge">Substack</span><span class="badge">Partial Ask</span></div>
+        <h2>Notes on AI memory systems</h2>
+        <p class="muted">Saved full preview only. Add full text to improve summaries and retrieval.</p>
+      </div>
+      <div class="actions"><button class="primary">Add full text</button><button>Open source</button></div>
+    </article>
+    <article class="row">
+      <div>
+        <div class="badges"><span class="badge ok">Repaired</span><span class="badge">PDF</span><span class="badge ok">Usable in Ask</span></div>
+        <h2>Research paper on retrieval systems</h2>
+        <p class="muted">Text was replaced 8 minutes ago. Summary and embeddings are refreshing.</p>
+      </div>
+      <div class="actions"><button>View item</button><button>History</button></div>
+    </article>
+  </main>
+</body>
+</html>

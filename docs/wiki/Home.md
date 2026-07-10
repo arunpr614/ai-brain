@@ -35,6 +35,7 @@ Sensitive operations are deliberately split out. Private owner runbooks are not 
 
 ## Key Areas
 
+- [AI Brain Feature Council Research](Feature-Council-Research)
 - [Capture and Ingestion](Capture-and-Ingestion)
 - [Search, RAG, and Ask](Search-RAG-and-Ask)
 - [Enrichment and AI Providers](Enrichment-and-AI-Providers)
@@ -42,5 +43,7 @@ Sensitive operations are deliberately split out. Private owner runbooks are not 
 - [Security, Privacy, and Redaction](Security-Privacy-and-Redaction)
 - [Deployment and Operations](Deployment-and-Operations)
 - [Documentation Maintenance](Documentation-Maintenance)
+
+The Feature Council section is a dated planning and research record. Its pages distinguish current planning artifacts from historical drafts and do not claim production implementation or runtime verification.
 
 Pinned source entrypoints: [application routes](https://github.com/arunpr614/ai-brain/blob/8178117c80923e5724e355fb2684cbc836013d39/src/app), [database client](https://github.com/arunpr614/ai-brain/blob/8178117c80923e5724e355fb2684cbc836013d39/src/db/client.ts), and [package scripts](https://github.com/arunpr614/ai-brain/blob/8178117c80923e5724e355fb2684cbc836013d39/package.json).

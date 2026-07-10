@@ -1,0 +1,2481 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>AI Brain Master Prototype</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --paper: #f7f8f5;
+      --surface: #ffffff;
+      --surface-alt: #f0f4f2;
+      --ink: #17201d;
+      --muted: #66736e;
+      --soft: #d9e0dc;
+      --line: #cbd5d0;
+      --green: #16745c;
+      --green-soft: #dff3ec;
+      --blue: #245ea8;
+      --blue-soft: #e2ecfb;
+      --amber: #a76213;
+      --amber-soft: #fff0d9;
+      --red: #b3261e;
+      --red-soft: #ffe3df;
+      --violet: #6250a5;
+      --violet-soft: #ece8ff;
+      --cyan: #087a84;
+      --cyan-soft: #ddf4f6;
+      --shadow: 0 14px 34px rgba(23, 32, 29, 0.08);
+      --radius: 8px;
+      --radius-sm: 6px;
+      --sidebar: 236px;
+      --feedback: 324px;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: var(--paper);
+      color: var(--ink);
+      letter-spacing: 0;
+    }
+
+    button,
+    input,
+    select,
+    textarea {
+      font: inherit;
+    }
+
+    button {
+      cursor: pointer;
+    }
+
+    a {
+      color: inherit;
+    }
+
+    .app {
+      display: grid;
+      grid-template-columns: var(--sidebar) minmax(0, 1fr) var(--feedback);
+      min-height: 100vh;
+    }
+
+    .sidebar {
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      padding: 18px 14px;
+      border-right: 1px solid var(--line);
+      background: #fbfcfa;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .brand {
+      padding: 4px 4px 10px;
+      border-bottom: 1px solid var(--soft);
+    }
+
+    .brand-title {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 18px;
+      font-weight: 760;
+      line-height: 1.2;
+    }
+
+    .mark {
+      width: 34px;
+      height: 34px;
+      border-radius: 8px;
+      display: grid;
+      place-items: center;
+      color: white;
+      font-weight: 800;
+      background:
+        linear-gradient(135deg, rgba(22, 116, 92, 0.98), rgba(36, 94, 168, 0.94)),
+        #16745c;
+    }
+
+    .brand-subtitle {
+      margin-top: 8px;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.45;
+    }
+
+    .nav {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .nav button {
+      width: 100%;
+      border: 1px solid transparent;
+      background: transparent;
+      color: var(--muted);
+      border-radius: 6px;
+      padding: 9px 10px;
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      text-align: left;
+      min-height: 38px;
+    }
+
+    .nav button:hover {
+      background: var(--surface-alt);
+      color: var(--ink);
+    }
+
+    .nav button.active {
+      color: var(--ink);
+      background: var(--green-soft);
+      border-color: rgba(22, 116, 92, 0.28);
+      font-weight: 720;
+    }
+
+    .nav-icon {
+      width: 24px;
+      height: 24px;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      display: grid;
+      place-items: center;
+      font-size: 11px;
+      font-weight: 800;
+      background: var(--surface);
+      color: var(--ink);
+      flex: 0 0 auto;
+    }
+
+    .sidebar-footer {
+      margin-top: auto;
+      padding: 12px 10px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--surface);
+      box-shadow: var(--shadow);
+    }
+
+    .small-label {
+      color: var(--muted);
+      text-transform: uppercase;
+      font-size: 10px;
+      font-weight: 780;
+      letter-spacing: 0.06em;
+    }
+
+    .status-stack {
+      margin-top: 8px;
+      display: grid;
+      gap: 8px;
+    }
+
+    .status-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      font-size: 12px;
+    }
+
+    .main {
+      min-width: 0;
+      padding: 18px;
+    }
+
+    .topbar {
+      min-height: 64px;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 16px;
+      align-items: center;
+      margin-bottom: 18px;
+    }
+
+    .eyebrow {
+      color: var(--green);
+      font-size: 12px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    h1,
+    h2,
+    h3,
+    p {
+      margin: 0;
+    }
+
+    h1 {
+      margin-top: 4px;
+      font-size: 30px;
+      line-height: 1.1;
+      font-weight: 820;
+    }
+
+    .topbar p {
+      margin-top: 8px;
+      color: var(--muted);
+      max-width: 850px;
+      line-height: 1.5;
+    }
+
+    .top-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    .btn {
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      background: var(--surface);
+      color: var(--ink);
+      min-height: 36px;
+      padding: 8px 11px;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 720;
+      box-shadow: 0 1px 0 rgba(23, 32, 29, 0.04);
+    }
+
+    .btn:hover {
+      border-color: #aebbb5;
+      background: #fbfcfb;
+    }
+
+    .btn.primary {
+      border-color: rgba(22, 116, 92, 0.2);
+      background: var(--green);
+      color: white;
+    }
+
+    .btn.danger {
+      border-color: rgba(179, 38, 30, 0.18);
+      background: var(--red-soft);
+      color: var(--red);
+    }
+
+    .btn.ghost {
+      background: transparent;
+      box-shadow: none;
+    }
+
+    .btn.small {
+      min-height: 30px;
+      padding: 5px 8px;
+      font-size: 12px;
+    }
+
+    .btn.icon-only {
+      width: 36px;
+      padding: 0;
+      justify-content: center;
+    }
+
+    .view {
+      display: grid;
+      gap: 16px;
+    }
+
+    .band {
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--surface);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .band-header {
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--soft);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .band-title {
+      display: grid;
+      gap: 4px;
+    }
+
+    .band-title h2 {
+      font-size: 17px;
+      line-height: 1.25;
+    }
+
+    .band-title p {
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.45;
+    }
+
+    .band-body {
+      padding: 16px;
+    }
+
+    .grid {
+      display: grid;
+      gap: 14px;
+    }
+
+    .grid.two {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .grid.three {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .grid.four {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+
+    .split {
+      display: grid;
+      grid-template-columns: 1.08fr 0.92fr;
+      gap: 14px;
+      align-items: start;
+    }
+
+    .split.wide-left {
+      grid-template-columns: 1.35fr 0.65fr;
+    }
+
+    .metric {
+      border: 1px solid var(--soft);
+      border-radius: 8px;
+      background: var(--surface);
+      padding: 12px;
+      min-height: 102px;
+      display: grid;
+      gap: 10px;
+    }
+
+    .metric strong {
+      font-size: 28px;
+      line-height: 1;
+    }
+
+    .metric span {
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.4;
+    }
+
+    .metric .trend {
+      color: var(--green);
+      font-size: 12px;
+      font-weight: 720;
+    }
+
+    .pill-row {
+      display: flex;
+      gap: 7px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .pill {
+      border-radius: 999px;
+      border: 1px solid var(--line);
+      background: var(--surface);
+      padding: 5px 9px;
+      min-height: 26px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      color: var(--ink);
+      font-size: 12px;
+      font-weight: 720;
+      white-space: nowrap;
+    }
+
+    .pill.good {
+      background: var(--green-soft);
+      border-color: rgba(22, 116, 92, 0.22);
+      color: #0d5944;
+    }
+
+    .pill.warn {
+      background: var(--amber-soft);
+      border-color: rgba(167, 98, 19, 0.22);
+      color: #7a440f;
+    }
+
+    .pill.bad {
+      background: var(--red-soft);
+      border-color: rgba(179, 38, 30, 0.22);
+      color: #8c1d16;
+    }
+
+    .pill.info {
+      background: var(--blue-soft);
+      border-color: rgba(36, 94, 168, 0.22);
+      color: #1b4a83;
+    }
+
+    .pill.violet {
+      background: var(--violet-soft);
+      border-color: rgba(98, 80, 165, 0.22);
+      color: #463584;
+    }
+
+    .pill.cyan {
+      background: var(--cyan-soft);
+      border-color: rgba(8, 122, 132, 0.22);
+      color: #075b62;
+    }
+
+    .segmented {
+      display: flex;
+      gap: 4px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 4px;
+      background: var(--surface-alt);
+      overflow: auto;
+    }
+
+    .segmented button {
+      border: 0;
+      border-radius: 6px;
+      background: transparent;
+      color: var(--muted);
+      min-height: 30px;
+      padding: 6px 10px;
+      white-space: nowrap;
+      font-weight: 720;
+    }
+
+    .segmented button.active {
+      background: var(--surface);
+      color: var(--ink);
+      box-shadow: 0 1px 4px rgba(23, 32, 29, 0.08);
+    }
+
+    .field {
+      display: grid;
+      gap: 6px;
+    }
+
+    .field label {
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 760;
+    }
+
+    .input,
+    .select,
+    .textarea {
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      background: var(--surface);
+      color: var(--ink);
+      padding: 9px 10px;
+      min-height: 38px;
+      outline: none;
+    }
+
+    .textarea {
+      resize: vertical;
+      min-height: 96px;
+      line-height: 1.45;
+    }
+
+    .input:focus,
+    .select:focus,
+    .textarea:focus {
+      border-color: var(--green);
+      box-shadow: 0 0 0 3px rgba(22, 116, 92, 0.12);
+    }
+
+    .table-wrap {
+      overflow: auto;
+      border: 1px solid var(--soft);
+      border-radius: 8px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 620px;
+      background: var(--surface);
+    }
+
+    th,
+    td {
+      padding: 10px 11px;
+      border-bottom: 1px solid var(--soft);
+      text-align: left;
+      vertical-align: top;
+      font-size: 13px;
+    }
+
+    th {
+      color: var(--muted);
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      background: #f7faf8;
+    }
+
+    tr:last-child td {
+      border-bottom: 0;
+    }
+
+    .item-list {
+      display: grid;
+      gap: 8px;
+      max-height: 566px;
+      overflow: auto;
+      padding-right: 4px;
+    }
+
+    .item-row {
+      border: 1px solid var(--soft);
+      border-radius: 8px;
+      background: var(--surface);
+      padding: 11px;
+      display: grid;
+      gap: 9px;
+      text-align: left;
+      color: var(--ink);
+      min-height: 116px;
+    }
+
+    .item-row.active {
+      border-color: rgba(22, 116, 92, 0.45);
+      box-shadow: 0 0 0 3px rgba(22, 116, 92, 0.12);
+    }
+
+    .item-row:hover {
+      border-color: #aebbb5;
+    }
+
+    .item-title {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: flex-start;
+      font-weight: 780;
+      line-height: 1.3;
+    }
+
+    .item-summary {
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.45;
+    }
+
+    .detail {
+      border: 1px solid var(--soft);
+      border-radius: 8px;
+      padding: 14px;
+      background: var(--surface);
+      display: grid;
+      gap: 14px;
+    }
+
+    .detail h3 {
+      font-size: 20px;
+      line-height: 1.2;
+    }
+
+    .divider {
+      height: 1px;
+      background: var(--soft);
+    }
+
+    .timeline {
+      display: grid;
+      gap: 10px;
+    }
+
+    .timeline-step {
+      position: relative;
+      padding-left: 24px;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.45;
+    }
+
+    .timeline-step::before {
+      content: "";
+      width: 10px;
+      height: 10px;
+      border-radius: 999px;
+      position: absolute;
+      left: 3px;
+      top: 4px;
+      background: var(--line);
+      border: 2px solid var(--surface);
+      box-shadow: 0 0 0 1px var(--line);
+    }
+
+    .timeline-step.good::before {
+      background: var(--green);
+      box-shadow: 0 0 0 1px rgba(22, 116, 92, 0.45);
+    }
+
+    .timeline-step.warn::before {
+      background: var(--amber);
+      box-shadow: 0 0 0 1px rgba(167, 98, 19, 0.45);
+    }
+
+    .source-reader {
+      min-height: 460px;
+      max-height: 650px;
+      overflow: auto;
+      border: 1px solid var(--soft);
+      border-radius: 8px;
+      background: #fbfcfb;
+      padding: 18px;
+      line-height: 1.65;
+      color: #2b3632;
+    }
+
+    .source-reader p + p {
+      margin-top: 14px;
+    }
+
+    .highlight {
+      background: linear-gradient(transparent 46%, rgba(243, 198, 76, 0.38) 46%);
+      border-bottom: 1px solid rgba(167, 98, 19, 0.36);
+    }
+
+    .anchor-list,
+    .note-list {
+      display: grid;
+      gap: 8px;
+    }
+
+    .anchor-row,
+    .note-row,
+    .verdict-row,
+    .provider-row {
+      border: 1px solid var(--soft);
+      border-radius: 8px;
+      padding: 11px;
+      background: var(--surface);
+      display: grid;
+      gap: 8px;
+    }
+
+    .node-map {
+      width: 100%;
+      min-height: 440px;
+      border: 1px solid var(--soft);
+      border-radius: 8px;
+      background:
+        linear-gradient(rgba(203, 213, 208, 0.28) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(203, 213, 208, 0.28) 1px, transparent 1px),
+        #fbfcfb;
+      background-size: 28px 28px;
+      overflow: hidden;
+    }
+
+    .node-label {
+      font-size: 11px;
+      fill: #17201d;
+      font-weight: 750;
+      pointer-events: none;
+    }
+
+    .graph-node {
+      cursor: pointer;
+    }
+
+    .graph-node circle {
+      stroke: white;
+      stroke-width: 3;
+      filter: drop-shadow(0 3px 5px rgba(23, 32, 29, 0.18));
+    }
+
+    .graph-node.active circle {
+      stroke: var(--amber);
+      stroke-width: 5;
+    }
+
+    .edge {
+      stroke: #84918b;
+      stroke-width: 2.2;
+      opacity: 0.72;
+    }
+
+    .edge.semantic {
+      stroke-dasharray: 5 5;
+      stroke: var(--blue);
+    }
+
+    .edge.evidence {
+      stroke: var(--violet);
+    }
+
+    .bar-track {
+      height: 8px;
+      background: var(--surface-alt);
+      border-radius: 999px;
+      overflow: hidden;
+      border: 1px solid var(--soft);
+    }
+
+    .bar-fill {
+      height: 100%;
+      background: var(--green);
+      border-radius: 999px;
+    }
+
+    .feedback {
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      padding: 18px 14px;
+      border-left: 1px solid var(--line);
+      background: #fbfcfa;
+      display: grid;
+      grid-template-rows: auto auto 1fr auto;
+      gap: 12px;
+    }
+
+    .feedback-panel {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--surface);
+      box-shadow: var(--shadow);
+      padding: 12px;
+      display: grid;
+      gap: 11px;
+    }
+
+    .feedback-list {
+      min-height: 0;
+      overflow: auto;
+      display: grid;
+      gap: 8px;
+      padding-right: 3px;
+    }
+
+    .note-row {
+      font-size: 12px;
+    }
+
+    .note-meta {
+      color: var(--muted);
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    .empty {
+      min-height: 140px;
+      border: 1px dashed var(--line);
+      border-radius: 8px;
+      display: grid;
+      place-items: center;
+      text-align: center;
+      color: var(--muted);
+      padding: 18px;
+      background: #fbfcfb;
+      line-height: 1.5;
+    }
+
+    .kbd {
+      border: 1px solid var(--line);
+      border-bottom-width: 2px;
+      border-radius: 5px;
+      padding: 1px 5px;
+      background: #fbfcfb;
+      font-size: 11px;
+      font-weight: 760;
+    }
+
+    .visually-hidden {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
+    }
+
+    @media (max-width: 1180px) {
+      .app {
+        grid-template-columns: var(--sidebar) minmax(0, 1fr);
+      }
+
+      .feedback {
+        position: static;
+        grid-column: 1 / -1;
+        height: auto;
+        border-left: 0;
+        border-top: 1px solid var(--line);
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        grid-template-rows: auto;
+      }
+
+      .feedback-list {
+        max-height: 320px;
+      }
+    }
+
+    @media (max-width: 900px) {
+      .app {
+        display: block;
+      }
+
+      .sidebar {
+        position: static;
+        height: auto;
+        border-right: 0;
+        border-bottom: 1px solid var(--line);
+      }
+
+      .nav {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .sidebar-footer {
+        display: none;
+      }
+
+      .main {
+        padding: 14px;
+      }
+
+      .topbar,
+      .split,
+      .split.wide-left,
+      .grid.two,
+      .grid.three,
+      .grid.four,
+      .feedback {
+        grid-template-columns: 1fr;
+      }
+
+      h1 {
+        font-size: 25px;
+      }
+
+      .top-actions {
+        justify-content: flex-start;
+      }
+    }
+
+    @media (max-width: 560px) {
+      .nav {
+        grid-template-columns: 1fr;
+      }
+
+      .band-header {
+        align-items: stretch;
+      }
+
+      .segmented {
+        width: 100%;
+      }
+
+      .metric {
+        min-height: 88px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar" aria-label="Prototype navigation">
+      <div class="brand">
+        <div class="brand-title">
+          <div class="mark" aria-hidden="true">AB</div>
+          <div>AI Brain<br />Master Prototype</div>
+        </div>
+        <div class="brand-subtitle">Throwaway review build for feature-council feedback.</div>
+      </div>
+      <nav class="nav" id="nav"></nav>
+      <div class="sidebar-footer">
+        <div class="small-label">Prototype State</div>
+        <div class="status-stack" id="sidebarStats"></div>
+      </div>
+    </aside>
+
+    <main class="main">
+      <div class="topbar">
+        <div>
+          <div class="eyebrow" id="viewEyebrow">Feature council review</div>
+          <h1 id="viewTitle">AI Brain Command Center</h1>
+          <p id="viewSubtitle"></p>
+        </div>
+        <div class="top-actions">
+          <button class="btn" data-action="tour">Review tour</button>
+          <button class="btn" data-view="feedback">Feedback board</button>
+          <button class="btn primary" data-action="addContextNote">Comment on this screen</button>
+        </div>
+      </div>
+      <section id="view" class="view" aria-live="polite"></section>
+    </main>
+
+    <aside class="feedback" aria-label="Review notes">
+      <div class="feedback-panel">
+        <div class="band-title">
+          <h2>Review Notes</h2>
+          <p>Notes are saved in this browser only and can be exported.</p>
+        </div>
+        <div class="field">
+          <label for="noteKind">Type</label>
+          <select class="select" id="noteKind">
+            <option value="Change">Change</option>
+            <option value="Question">Question</option>
+            <option value="Approve">Approve</option>
+            <option value="Risk">Risk</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="noteText">Feedback</label>
+          <textarea class="textarea" id="noteText" placeholder="Leave a note for the current screen"></textarea>
+        </div>
+        <div class="pill-row">
+          <button class="btn primary small" data-action="saveNote">Save note</button>
+          <button class="btn small" data-action="exportNotes">Export</button>
+          <button class="btn danger small" data-action="clearNotes">Clear</button>
+        </div>
+      </div>
+      <div class="feedback-panel">
+        <div class="small-label">Current Review Area</div>
+        <div class="pill-row" id="feedbackContext"></div>
+      </div>
+      <div class="feedback-list" id="notesList"></div>
+      <div class="feedback-panel">
+        <div class="small-label">Artifact</div>
+        <p style="color: var(--muted); font-size: 12px; line-height: 1.45;">Static HTML. No production code, no backend, no external services.</p>
+      </div>
+    </aside>
+  </div>
+
+  <script>
+    const views = [
+      { id: "command", icon: "01", label: "Command Center", eyebrow: "Feature council review", title: "AI Brain Command Center", subtitle: "Review the end-to-end product direction across capture, source quality, Ask, graph, and trust." },
+      { id: "capture", icon: "02", label: "Capture", eyebrow: "FCP-001", title: "Capture Studio", subtitle: "Simulate saves from web, Android, extension, YouTube, PDF, note, and Telegram-style sources." },
+      { id: "library", icon: "03", label: "Library", eyebrow: "Live foundation plus FCP-001", title: "Library and Review Queue", subtitle: "Search, inspect, filter, and triage saved knowledge items with source health visible." },
+      { id: "repair", icon: "04", label: "Repair Center", eyebrow: "FCP-001", title: "Capture Quality and Repair Center", subtitle: "Review weak sources, choose repair actions, and see how source health affects Ask and search eligibility." },
+      { id: "source", icon: "05", label: "Source Workspace", eyebrow: "FCP-002", title: "Source Workspace and Reading Studio Lite", subtitle: "Inspect content, create anchors, correct metadata, and export simple citations." },
+      { id: "ask", icon: "06", label: "Ask + Evidence", eyebrow: "FCP-003", title: "Contextual Ask and Evidence Scan", subtitle: "Pick a source set, run high-quality-only Ask, and classify a claim against local sources." },
+      { id: "graph", icon: "07", label: "Graph", eyebrow: "FCP-004", title: "Relationship Graph and Connection Map", subtitle: "Explore derived relationships with edge provenance and an accessible outline fallback." },
+      { id: "trust", icon: "08", label: "Trust Center", eyebrow: "FCP-005", title: "AI Services and Privacy Trust Center", subtitle: "Review provider readiness, data flow, backups, offline limits, and diagnostics redaction." },
+      { id: "feedback", icon: "09", label: "Feedback Board", eyebrow: "Prototype review", title: "Feedback Board", subtitle: "Collect screen-level notes and decisions for the next planning or implementation pass." }
+    ];
+
+    const seedItems = [
+      {
+        id: "item-1",
+        title: "Research-note PRD Index v2",
+        type: "PDF",
+        source: "Research bundle",
+        channel: "Web upload",
+        status: "saved_full_text",
+        health: "Healthy",
+        quality: 94,
+        indexed: true,
+        embedded: true,
+        warning: "",
+        date: "2026-06-28",
+        tags: ["research", "prd", "features"],
+        collections: ["AI Brain"],
+        summary: "Feature research package covering source management, anchors, graph, evidence, local AI, privacy, and subscription ideas.",
+        body: [
+          "The research package frames note.md as a research-writing system with project vaults, source management, citation workflows, graph exports, and local-first AI concerns.",
+          "AI Brain should absorb the trust-building capabilities without becoming a full writing editor. The highest-value bridge is source quality, not a wholesale vault migration.",
+          "Anchors, evidence classifications, and provenance labels become useful only when capture quality is visible and repair states are reliable."
+        ],
+        anchors: [
+          { label: "Research scope boundary", state: "active", note: "Useful for explaining why full Markdown editing is parked." }
+        ],
+        metadata: { author: "Feature Council", date: "2026-06-28", url: "local/research-note", citation: "Feature Council. Research-note PRD Index v2. 2026." },
+        repair: ["Open source workspace", "Refresh chunks", "Mark as reviewed"],
+        relations: ["item-2", "item-4"]
+      },
+      {
+        id: "item-2",
+        title: "Capture repair state taxonomy",
+        type: "Note",
+        source: "Council planning",
+        channel: "Manual note",
+        status: "saved_full_text",
+        health: "Healthy",
+        quality: 88,
+        indexed: true,
+        embedded: true,
+        warning: "",
+        date: "2026-06-28",
+        tags: ["capture", "repair", "quality"],
+        collections: ["AI Brain"],
+        summary: "Defines saved_full_text, metadata_only, failed_item_saved, repair_running, repair_complete, and related states.",
+        body: [
+          "Every capture entry point should map into a canonical result taxonomy. Metadata-only items should never show plain success copy.",
+          "Repair should invalidate summaries, chunks, embeddings, related-item cache, and search readiness in one visible lifecycle.",
+          "The Review Queue and item Source Health panel must agree on the item state and available actions."
+        ],
+        anchors: [
+          { label: "Metadata-only cannot be success", state: "active", note: "This is the most important FCP-001 UX principle." }
+        ],
+        metadata: { author: "AI Expert Brainstorm Council", date: "2026-06-28", url: "docs/fcp001", citation: "AI Expert Brainstorm Council. Capture Quality and Repair Center. 2026." },
+        repair: ["Run parity check", "Open repair history"],
+        relations: ["item-1", "item-3", "item-6"]
+      },
+      {
+        id: "item-3",
+        title: "YouTube memory OS talk",
+        type: "YouTube",
+        source: "youtube.com/watch?v=memory-os",
+        channel: "Android share",
+        status: "metadata_only",
+        health: "Weak",
+        quality: 38,
+        indexed: false,
+        embedded: false,
+        warning: "Transcript unavailable. Metadata saved.",
+        date: "2026-06-26",
+        tags: ["video", "memory", "transcript"],
+        collections: ["Inbox"],
+        summary: "Video metadata was saved, but transcript extraction failed. It should be repairable before Ask uses it.",
+        body: [
+          "Metadata is available for this video, but the transcript body is missing. The prototype marks this as weak rather than searchable.",
+          "A repair action can retry transcript recovery or let the user paste a transcript manually."
+        ],
+        anchors: [],
+        metadata: { author: "Unknown", date: "2026-06-26", url: "https://youtube.com/watch?v=memory-os", citation: "Unknown. YouTube memory OS talk. 2026." },
+        repair: ["Retry transcript", "Paste transcript", "Ignore for Ask"],
+        relations: ["item-2"]
+      },
+      {
+        id: "item-4",
+        title: "Provider readiness and privacy copy",
+        type: "Article",
+        source: "Internal planning",
+        channel: "Web capture",
+        status: "saved_with_warning",
+        health: "Warning",
+        quality: 71,
+        indexed: true,
+        embedded: false,
+        warning: "Embeddings provider paused. FTS fallback available.",
+        date: "2026-06-28",
+        tags: ["privacy", "providers", "trust"],
+        collections: ["AI Brain"],
+        summary: "Trust Center copy must name provider classes and avoid local-only overclaims when cloud providers are configured.",
+        body: [
+          "The Trust Center should distinguish generation, embeddings, capture helpers, mobile or extension transport, backups, and diagnostics.",
+          "Diagnostics may include provider name, model, timestamps, status categories, counts, and error codes. Raw prompts, excerpts, tokens, URLs, and paths are forbidden by default.",
+          "Offline should be described in concrete parts: shell availability, queued capture, cached library, and provider-dependent AI behavior."
+        ],
+        anchors: [
+          { label: "Diagnostics denylist", state: "active", note: "Raw prompts and source excerpts should not be exported by default." }
+        ],
+        metadata: { author: "Feature Council", date: "2026-06-28", url: "docs/fcp005", citation: "Feature Council. AI Services and Privacy Trust Center. 2026." },
+        repair: ["Recheck embeddings", "Open trust center"],
+        relations: ["item-1", "item-5"]
+      },
+      {
+        id: "item-5",
+        title: "Evidence Scan claim examples",
+        type: "Note",
+        source: "Ask experiments",
+        channel: "Capture page",
+        status: "saved_full_text",
+        health: "Healthy",
+        quality: 86,
+        indexed: true,
+        embedded: true,
+        warning: "",
+        date: "2026-06-27",
+        tags: ["ask", "evidence", "citations"],
+        collections: ["AI Brain"],
+        summary: "Example claims for source-set Ask and local evidence classification with support, contradiction, nuance, and insufficient evidence.",
+        body: [
+          "Evidence Scan should classify what the selected sources say, not whether a claim is universally true.",
+          "Weak captures should be excluded in high-quality mode and counted before the answer is produced.",
+          "A no-evidence result is different from a provider failure, indexing stale state, or all-irrelevant retrieval."
+        ],
+        anchors: [
+          { label: "No universal truth claim", state: "active", note: "Keep the verdict language humble." }
+        ],
+        metadata: { author: "Ask working notes", date: "2026-06-27", url: "local/ask-evidence", citation: "Ask working notes. Evidence Scan claim examples. 2026." },
+        repair: ["Run evidence scan", "Create claim anchor"],
+        relations: ["item-4", "item-6"]
+      },
+      {
+        id: "item-6",
+        title: "Android multi-PDF share handling",
+        type: "PDF",
+        source: "Mobile capture log",
+        channel: "Android share",
+        status: "failed_item_saved",
+        health: "Needs repair",
+        quality: 24,
+        indexed: false,
+        embedded: false,
+        warning: "Only the first PDF was processed. Partial item retained.",
+        date: "2026-06-25",
+        tags: ["android", "pdf", "capture"],
+        collections: ["Inbox"],
+        summary: "Mobile share intent received multiple PDFs, but the handler persisted only a partial first-file item.",
+        body: [
+          "A partial item exists so the user can repair or remove it. The UI should not report this as a complete save.",
+          "The next implementation pass needs parity tests for web, API, Android, and extension capture results."
+        ],
+        anchors: [],
+        metadata: { author: "Device log", date: "2026-06-25", url: "android/share-log", citation: "Device log. Android multi-PDF share handling. 2026." },
+        repair: ["Upload missing PDFs", "Retry extraction", "Delete partial"],
+        relations: ["item-2"]
+      }
+    ];
+
+    const graphNodes = [
+      { id: "item-1", label: "Research PRD", type: "item", x: 160, y: 120, color: "#245ea8" },
+      { id: "item-2", label: "Repair taxonomy", type: "item", x: 330, y: 170, color: "#16745c" },
+      { id: "item-3", label: "YouTube weak", type: "item", x: 500, y: 110, color: "#a76213" },
+      { id: "item-4", label: "Trust copy", type: "item", x: 240, y: 315, color: "#087a84" },
+      { id: "item-5", label: "Evidence claims", type: "item", x: 470, y: 330, color: "#6250a5" },
+      { id: "tag-capture", label: "capture", type: "tag", x: 640, y: 210, color: "#6b7280" },
+      { id: "collection-ai", label: "AI Brain", type: "collection", x: 82, y: 262, color: "#334155" }
+    ];
+
+    const graphEdges = [
+      { from: "item-1", to: "item-2", type: "semantic", label: "semantically_related", why: "Both define source quality gates." },
+      { from: "item-2", to: "item-3", type: "tag", label: "tagged_with", why: "Capture repair taxonomy applies to YouTube metadata-only item." },
+      { from: "item-2", to: "tag-capture", type: "tag", label: "tagged_with", why: "Owned by item_tags." },
+      { from: "item-6", to: "tag-capture", type: "tag", label: "tagged_with", why: "Owned by item_tags." },
+      { from: "item-4", to: "item-5", type: "evidence", label: "supports_claim", why: "Evidence Scan depends on provider/data-flow readiness." },
+      { from: "item-1", to: "collection-ai", type: "collection", label: "in_collection", why: "Owned by item_collections." },
+      { from: "item-4", to: "collection-ai", type: "collection", label: "in_collection", why: "Owned by item_collections." }
+    ];
+
+    const state = {
+      view: "command",
+      items: structuredClone(seedItems),
+      selectedItemId: "item-2",
+      libraryQuery: "",
+      libraryFilter: "all",
+      captureType: "url",
+      captureResult: null,
+      selectedSources: ["item-1", "item-2", "item-4", "item-5"],
+      highQualityOnly: true,
+      askResult: null,
+      evidenceResult: null,
+      graphNode: "item-2",
+      graphFilters: { item: true, tag: true, collection: true, weak: true },
+      providerRefreshes: 0,
+      notes: loadNotes()
+    };
+
+    function loadNotes() {
+      try {
+        return JSON.parse(localStorage.getItem("aiBrainMasterPrototypeNotes") || "[]");
+      } catch {
+        return [];
+      }
+    }
+
+    function saveNotes() {
+      localStorage.setItem("aiBrainMasterPrototypeNotes", JSON.stringify(state.notes));
+    }
+
+    function byId(id) {
+      return document.getElementById(id);
+    }
+
+    function currentView() {
+      return views.find((view) => view.id === state.view) || views[0];
+    }
+
+    function selectedItem() {
+      return state.items.find((item) => item.id === state.selectedItemId) || state.items[0];
+    }
+
+    function statusKind(item) {
+      if (["saved_full_text", "repair_complete", "updated_existing"].includes(item.status)) return "good";
+      if (["saved_with_warning", "metadata_only", "repair_running"].includes(item.status)) return "warn";
+      return "bad";
+    }
+
+    function escapeHtml(value) {
+      return String(value)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+
+    function render() {
+      renderNav();
+      renderTop();
+      renderSidebarStats();
+      renderFeedback();
+
+      const view = byId("view");
+      if (state.view === "command") view.innerHTML = renderCommand();
+      if (state.view === "capture") view.innerHTML = renderCapture();
+      if (state.view === "library") view.innerHTML = renderLibrary();
+      if (state.view === "repair") view.innerHTML = renderRepair();
+      if (state.view === "source") view.innerHTML = renderSourceWorkspace();
+      if (state.view === "ask") view.innerHTML = renderAskEvidence();
+      if (state.view === "graph") view.innerHTML = renderGraph();
+      if (state.view === "trust") view.innerHTML = renderTrustCenter();
+      if (state.view === "feedback") view.innerHTML = renderFeedbackBoard();
+    }
+
+    function renderNav() {
+      byId("nav").innerHTML = views.map((view) => `
+        <button class="${state.view === view.id ? "active" : ""}" data-view="${view.id}" aria-current="${state.view === view.id ? "page" : "false"}">
+          <span class="nav-icon" aria-hidden="true">${view.icon}</span>
+          <span>${view.label}</span>
+        </button>
+      `).join("");
+    }
+
+    function renderTop() {
+      const view = currentView();
+      byId("viewEyebrow").textContent = view.eyebrow;
+      byId("viewTitle").textContent = view.title;
+      byId("viewSubtitle").textContent = view.subtitle;
+    }
+
+    function renderSidebarStats() {
+      const weak = state.items.filter((item) => ["metadata_only", "failed_item_saved", "repair_failed"].includes(item.status)).length;
+      const warnings = state.items.filter((item) => item.status === "saved_with_warning").length;
+      const indexed = state.items.filter((item) => item.indexed).length;
+      byId("sidebarStats").innerHTML = `
+        <div class="status-row"><span>Sources</span><strong>${state.items.length}</strong></div>
+        <div class="status-row"><span>Weak / repair</span><strong>${weak}</strong></div>
+        <div class="status-row"><span>Warnings</span><strong>${warnings}</strong></div>
+        <div class="status-row"><span>Ask-ready</span><strong>${indexed}</strong></div>
+        <div class="status-row"><span>Notes</span><strong>${state.notes.length}</strong></div>
+      `;
+    }
+
+    function renderFeedback() {
+      const view = currentView();
+      byId("feedbackContext").innerHTML = `
+        <span class="pill info">${escapeHtml(view.label)}</span>
+        <span class="pill">${escapeHtml(selectedItem().title)}</span>
+      `;
+
+      byId("notesList").innerHTML = state.notes.length
+        ? state.notes.slice().reverse().map((note) => `
+            <div class="note-row">
+              <div class="note-meta"><strong>${escapeHtml(note.kind)}</strong><span>${escapeHtml(note.viewLabel)}</span></div>
+              <div>${escapeHtml(note.text)}</div>
+              <div class="note-meta"><span>${escapeHtml(note.context)}</span><button class="btn small ghost" data-action="deleteNote" data-id="${note.id}">Remove</button></div>
+            </div>
+          `).join("")
+        : `<div class="empty">No review notes yet.</div>`;
+    }
+
+    function renderCommand() {
+      const healthy = state.items.filter((item) => item.health === "Healthy").length;
+      const weak = state.items.filter((item) => item.health !== "Healthy").length;
+      const askReady = state.items.filter((item) => item.indexed && item.embedded).length;
+      return `
+        <div class="grid four">
+          <div class="metric"><span>Total sources</span><strong>${state.items.length}</strong><div class="trend">Library, inbox, and repaired items</div></div>
+          <div class="metric"><span>Healthy sources</span><strong>${healthy}</strong><div class="trend">${weak} need review or warning copy</div></div>
+          <div class="metric"><span>Ask-ready</span><strong>${askReady}</strong><div class="trend">High-quality retrieval pool</div></div>
+          <div class="metric"><span>Approved packages</span><strong>5</strong><div class="trend">FCP-001 through FCP-005</div></div>
+        </div>
+
+        <section class="band">
+          <div class="band-header">
+            <div class="band-title">
+              <h2>One Product, Five Feature Packages</h2>
+              <p>Each package is represented as a working review surface in this prototype.</p>
+            </div>
+            <div class="pill-row">
+              <span class="pill good">FCP-001 P0</span>
+              <span class="pill info">FCP-002 P1</span>
+              <span class="pill info">FCP-003 P1</span>
+              <span class="pill violet">FCP-004 P2</span>
+              <span class="pill good">FCP-005 P0</span>
+            </div>
+          </div>
+          <div class="band-body">
+            <div class="grid three">
+              ${featureCard("Capture Quality", "Canonical result states, weak-source repair, channel parity, item Source Health.", "capture", "Open capture")}
+              ${featureCard("Source Workspace", "Read captured content, create anchors, correct metadata, copy citations.", "source", "Open source")}
+              ${featureCard("Ask + Evidence", "Choose source context, exclude weak captures, classify a claim against local sources.", "ask", "Open Ask")}
+              ${featureCard("Connection Map", "Derived graph with provenance, filters, stale-state warnings, and list fallback.", "graph", "Open graph")}
+              ${featureCard("Trust Center", "Provider readiness, privacy data flow, diagnostics redaction, backup and offline truth.", "trust", "Open trust")}
+              ${featureCard("Feedback Board", "Collect approval, change, question, and risk notes for the next pass.", "feedback", "Review notes")}
+            </div>
+          </div>
+        </section>
+
+        <section class="band">
+          <div class="band-header">
+            <div class="band-title">
+              <h2>Implementation Gates Preserved In Prototype</h2>
+              <p>These are visible because they are the biggest risks from the planning package.</p>
+            </div>
+          </div>
+          <div class="band-body">
+            <div class="table-wrap">
+              <table>
+                <thead><tr><th>Gate</th><th>Prototype signal</th><th>Why it matters</th><th>Likely owner</th></tr></thead>
+                <tbody>
+                  <tr><td>Shared auth guard</td><td>Repair, Evidence, Diagnostics buttons are sensitive operations</td><td>Prevents session/bearer drift in new APIs</td><td>Platform</td></tr>
+                  <tr><td>Capture result DTO</td><td>Capture Studio and Review Queue use the same states</td><td>Stops weak captures from looking successful</td><td>FCP-001</td></tr>
+                  <tr><td>Realtime vs batch enrichment</td><td>Repair timeline names derived-state rebuild</td><td>Avoids competing workers after repair</td><td>FCP-001 / FCP-005</td></tr>
+                  <tr><td>Provider-aware usage</td><td>Trust Center separates generation and embeddings</td><td>Avoids stale cost and readiness copy</td><td>FCP-005</td></tr>
+                  <tr><td>Diagnostics redaction</td><td>Export preview shows allowlist and denylist</td><td>Prevents source leaks in support bundles</td><td>FCP-005</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+      `;
+    }
+
+    function featureCard(title, copy, viewId, action) {
+      return `
+        <div class="metric" style="min-height: 176px;">
+          <div>
+            <h3 style="font-size: 16px;">${title}</h3>
+            <p style="margin-top: 8px; color: var(--muted); line-height: 1.45; font-size: 13px;">${copy}</p>
+          </div>
+          <button class="btn small" data-view="${viewId}" style="justify-self: start;">${action}</button>
+        </div>
+      `;
+    }
+
+    function renderCapture() {
+      const result = state.captureResult || capturePreview();
+      return `
+        <section class="band">
+          <div class="band-header">
+            <div class="band-title">
+              <h2>Capture Entry Point</h2>
+              <p>Result copy is driven by the canonical taxonomy, not generic success messages.</p>
+            </div>
+            ${segmented("captureType", [
+              ["url", "URL"],
+              ["selection", "Selection"],
+              ["youtube", "YouTube"],
+              ["pdf", "PDF"],
+              ["android", "Android"],
+              ["extension", "Extension"],
+              ["telegram", "Telegram"]
+            ], state.captureType)}
+          </div>
+          <div class="band-body split">
+            <div class="grid">
+              <div class="field">
+                <label for="captureInput">Source</label>
+                <input class="input" id="captureInput" value="${captureInputValue()}" />
+              </div>
+              <div class="field">
+                <label for="captureNotes">Context note</label>
+                <textarea class="textarea" id="captureNotes">Save this into AI Brain and make the source quality visible immediately.</textarea>
+              </div>
+              <div class="pill-row">
+                <button class="btn primary" data-action="simulateCapture">Run capture simulation</button>
+                <button class="btn" data-view="repair">Open weak-source review</button>
+                <button class="btn" data-action="resetCapture">Reset</button>
+              </div>
+              <div class="table-wrap">
+                <table>
+                  <thead><tr><th>Channel</th><th>Expected result copy</th><th>Status</th></tr></thead>
+                  <tbody>
+                    <tr><td>Web capture page</td><td>Shows taxonomy state and next action</td><td><span class="pill good">Mapped</span></td></tr>
+                    <tr><td>Capture API</td><td>Returns canonical result DTO</td><td><span class="pill info">DTO needed</span></td></tr>
+                    <tr><td>Android share</td><td>Handles partial multi-file truthfully</td><td><span class="pill warn">Needs parity test</span></td></tr>
+                    <tr><td>Chrome extension</td><td>Reports selected text vs page capture</td><td><span class="pill warn">Needs token-state copy</span></td></tr>
+                    <tr><td>Telegram-style capture</td><td>Summarizes durable save vs failed item</td><td><span class="pill info">Lower priority</span></td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <div class="detail">
+              <div class="pill-row">
+                <span class="pill ${result.kind}">${result.state}</span>
+                <span class="pill">${result.channel}</span>
+              </div>
+              <h3>${result.title}</h3>
+              <p class="item-summary">${result.copy}</p>
+              <div class="divider"></div>
+              <div class="timeline">
+                ${result.steps.map((step) => `<div class="timeline-step ${step.kind}"><strong>${step.label}</strong><br />${step.text}</div>`).join("")}
+              </div>
+              <div class="divider"></div>
+              <div class="pill-row">
+                <button class="btn primary small" data-action="addCapturedItem">Add as sample item</button>
+                <button class="btn small" data-view="${result.nextView}">${result.nextAction}</button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="band">
+          <div class="band-header">
+            <div class="band-title">
+              <h2>Result Taxonomy</h2>
+              <p>These states appear consistently in capture, review, item detail, mobile, and extension surfaces.</p>
+            </div>
+          </div>
+          <div class="band-body">
+            <div class="grid three">
+              ${taxonomyCard("saved_full_text", "Sufficient body text and normal indexing path.", "good")}
+              ${taxonomyCard("saved_with_warning", "Saved, but an extraction or provider warning exists.", "warn")}
+              ${taxonomyCard("metadata_only", "Durable item exists but needs repair before Ask.", "warn")}
+              ${taxonomyCard("duplicate_existing", "Source already exists; open existing item.", "info")}
+              ${taxonomyCard("failed_item_saved", "Partial durable item exists after failure.", "bad")}
+              ${taxonomyCard("repair_complete", "Source content and derived state refreshed.", "good")}
+            </div>
+          </div>
+        </section>
+      `;
+    }
+
+    function taxonomyCard(name, copy, kind) {
+      return `<div class="metric"><span class="pill ${kind}">${name}</span><p style="color: var(--muted); line-height: 1.45; font-size: 13px;">${copy}</p></div>`;
+    }
+
+    function captureInputValue() {
+      const values = {
+        url: "https://example.com/research-memory-systems",
+        selection: "Selected passage about source quality and repair states",
+        youtube: "https://youtube.com/watch?v=memory-os",
+        pdf: "Reading-system-comparison.pdf",
+        android: "Shared from Android: 3 PDFs",
+        extension: "Current page plus selected text",
+        telegram: "Forwarded link with short note"
+      };
+      return values[state.captureType] || values.url;
+    }
+
+    function capturePreview() {
+      const previews = {
+        url: {
+          state: "saved_full_text",
+          kind: "good",
+          channel: "Web capture",
+          title: "Saved full text",
+          copy: "The page body was extracted, indexed, and made eligible for Ask.",
+          nextAction: "Open library",
+          nextView: "library",
+          steps: [
+            { kind: "good", label: "Source saved", text: "Durable item created with URL, title, and extracted body." },
+            { kind: "good", label: "Derived state queued", text: "Summary, chunks, search, embeddings, and related items are on the normal path." },
+            { kind: "good", label: "Ask eligible", text: "High-quality mode may use this source after index completion." }
+          ]
+        },
+        selection: {
+          state: "saved_full_text",
+          kind: "good",
+          channel: "Chrome extension",
+          title: "Selected text saved",
+          copy: "The selection was saved as the source body with page metadata attached.",
+          nextAction: "Open source",
+          nextView: "source",
+          steps: [
+            { kind: "good", label: "Selection captured", text: "Selected text is the durable source, not a metadata-only shell." },
+            { kind: "good", label: "Extension acknowledged", text: "Popup copy links to the saved item." },
+            { kind: "warn", label: "Token freshness checked", text: "Expired extension tokens should show auth repair copy." }
+          ]
+        },
+        youtube: {
+          state: "metadata_only",
+          kind: "warn",
+          channel: "YouTube",
+          title: "Transcript missing",
+          copy: "The item exists, but transcript recovery failed. It is excluded from high-quality Ask until repaired.",
+          nextAction: "Open repair",
+          nextView: "repair",
+          steps: [
+            { kind: "good", label: "Metadata saved", text: "Title, platform, source URL, and channel are retained." },
+            { kind: "warn", label: "Transcript unavailable", text: "Repair actions are retry transcript or paste transcript." },
+            { kind: "warn", label: "Ask gated", text: "The source is counted as excluded in high-quality mode." }
+          ]
+        },
+        pdf: {
+          state: "saved_with_warning",
+          kind: "warn",
+          channel: "PDF upload",
+          title: "PDF saved with extraction warning",
+          copy: "Text extraction completed with low confidence. Source Workspace can inspect the artifact and extracted text.",
+          nextAction: "Open source",
+          nextView: "source",
+          steps: [
+            { kind: "good", label: "Artifact saved", text: "PDF artifact and metadata are durable." },
+            { kind: "warn", label: "Extraction warning", text: "Low-confidence text is visible but marked." },
+            { kind: "good", label: "Repair available", text: "User can re-run extraction or paste corrected text." }
+          ]
+        },
+        android: {
+          state: "failed_item_saved",
+          kind: "bad",
+          channel: "Android share",
+          title: "Partial item saved",
+          copy: "The share contained multiple PDFs, but only a partial first item was retained. The result must not look complete.",
+          nextAction: "Open repair",
+          nextView: "repair",
+          steps: [
+            { kind: "good", label: "Durable partial", text: "A recoverable item exists with share metadata." },
+            { kind: "warn", label: "Multi-file mismatch", text: "User sees which files were not processed." },
+            { kind: "warn", label: "Parity needed", text: "Android behavior needs explicit release testing." }
+          ]
+        },
+        extension: {
+          state: "saved_with_warning",
+          kind: "warn",
+          channel: "Chrome extension",
+          title: "Page saved, extension warning",
+          copy: "The page was saved, but extension auth should be refreshed before background captures continue.",
+          nextAction: "Open trust",
+          nextView: "trust",
+          steps: [
+            { kind: "good", label: "Page captured", text: "Content is present and indexable." },
+            { kind: "warn", label: "Auth expiring", text: "Extension needs token-state copy and re-pair action." },
+            { kind: "good", label: "Item link shown", text: "The user can still open the saved item." }
+          ]
+        },
+        telegram: {
+          state: "saved_with_warning",
+          kind: "warn",
+          channel: "Telegram-style capture",
+          title: "Link saved with fetch warning",
+          copy: "The link and note were saved, but article extraction needs retry.",
+          nextAction: "Open repair",
+          nextView: "repair",
+          steps: [
+            { kind: "good", label: "Message saved", text: "User note and URL are durable." },
+            { kind: "warn", label: "Fetch warning", text: "The article body is incomplete." },
+            { kind: "warn", label: "Review needed", text: "Weak-source queue can retry or accept note-only capture." }
+          ]
+        }
+      };
+      return previews[state.captureType] || previews.url;
+    }
+
+    function renderLibrary() {
+      const items = filteredItems();
+      return `
+        <section class="band">
+          <div class="band-header">
+            <div class="band-title">
+              <h2>Library Search and Health</h2>
+              <p>Search and filter are intentionally paired with source quality so weak memory is visible.</p>
+            </div>
+            <div class="pill-row">
+              <input class="input" id="libraryQuery" style="width: 260px;" placeholder="Search title, tag, summary" value="${escapeHtml(state.libraryQuery)}" />
+              <select class="select" id="libraryFilter" style="width: 180px;">
+                ${option("all", "All states", state.libraryFilter)}
+                ${option("healthy", "Healthy", state.libraryFilter)}
+                ${option("weak", "Weak / repair", state.libraryFilter)}
+                ${option("warnings", "Warnings", state.libraryFilter)}
+                ${option("ask", "Ask-ready", state.libraryFilter)}
+              </select>
+            </div>
+          </div>
+          <div class="band-body split wide-left">
+            <div class="item-list">
+              ${items.length ? items.map(renderItemRow).join("") : `<div class="empty">No sources match this filter.</div>`}
+            </div>
+            ${renderItemDetail()}
+          </div>
+        </section>
+
+        <section class="band">
+          <div class="band-header">
+            <div class="band-title">
+              <h2>Review Queue Preview</h2>
+              <p>Weak and warning items are pulled forward rather than hidden in search results.</p>
+            </div>
+            <button class="btn small" data-view="repair">Open Repair Center</button>
+          </div>
+          <div class="band-body">
+            <div class="table-wrap">
+              <table>
+                <thead><tr><th>Item</th><th>State</th><th>Reason</th><th>Next action</th></tr></thead>
+                <tbody>
+                  ${state.items.filter((item) => item.health !== "Healthy").map((item) => `
+                    <tr>
+                      <td>${escapeHtml(item.title)}</td>
+                      <td><span class="pill ${statusKind(item)}">${escapeHtml(item.status)}</span></td>
+                      <td>${escapeHtml(item.warning || "Needs user review")}</td>
+                      <td><button class="btn small" data-action="selectRepair" data-id="${item.id}">Review</button></td>
+                    </tr>
+                  `).join("")}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+      `;
+    }
+
+    function filteredItems() {
+      const query = state.libraryQuery.trim().toLowerCase();
+      return state.items.filter((item) => {
+        const haystack = [item.title, item.summary, item.type, item.source, ...item.tags, ...item.collections].join(" ").toLowerCase();
+        const queryOk = !query || haystack.includes(query);
+        const filterOk =
+          state.libraryFilter === "all" ||
+          (state.libraryFilter === "healthy" && item.health === "Healthy") ||
+          (state.libraryFilter === "weak" && ["metadata_only", "failed_item_saved", "repair_failed"].includes(item.status)) ||
+          (state.libraryFilter === "warnings" && item.status === "saved_with_warning") ||
+          (state.libraryFilter === "ask" && item.indexed && item.embedded);
+        return queryOk && filterOk;
+      });
+    }
+
+    function renderItemRow(item) {
+      return `
+        <button class="item-row ${state.selectedItemId === item.id ? "active" : ""}" data-action="selectItem" data-id="${item.id}">
+          <div class="item-title">
+            <span>${escapeHtml(item.title)}</span>
+            <span class="pill ${statusKind(item)}">${escapeHtml(item.health)}</span>
+          </div>
+          <div class="item-summary">${escapeHtml(item.summary)}</div>
+          <div class="pill-row">
+            <span class="pill">${escapeHtml(item.type)}</span>
+            <span class="pill">${escapeHtml(item.channel)}</span>
+            ${item.indexed ? `<span class="pill good">indexed</span>` : `<span class="pill warn">not indexed</span>`}
+            ${item.embedded ? `<span class="pill good">embedded</span>` : `<span class="pill warn">no vector</span>`}
+          </div>
+        </button>
+      `;
+    }
+
+    function renderItemDetail() {
+      const item = selectedItem();
+      return `
+        <aside class="detail">
+          <div class="pill-row">
+            <span class="pill ${statusKind(item)}">${escapeHtml(item.status)}</span>
+            <span class="pill">${escapeHtml(item.type)}</span>
+            <span class="pill">${escapeHtml(item.date)}</span>
+          </div>
+          <h3>${escapeHtml(item.title)}</h3>
+          <p class="item-summary">${escapeHtml(item.summary)}</p>
+          <div>
+            <div class="small-label">Source Health</div>
+            <div class="bar-track" style="margin-top: 8px;"><div class="bar-fill" style="width: ${item.quality}%; background: ${item.quality > 80 ? "var(--green)" : item.quality > 50 ? "var(--amber)" : "var(--red)"};"></div></div>
+          </div>
+          ${item.warning ? `<div class="pill warn">${escapeHtml(item.warning)}</div>` : `<div class="pill good">No source warnings</div>`}
+          <div class="pill-row">
+            ${item.tags.map((tag) => `<span class="pill">${escapeHtml(tag)}</span>`).join("")}
+          </div>
+          <div class="divider"></div>
+          <div class="grid two">
+            <button class="btn small" data-view="source">Source Workspace</button>
+            <button class="btn small" data-view="ask">Ask with source</button>
+            <button class="btn small" data-view="graph">View graph</button>
+            <button class="btn small" data-view="repair">Repair history</button>
+          </div>
+        </aside>
+      `;
+    }
+
+    function renderRepair() {
+      const weakItems = state.items.filter((item) => item.health !== "Healthy");
+      return `
+        <section class="band">
+          <div class="band-header">
+            <div class="band-title">
+              <h2>Repair Queue</h2>
+              <p>Each weak item shows the specific repair path and how it affects derived state.</p>
+            </div>
+            <div class="pill-row">
+              <span class="pill warn">${weakItems.length} need attention</span>
+              <span class="pill info">High-quality Ask excludes weak sources</span>
+            </div>
+          </div>
+          <div class="band-body split">
+            <div class="item-list">
+              ${weakItems.length ? weakItems.map(renderRepairRow).join("") : `<div class="empty">No weak sources remain in this runtime state.</div>`}
+            </div>
+            ${renderRepairDetail()}
+          </div>
+        </section>
+
+        <section class="band">
+          <div class="band-header">
+            <div class="band-title">
+              <h2>Repair Lifecycle</h2>
+              <p>The same lifecycle should appear in item detail, Review Queue, capture result pages, Android, and extension flows.</p>
+            </div>
+          </div>
+          <div class="band-body">
+            <div class="grid four">
+              ${lifecycleCard("1", "Select repair", "Retry extraction, paste text, upload artifact, ignore, or delete.", "info")}
+              ${lifecycleCard("2", "Reset derived state", "Invalidate summary, chunks, vectors, relatedness, and stale Ask eligibility.", "warn")}
+              ${lifecycleCard("3", "Rebuild", "One owner decides whether realtime or batch enrichment resumes work.", "warn")}
+              ${lifecycleCard("4", "Confirm result", "Show repair_complete, repair_failed, or remaining warning state.", "good")}
+            </div>
+          </div>
+        </section>
+      `;
+    }
+
+    function lifecycleCard(step, title, copy, kind) {
+      return `<div class="metric"><span class="pill ${kind}">Step ${step}</span><h3 style="font-size: 15px;">${title}</h3><p style="color: var(--muted); line-height: 1.45; font-size: 13px;">${copy}</p></div>`;
+    }
+
+    function renderRepairRow(item) {
+      return `
+        <button class="item-row ${state.selectedItemId === item.id ? "active" : ""}" data-action="selectItem" data-id="${item.id}">
+          <div class="item-title"><span>${escapeHtml(item.title)}</span><span class="pill ${statusKind(item)}">${escapeHtml(item.status)}</span></div>
+          <div class="item-summary">${escapeHtml(item.warning || item.summary)}</div>
+          <div class="pill-row">
+            ${item.repair.slice(0, 3).map((repair) => `<span class="pill">${escapeHtml(repair)}</span>`).join("")}
+          </div>
+        </button>
+      `;
+    }
+
+    function renderRepairDetail() {
+      const item = selectedItem();
+      return `
+        <aside class="detail">
+          <div class="pill-row">
+            <span class="pill ${statusKind(item)}">${escapeHtml(item.health)}</span>
+            <span class="pill">${escapeHtml(item.channel)}</span>
+          </div>
+          <h3>${escapeHtml(item.title)}</h3>
+          <p class="item-summary">${escapeHtml(item.warning || item.summary)}</p>
+          <div class="divider"></div>
+          <div class="grid">
+            ${item.repair.map((action) => `<button class="btn" data-action="runRepair" data-id="${item.id}" data-repair="${escapeHtml(action)}">${escapeHtml(action)}</button>`).join("")}
+          </div>
+          <div class="divider"></div>
+          <div class="timeline">
+            <div class="timeline-step good"><strong>Durable item retained</strong><br />The user has something to open or repair.</div>
+            <div class="timeline-step warn"><strong>Derived state stale or unavailable</strong><br />Ask/search eligibility is reduced until repair completes.</div>
+            <div class="timeline-step warn"><strong>Repair owner required</strong><br />Implementation must decide realtime vs batch enrichment ownership.</div>
+          </div>
+        </aside>
+      `;
+    }
+
+    function renderSourceWorkspace() {
+      const item = selectedItem();
+      return `
+        <section class="band">
+          <div class="band-header">
+            <div class="band-title">
+              <h2>${escapeHtml(item.title)}</h2>
+              <p>Reader, anchors, metadata, and citation tools stay close to the source.</p>
+            </div>
+            <div class="pill-row">
+              <span class="pill ${statusKind(item)}">${escapeHtml(item.health)}</span>
+              <button class="btn small" data-view="library">Change source</button>
+            </div>
+          </div>
+          <div class="band-body split wide-left">
+            <article class="source-reader">
+              ${item.body.map((paragraph, index) => `<p data-chunk="${index + 1}"><span class="${index === 1 ? "highlight" : ""}">${escapeHtml(paragraph)}</span></p>`).join("")}
+            </article>
+            <aside class="detail">
+              <div class="band-title">
+                <h2>Anchors</h2>
+                <p>Anchors can attach to chunks now and richer PDF locators later.</p>
+              </div>
+              <div class="anchor-list">
+                ${item.anchors.length ? item.anchors.map((anchor, index) => `
+                  <div class="anchor-row">
+                    <div class="pill-row"><span class="pill good">${escapeHtml(anchor.state)}</span><strong>${escapeHtml(anchor.label)}</strong></div>
+                    <p class="item-summary">${escapeHtml(anchor.note)}</p>
+                    <button class="btn small" data-action="deleteAnchor" data-index="${index}">Delete anchor</button>
+                  </div>
+                `).join("") : `<div class="empty">No anchors yet.</div>`}
+              </div>
+              <button class="btn primary" data-action="createAnchor">Create anchor from highlighted passage</button>
+              <div class="divider"></div>
+              <div class="grid two">
+                <div class="field"><label>Author</label><input class="input" id="metaAuthor" value="${escapeHtml(item.metadata.author)}" /></div>
+                <div class="field"><label>Date</label><input class="input" id="metaDate" value="${escapeHtml(item.metadata.date)}" /></div>
+              </div>
+              <div class="field"><label>Source URL</label><input class="input" id="metaUrl" value="${escapeHtml(item.metadata.url)}" /></div>
+              <div class="pill-row">
+                <button class="btn small" data-action="saveMetadata">Save metadata</button>
+                <button class="btn small" data-action="copyCitation">Copy citation</button>
+                <button class="btn small" data-action="exportBibtex">Export BibTeX</button>
+              </div>
+            </aside>
+          </div>
+        </section>
+      `;
+    }
+
+    function renderAskEvidence() {
+      const selected = state.items.filter((item) => state.selectedSources.includes(item.id));
+      const eligible = selected.filter((item) => !state.highQualityOnly || (item.indexed && item.embedded && item.health === "Healthy"));
+      const excluded = selected.length - eligible.length;
+      return `
+        <section class="band">
+          <div class="band-header">
+            <div class="band-title">
+              <h2>Source-Set Ask</h2>
+              <p>Ask answers from the selected local context and counts weak-source exclusions.</p>
+            </div>
+            <div class="pill-row">
+              <label class="pill"><input type="checkbox" id="highQualityOnly" ${state.highQualityOnly ? "checked" : ""} /> High-quality only</label>
+              <span class="pill good">${eligible.length} included</span>
+              <span class="pill warn">${excluded} excluded</span>
+            </div>
+          </div>
+          <div class="band-body split">
+            <div class="grid">
+              <div class="field">
+                <label>Source set</label>
+                <div class="grid two">
+                  ${state.items.map((item) => `
+                    <label class="anchor-row">
+                      <span class="pill-row">
+                        <input type="checkbox" class="sourceCheck" data-id="${item.id}" ${state.selectedSources.includes(item.id) ? "checked" : ""} />
+                        <strong>${escapeHtml(item.title)}</strong>
+                      </span>
+                      <span class="item-summary">${escapeHtml(item.health)} - ${item.indexed && item.embedded ? "Ask-ready" : "limited"}</span>
+                    </label>
+                  `).join("")}
+                </div>
+              </div>
+              <div class="field">
+                <label for="askQuestion">Question</label>
+                <textarea class="textarea" id="askQuestion">What should AI Brain implement first to make Ask more trustworthy?</textarea>
+              </div>
+              <button class="btn primary" data-action="runAsk">Ask selected sources</button>
+            </div>
+
+            <aside class="detail">
+              <div class="pill-row">
+                <span class="pill good">${eligible.length} included</span>
+                <span class="pill warn">${excluded} excluded</span>
+                <span class="pill">Snapshot saved</span>
+              </div>
+              ${state.askResult ? renderAskResult() : `<div class="empty">Run Ask to preview an answer with source inclusion and exclusion visible.</div>`}
+            </aside>
+          </div>
+        </section>
+
+        <section class="band">
+          <div class="band-header">
+            <div class="band-title">
+              <h2>Evidence Scan</h2>
+              <p>Classifies one claim against selected local sources. It does not claim global truth.</p>
+            </div>
+          </div>
+          <div class="band-body split">
+            <div class="grid">
+              <div class="field">
+                <label for="claimText">Claim</label>
+                <textarea class="textarea" id="claimText">AI Brain should implement capture repair before graph export.</textarea>
+              </div>
+              <button class="btn primary" data-action="runEvidence">Scan selected sources</button>
+              <div class="pill-row">
+                <span class="pill good">Supports</span>
+                <span class="pill bad">Contradicts</span>
+                <span class="pill violet">Nuances</span>
+                <span class="pill warn">Insufficient evidence</span>
+              </div>
+            </div>
+            <aside class="detail">
+              ${state.evidenceResult ? renderEvidenceResult() : `<div class="empty">Run Evidence Scan to see source-limited verdict groups.</div>`}
+            </aside>
+          </div>
+        </section>
+      `;
+    }
+
+    function renderAskResult() {
+      return `
+        <div class="grid">
+          <h3>Answer preview</h3>
+          <p class="item-summary">Start with Capture Quality and Repair Center. The selected sources repeatedly show that trustworthy Ask depends on knowing which captures are complete, weak, repaired, indexed, or excluded.</p>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Included source</th><th>Why used</th></tr></thead>
+              <tbody>
+                ${state.askResult.included.map((item) => `<tr><td>${escapeHtml(item.title)}</td><td>${escapeHtml(item.reason)}</td></tr>`).join("")}
+              </tbody>
+            </table>
+          </div>
+          ${state.askResult.excluded.length ? `
+            <div class="table-wrap">
+              <table>
+                <thead><tr><th>Excluded source</th><th>Reason</th></tr></thead>
+                <tbody>
+                  ${state.askResult.excluded.map((item) => `<tr><td>${escapeHtml(item.title)}</td><td>${escapeHtml(item.reason)}</td></tr>`).join("")}
+                </tbody>
+              </table>
+            </div>
+          ` : ""}
+        </div>
+      `;
+    }
+
+    function renderEvidenceResult() {
+      return `
+        <div class="grid">
+          ${state.evidenceResult.map((row) => `
+            <div class="verdict-row">
+              <div class="pill-row">
+                <span class="pill ${row.kind}">${escapeHtml(row.verdict)}</span>
+                <strong>${escapeHtml(row.source)}</strong>
+              </div>
+              <p class="item-summary">${escapeHtml(row.explanation)}</p>
+              <button class="btn small" data-action="openEvidenceSource" data-id="${row.itemId}">Open cited source</button>
+            </div>
+          `).join("")}
+        </div>
+      `;
+    }
+
+    function renderGraph() {
+      const visibleNodes = graphNodes.filter((node) => state.graphFilters[node.type] !== false);
+      const visibleIds = new Set(visibleNodes.map((node) => node.id));
+      const visibleEdges = graphEdges.filter((edge) => visibleIds.has(edge.from) && visibleIds.has(edge.to));
+      return `
+        <section class="band">
+          <div class="band-header">
+            <div class="band-title">
+              <h2>Derived Connection Map</h2>
+              <p>Edges are projections from owner tables and computed relatedness, not manually edited truth.</p>
+            </div>
+            <div class="pill-row">
+              ${graphFilter("item", "Items")}
+              ${graphFilter("tag", "Tags")}
+              ${graphFilter("collection", "Collections")}
+            </div>
+          </div>
+          <div class="band-body split wide-left">
+            <svg class="node-map" viewBox="0 0 720 440" role="img" aria-label="Relationship graph">
+              ${visibleEdges.map(renderEdge).join("")}
+              ${visibleNodes.map(renderNode).join("")}
+            </svg>
+            <aside class="detail">
+              ${renderGraphDetail()}
+            </aside>
+          </div>
+        </section>
+
+        <section class="band">
+          <div class="band-header">
+            <div class="band-title">
+              <h2>Accessible Outline</h2>
+              <p>Every graph connection also appears as a scannable list with provenance.</p>
+            </div>
+          </div>
+          <div class="band-body">
+            <div class="table-wrap">
+              <table>
+                <thead><tr><th>Connection</th><th>Edge type</th><th>Provenance</th><th>Open</th></tr></thead>
+                <tbody>
+                  ${visibleEdges.map((edge) => {
+                    const from = graphNodes.find((node) => node.id === edge.from);
+                    const to = graphNodes.find((node) => node.id === edge.to);
+                    return `<tr><td>${escapeHtml(from.label)} -> ${escapeHtml(to.label)}</td><td>${escapeHtml(edge.label)}</td><td>${escapeHtml(edge.why)}</td><td><button class="btn small" data-action="selectGraphNode" data-id="${edge.from}">Inspect</button></td></tr>`;
+                  }).join("")}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+      `;
+    }
+
+    function graphFilter(id, label) {
+      return `<label class="pill"><input type="checkbox" class="graphFilter" data-id="${id}" ${state.graphFilters[id] ? "checked" : ""} /> ${label}</label>`;
+    }
+
+    function renderEdge(edge) {
+      const from = graphNodes.find((node) => node.id === edge.from);
+      const to = graphNodes.find((node) => node.id === edge.to);
+      if (!from || !to) return "";
+      return `<line class="edge ${edge.type}" x1="${from.x}" y1="${from.y}" x2="${to.x}" y2="${to.y}" />`;
+    }
+
+    function renderNode(node) {
+      const active = state.graphNode === node.id ? "active" : "";
+      return `
+        <g class="graph-node ${active}" data-action="selectGraphNode" data-id="${node.id}" tabindex="0" role="button" aria-label="${escapeHtml(node.label)}">
+          <circle cx="${node.x}" cy="${node.y}" r="${node.type === "item" ? 31 : 25}" fill="${node.color}"></circle>
+          <text class="node-label" x="${node.x}" y="${node.y + 48}" text-anchor="middle">${escapeHtml(node.label)}</text>
+        </g>
+      `;
+    }
+
+    function renderGraphDetail() {
+      const node = graphNodes.find((entry) => entry.id === state.graphNode) || graphNodes[0];
+      const connected = graphEdges.filter((edge) => edge.from === node.id || edge.to === node.id);
+      return `
+        <div class="pill-row">
+          <span class="pill info">${escapeHtml(node.type)}</span>
+          <span class="pill">${connected.length} edges</span>
+        </div>
+        <h3>${escapeHtml(node.label)}</h3>
+        <p class="item-summary">Every edge below names its source of truth or computed owner.</p>
+        <div class="divider"></div>
+        <div class="grid">
+          ${connected.length ? connected.map((edge) => `
+            <div class="anchor-row">
+              <div class="pill-row"><span class="pill ${edge.type === "evidence" ? "violet" : edge.type === "semantic" ? "info" : "good"}">${escapeHtml(edge.label)}</span></div>
+              <p class="item-summary">${escapeHtml(edge.why)}</p>
+            </div>
+          `).join("") : `<div class="empty">No visible connections for this filter.</div>`}
+        </div>
+      `;
+    }
+
+    function renderTrustCenter() {
+      const generationUp = state.providerRefreshes % 2 === 0;
+      const embeddingUp = state.providerRefreshes % 3 !== 1;
+      return `
+        <section class="band">
+          <div class="band-header">
+            <div class="band-title">
+              <h2>AI Readiness</h2>
+              <p>Readiness surfaces separate generation, embeddings, source quality, and transport health.</p>
+            </div>
+            <button class="btn small" data-action="refreshProviders">Refresh checks</button>
+          </div>
+          <div class="band-body grid three">
+            ${providerCard("Generation", generationUp ? "Available" : "Unavailable", generationUp ? "Claude-style chat path responding." : "Provider check failed with redacted code.", generationUp ? "good" : "bad")}
+            ${providerCard("Embeddings", embeddingUp ? "Available" : "Paused", embeddingUp ? "Vector search can use configured provider." : "FTS fallback is available; semantic retrieval reduced.", embeddingUp ? "good" : "warn")}
+            ${providerCard("Capture transport", "Available", "Web, extension, and Android share routes can reach app server.", "good")}
+          </div>
+        </section>
+
+        <section class="band">
+          <div class="band-header">
+            <div class="band-title">
+              <h2>Provider Data Flow</h2>
+              <p>User-facing copy must name what can leave the app for each path.</p>
+            </div>
+          </div>
+          <div class="band-body">
+            <div class="table-wrap">
+              <table>
+                <thead><tr><th>Path</th><th>Potential data sent</th><th>Copy requirement</th><th>Default diagnostics</th></tr></thead>
+                <tbody>
+                  <tr><td>Generation</td><td>Question, selected excerpts, prompt context</td><td>Name provider/model and excerpt flow</td><td><span class="pill warn">No prompts</span></td></tr>
+                  <tr><td>Embeddings</td><td>Text chunks or query text</td><td>Name provider/model and source text flow</td><td><span class="pill warn">No chunks</span></td></tr>
+                  <tr><td>Capture helpers</td><td>URL metadata or source identifiers</td><td>Explain metadata handling</td><td><span class="pill warn">No raw URLs</span></td></tr>
+                  <tr><td>Mobile / extension</td><td>Captured content through app server</td><td>Explain transport and auth mode</td><td><span class="pill good">Counts only</span></td></tr>
+                  <tr><td>Backups</td><td>SQLite database and artifacts</td><td>State destination, encryption, retention</td><td><span class="pill info">Config summary</span></td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <section class="band">
+          <div class="band-header">
+            <div class="band-title">
+              <h2>Diagnostics Export Preview</h2>
+              <p>Support bundles show redacted fields before export.</p>
+            </div>
+            <button class="btn small" data-action="downloadDiagnostics">Download redacted sample</button>
+          </div>
+          <div class="band-body split">
+            <div class="detail">
+              <div class="small-label">Allowed by default</div>
+              <div class="pill-row">
+                <span class="pill good">provider name</span>
+                <span class="pill good">model id</span>
+                <span class="pill good">status code</span>
+                <span class="pill good">counts</span>
+                <span class="pill good">timestamps</span>
+                <span class="pill good">route names</span>
+              </div>
+            </div>
+            <div class="detail">
+              <div class="small-label">Forbidden by default</div>
+              <div class="pill-row">
+                <span class="pill bad">raw body</span>
+                <span class="pill bad">source excerpts</span>
+                <span class="pill bad">questions</span>
+                <span class="pill bad">tokens</span>
+                <span class="pill bad">API keys</span>
+                <span class="pill bad">raw paths</span>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="band">
+          <div class="band-header">
+            <div class="band-title">
+              <h2>Backup and Offline Truth</h2>
+              <p>The prototype separates implemented fallback from claims that need real queue/library support.</p>
+            </div>
+          </div>
+          <div class="band-body grid four">
+            ${truthCard("Local backup", "Configured", "Database and artifacts can be copied locally.", "good")}
+            ${truthCard("Off-site backup", "Unknown", "Needs explicit destination and retention copy.", "warn")}
+            ${truthCard("Offline shell", "Partial", "App shell may load, but AI features depend on providers.", "warn")}
+            ${truthCard("Queued capture", "Not claimed", "Do not promise offline queue until implemented.", "bad")}
+          </div>
+        </section>
+      `;
+    }
+
+    function providerCard(name, status, copy, kind) {
+      return `
+        <div class="provider-row">
+          <div class="pill-row"><span class="pill ${kind}">${status}</span><strong>${name}</strong></div>
+          <p class="item-summary">${copy}</p>
+          <div class="small-label">Last checked just now</div>
+        </div>
+      `;
+    }
+
+    function truthCard(name, status, copy, kind) {
+      return `<div class="metric"><span class="pill ${kind}">${status}</span><h3 style="font-size: 15px;">${name}</h3><p style="color: var(--muted); line-height: 1.45; font-size: 13px;">${copy}</p></div>`;
+    }
+
+    function renderFeedbackBoard() {
+      const grouped = views.map((view) => ({
+        view,
+        notes: state.notes.filter((note) => note.view === view.id)
+      }));
+      return `
+        <section class="band">
+          <div class="band-header">
+            <div class="band-title">
+              <h2>Review Summary</h2>
+              <p>Use this board to see which areas have approval, questions, risks, or requested changes.</p>
+            </div>
+            <div class="pill-row">
+              <button class="btn small" data-action="exportNotes">Export notes</button>
+              <button class="btn small" data-action="copyNotes">Copy summary</button>
+            </div>
+          </div>
+          <div class="band-body grid three">
+            ${grouped.map((group) => `
+              <div class="metric" style="min-height: 180px;">
+                <div class="pill-row"><span class="pill info">${escapeHtml(group.view.label)}</span><span class="pill">${group.notes.length} notes</span></div>
+                ${group.notes.length ? group.notes.slice(-3).map((note) => `<p style="color: var(--muted); line-height: 1.45; font-size: 13px;"><strong>${escapeHtml(note.kind)}:</strong> ${escapeHtml(note.text)}</p>`).join("") : `<p style="color: var(--muted); line-height: 1.45; font-size: 13px;">No notes yet.</p>`}
+                <button class="btn small" data-view="${group.view.id}" style="justify-self: start;">Open area</button>
+              </div>
+            `).join("")}
+          </div>
+        </section>
+
+        <section class="band">
+          <div class="band-header">
+            <div class="band-title">
+              <h2>Decision Checklist</h2>
+              <p>Turn review feedback into a build sequence.</p>
+            </div>
+          </div>
+          <div class="band-body">
+            <div class="table-wrap">
+              <table>
+                <thead><tr><th>Decision</th><th>Default recommendation</th><th>Feedback needed</th></tr></thead>
+                <tbody>
+                  <tr><td>First build package</td><td>FCP-001 Capture Quality and Repair Center</td><td>Confirm before implementation</td></tr>
+                  <tr><td>Trust Center timing</td><td>Ship early with FCP-001 readiness copy</td><td>Decide if it precedes repair UI</td></tr>
+                  <tr><td>Graph release</td><td>Keep P2 until anchors/evidence exist</td><td>Validate if outline-only map is valuable sooner</td></tr>
+                  <tr><td>Evidence Scan scope</td><td>Single-claim, selected-source, local classification</td><td>Approve humble verdict language</td></tr>
+                  <tr><td>Source Workspace depth</td><td>Anchors and metadata, no full editor</td><td>Confirm citation export is enough for v1</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+      `;
+    }
+
+    function segmented(name, options, value) {
+      return `
+        <div class="segmented" role="tablist" aria-label="${name}">
+          ${options.map(([id, label]) => `<button class="${id === value ? "active" : ""}" data-action="segment" data-name="${name}" data-value="${id}" role="tab" aria-selected="${id === value}">${label}</button>`).join("")}
+        </div>
+      `;
+    }
+
+    function option(value, label, selected) {
+      return `<option value="${value}" ${value === selected ? "selected" : ""}>${label}</option>`;
+    }
+
+    function runAsk() {
+      const selected = state.items.filter((item) => state.selectedSources.includes(item.id));
+      const included = [];
+      const excluded = [];
+      selected.forEach((item) => {
+        const eligible = !state.highQualityOnly || (item.indexed && item.embedded && item.health === "Healthy");
+        if (eligible) {
+          included.push({ title: item.title, reason: item.tags.includes("capture") ? "Defines capture quality requirements." : item.tags.includes("privacy") ? "Explains provider and trust gating." : "Relevant source in selected set." });
+        } else {
+          excluded.push({ title: item.title, reason: item.warning || "Not high-quality eligible." });
+        }
+      });
+      state.askResult = { included, excluded };
+    }
+
+    function runEvidence() {
+      state.evidenceResult = [
+        {
+          verdict: "Supports",
+          kind: "good",
+          source: "Capture repair state taxonomy",
+          itemId: "item-2",
+          explanation: "The source argues weak captures should be repaired before Ask/search eligibility is trusted."
+        },
+        {
+          verdict: "Nuances",
+          kind: "violet",
+          source: "Provider readiness and privacy copy",
+          itemId: "item-4",
+          explanation: "Trust Center can ship early because provider readiness affects Evidence and Ask availability."
+        },
+        {
+          verdict: "Insufficient evidence",
+          kind: "warn",
+          source: "YouTube memory OS talk",
+          itemId: "item-3",
+          explanation: "The selected source is metadata-only, so high-quality mode excludes it from the scan."
+        }
+      ];
+    }
+
+    function addNote(kindOverride) {
+      const textArea = byId("noteText");
+      const text = textArea.value.trim();
+      if (!text) {
+        textArea.focus();
+        return;
+      }
+      const view = currentView();
+      state.notes.push({
+        id: crypto.randomUUID ? crypto.randomUUID() : String(Date.now()),
+        kind: kindOverride || byId("noteKind").value,
+        text,
+        view: view.id,
+        viewLabel: view.label,
+        context: selectedItem().title,
+        createdAt: new Date().toISOString()
+      });
+      textArea.value = "";
+      saveNotes();
+    }
+
+    function download(filename, content, type) {
+      const blob = new Blob([content], { type });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      URL.revokeObjectURL(url);
+    }
+
+    function exportNotes() {
+      const payload = {
+        prototype: "AI Brain Master Prototype",
+        exportedAt: new Date().toISOString(),
+        notes: state.notes
+      };
+      download("ai-brain-master-prototype-feedback.json", JSON.stringify(payload, null, 2), "application/json");
+    }
+
+    function copyNotes() {
+      const text = state.notes.map((note) => `[${note.viewLabel}] ${note.kind}: ${note.text}`).join("\n");
+      navigator.clipboard?.writeText(text || "No notes yet.");
+    }
+
+    function addCapturedItem() {
+      const result = state.captureResult || capturePreview();
+      const newItem = {
+        id: `item-${Date.now()}`,
+        title: `${result.title} sample`,
+        type: result.channel,
+        source: captureInputValue(),
+        channel: result.channel,
+        status: result.state,
+        health: result.kind === "good" ? "Healthy" : result.kind === "warn" ? "Warning" : "Needs repair",
+        quality: result.kind === "good" ? 82 : result.kind === "warn" ? 54 : 22,
+        indexed: result.kind === "good",
+        embedded: result.kind === "good",
+        warning: result.kind === "good" ? "" : result.copy,
+        date: "2026-06-28",
+        tags: ["prototype", "capture"],
+        collections: ["Inbox"],
+        summary: result.copy,
+        body: [result.copy, "This sample exists only in the prototype runtime."],
+        anchors: [],
+        metadata: { author: "Prototype", date: "2026-06-28", url: captureInputValue(), citation: `Prototype. ${result.title}. 2026.` },
+        repair: ["Retry extraction", "Paste text", "Ignore for Ask"],
+        relations: []
+      };
+      state.items.unshift(newItem);
+      state.selectedItemId = newItem.id;
+      state.view = "library";
+    }
+
+    function runRepair(id, repairAction) {
+      const item = state.items.find((entry) => entry.id === id);
+      if (!item) return;
+      if (repairAction.toLowerCase().includes("delete")) {
+        state.items = state.items.filter((entry) => entry.id !== id);
+        state.selectedItemId = state.items[0]?.id;
+        return;
+      }
+      item.status = "repair_complete";
+      item.health = "Healthy";
+      item.quality = Math.max(item.quality, 84);
+      item.indexed = true;
+      item.embedded = true;
+      item.warning = "";
+      item.summary = `${item.summary} Repair completed in the prototype state.`;
+      item.anchors.push({ label: "Repair completion marker", state: "active", note: `${repairAction} completed and source is now Ask eligible.` });
+    }
+
+    document.addEventListener("click", (event) => {
+      const target = event.target.closest("[data-view], [data-action]");
+      if (!target) return;
+
+      if (target.dataset.view) {
+        state.view = target.dataset.view;
+        render();
+        return;
+      }
+
+      const action = target.dataset.action;
+      if (action === "tour") state.view = "capture";
+      if (action === "addContextNote") {
+        byId("noteText").value = `Feedback on ${currentView().label}: `;
+        byId("noteText").focus();
+      }
+      if (action === "saveNote") addNote();
+      if (action === "deleteNote") {
+        state.notes = state.notes.filter((note) => note.id !== target.dataset.id);
+        saveNotes();
+      }
+      if (action === "clearNotes" && confirm("Clear all prototype review notes?")) {
+        state.notes = [];
+        saveNotes();
+      }
+      if (action === "exportNotes") exportNotes();
+      if (action === "copyNotes") copyNotes();
+      if (action === "segment") {
+        state[target.dataset.name] = target.dataset.value;
+        if (target.dataset.name === "captureType") state.captureResult = null;
+      }
+      if (action === "simulateCapture") state.captureResult = capturePreview();
+      if (action === "resetCapture") state.captureResult = null;
+      if (action === "addCapturedItem") addCapturedItem();
+      if (action === "selectItem") state.selectedItemId = target.dataset.id;
+      if (action === "selectRepair") {
+        state.selectedItemId = target.dataset.id;
+        state.view = "repair";
+      }
+      if (action === "runRepair") runRepair(target.dataset.id, target.dataset.repair || "Repair");
+      if (action === "createAnchor") {
+        const item = selectedItem();
+        item.anchors.push({ label: `Anchor ${item.anchors.length + 1}`, state: "active", note: "Created from the highlighted prototype passage." });
+      }
+      if (action === "deleteAnchor") {
+        const item = selectedItem();
+        item.anchors.splice(Number(target.dataset.index), 1);
+      }
+      if (action === "saveMetadata") {
+        const item = selectedItem();
+        item.metadata.author = byId("metaAuthor").value;
+        item.metadata.date = byId("metaDate").value;
+        item.metadata.url = byId("metaUrl").value;
+        item.metadata.citation = `${item.metadata.author}. ${item.title}. ${item.metadata.date}.`;
+      }
+      if (action === "copyCitation") navigator.clipboard?.writeText(selectedItem().metadata.citation);
+      if (action === "exportBibtex") {
+        const item = selectedItem();
+        const key = item.title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 28) || "ai-brain-source";
+        download(`${key}.bib`, `@misc{${key},\n  title = {${item.title}},\n  author = {${item.metadata.author}},\n  year = {${item.metadata.date.slice(0, 4)}},\n  url = {${item.metadata.url}}\n}\n`, "text/plain");
+      }
+      if (action === "runAsk") runAsk();
+      if (action === "runEvidence") runEvidence();
+      if (action === "openEvidenceSource") {
+        state.selectedItemId = target.dataset.id;
+        state.view = "source";
+      }
+      if (action === "selectGraphNode") state.graphNode = target.dataset.id;
+      if (action === "refreshProviders") state.providerRefreshes += 1;
+      if (action === "downloadDiagnostics") {
+        const sample = {
+          exportedAt: new Date().toISOString(),
+          providers: [
+            { path: "generation", provider: "configured-generation-provider", status: "available", rawPrompt: "[redacted]" },
+            { path: "embeddings", provider: "configured-embedding-provider", status: "available", sourceChunks: "[redacted]" }
+          ],
+          sourceCounts: { healthy: state.items.filter((item) => item.health === "Healthy").length, weak: state.items.filter((item) => item.health !== "Healthy").length },
+          forbiddenFields: ["raw item body", "source excerpts", "prompts", "tokens", "api keys", "raw file paths"]
+        };
+        download("ai-brain-redacted-diagnostics-sample.json", JSON.stringify(sample, null, 2), "application/json");
+      }
+      render();
+    });
+
+    document.addEventListener("input", (event) => {
+      if (event.target.id === "libraryQuery") {
+        state.libraryQuery = event.target.value;
+        render();
+      }
+    });
+
+    document.addEventListener("change", (event) => {
+      if (event.target.id === "libraryFilter") {
+        state.libraryFilter = event.target.value;
+        render();
+      }
+      if (event.target.id === "highQualityOnly") {
+        state.highQualityOnly = event.target.checked;
+        state.askResult = null;
+        render();
+      }
+      if (event.target.classList.contains("sourceCheck")) {
+        const id = event.target.dataset.id;
+        if (event.target.checked) {
+          if (!state.selectedSources.includes(id)) state.selectedSources.push(id);
+        } else {
+          state.selectedSources = state.selectedSources.filter((entry) => entry !== id);
+        }
+        state.askResult = null;
+        state.evidenceResult = null;
+        render();
+      }
+      if (event.target.classList.contains("graphFilter")) {
+        state.graphFilters[event.target.dataset.id] = event.target.checked;
+        render();
+      }
+    });
+
+    render();
+  </script>
+</body>
+</html>

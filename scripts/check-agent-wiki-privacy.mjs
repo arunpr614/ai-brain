@@ -7,6 +7,22 @@ const PLACEHOLDER = String.raw`(?:<[^>]*(?:redacted|placeholder|example|stored|p
 
 const RULES = [
   {
+    id: "local_user_path",
+    pattern: /(?:\/Users\/[A-Za-z0-9._-]+|[A-Za-z]:\\Users\\[A-Za-z0-9._-]+)/i,
+  },
+  {
+    id: "email_address",
+    pattern: /\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b/i,
+  },
+  {
+    id: "personal_owner_name",
+    pattern: /\bArun(?:\s+Prakash)?\b/i,
+  },
+  {
+    id: "live_owner_hostname",
+    pattern: /\b(?:brain\.)?arunp\.in\b/i,
+  },
+  {
     id: "credential_assignment",
     pattern: new RegExp(
       String.raw`\b(?:RECALL_API_KEY|ANTHROPIC_API_KEY|OPENAI_API_KEY|OPENROUTER_API_KEY|GEMINI_API_KEY|TELEGRAM_BOT_TOKEN|TELEGRAM_WEBHOOK_SECRET|BRAIN_API_TOKEN|BRAIN_SESSION_SECRET)\s*[:=]\s*(?!${PLACEHOLDER})[^\s\x60"'<>]{8,}`,

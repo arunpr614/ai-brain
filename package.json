@@ -144,10 +144,11 @@
     "check:agent-wiki-privacy": "node scripts/check-agent-wiki-privacy.mjs --require-files docs/wiki docs/agent-docs docs/plans/agent-documentation-wiki-architecture-plan-2026-07-10.md",
     "check:agent-wiki-structure": "node scripts/check-agent-wiki-structure.mjs docs/wiki docs/agent-docs/source-baseline.json",
     "check:agent-doc-coverage": "node scripts/check-agent-doc-coverage.mjs docs/agent-docs --wiki docs/wiki --package package.json",
+    "check:feature-council-wiki": "node scripts/build-feature-council-wiki.mjs --check",
     "smoke:agent-wiki-privacy": "node scripts/smoke-agent-wiki-privacy.mjs",
     "smoke:agent-wiki-structure": "node scripts/smoke-agent-wiki-structure.mjs",
     "smoke:agent-doc-coverage": "node scripts/smoke-agent-doc-coverage.mjs",
-    "check:agent-docs": "npm run check:agent-wiki-privacy && npm run check:agent-wiki-structure && npm run check:agent-doc-coverage",
+    "check:agent-docs": "npm run check:feature-council-wiki && npm run check:agent-wiki-privacy && npm run check:agent-wiki-structure && npm run check:agent-doc-coverage",
     "smoke:agent-docs": "npm run smoke:agent-wiki-privacy && npm run smoke:agent-wiki-structure && npm run smoke:agent-doc-coverage"
   },
   "dependencies": {

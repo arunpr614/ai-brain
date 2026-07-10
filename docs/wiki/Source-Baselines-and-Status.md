@@ -13,12 +13,15 @@ Owner: AI Brain maintainer.
 |---|---|---|
 | Default branch | `2b4db9540d0b76ee6d3aa2a9da5f788b69a8d02a` | Latest fetched `origin/main` during documentation build |
 | Documentation worktree source | `8178117c80923e5724e355fb2684cbc836013d39` | UX v2 and Recall-oriented branch used for this documentation build |
-| Wiki before publication | `c149c22c002cbcc0174bb6ab702d6e4e763a1986` | Existing GitHub Wiki base |
+| Feature Council artifact source | `9de8de87de915e874e8290aa556e2b6772d6fabf` | Immutable source for the 44 planning and research documents published under Feature Council Research |
+| Wiki before Feature Council publication | `dab9267124b55571f03ad56c6776c6827723229a` | Published wiki base recorded before the research-category update |
 | Complete production tree | Unknown | Public-safe evidence does not prove one current complete production SHA |
 
 The default branch has 12 commits not present in the worktree baseline. The worktree baseline has 16 commits not present in the default branch. Neither is a descendant of the other.
 
 Default branch source: [main baseline](https://github.com/arunpr614/ai-brain/tree/2b4db9540d0b76ee6d3aa2a9da5f788b69a8d02a). Worktree source: [documentation baseline](https://github.com/arunpr614/ai-brain/tree/8178117c80923e5724e355fb2684cbc836013d39).
+
+Feature Council source: [planning artifact baseline](https://github.com/arunpr614/ai-brain/tree/9de8de87de915e874e8290aa556e2b6772d6fabf/docs/feature-council). Its research evidence date is 2026-06-28. These documents are planning evidence; they do not update the production runtime baseline.
 
 ## Known Divergence
 
