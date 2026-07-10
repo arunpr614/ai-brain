@@ -27,3 +27,13 @@ The final v2 documents supersede v1 where they differ. Council and v1 artifacts 
 - `validation/PRODUCTION_SOURCE_BASELINE_ATTESTATION_2026-07-10.md`
 
 Implementation may proceed only after merging attested production snapshot `8178117`. UI, write, and semantic-worker flags remain default off until their respective gates pass.
+
+## Implementation and release evidence
+
+- `reviews/F08_MANUAL_CONTENT_NOTES_IMPLEMENTATION_ADVERSARIAL_REVIEW_2026-07-10_18-44-33_IST.md`
+- `reviews/IMPLEMENTATION_REVIEW_DISPOSITION.md`
+- `validation/IMPLEMENTATION_VALIDATION_2026-07-10.md`
+- `validation/IMPLEMENTATION_DESIGN_QA_2026-07-10.md`
+- `validation/PRODUCTION_SNAPSHOT_REHEARSAL_2026-07-10.md`
+
+The implementation release gate is green: 785 tests, typecheck, lint, production build, dependency audit, interactive desktop/mobile validation, and the content-free production snapshot rehearsal pass. The implementation adversarial review originally returned NO-GO; every P0/P1 finding is closed in the disposition. Live production remains a separate guarded step: flags off, startup migration, exact audit/repair, synthetic smoke/cleanup, then staged UI/write/worker enablement.

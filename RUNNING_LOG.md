@@ -28142,3 +28142,67 @@ None identified for the Recall daily-sync completion gate.
 - **Working tree:** Dirty with broad pre-existing project changes plus final Recall scheduler code/docs/tracker/log updates and ignored private evidence.
 - **Deployed/runtime state:** Production app deployed from earlier work; `brain-recall-sync.timer` enabled/active; first scheduled service run verified; private scheduler evidence recorded.
 - **Next milestone:** Monitor the next daily scheduled run only if desired; no remaining Recall daily-sync completion gate.
+
+---
+
+## 2026-07-10 18:57 - F08 Manual Content Notes Implementation and Release Candidate Validated
+
+**Entry author:** AI agent (Codex) · **Triggered by:** autonomous end-to-end F08 feature goal
+
+### Planned since last F08 entry
+
+Integrate the attested production source without flattening Recall history, implement the separately stored per-item Markdown note end to end, run interactive and automated validation, adversarially review the implementation, and prove the production migration/vector path on a byte-verified snapshot before any live write.
+
+### Done
+
+- Integrated attested production source `8178117` in true merge commit `a50ba82`; retained Recall/transcript migrations and runtime.
+- Implemented migrations 022/023, canonical note repository/API, optimistic epoch/generation, idempotency, durable delete tombstone, bounded revisions, immediate FTS, explicit export, and provider policy.
+- Implemented the responsive native Markdown editor, safe Preview, toolbar, per-editor IndexedDB journal, idle/max autosave, one-in-flight queue, two-tab conflict review, recovery drafts, versions/restore, clear/delete/recreate, mobile Notes tab, and desktop AI digest/My notes companion tabs.
+- Added source-aware semantic chunks and citations, separate original/AI/manual indexing, note-aware exact/hybrid search, Ask provenance and privacy rechecks, bounded Related influence, future semantic event contract, and a generation-safe background worker.
+- Added content-free vector audit/repair tools and deploy packaging with default-off manual-note flags and verified pre-deploy database backup.
+- Ran real-browser desktop/mobile interaction QA for autosave, note-only search, two-tab conflict, safe Preview, and 390/320 px layouts.
+- Copied a WAL-safe production backup byte-exact, rehearsed migrations 021-023, classified 44 orphan vectors plus two stale queue foreign keys, and reached a safe atomic post-repair audit on the rehearsal copy. Production was not changed.
+- Ran the requested implementation adversarial review. Initial verdict was NO-GO; closed all three P0 and six P1 findings:
+  - real-runner migration bridge loss;
+  - ordinary item-delete vec0/chat cleanup;
+  - delayed replay false acknowledgement;
+  - stale purge ownership race;
+  - in-flight Save/Clear intent loss;
+  - delete-during-Ask persistence race;
+  - incomplete three-flag worker gate;
+  - inaccurate endpoint/model consent identity;
+  - missing reindex after provider reapproval.
+- Hardened completed-Recall deployment mode: explicit overrides now verify the live timer and enabled flags, then use static/public completed-state gates instead of requiring absent historical private fixtures from a clean worktree.
+
+### Verification
+
+- Full suite: 785 tests, 92 suites, 0 failures.
+- Focused post-adversarial suite: 20/20.
+- TypeScript, ESLint, Next.js production build, `git diff --check`, build artifact privacy, Recall scheduler static gate, and public-doc privacy all passed.
+- `npm audit --omit=dev`: 0 vulnerabilities.
+- Production snapshot final rehearsal: 25 migrations through 023, SQLite quick check `ok`, zero post-repair FK violations, zero vector anomalies, allocator 45, `safeToEnableWriters=true`.
+- Known unchanged build warning: `unpdf` direct `import.meta` access; compilation and standalone output remain successful.
+- A direct Recall completion-status command in this clean worktree correctly could not find ignored historical private fixtures. Read-only production checks independently confirmed the already-completed Recall timer is enabled/active and its three scheduler flags remain enabled; deploy now has an explicit completed-state path.
+
+### Documents created or updated this period
+
+- Implementation adversarial report and disposition under `docs/feature-council/F08-manual-content-notes/reviews/`.
+- Implementation validation, design QA, and production snapshot rehearsal under `docs/feature-council/F08-manual-content-notes/validation/`.
+- F08 README, tracker, and decision log updated to release-candidate state.
+- Five implementation screenshots retained as visual evidence.
+
+### Current remaining to-do
+
+1. Commit and push the implementation/release evidence; open the GitHub PR.
+2. Publish sanitized canonical GitHub wiki updates with a concurrency check.
+3. Deploy flags off while preserving the completed Recall scheduler.
+4. Repeat the live audit, approve only the exact live manifest, run backup-confirmed repair, and require a safe post-audit.
+5. Run synthetic production create/edit/search/Ask/Related/opt-out/delete/cleanup; stage UI/write and then worker/provider consent; verify health and Recall stability.
+
+### State snapshot
+
+- **Current phase / version:** F08 implementation and local/snapshot release readiness complete; GitHub/wiki/live release pending.
+- **Active branch:** `codex/manual-content-notes`.
+- **Working tree:** Expected feature code/docs/screenshots are uncommitted; ignored private rehearsal databases/reports remain owner-only.
+- **Production:** Unchanged by F08 so far; app and Recall timer active; manual-note flags disabled.
+- **Next milestone:** GitHub publication, flags-off deploy, exact live repair, synthetic smoke, and staged enablement.
