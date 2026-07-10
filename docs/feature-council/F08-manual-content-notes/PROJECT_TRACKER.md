@@ -4,9 +4,10 @@
 **Repository:** `arunpr614/ai-brain`
 **Worktree:** `Phase3`
 **Original release branch:** `codex/manual-content-notes`
-**Active follow-on branch:** `codex/note-ai-default-setting`
+**Follow-on implementation branch:** `codex/note-ai-default-setting`
+**Closeout branch:** `codex/note-ai-default-closeout`
 **Started:** 2026-07-10
-**Current recommendation:** Original F08 release verified; global AI-default follow-on is local release candidate GO and pending GitHub/production integration.
+**Current recommendation:** Production GO; original F08 and global AI-default follow-on are released and verified.
 
 ## Workstreams and owners
 
@@ -39,11 +40,11 @@
 | M7 | Release readiness | Complete | Verified backup copy, snapshot migration, exact audit/repair, rollback gates, and 785-test build pass |
 | M8 | Production release | Complete | Synthetic end-to-end smoke and cleanup pass; health, providers, and Recall timer stable |
 | M9 | Publication and main integration | Complete | Wiki fresh-clone verification passed; PR #10 merged to `main` at `b5910b2` |
-| M10 | Global AI inclusion default | Release ready | New/recreated-note inheritance, non-retroactivity, provider gate/revocation, Settings UX, 796-test/full release checks pass; GitHub and production smoke pending |
+| M10 | Global AI inclusion default | Complete | PR #12 merged at `01721d1c`; 796-test gate, guarded deploy, authenticated API/UI smoke, strict providers, service and Recall timer all pass |
 
 ## Current blockers
 
-None. Production feature behavior, public documentation, and main integration have no open release blocker.
+None. Production feature behavior and main integration have no open release blocker; final wiki publication is closeout work, not a runtime blocker.
 
 ## Release rule
 

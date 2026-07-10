@@ -28352,3 +28352,97 @@ None. The privacy-safe interpretation is that this is a configurable default for
 - **Working tree:** Dirty with the intended setting implementation/tests plus preserved brainstorm Markdown/HTML and README addition.
 - **Deployed/runtime state:** Production unchanged; released F08 remains active and remote provider consent remains revoked.
 - **Next milestone:** Full release validation, documentation closeout, GitHub PR/integration, and guarded production deployment.
+
+---
+
+## 2026-07-10 20:38 - F08 Global Note AI Default Merged and Released
+
+**Entry author:** AI agent (Codex) · **Triggered by:** Continued autonomous completion of Arun's global default-setting request and the active F08 production-release goal.
+
+### Planned since last entry
+
+The previous milestone had the preference, Settings UI, privacy gates, focused tests, and initial documentation implemented but had not completed broad validation, adversarial review, GitHub integration, or production release.
+
+### Done
+
+- Added explicit existing-note non-retroactivity coverage and deterministic local-provider setup.
+- Ran the complete local release gate: 796 tests / 92 suites, TypeScript, full ESLint, production build, artifact privacy, environment, documentation generation/privacy/structure/coverage, and zero-vulnerability production dependency audit.
+- Ran the adversarial-review skill and produced a timestamped repository report. It found a real P1 privacy UX bug: in a paused stored-preference state, **Keep default off** only hid the dialog and did not persist false.
+- Closed both P1 findings:
+  - **Keep default off** now calls the authoritative false PATCH;
+  - jsdom/React interaction tests cover paused-preference cancellation and two-provider acknowledgement/enable.
+- Added PATCH authentication, malformed-body, and disabled-write rollout tests; documented the accepted server-safe cross-tab freshness P2.
+- Published the requested detailed brainstorming reports as commit `203e0f6` and the feature/evidence as `d4f3932`.
+- Opened GitHub PR #12. The GitHub app connector returned a 403 integration-scope error, so the documented authenticated `gh` fallback created the PR. Its required Agent documentation check passed.
+- Promoted PR #12 from draft and merged it to `main` at `01721d1c2bbb686b9768d38c688352f78933205f`. The deployed feature commit and merge commit share tree `ee8b1e9982ee42cf2e1ff70585d527065d5d3607`.
+- Ran the guarded production deployment while preserving the completed Recall timer/flags and enabled manual-note flags.
+
+### Deployment detail and verification
+
+- First deploy attempt stopped safely before build/sync because local Ollama was unreachable; a verified pre-deploy database backup had already completed.
+- Reran with the repository's documented local-provider warning mode. The full 796-test gate repeated, the production artifact synced, native dependencies rebuilt, the service restarted, authenticated health passed, and webhook reachability passed.
+- A separate strict production-host provider check passed for Anthropic enrichment/Ask and Gemini embeddings.
+- `brain` is active. `brain-recall-sync.timer` remains enabled and active.
+- Production route bundle for `/api/settings/note-ai-default` is present.
+- Authenticated read-only API smoke passed with preference false, effective false, two provider disclosures, and current provider policy eligible.
+- Authenticated Settings HTML smoke found **Include in AI & connections by default**.
+- Production has no `notes.ai.include_by_default` row, so the setting remains off. Two existing active provider approvals were observed and deliberately left unchanged.
+
+### Cross-lane notes
+
+- No real note content, per-note AI choice, global setting row, or provider consent was created, changed, or deleted during production smoke.
+- The local main branch is held by another stale worktree, so deployment used the clean feature commit whose tree exactly matches merged `origin/main`.
+- The source worktree moved to `codex/note-ai-default-closeout` from merged `origin/main` for documentation/wiki closeout.
+
+### Learned
+
+- API/repository coverage did not catch a client-only privacy false-success path; privacy controls need state-machine interaction tests.
+- Production provider approvals had changed since the original release closeout: both current providers are now owner-approved. The deploy preserved this external state and kept the new global preference off.
+- Local Ollama availability is not evidence of production provider health. The deploy's warning-mode escape must be followed by a separate strict production-host provider check, which passed.
+
+### Deployed / Released
+
+- PR #12 merged to `main` at `01721d1c2bbb686b9768d38c688352f78933205f`.
+- Production `https://brain.arunp.in` now serves the global note AI default setting.
+- Service, strict providers, setting API, Settings surface, and Recall scheduler health are verified.
+
+### Documents created or updated this period
+
+**Created:**
+- `ReviewReport/F08_GLOBAL_NOTE_AI_DEFAULT_SETTING_RECENT_WORK_ADVERSARIAL_REVIEW_2026-07-10_20-22-27_IST.md`.
+- `docs/feature-council/F08-manual-content-notes/reviews/GLOBAL_NOTE_AI_DEFAULT_ADVERSARIAL_REVIEW_DISPOSITION_2026-07-10.md`.
+- `docs/feature-council/F08-manual-content-notes/validation/GLOBAL_NOTE_AI_DEFAULT_SETTING_VALIDATION_2026-07-10.md`.
+- Detailed Markdown and standalone HTML brainstorming reports under `docs/feature-council/F08-manual-content-notes/brainstorm/`.
+
+**Updated:**
+- F08 README, decision log, project tracker, canonical wiki page, and this running log.
+- Note settings API/UI, note repository, provider policy, and corresponding tests.
+
+### Current remaining to-do
+
+1. Commit and merge this production closeout documentation.
+2. Publish the final canonical wiki with a remote-SHA concurrency check and fresh-clone byte comparison.
+3. Verify the final worktree and goal status, then hand off links and production behavior.
+
+### Open questions / decisions needed
+
+None. The global preference intentionally remains off until Arun enables it in Settings; existing provider approvals mean the current providers will not require another acknowledgement unless their identity changes or consent is revoked.
+
+### Session self-critique
+
+- A browser screenshot comparison was not run because Product Design policy requires the user's chosen browser. Client interaction tests and authenticated production HTML/API smokes cover behavior, but not pixel-level inspection.
+- The first deploy attempt spent time repeating broad gates before local provider failure. It stopped before sync as designed and produced no partial application release.
+
+### Action items for the next agent
+
+1. Treat PR #12 merge `01721d1c` as the production source integration.
+2. Publish only the post-release canonical wiki state; do not republish the earlier release-candidate wording.
+3. Do not enable the global preference or alter provider approvals on Arun's behalf.
+
+### State snapshot
+
+- **Current phase / version:** F08 global note AI default production release complete; documentation/wiki closeout in progress.
+- **Active branch:** `codex/note-ai-default-closeout` from merged `origin/main`.
+- **Working tree:** Dirty only with intended production closeout documentation.
+- **Deployed/runtime state:** Production healthy; global preference off/effective off; two current provider approvals preserved; `brain` and Recall timer active.
+- **Next milestone:** Merge closeout docs, publish/verify final wiki, and complete the active goal.

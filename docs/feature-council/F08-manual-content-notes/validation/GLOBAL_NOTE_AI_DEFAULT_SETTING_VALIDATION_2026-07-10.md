@@ -3,7 +3,7 @@
 **Date:** 2026-07-10
 **Branch:** `codex/note-ai-default-setting`
 **Base:** `origin/main` at `840c06e`
-**Status:** Local release candidate GO; GitHub integration and production deployment pending.
+**Status:** Production released and read-only smoke verified.
 
 ## Delivered behavior
 
@@ -71,15 +71,24 @@ The review issued a conditional no-go with two P1 findings. Both are closed: rej
 ## Rollout and rollback
 
 - No schema migration is required; the preference uses the existing settings store.
-- Production starts with the preference absent/off, so deploying the code does not change any existing or future note until the owner enables the setting.
+- Production retained the preference absent/off, so the deployment changed no existing note and no future note inherits AI inclusion until the owner enables the setting.
 - Existing notes are never backfilled or rewritten.
 - Rollback is application-only: deploy the previous source. The unknown settings key is inert to older code.
-- Provider consent must remain unchanged during deployment validation. A read-only production smoke should confirm the setting is off and the app/Recall timer remain healthy.
+- Provider consent remained unchanged during deployment validation.
 
-## Remaining release steps
+## GitHub and production release evidence
 
-1. Commit and push the documentation and implementation.
-2. Open, validate, and merge the GitHub pull request.
-3. Publish the canonical wiki update with a remote-SHA concurrency check and fresh-clone verification.
-4. Run the guarded deployment while preserving completed Recall and enabled manual-note flags.
-5. Confirm health, route presence, setting-off state, provider-consent state, and unchanged scheduler status.
+- Improvement reports were committed at `203e0f6`; implementation and evidence were committed at `d4f3932`.
+- GitHub PR #12 passed its required documentation check and merged to `main` at `01721d1c2bbb686b9768d38c688352f78933205f`.
+- The deployed feature tree and the merge commit have the same Git tree, `ee8b1e9982ee42cf2e1ff70585d527065d5d3607`.
+- The first guarded deploy attempt stopped before build/sync because local Ollama was unavailable. This was a safe pre-deploy stop after a verified backup.
+- The documented warning-only local-provider path then completed the full 796-test release gate, build, artifact sync, native dependency repair, service restart, authenticated health check, and webhook reachability check.
+- A separate strict production-host provider check passed for Anthropic generation/Ask and Gemini embeddings.
+- `brain` is active; `brain-recall-sync.timer` remains enabled and active; all existing manual-note rollout flags were preserved.
+- The production route bundle exists and authenticated read-only API/UI smokes passed.
+- Production state after release: global preference absent/off, effective default off, two disclosed providers, provider policy eligible from two existing owner approvals. The deployment neither added nor revoked those approvals.
+
+## Remaining follow-up
+
+- Publish the final canonical wiki update with the normal remote-SHA concurrency gate and fresh-clone byte comparison.
+- Consider a future focus/visibility refresh for an already-open Settings page after out-of-band provider revocation. Server enforcement is already fail-closed.

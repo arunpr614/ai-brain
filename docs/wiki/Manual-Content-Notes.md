@@ -2,8 +2,8 @@
 
 Purpose: Explain the private Markdown note attached to each saved library item.
 Audience: AI agents, engineers, product collaborators, and operators maintaining item notes.
-Verified against: `8654f293d0f8615617df883e4703c0ca098a6029` and integrated baseline `a50ba828cded2442e8cb417693a40d81b45446f8`.
-Runtime evidence through: 2026-07-10 production deployment, synthetic lifecycle smoke, cleanup, and final content-free integrity audit.
+Verified against: original release `8654f293d0f8615617df883e4703c0ca098a6029` and global-default integration `01721d1c2bbb686b9768d38c688352f78933205f`.
+Runtime evidence through: 2026-07-10 global-default production deployment, authenticated read-only setting/UI smoke, strict provider check, and scheduler/service health verification.
 Last reviewed: 2026-07-10.
 Owner: AI Brain maintainer.
 
@@ -55,7 +55,7 @@ The production safety sequence is conceptual: verified SQLite backup, flags-off 
 
 Release evidence includes 785 passing tests, typecheck, lint, production build, dependency audit, interactive desktop/mobile autosave-search-conflict-preview checks, implementation adversarial review with every P0/P1 closed, and a byte-verified production-snapshot rehearsal. The guarded live rollout then passed verified backup, migrations through 023, exact content-free audit/repair, note save, exact search, remote semantic indexing, Related, Ask with manual-note citation provenance, opt-out, semantic purge, provider revocation, note/item deletion, and zero-leftover cleanup. The final production audit reports SQLite integrity OK, zero foreign-key/vector anomalies, and a safe monotonic allocator.
 
-The global-default follow-on release candidate passes 796 tests, client consent/cancellation interaction coverage, full type/lint/build checks, adversarial closure, documentation privacy/structure validation, and a zero-vulnerability production dependency audit. This is release-candidate evidence until the follow-on GitHub integration and production smoke are complete.
+The global-default follow-on passes 796 tests, client consent/cancellation interaction coverage, full type/lint/build checks, adversarial closure, documentation privacy/structure validation, and a zero-vulnerability production dependency audit. PR #12 merged to `main`, and the guarded production release passed verified backup, full release gates, authenticated health, strict Anthropic/Gemini checks, route/UI presence, and Recall timer preservation. The global preference remains off; existing provider approvals were preserved without modification.
 
 Canonical implementation evidence lives in the repository under `docs/feature-council/F08-manual-content-notes/`. Public wiki publication intentionally summarizes the current product contract instead of copying private operational evidence or every internal review artifact.
 
