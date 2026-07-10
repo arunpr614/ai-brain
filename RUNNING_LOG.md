@@ -28770,3 +28770,90 @@ None for the web release. Android device certification and real assistive-techno
 - **Working tree:** Dirty only with intended implementation, documents, screenshots, tests, deploy/env updates, and append-only log entries.
 - **Deployed/runtime state:** Production unchanged; local production artifact stopped after synthetic evidence except the current localhost verification server.
 - **Next milestone:** Green documentation/review gate and intentional GitHub PR.
+
+---
+
+## 2026-07-10 22:46 - Note Focus Mode Merged, Hotfixed, Enabled, and Production-Verified
+
+**Entry author:** AI agent (Codex) · **Triggered by:** Autonomous completion of Arun's Note Focus Mode implementation, GitHub publication, production release, and documentation objective.
+
+### Planned since last entry
+
+Complete the final adversarial/privacy/documentation gates, publish and merge the feature package, deploy with Focus off, validate the exact production entry/recovery boundary, enable only after that smoke passes, verify production read-only behavior and operations, then reconcile reports, wiki, and the append-only log.
+
+### Done
+
+- Sanitized machine-specific paths from the Note Focus feature package and reran documentation generation, privacy, structure, coverage, smoke, and whitespace checks successfully.
+- Completed the implementation adversarial review. It issued a conditional guarded-web GO with no P0 finding and retained honest residuals for physical Android, real assistive technology, deterministic native undo, and deliberately injected browser-storage failures.
+- Committed the 54-file implementation/report/wiki package as `07bbc29`, pushed `feat/note-focus-mode`, opened PR #15, waited for its required Agent documentation check to pass, promoted it, and merged it to `main` at `e2b44a2294e5aab6291e4e87e6f374ce8c4bb554`.
+- Updated a clean main worktree to the exact merge commit, installed dependencies with zero audit findings, and ran the guarded production deploy with the existing manual-note and completed Recall flags preserved while `NOTE_FOCUS_MODE_ENABLED` remained disabled.
+- The first deploy created a verified SQLite backup, repeated 813 passing tests, built/synced the standalone artifact, rebuilt native dependencies, restarted `brain`, and passed authenticated health, strict Anthropic/Gemini provider checks, and webhook reachability.
+- The exact flag-off deep-link smoke found a real integration defect before enablement: the auth proxy copied `tab=notes&note_mode=focus` beside `/unlock` while `next` contained only the item pathname. A successful unlock would lose the requested query before the item page could validate it.
+- Kept Focus disabled, added a proxy regression that requires the complete pathname/query inside `next` with no duplicate unlock query, passed 24 focused proxy tests plus type/lint/diff checks, opened PR #16, and merged it at `6858529ef179a51442d319c6c58e5ace79757619`.
+- Deployed the exact final main tree with Focus still off. The full gate now passed 814 tests across 92 suites. A transient SSH connection refusal occurred only at the final provider-check step after authenticated health had passed; SSH immediately recovered and the strict providers/webhook/service checks were rerun separately and passed.
+- Proved the corrected signed-out deep link now redirects to `/unlock` with the complete item path and Focus query encoded inside `next`.
+- Backed up the restricted production environment file, set `NOTE_FOCUS_MODE_ENABLED=1`, and restarted `brain`.
+- Ran read-only authenticated server-side production smoke with an ephemeral in-process session and no note-content output:
+  - ordinary Notes rendered;
+  - the Focus control and Focus route were present;
+  - missing-tab Focus canonicalization passed;
+  - source-reading Focus precedence removed the note marker;
+  - Settings retained **Include in AI & connections by default**.
+- Final operations checks passed: authenticated health 200, strict Anthropic enrichment/Ask, Gemini embeddings, unauthenticated webhook 401, `brain` active, Recall timer enabled/active, and Focus flag enabled.
+- Stopped the isolated local production server. No production note, note policy, AI default, provider consent, or item row was created or changed.
+
+### Deployed / Released
+
+- Feature package: [PR #15](https://github.com/arunpr614/ai-brain/pull/15), merge `e2b44a2`.
+- Release hotfix: [PR #16](https://github.com/arunpr614/ai-brain/pull/16), merge/final production main `6858529`.
+- Production: `https://brain.arunp.in` with Note Focus enabled.
+- Release database backups include the verified predeploy snapshots from both guarded artifact cycles plus the restricted pre-enable environment backup.
+
+### Cross-lane notes
+
+- The user's **Include in AI & connections** request remains a global Settings default for first-save/recreated notes and is preserved in production. Focus does not change it.
+- Production interaction claims remain bounded: the complete hydrated browser/history/visual matrix uses the locally built production artifact and synthetic database; production itself was verified through authenticated read-only server-rendered route/control/canonicalization checks because no user PIN/session was available to the selected browser.
+- Android keyboard/system Back/TalkBack, real screen-reader speech, and deterministic native undo remain explicit post-release evidence items, not claimed passes.
+
+### Learned
+
+- Guarded flag-off release smoke caught an auth-boundary defect that item-page unit/integration tests could not see because the proxy intercepts unauthenticated requests first.
+- Deep-link recovery belongs to the authentication contract: `next` must carry pathname plus query as one value, and the unlock URL must not retain duplicate top-level query state.
+- A health-checked application can coexist with a transient operator-channel SSH refusal; rerun the failed poststep and prove service/provider state instead of repeating or misclassifying the release.
+- Production authenticated smoke can remain read-only and avoid secret/content output by deriving a short-lived session only inside the remote process and printing assertion labels, not credentials or response bodies.
+
+### Documents created or updated this period
+
+- Added the timestamped implementation adversarial review under `docs/feature-council/note-focus-mode/validation/`.
+- Updated Note Focus README, tracker, decision log, QA, traceability, release/rollback, detailed Markdown/HTML report, canonical Manual Content Notes wiki source, and this running log with actual PR/merge/deploy evidence.
+- Added the proxy query-preservation implementation and regression in PR #16.
+
+### Current remaining to-do
+
+1. Run the final closeout documentation/privacy/diff gates.
+2. Commit/push/merge this production closeout branch.
+3. Publish the canonical GitHub Wiki with remote-SHA concurrency protection and fresh-clone privacy/structure/byte comparison.
+4. Verify final production/main/wiki state and complete the active goal.
+
+### Open questions / decisions needed
+
+None for the guarded web release. Device/AT certification remains a separately evidenced follow-up.
+
+### Session self-critique
+
+- The initial production smoke assertion accidentally allowed a failed matcher to include a large server-rendered HTML response in local command output. No credential was printed, and subsequent smokes used sanitized boolean assertions only; future production assertion helpers should never attach response bodies to errors.
+- The canonical deploy script rebuilds native dependencies on every release, making the narrow hotfix rollout slow. That is operationally safe but worth optimizing separately with integrity-checked native artifact reuse.
+
+### Action items for the next agent
+
+1. Treat `6858529` as the released application baseline and keep Focus enabled unless a rollback trigger occurs.
+2. Do not rewrite prior running-log entries; append only.
+3. Preserve the verified web/device-evidence boundary in future documentation.
+
+### State snapshot
+
+- **Current phase / version:** Note Focus Mode production release complete; documentation/wiki closeout in progress.
+- **Active branch:** `codex/note-focus-release-closeout` from final main `6858529`.
+- **Working tree:** Dirty only with intended production closeout documentation.
+- **Deployed/runtime state:** Production healthy; Focus enabled; strict providers pass; Recall timer enabled/active; AI default behavior preserved.
+- **Next milestone:** Merge closeout docs, publish/verify GitHub Wiki, and complete the goal.

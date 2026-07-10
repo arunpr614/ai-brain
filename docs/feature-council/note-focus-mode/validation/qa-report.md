@@ -1,4 +1,4 @@
-# Note Focus Mode — QA and Release-Candidate Report
+# Note Focus Mode — QA and Production Release Report
 
 Date: 2026-07-10
 Scope: isolated synthetic database and generated note content only
@@ -8,7 +8,7 @@ Scope: isolated synthetic database and generated note content only
 | Gate | Result |
 |---|---|
 | Focused unit/component tests | Pass |
-| Full repository tests | Pass — 813 tests, 92 suites |
+| Full repository tests | Pass — 814 tests, 92 suites after production-smoke hotfix |
 | ESLint | Pass |
 | TypeScript | Pass |
 | Diff whitespace | Pass |
@@ -53,6 +53,23 @@ Visual comparisons:
 - Focus-only rollback passed with `NOTE_FOCUS_MODE_ENABLED=0` and restart.
 - Previous artifact `870dc5ab3c9294ba749e218831fcb922098b447d` installed dependencies, built, started on a separate port, loaded the synthetic note, exposed no Focus button, and retained the requested AI/connections preference UI.
 - The old artifact predictably restores the known pre-feature duplicate responsive controllers (two DOM textareas, one visible). This is acceptable only as an emergency structural rollback and is recorded honestly.
+
+## Production gate
+
+| Scenario | Result |
+|---|---|
+| GitHub integration | PR #15 merged feature; PR #16 merged signed-out deep-link fix |
+| Final deployed main | `6858529ef179a51442d319c6c58e5ace79757619` |
+| Flag-off first deploy | Pass; backup, 813 tests, build, restart, health, strict providers |
+| Flag-off deep link | Initial smoke found query loss; Focus remained disabled; fixed before enablement |
+| Corrected gate | Pass — 814 tests, build, sync, restart, authenticated health |
+| Deliberate enablement | `NOTE_FOCUS_MODE_ENABLED=1`; restricted env backup/rewrite and restart |
+| Authenticated Notes/Focus | Ordinary Notes, Focus control, Focus route, canonicalization, and source precedence pass |
+| AI default regression | Settings markup contains **Include in AI & connections by default** |
+| Operations | Strict Anthropic/Gemini checks, webhook 401, service active, Recall timer enabled/active |
+| Production mutations | None; read-only smoke used an ephemeral in-process session and printed no note content |
+
+The browser interaction matrix remains the local production-build evidence because no user PIN/session was available to the selected browser. Production verification therefore claims authenticated route/control/server-rendered behavior and operations health, not a second pixel comparison or a second native undo proof.
 
 ## Residuals
 
