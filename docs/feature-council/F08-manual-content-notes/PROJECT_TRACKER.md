@@ -21,7 +21,7 @@
 | Production-line integration | Coordinator | Complete | True merge `a50ba82`; Recall source/migrations 018–020 retained |
 | Implementation | Coordinator | Complete | Schema, API, editor, search, AI/Related, privacy, vector audit/repair, rollout flags |
 | Validation | Coordinator + QA | Complete | 785 tests, build/lint/type/audit, browser/design, adversarial disposition, snapshot rehearsal |
-| Documentation/wiki | Coordinator | Complete | Canonical commit `463c56f`; wiki commit `70f6fa8`; fresh clone matches all 63 Markdown files |
+| Documentation/wiki | Coordinator | Complete | Canonical release commit `463c56f`; main-status closeout `a813c2e`; final wiki `a9c1214`; fresh clone matches all 63 Markdown files |
 | Release | Coordinator | Complete | GitHub PR, backup, controlled deploy, exact repair, production smoke/cleanup |
 
 ## Milestones

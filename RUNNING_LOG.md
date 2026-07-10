@@ -28249,3 +28249,14 @@ Integrate the attested production source without flattening Recall history, impl
 - Fresh-clone privacy and structure checks passed with 63 required/actual/reachable pages, and the fresh clone matched `docs/wiki/` byte-for-byte.
 - Verified the rendered public Manual Content Notes page exposes the current production SHA, product contract, privacy boundary, and production release evidence.
 - GitHub PR #10 is ready, mergeable, and its Agent documentation validation check is green.
+
+### Main integration closeout
+
+- Merged PR #10 to `main` as `b5910b250ea4de62bae7af2059324786a3e23410` after its required Agent documentation check passed.
+- Created the isolated closeout branch from the updated `main`, changed the feature code status from Branch-only to Main, and opened PR #11 for that documentation-only reconciliation.
+- Republished the one-line catalog correction from wiki base `70f6fa8` as `a9c1214` with the same fetch/compare concurrency guard.
+- A second fresh-clone privacy and structure validation passed with all 63 pages reachable, and canonical versus wiki content remained byte-identical.
+
+### Current remaining to-do
+
+None after PR #11 validation and merge. Production, `main`, canonical documentation, and the GitHub Wiki are reconciled.
