@@ -2,8 +2,14 @@
 
 Date: 2026-07-10 IST
 Revision: 2
-Status: revised after second adversarial review; not yet executed
+Status: executed 2026-07-10; canonical documentation and GitHub Wiki published
 Primary audience: AI agents and engineers working on AI Brain
+
+Execution records:
+
+- Canonical documentation commit: `cc524b23d7dde343751351476efa264f18ceaa95`
+- Wiki commit: `dab9267124b55571f03ad56c6776c6827723229a`
+- Publication report: `docs/agent-docs/wiki-publication-report.md`
 
 ## 1. Outcome
 
