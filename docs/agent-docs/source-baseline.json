@@ -1,0 +1,16 @@
+{
+  "generatedAt": "2026-07-10T10:02:08Z",
+  "defaultBranch": "main",
+  "defaultBranchSha": "2b4db9540d0b76ee6d3aa2a9da5f788b69a8d02a",
+  "worktreeBranch": "codex/ai-brain-agent-docs-wiki",
+  "worktreeSha": "8178117c80923e5724e355fb2684cbc836013d39",
+  "worktreeDivergence": {
+    "mainOnlyCommits": 12,
+    "worktreeOnlyCommits": 16
+  },
+  "productionSha": null,
+  "productionEvidence": null,
+  "productionStatus": "unknown",
+  "productionNotes": "Public records verify deployments of multiple revisions, including UX v2 source through 60d670741522a25db33545ee23fc2881774347e2 and later Recall operational updates, but no single public-safe record proves the complete current production tree SHA.",
+  "wikiBaseSha": "c149c22c002cbcc0174bb6ab702d6e4e763a1986"
+}
