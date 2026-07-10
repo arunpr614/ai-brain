@@ -21,7 +21,7 @@
 | Production-line integration | Coordinator | Complete | True merge `a50ba82`; Recall source/migrations 018–020 retained |
 | Implementation | Coordinator | Complete | Schema, API, editor, search, AI/Related, privacy, vector audit/repair, rollout flags |
 | Validation | Coordinator + QA | Complete | 785 tests, build/lint/type/audit, browser/design, adversarial disposition, snapshot rehearsal |
-| Documentation/wiki | Coordinator | Complete | Canonical commit `463c56f`; wiki commit `70f6fa8`; fresh clone matches all 63 Markdown files |
+| Documentation/wiki | Coordinator | Complete | Canonical release commit `463c56f`; main-status closeout `a813c2e`; final wiki `a9c1214`; fresh clone matches all 63 Markdown files |
 | Release | Coordinator | Complete | GitHub PR, backup, controlled deploy, exact repair, production smoke/cleanup |
 
 ## Milestones
@@ -37,10 +37,11 @@
 | M6 | Search, AI, related/graph integration | Complete | Provenance, consent, opt-out, convergence, stale-job, and cleanup tests pass |
 | M7 | Release readiness | Complete | Verified backup copy, snapshot migration, exact audit/repair, rollback gates, and 785-test build pass |
 | M8 | Production release | Complete | Synthetic end-to-end smoke and cleanup pass; health, providers, and Recall timer stable |
+| M9 | Publication and main integration | Complete | Wiki fresh-clone verification passed; PR #10 merged to `main` at `b5910b2` |
 
 ## Current blockers
 
-Only final PR integration remains. Production feature behavior and documentation have no open release blocker.
+None. Production feature behavior, public documentation, and main integration have no open release blocker.
 
 ## Release rule
 

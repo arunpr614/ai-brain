@@ -8,9 +8,12 @@ Result: Passed
 | Artifact | Revision |
 |---|---|
 | Application branch | `codex/manual-content-notes` |
+| Main integration | PR #10, merge commit `b5910b250ea4de62bae7af2059324786a3e23410` |
 | Canonical documentation commit | `463c56ffa8293e2b6d37d6084bea9b2d5472d03c` |
 | Wiki base before publication | `a9f27341fd48e88c6c9606a420d9b428dd9cc668` |
-| Published wiki commit | `70f6fa8c041bf3f86ca67129ce5240d2d253af2a` |
+| Initial production wiki commit | `70f6fa8c041bf3f86ca67129ce5240d2d253af2a` |
+| Canonical main-status closeout commit | `a813c2eb6421c854d0489779ef20d5622305e92e` |
+| Final published wiki commit | `a9c1214b7a19c47bba5248998d207e95dd84fa18` |
 | Verified production application tree | `8654f293d0f8615617df883e4703c0ca098a6029` |
 
 ## Delivered documentation
@@ -33,6 +36,7 @@ Result: Passed
 | Fresh-clone privacy and structure checks | Passed at `70f6fa8c041bf3f86ca67129ce5240d2d253af2a` |
 | Canonical versus fresh-clone byte comparison | Passed; no differences |
 | Rendered Manual Content Notes page | Passed; current production SHA, product contract, privacy boundary, and release evidence visible |
+| Post-merge catalog reconciliation | Passed; feature code status is Main and fresh clone again matches canonical source |
 
 ## Safety result
 
