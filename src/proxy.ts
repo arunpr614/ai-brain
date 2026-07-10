@@ -148,9 +148,11 @@ function unauth(req: NextRequest, pathname: string) {
       { status: 401, headers: { "cache-control": "no-store" } },
     );
   }
+  const requestedPath = `${pathname}${req.nextUrl.search}`;
   const url = req.nextUrl.clone();
   url.pathname = "/unlock";
-  url.searchParams.set("next", pathname);
+  url.search = "";
+  url.searchParams.set("next", requestedPath);
   url.searchParams.set("reason", "session-expired");
   return NextResponse.redirect(url);
 }
