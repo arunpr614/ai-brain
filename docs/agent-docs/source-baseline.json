@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-11T05:45:00Z",
+  "generatedAt": "2026-07-11T07:30:00Z",
   "defaultBranch": "main",
   "defaultBranchSha": "23868faf13c8e3d0821715e6f5d0e3d2af1e1a34",
   "worktreeBranch": "docs/definitive-project-wiki",
@@ -15,5 +15,11 @@
   "featureCouncilArtifactBranch": "codex/ai-brain-feature-council-20260628",
   "featureCouncilArtifactSha": "9de8de87de915e874e8290aa556e2b6772d6fabf",
   "featureCouncilResearchEvidenceDate": "2026-06-28",
-  "wikiBaseSha": "3d578c3f66e61de3f124a855253e713758f6a49b"
+  "wikiBaseSha": "3d578c3f66e61de3f124a855253e713758f6a49b",
+  "publicationRepositoryPr": "https://github.com/arunpr614/ai-brain/pull/19",
+  "publicationRepositorySourceSha": "5f001e94878a9064224ccb76cf5274f288241b36",
+  "publicationRepositoryMergeSha": "0b1cb475bb179626e9357d6f427ef2a2345ee679",
+  "publishedWikiContentSha": "8909215124883e5b0d24a09bc3bec0ec6ff79b83",
+  "publishedWikiSha": "88a3520038703108a0533501c7a384c6def7b74e",
+  "publicationVerifiedAt": "2026-07-11T07:30:00Z"
 }

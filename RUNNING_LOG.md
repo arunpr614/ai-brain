@@ -29081,3 +29081,60 @@ None. Any remote concurrency change or protected-branch restriction will be trea
 - **Working tree:** Dirty only with intended documentation, evidence, generator/validator, and append-only log changes.
 - **Deployed/runtime state:** Unchanged; latest verified deployed application baseline remains `6858529`.
 - **Next milestone:** Adversarial closure and repository pull request.
+
+---
+
+## 2026-07-11 12:42 - Definitive Project Wiki Published and Verified
+
+**Entry author:** AI agent (Codex) · **Triggered by:** Completion of adversarial closure, repository publication, separate-wiki publication, and live verification.
+
+### Planned since last entry
+
+Close the adversarial review, publish and merge the canonical wiki source through the normal repository process, synchronize the separate wiki without rewriting history, verify a fresh clone and live rendering, and replace candidate-state records with an auditable final handoff.
+
+### Done
+
+- Received final GO decisions from the product/QA, feature-status, security/privacy, and adversarial review lanes. The adversarial report records closure of all P1/P2 findings, including the plural-screenshot privacy-policy blind spot.
+- Published the canonical source through `docs/definitive-project-wiki`: source commit `5f001e9`, rationale commit `c555872`, Mermaid refinement `4c91e68`, and exact 37-record idea-catalog refinement `4f583d0`.
+- Opened repository pull request [#19](https://github.com/arunpr614/ai-brain/pull/19), observed the required `validate` check pass, and completed a normal merge to `main` as `0b1cb475bb179626e9357d6f427ef2a2345ee679`.
+- Re-fetched the separate wiki and required both local `HEAD` and `origin/master` to equal the original audited `3d578c3f66e61de3f124a855253e713758f6a49b` baseline before copying.
+- Published all 84 canonical pages normally as wiki commit `8909215124883e5b0d24a09bc3bec0ec6ff79b83`, then published the final changelog as immediate successor `88a3520038703108a0533501c7a384c6def7b74e`; no force or history rewrite was used.
+- Created final closeout branch `docs/definitive-project-wiki-closeout` and pull request [#20](https://github.com/arunpr614/ai-brain/pull/20). The pull request's GitHub history is the authoritative closeout merge record and avoids a self-referential documentation commit.
+- Converted the QA verdict to **GO — published and verified**, finalized the delivery report and baseline metadata, and regenerated the 84-row page audit against the original wiki baseline.
+
+### Verification results
+
+- Final canonical checks passed: `npm run check:agent-docs`, `npm run smoke:agent-docs`, `npm run lint`, `npm run typecheck`, and `git diff --check`.
+- The definitive candidate's full application run passed 814 tests in 92 suites with zero failures/skips; the closeout changes only documentation and audit metadata.
+- Fresh wiki clone resolved to exact final commit `88a3520038703108a0533501c7a384c6def7b74e`; all 84 pages were byte-equal to `docs/wiki/`, 84/84 were reachable, and the privacy scan returned zero findings.
+- Live HTTP verification passed for 82/82 user-facing wiki content URLs and 16/16 unique external evidence/prototype URLs.
+- Live GitHub visual inspection passed for Home, five-group sidebar, footer, Feature Catalog, Ideas Catalog, System Architecture, Browser Extension, and historical FCP-003 UX v2. Home, architecture, and historical Mermaid diagrams rendered; the wide Feature Catalog remained fully reachable through horizontal scrolling.
+
+### Conflicts resolved
+
+- Current-main implementation evidence remains pinned to `23868faf`; it is not relabeled as deployed evidence.
+- The latest verified deployed application remains separately pinned to `6858529`; this documentation publication did not change runtime.
+- All 63 prior wiki pages and stable URLs were preserved, with 21 additions; the 44 dated Feature Council pages remain explicitly historical and cannot establish current implementation.
+- The machine ledger retains 46 feature records while the public feature catalog groups them into 45 user-friendly capability rows; the public ideas catalog maps one-to-one to all 37 non-current evidence records.
+
+### Deployed / Released
+
+- Repository documentation: merged through PR #19 to `main` at `0b1cb475bb179626e9357d6f427ef2a2345ee679`.
+- GitHub Wiki: published at <https://github.com/arunpr614/ai-brain/wiki>, final wiki commit `88a3520038703108a0533501c7a384c6def7b74e`.
+- Application runtime: unchanged; latest verified deployed tree remains `6858529ef179a51442d319c6c58e5ace79757619`.
+
+### Final handoff
+
+- Canonical editable wiki source: `docs/wiki/`; published mirror: the separate `ai-brain.wiki.git` repository.
+- Start with `AI-Agent-Start-Here`, then use `Source-Baselines-and-Status`, `Feature-Catalog`, `Ideas-and-Exploration-Catalog`, and the architecture/operations maps appropriate to the task.
+- For future publication, regenerate the inventories/audits, run every documentation/privacy/structure/drift gate, re-fetch and compare the wiki remote before copying, push normally, verify a fresh clone byte-for-byte, and inspect live rendering.
+- Rollback uses a new normal revert commit in the affected repository. Do not force-push or delete prior wiki history.
+- No user decision or unresolved blocker remains.
+
+### State snapshot
+
+- **Current phase / version:** Definitive project wiki published and verified; final closeout carried by PR #20.
+- **Canonical repository state:** Documentation source merged at `0b1cb475`; closeout records on `docs/definitive-project-wiki-closeout` / PR #20.
+- **Published wiki state:** `master` at `88a3520`; 84 pages; fresh-clone, privacy, structure, live URL, and rendered-page QA green.
+- **Deployed/runtime state:** Unchanged at latest verified application baseline `6858529`.
+- **Next milestone:** Routine maintenance only; no remaining action for this goal.
