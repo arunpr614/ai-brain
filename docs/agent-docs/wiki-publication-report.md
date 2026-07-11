@@ -1,5 +1,7 @@
 # AI Brain Agent Wiki Publication Report
 
+> **Historical publication record.** This report describes its dated baseline. Current implementation and runtime baselines are maintained in `source-baseline.json` and `docs/wiki/Source-Baselines-and-Status.md`.
+
 Date: 2026-07-10 IST
 Result: Passed
 

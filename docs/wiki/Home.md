@@ -1,49 +1,46 @@
-# AI Brain Agent Documentation
+# AI Brain
 
-Purpose: Entry point for understanding and changing AI Brain safely.
-Audience: AI agents and engineers.
-Verified against: `2b4db9540d0b76ee6d3aa2a9da5f788b69a8d02a`, `8178117c80923e5724e355fb2684cbc836013d39`, and production `8654f293d0f8615617df883e4703c0ca098a6029`.
-Runtime evidence through: 2026-07-10; production application tree verified at `8654f293d0f8615617df883e4703c0ca098a6029`.
-Last reviewed: 2026-07-10.
+Purpose: Orient readers to the current product, evidence model, architecture, and documentation paths.
+Audience: AI agents, engineers, product/design collaborators, and maintainers.
+Verified against: `23868faf13c8e3d0821715e6f5d0e3d2af1e1a34`.
+Runtime evidence through: 2026-07-10 at deployed application `6858529ef179a51442d319c6c58e5ace79757619`; runtime evidence remains feature-specific.
+Last reviewed: 2026-07-11.
 Owner: AI Brain maintainer.
 
-AI Brain is a single-user personal knowledge system for capturing material, organizing it, enriching it with AI, searching it, and asking cited questions across a private library. It has a Next.js web application, SQLite storage, Android and browser-extension clients, Telegram capture, and a guarded Recall synchronization subsystem.
+AI Brain is a private, single-owner knowledge system for capturing material, preserving source provenance, enriching it with AI, organizing it, finding it through lexical and semantic retrieval, and asking cited questions across the saved library. Parts of the UI use the alias **AI Memory**.
 
-## Start Here
+## Start here
 
-1. Read [Agent Onboarding](Agent-Onboarding) before running commands.
-2. Read [Source Baselines and Status](Source-Baselines-and-Status) before deciding whether a feature is current.
-3. Use the [Feature Catalog](Feature-Catalog) for product, code, and runtime status.
-4. Read [System Architecture](System-Architecture) and [Data Model](Data-Model) before cross-cutting changes.
-5. Check [Command Safety](Command-Safety) before executing any script.
-6. Use [Agent Workflows](Agent-Workflows) and [Troubleshooting](Troubleshooting) for task-specific guidance.
+1. Read [AI Agent Start Here](Agent-Onboarding).
+2. Confirm [Source Baselines and Status](Source-Baselines-and-Status).
+3. Find the capability in the [Feature Catalog](Feature-Catalog).
+4. Read its detailed feature page and [Feature Architecture](Feature-Architecture).
+5. Check [Command Safety](Command-Safety) before running repository scripts.
 
-## Documentation Model
+## Current product
 
-The canonical public documentation is versioned under `docs/wiki/` in the application repository. The GitHub Wiki is published from those files. Changes should begin in the canonical files, pass validation, and then be copied to the wiki.
+Current main contains web, Android, browser-extension, Telegram, and guarded Recall entry paths; SQLite persistence; capture provenance and repair; AI enrichment; full-text, semantic, and hybrid retrieval; cited Ask conversations; organization; attached My notes; exports; backups; and owner-oriented operations.
 
-Sensitive operations are deliberately split out. Private owner runbooks are not distributed with a clone. When they are unavailable, report that limitation and stop sensitive work rather than reconstructing commands from historical plans.
+Several capabilities are deliberately not current product behavior. Official caption recovery and owned-media speech-to-text are Inactive. The full Evidence Scan, graph UI, Reading Studio, Trust Center, spaced repetition, Obsidian sync, and fully offline mobile library are Planned; other ideas are separately Explored, Deferred, Rejected or Superseded. See [Ideas and Exploration](Ideas-and-Exploration-Catalog).
 
-## Truth Rules
+## Architecture at a glance
 
-- Code presence proves implementation, not production deployment.
-- A migration proves schema support, not a complete product feature.
-- A tracker proves intent or historical status, not current runtime state.
-- `origin/main` and the documentation worktree have diverged; neither contains the other.
-- The current hosted application was deployed from `8654f293d0f8615617df883e4703c0ca098a6029`; feature-specific runtime status still requires its own dated evidence.
-- Unknown state is represented explicitly.
+```mermaid
+flowchart TB
+  clients["Web, Android, extension, Telegram, Recall"] --> app["Next.js pages, actions, and APIs"]
+  app --> domain["Capture, notes, search, Ask, organization"]
+  domain --> db["SQLite, FTS5, sqlite-vec"]
+  app --> workers["Enrichment, transcript, and note workers"]
+  workers --> providers["Generation and embedding providers"]
+```
 
-## Key Areas
+The standalone Node service, workers, schedules, and one SQLite store form a compact single-owner deployment. See [Architecture Overview](System-Architecture), [Technology Stack](Technology-Stack), and [Data Model](Data-Model).
 
-- [AI Brain Feature Council Research](Feature-Council-Research)
-- [Capture and Ingestion](Capture-and-Ingestion)
-- [Search, RAG, and Ask](Search-RAG-and-Ask)
-- [Enrichment and AI Providers](Enrichment-and-AI-Providers)
-- [Mobile, Extension, and Pairing](Mobile-Extension-and-Pairing)
-- [Security, Privacy, and Redaction](Security-Privacy-and-Redaction)
-- [Deployment and Operations](Deployment-and-Operations)
-- [Documentation Maintenance](Documentation-Maintenance)
+## Truth rules
 
-The Feature Council section is a dated planning and research record. Its pages distinguish current planning artifacts from historical drafts and do not claim production implementation or runtime verification.
-
-Pinned source entrypoints: [application routes](https://github.com/arunpr614/ai-brain/blob/8178117c80923e5724e355fb2684cbc836013d39/src/app), [database client](https://github.com/arunpr614/ai-brain/blob/8178117c80923e5724e355fb2684cbc836013d39/src/db/client.ts), and [package scripts](https://github.com/arunpr614/ai-brain/blob/8178117c80923e5724e355fb2684cbc836013d39/package.json).
+- Code and tests prove implementation, not production deployment.
+- A migration proves storage support, not a complete user feature.
+- Planning and prototypes never prove current behavior.
+- Availability, implementation status, confidence, and runtime evidence are separate.
+- Unknown is a valid evidence result.
+- `docs/wiki/` is canonical; the GitHub Wiki is its published mirror.

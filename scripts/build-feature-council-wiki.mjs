@@ -179,14 +179,14 @@ function generatePage(entry, source) {
     ? "None"
     : entry.successors.map((destination) => wikiLink(destination)).join(", ");
   const lifecycleLabel = {
-    current: "Current feature-council artifact",
-    historical: "Historical draft - do not implement",
-    review: "Review record",
+    current: "Latest revision within the 2026-06-28 planning package",
+    historical: "Superseded draft within the 2026-06-28 planning package - do not implement",
+    review: "Review record within the 2026-06-28 planning package",
   }[entry.lifecycle];
   const notice = {
-    current: "> **Current feature-council artifact.** This is planning evidence, not proof of production implementation or current runtime behavior.",
-    historical: `> **Historical draft - do not implement.** Use the current successor: ${successorLinks}.`,
-    review: `> **Review record.** These findings are preserved for traceability. Use the current successor: ${successorLinks}.`,
+    current: "> **Historical planning record from 2026-06-28.** This is the latest revision within that planning package. It is not proof of current implementation, deployment, or runtime behavior. Use the living [Feature Catalog](Feature-Catalog) for present status.",
+    historical: `> **Superseded planning draft - do not implement.** Use the later planning successor: ${successorLinks}. Then check the living [Feature Catalog](Feature-Catalog) for present status.`,
+    review: `> **Historical planning review.** These findings are preserved for traceability. Use the reviewed planning successor: ${successorLinks}. Then check the living [Feature Catalog](Feature-Catalog) for present status.`,
   }[entry.lifecycle];
 
   const metadata = [

@@ -1,58 +1,39 @@
 # Search, RAG, and Ask
 
-Purpose: Explain indexing, retrieval, answer generation, citations, and chat persistence.
-Audience: AI agents working on search, embeddings, retrieval, or Ask.
-Verified against: `2b4db9540d0b76ee6d3aa2a9da5f788b69a8d02a` and `8178117c80923e5724e355fb2684cbc836013d39`.
-Runtime evidence through: 2026-07-10 for exact note search, remote semantic indexing, Related, and Ask manual-note citation provenance at `8654f293d0f8615617df883e4703c0ca098a6029`.
-Last reviewed: 2026-07-10.
+Purpose: Explain lexical/vector retrieval, Related, cited Ask, chat persistence, and evidence boundaries.
+Audience: AI agents changing search, indexing, ranking, citations, or chat.
+Verified against: `23868faf13c8e3d0821715e6f5d0e3d2af1e1a34`.
+Runtime evidence through: 2026-07-10; strict provider and Ask boundaries were verified for the deployed release.
+Last reviewed: 2026-07-11.
 Owner: AI Brain maintainer.
 
-## Indexing
+**Overall status:** Implemented · **Confidence:** High for code/tests; runtime evidence is feature-specific
 
-After enrichment, content is divided into stable chunks. Embedding providers convert chunk text to vectors, and SQLite plus `sqlite-vec` stores text, row-id mappings, and embeddings. Embedding jobs track completion and failures independently from enrichment.
+The single owner needs to rediscover saved material and ask grounded questions without losing source scope. **Target user:** the single owner; maintainers support retrieval, provider and citation behavior.
 
-The manual-notes release candidate separates original content, AI digest, and My notes into source-aware chunks. Note FTS is synchronous with an accepted save; semantic indexing is asynchronous, generation-bound, and optional. Search de-duplicates all sources to one parent item and labels note matches explicitly.
+| Capability | Status | Boundary |
+|---|---|---|
+| Full-text search | Implemented | Items plus eligible attached-note exact text |
+| Semantic/hybrid search | Implemented | 768-dimensional vectors and reciprocal-rank fusion |
+| Related items | Implemented | Query-time similarity, not graph edges |
+| Scoped cited Ask | Implemented | Library, item, selection, tag, topic and collection scopes |
+| Chat persistence | Implemented | Single-owner threads/messages/citations |
+| Evidence Scan proposal | Planned | Scoped Ask/citations are adjacent implemented substrate; no verdict/snapshot/policy experience |
 
-Pinned source: [chunker](https://github.com/arunpr614/ai-brain/blob/8178117c80923e5724e355fb2684cbc836013d39/src/lib/chunk/index.ts), [embedding pipeline](https://github.com/arunpr614/ai-brain/blob/8178117c80923e5724e355fb2684cbc836013d39/src/lib/embed/pipeline.ts), and [retrieval](https://github.com/arunpr614/ai-brain/blob/8178117c80923e5724e355fb2684cbc836013d39/src/lib/retrieve/index.ts).
+## Runtime flow
 
-## Retrieval Modes
+FTS queries item/note indexes. Semantic search embeds a query and performs sqlite-vec KNN. Hybrid retrieval fuses lexical and vector ranks. Related computes item/source centroids with bounded eligible-note influence. Ask validates session, scope and provider, retrieves eligible chunks, builds a citation-constrained prompt, streams SSE, filters orphan citations and optionally persists messages.
 
-- Full-text search uses SQLite FTS for lexical matches.
-- Semantic search uses vector similarity for conceptual matches.
-- Hybrid retrieval combines signals and applies scope constraints.
-- Related items reuse item/chunk similarity in the worktree baseline.
+Attached-note eligibility is checked before prompt creation and persistence so revocation or a newer note generation cannot silently remain current evidence. Citation quality still depends on retrieval and model output.
 
-Scopes include the whole library, a single item, or selected/multiple items. Scope filtering must occur before or within retrieval, not only after results are returned.
+## User states
 
-## Ask Flow
+Search handles empty query, loading/processing, no results, partial provider/index availability and ranked success. Ask reports unavailable providers/scopes, limited-source warnings, streamed progress, citation parsing and persistence failures separately. A saved item may not be semantically ready until processing completes.
 
-1. Authenticate and validate the request and scope.
-2. Retrieve relevant chunks.
-3. Construct a bounded provider prompt with source identifiers.
-4. Stream answer events over SSE.
-5. Parse and validate citation markers.
-6. Persist thread/message history where requested.
+## Boundaries and change impact
 
-Manual-note chunks carry source epoch/version in prompts and citations. Eligibility is rechecked before prompt construction and before persistence, so opt-out, deletion, provider revocation, or a newer note generation cannot be silently persisted as current note-derived evidence.
+There is no source-kind policy UI, detailed rank explanation, claim-support verdict, retrieval snapshot or graph. Changes can affect chunks/schema, provider dimensions, note consent, Related, Ask citations and chat persistence. Begin with `src/lib/search/`, `retrieve/`, `related/`, `ask/`, search/Ask routes, `src/db/chunks.ts`/chat/notes and their tests.
 
-Pinned Ask source: [route](https://github.com/arunpr614/ai-brain/blob/8178117c80923e5724e355fb2684cbc836013d39/src/app/api/ask/route.ts), [generator](https://github.com/arunpr614/ai-brain/blob/8178117c80923e5724e355fb2684cbc836013d39/src/lib/ask/generator.ts), [SSE](https://github.com/arunpr614/ai-brain/blob/8178117c80923e5724e355fb2684cbc836013d39/src/lib/ask/sse.ts), and [citation parser](https://github.com/arunpr614/ai-brain/blob/8178117c80923e5724e355fb2684cbc836013d39/src/lib/ask/parse-citations.ts).
+API entrypoints are the search and Ask routes plus thread routes. Operational diagnosis must separate FTS state, vector generation, provider health, citation parsing and chat persistence.
 
-## Failure Modes
-
-- Missing chunks or embedding jobs produce weak semantic results.
-- Provider overload or configuration errors interrupt generation.
-- Citation markers may be malformed even when text generation succeeds.
-- Scope bugs can return no chunks or unrelated chunks.
-- Metadata-only captures may not provide enough evidence for an answer.
-- A disabled note rollout, missing provider acknowledgement, or stale note generation intentionally removes manual-note chunks from retrieval.
-
-Debug retrieval before changing prompts. Verify item state, chunk presence, embedding dimensions/provider, scope construction, retrieved chunks, SSE frames, and citation parsing separately.
-
-## Safe Verification
-
-```bash
-npm run typecheck
-npm test
-```
-
-Tests are isolated W1 fixture writes. Provider checks and live Ask benchmarks have separate command classifications and are not safe defaults.
+Protecting suites include search/retrieve/related index tests, embedding pipeline/factory/client/provider tests, Ask route/request/state/generator/SSE/citation tests and chat repository tests. Configuration covers search mode, generation/embedding provider/model/dimensions, note eligibility flags and scope. Browser session authentication protects Ask/chat; provider consent additionally protects attached-note use. Pinned evidence: [current retrieval source](https://github.com/arunpr614/ai-brain/tree/23868faf13c8e3d0821715e6f5d0e3d2af1e1a34/src/lib/retrieve).

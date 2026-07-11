@@ -1,19 +1,19 @@
 {
-  "generatedAt": "2026-07-10T10:02:08Z",
+  "generatedAt": "2026-07-11T05:45:00Z",
   "defaultBranch": "main",
-  "defaultBranchSha": "2b4db9540d0b76ee6d3aa2a9da5f788b69a8d02a",
-  "worktreeBranch": "codex/ai-brain-agent-docs-wiki",
-  "worktreeSha": "8178117c80923e5724e355fb2684cbc836013d39",
+  "defaultBranchSha": "23868faf13c8e3d0821715e6f5d0e3d2af1e1a34",
+  "worktreeBranch": "docs/definitive-project-wiki",
+  "worktreeSha": "23868faf13c8e3d0821715e6f5d0e3d2af1e1a34",
   "worktreeDivergence": {
-    "mainOnlyCommits": 12,
-    "worktreeOnlyCommits": 16
+    "mainOnlyCommits": 0,
+    "worktreeOnlyCommits": 0
   },
-  "productionSha": "8654f293d0f8615617df883e4703c0ca098a6029",
-  "productionEvidence": "docs/feature-council/F08-manual-content-notes/validation/PRODUCTION_RELEASE_2026-07-10.md",
+  "productionSha": "6858529ef179a51442d319c6c58e5ace79757619",
+  "productionEvidence": "docs/feature-council/note-focus-mode/validation/release-and-rollback.md",
   "productionStatus": "verified",
-  "productionNotes": "The hosted application was built and deployed from the clean 8654f29 tree. Authenticated health, strict provider checks, migrations through 023, Recall timer continuity, a content-free vector audit, and a cleaned synthetic note lifecycle were verified on 2026-07-10.",
+  "productionNotes": "The hosted application was built and deployed from the clean 6858529 tree with Note Focus enabled after a flag-off smoke and an authentication deep-link hotfix. Authenticated health, strict provider checks, Recall timer continuity, and read-only Focus route behavior were verified on 2026-07-10. A 2026-07-11 unauthenticated health probe returned the expected 401 and did not provide newer runtime evidence.",
   "featureCouncilArtifactBranch": "codex/ai-brain-feature-council-20260628",
   "featureCouncilArtifactSha": "9de8de87de915e874e8290aa556e2b6772d6fabf",
   "featureCouncilResearchEvidenceDate": "2026-06-28",
-  "wikiBaseSha": "dab9267124b55571f03ad56c6776c6827723229a"
+  "wikiBaseSha": "3d578c3f66e61de3f124a855253e713758f6a49b"
 }

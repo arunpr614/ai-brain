@@ -22,7 +22,7 @@ try {
   ));
   writeFileSync(join(docs, "feature-coverage-ledger.md"), table(
     ["Feature", "Product status", "Code status", "Runtime status", "User surface", "API/action entrypoint", "Core modules", "Data touched", "Jobs/scripts", "Verification", "Baseline SHA", "Known gaps"],
-    [["Home", "Shipped", "Main", "Deployed-verified", "/", "None", "src/app/page.tsx", "None", "None", "typecheck", sha, "None"]],
+    [["Home", "Implemented", "Main", "Deployed-verified", "/", "None", "src/app/page.tsx", "None", "None", "typecheck", sha, "None"]],
   ));
   writeFileSync(join(docs, "command-safety-registry.md"), table(
     ["Command", "Classification", "Network", "Writes", "Production", "Approval", "Evidence"],

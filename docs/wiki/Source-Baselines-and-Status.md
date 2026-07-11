@@ -1,43 +1,46 @@
 # Source Baselines and Status
 
-Purpose: Define the exact source revisions and status vocabulary used throughout this wiki.
-Audience: AI agents and release/documentation maintainers.
-Verified against: `2b4db9540d0b76ee6d3aa2a9da5f788b69a8d02a`, `8178117c80923e5724e355fb2684cbc836013d39`, and production `8654f293d0f8615617df883e4703c0ca098a6029`.
-Runtime evidence through: 2026-07-10; production application tree verified at `8654f293d0f8615617df883e4703c0ca098a6029`.
-Last reviewed: 2026-07-10.
+Purpose: Define authoritative revisions, verification scope, status, availability, and confidence vocabulary.
+Audience: AI agents, reviewers, and documentation/release maintainers.
+Verified against: `23868faf13c8e3d0821715e6f5d0e3d2af1e1a34`.
+Runtime evidence through: 2026-07-10 at `6858529ef179a51442d319c6c58e5ace79757619` for its dated verification scope.
+Last reviewed: 2026-07-11.
 Owner: AI Brain maintainer.
 
-## Recorded Baselines
+## Recorded baselines
 
 | Baseline | Revision | Meaning |
 |---|---|---|
-| Default branch | `2b4db9540d0b76ee6d3aa2a9da5f788b69a8d02a` | Latest fetched `origin/main` during documentation build |
-| Documentation worktree source | `8178117c80923e5724e355fb2684cbc836013d39` | UX v2 and Recall-oriented branch used for this documentation build |
-| Feature Council artifact source | `9de8de87de915e874e8290aa556e2b6772d6fabf` | Immutable source for the 44 planning and research documents published under Feature Council Research |
-| Wiki before Feature Council publication | `dab9267124b55571f03ad56c6776c6827723229a` | Published wiki base recorded before the research-category update |
-| Complete production application tree | `8654f293d0f8615617df883e4703c0ca098a6029` | Clean branch tree deployed and verified by authenticated health, strict provider checks, schema/audit evidence, and a cleaned synthetic note lifecycle |
+| Current application/documentation source | `23868faf13c8e3d0821715e6f5d0e3d2af1e1a34` | Latest verified `origin/main` for this wiki build |
+| Latest verified deployed application code | `6858529ef179a51442d319c6c58e5ace79757619` | Dated Note Focus release/hotfix tree; later repository commits are documentation closeout |
+| Existing wiki before this revision | `3d578c3f66e61de3f124a855253e713758f6a49b` | Eight-commit wiki baseline audited before editing |
+| Feature Council artifact source | `9de8de87de915e874e8290aa556e2b6772d6fabf` | Dated planning/research corpus, not product runtime |
 
-The default branch has 12 commits not present in the worktree baseline. The worktree baseline has 16 commits not present in the default branch. Neither is a descendant of the other.
+The former default-branch/worktree divergence is resolved in current main. Both historical `017` migrations now coexist with distinct full filenames; the runner tracks/applies full filenames lexicographically. Duplicate numeric prefixes remain technical debt, not an unmerged branch conflict.
 
-Default branch source: [main baseline](https://github.com/arunpr614/ai-brain/tree/2b4db9540d0b76ee6d3aa2a9da5f788b69a8d02a). Worktree source: [documentation baseline](https://github.com/arunpr614/ai-brain/tree/8178117c80923e5724e355fb2684cbc836013d39). Production source: [verified deployed tree](https://github.com/arunpr614/ai-brain/tree/8654f293d0f8615617df883e4703c0ca098a6029).
+## Status taxonomy
 
-Feature Council source: [planning artifact baseline](https://github.com/arunpr614/ai-brain/tree/9de8de87de915e874e8290aa556e2b6772d6fabf/docs/feature-council). Its research evidence date is 2026-06-28. These documents are planning evidence; they do not update the production runtime baseline.
+| Status | Meaning |
+|---|---|
+| Implemented | Reachable current code supports the documented behavior under stated availability conditions |
+| Partially implemented | Meaningful current behavior exists, but an important contract element is missing |
+| Experimental | Implemented but explicitly unstable/evaluation-oriented |
+| Feature-flagged | Material behavior is controlled by rollout configuration |
+| Inactive | Code exists but is deliberately unavailable or not wired |
+| Deprecated | Present but no longer recommended or scheduled for removal |
+| Explored | Research/design/prototype evidence without implementation commitment |
+| Planned | Explicit future intent without current implementation evidence |
+| Deferred | Intentionally postponed |
+| Rejected | Intentionally not pursued |
+| Superseded | Replaced by a later design or implementation |
+| Unknown | Evidence is insufficient |
 
-## Known Divergence
+Availability is `Default`, `Feature-flagged`, `Inactive`, or `Not applicable`. Confidence is High/Medium/Low evidence strength. Runtime evidence is separate and must be dated and scoped; a deployed tree does not prove every feature was end-to-end tested.
 
-Main contains later review-inbox, browser-selected-text, YouTube transcript recovery, provider-resilience, and production backfill work. The worktree contains UX v2, later capture-quality structures, topics/transcript segments, and Recall sync that are absent from the fetched main tree.
+## Staleness traps
 
-Migration number `017` is used for different changes on the two baselines. This is an active integration hazard. Do not merge migrations by filename or renumber them without a dedicated schema reconciliation plan and database-state evidence.
-
-## Status Dimensions
-
-Product status, code status, and runtime status are independent. Code presence alone never proves deployment. A tracker or package version never proves current runtime. Historical production evidence may verify one feature at an older source revision without proving the entire current production tree.
-
-## Staleness Traps
-
-- The root README describes an older product stage.
-- `package.json` reports `0.6.2` while later source and roadmaps exist.
-- Roadmap versions are document revisions and product lanes, not necessarily the deployed application version.
-- Branch commits may have been deployed without being merged to main.
-
-When evidence conflicts, retain the conflict and mark the runtime Unknown rather than choosing the newest-looking value.
+- The root README and package version describe older stages.
+- Roadmap version lanes record intent/history, not necessarily current product or runtime.
+- Historical Feature Council “current/approved” labels apply within the 2026-06-28 package only.
+- Provider/settings health is point-in-time.
+- Unknown should not be upgraded by inference.

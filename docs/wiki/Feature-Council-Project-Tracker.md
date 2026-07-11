@@ -5,13 +5,13 @@ Audience: Product, design, engineering, documentation maintainers, and AI agents
 Artifact source commit: `9de8de87de915e874e8290aa556e2b6772d6fabf`
 Audited application baseline: `2b4db9540d0b76ee6d3aa2a9da5f788b69a8d02a`
 Research evidence date: 2026-06-28.
-Lifecycle: Current feature-council artifact.
+Lifecycle: Latest revision within the 2026-06-28 planning package.
 Runtime verification: Not provided.
 Superseded by: None.
 Public disclosure: Reviewed and sanitized.
 Owner: AI Brain maintainer.
 
-> **Current feature-council artifact.** This is planning evidence, not proof of production implementation or current runtime behavior.
+> **Historical planning record from 2026-06-28.** This is the latest revision within that planning package. It is not proof of current implementation, deployment, or runtime behavior. Use the living [Feature Catalog](Feature-Catalog) for present status.
 
 Created: 2026-06-28 21:23 IST  
 Branch: `codex/ai-brain-feature-council-20260628`

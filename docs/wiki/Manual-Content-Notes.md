@@ -2,14 +2,18 @@
 
 Purpose: Explain the private Markdown note attached to each saved library item.
 Audience: AI agents, engineers, product collaborators, and operators maintaining item notes.
-Verified against: original release `8654f293d0f8615617df883e4703c0ca098a6029`, global-default integration `01721d1c2bbb686b9768d38c688352f78933205f`, and Note Focus production main `6858529ef179a51442d319c6c58e5ace79757619`.
+Verified against: current main `23868faf13c8e3d0821715e6f5d0e3d2af1e1a34`, original release `8654f293d0f8615617df883e4703c0ca098a6029`, global-default integration `01721d1c2bbb686b9768d38c688352f78933205f`, and Note Focus production main `6858529ef179a51442d319c6c58e5ace79757619`.
 Runtime evidence through: 2026-07-10 Note Focus guarded deployment, deep-link hotfix, deliberate enablement, authenticated read-only Notes/Focus/default-setting smoke, strict provider check, and scheduler/service health verification.
-Last reviewed: 2026-07-10.
+Last reviewed: 2026-07-11.
 Owner: AI Brain maintainer.
+
+**Status:** Feature-flagged and enabled in the verified release · **Confidence:** High · **Target user:** the single owner writing private context on an existing item
 
 ## Product Contract
 
 Every saved item can have one owner-authored **My notes** document. It is an attached layer, not another library item. Original material, AI digest, and My notes remain visibly and persistently separate.
+
+The user journey is item detail → My notes → empty editor or recovered draft → Write/Preview → local journal → autosave/manual save → optional versions/export/AI policy/Focus. Loading reconciles server and local journal state; success shows canonical generation/save state; network, session, journal and optimistic-conflict failures remain recoverable without silently replacing either version.
 
 The note uses canonical UTF-8 Markdown. The editor provides basic formatting controls, Write and safe Preview modes, explicit Save, autosave, offline-local recovery, conflict review, recent checkpoints, restore, clear, delete, recreate, and explicit note-only export. Opening an empty editor does not create a record.
 
@@ -26,6 +30,8 @@ While focused, the editor section has dialog semantics and an item-aware accessi
 `NOTE_FOCUS_MODE_ENABLED` controls only Focus presentation/history. The single responsive Notes host is a structural correction and requires the previous known-good artifact for emergency rollback.
 
 ## Data and No-Loss Model
+
+The architecture/runtime flow is mounted editor → browser journal → authenticated note API → compare-and-swap repository/revisions/FTS → optional consent-gated note-index worker → Search/Ask/Related.
 
 Migration 022 adds separate note state, current note, revision, idempotency receipt, semantic job, provider-consent, and note FTS tables. An item-scoped epoch/generation record survives note deletion as a content-free tombstone so delayed offline drafts cannot silently recreate deleted text.
 
@@ -72,6 +78,8 @@ Release evidence includes 785 passing tests, typecheck, lint, production build, 
 The global-default follow-on passes 796 tests, client consent/cancellation interaction coverage, full type/lint/build checks, adversarial closure, documentation privacy/structure validation, and a zero-vulnerability production dependency audit. PR #12 merged to `main`, and the guarded production release passed verified backup, full release gates, authenticated health, strict Anthropic/Gemini checks, route/UI presence, and Recall timer preservation. The global preference remains off; existing provider approvals were preserved without modification.
 
 The Note Focus follow-on passes 814 tests across 92 suites, production-build desktop/mobile/history/network/accessibility checks, both rollback rehearsals, and a zero-vulnerability production dependency audit. PR #15 delivered the feature package. The first flag-off production smoke caught signed-out query loss before enablement; PR #16 fixed the auth redirect and added regression coverage. Final production main `6858529` runs with Focus enabled and passes authenticated ordinary Notes, Focus control/route, canonicalization, source-reading precedence, AI-default presence, health, strict providers, webhook boundary, service, and Recall timer checks. No note content or privacy setting was mutated by the release smoke.
+
+Exact suites include item-note repository/route tests; note flags, journal, save queue, provider-policy, formatting/Markdown/navigation tests; note-index worker tests; AI-default API/component tests; and Focus history/isolation/session tests. Configuration is documented in [Configuration Reference](Configuration-Reference). Related explored ideas—richer history/diff, backlinks, annotations, synthesis, learning and append-to-existing-note clients—remain in [Ideas and Exploration](Ideas-and-Exploration-Catalog). Pinned evidence: [current notes source](https://github.com/arunpr614/ai-brain/tree/23868faf13c8e3d0821715e6f5d0e3d2af1e1a34/src/lib/notes).
 
 Canonical implementation evidence lives in the repository under `docs/feature-council/F08-manual-content-notes/`. Public wiki publication intentionally summarizes the current product contract instead of copying private operational evidence or every internal review artifact.
 

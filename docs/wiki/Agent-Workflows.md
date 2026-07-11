@@ -2,9 +2,9 @@
 
 Purpose: Provide repeatable, safety-scoped playbooks for common AI Brain tasks.
 Audience: AI agents and engineers implementing or debugging changes.
-Verified against: `2b4db9540d0b76ee6d3aa2a9da5f788b69a8d02a` and `8178117c80923e5724e355fb2684cbc836013d39`.
-Runtime evidence through: 2026-07-09; complete production tree SHA is Unknown.
-Last reviewed: 2026-07-10.
+Verified against: `23868faf13c8e3d0821715e6f5d0e3d2af1e1a34`.
+Runtime evidence through: 2026-07-10 at deployed application `6858529ef179a51442d319c6c58e5ace79757619`; workflow runtime evidence is task-specific.
+Last reviewed: 2026-07-11.
 Owner: AI Brain maintainer.
 
 ## Common Opening
@@ -27,7 +27,7 @@ Trace authentication, API version, origin/content-type policy, input size/schema
 
 ## Schema or Migration Design
 
-Stop before execution. Compare both baseline migration trees and deployed schema evidence. The conflicting `017` migrations require a dedicated reconciliation. Design idempotency, rollback/forward repair, index cost, backup requirements, and compatibility before writing migration SQL.
+Stop before execution. Current main contains both historical `017` migrations and applies them by full filename. Do not rename, renumber, merge, or assume numeric-prefix uniqueness. Design idempotency, rollback/forward repair, index cost, backup requirements, and compatibility before writing migration SQL.
 
 ## Capture Quality Debugging
 

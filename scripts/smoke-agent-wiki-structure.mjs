@@ -6,13 +6,20 @@ import { join, resolve } from "node:path";
 import { spawnSync } from "node:child_process";
 
 const pages = [
-  "Home.md", "_Sidebar.md", "Agent-Onboarding.md", "Product-Overview.md",
-  "Source-Baselines-and-Status.md", "Feature-Catalog.md", "System-Architecture.md",
-  "Manual-Content-Notes.md",
-  "Data-Model.md", "Capture-and-Ingestion.md", "Search-RAG-and-Ask.md",
-  "Enrichment-and-AI-Providers.md", "Mobile-Extension-and-Pairing.md",
-  "Security-Privacy-and-Redaction.md", "Command-Safety.md", "Deployment-and-Operations.md",
-  "Agent-Workflows.md", "Troubleshooting.md", "Documentation-Maintenance.md",
+  "Home.md", "_Sidebar.md", "_Footer.md", "Agent-Onboarding.md", "Product-Overview.md",
+  "Source-Baselines-and-Status.md", "Feature-Catalog.md", "Ideas-and-Exploration-Catalog.md",
+  "Manual-Content-Notes.md", "System-Architecture.md", "Feature-Architecture.md",
+  "Technology-Stack.md", "Repository-Map.md", "Data-Model.md", "APIs-and-Integrations.md",
+  "Library-and-Item-Management.md", "Capture-and-Ingestion.md",
+  "Capture-Quality-Review-and-Repair.md", "Organization-Tags-Topics-and-Collections.md",
+  "Search-RAG-and-Ask.md", "Enrichment-and-AI-Providers.md",
+  "Authentication-Sessions-and-Device-Pairing.md", "Mobile-Extension-and-Pairing.md",
+  "Browser-Extension.md", "Telegram-Capture.md", "Recall-Synchronization.md",
+  "Backups-and-Restore.md", "Security-Privacy-and-Redaction.md",
+  "Local-Development-and-Testing.md", "Configuration-Reference.md", "Command-Safety.md",
+  "Deployment-and-Operations.md", "Agent-Workflows.md", "Troubleshooting.md",
+  "Known-Limitations-and-Technical-Debt.md", "Glossary.md", "Documentation-Maintenance.md",
+  "Documentation-Changelog.md", "Feature-Page-Template.md", "Explored-Idea-Template.md",
 ];
 const root = mkdtempSync(join(tmpdir(), "agent-wiki-structure-"));
 const wiki = join(root, "wiki");
@@ -47,12 +54,14 @@ try {
         ...pages.filter((name) => name !== "_Sidebar.md").map((name) => `- [${name}](${name})`),
         `- [Feature Council Research](${sourceManifest.landingPage})`,
       ].join("\n"));
+    } else if (page === "_Footer.md") {
+      writeFileSync(target, `Verified against ${sha}. [Home](Home)\n`);
     } else if (page === "Feature-Catalog.md") {
-      writeFileSync(target, `${metadata}\n\n# Feature Catalog\n\n| Feature | Product status | Code status | Runtime status | User surface | API/action entrypoint | Core modules | Data touched | Jobs/scripts | Verification | Baseline SHA | Known gaps |\n|---|---|---|---|---|---|---|---|---|---|---|---|\n| Synthetic | Internal | Main | Unknown | None | None | None | None | None | None | ${sha} | None |\n`);
+      writeFileSync(target, `${metadata}\n\n# Feature Catalog\n\n| Feature | Status | Availability | Confidence | Runtime evidence | Detailed page | Verified baseline | Key boundary |\n|---|---|---|---|---|---|---|---|\n| Synthetic | Implemented | Default | High | Unknown | [Home](Home) | ${sha} | None |\n`);
     } else if (page === "System-Architecture.md") {
       writeFileSync(target, `${metadata}\n\n# Architecture\n\n\`\`\`mermaid\ngraph TD\n  A --> B\n\`\`\`\n`);
     } else {
-      writeFileSync(target, `${metadata}\n\n# ${page.replace(/\.md$/, "")}\n`);
+      writeFileSync(target, `${metadata}\n\n# ${page.replace(/\.md$/, "")}\n\nStatus and Confidence. Target user and user journey. Empty, Loading, Success, and Failure states. Architecture and runtime flow. Data storage and schema. API entrypoint. Security, privacy, and authentication. Configuration and feature flag. Tests and verification. Operational limitations and boundary. Related features and ideas. Pinned evidence.\n`);
     }
   }
 
@@ -62,7 +71,11 @@ try {
     `Artifact source commit: \`${sourceManifest.artifactSourceCommit}\``,
     `Audited application baseline: \`${sourceManifest.auditedApplicationBaseline}\``,
     `Research evidence date: ${sourceManifest.researchEvidenceDate}.`,
-    `Lifecycle: ${{ current: "Current feature-council artifact", historical: "Historical draft - do not implement", review: "Review record" }[entry.lifecycle]}.`,
+    `Lifecycle: ${{
+      current: "Latest revision within the 2026-06-28 planning package",
+      historical: "Superseded draft within the 2026-06-28 planning package - do not implement",
+      review: "Review record within the 2026-06-28 planning package",
+    }[entry.lifecycle]}.`,
     "Runtime verification: Not provided.",
     `Superseded by: ${entry.successors.length ? entry.successors.map((page) => `[${page}](${page.replace(/\.md$/, "")})`).join(", ") : "None"}.`,
     "Public disclosure: Reviewed and sanitized.",

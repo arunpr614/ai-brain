@@ -3,6 +3,7 @@ import { lstatSync, readFileSync, readdirSync } from "node:fs";
 import { extname, join, resolve } from "node:path";
 
 const EXCLUDED_DIRECTORIES = new Set([".git", ".next", "node_modules", "build", "dist"]);
+const SCANNED_EXTENSIONS = new Set([".md", ".csv", ".json"]);
 const PLACEHOLDER = String.raw`(?:<[^>]*(?:redacted|placeholder|example|stored|private)[^>]*>|\$\{[^}]+\}|example[_-][A-Za-z0-9_-]+)`;
 
 const RULES = [
@@ -80,11 +81,11 @@ if (args.help || args.paths.length === 0) {
   process.exit(args.help ? 0 : 2);
 }
 
-const files = collectMarkdown(args.paths);
+const files = collectPublicationArtifacts(args.paths);
 const findings = [];
 
 if (args.requireFiles && files.length === 0) {
-  findings.push({ file: null, line: null, rule: "no_markdown_files", preview: "<redacted:no files>" });
+  findings.push({ file: null, line: null, rule: "no_publication_artifacts", preview: "<redacted:no files>" });
 }
 
 for (const file of files) {
@@ -129,7 +130,7 @@ function parseArgs(argv) {
   return parsed;
 }
 
-function collectMarkdown(paths) {
+function collectPublicationArtifacts(paths) {
   const found = new Set();
   for (const path of paths) {
     const absolute = resolve(path);
@@ -140,7 +141,7 @@ function collectMarkdown(paths) {
       continue;
     }
     if (stat.isSymbolicLink()) continue;
-    if (stat.isFile() && extname(absolute).toLowerCase() === ".md") found.add(absolute);
+    if (stat.isFile() && SCANNED_EXTENSIONS.has(extname(absolute).toLowerCase())) found.add(absolute);
     if (stat.isDirectory()) walk(absolute, found);
   }
   return [...found].sort();
@@ -151,7 +152,7 @@ function walk(directory, found) {
     if (entry.isSymbolicLink() || EXCLUDED_DIRECTORIES.has(entry.name)) continue;
     const path = join(directory, entry.name);
     if (entry.isDirectory()) walk(path, found);
-    else if (entry.isFile() && extname(entry.name).toLowerCase() === ".md") found.add(path);
+    else if (entry.isFile() && SCANNED_EXTENSIONS.has(extname(entry.name).toLowerCase())) found.add(path);
   }
 }
 
@@ -161,6 +162,6 @@ function printHelp() {
 Usage:
   node scripts/check-agent-wiki-privacy.mjs --require-files <file-or-directory> [...]
 
-The scanner inspects Markdown only, excludes repository metadata, fails closed
+The scanner inspects Markdown, CSV, and JSON publication artifacts, excludes repository metadata, fails closed
 when requested files are absent, and never prints matched secret values.`);
 }

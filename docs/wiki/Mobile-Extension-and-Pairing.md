@@ -1,39 +1,34 @@
-# Mobile, Extension, and Pairing
+# Android Client and Pairing
 
-Purpose: Explain non-web clients, authentication exchange, capture attribution, and distribution status.
-Audience: AI agents working on Android, extension, pairing, or client connectivity.
-Verified against: `2b4db9540d0b76ee6d3aa2a9da5f788b69a8d02a` and `8178117c80923e5724e355fb2684cbc836013d39`.
-Runtime evidence through: 2026-06-17 for tied Android/web evidence; complete production tree SHA is Unknown.
-Last reviewed: 2026-07-10.
+Purpose: Document the Capacitor Android client, native share flow, reachability, pairing and offline boundary.
+Audience: AI agents changing Android or pairing behavior.
+Verified against: `23868faf13c8e3d0821715e6f5d0e3d2af1e1a34`.
+Runtime evidence through: 2026-07-10 for deployed web/client boundaries; physical-device scope remains feature-specific.
+Last reviewed: 2026-07-11.
 Owner: AI Brain maintainer.
 
-## Android Architecture
+**Status:** Implemented · **Confidence:** High · **Availability:** Private sideload
 
-The Android application is a Capacitor shell around the hosted web app with native share-target integration. It accepts note, URL, and PDF shares, builds authenticated capture requests, and renders an honest source-specific result. Reachability and offline fallback are client-state concerns separate from server health.
+The Android app is a Capacitor WebView around the hosted application. Native share accepts text/URL or one PDF, reads the bearer credential from Capacitor Preferences, calls capture APIs, and renders canonical result states. Multiple-PDF input is received by the manifest but intentionally rejected by classification.
 
-Pinned source: [Android activity](https://github.com/arunpr614/ai-brain/blob/8178117c80923e5724e355fb2684cbc836013d39/android/app/src/main/java/com/arunprakash/brain/MainActivity.java), [share request helpers](https://github.com/arunpr614/ai-brain/blob/8178117c80923e5724e355fb2684cbc836013d39/src/lib/android-share/request.ts), and [result model](https://github.com/arunpr614/ai-brain/blob/8178117c80923e5724e355fb2684cbc836013d39/src/lib/android-share/result.ts).
+Pairing begins in web Settings with a short-lived one-use code. `/setup-apk` exchanges it for the shared global bearer token, stores it locally, checks reachability and returns to the Library. Token rotation invalidates every paired client because there is no per-device credential model.
 
-Android runtime evidence covers authenticated routes, pairing persistence, note/URL share, attribution, log hygiene, offline/recovery, keyboard behavior, and platform accessibility order. The artifact is a private debug sideload, not a public store or release-signed distribution.
+The service worker caches shell/static/visited-page content and provides an honest offline page. It does not provide a complete offline library, offline capture queue or synchronization. Attached-note IndexedDB protects drafts separately.
 
-## Pairing
+This is not a public store/release-signed distribution, native Kotlin product, iOS client, or application-level encrypted store. Primary code: Capacitor/Android configuration, MainActivity/share target, share handler/result/request helpers, pairing/reachability clients/routes and tests. Browser capture is documented separately in [Browser Extension](Browser-Extension).
 
-The web settings surface creates a short-lived pairing code. The Android client exchanges it for the existing bearer credential through dedicated pairing routes. Codes expire and are one-time. Token display, exchange, storage, and logging must never expose credential values in screenshots, logs, or documentation.
+## User journey and states
 
-Pinned source: [pairing creation](https://github.com/arunpr614/ai-brain/blob/8178117c80923e5724e355fb2684cbc836013d39/src/lib/device-pairing/create-route-handler.ts) and [exchange](https://github.com/arunpr614/ai-brain/blob/8178117c80923e5724e355fb2684cbc836013d39/src/lib/device-pairing/exchange-route-handler.ts).
+Install private APK → open hosted shell → pair if no token → browse normally; or share text/URL/PDF from Android → native intent classification → authenticated capture request → full/limited/duplicate/updated/failure result → open item/repair. Empty/unsupported intents and multiple PDFs fail explicitly. Offline loads cached shell/visited content or the honest fallback; it never claims queued capture.
 
-## Browser Extension
+Loading covers pairing/reachability and capture-request progress. Success stores/uses the authorized client state and shows the canonical result without promising downstream enrichment.
 
-The extension offers popup/options capture and background/context-menu capture. The main baseline adds selected-text capture and later recovery-aware behavior not present in the worktree source.
+## Architecture, data, APIs, security, and configuration
 
-Pinned source: [worktree extension](https://github.com/arunpr614/ai-brain/tree/8178117c80923e5724e355fb2684cbc836013d39/extension) and [main selected-text capture](https://github.com/arunpr614/ai-brain/blob/2b4db9540d0b76ee6d3aa2a9da5f788b69a8d02a/src/lib/capture/selected-text.ts).
+Android Manifest/MainActivity and the share-target plugin bridge native intents into `src/components/share-handler.tsx`; request/result helpers call capture APIs. Pairing uses the same routes/data described in [Authentication and Pairing](Authentication-Sessions-and-Device-Pairing). Client-local state includes Capacitor Preferences, service-worker caches and browser note journal. Server URL, API compatibility, bearer token and reachability shape behavior. Platform backup and local token storage are security residuals.
 
-## Failure Modes
+## Tests, operations, and change impact
 
-- Pairing code expired, already used, or created against another runtime.
-- Hosted app unreachable while the device still has cached shell assets.
-- Share intent lacks expected content or MIME type.
-- Client and server API versions differ.
-- Capture succeeds but result attribution or quality is wrong.
-- Debug logs expose request payloads if native bridge logging regresses.
+Protecting tests include `src/lib/android-share/request.test.ts`, `result.test.ts`, pairing/reachability/setup tests, capture route tests and Note Focus/browser evidence. Android build/share changes also require manifest/Gradle/Capacitor sync and device-level validation; the repository rules require versionName/versionCode bumps for a new shared APK. Changes can affect capture attribution, MIME/size contracts, result deep links, pairing and offline trust copy. Pinned evidence: [current Android source](https://github.com/arunpr614/ai-brain/tree/23868faf13c8e3d0821715e6f5d0e3d2af1e1a34/android).
 
-Use [Command Safety](Command-Safety) before builds or device operations. APK builds are W2 local persistent writes.
+Related current features are pairing/authentication, capture, attached-note recovery and the browser extension. Related ideas are full offline library, native Kotlin, iOS and public-store distribution.

@@ -1,56 +1,34 @@
 # Security, Privacy, and Redaction
 
-Purpose: Document authentication, trust boundaries, sensitive-data handling, and public documentation rules.
-Audience: AI agents and engineers touching auth, integrations, logs, or operations.
-Verified against: `2b4db9540d0b76ee6d3aa2a9da5f788b69a8d02a` and `8178117c80923e5724e355fb2684cbc836013d39`.
-Runtime evidence through: 2026-07-10 for the attached-note consent, opt-out, purge, revocation, deletion, and cleanup lifecycle at `8654f293d0f8615617df883e4703c0ca098a6029`.
-Last reviewed: 2026-07-10.
+Purpose: Document authentication, trust boundaries, content handling, publication safety, and verified risks.
+Audience: AI agents, security reviewers, and contributors touching auth, integrations, notes, logs or operations.
+Verified against: `23868faf13c8e3d0821715e6f5d0e3d2af1e1a34`.
+Runtime evidence through: 2026-07-10 for the deployed session/provider/note-consent release boundaries.
+Last reviewed: 2026-07-11.
 Owner: AI Brain maintainer.
 
-## Authentication Layers
+## Trust boundaries
 
-- Browser sessions use the single-user PIN/session model.
-- Remote clients use bearer authentication.
-- Pairing exchanges short-lived codes for the existing client credential.
-- API version checks prevent incompatible clients from silently mutating state.
-- Origin policy constrains browser-originated requests.
-- Telegram verifies webhook authenticity and applies chat policy before dispatch.
+- Browser: PBKDF2 PIN hash and signed HttpOnly/SameSite session cookie.
+- Programmatic clients: one global bearer token and in-process limits. Client-version validation runs only when the header is present; `Origin` may be absent, and Chrome-extension origins are accepted broadly.
+- Pairing: short-lived one-use code that exchanges for the global bearer token.
+- Telegram: webhook secret plus owner/private-chat policy.
+- Attached notes: same-origin mutation checks plus feature flags, per-note AI opt-in and provider acknowledgement.
+- Recall and providers: separate private environment credentials.
+- Managed edge terminates public TLS before the loopback Node service.
 
-Pinned source: [session auth](https://github.com/arunpr614/ai-brain/blob/8178117c80923e5724e355fb2684cbc836013d39/src/lib/auth.ts), [bearer auth](https://github.com/arunpr614/ai-brain/blob/8178117c80923e5724e355fb2684cbc836013d39/src/lib/auth/bearer.ts), [API version](https://github.com/arunpr614/ai-brain/blob/8178117c80923e5724e355fb2684cbc836013d39/src/lib/auth/api-version.ts), and [redaction](https://github.com/arunpr614/ai-brain/blob/8178117c80923e5724e355fb2684cbc836013d39/src/lib/security/redaction.ts).
+Private means single-owner/authenticated/default-unshared, not end-to-end encrypted. SQLite, local backups, artifact files, browser note journals/service-worker caches, extension storage and Android preferences lack application-level encryption.
 
-## Sensitive Data
+## Verified risks
 
-Library content, captured URLs, transcripts, Recall card data, chat messages, provider payloads, session values, client credentials, webhook material, private evidence, and production identifiers are sensitive. Error handling and diagnostics should minimize content, redact token-like strings, and avoid persisting raw provider responses.
+The minimum PIN is four characters and no unlock-attempt limiter was found. API-client identity/revocation is global. Several rate limits reset on restart. CSP is absent. URL safety does not clearly revalidate every redirect destination. Error-sink callers can submit arbitrary context. Android allows platform backup. Database backup excludes capture-artifact files.
 
-Attached My notes are private application data but are not end-to-end encrypted. Note responses are authenticated and private/no-store; browser mutations require exact same origin. Default library export excludes notes. Remote note processing requires an acknowledgement fingerprinted to the provider, destination, purpose, and effective model; only parsed loopback Ollama is considered local.
+## Publication denylist
 
-Deletion has a broader boundary than deleting the current note row: FTS, semantic chunks/vectors, recent versions, queued work, and assistant answers proven to cite the note are cleaned up. Backup retention and already-started remote requests remain explicit residual limits.
+Do not publish credentials, environment values, tokens/cookies/keys, signed URLs, pairing codes, private content/IDs, live hosts/tunnels/accounts, local absolute paths, raw logs, dangerous approval text, or executable production-write/deploy/restore/backfill/key/scheduler instructions. Summarize only public-safe behavior and record excluded sources without reproducing them.
 
-## Public Documentation Denylist
+## Provider, privacy, and offline settings
 
-Do not publish:
+**Status:** Implemented · **Confidence:** High · **Availability:** default Settings/More surfaces. The owner opens Settings/More to inspect point-in-time provider health, attached-note consent/default, privacy/offline explanations, backup/export visibility and pairing controls. Empty/unconfigured providers show unavailable rather than healthy; loading/probe state is transient; success is point-in-time; failure does not erase existing content or consent state. Settings pages call provider/status and note-consent/default APIs and read configuration/settings data. Session authentication protects the pages; note provider acknowledgement adds a purpose/model/destination privacy boundary. Tests include provider-status route/module, note consent/default API/component/policy, auth and trust-copy coverage. Changes can affect AI eligibility, client pairing, trust copy and operational guidance. The full Trust Center remains a separate Planned proposal.
 
-- Credential or environment values.
-- Bearer, session, cookie, bot, webhook, private-key, or signed-link material.
-- Exact dangerous approval text.
-- Private Recall titles, URLs, IDs, samples, chunks, or reports.
-- Live host, SSH, tunnel, DNS, account, or private path identifiers.
-- Executable deploy, restore, migration, backfill, key, scheduler, checkpoint, or production-write instructions.
-- Screenshots or logs containing private library or operational data.
-
-The public privacy scanner detects common secret shapes and redacts its own findings. Pattern matching is defense in depth; a human semantic review remains required before publication.
-
-## Private Runbooks
-
-Private owner runbooks live outside the repository and synced workspace. They are single-machine by design and use owner-only permissions. They do not contain raw key values. If unavailable, sensitive operations stop.
-
-## Security Failure Modes
-
-- UI reveals private counts before session validation.
-- Client bridge logs capture credentials or user payloads.
-- Error messages preserve provider secrets or signed links.
-- A write route accepts destructive GET requests.
-- Pairing codes remain valid too long or can be reused.
-- Public evidence contains operational identifiers even without a raw key.
-
-Security changes require focused tests plus a review of logs, screenshots, evidence files, and public documentation output.
+See [Authentication and Pairing](Authentication-Sessions-and-Device-Pairing), [Manual Content Notes](Manual-Content-Notes), and [Known Limitations](Known-Limitations-and-Technical-Debt).

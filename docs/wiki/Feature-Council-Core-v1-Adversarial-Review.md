@@ -5,13 +5,13 @@ Audience: Product, design, engineering, documentation maintainers, and AI agents
 Artifact source commit: `9de8de87de915e874e8290aa556e2b6772d6fabf`
 Audited application baseline: `2b4db9540d0b76ee6d3aa2a9da5f788b69a8d02a`
 Research evidence date: 2026-06-28.
-Lifecycle: Review record.
+Lifecycle: Review record within the 2026-06-28 planning package.
 Runtime verification: Not provided.
 Superseded by: [Feature-Council-Research](Feature-Council-Research).
 Public disclosure: Reviewed and sanitized.
 Owner: AI Brain maintainer.
 
-> **Review record.** These findings are preserved for traceability. Use the current successor: [Feature-Council-Research](Feature-Council-Research).
+> **Historical planning review.** These findings are preserved for traceability. Use the reviewed planning successor: [Feature-Council-Research](Feature-Council-Research). Then check the living [Feature Catalog](Feature-Catalog) for present status.
 
 Target: [docs/feature-council/00_CORE_ARTIFACTS_v1.md](Feature-Council-Core-Artifacts-v1)  
 Reviewer stance: adversarial-review skill  
