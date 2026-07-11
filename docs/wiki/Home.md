@@ -23,6 +23,8 @@ Current main contains web, Android, browser-extension, Telegram, and guarded Rec
 
 Several capabilities are deliberately not current product behavior. Official caption recovery and owned-media speech-to-text are Inactive. The full Evidence Scan, graph UI, Reading Studio, Trust Center, spaced repetition, Obsidian sync, and fully offline mobile library are Planned; other ideas are separately Explored, Deferred, Rejected or Superseded. See [Ideas and Exploration](Ideas-and-Exploration-Catalog).
 
+The [Card Processing Workflow](Card-Processing-Workflow-Exploration) is a current **Explored — not implemented** proposal with three fictional-data prototype directions. It does not establish a Processing section or workflow/archive lifecycle in the application.
+
 ## Architecture at a glance
 
 ```mermaid

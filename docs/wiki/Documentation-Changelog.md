@@ -7,6 +7,16 @@ Runtime evidence through: 2026-07-10 at `6858529ef179a51442d319c6c58e5ace7975761
 Last reviewed: 2026-07-11.
 Owner: AI Brain maintainer.
 
+## 2026-07-11 — Card Processing Workflow exploration
+
+| Change | Implementation baseline | Runtime baseline | State |
+|---|---|---|---|
+| Added Card Processing Workflow research, three directions, recommendation, adversarially reviewed v2 product/UX/technical plans, fictional prototypes, and architecture/status/catalog records | `1cb5d36f37611e60442b4f2c4433b45455273500` exploration baseline | None; no production change | **Explored — not implemented** |
+
+- Added [Card Processing Workflow Exploration](Card-Processing-Workflow-Exploration) and cross-linked the ideas catalog, feature-status matrix, product roadmap posture, architecture proposals, and sidebar.
+- The recommended Direction B is an Inbox-first Processing section. Batch mutation and manual rank are deferred; no production implementation, migration, API, flag, rollout, or merge is claimed.
+- Canonical repository commit, review-only pull request, live-wiki commit, and publication verification are recorded at final delivery rather than preclaimed here.
+
 ## 2026-07-11 — definitive project wiki
 
 | Change | Implementation baseline | Runtime baseline | State |

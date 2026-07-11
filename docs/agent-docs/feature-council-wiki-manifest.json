@@ -8,6 +8,7 @@
   "sourceRoot": "docs/feature-council",
   "excludedSourceRoots": [
     "docs/feature-council/F08-manual-content-notes",
+    "docs/feature-council/card-processing-workflow",
     "docs/feature-council/note-focus-mode",
     "docs/feature-council/project-wiki"
   ],

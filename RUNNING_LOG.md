@@ -29138,3 +29138,246 @@ Close the adversarial review, publish and merge the canonical wiki source throug
 - **Published wiki state:** `master` at `88a3520`; 84 pages; fresh-clone, privacy, structure, live URL, and rendered-page QA green.
 - **Deployed/runtime state:** Unchanged at latest verified application baseline `6858529`.
 - **Next milestone:** Routine maintenance only; no remaining action for this goal.
+
+---
+
+## 2026-07-11 14:21 - Card Processing Workflow Setup and Discovery Baseline
+
+**Entry author:** AI agent (Codex) · **Triggered by:** User supplied the autonomous Card Processing Workflow feature-council objective in `goal-objective.md`.
+
+### Planned since last entry
+
+Open a new exploration-only workstream from current `main`; preserve all existing worktrees; inspect application and wiki truth; coordinate the required specialist roles; produce research, three product directions, PRD/UX/technical v1 plus adversarial reviews and v2 resolutions, isolated interactive prototypes, traceability and wiki records; then commit, push, and open a review-only pull request without production implementation.
+
+### Done
+
+- Read the complete objective and activated the substantive goal after completing the attachment-read gate.
+- Verified the supplied checkout is clean and its origin is `https://github.com/arunpr614/ai-brain.git`.
+- Fetched and pruned remote state, then created clean worktree `ai-brain-card-processing-workflow-20260711` from exact `origin/main` commit `1cb5d36f37611e60442b4f2c4433b45455273500` on branch `concept/card-processing-workflow`.
+- Preserved all unrelated worktrees and branches; no reset, cleanup, overwrite, production migration, API, or application feature change was made.
+- Verified GitHub authentication for `github.com`, Wiki enablement, and cloned the separate wiki with its history intact at wiki commit `88a3520038703108a0533501c7a384c6def7b74e`.
+- Loaded the running-log, adversarial-review, Product Design, browser, GitHub, and worktree guidance required by this exploration.
+- Installed exact repository dependencies with `npm ci`; audit reported zero known vulnerabilities.
+- Started an isolated local application against a new ignored SQLite database, used only fictional sample cards, and captured current Library and card-detail references at desktop and mobile sizes.
+- Inspected current navigation, Library filters and bulk actions, capture tabs, item detail, source/quality states, tags/topics separation, schema, note feature flags, design tokens, and current wiki status/baseline rules.
+- Started the specialist team with bounded single-writer artifacts:
+  - Expert Project Manager completed the project tracker and review-gate discipline.
+  - AI Expert Brainstorm Council, Platform/Data PM, and Growth/Engagement PM are in progress.
+
+### Cross-lane notes
+
+- Coordinator owns synthesis, shared files, `RUNNING_LOG.md`, prototypes, wiki publication, and final Git/GitHub delivery.
+- Each specialist has one explicitly owned artifact under `docs/feature-council/card-processing-workflow/`; agents must not edit shared files or production code.
+- The local `.env`, SQLite database, backups, and installed dependencies are ignored test/runtime state and must never be committed or published.
+
+### Learned
+
+- The code baseline is newer than several root documents; the definitive wiki explicitly warns that README/version lanes are stale status indicators.
+- Current cards have enrichment state and capture quality but no user workflow state or archive lifecycle attribute.
+- User tags and AI topics are separate persisted concepts; legacy `items.category` also remains, so the proposal must avoid recreating taxonomy ambiguity.
+- Current item deletion is destructive; no card archive/restore contract exists.
+- Desktop uses a 240px collapsible sidebar and mobile uses a fixed bottom navigation. Library mobile already uses a filter sheet and selection toolbar, useful precedent for a mobile list-first workflow.
+- Attached My notes and Note Focus are feature-flagged in current code, so the proposal must reuse their interaction contracts without claiming default availability.
+- The wiki canonical source is `docs/wiki/`; the separate GitHub Wiki is a published mirror with remote-SHA concurrency discipline.
+
+### Deployed / Released
+
+Nothing deployed, pushed, merged, or published in this milestone.
+
+### Documents created or updated this period
+
+**Created:**
+- `docs/feature-council/card-processing-workflow/product/project-management-tracker.md` - milestones, ownership, risks, decision records, gates, and exact definition of done.
+- `docs/feature-council/card-processing-workflow/research/screenshots/current-product/library-desktop-1440x1024.png` - fictional-data current Library reference.
+- `docs/feature-council/card-processing-workflow/research/screenshots/current-product/library-mobile-390x844.png` - mobile current Library reference.
+- `docs/feature-council/card-processing-workflow/research/screenshots/current-product/card-detail-desktop-1440x1024.png` - current card-detail reference.
+- `docs/feature-council/card-processing-workflow/research/screenshots/current-product/card-detail-mobile-390x844.png` - mobile current card-detail reference.
+
+**Updated:**
+- `RUNNING_LOG.md` - appended this setup and discovery milestone only.
+
+### Current remaining to-do
+
+1. Complete and reconcile all current-state research artifacts, including code map, data model, design system, constraints/opportunities, and source conflicts.
+2. Run the remaining specialist roles in bounded waves: Power User PM, technical architect, UX/UI designer, analytics, accessibility, QA, and adversarial reviewer.
+3. Produce exactly three distinct product/visual directions and a weighted recommendation.
+4. Draft PRD/UX/technical v1, run evidence-first adversarial reviews, and resolve every material finding in aligned v2 artifacts.
+5. Build isolated responsive HTML prototypes for all three directions, test required interactions, and visually verify desktop/mobile and failure states.
+6. Complete traceability, canonical repository wiki updates, separate wiki publication, final validation, commit/push, and review-only pull request.
+
+### Open questions / decisions needed
+
+No user decision is required. Naming, migration, archive, metrics, mobile, and detail-surface choices remain council decisions to be resolved through evidence and the decision matrix.
+
+### Session self-critique
+
+- Current-product visual evidence uses an isolated synthetic database and proves local rendering, not deployed production behavior.
+- The first Library desktop full-page capture shows a narrow repeated edge artifact from the browser capture surface; it is usable for style grounding but should not be treated as pixel-perfect layout evidence.
+- Wiki content is current at its published commit, but its recorded application baseline predates the merge commit used for this branch; source reconciliation must state this precisely.
+
+### Action items for the next agent
+
+1. Work only in `ai-brain-card-processing-workflow-20260711` on `concept/card-processing-workflow`.
+2. Read the project-manager tracker and each specialist artifact before synthesis.
+3. Preserve separate concepts for workflow status, manual tags, AI topics, and archive state.
+4. Do not modify `src/`, migrations, APIs, or production configuration.
+
+### State snapshot
+
+- **Current phase / version:** M1 complete; M2 repository/wiki discovery and evidence capture in progress.
+- **Active branch:** `concept/card-processing-workflow` at base `1cb5d36`.
+- **Working tree:** Dirty only with intended exploration documents and screenshot evidence; ignored local runtime/dependency state exists.
+- **Deployed/runtime state:** Production unchanged; isolated local dev server running on synthetic data for discovery.
+- **Next milestone:** Complete current-state research and product-direction synthesis.
+
+---
+
+## 2026-07-11 15:14 - Research, V1 Council Package, and Interactive Direction Gallery
+
+**Entry author:** AI agent (Codex) · **Triggered by:** Completion of current-state reconciliation, specialist inputs, and the first executable concept package.
+
+### Planned since last entry
+
+Finish the evidence baseline; reconcile product, data, engagement, power-user, architecture, analytics, accessibility, and design perspectives; compare exactly three directions; select a recommendation; write the v1 PRD/UX/technical package; and build isolated fictional-data prototypes ready for independent review.
+
+### Done
+
+- Completed the current-state report, code map, data-model summary, design-system inventory, constraints/opportunities analysis, and source reconciliation against current repository and wiki evidence.
+- Completed specialist product-direction, platform/data, growth/engagement, power-user, analytics, architecture, accessibility-input, UX/UI, and project-management artifacts.
+- Compared exactly three directions with a weighted matrix: board-first Workflow (70), Inbox-first Processing (94), and Library-integrated Queue (79).
+- Selected Direction B, Inbox-first Processing, because it gives the clearest next decision, strongest mobile parity, and cleanest separation from Library browsing and SRS Review.
+- Created `product/prd-v1.md`, `ux/ux-ui-v1.md`, and `technical/technical-plan-v1.md`, all explicitly classified **Explored — not implemented**.
+- Resolved foundational model choices for v1 review: workflow status is separate from tags/topics/quality; archive is a Done-only Processing lifecycle separate from deletion; existing rows remain unenrolled until explicit enrollment; new captures enter Inbox; deterministic ordering replaces manual rank; online-only versioned writes avoid last-write-wins; metrics count first effective exits/completions rather than ordinary re-entry.
+- Used the product-design workflow to generate and inspect exactly three independent visual concept images, then selected the Inbox-first visual for implementation while preserving all three.
+- Bootstrapped an isolated Vite/React prototype project under the feature-council folder; no `src/` production application, migration, API, feature flag, or database change was made.
+- Built a prototype gallery and three responsive interactive directions with fictional data. Core interactions include Inbox/Board/List/Archived views, manual-tag and AI-topic filters, status movement, non-drag alternatives, undo, archive/restore/reprocess, canonical detail, independent notes, desktop/mobile layouts, and normal/loading/error/offline/empty/filtered-empty review states.
+- Verified the isolated prototype production build succeeds and inspected the three desktop directions plus mobile alternatives in the selected in-app browser.
+- Exercised filters, status change, undo, archive, restore, reprocess, detail open/close, note edit/save, and state switching through semantic browser controls; no browser console warnings or errors were observed.
+- Captured current-product evidence, concept images, prototype screenshots, and a same-viewport side-by-side Direction B reference-versus-implementation comparison.
+- Started independent adversarial, accessibility, and QA/traceability reviews. Their findings remain review input, not yet resolved.
+
+### Conflicts resolved
+
+- Reconciled “no silent backfill” with a valid schema baseline: legacy rows can carry a valid Inbox default while remaining excluded from workflow UI and metrics until explicit enrollment.
+- Preserved `items` as the captured-source entity and rejected reuse of the unrelated SRS `cards` table.
+- Preserved manual user tags and AI topics as distinct filter vocabularies; workflow status is not another tag.
+- Kept archive visibility honest: archived sources disappear only from active Processing and remain discoverable through Library, search, Ask, notes, related content, Review eligibility, and export.
+- Kept Processing under mobile More for initial exploration while preserving the existing primary bottom navigation; a Library Inbox summary supplies discoverability.
+
+### Deployed / Released
+
+Nothing deployed, merged, published, or enabled. Prototype behavior is isolated, fictional, and exploratory.
+
+### Documents created or updated this period
+
+**Created:**
+- `docs/feature-council/card-processing-workflow/research/*.md` - reconciled current-state and specialist evidence.
+- `docs/feature-council/card-processing-workflow/product/product-directions.md` - exactly three directions and weighted recommendation.
+- `docs/feature-council/card-processing-workflow/product/prd-v1.md` - initial product specification.
+- `docs/feature-council/card-processing-workflow/product/metrics-framework.md` - non-gameable metric contracts and instrumentation.
+- `docs/feature-council/card-processing-workflow/ux/ux-ui-v1.md` and `ux/concepts/*.png` - UX specification and independent visual directions.
+- `docs/feature-council/card-processing-workflow/technical/architecture-options.md` and `technical-plan-v1.md` - architecture comparison and implementation proposal.
+- `docs/feature-council/card-processing-workflow/prototypes/` - isolated gallery, three interactive prototypes, fictional fixtures, and screenshots.
+
+**Updated:**
+- `RUNNING_LOG.md` - appended this v1/prototype milestone only.
+
+### Current remaining to-do
+
+1. Receive and triage the three independent review lanes; fix every P0/P1/P2 or explicitly defer with rationale.
+2. Produce aligned PRD v2, UX/UI v2, and technical plan v2 plus decision log, open-question closure, rollout/rollback, and durable traceability.
+3. Complete final product-design QA and accessibility fixes in the isolated prototype; retain passing evidence and remove capture artifacts.
+4. Update canonical repository wiki pages, safely mirror them to the live wiki with remote-SHA checks, and preserve historical classifications.
+5. Run final privacy/build/link/status checks, commit, push, open the review-only PR, verify remote artifacts, and close the goal without merging or production implementation.
+
+### Open questions / decisions needed
+
+No user decision is required. The review pass must close or explicitly defer batch conflict semantics, mobile discoverability, quick-preview scope, dialog focus behavior, manual-rank deferral, and rollout guardrails.
+
+### Session self-critique
+
+- The in-app browser capture surface intermittently fails to repaint unchanged regions in rapid sequential screenshots; only visually inspected stable captures should be retained as evidence.
+- The selected implementation matches the product's dark design language and core Inbox-first composition but intentionally uses smaller fictional counts and omits tag/topic editing from quick preview; design QA must classify those differences as intentional or require correction.
+- V1 still contains unresolved choices by design. None should survive into a nominally implementation-ready v2 without a decision, owner, or explicit no-go gate.
+
+### Action items for the next agent
+
+1. Treat v1 as review input, never as approved implementation scope.
+2. Read all three adversarial reports and the QA/accessibility reports before editing any v2 document.
+3. Keep prototype fixes isolated under `docs/feature-council/card-processing-workflow/prototypes/`.
+4. Preserve the exact branch, base SHA, production non-change rule, and wiki concurrency protocol.
+
+### State snapshot
+
+- **Current phase / version:** M2-M4 complete; independent review pass in progress.
+- **Active branch:** `concept/card-processing-workflow` at base `1cb5d36` with intended uncommitted exploration artifacts.
+- **Prototype:** Running locally on port 4173 from the isolated prototypes folder; production app server stopped.
+- **Deployed/runtime state:** Unchanged; no production feature exists.
+- **Next milestone:** Resolve independent findings into v2 specifications and a design-QA-passed prototype package.
+
+---
+
+## 2026-07-11 16:24 - Adversarial Findings Resolved and V2 Exploration Package Closed
+
+**Entry author:** AI agent (Codex) · **Triggered by:** Completion of independent QA, accessibility, and v2 cross-artifact consistency review.
+
+### Planned since last entry
+
+Disposition every material v1/v2 review finding; align the product, UX, technical, decision, metric, and traceability contracts; replace stale visual evidence; and keep every production-readiness gap explicit.
+
+### Done
+
+- Preserved all v1 artifacts and their separate product, UX, and technical adversarial reviews.
+- Published aligned `product/prd-v2.md`, `ux/ux-ui-v2.md`, `technical/technical-plan-v2.md`, `decisions/decision-log.md`, and `reviews/traceability-matrix-v2.md`.
+- Resolved the final cross-artifact P1 findings: Added now counts genuinely new successful captures only, and exact mutation replay returns an immutable receipt plus current canonical truth through an explicit outcome contract.
+- Removed free-form event metadata from the proposal in favor of bounded typed episode/reason fields; standardized `workflow_archived_at`; aligned Undo on a 10-second `undoEligibleUntil` contract; and matched the note-return prompt to Save and return / Discard / Keep editing.
+- Kept implementation-only validation explicit: real mobile Library/More discovery, multi-value filter algebra, manual AT/zoom/switch testing, migration and SQLite contention rehearsal, 10k/50k performance, every ingestion path, archive-matrix regression, CAS/idempotency, and unknown-outcome E2E.
+- Rebuilt the isolated five-entry prototype and verified Process next, safe note return, seven direct-link trust states, and zero browser console warnings/errors.
+- Regenerated and visually inspected the selected Direction B desktop/mobile/reference/comparison evidence and every retained trust-state capture; added Direction A mobile evidence; removed stale cropped state captures.
+- Recorded final source checksums in prototype design QA and retained the status **Explored — not implemented** throughout.
+
+### Conflicts resolved
+
+- Separated new capture pressure (`Added`) from recurring Inbox-entry work (`Processed` episodes).
+- Separated idempotent acceptance history from current UI truth so a replay cannot reinstall stale state.
+- Replaced a prose-only privacy promise around generic JSON with a typed, bounded, reject-unknown event shape.
+- Kept the mobile proposal honest: the responsive UI is demonstrated, but actual unaided discovery remains an implementation-authorization gate.
+
+### Deployed / Released
+
+Nothing deployed, merged, enabled, or implemented in production. The prototype remains local, fictional, and isolated under documentation.
+
+### Documents created or updated this period
+
+- `docs/feature-council/card-processing-workflow/product/prd-v2.md`
+- `docs/feature-council/card-processing-workflow/ux/ux-ui-v2.md`
+- `docs/feature-council/card-processing-workflow/technical/technical-plan-v2.md`
+- `docs/feature-council/card-processing-workflow/decisions/decision-log.md`
+- `docs/feature-council/card-processing-workflow/reviews/*`
+- `docs/feature-council/card-processing-workflow/prototypes/*`
+- `docs/wiki/Card-Processing-Workflow-Exploration.md` and related canonical wiki indexes
+
+### Current remaining to-do
+
+1. Run repository-wide documentation privacy, structure, link, and final-diff checks.
+2. Commit and push the concept branch, then open a review-only pull request without merging.
+3. Publish the canonical wiki changes to the separate live wiki after remote-SHA verification.
+4. Record the exact commit, PR, and live wiki evidence in the final handoff and close the goal.
+
+### Open questions / decisions needed
+
+No user decision is required for discovery closeout. Stakeholder review is the next human gate; no production work is authorized.
+
+### Session self-critique
+
+- The generated reference concept intentionally contains the rejected v1 “Processed today”/Process next 3 framing; the side-by-side comparison is evidence of iteration, not a recommendation to retain those details.
+- Browser viewport overrides sometimes emit a 1404px-wide desktop payload for a 1440/1487px configured viewport; design QA records configured and emitted dimensions separately.
+- Manual assistive-technology and real Library/More discovery evidence is still absent and is not claimed.
+
+### State snapshot
+
+- **Current phase / version:** V2 discovery package and prototype QA complete; publication in progress.
+- **Active branch:** `concept/card-processing-workflow` from `1cb5d36`.
+- **Working tree:** Dirty only with intended exploration, wiki-source, screenshot, and log changes; generated prototype dependencies/build remain ignored.
+- **Deployed/runtime state:** Production unchanged; isolated local prototype server still running for reviewer handoff.
+- **Next milestone:** Commit/push, review-only PR, live wiki publication, and final verification.

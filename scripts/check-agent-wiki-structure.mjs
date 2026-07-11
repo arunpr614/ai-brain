@@ -12,6 +12,7 @@ const CORE_REQUIRED_PAGES = [
   "Feature-Catalog.md",
   "Ideas-and-Exploration-Catalog.md",
   "Manual-Content-Notes.md",
+  "Card-Processing-Workflow-Exploration.md",
   "System-Architecture.md",
   "Feature-Architecture.md",
   "Technology-Stack.md",
@@ -129,6 +130,7 @@ const approvedShas = new Set(
     baseline?.worktreeSha,
     baseline?.productionSha,
     baseline?.featureCouncilArtifactSha,
+    baseline?.cardProcessingExplorationSha,
   ].filter(
     (value) => typeof value === "string" && /^[0-9a-f]{40}$/i.test(value),
   ),

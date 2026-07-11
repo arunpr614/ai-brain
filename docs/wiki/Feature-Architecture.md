@@ -18,6 +18,14 @@ Owner: AI Brain maintainer.
 | Recall | external daily timer and packaged runner | client/map/fidelity/import/sync | Recall run/item/state tables | [Recall Synchronization](Recall-Synchronization) |
 | Operations | instrumentation, deploy, backup, health | scripts/services/provider checks | SQLite snapshots, logs, reports | [Deployment and Operations](Deployment-and-Operations) |
 
+## Explored architecture proposals
+
+These rows are not current application architecture.
+
+| Proposal | Proposed entry points | Proposed domain path | Proposed storage/jobs | Status |
+|---|---|---|---|---|
+| [Card Processing Workflow](Card-Processing-Workflow-Exploration) | Dedicated Processing Inbox/Board/List/Archived; existing item detail | New workflow repository/service attached to `items`; existing Library/detail/taxonomy/notes reused | Item workflow projection + content-free events + resumable legacy baseline job | **Explored — not implemented** |
+
 ## Cross-cutting invariants
 
 - Original source, generated digest, standalone note item, and attached My notes remain distinct.
