@@ -30,6 +30,12 @@ const tmp = join(tmpdir(), `brain-recall-scheduled-wrapper-${process.pid}-${Date
 const scriptsDir = join(tmp, "scripts");
 mkdirSync(scriptsDir, { recursive: true });
 mkdirSync(join(scriptsDir, "lib"), { recursive: true });
+mkdirSync(join(tmp, "run", "brain-recall"), { recursive: true });
+mkdirSync(join(tmp, "bin"), { recursive: true });
+writeFileSync(join(tmp, "bin", "flock"), "#!/usr/bin/env bash\nexit 0\n", "utf8");
+chmodSync(join(tmp, "bin", "flock"), 0o755);
+process.env.BRAIN_RECALL_OUTER_LOCK_PATH = join(tmp, "run", "brain-recall", "recall-sync.lock");
+process.env.PATH = `${join(tmp, "bin")}:${process.env.PATH ?? ""}`;
 
 try {
   const wrapperSource = readFileSync(resolve(root, "scripts/recall-scheduled-apply.sh"), "utf8");
@@ -65,6 +71,7 @@ try {
   );
 
   cpSync(bundle, join(scriptsDir, "sync-recall-prod.mjs"));
+  cpSync(resolve(root, "scripts/dist/recall-sync-lifecycle-prod.mjs"), join(scriptsDir, "recall-sync-lifecycle-prod.mjs"));
   cpSync(resolve(root, "scripts/dist/db"), join(scriptsDir, "db"), { recursive: true });
   cpSync(resolve(root, "scripts/recall-first-apply-preflight.mjs"), join(scriptsDir, "recall-first-apply-preflight.mjs"));
   cpSync(

@@ -1,0 +1,10 @@
+[Unit]
+Description=Recover lost Recall manual sync wakeups
+
+[Timer]
+OnBootSec=60s
+OnUnitInactiveSec=60s
+Unit=brain-recall-manual-sync.service
+
+[Install]
+WantedBy=timers.target

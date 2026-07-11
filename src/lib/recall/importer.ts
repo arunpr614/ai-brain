@@ -62,11 +62,25 @@ export interface ImportRecallCardOptions {
   verifiedComplete?: boolean;
   upgradeWeakExistingByUrl?: boolean;
   fidelityPolicy?: RecallFidelityPolicyOptions;
+  /** Trusted bookkeeping performed in the same outer transaction as the card. */
+  onBeforeCommit?: (result: RecallImportResult) => void;
 }
 
 export function importRecallCard(
   detail: RecallCardDetail,
   options: ImportRecallCardOptions = {},
+): RecallImportResult {
+  const tx = getDb().transaction(() => {
+    const result = importRecallCardInner(detail, options);
+    options.onBeforeCommit?.(result);
+    return result;
+  });
+  return tx();
+}
+
+function importRecallCardInner(
+  detail: RecallCardDetail,
+  options: ImportRecallCardOptions,
 ): RecallImportResult {
   const importedAt = options.importedAt ?? Date.now();
   const mapped = mapRecallCardToCapturedInput(detail, {

@@ -6,7 +6,7 @@ Wants=network-online.target
 [Service]
 Type=simple
 User=brain
-Group=brain
+Group=brain-data
 WorkingDirectory=/opt/brain
 EnvironmentFile=/etc/brain/.env
 Environment=HOSTNAME=127.0.0.1
@@ -23,6 +23,7 @@ PrivateTmp=true
 ProtectSystem=strict
 ProtectHome=true
 ReadWritePaths=/opt/brain/data
+UMask=0007
 
 [Install]
 WantedBy=multi-user.target

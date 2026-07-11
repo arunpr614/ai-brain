@@ -53,6 +53,9 @@ export interface RecallSyncRunRow {
   total_chunks_fetched: number;
   last_error: string | null;
   report_json: string | null;
+  execution_id: string | null;
+  trigger: "automatic" | "manual_ui";
+  request_id: string | null;
 }
 
 export interface InsertRecallSyncRunInput {
@@ -73,6 +76,9 @@ export interface InsertRecallSyncRunInput {
   total_chunks_fetched: number;
   last_error: string | null;
   report_json: string;
+  execution_id?: string | null;
+  trigger?: "automatic" | "manual_ui";
+  request_id?: string | null;
 }
 
 export interface RecallSyncLockResult {
@@ -146,9 +152,9 @@ export function insertRecallSyncRun(input: InsertRecallSyncRunInput): RecallSync
          id, mode, started_at, completed_at, state, date_from, date_to,
          cards_seen, cards_imported, cards_upgraded, cards_skipped,
          cards_changed_remote, cards_blocked, total_chars_planned,
-         total_chunks_fetched, last_error, report_json
+         total_chunks_fetched, last_error, report_json, execution_id, trigger, request_id
        )
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     )
     .run(
       id,
@@ -168,8 +174,104 @@ export function insertRecallSyncRun(input: InsertRecallSyncRunInput): RecallSync
       input.total_chunks_fetched,
       input.last_error,
       input.report_json,
+      input.execution_id ?? null,
+      input.trigger ?? "automatic",
+      input.request_id ?? null,
     );
   return getRecallSyncRun(id)!;
+}
+
+export function beginRecallSyncRun(input: {
+  id: string;
+  mode: "dry_run" | "apply";
+  startedAt: number;
+  dateFrom: string;
+  dateTo: string;
+  executionId?: string | null;
+  trigger?: "automatic" | "manual_ui";
+  requestId?: string | null;
+}): RecallSyncRunRow {
+  return insertRecallSyncRun({
+    id: input.id,
+    mode: input.mode,
+    started_at: input.startedAt,
+    completed_at: null,
+    state: "running",
+    date_from: input.dateFrom,
+    date_to: input.dateTo,
+    cards_seen: 0,
+    cards_imported: 0,
+    cards_upgraded: 0,
+    cards_skipped: 0,
+    cards_changed_remote: 0,
+    cards_blocked: 0,
+    total_chars_planned: 0,
+    total_chunks_fetched: 0,
+    last_error: null,
+    report_json: "{}",
+    execution_id: input.executionId ?? null,
+    trigger: input.trigger ?? "automatic",
+    request_id: input.requestId ?? null,
+  });
+}
+
+export function updateRecallSyncRunProgress(input: {
+  id: string;
+  cardsImported: number;
+  cardsUpgraded: number;
+  cardsSkipped: number;
+  cardsChangedRemote: number;
+  cardsBlocked: number;
+}): void {
+  getDb().prepare(
+    `UPDATE recall_sync_runs SET cards_imported = ?, cards_upgraded = ?, cards_skipped = ?,
+     cards_changed_remote = ?, cards_blocked = ? WHERE id = ? AND state = 'running'`,
+  ).run(
+    input.cardsImported,
+    input.cardsUpgraded,
+    input.cardsSkipped,
+    input.cardsChangedRemote,
+    input.cardsBlocked,
+    input.id,
+  );
+}
+
+export function finishRecallSyncRun(input: {
+  id: string;
+  completedAt: number;
+  state: RecallSyncRunState;
+  cardsSeen: number;
+  cardsImported: number;
+  cardsUpgraded: number;
+  cardsSkipped: number;
+  cardsChangedRemote: number;
+  cardsBlocked: number;
+  totalCharsPlanned: number;
+  totalChunksFetched: number;
+  lastError: string | null;
+  reportJson: string;
+}): RecallSyncRunRow {
+  getDb().prepare(
+    `UPDATE recall_sync_runs SET completed_at = ?, state = ?, cards_seen = ?, cards_imported = ?,
+     cards_upgraded = ?, cards_skipped = ?, cards_changed_remote = ?, cards_blocked = ?,
+     total_chars_planned = ?, total_chunks_fetched = ?, last_error = ?, report_json = ?
+     WHERE id = ? AND state = 'running'`,
+  ).run(
+    input.completedAt,
+    input.state,
+    input.cardsSeen,
+    input.cardsImported,
+    input.cardsUpgraded,
+    input.cardsSkipped,
+    input.cardsChangedRemote,
+    input.cardsBlocked,
+    input.totalCharsPlanned,
+    input.totalChunksFetched,
+    input.lastError,
+    input.reportJson,
+    input.id,
+  );
+  return getRecallSyncRun(input.id)!;
 }
 
 export function getRecallSyncRun(id: string): RecallSyncRunRow | null {

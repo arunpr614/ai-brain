@@ -5,11 +5,18 @@ Wants=network-online.target
 
 [Service]
 Type=oneshot
-User=brain
-Group=brain
+User=brain-recall
+Group=brain-data
 WorkingDirectory=/opt/brain
 EnvironmentFile=/etc/brain/.env
+Environment=BRAIN_RECALL_TRIGGER=automatic
+Environment=BRAIN_RECALL_MANUAL_SYNC_MODE=0
+LoadCredential=recall-api-key:/etc/brain/recall-api-key
 ExecStart=/usr/bin/bash /opt/brain/scripts/recall-scheduled-apply.sh
+ExecStartPost=/usr/bin/node /opt/brain/scripts/recall-sync-lifecycle-prod.mjs schedule --timer-name brain-recall-sync.timer --db-path /opt/brain/data/brain.sqlite --migrations-dir /opt/brain/scripts/db/migrations
+TimeoutStartSec=7h
+Restart=on-failure
+RestartSec=60
 StandardOutput=journal
 StandardError=journal
 SyslogIdentifier=brain-recall-sync
@@ -19,3 +26,5 @@ PrivateTmp=true
 ProtectSystem=strict
 ProtectHome=true
 ReadWritePaths=/opt/brain/data
+ReadWritePaths=/run/brain-recall
+UMask=0007
