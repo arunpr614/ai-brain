@@ -1,11 +1,11 @@
 # Final Delivery Report
 
 **Prepared:** 2026-07-11
-**Delivery state:** Publication candidate complete locally; repository PR, merge, wiki publication, and live verification pending
+**Delivery state:** Complete — repository source merged, separate wiki published, and fresh-clone/live verification passed
 **Repository:** <https://github.com/arunpr614/ai-brain>
 **Wiki:** <https://github.com/arunpr614/ai-brain/wiki>
 
-## Delivered locally
+## Delivered
 
 - Definitive 84-page wiki source under `docs/wiki/`: 40 living/core pages and 44 preserved, explicitly historical Feature Council pages.
 - AI-agent-first reading paths, global sidebar/footer, feature/idea catalogs, system and feature architecture, stack, repository/API/data/config/operations/security/testing guidance, limitations, glossary, templates, maintenance workflow, and changelog.
@@ -32,20 +32,21 @@ Local documentation, privacy, structure, link-graph, semantic coverage, artifact
 | Step | Result/evidence |
 |---|---|
 | Source branch | `docs/definitive-project-wiki` |
-| Repository commit | Pending |
-| Pull request | Pending |
-| Required checks | Pending |
-| Main merge commit | Pending |
-| Wiki pre-push remote SHA | Must equal `3d578c3f66e61de3f124a855253e713758f6a49b` |
-| Wiki publication commit | Pending |
-| Fresh-clone verification | Pending |
-| Live page/link/render verification | Pending |
-| Closeout record | Pending |
+| Repository commits | `5f001e9` source, `c555872` rationale, `4c91e68` rendered-diagram refinement, `4f583d0` exact idea-catalog refinement |
+| Pull request | [#19 — Definitive AI Brain project wiki](https://github.com/arunpr614/ai-brain/pull/19) |
+| Required checks | `validate` passed |
+| Main merge commit | `0b1cb475bb179626e9357d6f427ef2a2345ee679` |
+| Wiki pre-push remote SHA | `3d578c3f66e61de3f124a855253e713758f6a49b`, exactly matched immediately before publication |
+| Wiki publication commits | `8909215124883e5b0d24a09bc3bec0ec6ff79b83` corpus; `88a3520038703108a0533501c7a384c6def7b74e` final changelog |
+| Fresh-clone verification | Exact final SHA; 84/84 canonical pages byte-equal; structure and privacy checks passed |
+| Live page/link verification | 82/82 user-facing wiki URLs and 16/16 unique external evidence/prototype URLs returned HTTP 200 |
+| Live render verification | Home/sidebar/footer, both catalogs, architecture, representative feature/history pages, long tables, and Mermaid diagrams passed visual inspection |
+| Closeout record | `docs/definitive-project-wiki-closeout`; follow-up PR recorded in GitHub history |
 
 ## Preserved history and rollback
 
-No existing wiki page is deleted. Existing filenames and inbound URLs are preserved; additions fill identified information-architecture gaps. The separate wiki keeps its eight-commit baseline history and will receive a normal commit. If post-publication validation fails, revert the new wiki commit with a new normal commit; do not rewrite history. Repository source rollback follows the pull request's normal revert path.
+No existing wiki page was deleted. Existing filenames and inbound URLs are preserved; additions fill identified information-architecture gaps. The separate wiki retained its baseline history and received two normal commits. If post-publication validation fails, revert the relevant wiki commit with a new normal commit; do not rewrite history. Repository source rollback follows pull request #19's normal revert path.
 
-## Remaining action
+## Final handoff
 
-Complete the publication record above, change `FINAL_QA_REPORT.md` to final GO, append the final `RUNNING_LOG.md` handoff, and merge the closeout record.
+Treat `docs/wiki/` as the canonical editable source and the separate GitHub Wiki repository as the published mirror. Start future reviews from `AI-Agent-Start-Here`, use the status/evidence taxonomy in `Source-Baselines-and-Status`, regenerate the evidence artifacts before publication, and require the documented privacy, structure, drift, fresh-clone, and live-render gates. No runtime deployment was part of this documentation publication.
