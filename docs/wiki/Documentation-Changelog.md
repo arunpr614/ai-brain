@@ -17,6 +17,16 @@ Owner: AI Brain maintainer.
 - Local verification covers the full code gates, six process-fixture groups, responsive states, keyboard behavior, reduced motion, dark mode, zoom/reflow, contrast, and automated accessibility checks.
 - Physical assistive-technology validation and actual-host identity/credential/unit proof remain explicit pre-enablement activities. No merge or deployment is part of this entry.
 
+## 2026-07-11 — Card Processing Workflow exploration
+
+| Change | Implementation baseline | Runtime baseline | State |
+|---|---|---|---|
+| Added Card Processing Workflow research, three directions, recommendation, adversarially reviewed v2 product/UX/technical plans, fictional prototypes, and architecture/status/catalog records | Application baseline `1cb5d36f37611e60442b4f2c4433b45455273500`; exploration package `df4c42b9869f8a35b9557bc64bf6ecdb9d11b416` | None; no production change | **Explored — not implemented** |
+
+- Added [Card Processing Workflow Exploration](https://github.com/arunpr614/ai-brain/wiki/Card-Processing-Workflow-Exploration) and cross-linked the ideas catalog, feature-status matrix, product roadmap posture, architecture proposals, and sidebar.
+- The recommended Direction B is an Inbox-first Processing section. Batch mutation and manual rank are deferred; no production implementation, migration, API, flag, rollout, or merge is claimed.
+- Canonical exploration evidence was committed in `df4c42b9869f8a35b9557bc64bf6ecdb9d11b416`, pinned in successor `13ed06a9f7cab853b33fa0c20c51fefc222313ff`, and opened for review in [pull request #21](https://github.com/arunpr614/ai-brain/pull/21). Live-wiki commit and publication verification are recorded in final delivery rather than preclaimed here.
+
 ## 2026-07-11 — definitive project wiki
 
 | Change | Implementation baseline | Runtime baseline | State |
