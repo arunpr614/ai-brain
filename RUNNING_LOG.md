@@ -29381,3 +29381,49 @@ No user decision is required for discovery closeout. Stakeholder review is the n
 - **Working tree:** Dirty only with intended exploration, wiki-source, screenshot, and log changes; generated prototype dependencies/build remain ignored.
 - **Deployed/runtime state:** Production unchanged; isolated local prototype server still running for reviewer handoff.
 - **Next milestone:** Commit/push, review-only PR, live wiki publication, and final verification.
+
+---
+
+## 2026-07-11 16:23 - Review-Only PR, Live Wiki, and Green Publication Checks
+
+**Entry author:** AI agent (Codex) · **Triggered by:** Successful repository/wiki publication and final CI verification.
+
+### Planned since last entry
+
+Validate all documentation artifacts, commit and push the isolated branch, open the review-only PR, publish the separate live wiki without overwriting concurrent work, and close only after remote verification.
+
+### Done
+
+- Committed and pushed the full exploration package, immutable evidence pins, canonical wiki review links, and artifact-fixture reconciliation on `concept/card-processing-workflow`.
+- Opened ready-for-review pull request [#21](https://github.com/arunpr614/ai-brain/pull/21) against `main`; it remains unmerged and explicitly says **Explored — not implemented**.
+- Verified the separate wiki remote was still at expected base `88a3520038703108a0533501c7a384c6def7b74e`, copied only the eight canonical changed pages, committed normally, and pushed `9e3f7d93f8d7cbc6a5a615c078ac4fbe4e475f3c`.
+- Fresh-cloned the live wiki, reproduced all eight changed pages byte-for-byte, and passed privacy plus 85-page structure/reachability checks.
+- Opened the live Card Processing Workflow page in the selected in-app Browser and verified its heading and **Explored — not implemented** status.
+- Diagnosed the first PR CI failure: the real validator required the new 85th page while the synthetic smoke fixture still built 84 pages. Reconciled the smoke fixture, 85-row page audit, 38-idea evidence inventory, hashes, and artifact count gate.
+- Re-ran `smoke:agent-docs` and the full `check:agent-docs` suite locally; all passed.
+- GitHub Actions `Agent documentation / validate` passed in run `29150055525`.
+
+### Deployed / Released
+
+Documentation and exploration evidence were published to the concept branch, review-only PR, and live wiki. No production application behavior, schema, migration, API, feature flag, rollout, deployment, or merge occurred.
+
+### Final evidence
+
+- Exploration package commit: `df4c42b9869f8a35b9557bc64bf6ecdb9d11b416`.
+- Evidence pin commit: `13ed06a9f7cab853b33fa0c20c51fefc222313ff`.
+- Review-link commit: `5f5154f0d075ce3029b389a77745d6552eae3faf`.
+- CI/artifact reconciliation commit: `97cde73939ef74f56fb4dc3890a5c869b919d5e1`.
+- Live wiki commit: `9e3f7d93f8d7cbc6a5a615c078ac4fbe4e475f3c`.
+- Review-only PR: `https://github.com/arunpr614/ai-brain/pull/21`.
+
+### Remaining gates
+
+All remaining work is future authorization, not unfinished discovery delivery: stakeholder decision; real mobile discovery; full filter algebra; production integration/concurrency/migration/performance tests; and manual assistive-technology/responsive validation.
+
+### State snapshot
+
+- **Current phase / version:** Discovery goal complete; stakeholder review pending.
+- **Active branch:** `concept/card-processing-workflow`, pushed and tracked.
+- **Working tree:** Clean after final delivery commit.
+- **Deployed/runtime state:** Production unchanged; local isolated prototype remains available for review.
+- **Next milestone:** Human stakeholder review of PR #21; no automatic merge or implementation.
