@@ -13,6 +13,7 @@ An idea can overlap an implemented substrate without being implemented as propos
 
 | Idea | Status | Current overlap | Missing proposed contract |
 |---|---|---|---|
+| [Card Processing Workflow](Card-Processing-Workflow-Exploration) | Explored | Library/items, user tags, AI topics, canonical detail/My notes, responsive shell | Dedicated Processing/Inbox lifecycle, workflow history, archive/restore, metrics, concurrency, enrollment, and validated navigation; **not implemented** |
 | Reading Studio Lite | Planned | Item reading Focus, trust strip, transcript preview, My notes | PDF canvas, anchors, highlights, citation metadata and export workflow |
 | Contextual Ask Evidence Scan | Planned | Scoped Ask, selected-source retrieval, citations | Claim verdicts, retrieval snapshot, quality/source policies |
 | Relationship Graph/Connection Map | Planned | Related items and semantic events | Persisted edges, graph route/UI, accessible alternate view, rebuild controls |

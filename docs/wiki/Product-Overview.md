@@ -30,6 +30,11 @@ AI Brain serves one owner who wants to capture material from several channels, r
 | Operate remotely | Hosted web app, private Android shell, extension, Telegram | Not a public multi-user or complete offline-native product |
 | Protect/recover | PIN/session/bearer boundaries, consent, database backups, health and queues | Private does not mean E2EE; artifact files are outside database backups |
 
+## Exploration roadmap posture
+
+- [Card Processing Workflow](Card-Processing-Workflow-Exploration) is **Explored — not implemented**. It proposes a dedicated Processing Inbox/Board/List/Archive lifecycle over saved items while preserving Library, detail, notes, tags/topics, search/Ask, and Review boundaries.
+- Its concept branch, fictional prototypes, and v2 plans are stakeholder-review inputs only. They do not change the current core workflow above.
+
 ## Boundaries
 
 - Single owner and one SQLite store; no tenant/team/role/sharing model.
