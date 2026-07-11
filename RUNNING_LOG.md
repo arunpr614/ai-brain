@@ -29965,3 +29965,97 @@ Nothing deployed, merged, enabled, or implemented in production. This is an isol
 - **Current phase / version:** Direction B density correction complete.
 - **Active branch:** `concept/card-processing-workflow`; PR #21 remains review-only.
 - **Next milestone:** Stakeholder confirmation that the compact organization control now matches the existing product density.
+
+---
+
+## 2026-07-11 20:11 - Approved Direction B HTML Handoff and Mainline Reconciliation
+
+**Entry author:** AI agent (Codex) · **Triggered by:** Stakeholder confirmation that the compact Direction B design looks good, followed by a request to log the accepted design, complete the necessary next steps, and create detailed HTML assets another AI agent can use without reconstructing prior context.
+
+### Planned since last entry
+
+Freeze the accepted compact organization-control intent, turn the prototype into a self-contained visual and implementation handoff, provide both human-readable and machine-readable pickup material, verify desktop/mobile and Light/Dark behavior, reconcile the review branch with current `main`, and leave the review-only PR green without authorizing production implementation.
+
+### Done
+
+- Added `design-handoff.html`, an approved-design record with locked decisions, exact measurements, canonical state links, implementation guardrails, visual evidence, and a live compact Group & sort specimen.
+- Added `group-sort-specimen.html`, a functional component sheet covering Dark, Light, open, closed, and narrow responsive states; grouping/sorting selects and reset are interactive rather than static screenshots.
+- Added `agent-pickup.html`, a cold-start page with branch/PR status, repository commands, file map, remaining gates, acceptance criteria, and explicit no-production-authorization boundaries.
+- Added shared handoff source modules in `prototypes/src/Handoff.jsx`, `prototypes/src/handoff-main.jsx`, and `prototypes/src/handoff.css` rather than duplicating page markup.
+- Added `prototypes/handoff/AI_AGENT_HANDOFF.md` and `prototypes/handoff/agent-handoff.json` so a future agent has both a narrative pickup guide and a structured contract.
+- Updated the prototype gallery, Vite multi-page inputs, README, local agent instructions, design QA record, decision log, and traceability matrix so all handoff assets are discoverable and evidence-linked.
+- Preserved the accepted compact density: 36px desktop trigger, 44px narrow-screen trigger, 322px desktop popover, 12px radius, 50px rows, 13px labels, and 18px icons.
+- Preserved comprehensive Board/List grouping and sorting inventories, Light/Dark appearance, query-persisted review states, default reset semantics, and the rule that only workflow-status layouts allow status drag.
+- Added unique accessible names to repeated specimens after browser inspection exposed duplicate select labels.
+- Built all eight Vite entries successfully and verified the three new routes with zero browser console warnings/errors and no document-level horizontal overflow.
+- Verified exact 390px CSS viewport geometry through the selected in-app Browser's emulation path after its raster capture surface reported inconsistent physical dimensions; all three routes returned `innerWidth`, `clientWidth`, and `scrollWidth` of 390.
+- Recorded approved-reference versus HTML comparison assets, including a focused comparison after restoring the intended `Primary AI topic · Title A–Z` specimen state.
+- Kept the selected local design handoff route open at `http://127.0.0.1:4173/design-handoff.html` for reviewer pickup.
+
+### Mainline reconciliation
+
+- Main advanced to `4e917c7c1fb665ef487f508de8d8984ec13642b6` through Recall manual-sync PR #22 while this design handoff was being prepared.
+- Merged current `origin/main` into `concept/card-processing-workflow` in merge commit `07477ed`, preserving the Recall implementation and documentation already accepted on main.
+- Resolved overlapping global wiki/catalog artifacts in favor of the current mainline versions, then preserved the complete 342-line Card Processing log history by appending it after the Recall entries.
+- Reconciled the page-audit artifact to the now-valid 85-page wiki corpus, added the Card Processing exploration page to the audit, and refreshed the five mainline-changed destination hashes.
+- Pushed the reconciled branch and confirmed GitHub Actions `Agent documentation / validate` passed in run `29156579168`.
+
+### Verification evidence
+
+- `npm run build --prefix docs/feature-council/card-processing-workflow/prototypes` — passed; eight HTML entries emitted.
+- `npm run check:agent-docs` — passed; 85 wiki pages reachable, 85 audit rows, 46 feature evidence rows, and 38 idea evidence rows.
+- `npm run smoke:agent-docs` — passed.
+- `git diff --check` and staged-diff whitespace validation — passed before merge commit.
+- Desktop review: 1440×1024 handoff and pickup pages plus 1280×720/full-page specimen evidence.
+- Narrow review: exact 390px DOM geometry with 44px trigger height and no horizontal overflow.
+- Appearance/behavior review: Light/Dark switching, grouping/sorting selection, reset, open/closed menu, and canonical URL persistence exercised.
+
+### Created / updated handoff paths
+
+- `docs/feature-council/card-processing-workflow/prototypes/design-handoff.html`
+- `docs/feature-council/card-processing-workflow/prototypes/group-sort-specimen.html`
+- `docs/feature-council/card-processing-workflow/prototypes/agent-pickup.html`
+- `docs/feature-council/card-processing-workflow/prototypes/src/Handoff.jsx`
+- `docs/feature-council/card-processing-workflow/prototypes/src/handoff-main.jsx`
+- `docs/feature-council/card-processing-workflow/prototypes/src/handoff.css`
+- `docs/feature-council/card-processing-workflow/prototypes/handoff/AI_AGENT_HANDOFF.md`
+- `docs/feature-council/card-processing-workflow/prototypes/handoff/agent-handoff.json`
+- `docs/feature-council/card-processing-workflow/prototypes/design-qa.md`
+- `docs/feature-council/card-processing-workflow/decisions/decision-log.md`
+- `docs/feature-council/card-processing-workflow/reviews/traceability-matrix-v2.md`
+
+### Deployed / Released
+
+The detailed HTML handoff package was committed in `bc7e9093d6eaa5a62e80276077d4b3a88e58b0ff`, merged with current mainline history through `07477ed`, pushed to `concept/card-processing-workflow`, and validated on review-only PR [#21](https://github.com/arunpr614/ai-brain/pull/21). No production application behavior, schema, migration, API, feature flag, rollout, deployment, merge to `main`, or live feature enablement occurred. Status remains **Explored — not implemented**.
+
+### Learned
+
+- A PR with merge conflicts did not receive a useful fresh `pull_request` validation run; bringing the branch up to date restored normal CI.
+- Browser raster dimensions and CSS viewport dimensions can diverge in the desktop app; exact DOM metrics are the reliable responsive acceptance check, while raster evidence should state the capture limitation.
+- A handoff is materially stronger when the accepted visual, runnable component states, narrative guide, and structured contract all point to the same locked measurements and guardrails.
+
+### Remaining gates
+
+- Stakeholder authorization to move from exploration into production planning or implementation.
+- Real-library task testing, full filter algebra, large-data/performance behavior, and production URL/state semantics.
+- Production integration, concurrency, migration, regression, rollout, and observability plans.
+- Manual assistive-technology, forced-colors, zoom/reflow, and physical-device validation.
+
+### Open questions / decisions needed
+
+No decision is needed to use the handoff. The next product decision is whether to authorize a separate production-planning phase; this work does not infer that authorization.
+
+### Session self-critique
+
+- The desktop Browser's mobile raster capture remained physically inconsistent, so responsive proof combines exact in-browser DOM geometry with documented desktop/full-page imagery rather than claiming a faithful 390×844 raster.
+- Automated accessibility-oriented checks and accessible-name inspection passed, but manual screen-reader/assistive-technology validation remains intentionally unclaimed.
+- Mainline reconciliation increased the diff visible in the concept PR because it now contains the merged Recall history; the actual Card Processing handoff remains isolated in its documented paths and commits.
+
+### State snapshot
+
+- **Current phase / version:** Approved Direction B HTML handoff complete; production status remains **Explored — not implemented**.
+- **Active branch / review:** `concept/card-processing-workflow`; review-only PR #21 open and validated.
+- **Key commits:** compact design `c046e1d`; handoff package `bc7e909`; current-main merge `07477ed`; this final log entry will be committed separately.
+- **Working tree:** Intended append-only log update only after merge/push verification.
+- **Deployed/runtime state:** Production unchanged; isolated Vite review server available on `127.0.0.1:4173`.
+- **Next agent action:** Open `design-handoff.html`, then `agent-pickup.html`, then read `handoff/AI_AGENT_HANDOFF.md` and `handoff/agent-handoff.json`; retain the locked design and authorization boundary before proposing any production work.
