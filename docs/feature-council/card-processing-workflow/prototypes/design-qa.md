@@ -168,3 +168,48 @@ Using semantic in-app Browser controls, the following were exercised without con
 - Manual VoiceOver/NVDA/TalkBack, switch control, 320px, 200%/400% zoom, text spacing, and real-device validation remain implementation no-go gates.
 
 final result: passed
+
+---
+
+## Stakeholder density correction QA — compact existing-pattern alignment
+
+**Date:** 2026-07-11
+**Scope:** Direction B Board/List organization trigger and popover
+**Classification:** **Explored — not implemented**
+
+### Visual truth and evidence
+
+- Existing compact visual pattern: `references/group-sort-popover-reference.png`.
+- Stakeholder-marked oversized state: `references/group-sort-popover-oversized-feedback.png`.
+- Revised dark Board full view at 1440×1024: `screenshots/direction-b-board-group-sort-menu-compact-dark-1440x1024.jpg`.
+- Revised light List full view at 1440×1024: `screenshots/direction-b-list-group-sort-menu-compact-light-1440x1024.jpg`.
+- Revised mobile Board at 390×844: `screenshots/direction-b-board-group-sort-menu-compact-mobile-dark-390x844.jpg`.
+- Focused revised implementation: `screenshots/direction-b-group-sort-focused-compact-dark-324x194.jpg`.
+- Combined comparison input: `screenshots/direction-b-group-sort-density-reference-feedback-revised.png`.
+- Final tested source SHA-256: `App.jsx bc90dc851b876860740a567748d7cb785d7a95ee53e32c23fe975792545e5b17`; `styles.css 7473abcea633a214c1c9d6db1607293927a4d3256d7043277099f7cffda21316`.
+
+### Required fidelity surfaces
+
+- **Typography:** Group by / Sort by moved from 16px to 13px, values to 12px, trigger label to 11px, summary value to 9px, and reset to 10px. These sizes now follow adjacent filter, card-action, and view-control hierarchy.
+- **Spacing and layout rhythm:** desktop trigger changed from 42px to 36px, popover from 390px to 322px, rows from 68px to 50px, padding from 10px to 6px, and radius from 18px to 12px. The result reads as a utility menu beside 40px filters rather than a primary task surface.
+- **Colors and tokens:** existing theme, border, accent, raised-surface, and popover tokens are unchanged in both Light and Dark; only density changed.
+- **Image and icon fidelity:** no raster imagery is part of this control. Existing Lucide organization/sort/reset icons were retained and reduced from 24px/14px to 18px/12px to match the product icon scale.
+- **Copy and content:** Group & sort, Group by, Sort by, current values, and Reset to Status · Oldest remain unchanged.
+
+### Comparison history
+
+| Severity | Earlier finding | Fix | Post-fix evidence |
+|---|---|---|---|
+| P1 | The open popover dominated the Board and did not align with existing control density. | Reduced width, row height, padding, type, icons, radius, and shadow footprint while preserving the two-row anatomy. | Dark Board and combined density comparison. |
+| P2 | The trigger was taller and wider than needed beside the 40px filters. | Reduced desktop height to 36px and minimum width to 238px; preserved truncation for long values. | Dark Board and light List full views. |
+| P2 | A blanket compact rule would reduce the mobile touch target below the established 44px minimum. | Kept the mobile trigger at 44px while using compact 54px popover rows and 13px labels. | 390×844 Board capture and measured bounds. |
+
+### Verification
+
+- Measured desktop dark and light states: trigger `36px` high; popover `322×148px`; rows `50px`; zero horizontal document overflow.
+- Measured mobile state: trigger `44px` high; popover `350×156px`; zero horizontal document overflow.
+- Board and List option behavior, URL persistence, status-movement separation, and Light/Dark theme behavior remain unchanged.
+- Final in-app Browser pass: **0 console errors, 0 console warnings**.
+- Isolated five-entry production build: **pass**.
+
+final result: passed

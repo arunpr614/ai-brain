@@ -29459,3 +29459,27 @@ Task-based usability with realistic libraries; production URL/query semantics an
 - **Active branch:** `concept/card-processing-workflow`; PR #21 remains review-only.
 - **Deployed/runtime state:** Production unchanged; local isolated prototype available for review.
 - **Next milestone:** Stakeholder review of organization breadth, defaults, and both appearance modes.
+
+---
+
+## 2026-07-11 17:50 - Compact Organization-Control Density Correction
+
+**Entry author:** AI agent (Codex) · **Triggered by:** Stakeholder feedback that the Group & sort trigger and popover were too large and did not align with existing design patterns.
+
+### Done
+
+- Preserved the approved Direction B organization behavior and changed only component density.
+- Reduced the desktop trigger from 42px to 36px, popover from 390px to 322px, rows from 68px to 50px, labels from 16px to 13px, icons from 24px to 18px, and radius from 18px to 12px.
+- Kept the mobile trigger at the established 44px touch minimum while compacting the open mobile menu.
+- Verified the revised component on dark Board, light List, and 390×844 mobile Board with no horizontal overflow or console issues.
+- Compared the original compact pattern, stakeholder-marked oversized state, and revised implementation in one QA image; final design QA remains `passed`.
+
+### Deployed / Released
+
+Nothing deployed, merged, enabled, or implemented in production. This is an isolated prototype refinement on the review-only concept branch.
+
+### State snapshot
+
+- **Current phase / version:** Direction B density correction complete.
+- **Active branch:** `concept/card-processing-workflow`; PR #21 remains review-only.
+- **Next milestone:** Stakeholder confirmation that the compact organization control now matches the existing product density.
