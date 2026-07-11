@@ -74,8 +74,9 @@ The concept branch includes a locally runnable isolated gallery, three responsiv
 - [UX/UI v2](https://github.com/arunpr614/ai-brain/blob/df4c42b9869f8a35b9557bc64bf6ecdb9d11b416/docs/feature-council/card-processing-workflow/ux/ux-ui-v2.md)
 - [Technical plan v2](https://github.com/arunpr614/ai-brain/blob/df4c42b9869f8a35b9557bc64bf6ecdb9d11b416/docs/feature-council/card-processing-workflow/technical/technical-plan-v2.md)
 - [Decision log](https://github.com/arunpr614/ai-brain/blob/df4c42b9869f8a35b9557bc64bf6ecdb9d11b416/docs/feature-council/card-processing-workflow/decisions/decision-log.md)
+- [Review-only pull request #21](https://github.com/arunpr614/ai-brain/pull/21)
 
-Interactive hosting is not established by this wiki page; the files run locally from the concept branch.
+Interactive hosting is not established by this wiki page; the files run locally from the review branch. Pull request #21 is for stakeholder review and does not authorize implementation or merge.
 
 ## Risks and open validation
 

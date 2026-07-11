@@ -15,7 +15,7 @@ Owner: AI Brain maintainer.
 
 - Added [Card Processing Workflow Exploration](Card-Processing-Workflow-Exploration) and cross-linked the ideas catalog, feature-status matrix, product roadmap posture, architecture proposals, and sidebar.
 - The recommended Direction B is an Inbox-first Processing section. Batch mutation and manual rank are deferred; no production implementation, migration, API, flag, rollout, or merge is claimed.
-- Canonical repository commit, review-only pull request, live-wiki commit, and publication verification are recorded at final delivery rather than preclaimed here.
+- Canonical exploration evidence was committed in `df4c42b9869f8a35b9557bc64bf6ecdb9d11b416`, pinned in successor `13ed06a9f7cab853b33fa0c20c51fefc222313ff`, and opened for review in [pull request #21](https://github.com/arunpr614/ai-brain/pull/21). Live-wiki commit and publication verification are recorded in final delivery rather than preclaimed here.
 
 ## 2026-07-11 — definitive project wiki
 
