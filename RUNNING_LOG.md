@@ -29529,3 +29529,50 @@ None from the user. Remediation must remain within v2. Any proposed contract dev
 - **Active branch:** `feat/recall-manual-sync` at implementation commit `fdd7406` plus documentation changes.
 - **Deployed/runtime state:** Unchanged; manual feature remains default off and undeployed.
 - **Next milestone:** Verified Wiki publication followed by review-ready PR.
+
+---
+
+## 2026-07-11 17:12 IST — Recall manual sync GitHub Wiki publication verified
+
+**Entry author:** AI agent (Codex) · **Triggered by:** Canonical Recall documentation passed all repository documentation and privacy gates.
+
+### What changed
+
+- Re-read the separate Wiki remote immediately before publication and found a concurrent, unrelated Card Processing Workflow exploration at `9e3f7d93f8d7cbc6a5a615c078ac4fbe4e475f3c`.
+- Stopped the planned corpus sync, preserved the concurrent page/navigation/architecture changes, and reconciled the two overlapping Feature Catalog and Documentation Changelog entries.
+- Published exactly ten Recall-related pages with a normal commit and push: Wiki commit `703077dd74c3cbc18936357a9b5bde0397f972a3`.
+- Did not force push, rewrite Wiki history, delete pages, or overwrite unrelated content.
+- Fresh-clone verification proved all ten pages byte-identical to canonical source, the concurrent exploration page byte-identical before/after, 85 Markdown pages present, clean status, and a passing full-Wiki privacy scan.
+- Live GitHub inspection verified the Recall page, both Feature Catalog entries, both Documentation Changelog entries, and the preserved exploration's “Explored — not implemented” boundary.
+
+### Runtime and safety boundary
+
+- The external write was documentation-only and explicitly required by the goal.
+- No application merge, deploy, feature enablement, timer change, credential access, or Recall call occurred.
+- The Wiki continues to label the manual feature as a default-off review candidate and records actual-host proof as a separately authorized enablement gate.
+
+### Documents created or updated this period
+
+**Created:**
+- `docs/feature-council/recall-manual-sync/wiki-update-summary.md`
+
+**Updated:**
+- `docs/agent-docs/source-baseline.json`
+- `docs/feature-council/recall-manual-sync/project-tracker.md`
+- `RUNNING_LOG.md` (append-only)
+
+### Current remaining to-do
+
+1. Commit Wiki publication evidence and final documentation state.
+2. Run final regression and repository cleanliness gates.
+3. Push the feature branch and open the review-ready PR with screenshots, test ledger, Wiki link, rollback, and enablement boundary.
+4. Verify PR checks and update final tracking evidence.
+5. Stop before merge or deployment.
+
+### State snapshot
+
+- **Current phase:** Review-ready repository delivery.
+- **Active branch:** `feat/recall-manual-sync` with three focused commits before Wiki closeout.
+- **Published Wiki:** `703077dd74c3cbc18936357a9b5bde0397f972a3`.
+- **Deployed/runtime state:** Unchanged; manual feature remains default off and undeployed.
+- **Next milestone:** Branch push and review-ready pull request.

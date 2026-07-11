@@ -1,6 +1,6 @@
 # Recall manual sync project tracker
 
-Updated: 2026-07-11 17:01 IST
+Updated: 2026-07-11 17:12 IST
 Branch: `feat/recall-manual-sync`
 Project phase: documentation, Wiki publication, and review-ready delivery
 
@@ -15,8 +15,8 @@ Project phase: documentation, Wiki publication, and review-ready delivery
 | M4 Backend dark launch | Implementation agent | Migration, request repository, lifecycle/status, route, worker, full-wrapper reuse, tests; flag off | Complete |
 | M5 Settings experience | Implementation agent, UX | Responsive accessible panel/dialog/polling and every v2 state | Complete |
 | M6 Verification and independent review | QA/reviewer, adversarial reviewer | Automated gates, visual/mobile/a11y/manual evidence, no critical/high findings | Complete — GO |
-| M7 Repository and wiki documentation | Coordinator | Canonical docs updated; separate wiki committed, pushed, fresh-clone verified | In progress |
-| M8 Review-ready delivery | Coordinator | Final diff, commits, push, PR, screenshots, evidence, running log, final report | Pending |
+| M7 Repository and wiki documentation | Coordinator | Canonical docs updated; separate wiki committed, pushed, fresh-clone verified | Complete |
+| M8 Review-ready delivery | Coordinator | Final diff, commits, push, PR, screenshots, evidence, running log, final report | In progress |
 
 ## Work items
 
@@ -42,15 +42,15 @@ Project phase: documentation, Wiki publication, and review-ready delivery
 | RMS-UX-02 | Responsive accessible Settings UI | Implementation | Complete | 320/390/1024/1440, 200% zoom, keyboard, reduced motion, light/dark, AX/axe |
 | RMS-REL-01 | Refresh/offline/auth/multi-tab recovery | Implementation + QA | Complete | Exact request-ID/key rehydration, supersession, no replay/false failure |
 | RMS-QA-01 | Acceptance traceability and release risk | QA/reviewer | Complete — GO | AC 1–21 closed for review-ready scope; no Critical/High; host proof separate |
-| RMS-DOC-01 | Repository docs and wiki source | Coordinator | In progress | Feature, API, data, ops, security, limitations, catalog, changelog, baseline |
-| RMS-DOC-02 | Separate wiki publication | Coordinator | Pending | Protected base SHA, normal push, fresh clone, live verification |
+| RMS-DOC-01 | Repository docs and wiki source | Coordinator | Complete | Feature, API, data, ops, security, limitations, catalog, changelog, baseline |
+| RMS-DOC-02 | Separate wiki publication | Coordinator | Complete | Base `9e3f7d9`; normal push `703077d`; fresh clone, 85-page privacy, byte and live verification |
 | RMS-DEL-01 | Review-ready PR | Coordinator | Pending | Green checks, screenshots, rollback, no production enablement |
 
 ## Current blockers and risks
 
 - Production enablement remains blocked until an authorized real-host proof shows the web process cannot read the Recall credential or open the private lock and verifies identity, data/SQLite/WAL/backup permissions, installed units, timer continuity, a controlled request, and the next daily completion. This does not block a default-off review-ready PR.
 - No Critical, High, or P2 implementation-review finding remains. Physical VoiceOver/TalkBack and physical touch hardware were unavailable; browser AX/live-region/keyboard/zoom/contrast/axe/reduced-motion evidence is recorded without claiming a physical AT lab.
-- Remaining delivery work is canonical Wiki publication verification, repository documentation commit, branch push, and the review-ready PR. No merge or deploy is authorized.
+- Remaining delivery work is the publication closeout commit, branch push, review-ready PR, and checks. No merge or deploy is authorized.
 
 ## Operating constraints
 
