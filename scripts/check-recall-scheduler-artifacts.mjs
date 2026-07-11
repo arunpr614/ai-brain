@@ -4,7 +4,9 @@ import { readFileSync } from "node:fs";
 const files = {
   service: read("scripts/deploy/brain-recall-sync.service"),
   timer: read("scripts/deploy/brain-recall-sync.timer"),
+  manualTmpfiles: read("scripts/deploy/brain-recall-manual-sync.tmpfiles.conf"),
   wrapper: read("scripts/recall-scheduled-apply.sh"),
+  lifecycle: read("scripts/recall-sync-lifecycle.ts"),
   deploy: read("scripts/deploy.sh"),
   prelive: read("scripts/check-recall-prelive-readiness.mjs"),
   packageJson: read("package.json"),
@@ -361,6 +363,26 @@ assertIncludes(files.wrapper, "sync-recall-prod.mjs", "wrapper must call bundled
 
 assertIncludes(files.deploy, "brain-recall-sync.service", "deploy must copy/install service");
 assertIncludes(files.deploy, "brain-recall-sync.timer", "deploy must copy/install timer");
+assertIncludes(
+  files.deploy,
+  "getent group brain-recall >/dev/null || groupadd --system brain-recall",
+  "deploy must create the private runtime group before assigning it",
+);
+assertIncludes(
+  files.deploy,
+  'ready_file="$(mktemp)"',
+  "deploy guard output capture must not expand the remote script inside a quoted command substitution",
+);
+assertIncludes(
+  files.manualTmpfiles,
+  "f /run/brain-recall/recall-sync.lock 0600 brain-recall brain-recall - -",
+  "tmpfiles must normalize the shared lock to worker-only ownership",
+);
+assertIncludes(
+  files.lifecycle,
+  'execFileSync("date", ["--date", raw, "--iso-8601=seconds"]',
+  "schedule snapshots must normalize systemd timezone abbreviations without a shell",
+);
 assertIncludes(
   files.deploy,
   "BRAIN_RECALL_ALLOW_EXISTING_TIMER",

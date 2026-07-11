@@ -23,7 +23,9 @@ acquire_recall_deploy_guard() {
   [[ -z "$RECALL_DEPLOY_GUARD_TOKEN" ]] || die "Recall deploy guard is already held"
   RECALL_DEPLOY_GUARD_TOKEN="deploy-$$-$(date -u +%s)"
   local ready
-  ready="$(ssh "${SSH_HOST}" "sudo env RECALL_GUARD_TOKEN='${RECALL_DEPLOY_GUARD_TOKEN}' bash -s" <<'REMOTE_RECALL_DEPLOY_GUARD'
+  local ready_file
+  ready_file="$(mktemp)"
+  if ! ssh "${SSH_HOST}" "sudo env RECALL_GUARD_TOKEN='${RECALL_DEPLOY_GUARD_TOKEN}' bash -s" >"$ready_file" <<'REMOTE_RECALL_DEPLOY_GUARD'; then
 set -euo pipefail
 prefix="/run/brain-recall/${RECALL_GUARD_TOKEN}"
 hold="${prefix}.hold"
@@ -47,45 +49,46 @@ if ! id brain-recall >/dev/null 2>&1 || [[ "$(stat -c '%U %G %a' /run/brain-reca
     exit 1
   fi
   getent group brain-data >/dev/null || groupadd --system brain-data
+  getent group brain-recall >/dev/null || groupadd --system brain-recall
   id brain-recall >/dev/null 2>&1 || useradd --system --home /nonexistent --shell /usr/sbin/nologin --gid brain-data brain-recall
   install -d -m 0700 -o brain-recall -g brain-recall /run/brain-recall
 fi
 
 install -m 0600 /dev/null "$hold"
 rm -f "$ready" "$result" "$holder"
-cat > "$holder" <<'RECALL_GUARD_HOLDER'
-#!/usr/bin/env bash
-set -euo pipefail
-prefix="$1"
-hold="${prefix}.hold"
-ready="${prefix}.ready"
-result="${prefix}.result"
-lock="/run/brain-recall/recall-sync.lock"
-exec 9>>"$lock"
-if ! flock -n 9; then
-  printf 'lock_busy\n' > "$result"
-  exit 1
-fi
-for service in brain-recall-sync.service brain-recall-manual-sync.service; do
-  state="$(systemctl is-active "$service" 2>/dev/null || true)"
-  case "$state" in
-    active|reloading|deactivating)
-      printf 'service_active:%s:%s\n' "$service" "$state" > "$result"
-      exit 1
-      ;;
-  esac
-done
-timer_before="$(systemctl is-enabled brain-recall-sync.timer 2>/dev/null || true)|$(systemctl is-active brain-recall-sync.timer 2>/dev/null || true)"
-printf 'ready|%s\n' "$timer_before" > "$ready"
-while [[ -e "$hold" ]]; do sleep 0.1; done
-timer_after="$(systemctl is-enabled brain-recall-sync.timer 2>/dev/null || true)|$(systemctl is-active brain-recall-sync.timer 2>/dev/null || true)"
-if [[ "$timer_after" != "$timer_before" ]]; then
-  printf 'timer_changed|%s|%s\n' "$timer_before" "$timer_after" > "$result"
-else
-  printf 'ok|%s\n' "$timer_after" > "$result"
-fi
-rm -f "$ready" "$holder"
-RECALL_GUARD_HOLDER
+printf '%s\n' \
+  '#!/usr/bin/env bash' \
+  'set -euo pipefail' \
+  'prefix="$1"' \
+  'hold="${prefix}.hold"' \
+  'ready="${prefix}.ready"' \
+  'result="${prefix}.result"' \
+  'lock="/run/brain-recall/recall-sync.lock"' \
+  'exec 9>>"$lock"' \
+  'if ! flock -n 9; then' \
+  "  printf 'lock_busy\\n' > \"\$result\"" \
+  '  exit 1' \
+  'fi' \
+  'for service in brain-recall-sync.service brain-recall-manual-sync.service; do' \
+  '  state="$(systemctl is-active "$service" 2>/dev/null || true)"' \
+  '  case "$state" in' \
+  '    active|reloading|deactivating)' \
+  "      printf 'service_active:%s:%s\\n' \"\$service\" \"\$state\" > \"\$result\"" \
+  '      exit 1' \
+  '      ;;' \
+  '  esac' \
+  'done' \
+  'timer_before="$(systemctl is-enabled brain-recall-sync.timer 2>/dev/null || true)|$(systemctl is-active brain-recall-sync.timer 2>/dev/null || true)"' \
+  "printf 'ready|%s\\n' \"\$timer_before\" > \"\$ready\"" \
+  'while [[ -e "$hold" ]]; do sleep 0.1; done' \
+  'timer_after="$(systemctl is-enabled brain-recall-sync.timer 2>/dev/null || true)|$(systemctl is-active brain-recall-sync.timer 2>/dev/null || true)"' \
+  'if [[ "$timer_after" != "$timer_before" ]]; then' \
+  "  printf 'timer_changed|%s|%s\\n' \"\$timer_before\" \"\$timer_after\" > \"\$result\"" \
+  'else' \
+  "  printf 'ok|%s\\n' \"\$timer_after\" > \"\$result\"" \
+  'fi' \
+  'rm -f "$ready" "$0"' \
+  > "$holder"
 chmod 0700 "$holder"
 nohup bash "$holder" "$prefix" >/dev/null 2>&1 &
 for _ in $(seq 1 200); do
@@ -103,10 +106,12 @@ echo '[deploy] timed out acquiring continuous Recall deploy guard' >&2
 rm -f "$hold"
 exit 1
 REMOTE_RECALL_DEPLOY_GUARD
-)" || {
+    rm -f "$ready_file"
     RECALL_DEPLOY_GUARD_TOKEN=""
     die "continuous Recall deploy guard could not be acquired"
-  }
+  fi
+  ready="$(<"$ready_file")"
+  rm -f "$ready_file"
   [[ "$ready" == ready\|* ]] || die "continuous Recall deploy guard returned an invalid readiness response"
   trap 'release_recall_deploy_guard false' EXIT
   echo "[deploy] continuous Recall deploy guard acquired (${ready#ready|})."
@@ -117,7 +122,9 @@ release_recall_deploy_guard() {
   [[ -n "$RECALL_DEPLOY_GUARD_TOKEN" ]] || return 0
   local token="$RECALL_DEPLOY_GUARD_TOKEN"
   local outcome
-  outcome="$(ssh "${SSH_HOST}" "sudo env RECALL_GUARD_TOKEN='${token}' bash -s" <<'REMOTE_RECALL_DEPLOY_RELEASE'
+  local outcome_file
+  outcome_file="$(mktemp)"
+  if ssh "${SSH_HOST}" "sudo env RECALL_GUARD_TOKEN='${token}' bash -s" >"$outcome_file" <<'REMOTE_RECALL_DEPLOY_RELEASE'; then
 set -euo pipefail
 prefix="/run/brain-recall/${RECALL_GUARD_TOKEN}"
 rm -f "${prefix}.hold"
@@ -132,7 +139,11 @@ done
 echo 'guard_release_timeout'
 exit 1
 REMOTE_RECALL_DEPLOY_RELEASE
-)" || outcome="guard_release_failed"
+    outcome="$(<"$outcome_file")"
+  else
+    outcome="guard_release_failed"
+  fi
+  rm -f "$outcome_file"
   RECALL_DEPLOY_GUARD_TOKEN=""
   trap - EXIT
   if [[ "$verify" == "true" && "$outcome" != ok\|* ]]; then
@@ -506,6 +517,7 @@ if grep -Eq '^(export[[:space:]]+)?RECALL_API_KEY[[:space:]]*=' /etc/brain/.env;
   exit 1
 fi
 getent group brain-data >/dev/null || groupadd --system brain-data
+getent group brain-recall >/dev/null || groupadd --system brain-recall
 id brain-recall >/dev/null 2>&1 || useradd --system --home /nonexistent --shell /usr/sbin/nologin --gid brain-data brain-recall
 usermod -a -G brain-data brain
 test "$(stat -c '%U %a' /etc/brain/recall-api-key)" = 'root 400' || {

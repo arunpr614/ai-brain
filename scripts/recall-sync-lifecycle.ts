@@ -38,7 +38,21 @@ function parseNextElapse(output: string): string | null {
   const raw = output.trim();
   if (!raw || raw === "n/a") return null;
   const parsed = Date.parse(raw);
-  return Number.isFinite(parsed) ? new Date(parsed).toISOString() : null;
+  if (Number.isFinite(parsed)) return new Date(parsed).toISOString();
+  try {
+    // systemd renders this property in the host timezone (for example, an
+    // `IST` suffix), and V8 does not recognize every systemd abbreviation.
+    // GNU date already uses the host timezone database, so normalize the
+    // trusted systemctl value without invoking a shell.
+    const normalized = execFileSync("date", ["--date", raw, "--iso-8601=seconds"], {
+      encoding: "utf8",
+      timeout: 10_000,
+    }).trim();
+    const normalizedTimestamp = Date.parse(normalized);
+    return Number.isFinite(normalizedTimestamp) ? new Date(normalizedTimestamp).toISOString() : null;
+  } catch {
+    return null;
+  }
 }
 
 async function main(): Promise<void> {
