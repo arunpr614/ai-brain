@@ -22,6 +22,7 @@ This registry classifies every package script at the documentation baseline. Com
 | `check:build-artifacts` | R0 read-only local | No | No | No | No | Local source/config inspection |
 | `check:env` | R0 read-only local | No | No | No | No | Local source/config inspection |
 | `check:feature-council-wiki` | R0 read-only local | No | No | No | No | Deterministic source/manifest/generated-page comparison |
+| `check:project-wiki-artifacts` | R0 read-only local | No | No | No | No | Local CSV schema, count, page-hash, and ledger-drift validation |
 | `check:recall-apply-report` | R0 read-only local | No | No | No | No | Static or local-evidence checker; live variants remain prohibited by project gate |
 | `check:recall-approval-packet` | R0 read-only local | No | No | No | No | Static or local-evidence checker; live variants remain prohibited by project gate |
 | `check:recall-controlled-samples` | R0 read-only local | No | No | No | No | Static or local-evidence checker; live variants remain prohibited by project gate |

@@ -1,44 +1,43 @@
 # Enrichment and AI Providers
 
-Purpose: Explain post-capture AI processing, provider selection, retries, and failure states.
-Audience: AI agents working on enrichment, embeddings, queues, or providers.
-Verified against: `2b4db9540d0b76ee6d3aa2a9da5f788b69a8d02a` and `8178117c80923e5724e355fb2684cbc836013d39`.
-Runtime evidence through: 2026-06-17 for tied provider evidence; complete production tree SHA is Unknown.
-Last reviewed: 2026-07-10.
+Purpose: Explain generated content, provider selection, queues, retries, note consent, and known telemetry/batch risks.
+Audience: AI agents changing AI, embeddings, prompts, queues, or provider configuration.
+Verified against: `23868faf13c8e3d0821715e6f5d0e3d2af1e1a34`.
+Runtime evidence through: 2026-07-10; strict Anthropic/Gemini checks passed for the verified release.
+Last reviewed: 2026-07-11.
 Owner: AI Brain maintainer.
 
-## Pipeline
+**Status:** Implemented · **Confidence:** High · **Availability:** Provider-configured
 
-Captured items enter an enrichment queue. The worker loads the current item, applies prompts and provider selection, writes summaries and taxonomy, then triggers or coordinates chunking and embeddings. Enrichment state and embedding state are separate so a vector failure does not erase successful generated content.
+The owner needs useful derived metadata and semantic readiness after capture; maintainers need provider failures to remain observable and recoverable without damaging source text.
 
-Pinned source: [enrichment pipeline](https://github.com/arunpr614/ai-brain/blob/8178117c80923e5724e355fb2684cbc836013d39/src/lib/enrich/pipeline.ts), [prompts](https://github.com/arunpr614/ai-brain/blob/8178117c80923e5724e355fb2684cbc836013d39/src/lib/enrich/prompts.ts), [worker](https://github.com/arunpr614/ai-brain/blob/8178117c80923e5724e355fb2684cbc836013d39/src/lib/queue/enrichment-worker.ts), and [embedding factory](https://github.com/arunpr614/ai-brain/blob/8178117c80923e5724e355fb2684cbc836013d39/src/lib/embed/factory.ts).
+**Target user:** the single owner consuming derived content; maintainers operating provider and queue policy.
 
-## Providers
+The architecture/runtime flow is capture completion → enrichment job → provider API entrypoint → generated item data storage → chunk/embed job → retrieval readiness. Authentication protects provider-status/settings APIs; privacy and attached-note consent determine eligible content.
 
-| Capability | Source-wired providers | Notes |
-|---|---|---|
-| Text generation | Anthropic, OpenRouter, Ollama | Selection depends on configuration and factory policy |
-| Embeddings | Gemini, Ollama | Stored vectors must match configured dimensions |
-| Owned-media speech-to-text | Provider adapters in the worktree | Requires explicit ownership and configured provider |
+Captured items enter enrichment jobs. The pipeline generates title, digest, quotes, category, tags and topics, then creates chunk/embed work. Enrichment and embedding state are separate; a vector failure does not erase valid captured/generated content.
 
-Provider status is point-in-time. A green settings check does not guarantee future requests, and local provider availability may differ from hosted runtime availability.
+| Capability | Providers |
+|---|---|
+| Text generation | Ollama, Anthropic, OpenRouter |
+| Embeddings | Ollama and Gemini at the configured 768-dimensional contract |
+| Owned-media speech-to-text | Adapter code exists, but the route is inactive |
 
-## Queue Behavior
+Provider status is point-in-time. Local defaults may differ from the verified hosted provider choice. Attached-note AI adds rollout flags, per-note opt-in and a provider/model/destination acknowledgement; exact note search is independent.
 
-Jobs track queued, running, completed, and failed states with attempts and errors. Batch/cron helpers claim work, apply retry/backoff policy, and avoid leaving unreachable running jobs. Error messages must be redacted before persistence or display.
+## Queue behavior and failure states
 
-## Failure Separation
+Jobs record pending/running/completed/failed attempts. Provider timeout/outage can leave retryable state; stale claims require careful recovery. Current instrumentation starts both continuous enrichment and a nightly batch path against the same pending queue. Static control flow suggests continuous processing can consume work before batching, so document actual batch behavior only after measurement.
 
-- Capture extraction can fail before an item is useful.
-- Enrichment can fail while captured text remains available.
-- Embedding can fail after summary/taxonomy succeeds.
-- Provider status can pass while a later request times out.
-- A retry can duplicate work unless job claiming and item writes are idempotent.
+| State | Behavior |
+|---|---|
+| Empty/pending queue | Worker idles or claims the next eligible item |
+| Loading/running | Durable claim and provider request; UI shows processing state |
+| Success | Generated fields persist, then chunk/embed work becomes eligible |
+| Failure | Attempt/error state remains without erasing captured content; retry policy applies |
 
-When debugging, inspect the exact stage and state transition. Avoid resetting both enrichment and embeddings when only one stage is damaged.
+Known debt: realtime enrichment/Ask usage records can label non-Ollama traffic as Ollama and do not provide complete model/cost fidelity; Ask retains an Ollama-specific model coupling.
 
-## Usage and Privacy
+Primary files: `src/lib/enrich/`, `llm/`, `embed/`, `providers/`, queue modules, instrumentation, settings/provider routes and tests.
 
-Provider requests may send item content outside the application host according to the configured provider. Public docs describe provider classes, not credentials or private prompts containing user content. Logs should record safe status, timing, model/provider identity, and redacted errors without raw library text.
-
-See [Search, RAG, and Ask](Search-RAG-and-Ask), [Security, Privacy, and Redaction](Security-Privacy-and-Redaction), and [Troubleshooting](Troubleshooting).
+Protecting suites include enrichment pipeline/worker/batch/batch-cron tests, provider factory/adapters/status tests and embedding client/factory/Gemini/pipeline tests. Configuration selects provider, endpoint/key/model/dimensions, timeouts and batch behavior; note AI adds separate rollout/consent rules. Operational changes affect capture readiness, search/Ask, taxonomy, usage records and queues. Related: [Capture](Capture-and-Ingestion), [Search and Ask](Search-RAG-and-Ask), [Manual Notes](Manual-Content-Notes), and [Known Limitations](Known-Limitations-and-Technical-Debt). Pinned evidence: [current enrichment source](https://github.com/arunpr614/ai-brain/tree/23868faf13c8e3d0821715e6f5d0e3d2af1e1a34/src/lib/enrich).

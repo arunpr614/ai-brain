@@ -1,41 +1,43 @@
 # Product Overview
 
-Purpose: Describe what AI Brain does and separate working capabilities from future goals.
-Audience: AI agents, engineers, and technical product collaborators.
-Verified against: `2b4db9540d0b76ee6d3aa2a9da5f788b69a8d02a` and `8178117c80923e5724e355fb2684cbc836013d39`.
-Runtime evidence through: 2026-07-09; complete production tree SHA is Unknown.
-Last reviewed: 2026-07-10.
+Purpose: Explain AI Brain's users, jobs, workflows, terminology, and current product boundaries.
+Audience: AI agents, engineers, and product/design collaborators.
+Verified against: `23868faf13c8e3d0821715e6f5d0e3d2af1e1a34`.
+Runtime evidence through: 2026-07-10 at deployed application `6858529ef179a51442d319c6c58e5ace79757619`; feature scope varies.
+Last reviewed: 2026-07-11.
 Owner: AI Brain maintainer.
 
-## Product Jobs
+AI Brain serves one owner who wants to capture material from several channels, retain trustworthy source context, let background AI organize/index it, find it later, and ask cited questions without turning the system into a collaborative workspace or full research-writing IDE.
 
-| Job | Current capability | Important qualification |
+## Core workflow
+
+1. Capture or import a source.
+2. Assess fidelity and preserve provenance.
+3. Enrich, chunk, and index it.
+4. Browse, organize, read, review, and repair it.
+5. Find it through exact, semantic, or hybrid retrieval.
+6. Ask cited questions over a controlled source scope.
+7. Add private attached notes and optionally include them in retrieval/AI under explicit policy.
+8. Export and back up the library.
+
+## Product jobs
+
+| Job | Current behavior | Important boundary |
 |---|---|---|
-| Capture | Notes, articles, YouTube, PDFs, transcripts, Android share, extension, Telegram, and Recall | Fidelity varies by source and some paths exist on only one baseline |
-| Organize | Tags, topics, collections, summaries, quality states, repair, and review inboxes | Main and the documentation branch have different review implementations |
-| Find | Full-text, semantic, and hybrid retrieval | Results require successful enrichment and embedding |
-| Ask | Streamed RAG answers with scopes, citations, and persisted threads | Provider and citation quality can fail independently |
-| Sync | Guarded daily Recall ingestion | Runtime is documented but the complete production SHA is Unknown |
-| Use remotely | Hosted web app, private Android sideload, and extension | Android is not a public store release |
-| Operate safely | Health checks, backups, off-site backup, redaction, services, and timers | Exact production operations remain private |
+| Capture | Notes, URLs/articles, selected text, YouTube, PDFs, transcripts, Android, extension, Telegram, Recall | Source fidelity varies; inactive recovery adapters remain visible only as unavailable options |
+| Organize/read | Library/item views, category/tags/topics/collections, Review/Needs Upgrade, source Focus, My notes | No multi-vault workspace, annotations, or graph |
+| Find/ask | FTS, semantic/hybrid retrieval, Related, scoped cited Ask, persisted chat | Retrieval quality and provider/citation behavior can fail independently |
+| Operate remotely | Hosted web app, private Android shell, extension, Telegram | Not a public multi-user or complete offline-native product |
+| Protect/recover | PIN/session/bearer boundaries, consent, database backups, health and queues | Private does not mean E2EE; artifact files are outside database backups |
 
-## Product Shape
+## Boundaries
 
-AI Brain is single-user by design. It stores the knowledge library in SQLite, uses background jobs for enrichment and embeddings, and exposes the same capture API to the web UI, extension, Android client, and Telegram integration. Recall sync maps external cards into the same item/capture model through fidelity gates.
+- Single owner and one SQLite store; no tenant/team/role/sharing model.
+- Hosted architecture with configurable providers; the original “100% local Mac/Ollama” model is superseded.
+- Android is a private thin client, not public-store/offline parity.
+- Review and Needs Upgrade are source-quality queues, not spaced repetition.
+- Related is query-time similarity, not a graph.
+- Export is not round-trip Markdown/Obsidian synchronization.
+- Schema/type substrate for cards, podcasts, EPUB, or DOCX does not establish product support.
 
-Pinned source anchors: [library](https://github.com/arunpr614/ai-brain/blob/8178117c80923e5724e355fb2684cbc836013d39/src/app/library/page.tsx), [capture](https://github.com/arunpr614/ai-brain/blob/8178117c80923e5724e355fb2684cbc836013d39/src/app/capture/page.tsx), [Ask](https://github.com/arunpr614/ai-brain/blob/8178117c80923e5724e355fb2684cbc836013d39/src/app/ask/page.tsx), and [Recall runner](https://github.com/arunpr614/ai-brain/blob/8178117c80923e5724e355fb2684cbc836013d39/src/lib/recall/sync-runner.ts).
-
-## Status Boundaries
-
-- `Shipped` describes a usable product capability with evidence.
-- `Main` describes code merged into the default branch.
-- `Branch-only` describes code present only in the documentation worktree baseline.
-- `Deployed-verified` requires dated evidence tied to a source SHA.
-- `Deployed-unverified` means operation is documented but the exact complete runtime revision is not proven.
-- `Planned` means no shipped implementation was found.
-
-See the [Feature Catalog](Feature-Catalog) for the complete matrix.
-
-## Future Goals
-
-Spaced repetition, generated pages, multi-step flows, a knowledge graph UI, Obsidian synchronization, and a fully offline mobile library remain planned or incomplete. Existing schema fragments, related-item retrieval, review inboxes, and offline fallback pages must not be presented as those completed products.
+See [Glossary](Glossary), [Feature Catalog](Feature-Catalog), and [Ideas and Exploration](Ideas-and-Exploration-Catalog).

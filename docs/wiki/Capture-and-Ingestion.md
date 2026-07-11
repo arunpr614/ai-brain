@@ -1,50 +1,44 @@
 # Capture and Ingestion
 
-Purpose: Explain how content enters AI Brain and how fidelity and provenance are preserved.
-Audience: AI agents working on capture, integrations, quality, or repair.
-Verified against: `2b4db9540d0b76ee6d3aa2a9da5f788b69a8d02a` and `8178117c80923e5724e355fb2684cbc836013d39`.
-Runtime evidence through: 2026-07-09; complete production tree SHA is Unknown.
-Last reviewed: 2026-07-10.
+Purpose: Document capture channels, supported content, result states, processing flow, and boundaries.
+Audience: AI agents and contributors changing ingestion behavior.
+Verified against: `23868faf13c8e3d0821715e6f5d0e3d2af1e1a34`.
+Runtime evidence through: 2026-07-10; source/channel evidence varies.
+Last reviewed: 2026-07-11.
 Owner: AI Brain maintainer.
 
-## Entry Paths
+**Overall status:** Implemented with partial/inactive sub-capabilities · **Confidence:** High for current-main code; runtime confidence is channel-specific
 
-| Path | Entry point | Key behavior |
+| Input/channel | Status | Coverage |
 |---|---|---|
-| Note | Web form, Android note share, API | Stores user text directly with source attribution |
-| URL/article | Web, extension, Android, Telegram | Normalizes URL, deduplicates, extracts readable text and metadata |
-| Browser selection | Main-only extension flow | Stores selected user-provided text with URL context |
-| YouTube | URL capture | Resolves metadata and transcript state with recovery/provider policy |
-| PDF | Web/API/native file share | Validates file, extracts text, and records quality warnings |
-| Transcript | User upload or owned-media route | Applies transcript source and ownership policy |
-| Telegram | Authenticated webhook | Validates update, enforces chat policy, deduplicates, then dispatches capture |
-| Recall | Scheduled/manual guarded runner | Maps external cards through fidelity policy, locks, checkpoints, and reports |
+| Standalone note | Implemented | Web, Android text share, Telegram text |
+| URL/article | Implemented | Web, Android, extension, Telegram; selected-text support |
+| YouTube | Implemented | Metadata, duration, thumbnail, best-effort transcript and quality |
+| PDF | Implemented | Web and Android single-PDF extraction |
+| User-provided transcript | Implemented | VTT/SRT/TXT/Markdown repair for YouTube items |
+| Recall | Partially implemented | Guarded scheduled one-way import |
+| Official captions / owned-media STT | Inactive | Adapters exist but current product paths are not wired |
 
-Pinned source anchors: [URL capture](https://github.com/arunpr614/ai-brain/blob/8178117c80923e5724e355fb2684cbc836013d39/src/lib/capture/capture-url.ts), [capture policy](https://github.com/arunpr614/ai-brain/blob/8178117c80923e5724e355fb2684cbc836013d39/src/lib/capture/policy.ts), [Telegram dispatch](https://github.com/arunpr614/ai-brain/blob/8178117c80923e5724e355fb2684cbc836013d39/src/lib/telegram/dispatch.ts), and [Recall importer](https://github.com/arunpr614/ai-brain/blob/8178117c80923e5724e355fb2684cbc836013d39/src/lib/recall/importer.ts).
+## User journey and states
 
-## Capture Pipeline
+The single owner needs one trustworthy path to save several content kinds without mistaking a weak extraction for a complete source. Web and authenticated client entrypoints serve the owner; integration maintainers support channel-specific behavior.
 
-The common flow is source validation, canonicalization, deduplication, extraction, metadata composition, quality classification, persistence, and downstream enrichment. Platform helpers handle Open Graph, JSON-LD, RSS, Substack, LinkedIn, YouTube, and generic Readability extraction.
+An authenticated client submits content → request and source safety validation → canonicalization/deduplication → platform extraction → item/provenance/artifact write → canonical full/limited/duplicate/updated/failure result → enrichment/transcript queues → later search/Ask readiness.
 
-Capture provenance is separate from content type. For example, a URL may arrive through Android, Telegram, extension, Recall, or the web UI. Preserve both the source URL/type and the client capture source.
+Empty/invalid input returns validation errors; processing/loading retains pending feedback; duplicate URLs reuse existing identity; weak text is saved with explicit quality and repair guidance; provider/network failures remain retryable or manual; successful save does not promise enrichment/embedding completion.
 
-## Quality and Repair
+## Data and architecture
 
-Quality is not binary. Items may contain full text, transcripts, metadata-only content, warnings, or failed enrichment. Capture artifacts and metadata cache retain evidence needed for repair and prevent unnecessary refetching. Repair and upgrade paths should be idempotent and should not overwrite better user-provided content with weaker fetched content.
+Capture writes `items`, capture source/platform/quality fields, bounded artifact metadata/files and metadata cache. Triggers/logic enqueue enrichment; weak YouTube sources can enqueue transcript work. Android, extension, Telegram and Recall use the same domain result model but retain channel-specific authentication and feedback.
 
-The default branch contains a newer review inbox and transcript-recovery model. The worktree contains a needs-upgrade/repair model and Recall fidelity integration. Do not merge their state machines without explicit reconciliation.
+## Boundaries
 
-## Recall Safety
+- Some sources remain metadata/preview only.
+- PDF has no OCR, native renderer, highlight/anchor or multi-file flow.
+- Multi-PDF Android share is intentionally rejected.
+- Schema enums for other formats do not establish ingestion support.
+- Full repair behavior is documented in [Capture Quality, Review, and Repair](Capture-Quality-Review-and-Repair).
 
-Recall has dry-run and apply modes, source mapping, fidelity gates, locks, checkpoints, backup proof, redacted reports, and scheduler controls. Public documentation does not provide executable live/apply instructions. Use current private runbooks and explicit authorization for any live or write operation.
+Primary code: `src/app/api/capture/`, capture actions/pages, `src/lib/capture/`, `src/db/items.ts`, artifacts/cache repositories, channel clients and tests.
 
-## Common Failures
-
-- Dynamic or protected pages return metadata only.
-- YouTube providers return no transcript or trigger cooldown.
-- PDFs contain scans or truncated text.
-- Duplicate URLs arrive through multiple clients.
-- A capture succeeds but enrichment or embeddings fail later.
-- Recall scheduler runs but fidelity policy blocks import.
-
-See [Troubleshooting](Troubleshooting) and [Data Model](Data-Model).
+Exact protecting suites include the four capture route tests, PDF validation, capture artifact/dedup/result/quality/policy/URL-safety/platform tests, YouTube/subplatform tests and client result tests. Configuration covers request size/time limits, optional metadata providers, artifact caps, authentication and provider availability. Operational changes can affect queues, review/repair, clients, exports and retrieval. Related: [Quality and Repair](Capture-Quality-Review-and-Repair), [Enrichment](Enrichment-and-AI-Providers), [Browser Extension](Browser-Extension), [Telegram](Telegram-Capture), and [Recall](Recall-Synchronization). Pinned evidence: [current capture source](https://github.com/arunpr614/ai-brain/tree/23868faf13c8e3d0821715e6f5d0e3d2af1e1a34/src/lib/capture).

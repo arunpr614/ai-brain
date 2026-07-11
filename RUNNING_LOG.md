@@ -28901,3 +28901,183 @@ None.
 - **Working tree:** Dirty only with this final publication record.
 - **Deployed/runtime state:** Production healthy; Focus enabled; final application main `6858529`; strict providers and Recall timer healthy.
 - **Next milestone:** Merge final record and close the active goal.
+
+---
+
+## 2026-07-11 11:06 - Definitive Project Wiki Discovery and Baseline Milestone
+
+**Entry author:** AI agent (Codex) · **Triggered by:** User authorized an autonomous, multi-agent project to create and publish the definitive AI Brain GitHub Wiki.
+
+### Planned since last entry
+
+Start from the completed Note Focus release/wiki baseline, systematically inventory the five supplied local source folders, verify the latest application and wiki repositories, create a clean documentation worktree, reconcile implementation versus planning evidence, redesign the living wiki, independently review it, publish repository sources through a PR, publish the separate GitHub Wiki, and verify both.
+
+### Done
+
+- Activated the definitive-wiki goal and read the complete source/evidence/publication brief.
+- Used a multi-agent discovery team with bounded read-only assignments:
+  - repository investigator;
+  - documentation archaeologist;
+  - existing-wiki and information-architecture auditor;
+  - product manager, technical architect, and documentation writer remain in progress at this milestone.
+- Verified remote `main` at `23868faf13c8e3d0821715e6f5d0e3d2af1e1a34` and selected `ai-brain-git-main` as the administrative clone.
+- Preserved its five user-modified deployment/Recall scripts and every other dirty research worktree.
+- Created clean worktree `ai-brain-definitive-project-wiki-20260711` on branch `docs/definitive-project-wiki` from exact `origin/main`.
+- Independently inventoried all five supplied folders. All relevant files were readable; there were no Word/Excel/PowerPoint documents. Three PDFs were identified as seed fixtures rather than documentation.
+- Confirmed heavy duplication among historical worktrees and recorded commit identity, not modification time, as the deduplication key.
+- Audited the existing GitHub Wiki at `3d578c3f66e61de3f124a855253e713758f6a49b`: eight commits, 62 content pages plus `_Sidebar.md`, zero broken internal links, zero orphan pages, 62/62 live page URLs reachable, and 51/51 external GitHub evidence links reachable.
+- Cloned the separate wiki repository into a sibling directory while preserving its eight-commit history.
+- Verified that current application main contains only documentation/release records after deployed application commit `6858529ef179a51442d319c6c58e5ace79757619`; adopted a dual-baseline convention.
+- Probed the hosted health endpoint without credentials. It returned the expected `401`, so no newer runtime behavior was inferred.
+- Created initial project-wiki research artifacts for source inventory, local documentation, repository setup, existing-wiki audit, reconciliation, information architecture, decisions, and migration.
+- Updated `docs/agent-docs/source-baseline.json` with the current code, production, worktree, and wiki baselines.
+
+### Cross-lane notes
+
+- Discovery agents made no changes to supplied folders or repositories.
+- The coordinator owns all canonical file edits in the new worktree.
+- The wiki audit used a unique temporary clone; the coordinator's persistent wiki clone remains clean on `master` at `3d578c3`.
+
+### Learned
+
+- Existing `docs/wiki/` is a strong foundation but its baseline metadata predates merged Manual Notes, AI-default, and Note Focus work.
+- Nine core pages contradict later pages about whether a complete production SHA is known.
+- The old Shipped/Main/Runtime vocabulary must be mapped to the requested definitive status taxonomy while preserving runtime as a separate evidence dimension.
+- Feature Council planning is safely labeled but overwhelms the living wiki and needs an Ideas and Exploration entrypoint with current-implementation deltas.
+- The README and `package.json` version are stale product-status indicators and must not drive capability classification.
+- Historical branches used migration number `017` for different changes; current main contains both distinct migrations.
+- Sensitive local evidence is extensive. Raw databases, private reports, credentials/configuration handovers, device logs, owner identifiers, and executable production-write instructions are excluded from publication.
+
+### Deployed / Released
+
+Nothing pushed, merged, deployed, or published in this milestone.
+
+### Documents created or updated this period
+
+**Created:**
+- `docs/feature-council/project-wiki/SOURCE_INVENTORY.md`
+- `docs/feature-council/project-wiki/LOCAL_DOCUMENTATION_INVENTORY.md`
+- `docs/feature-council/project-wiki/REPOSITORY_INVENTORY.md`
+- `docs/feature-council/project-wiki/EXISTING_WIKI_AUDIT.md`
+- `docs/feature-council/project-wiki/SOURCE_RECONCILIATION_REPORT.md`
+- `docs/feature-council/project-wiki/WIKI_INFORMATION_ARCHITECTURE.md`
+- `docs/feature-council/project-wiki/DECISION_LOG.md`
+- `docs/feature-council/project-wiki/EXISTING_WIKI_MIGRATION_MAP.md`
+
+**Updated:**
+- `docs/agent-docs/source-baseline.json` - current application, deployed-application, worktree, and wiki baselines.
+- `RUNNING_LOG.md` - appended this discovery milestone.
+
+### Current remaining to-do
+
+1. Complete product, technical-architecture, and documentation-writer synthesis.
+2. Produce the master capability/idea catalog, implementation matrix, architecture findings, and technology-stack inventory.
+3. Rewrite and extend the living wiki with current baselines, detailed feature families, AI Agent Start Here, Ideas, stack, repository/API maps, limitations, glossary, changelog, templates, and contribution guidance.
+4. Update validation scripts and ledgers for the expanded page set and current-main status.
+5. Run independent feature-status, QA/evidence, security/privacy, and adversarial reviews; resolve all critical/high findings.
+6. Install dependencies and run documentation, link, privacy, structure, coverage, formatting, type, and relevant test gates.
+7. Commit/push the application documentation branch, create the PR, observe checks, and merge when permitted.
+8. Synchronize the separate wiki with remote-SHA protection, push normally, and verify a fresh clone plus live rendering/links.
+
+### Open questions / decisions needed
+
+None from the user. Runtime claims without dated authenticated evidence remain explicitly Unknown or limited to the 2026-07-10 verified release scope.
+
+### Session self-critique
+
+- The initial health probe was intentionally unauthenticated and cannot establish newer production state.
+- The source inventories are evidence-rich summaries; the feature catalog still needs current-main row-by-row synthesis before publication.
+- HTTP link checks do not prove Mermaid/table rendering or semantic currency; visual QA remains required.
+
+### Action items for the next agent
+
+1. Work only in the clean definitive-wiki worktree and preserve the sibling wiki clone's history.
+2. Treat `23868faf…` as the current code/docs inspection baseline and `6858529…` as the latest verified deployed application baseline.
+3. Do not promote any Feature Council proposal to Implemented without current-main code/test evidence.
+4. Run publication-safety checks over every new Markdown file before copying it to the wiki clone.
+
+### State snapshot
+
+- **Current phase / version:** Discovery and source reconciliation complete; capability and architecture synthesis in progress.
+- **Active branch:** `docs/definitive-project-wiki` at base `23868faf`.
+- **Working tree:** Dirty only with intended baseline update, project-wiki research artifacts, and append-only running-log entry.
+- **Deployed/runtime state:** Production not changed; latest verified deployed application baseline remains `6858529` from 2026-07-10.
+- **Next milestone:** Evidence-backed master catalog and wiki v1 draft.
+
+---
+
+## 2026-07-11 11:58 - Definitive Wiki v2 and Independent Review Milestone
+
+**Entry author:** AI agent (Codex) · **Triggered by:** Completion of source synthesis, wiki v1 review, and high-severity finding remediation.
+
+### Planned since last entry
+
+Complete the capability/architecture synthesis, build the 84-page publication candidate, create audit-level evidence inventories, run independent product/status/security reviews, resolve P0/P1 findings, strengthen validation, and prepare final publication gates.
+
+### Done
+
+- Coordinated product management, technical architecture, documentation writing, feature-status audit, QA/evidence, AI-agent-usability, information architecture, security/privacy, and adversarial-review lanes with bounded ownership.
+- Built the definitive living/core wiki set and preserved all 44 prior Feature Council pages with stronger dated planning wrappers; the current corpus is 84 pages with global sidebar and footer.
+- Reconciled current main, the latest verified deployed application tree, five supplied local source folders, existing wiki history, and Feature Council history into a 46-row definitive feature ledger and implemented-versus-explored catalogs.
+- Added detailed feature-family coverage for user journeys/states, architecture/runtime/data/API/security/configuration/tests/operations/change impact, including theme/shell, YouTube backfill, local status tooling, provider/privacy/offline settings, and proposal-versus-substrate boundaries.
+- Created the audit-level relevant local source inventory, the 84-row page audit/migration record, and normalized detailed evidence for 46 current features plus 37 non-current ideas/capabilities.
+- Resolved the independent v1 P1 findings: detailed-page incompleteness, missing audit-level inventories, capability/idea omissions, overbroad runtime language, proposal status contradictions, security-summary overstatement, and extension endpoint inaccuracy.
+- Resolved a security re-review P1: the inventory generator now redacts personal-name paths; the privacy gate scans Markdown, CSV, and JSON; a CSV-specific smoke proves the rule.
+- Added deterministic validation for exact page corpus/reachability, living-page baselines, historical lifecycle labels, feature-page semantic concepts, source/feature/command coverage, privacy, CSV schemas/counts/required fields, page hashes, and feature-ledger drift.
+- Product/QA and AI-agent-usability re-review returned GO; feature-status re-review returned GO; security/privacy re-review returned GO. No P0/P1 remains in those lanes.
+- Added privacy/publication, candidate final-QA, and delivery artifacts. The adversarial reviewer is completing the final independent red-team pass.
+
+### Verification results
+
+- `npm run check:agent-docs`: passed with 44/44 generated historical pages, 84/84 wiki pages reachable, 238 source rows, 46 feature rows, 144/144 commands, and zero privacy/artifact findings.
+- `npm run smoke:agent-docs`: passed.
+- `npm run lint`: passed.
+- `npm run typecheck`: passed.
+- `npm test`: 814 tests in 92 suites passed; zero failures/skips.
+- `git diff --check`: passed.
+
+### Conflicts resolved
+
+- Current code status and dated runtime verification are separate; current main is not presumed deployed.
+- Repair Center, Evidence Scan, and Trust Center remain Planned while existing primitives are documented independently.
+- Recall remains broad Partially implemented with a narrower implemented, flag-controlled one-way import contract.
+- Client version is checked only when present; Origin may be absent; Chrome-extension origins are broadly accepted.
+- The two migration files numbered `017` coexist and are identified by full filename.
+- Historical research is preserved but cannot establish implementation status.
+
+### Deployed / Released
+
+Nothing pushed, merged, deployed, or published in this milestone. The candidate remains NO-GO until adversarial closure, GitHub-rendered visual QA, PR checks/merge, protected wiki synchronization, and live verification complete.
+
+### Documents created or updated this period
+
+- Complete `docs/wiki/` publication candidate and global navigation.
+- Complete `docs/feature-council/project-wiki/` required-artifact set except the adversarial report, which is in progress.
+- Updated agent-doc baselines, inventories, ledgers, command registry, publication report, generator manifest, and validation/smoke scripts.
+- Added repeatable builders for the local source, page migration, and feature evidence inventories.
+
+### Current remaining to-do
+
+1. Receive and disposition the independent adversarial review; rerun final local gates.
+2. Commit and push `docs/definitive-project-wiki`, create the PR, inspect GitHub rendering, and observe required checks.
+3. Merge through the normal process when green.
+4. Re-fetch the separate wiki remote, verify its expected SHA, copy and validate the 84-page corpus, commit/push normally, and verify fresh clone/live rendering/links.
+5. Commit and merge the final publication record and append the final running-log handoff.
+
+### Open questions / decisions needed
+
+None. Any remote concurrency change or protected-branch restriction will be treated as a hard publication gate rather than bypassed.
+
+### Session self-critique
+
+- Regex-based semantic validation proves page-contract presence, not prose truth; independent evidence review remains necessary.
+- The inventory is exhaustive at the file/metadata level, but excluded sensitive contents are intentionally not reproduced.
+- Local Markdown checks cannot prove GitHub Mermaid rendering; remote visual QA remains mandatory.
+
+### State snapshot
+
+- **Current phase / version:** Wiki v2 publication candidate; independent product/status/security reviews green; adversarial review in progress.
+- **Active branch:** `docs/definitive-project-wiki` based on `23868faf`.
+- **Working tree:** Dirty only with intended documentation, evidence, generator/validator, and append-only log changes.
+- **Deployed/runtime state:** Unchanged; latest verified deployed application baseline remains `6858529`.
+- **Next milestone:** Adversarial closure and repository pull request.

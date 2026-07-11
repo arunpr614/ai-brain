@@ -2,9 +2,9 @@
 
 Purpose: Classify command side effects and define the public safe-command allowlist.
 Audience: AI agents and engineers running repository commands.
-Verified against: `8178117c80923e5724e355fb2684cbc836013d39` package scripts.
+Verified against: `23868faf13c8e3d0821715e6f5d0e3d2af1e1a34` package scripts.
 Runtime evidence through: Not applicable; command classification is source-based.
-Last reviewed: 2026-07-10.
+Last reviewed: 2026-07-11.
 Owner: AI Brain maintainer.
 
 ## Classes

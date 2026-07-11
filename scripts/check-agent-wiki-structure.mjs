@@ -5,23 +5,44 @@ import { basename, dirname, join, relative, resolve } from "node:path";
 const CORE_REQUIRED_PAGES = [
   "Home.md",
   "_Sidebar.md",
+  "_Footer.md",
   "Agent-Onboarding.md",
   "Product-Overview.md",
   "Source-Baselines-and-Status.md",
   "Feature-Catalog.md",
+  "Ideas-and-Exploration-Catalog.md",
   "Manual-Content-Notes.md",
   "System-Architecture.md",
+  "Feature-Architecture.md",
+  "Technology-Stack.md",
+  "Repository-Map.md",
   "Data-Model.md",
+  "APIs-and-Integrations.md",
+  "Library-and-Item-Management.md",
   "Capture-and-Ingestion.md",
+  "Capture-Quality-Review-and-Repair.md",
+  "Organization-Tags-Topics-and-Collections.md",
   "Search-RAG-and-Ask.md",
   "Enrichment-and-AI-Providers.md",
+  "Authentication-Sessions-and-Device-Pairing.md",
   "Mobile-Extension-and-Pairing.md",
+  "Browser-Extension.md",
+  "Telegram-Capture.md",
+  "Recall-Synchronization.md",
+  "Backups-and-Restore.md",
   "Security-Privacy-and-Redaction.md",
+  "Local-Development-and-Testing.md",
+  "Configuration-Reference.md",
   "Command-Safety.md",
   "Deployment-and-Operations.md",
   "Agent-Workflows.md",
   "Troubleshooting.md",
+  "Known-Limitations-and-Technical-Debt.md",
+  "Glossary.md",
   "Documentation-Maintenance.md",
+  "Documentation-Changelog.md",
+  "Feature-Page-Template.md",
+  "Explored-Idea-Template.md",
 ];
 
 const REQUIRED_METADATA = [
@@ -45,6 +66,22 @@ const REQUIRED_RESEARCH_METADATA = [
   "Public disclosure:",
   "Owner:",
 ];
+
+const DETAILED_FEATURE_PAGES = new Set([
+  "Library-and-Item-Management.md",
+  "Capture-and-Ingestion.md",
+  "Capture-Quality-Review-and-Repair.md",
+  "Manual-Content-Notes.md",
+  "Organization-Tags-Topics-and-Collections.md",
+  "Enrichment-and-AI-Providers.md",
+  "Search-RAG-and-Ask.md",
+  "Authentication-Sessions-and-Device-Pairing.md",
+  "Mobile-Extension-and-Pairing.md",
+  "Browser-Extension.md",
+  "Telegram-Capture.md",
+  "Recall-Synchronization.md",
+  "Backups-and-Restore.md",
+]);
 
 const [wikiArg, baselineArg, manifestArg] = process.argv.slice(2);
 if (!wikiArg || !baselineArg || process.argv.includes("--help")) {
@@ -122,13 +159,14 @@ for (const page of actualPages) {
   const lines = text.split(/\r?\n/);
 
   if (researchPageSet.has(page)) checkResearchMetadata(page, lines);
-  else if (page !== "_Sidebar.md") checkMetadata(page, lines);
+  else if (!new Set(["_Sidebar.md", "_Footer.md"]).has(page)) checkMetadata(page, lines);
   checkPlaceholders(page, lines);
   checkMermaid(page, lines);
   checkLinks(page, text);
   if (researchPageSet.has(page)) checkUnconvertedResearchReferences(page, text);
 
   if (page === "Feature-Catalog.md") checkFeatureCatalog(page, text);
+  if (DETAILED_FEATURE_PAGES.has(page)) checkDetailedFeaturePage(page, text);
 }
 
 checkResearchLifecycleLinks();
@@ -155,6 +193,9 @@ function checkMetadata(page, lines) {
   const header = lines.slice(0, 20).join("\n");
   for (const label of REQUIRED_METADATA) {
     if (!header.includes(label)) findings.push(finding(page, null, "missing_metadata", label));
+  }
+  if (baseline?.defaultBranchSha && !header.includes(baseline.defaultBranchSha)) {
+    findings.push(finding(page, null, "stale_current_main_baseline", baseline.defaultBranchSha));
   }
 }
 
@@ -254,9 +295,9 @@ function checkResearchLifecycleLinks() {
     if (!existsSync(pagePath)) continue;
     const text = readFileSync(pagePath, "utf8");
     const expectedLifecycle = {
-      current: "Lifecycle: Current feature-council artifact.",
-      historical: "Lifecycle: Historical draft - do not implement.",
-      review: "Lifecycle: Review record.",
+      current: "Lifecycle: Latest revision within the 2026-06-28 planning package.",
+      historical: "Lifecycle: Superseded draft within the 2026-06-28 planning package - do not implement.",
+      review: "Lifecycle: Review record within the 2026-06-28 planning package.",
     }[entry.lifecycle];
     if (!expectedLifecycle || !text.includes(expectedLifecycle)) {
       findings.push(finding(entry.destination, null, "wrong_research_lifecycle", entry.lifecycle));
@@ -290,7 +331,7 @@ function checkNavigationReachability() {
   }
 
   const visited = new Set();
-  const queue = ["Home.md", "_Sidebar.md"];
+  const queue = ["Home.md", "_Sidebar.md", "_Footer.md"];
   while (queue.length > 0) {
     const page = queue.shift();
     if (!pageSet.has(page) || visited.has(page)) continue;
@@ -320,17 +361,13 @@ function extractInternalTargets(text) {
 function checkFeatureCatalog(page, text) {
   const required = [
     "Feature",
-    "Product status",
-    "Code status",
-    "Runtime status",
-    "User surface",
-    "API/action entrypoint",
-    "Core modules",
-    "Data touched",
-    "Jobs/scripts",
-    "Verification",
-    "Baseline SHA",
-    "Known gaps",
+    "Status",
+    "Availability",
+    "Confidence",
+    "Runtime evidence",
+    "Detailed page",
+    "Verified baseline",
+    "Key boundary",
   ];
   const header = text.split(/\r?\n/).find((line) => line.trim().startsWith("| Feature |"));
   if (!header) {
@@ -340,6 +377,31 @@ function checkFeatureCatalog(page, text) {
   const cells = parseRow(header);
   if (JSON.stringify(cells) !== JSON.stringify(required)) {
     findings.push(finding(page, null, "wrong_feature_columns", cells.join(" | ")));
+  }
+}
+
+function checkDetailedFeaturePage(page, text) {
+  const requiredConcepts = [
+    ["status", /\bStatus\b/i],
+    ["confidence", /\bConfidence\b/i],
+    ["user_problem_or_journey", /user (?:problem|journey)|target user/i],
+    ["empty_state", /\bempty\b/i],
+    ["loading_state", /\bloading\b/i],
+    ["success_state", /\bsuccess/i],
+    ["failure_state", /\bfail/i],
+    ["architecture_or_runtime_flow", /architecture|runtime flow/i],
+    ["data_or_storage", /\bdata\b|storage|schema/i],
+    ["api_or_entrypoint", /\bAPI\b|server action|entrypoint/i],
+    ["security_or_privacy", /security|privacy|auth/i],
+    ["configuration_or_flags", /configur|feature flag|rollout flag/i],
+    ["tests_or_verification", /\btests?\b|verification/i],
+    ["operations", /operation/i],
+    ["boundary_or_noncoverage", /boundar|does not|not a |no [a-z]/i],
+    ["related_features_or_ideas", /related/i],
+    ["source_evidence", /pinned evidence|primary files|primary code|verified against/i],
+  ];
+  for (const [concept, pattern] of requiredConcepts) {
+    if (!pattern.test(text)) findings.push(finding(page, null, "missing_feature_page_concept", concept));
   }
 }
 

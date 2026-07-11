@@ -11,7 +11,20 @@ const INVENTORY_CLASSIFICATIONS = new Set([
   "Deprecated",
   "Excluded with rationale",
 ]);
-const PRODUCT_STATUSES = new Set(["Shipped", "Partial", "Internal", "Planned", "Deprecated"]);
+const PRODUCT_STATUSES = new Set([
+  "Implemented",
+  "Partially implemented",
+  "Experimental",
+  "Feature-flagged",
+  "Inactive",
+  "Deprecated",
+  "Explored",
+  "Planned",
+  "Deferred",
+  "Rejected",
+  "Superseded",
+  "Unknown",
+]);
 const CODE_STATUSES = new Set(["Main", "Branch-only", "Not found"]);
 const RUNTIME_STATUSES = new Set(["Deployed-verified", "Deployed-unverified", "Not deployed", "Unknown"]);
 const COMMAND_CLASSES = new Set([
@@ -65,8 +78,8 @@ for (const [index, row] of features.rows.entries()) {
   if (!RUNTIME_STATUSES.has(row["Runtime status"])) {
     findings.push(finding(featurePath, index + 3, "invalid_runtime_status", row["Runtime status"]));
   }
-  if (row["Product status"] === "Shipped" && row["Code status"] === "Not found") {
-    findings.push(finding(featurePath, index + 3, "shipped_without_code", row.Feature));
+  if (new Set(["Implemented", "Feature-flagged", "Inactive"]).has(row["Product status"]) && row["Code status"] === "Not found") {
+    findings.push(finding(featurePath, index + 3, "implemented_without_code", row.Feature));
   }
   if (row["Runtime status"] === "Deployed-verified" && !/^[0-9a-f]{40}$/i.test(row["Baseline SHA"])) {
     findings.push(finding(featurePath, index + 3, "verified_runtime_without_sha", row.Feature));

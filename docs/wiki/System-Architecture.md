@@ -1,57 +1,47 @@
-# System Architecture
+# Architecture Overview
 
-Purpose: Explain AI Brain's major components, boundaries, and data flow.
+Purpose: Explain AI Brain's components, trust boundaries, data flow, failure isolation, and deployment shape.
 Audience: AI agents and engineers making cross-cutting changes.
-Verified against: `2b4db9540d0b76ee6d3aa2a9da5f788b69a8d02a` and `8178117c80923e5724e355fb2684cbc836013d39`.
-Runtime evidence through: 2026-07-09; complete production tree SHA is Unknown.
-Last reviewed: 2026-07-10.
+Verified against: `23868faf13c8e3d0821715e6f5d0e3d2af1e1a34`.
+Runtime evidence through: 2026-07-10 at deployed application `6858529ef179a51442d319c6c58e5ace79757619`.
+Last reviewed: 2026-07-11.
 Owner: AI Brain maintainer.
 
-## Component Map
-
 ```mermaid
-graph TD
-  Web[Next.js web UI] --> App[Server actions and API routes]
-  Android[Capacitor Android client] --> App
-  Extension[Browser extension] --> App
-  Telegram[Telegram webhook] --> App
-  Recall[Recall sync runner] --> Import[Capture and import policy]
-  App --> Capture[Capture pipeline]
-  Capture --> DB[(SQLite)]
-  Import --> DB
-  DB --> Queue[Enrichment and embedding jobs]
-  Queue --> Providers[LLM and embedding providers]
-  Providers --> DB
-  App --> Retrieve[FTS and vector retrieval]
-  Retrieve --> DB
-  Retrieve --> Ask[Ask and citation streaming]
-  Ask --> Web
-  Scheduler[Services timers and cron] --> Recall
-  Scheduler --> Queue
-  Scheduler --> Backup[Backup pipeline]
-  Backup --> DB
+flowchart LR
+  clients["Browser, Android, extension, Telegram, Recall"] --> edge["Managed edge and authenticated entrypoints"]
+  edge --> web["Next.js standalone Node process"]
+  web --> domain["Capture, notes, library, search, Ask"]
+  domain --> db["SQLite + FTS5 + sqlite-vec"]
+  domain --> artifacts["Capture artifact files"]
+  web --> workers["Enrichment, transcript, note-index workers"]
+  workers --> providers["Generation and embedding providers"]
+  recall["Guarded Recall timer/runner"] --> domain
+  backups["Database backup workflows"] --> db
 ```
 
-## Web and API Layer
+The Node process handles HTTP, migrations, workers, some schedules, backups, and one SQLite database. This compact design suits one owner but couples failure and resource pressure across capabilities.
 
-Next.js App Router pages render the Library, Capture, Ask, item, settings, pairing, topic, collection, repair, and diagnostic surfaces. Server actions support authenticated UI mutations. API routes provide capture, Ask streaming, search, exports, pairing, provider status, Telegram, health, threads, and transcript operations.
+## Component responsibilities
 
-Pinned entrypoints: [App Router](https://github.com/arunpr614/ai-brain/blob/8178117c80923e5724e355fb2684cbc836013d39/src/app), [application actions](https://github.com/arunpr614/ai-brain/blob/8178117c80923e5724e355fb2684cbc836013d39/src/app/actions.ts), and [auth](https://github.com/arunpr614/ai-brain/blob/8178117c80923e5724e355fb2684cbc836013d39/src/lib/auth.ts).
+- Next.js pages/actions/APIs implement browser UI and client contracts.
+- Domain modules enforce capture, retrieval, AI, notes, integration, and security policy.
+- SQLite stores canonical state, FTS, queues, chat, provenance, notes and vectors.
+- Capture artifact files retain bounded extraction evidence outside SQLite.
+- In-process workers handle enrichment, transcript recovery and note indexing.
+- The separate Recall timer invokes a guarded packaged importer.
+- Android is a thin WebView/share client; the extension and Telegram call capture contracts.
 
-## Persistence
+## Primary flows
 
-SQLite is the system of record. Migrations build items, FTS, enrichment queues, chunks, vector indexes, embedding jobs, taxonomy, chat, capture artifacts/cache, transcript records, Telegram update tracking, and Recall synchronization state. `sqlite-vec` backs semantic retrieval.
+Capture validates/authenticates, normalizes/deduplicates, extracts, writes item/provenance/artifacts, then queues enrichment and transcript work. Enrichment writes generated fields/taxonomy and triggers chunk/embed. Search and Related query FTS/vectors. Ask retrieves eligible chunks, streams citation-constrained output, filters citations and optionally persists chat. Attached notes add independent journal/save/revision/FTS/semantic/consent state.
 
-Database work is synchronous inside server/worker processes. Transactions protect multi-table writes such as chunks plus vector index records. Database-file backups are required before separately authorized production changes.
+## Trust boundaries
 
-## Background Work
+Browser sessions use PIN-derived session state. API clients share a bearer token. Pairing exchanges a short-lived one-use code. Telegram requires secret plus owner/private-chat policy. Notes add same-origin and AI consent rules. Provider/Recall credentials remain private. The managed edge terminates public TLS before the loopback service.
 
-Enrichment and embedding pipelines convert captured content into summaries, taxonomy, chunks, and vectors. Recall sync has a separate guarded runner with mapping, fidelity checks, locking, checkpoints, reports, and scheduler integration. Services and timers are deployment concerns; exact production commands are private.
+## Failure isolation
 
-## Client Boundaries
+Capture save, enrichment, embeddings, transcript recovery, note save/indexing, provider health, Recall imports, and backups have separate states. Repair only the failed stage. Never erase valid source or generated state merely because a downstream vector/provider operation failed.
 
-The Android app is a Capacitor shell using the hosted web experience plus native share-target behavior. The extension captures pages or selected text through the API. Telegram validates incoming updates and dispatches accepted private-chat content. All remote clients depend on bearer authentication and API compatibility checks.
-
-## Failure Isolation
-
-Capture success, enrichment success, embedding success, and Ask success are separate states. A saved item may remain metadata-only, need repair, fail enrichment, lack vectors, or produce weak retrieval. UI and diagnostics should preserve those distinctions rather than collapsing them into one success flag.
+See [Feature Architecture](Feature-Architecture), [Data Model](Data-Model), [APIs and Integrations](APIs-and-Integrations), and [Known Limitations](Known-Limitations-and-Technical-Debt).

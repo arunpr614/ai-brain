@@ -1,42 +1,53 @@
 ## Start Here
 
 - [Home](Home)
-- [Agent Onboarding](Agent-Onboarding)
+- [AI Agent Start Here](Agent-Onboarding)
+- [Product Overview](Product-Overview)
+- [Feature Catalog](Feature-Catalog)
 - [Source Baselines and Status](Source-Baselines-and-Status)
 
 ## Product and Features
 
-- [Product Overview](Product-Overview)
-- [Feature Catalog](Feature-Catalog)
-- [Manual Content Notes](Manual-Content-Notes)
-
-## Research and Planning
-
-- [AI Brain Feature Council Research](Feature-Council-Research)
-
-## Architecture
-
-- [System Architecture](System-Architecture)
-- [Data Model](Data-Model)
-
-## Ingestion and AI
-
+- [Ideas and Exploration](Ideas-and-Exploration-Catalog)
+- [Library and Items](Library-and-Item-Management)
 - [Capture and Ingestion](Capture-and-Ingestion)
-- [Search, RAG, and Ask](Search-RAG-and-Ask)
+- [Capture Quality, Review, and Repair](Capture-Quality-Review-and-Repair)
+- [Manual Content Notes](Manual-Content-Notes)
+- [Organization](Organization-Tags-Topics-and-Collections)
 - [Enrichment and AI Providers](Enrichment-and-AI-Providers)
+- [Search, RAG, and Ask](Search-RAG-and-Ask)
+- [Authentication and Pairing](Authentication-Sessions-and-Device-Pairing)
+- [Android and Pairing](Mobile-Extension-and-Pairing)
+- [Browser Extension](Browser-Extension)
+- [Telegram Capture](Telegram-Capture)
+- [Recall Synchronization](Recall-Synchronization)
+- [Backups and Restore](Backups-and-Restore)
 
-## Clients and Integrations
+## Architecture and Data
 
-- [Mobile, Extension, and Pairing](Mobile-Extension-and-Pairing)
-
-## Operations and Safety
-
+- [Architecture Overview](System-Architecture)
+- [Feature Architecture](Feature-Architecture)
+- [Technology Stack](Technology-Stack)
+- [Repository Map](Repository-Map)
+- [Data Model and Storage](Data-Model)
+- [APIs and Integrations](APIs-and-Integrations)
 - [Security, Privacy, and Redaction](Security-Privacy-and-Redaction)
-- [Command Safety](Command-Safety)
+
+## Development and Operations
+
+- [Local Development and Testing](Local-Development-and-Testing)
+- [Configuration Reference](Configuration-Reference)
 - [Deployment and Operations](Deployment-and-Operations)
+- [Command Safety](Command-Safety)
 - [Troubleshooting](Troubleshooting)
+- [Known Limitations](Known-Limitations-and-Technical-Debt)
 
-## Agent Work
+## Reference and History
 
+- [Glossary](Glossary)
 - [Agent Workflows](Agent-Workflows)
 - [Documentation Maintenance](Documentation-Maintenance)
+- [Documentation Changelog](Documentation-Changelog)
+- [Feature Page Template](Feature-Page-Template)
+- [Explored Idea Template](Explored-Idea-Template)
+- [Feature Council Research](Feature-Council-Research)

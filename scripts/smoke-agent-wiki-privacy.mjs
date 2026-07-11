@@ -1,9 +1,14 @@
 #!/usr/bin/env node
 import assert from "node:assert/strict";
-import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { mkdtempSync, rmSync, unlinkSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { spawnSync } from "node:child_process";
+import {
+  isSensitiveProjectWikiPath,
+  SAFE_PATH_REGRESSION_FIXTURES,
+  SENSITIVE_PATH_REGRESSION_FIXTURES,
+} from "./project-wiki-sensitive-path-policy.mjs";
 
 const root = mkdtempSync(join(tmpdir(), "agent-wiki-privacy-"));
 const checker = resolve("scripts/check-agent-wiki-privacy.mjs");
@@ -17,6 +22,8 @@ const syntheticSecrets = [
 ];
 
 try {
+  for (const fixture of SENSITIVE_PATH_REGRESSION_FIXTURES) assert.equal(isSensitiveProjectWikiPath(fixture), true, `sensitive path fixture must be denied: ${fixture}`);
+  for (const fixture of SAFE_PATH_REGRESSION_FIXTURES) assert.equal(isSensitiveProjectWikiPath(fixture), false, `safe path fixture must remain eligible: ${fixture}`);
   writeFileSync(join(root, "safe.md"), "# Safe\n\nRECALL_API_KEY=<redacted:secret>\n", "utf8");
   const safe = run(["--require-files", root]);
   assert.equal(safe.status, 0, safe.stderr);
@@ -53,6 +60,12 @@ try {
   assert.match(output, /email_address/);
   assert.match(output, /personal_owner_name/);
   assert.match(output, /live_owner_hostname/);
+
+  unlinkSync(join(root, "unsafe.md"));
+  writeFileSync(join(root, "unsafe.csv"), "name,path\nowner,Arun private notes.md\n", "utf8");
+  const unsafeCsv = run(["--require-files", root]);
+  assert.equal(unsafeCsv.status, 1, "unsafe CSV fixture must fail");
+  assert.match(unsafeCsv.stderr, /personal_owner_name/);
 
   const empty = mkdtempSync(join(tmpdir(), "agent-wiki-privacy-empty-"));
   try {

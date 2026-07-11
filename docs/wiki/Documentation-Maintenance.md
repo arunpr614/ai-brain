@@ -1,57 +1,47 @@
-# Documentation Maintenance
+# Contribution and Documentation Maintenance
 
-Purpose: Keep canonical and published agent documentation accurate, safe, and synchronized.
-Audience: Documentation maintainers and AI agents changing architecture or features.
-Verified against: `2b4db9540d0b76ee6d3aa2a9da5f788b69a8d02a` and `8178117c80923e5724e355fb2684cbc836013d39`.
-Runtime evidence through: 2026-07-09; complete production tree SHA is Unknown.
-Last reviewed: 2026-07-10.
+Purpose: Keep canonical and published documentation accurate, safe, reviewable and synchronized.
+Audience: Documentation contributors, maintainers, and AI agents.
+Verified against: `23868faf13c8e3d0821715e6f5d0e3d2af1e1a34`.
+Runtime evidence through: 2026-07-10; documentation publication does not alter runtime evidence.
+Last reviewed: 2026-07-11.
 Owner: AI Brain maintainer.
 
-## Source of Truth
+`docs/wiki/` is canonical. The GitHub Wiki is a published mirror. Update canonical files first and never hand-edit generated Feature Council pages.
 
-Canonical pages live under `docs/wiki/` in the application repository. The GitHub Wiki is a published copy. Update canonical files first, review them with code, and publish only after checks pass.
+## When to update
 
-## Change Triggers
+Update the catalog and owning feature page when a change affects behavior, routes, APIs, schemas, storage, AI providers, integrations, authentication, flags, tests, deployment, monitoring, limitations or idea status. Update architecture/data/API/operations pages when their contracts change.
 
-Review documentation when a change touches routes/actions, migrations/database behavior, authentication/redaction, capture/integrations, queues/providers, search/Ask, package scripts, Android/extension behavior, deployment/backup/scheduling, or feature lifecycle/runtime status.
+## Verification convention
 
-Feature changes update the coverage ledger. Script changes update the command-safety registry. Baseline changes update page metadata and pinned source links.
+- Pin living pages to current-main SHA and verification date.
+- Record feature-specific runtime evidence separately.
+- Confidence describes evidence strength, not maturity.
+- Do not refresh only a date; recheck cited code/tests/status.
+- Historical pages keep their artifact SHA/date/lifecycle/successor and no-runtime label.
 
-Feature Council research pages are generated from `docs/feature-council/` through the versioned manifest at `docs/agent-docs/feature-council-wiki-manifest.json`. Update the source artifacts and manifest, regenerate, then commit the generated `Feature-Council-*.md` pages. Do not hand-edit generated research pages.
+## Canonical workflow
 
-The F08 implementation package is explicitly excluded from the historical research generator. Its public, current product summary is the maintained core page [Manual Content Notes](Manual-Content-Notes); internal v1/v2/review/validation artifacts remain repository evidence and are not copied wholesale into the wiki.
+1. Update catalog, detailed page and affected references with the code change.
+2. Run Feature Council generation/checks and wiki privacy/structure/coverage/link checks.
+3. Review the complete diff for unsupported claims and sensitive content.
+4. Commit/push canonical source and merge through the normal repository process.
+5. Re-fetch the wiki remote and confirm the recorded base has not moved.
+6. Synchronize all canonical pages with a normal non-force push.
+7. Fresh-clone, byte-compare and visually inspect Home, sidebar, catalog, changed pages, diagrams and links.
+8. Record repository/wiki commits and live verification in [Documentation Changelog](Documentation-Changelog) and the running log.
 
-## Canonical Validation
+Feature Council generation is manifest-owned. The implementation/release folders and `docs/feature-council/project-wiki/` are explicitly excluded from the fixed historical research corpus. See [Feature Page Template](Feature-Page-Template) and [Explored Idea Template](Explored-Idea-Template).
+
+## Evidence-artifact regeneration
+
+Three checked builders maintain the audit-level evidence. Private source paths are runtime inputs and must never be committed; use the five stable source aliases documented in the project maintenance plan.
 
 ```bash
-npm run smoke:agent-docs
+node scripts/build-master-feature-evidence.mjs docs/agent-docs/feature-coverage-ledger.md docs/feature-council/project-wiki/MASTER_FEATURE_AND_IDEA_INVENTORY.md docs/feature-council/project-wiki/MASTER_FEATURE_AND_IDEA_EVIDENCE_DETAILS.csv
+node scripts/build-existing-wiki-page-audit.mjs "${EXISTING_WIKI_CLONE}" docs/wiki docs/feature-council/project-wiki/EXISTING_WIKI_PAGE_AUDIT_AND_MIGRATION.csv
 npm run check:agent-docs
 ```
 
-The privacy check must scan actual canonical Markdown and fail when no files exist. Structure validates the exact page set, metadata, links, source revisions, tables, and Mermaid fences. Coverage validates inventory classifications, feature status, every package script, and public command safety.
-
-The Feature Council generator check additionally proves one-to-one source mapping, checksums, lifecycle successors, sanitized disclosure state, immutable prototype references, and normalized wiki filenames.
-
-## Publication Sequence
-
-1. Commit and push canonical documentation.
-2. Clone the wiki and record its base SHA.
-3. Replace its page set from `docs/wiki/` and remove the temporary test page. The expected set is 18 core files plus 44 Feature Council research files.
-4. Run privacy and structure checks against the clone.
-5. Fetch the wiki remote again and verify the remote SHA still equals the recorded base.
-6. Commit and push normally; never force-push.
-7. Fresh-clone and rerun checks.
-8. Inspect every rendered page, sidebar link, table, code block, pinned source link, Feature Council lifecycle banner, and Mermaid diagram.
-9. Record canonical, before-wiki, and after-wiki SHAs in the publication report.
-
-## Rollback
-
-For a public-safety problem, revert the wiki commit immediately with a normal revert, verify the public state, then correct canonical source. For a rendering defect, fix canonical source, rerun all checks, and republish through the same concurrency gate.
-
-## Review Cadence
-
-Run a full audit after major releases and at least quarterly while active. Preserve Unknown runtime state until new dated evidence establishes it. Do not silently refresh a date without rechecking the referenced baseline and evidence.
-
-## Ownership
-
-The AI Brain maintainer owns the baseline record, public/private boundary, feature status vocabulary, publication authorization, and final rendered review. An AI agent may prepare updates but must report unresolved evidence gaps rather than smoothing them over.
+The private five-root inventory uses `scripts/build-project-wiki-source-inventory.mjs`; see `docs/feature-council/project-wiki/MAINTENANCE_PLAN.md` in the application repository for the environment-variable command and prerequisites. Review count/hash changes rather than mechanically accepting them. Any new sensitive file class must update both the generator denylist and artifact invariant checker before regeneration.

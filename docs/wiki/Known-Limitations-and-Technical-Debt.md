@@ -1,0 +1,39 @@
+# Known Limitations and Technical Debt
+
+Purpose: Separate verified implementation limitations from proposals and speculative concerns.
+Audience: AI agents, maintainers, and reviewers.
+Verified against: `23868faf13c8e3d0821715e6f5d0e3d2af1e1a34`.
+Runtime evidence through: 2026-07-10 where cited; most findings are static-code evidence.
+Last reviewed: 2026-07-11.
+Owner: AI Brain maintainer.
+
+## Verified limitations
+
+- Official-caption recovery and owned-media speech-to-text are inactive/not wired.
+- Android accepts one PDF; multiple-PDF share is intentionally rejected.
+- Offline support is cached fallback/visited content and note-draft recovery, not offline parity.
+- Recall is a guarded one-way import, not two-way synchronization.
+- Related items is similarity output, not a graph.
+- Review/Needs Upgrade are quality queues, not spaced repetition.
+- Attached notes are not end-to-end encrypted and are excluded from default bulk export.
+- One shared bearer token prevents per-device identity/revocation.
+- Database backup workflows do not include filesystem capture-artifact files.
+
+## Technical risks
+
+- Continuous enrichment and nightly batch paths claim the same pending queue; measure actual batching before describing it as the default.
+- Usage telemetry can label realtime non-Ollama generation as Ollama and lacks complete provider/model/cost fidelity.
+- Provider-agnostic Ask retains an Ollama-specific model coupling.
+- Several rate limits are in-memory and reset on restart.
+- URL safety does not clearly revalidate every redirect destination.
+- CSP is absent; local/browser/mobile/extension state lacks application-level encryption.
+- Export caching headers and error-context redaction are inconsistent.
+- Workers, schedules, backups, HTTP, and one SQLite database share operational fate.
+- Duplicate numeric migration prefix `017` is resolved in current main but remains a tooling/human hazard.
+- GitHub CI validates documentation, not the complete product type/lint/test suite.
+
+## Documentation debt
+
+The root README, package version, provider roadmap, and some client comments reflect older local-only stages. Use this wiki's pinned baseline and current code instead.
+
+See [Ideas and Exploration](Ideas-and-Exploration-Catalog) for non-current future work.
