@@ -482,6 +482,19 @@ function Gallery() {
           </p>
         </div>
       </section>
+
+      <section className="gallery-handoff" aria-labelledby="handoff-title">
+        <div>
+          <p className="eyebrow">Approved design record</p>
+          <h2 id="handoff-title">Pick up Direction B without reconstructing the conversation</h2>
+          <p>The handoff assets record the locked design, live component states, measurements, behavior, source map, and remaining implementation gates.</p>
+        </div>
+        <div>
+          <a href="/design-handoff.html"><span>Design handoff</span><ChevronRight aria-hidden="true" /></a>
+          <a href="/group-sort-specimen.html"><span>Component specimen</span><ChevronRight aria-hidden="true" /></a>
+          <a href="/agent-pickup.html"><span>AI agent pickup</span><ChevronRight aria-hidden="true" /></a>
+        </div>
+      </section>
     </main>
   );
 }

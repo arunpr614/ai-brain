@@ -9,6 +9,11 @@
 - `direction-b.html` — Processing, Inbox-first triage (**recommended**).
 - `direction-c.html` — Queue, Library-integrated workflow lens.
 - `item-detail.html` — isolated canonical item-detail route simulation.
+- `design-handoff.html` — stakeholder-approved Direction B visual/interaction handoff.
+- `group-sort-specimen.html` — runnable Light/Dark component states, exact measurements, options, and acceptance criteria.
+- `agent-pickup.html` — cold-start file map, commands, guardrails, and remaining gates for another AI agent.
+- `handoff/agent-handoff.json` — machine-readable approved design contract.
+- `handoff/AI_AGENT_HANDOFF.md` — concise source-oriented pickup instructions.
 - `design-qa.md` — final visual, interaction, console, and responsive QA evidence.
 
 ## Working interactions

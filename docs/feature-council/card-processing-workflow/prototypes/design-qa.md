@@ -171,6 +171,61 @@ final result: passed
 
 ---
 
+## Approved-design HTML handoff QA
+
+**Date:** 2026-07-11
+**Scope:** Direction B design handoff, component specimen, and AI-agent pickup assets
+**Classification:** **Explored — not implemented**
+
+### Source truth and rendered evidence
+
+- Approved product source: `screenshots/direction-b-board-group-sort-menu-compact-dark-1440x1024.jpg`.
+- Approved focused component source: `screenshots/direction-b-group-sort-focused-compact-dark-324x194.jpg`.
+- HTML overview implementation: `screenshots/direction-b-design-handoff-desktop-1440x1024.jpg` at 1440×1024.
+- HTML pickup implementation: `screenshots/direction-b-agent-pickup-desktop-1440x1024.jpg` at 1440×1024.
+- HTML component implementation: `screenshots/direction-b-group-sort-specimen-desktop-1280x720.jpg`, `screenshots/direction-b-group-sort-specimen-components-1280x720.jpg`, and `screenshots/direction-b-group-sort-specimen-full-1280.jpg` at 1280×720 / 1280×2888 full page.
+- Full-view combined comparison: `screenshots/direction-b-handoff-full-reference-vs-html.png`.
+- Focused combined comparison: `screenshots/direction-b-handoff-specimen-reference-vs-html.png`.
+- Focused rendered specimen crop: `screenshots/direction-b-handoff-dark-specimen-focused-610x333.jpg`.
+- Final source SHA-256: `App.jsx 3cc2b8c86fa196412219aa854a1a314478a468a2bcaf759af8f9ecc178f6c2dd`; `styles.css 32bb4a0ad8b59573bf29e51e8fa526050294bd91d9cc463548927cd8e2bad735`; `Handoff.jsx e2454ea8ef75310059696090effc39d34ceac25c195e80b7d61bf0967254d3f6`; `handoff.css 96940093fd7bc6cec9c41edb4b17ea2199ab32cbe286e7597f00c1753e38cdca`; `agent-handoff.json 08fdfb4368b7dbbd055a25e068c9c8e89f94bb42b09801fc9c2983217767541e`.
+
+### Required fidelity surfaces
+
+- **Typography:** the handoff reuses the prototype's Georgia display hierarchy and compact system UI scale. The live specimen preserves the approved 11px trigger, 13px row labels, 12px values, and 10px reset text.
+- **Spacing and layout:** the live specimen preserves 36px/44px triggers, 322×148px desktop popover, 50px desktop rows, 12px radius, and 390px no-overflow behavior. Documentation sections use the existing 1240px content frame, borders, radii, and spacing rhythm.
+- **Colors and tokens:** handoff Light/Dark controls use the existing prototype variables. The component specimen scopes the same semantic surfaces locally so Light and Dark can be inspected side by side without color inversion.
+- **Image quality and assets:** approved screenshots are imported as build assets without stretching or lossy recapture. All UI icons use the existing Lucide library; no handcrafted SVG, CSS art, emoji, or placeholder icon was introduced.
+- **Copy and content:** the handoff records Direction B, the exact options/defaults, non-status grouping safety, compact measurements, review URLs, branch/PR context, source files, and explicit non-authorization language.
+
+### Interaction and responsive verification
+
+- The handoff appearance switch changed the document from Dark to Light and exposed the pressed state correctly.
+- The dark live specimen changed grouping through a native select; Reset restored `Workflow status · Oldest captured`.
+- All three HTML assets rendered with zero horizontal document overflow at desktop and emulated 390×844.
+- At 390px, the live specimen trigger measured 44px and the navigation/container scroll widths remained equal to their client widths.
+- All three pages exposed landmarks, skip link, unique page titles, native links/buttons/selects, exact route URLs, and readable source/guardrail content.
+- Final in-app Browser pass across the three assets: **0 console errors, 0 console warnings**.
+- Eight-entry Vite production build: **pass**.
+
+### Comparison history
+
+| Severity | Finding | Fix | Post-fix evidence |
+|---|---|---|---|
+| P2 | New HTML assets were initially absent from the production build input. | Added `designHandoff`, `groupSortSpecimen`, and `agentPickup` Rollup inputs plus handoff warmup entry. | Eight HTML entries in final build output. |
+| P2 | Dark desktop and mobile specimens initially shared duplicate accessible select names. | Added unique variant labels and stable specimen test IDs. | Final accessibility snapshot and interaction pass. |
+| P2 | First focused QA capture showed a reset-modified state rather than the approved Primary AI topic · Title A–Z state. | Reloaded the pristine specimen, captured the exact source-equivalent state, and regenerated the combined focused comparison. | `direction-b-handoff-specimen-reference-vs-html.png`. |
+| P3 | Browser viewport override intermittently changed CSS metrics without matching the capture surface. | Retained only correctly dimensioned desktop captures; verified 390px behavior through same-browser DOM bounds and removed the misleading mobile raster. | File dimension audit plus recorded 390px client/scroll measurements. |
+
+### Residual limits
+
+- These are handoff and exploration assets, not production code or implementation authorization.
+- Manual screen-reader, switch-control, forced-colors, 320px, zoom/reflow, text-spacing, and real-device validation remain implementation no-go gates.
+- Clipboard copy buttons depend on the browser's secure-context clipboard permission; the commands remain fully readable without clipboard access.
+
+final result: passed
+
+---
+
 ## Stakeholder density correction QA — compact existing-pattern alignment
 
 **Date:** 2026-07-11
