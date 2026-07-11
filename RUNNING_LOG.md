@@ -29427,3 +29427,35 @@ All remaining work is future authorization, not unfinished discovery delivery: s
 - **Working tree:** Clean after final delivery commit.
 - **Deployed/runtime state:** Production unchanged; local isolated prototype remains available for review.
 - **Next milestone:** Human stakeholder review of PR #21; no automatic merge or implementation.
+
+---
+
+## 2026-07-11 17:25 - Direction B Grouping, Sorting, and Appearance Iteration
+
+**Entry author:** AI agent (Codex) · **Triggered by:** Stakeholder approval of Direction B and request for comprehensive Board/List grouping and sorting in Light and Dark.
+
+### Done
+
+- Recorded Direction B as the stakeholder-selected direction for continued exploration without changing the feature's **Explored — not implemented** classification.
+- Added one shared compact Group & sort control to Direction B Board and List.
+- Added grouping by workflow status, primary User tag, primary AI topic, source type, capture channel, capture quality, capture age, or no grouping.
+- Added sorting by custom fixture order, oldest/newest capture, title A–Z/Z–A, workflow status, source type, or capture channel.
+- Kept non-status grouping view-only, disabled status drag for those layouts, and preserved source-specific Move controls as the status-changing path.
+- Added intentional Light and Dark designs with review-link persistence.
+- Verified grouped/sorted Board and List states at 1440×1024 and 390×844 with no horizontal document overflow, no console warnings/errors, and a passing five-entry production build.
+- Compared the final dark organization control side-by-side with the user-supplied reference and recorded design QA as `passed`.
+
+### Deployed / Released
+
+Nothing deployed, merged, enabled, or implemented in production. Changes remain in the isolated throwaway prototype and exploration documentation on the review-only concept branch.
+
+### Remaining gates
+
+Task-based usability with realistic libraries; production URL/query semantics and scale; theme preference/system behavior; forced colors; 320px and zoom/reflow; and manual assistive-technology/real-device validation.
+
+### State snapshot
+
+- **Current phase / version:** Stakeholder-selected Direction B prototype iteration complete.
+- **Active branch:** `concept/card-processing-workflow`; PR #21 remains review-only.
+- **Deployed/runtime state:** Production unchanged; local isolated prototype available for review.
+- **Next milestone:** Stakeholder review of organization breadth, defaults, and both appearance modes.

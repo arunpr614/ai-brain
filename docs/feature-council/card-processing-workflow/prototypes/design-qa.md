@@ -116,3 +116,55 @@ Using semantic in-app Browser controls, the following were exercised without con
 - Production accessibility/release readiness: **not claimed**.
 
 **Final result: passed.**
+
+---
+
+## Stakeholder iteration QA — shared Group & sort, Light and Dark
+
+**Date:** 2026-07-11
+**Scope:** Direction B Board and List only
+**Classification:** **Explored — not implemented**
+
+### Visual truth and comparison input
+
+- Source visual truth: `references/group-sort-popover-reference.png` (user-supplied compact dark organization popover).
+- Focused implementation state: `screenshots/direction-b-group-sort-focused-dark-445x300.jpg`.
+- Required combined comparison input: `screenshots/direction-b-group-sort-reference-vs-implementation.png`.
+- Full-view evidence: `screenshots/direction-b-board-group-sort-menu-dark-1440x1024.jpg`, `screenshots/direction-b-board-grouped-light-1440x1024.jpg`, `screenshots/direction-b-list-grouped-dark-1440x1024.jpg`, and `screenshots/direction-b-list-grouped-light-1440x1024.jpg`.
+- Responsive evidence: `screenshots/direction-b-board-group-sort-mobile-dark-390x844.jpg`, `screenshots/direction-b-board-grouped-mobile-dark-390x844.jpg`, and `screenshots/direction-b-list-grouped-mobile-light-390x844.jpg`.
+- Final tested source SHA-256: `App.jsx bc90dc851b876860740a567748d7cb785d7a95ee53e32c23fe975792545e5b17`; `styles.css 9fd48652e8de277ab53b092fd5d092b8bcc63a74fba10272037f65a882943a52`; `item-detail.html fb61a8f83af52b587c6693def83b54e3bcff900c285dd3c79193458af2ac6973`.
+
+### Comparison judgment
+
+- The compact trigger and two-row popover preserve the reference's hierarchy: organization icon, clear Group by / Sort by labels, right-aligned current values, chevrons, dark raised surface, measured border, and restrained shadow.
+- The implementation intentionally adds a labeled trigger and one quiet reset action because the requested design needs both discoverability and a safe way back to the recommended Status · Oldest defaults.
+- The component uses the prototype's existing typography, Lucide icon set, spacing, radii, color tokens, and focus treatment rather than introducing a separate design language.
+- Light mode is composed with explicit surface, border, text, status, navigation, and raised-control tokens; it is not a blanket color inversion.
+
+### Interaction and responsive verification
+
+- Board and List expose the same Group and Sort options and update the URL with `group`, `sort`, and `theme`.
+- All eight grouping options and all eight sorting options were exercised through direct review states; every state rendered its expected group count with no console issues.
+- Primary AI topic + Title A–Z was exercised in both Board and List; grouped headings, counts, and within-group ordering matched the selected state.
+- Workflow-status grouping retains desktop status drag. Every other grouping is view-only and preserves the source-specific Move control as the only status-changing path.
+- Light and Dark switches were exercised at 1440×1024. Both layouts had `scrollWidth === clientWidth`.
+- Direction B Board and List were inspected at 390×844. Both layouts had `scrollWidth === clientWidth`; mobile Board displayed one selected group at a time; the open organization menu remained legible and reachable above fixed navigation.
+- Final in-app Browser pass: **0 console errors, 0 console warnings**.
+- Isolated five-entry production build: **pass**.
+
+### Finding history
+
+| Severity | Finding | Resolution |
+|---|---|---|
+| P1 | Grouping by a taxonomy dimension could be mistaken for moving workflow status | Added explicit view-only copy; disabled pointer drag outside Workflow status grouping; retained source-specific Move controls and status pills. |
+| P1 | A dark-only control would not satisfy the requested appearance scope | Added intentional Light and Dark tokens, appearance control, shareable URL state, and full-view evidence. |
+| P2 | Separate Board/List organization controls would increase relearning | Reused one component, one option model, one summary format, and one URL contract in both views. |
+| P2 | Mobile multi-group Board could collapse into an unusable horizontal canvas | Reused the one-group-at-a-time mobile switcher with horizontally scrollable group choices. |
+| P2 | Rapid full-browser menu capture contained an unchanged-region repaint artifact | Removed the unstable capture and retained a stable full capture plus focused comparison crop. |
+
+### Residual validation limits
+
+- This remains fictional in-memory prototype evidence. Real persistence, query performance at 10k/50k, stable-ID normalization, locale-aware title sorting, preference storage/system theme, forced colors, and server parity are not proven.
+- Manual VoiceOver/NVDA/TalkBack, switch control, 320px, 200%/400% zoom, text spacing, and real-device validation remain implementation no-go gates.
+
+final result: passed

@@ -2,7 +2,9 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import {
   AlertTriangle,
   Archive,
+  ArrowDownWideNarrow,
   ArrowLeft,
+  ArrowUpDown,
   BookOpen,
   Check,
   ChevronRight,
@@ -16,11 +18,14 @@ import {
   List,
   MessageSquare,
   MoreHorizontal,
+  Moon,
   PanelLeftClose,
   RefreshCw,
   RotateCcw,
+  Rows3,
   Search,
   Settings,
+  Sun,
   Tag,
   WifiOff,
   X,
@@ -33,6 +38,87 @@ const LABEL = {
   in_progress: "In Progress",
   done: "Done",
 };
+
+const GROUP_OPTIONS = [
+  ["status", "Workflow status"],
+  ["user_tag", "Primary user tag"],
+  ["ai_topic", "Primary AI topic"],
+  ["source_type", "Source type"],
+  ["channel", "Capture channel"],
+  ["quality", "Capture quality"],
+  ["age", "Capture age"],
+  ["none", "No grouping"],
+];
+
+const SORT_OPTIONS = [
+  ["custom", "Custom order"],
+  ["oldest", "Oldest captured"],
+  ["newest", "Newest captured"],
+  ["title_asc", "Title A–Z"],
+  ["title_desc", "Title Z–A"],
+  ["status", "Workflow status"],
+  ["source_type", "Source type"],
+  ["channel", "Capture channel"],
+];
+
+const FIXTURE_ORDER = new Map();
+
+function ageInMinutes(age) {
+  const value = Number.parseFloat(age) || 0;
+  if (age.includes("m")) return value;
+  if (age.includes("h")) return value * 60;
+  if (age.includes("w")) return value * 10080;
+  return value * 1440;
+}
+
+function groupDescriptor(card, groupBy) {
+  if (groupBy === "status") return { key: card.status, label: LABEL[card.status] };
+  if (groupBy === "user_tag") return { key: `tag-${card.userTags[0] ?? "none"}`, label: card.userTags[0] ?? "No user tag" };
+  if (groupBy === "ai_topic") return { key: `topic-${card.topics[0] ?? "none"}`, label: card.topics[0] ?? "No AI topic" };
+  if (groupBy === "source_type") return { key: `type-${card.type}`, label: card.type };
+  if (groupBy === "channel") return { key: `channel-${card.channel}`, label: card.channel };
+  if (groupBy === "quality") return { key: `quality-${card.quality}`, label: card.quality };
+  if (groupBy === "age") {
+    const minutes = ageInMinutes(card.age);
+    if (minutes <= 1440) return { key: "age-today", label: "Today" };
+    if (minutes <= 10080) return { key: "age-week", label: "This week" };
+    return { key: "age-older", label: "Older" };
+  }
+  return { key: "all", label: "All active sources" };
+}
+
+function sortCards(cards, sortBy) {
+  const result = [...cards];
+  return result.sort((a, b) => {
+    if (sortBy === "oldest") return ageInMinutes(b.age) - ageInMinutes(a.age);
+    if (sortBy === "newest") return ageInMinutes(a.age) - ageInMinutes(b.age);
+    if (sortBy === "title_asc") return a.title.localeCompare(b.title);
+    if (sortBy === "title_desc") return b.title.localeCompare(a.title);
+    if (sortBy === "status") return STATUSES.indexOf(a.status) - STATUSES.indexOf(b.status) || ageInMinutes(b.age) - ageInMinutes(a.age);
+    if (sortBy === "source_type") return a.type.localeCompare(b.type) || a.title.localeCompare(b.title);
+    if (sortBy === "channel") return a.channel.localeCompare(b.channel) || a.title.localeCompare(b.title);
+    return (FIXTURE_ORDER.get(a.id) ?? 0) - (FIXTURE_ORDER.get(b.id) ?? 0);
+  });
+}
+
+function organizeCards(cards, groupBy, sortBy) {
+  const groups = new Map();
+  for (const card of cards) {
+    const descriptor = groupDescriptor(card, groupBy);
+    if (!groups.has(descriptor.key)) groups.set(descriptor.key, { ...descriptor, cards: [] });
+    groups.get(descriptor.key).cards.push(card);
+  }
+  let result = [...groups.values()].map((group) => ({ ...group, cards: sortCards(group.cards, sortBy) }));
+  if (groupBy === "status") {
+    result = STATUSES.map((status) => result.find((group) => group.key === status) ?? { key: status, label: LABEL[status], cards: [] });
+  } else if (groupBy === "age") {
+    const ageOrder = ["age-today", "age-week", "age-older"];
+    result.sort((a, b) => ageOrder.indexOf(a.key) - ageOrder.indexOf(b.key));
+  } else if (groupBy !== "none") {
+    result.sort((a, b) => a.label.localeCompare(b.label));
+  }
+  return result;
+}
 
 const INITIAL_CARDS = [
   {
@@ -199,6 +285,8 @@ const INITIAL_CARDS = [
   },
 ];
 
+INITIAL_CARDS.forEach((card, index) => FIXTURE_ORDER.set(card.id, index));
+
 function currentPage() {
   const path = window.location.pathname;
   if (path.endsWith("item-detail.html")) return "detail";
@@ -218,6 +306,7 @@ export function App() {
 function ItemDetailPage() {
   const params = new URLSearchParams(window.location.search);
   const direction = ["a", "b", "c"].includes(params.get("direction")) ? params.get("direction") : "b";
+  const [theme, setTheme] = useState(params.get("theme") === "light" ? "light" : "dark");
   const initialCard = INITIAL_CARDS.find((card) => card.id === params.get("item")) ?? INITIAL_CARDS[0];
   const [status, setStatus] = useState(initialCard.status);
   const [archived, setArchived] = useState(initialCard.archived);
@@ -227,7 +316,11 @@ function ItemDetailPage() {
   const [announcement, setAnnouncement] = useState("Item detail loaded.");
   const bypassUnloadGuardRef = useRef(false);
   const returnView = params.get("view") || "inbox";
-  const returnHref = `/direction-${direction}.html?view=${encodeURIComponent(returnView)}&focus=${encodeURIComponent(initialCard.id)}`;
+  const returnHref = `/direction-${direction}.html?view=${encodeURIComponent(returnView)}&focus=${encodeURIComponent(initialCard.id)}&theme=${theme}`;
+
+  useEffect(() => {
+    document.documentElement.dataset.theme = theme;
+  }, [theme]);
 
   useEffect(() => {
     function guardUnload(event) {
@@ -267,7 +360,7 @@ function ItemDetailPage() {
         <div className="prototype-banner"><span>Throwaway prototype · Explored — not implemented</span><a href="/">Prototype gallery</a></div>
         <header className="detail-route-header">
           <button className="secondary-button" onClick={requestReturn}><ArrowLeft aria-hidden="true" />Back to Processing</button>
-          <span>Canonical item-detail route simulation</span>
+          <div className="detail-route-tools"><span>Canonical item-detail route simulation</span><ThemeToggle theme={theme} setTheme={setTheme} compact /></div>
         </header>
         <main id="item-detail-main" className="detail-route" tabIndex="-1">
           <article>
@@ -404,6 +497,11 @@ function Prototype({ direction }) {
   const initialView = ["inbox", "board", "list", "archived"].includes(requestedView) ? requestedView : defaults.view;
   const requestedScenario = initialParams.get("scenario");
   const initialScenario = ["normal", "loading", "error", "offline", "empty", "filtered-empty", "mutation-failure", "conflict"].includes(requestedScenario) ? requestedScenario : "normal";
+  const requestedGroup = initialParams.get("group");
+  const initialGroup = GROUP_OPTIONS.some(([value]) => value === requestedGroup) ? requestedGroup : "status";
+  const requestedSort = initialParams.get("sort");
+  const initialSort = SORT_OPTIONS.some(([value]) => value === requestedSort) ? requestedSort : "oldest";
+  const initialTheme = initialParams.get("theme") === "light" ? "light" : "dark";
   const returnFocusId = initialParams.get("focus");
 
   const [cards, setCards] = useState(INITIAL_CARDS);
@@ -412,6 +510,9 @@ function Prototype({ direction }) {
   const [topicFilter, setTopicFilter] = useState("all");
   const [selectedId, setSelectedId] = useState(returnFocusId);
   const [scenario, setScenario] = useState(initialScenario);
+  const [groupBy, setGroupBy] = useState(initialGroup);
+  const [sortBy, setSortBy] = useState(initialSort);
+  const [theme, setTheme] = useState(initialTheme);
   const [mobileStatus, setMobileStatus] = useState("inbox");
   const [history, setHistory] = useState(null);
   const [announcement, setAnnouncement] = useState("Prototype loaded.");
@@ -419,6 +520,10 @@ function Prototype({ direction }) {
   const [pendingFocusTarget, setPendingFocusTarget] = useState(returnFocusId);
   const mainRef = useRef(null);
   const sourceRefs = useRef(new Map());
+
+  useEffect(() => {
+    document.documentElement.dataset.theme = theme;
+  }, [theme]);
 
   useEffect(() => {
     if (!pendingFocusTarget) return;
@@ -453,9 +558,6 @@ function Prototype({ direction }) {
   const archived = filtered.filter((card) => card.archived);
   const selected = cards.find((card) => card.id === selectedId) ?? null;
   const inboxTotal = cards.filter((card) => !card.archived && card.status === "inbox").length;
-  const counts = Object.fromEntries(
-    STATUSES.map((status) => [status, active.filter((card) => card.status === status).length]),
-  );
   const viewMatching = view === "inbox"
     ? active.filter((card) => card.status === "inbox").length
     : view === "archived"
@@ -562,8 +664,33 @@ function Prototype({ direction }) {
     setAnnouncement(next === "loading" ? "Loading Processing cards." : next === "normal" ? "Processing cards loaded." : `Review scenario changed to ${next.replace("-", " ")}.`);
   }
 
+  function persistPreference(key, value) {
+    const url = new URL(window.location.href);
+    url.searchParams.set(key, value);
+    window.history.replaceState({}, "", url);
+  }
+
+  function changeGroupBy(nextGroup) {
+    setGroupBy(nextGroup);
+    setMobileStatus(nextGroup === "status" ? "inbox" : "");
+    persistPreference("group", nextGroup);
+    setAnnouncement(`Board and List grouped by ${GROUP_OPTIONS.find(([value]) => value === nextGroup)?.[1] ?? nextGroup}. Workflow status is unchanged.`);
+  }
+
+  function changeSortBy(nextSort) {
+    setSortBy(nextSort);
+    persistPreference("sort", nextSort);
+    setAnnouncement(`Board and List sorted by ${SORT_OPTIONS.find(([value]) => value === nextSort)?.[1] ?? nextSort}.`);
+  }
+
+  function changeTheme(nextTheme) {
+    setTheme(nextTheme);
+    persistPreference("theme", nextTheme);
+    setAnnouncement(`${nextTheme === "light" ? "Light" : "Dark"} appearance selected.`);
+  }
+
   function openDetail(id) {
-    window.location.href = `/item-detail.html?direction=${direction}&view=${view}&item=${encodeURIComponent(id)}`;
+    window.location.href = `/item-detail.html?direction=${direction}&view=${view}&item=${encodeURIComponent(id)}&theme=${theme}`;
   }
 
   const shownCards = scenario === "empty" ? active.filter((card) => card.status !== "inbox") : active;
@@ -592,6 +719,7 @@ function Prototype({ direction }) {
             <p>{defaults.subtitle}. Decide what happens to captured sources.</p>
           </div>
           <div className="header-actions">
+            <ThemeToggle theme={theme} setTheme={changeTheme} />
             <label className="scenario-control">
               <span>Review state</span>
               <select value={scenario} onChange={(event) => applyScenario(event.target.value)}>
@@ -640,6 +768,16 @@ function Prototype({ direction }) {
           total={scenario === "empty" ? 0 : inboxTotal}
         />
 
+        {(view === "board" || view === "list") && (
+          <OrganizationControls
+            view={view}
+            groupBy={groupBy}
+            setGroupBy={changeGroupBy}
+            sortBy={sortBy}
+            setSortBy={changeSortBy}
+          />
+        )}
+
         <main id="processing-main" ref={mainRef} className="view-stage" tabIndex="-1">
           {scenario === "loading" ? (
             <LoadingState view={view} />
@@ -667,7 +805,6 @@ function Prototype({ direction }) {
           ) : view === "board" ? (
             <BoardView
               cards={shownCards}
-              counts={counts}
               mobileStatus={mobileStatus}
               setMobileStatus={setMobileStatus}
               moveCard={moveCard}
@@ -677,6 +814,8 @@ function Prototype({ direction }) {
               setDragId={setDragId}
               offline={scenario === "offline"}
               registerSourceRef={registerSourceRef}
+              groupBy={groupBy}
+              sortBy={sortBy}
             />
           ) : view === "list" ? (
             <ListView
@@ -687,6 +826,8 @@ function Prototype({ direction }) {
               offline={scenario === "offline"}
               dense={direction === "c"}
               registerSourceRef={registerSourceRef}
+              groupBy={groupBy}
+              sortBy={sortBy}
             />
           ) : (
             <ArchivedView cards={scenario === "empty" ? [] : archived} restoreCard={restoreCard} setDetailId={openDetail} offline={scenario === "offline"} registerSourceRef={registerSourceRef} />
@@ -762,6 +903,51 @@ function ViewTabs({ view, changeView }) {
   return <div className="view-tabs" aria-label="Processing views">{tabs.map(([id, label]) => <button key={id} aria-pressed={view === id} className={view === id ? "active" : ""} onClick={() => changeView(id)}>{id === "board" && <LayoutGrid aria-hidden="true" />}{id === "list" && <List aria-hidden="true" />}{id === "archived" && <Archive aria-hidden="true" />}{id === "inbox" && <Inbox aria-hidden="true" />}{label}</button>)}</div>;
 }
 
+function ThemeToggle({ theme, setTheme, compact = false }) {
+  return (
+    <div className={`theme-control ${compact ? "compact" : ""}`} aria-label="Appearance">
+      {!compact && <span>Appearance</span>}
+      <div>
+        <button type="button" aria-pressed={theme === "light"} className={theme === "light" ? "active" : ""} onClick={() => setTheme("light")}><Sun aria-hidden="true" />Light</button>
+        <button type="button" aria-pressed={theme === "dark"} className={theme === "dark" ? "active" : ""} onClick={() => setTheme("dark")}><Moon aria-hidden="true" />Dark</button>
+      </div>
+    </div>
+  );
+}
+
+function OrganizationControls({ view, groupBy, setGroupBy, sortBy, setSortBy }) {
+  const groupLabel = GROUP_OPTIONS.find(([value]) => value === groupBy)?.[1] ?? "Custom";
+  const sortLabel = SORT_OPTIONS.find(([value]) => value === sortBy)?.[1] ?? "Custom";
+  return (
+    <section className="organize-toolbar" aria-label={`${view === "board" ? "Board" : "List"} grouping and sorting`}>
+      <div>
+        <strong>{view === "board" ? "Board organization" : "List organization"}</strong>
+        <span>{groupBy === "status" ? "Drag between status columns remains available." : "Grouping changes layout only; Move still changes workflow status."}</span>
+      </div>
+      <details className="organize-menu">
+        <summary><ArrowUpDown aria-hidden="true" /><span>Group &amp; sort</span><b>{groupLabel} · {sortLabel}</b></summary>
+        <div className="organize-popover">
+          <label>
+            <Rows3 aria-hidden="true" />
+            <span><strong>Group by</strong><small>{groupLabel}</small></span>
+            <select aria-label="Group Board and List by" value={groupBy} onChange={(event) => setGroupBy(event.target.value)}>
+              {GROUP_OPTIONS.map(([value, label]) => <option key={value} value={value}>{label}</option>)}
+            </select>
+          </label>
+          <label>
+            <ArrowDownWideNarrow aria-hidden="true" />
+            <span><strong>Sort by</strong><small>{sortLabel}</small></span>
+            <select aria-label="Sort Board and List by" value={sortBy} onChange={(event) => setSortBy(event.target.value)}>
+              {SORT_OPTIONS.map(([value, label]) => <option key={value} value={value}>{label}</option>)}
+            </select>
+          </label>
+          <button type="button" onClick={() => { setGroupBy("status"); setSortBy("oldest"); }}><RotateCcw aria-hidden="true" />Reset to Status · Oldest</button>
+        </div>
+      </details>
+    </section>
+  );
+}
+
 function FilterBar({ tagFilter, setTagFilter, topicFilter, setTopicFilter, clearFilters, matching, scope, total }) {
   return (
     <section className="filter-bar" aria-label="Filters">
@@ -816,30 +1002,33 @@ function QuickPreview({ card, moveCard, setDetailId, offline, leaveInInbox }) {
   );
 }
 
-function BoardView({ cards, counts, mobileStatus, setMobileStatus, moveCard, archiveCard, setDetailId, dragId, setDragId, offline, registerSourceRef }) {
+function BoardView({ cards, mobileStatus, setMobileStatus, moveCard, archiveCard, setDetailId, dragId, setDragId, offline, registerSourceRef, groupBy, sortBy }) {
+  const groups = organizeCards(cards, groupBy, sortBy);
+  const activeMobileGroup = groups.some((group) => group.key === mobileStatus) ? mobileStatus : groups[0]?.key;
   return (
     <div>
-      <div className="mobile-status-tabs" aria-label="Board status">{STATUSES.map((status) => <button aria-pressed={mobileStatus === status} className={mobileStatus === status ? "active" : ""} onClick={() => setMobileStatus(status)} key={status}>{LABEL[status]} <span>{counts[status]}</span></button>)}</div>
-      <div className="board" aria-label="Workflow board">
-        {STATUSES.map((status) => (
+      <div className="mobile-status-tabs" aria-label="Board groups">{groups.map((group) => <button aria-pressed={activeMobileGroup === group.key} className={activeMobileGroup === group.key ? "active" : ""} onClick={() => setMobileStatus(group.key)} key={group.key}>{group.label} <span>{group.cards.length}</span></button>)}</div>
+      <div className={`board ${groupBy === "status" ? "status-board" : "view-only-board"}`} aria-label={`Workflow board grouped by ${GROUP_OPTIONS.find(([value]) => value === groupBy)?.[1]}`}>
+        {groups.map((group) => (
           <section
-            key={status}
-            className={`board-column mobile-${mobileStatus === status ? "selected" : "hidden"}`}
-            aria-labelledby={`column-${status}`}
-            onDragOver={(event) => event.preventDefault()}
-            onDrop={() => { if (dragId && !offline) moveCard(dragId, status); setDragId(null); }}
+            key={group.key}
+            className={`board-column mobile-${activeMobileGroup === group.key ? "selected" : "hidden"}`}
+            aria-labelledby={`column-${group.key.replace(/[^a-z0-9-]/gi, "-")}`}
+            onDragOver={(event) => { if (groupBy === "status") event.preventDefault(); }}
+            onDrop={() => { if (groupBy === "status" && dragId && !offline) moveCard(dragId, group.key); setDragId(null); }}
           >
-            <header><h2 id={`column-${status}`}>{LABEL[status]}</h2><span>{counts[status]} matching</span></header>
+            <header><h2 id={`column-${group.key.replace(/[^a-z0-9-]/gi, "-")}`}>{group.label}</h2><span>{group.cards.length} {group.cards.length === 1 ? "source" : "sources"}</span></header>
             <ul className="column-list">
-              {cards.filter((card) => card.status === status).map((card) => (
-                <li ref={(node) => registerSourceRef(card.id, node)} key={card.id} className="board-card" tabIndex="-1" draggable={!offline} onDragStart={() => setDragId(card.id)} onDragEnd={() => setDragId(null)}>
+              {group.cards.map((card) => (
+                <li ref={(node) => registerSourceRef(card.id, node)} key={card.id} className="board-card" tabIndex="-1" draggable={!offline && groupBy === "status"} onDragStart={() => { if (groupBy === "status") setDragId(card.id); }} onDragEnd={() => setDragId(null)}>
                   <div className="card-meta"><SourceMark type={card.type} /><span>{card.type} · {card.age}</span></div>
                   <h3>{card.title}</h3>
+                  {groupBy !== "status" && <span className={`status-pill status-${card.status} grouped-card-status`}>{LABEL[card.status]}</span>}
                   <div className="chip-row">{card.userTags.slice(0, 1).map((tag) => <span key={tag}>{tag}</span>)}{card.topics.slice(0, 1).map((topic) => <span key={topic}>AI · {topic}</span>)}</div>
                   <CardActions card={card} moveCard={moveCard} archiveCard={archiveCard} setDetailId={setDetailId} offline={offline} compact />
                 </li>
               ))}
-              {counts[status] === 0 && <li className="column-empty">No sources in {LABEL[status]}.</li>}
+              {group.cards.length === 0 && <li className="column-empty">No sources in {group.label}.</li>}
             </ul>
           </section>
         ))}
@@ -848,23 +1037,32 @@ function BoardView({ cards, counts, mobileStatus, setMobileStatus, moveCard, arc
   );
 }
 
-function ListView({ cards, moveCard, archiveCard, setDetailId, offline, dense, registerSourceRef }) {
+function ListView({ cards, moveCard, archiveCard, setDetailId, offline, dense, registerSourceRef, groupBy, sortBy }) {
   if (cards.length === 0) return <EmptyState title="No active sources" />;
+  const groups = organizeCards(cards, groupBy, sortBy);
   return (
     <section className={`list-surface ${dense ? "dense" : ""}`} aria-labelledby="list-heading">
-      <div className="section-heading"><div><h2 id="list-heading">All active sources</h2><p>Deterministic status ordering · {cards.length} matching</p></div></div>
-      <div className="list-header" aria-hidden="true"><span>Status</span><span>Source</span><span>Labels</span><span>Captured</span><span>Actions</span></div>
-      <ul>
-        {cards.map((card) => (
-          <li key={card.id}>
-            <span className={`status-pill status-${card.status}`}>{LABEL[card.status]}</span>
-            <button ref={(node) => registerSourceRef(card.id, node)} className="list-title" aria-label={`Open ${card.title}`} onClick={() => setDetailId(card.id)}><SourceMark type={card.type} /><span><strong>{card.title}</strong><small>{card.type} · via {card.channel}</small></span></button>
-            <div className="list-labels">{card.userTags.slice(0, 1).map((tag) => <span key={tag}>{tag}</span>)}{card.topics.slice(0, 1).map((topic) => <span key={topic}>AI · {topic}</span>)}</div>
-            <span className="list-age">{card.age}</span>
-            <CardActions card={card} moveCard={moveCard} archiveCard={archiveCard} setDetailId={setDetailId} offline={offline} compact />
-          </li>
-        ))}
-      </ul>
+      <div className="section-heading"><div><h2 id="list-heading">All active sources</h2><p>{GROUP_OPTIONS.find(([value]) => value === groupBy)?.[1]} · {SORT_OPTIONS.find(([value]) => value === sortBy)?.[1]} · {cards.length} matching</p></div></div>
+      {groups.map((group) => {
+        const headingId = `list-group-${group.key.replace(/[^a-z0-9-]/gi, "-")}`;
+        return (
+          <section className="list-group" aria-labelledby={headingId} key={group.key}>
+            <header><h3 id={headingId}>{group.label}</h3><span>{group.cards.length} {group.cards.length === 1 ? "source" : "sources"}</span></header>
+            <div className="list-header" aria-hidden="true"><span>Status</span><span>Source</span><span>Labels</span><span>Captured</span><span>Actions</span></div>
+            <ul>
+              {group.cards.map((card) => (
+                <li key={card.id}>
+                  <span className={`status-pill status-${card.status}`}>{LABEL[card.status]}</span>
+                  <button ref={(node) => registerSourceRef(card.id, node)} className="list-title" aria-label={`Open ${card.title}`} onClick={() => setDetailId(card.id)}><SourceMark type={card.type} /><span><strong>{card.title}</strong><small>{card.type} · via {card.channel}</small></span></button>
+                  <div className="list-labels">{card.userTags.slice(0, 1).map((tag) => <span key={tag}>{tag}</span>)}{card.topics.slice(0, 1).map((topic) => <span key={topic}>AI · {topic}</span>)}</div>
+                  <span className="list-age">{card.age}</span>
+                  <CardActions card={card} moveCard={moveCard} archiveCard={archiveCard} setDetailId={setDetailId} offline={offline} compact />
+                </li>
+              ))}
+            </ul>
+          </section>
+        );
+      })}
     </section>
   );
 }

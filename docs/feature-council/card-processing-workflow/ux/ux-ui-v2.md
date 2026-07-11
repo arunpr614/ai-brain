@@ -253,3 +253,37 @@ The prototype uses fictional in-memory data, no production imports/API/persisten
 ## 17. No authorization
 
 This UX package is a high-fidelity throwaway exploration. It does not authorize production UI, routes, migrations, APIs, flags, or rollout.
+
+## 18. Stakeholder-selected Direction B iteration: organization and appearance
+
+Direction B remains the selected design direction. Board and List now use the same compact **Group & sort** disclosure so a person can understand and change both dimensions from one predictable place.
+
+### Grouping
+
+- Workflow status
+- Primary User tag
+- Primary AI topic
+- Source type
+- Capture channel
+- Capture quality
+- Capture age
+- No grouping
+
+Grouping other than Workflow status is view-only. It never changes an item's workflow state, and the UI states this directly. On mobile, Board shows one selected group at a time to avoid a compressed multi-column canvas.
+
+### Sorting
+
+- Custom fixture order
+- Oldest captured
+- Newest captured
+- Title A–Z
+- Title Z–A
+- Workflow status
+- Source type
+- Capture channel
+
+The selection applies consistently to Board cards and List rows. Group and sort choices are encoded in the prototype URL so a reviewer can share an exact state.
+
+### Light and Dark appearance
+
+Both modes are intentionally composed from the prototype's existing tokens and components. The appearance switch is available in the main header and item-detail route, persists in review links, and retains the same content, interaction, and hierarchy across modes. This is prototype evidence only; production preference storage, system-preference behavior, forced-colors support, and manual contrast/zoom validation remain implementation gates.
