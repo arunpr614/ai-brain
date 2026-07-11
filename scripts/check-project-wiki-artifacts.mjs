@@ -45,13 +45,16 @@ expectCount(pageAudit, 84, "page_audit_count");
 
 const ledgerFeatureCount = tableRowCount(featureLedger, "| Feature | Product status |");
 const masterIdeaCount = tableRowCount(masterInventoryPath, "| Idea or capability | Status |");
+const masterIdeaNames = tableNames(masterInventoryPath, "| Idea or capability | Status |");
+const publicIdeaNames = tableNames(join(wikiRoot, "Ideas-and-Exploration-Catalog.md"), "| Idea | Status |");
 if (features.rows.length !== ledgerFeatureCount + masterIdeaCount) {
   findings.push({ rule: "master_evidence_count_drift", expected: ledgerFeatureCount + masterIdeaCount, actual: features.rows.length });
 }
 if (features.rows.filter((row) => row.record_type === "feature").length !== ledgerFeatureCount) findings.push({ rule: "feature_evidence_count_drift" });
 if (features.rows.filter((row) => row.record_type === "idea").length !== masterIdeaCount) findings.push({ rule: "idea_evidence_count_drift" });
 compareNames("feature", tableNames(featureLedger, "| Feature | Product status |"));
-compareNames("idea", tableNames(masterInventoryPath, "| Idea or capability | Status |"));
+compareNames("idea", masterIdeaNames);
+comparePublicIdeaCatalog(masterIdeaNames, publicIdeaNames);
 compareStatuses("feature", tableColumnMap(featureLedger, "| Feature | Product status |", 1));
 compareStatuses("idea", tableColumnMap(masterInventoryPath, "| Idea or capability | Status |", 1));
 const ideaConfidence = tableColumnMap(masterInventoryPath, "| Idea or capability | Status |", 2);
@@ -249,6 +252,16 @@ function compareNames(recordType, expectedNames) {
 function compareStatuses(recordType, expectedStatuses) {
   for (const row of features.rows.filter((item) => item.record_type === recordType)) {
     if (row.definitive_status !== expectedStatuses.get(row.name)) findings.push({ rule: `${recordType}_evidence_status_drift`, name: row.name });
+  }
+}
+
+function comparePublicIdeaCatalog(expectedNames, actualNames) {
+  if (actualNames.length !== expectedNames.length) findings.push({ rule: "public_idea_catalog_count_drift", expected: expectedNames.length, actual: actualNames.length });
+  for (const name of expectedNames) {
+    if (!actualNames.includes(name)) findings.push({ rule: "public_idea_catalog_missing_record", name });
+  }
+  for (const name of actualNames) {
+    if (!expectedNames.includes(name)) findings.push({ rule: "public_idea_catalog_unexpected_record", name });
   }
 }
 
