@@ -22,6 +22,8 @@
     "check:env": "bash scripts/check-env-gitignored.sh",
     "check:build-artifacts": "node scripts/check-build-artifacts.mjs",
     "build:recall-cli": "node scripts/build-recall-cli.mjs",
+    "check:recall-manual-sync-artifacts": "node scripts/check-recall-manual-sync-artifacts.mjs",
+    "test:recall-manual-sync-process": "node scripts/test-recall-manual-sync-process.mjs",
     "build:vector-tools": "node scripts/build-vector-tools.mjs",
     "smoke:recall-cli:bundle": "node scripts/smoke-recall-cli-bundle.mjs",
     "smoke:recall-live-spikes": "node -- scripts/smoke-recall-live-spikes.mjs",

@@ -2,7 +2,7 @@
 
 Purpose: Provide a current, compact status matrix with links to evidence-backed feature documentation.
 Audience: AI agents, engineers, and product/design collaborators.
-Verified against: `23868faf13c8e3d0821715e6f5d0e3d2af1e1a34`.
+Verified against: main documentation baseline `23868faf13c8e3d0821715e6f5d0e3d2af1e1a34` plus review candidate `fdd740617685c1ce730a6150c306152a04070f86` on `feat/recall-manual-sync`.
 Runtime evidence through: 2026-07-10 at `6858529ef179a51442d319c6c58e5ace79757619`; each row retains its own runtime boundary.
 Last reviewed: 2026-07-11.
 Owner: AI Brain maintainer.
@@ -32,12 +32,13 @@ Implementation status, availability, confidence, and runtime evidence are indepe
 | Provenance/artifacts/cache | Implemented | Supporting | High | Historical dated evidence; not reverified | [Capture](Capture-and-Ingestion) | `23868faf…` | Retention contract incomplete |
 | Needs Upgrade | Implemented | Default | High | Historical dated evidence; not reverified | [Quality and Repair](Capture-Quality-Review-and-Repair) | `23868faf…` | Source quality, not SRS |
 | Attention Review inbox | Implemented | Reachable route | High code; Medium runtime | Code/test; runtime not rechecked | [Quality and Repair](Capture-Quality-Review-and-Repair) | `23868faf…` | Not primary navigation or SRS |
+| Card Processing Workflow | Explored | Not available | High proposal; no runtime | No runtime claim; fictional prototype only | [Exploration](https://github.com/arunpr614/ai-brain/wiki/Card-Processing-Workflow-Exploration) | `1cb5d36…` exploration baseline | Dedicated Processing lifecycle is proposed, **not implemented** |
 | Unified Repair Center proposal | Planned | Not available | High | No runtime claim | [Ideas and Exploration](Ideas-and-Exploration-Catalog) | `23868faf…` | Several primitives exist; full proposal is absent |
 | Android thin client/share | Implemented | Private sideload | High | Historical dated evidence; not reverified | [Mobile and Pairing](Mobile-Extension-and-Pairing) | `23868faf…` | Not public/offline-native |
 | Multi-PDF Android share | Rejected | Inactive | High | Rejected by classifier | [Mobile and Pairing](Mobile-Extension-and-Pairing) | `23868faf…` | Single-PDF contract |
 | Browser extension | Implemented | User-installed | High | Historical runtime evidence | [Browser Extension](Browser-Extension) | `23868faf…` | No store/overlay proof |
 | Telegram capture | Implemented | Configured | High | Webhook boundary verified | [Telegram Capture](Telegram-Capture) | `23868faf…` | Private owner chat only |
-| Recall synchronization | Partially implemented | Feature-flagged/configured timer | High | Timer active on 2026-07-10 | [Recall Synchronization](Recall-Synchronization) | `23868faf…` | Narrow daily-import contract exists; no two-way sync UI |
+| Recall synchronization | Implemented | Default-off flags plus configured daily timer | High code/local proof; host proof pending | Daily timer evidence 2026-07-10; manual control not deployed | [Recall Synchronization](Recall-Synchronization) | `fdd7406…` candidate | Guarded one-way import and manual request UI; not two-way sync |
 | AI enrichment/taxonomy | Implemented | Background | High | Historical dated evidence; not reverified | [Enrichment](Enrichment-and-AI-Providers) | `23868faf…` | Queue/provider failures remain |
 | Provider abstraction/health | Implemented | Configured | High | Strict providers verified | [Enrichment](Enrichment-and-AI-Providers) | `23868faf…` | Health is point-in-time |
 | Tags/categories/topics/collections | Implemented | Default | High | Historical dated evidence; not reverified | [Organization](Organization-Tags-Topics-and-Collections) | `23868faf…` | No hierarchy/smart rules |

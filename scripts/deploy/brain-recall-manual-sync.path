@@ -1,0 +1,10 @@
+[Unit]
+Description=Watch for durable Recall manual sync wake markers
+
+[Path]
+PathExists=/opt/brain/data/recall-manual-sync/wake
+PathChanged=/opt/brain/data/recall-manual-sync/wake
+Unit=brain-recall-manual-sync.service
+
+[Install]
+WantedBy=multi-user.target

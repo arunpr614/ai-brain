@@ -17,6 +17,130 @@ die() {
   exit 1
 }
 
+RECALL_DEPLOY_GUARD_TOKEN=""
+
+acquire_recall_deploy_guard() {
+  [[ -z "$RECALL_DEPLOY_GUARD_TOKEN" ]] || die "Recall deploy guard is already held"
+  RECALL_DEPLOY_GUARD_TOKEN="deploy-$$-$(date -u +%s)"
+  local ready
+  ready="$(ssh "${SSH_HOST}" "sudo env RECALL_GUARD_TOKEN='${RECALL_DEPLOY_GUARD_TOKEN}' bash -s" <<'REMOTE_RECALL_DEPLOY_GUARD'
+set -euo pipefail
+prefix="/run/brain-recall/${RECALL_GUARD_TOKEN}"
+hold="${prefix}.hold"
+ready="${prefix}.ready"
+result="${prefix}.result"
+holder="${prefix}.sh"
+lock="/run/brain-recall/recall-sync.lock"
+
+for service in brain-recall-sync.service brain-recall-manual-sync.service; do
+  state="$(systemctl is-active "$service" 2>/dev/null || true)"
+  case "$state" in
+    active|activating|reloading|deactivating)
+      echo "[deploy] Recall runtime replacement refused while $service is $state" >&2
+      exit 1
+      ;;
+  esac
+done
+if ! id brain-recall >/dev/null 2>&1 || [[ "$(stat -c '%U %G %a' /run/brain-recall 2>/dev/null || true)" != 'brain-recall brain-recall 700' ]]; then
+  if systemctl is-enabled --quiet brain-recall-sync.timer 2>/dev/null || systemctl is-active --quiet brain-recall-sync.timer 2>/dev/null; then
+    echo '[deploy] first guarded identity/runtime preparation requires the automatic timer disabled and inactive' >&2
+    exit 1
+  fi
+  getent group brain-data >/dev/null || groupadd --system brain-data
+  id brain-recall >/dev/null 2>&1 || useradd --system --home /nonexistent --shell /usr/sbin/nologin --gid brain-data brain-recall
+  install -d -m 0700 -o brain-recall -g brain-recall /run/brain-recall
+fi
+
+install -m 0600 /dev/null "$hold"
+rm -f "$ready" "$result" "$holder"
+cat > "$holder" <<'RECALL_GUARD_HOLDER'
+#!/usr/bin/env bash
+set -euo pipefail
+prefix="$1"
+hold="${prefix}.hold"
+ready="${prefix}.ready"
+result="${prefix}.result"
+lock="/run/brain-recall/recall-sync.lock"
+exec 9>>"$lock"
+if ! flock -n 9; then
+  printf 'lock_busy\n' > "$result"
+  exit 1
+fi
+for service in brain-recall-sync.service brain-recall-manual-sync.service; do
+  state="$(systemctl is-active "$service" 2>/dev/null || true)"
+  case "$state" in
+    active|reloading|deactivating)
+      printf 'service_active:%s:%s\n' "$service" "$state" > "$result"
+      exit 1
+      ;;
+  esac
+done
+timer_before="$(systemctl is-enabled brain-recall-sync.timer 2>/dev/null || true)|$(systemctl is-active brain-recall-sync.timer 2>/dev/null || true)"
+printf 'ready|%s\n' "$timer_before" > "$ready"
+while [[ -e "$hold" ]]; do sleep 0.1; done
+timer_after="$(systemctl is-enabled brain-recall-sync.timer 2>/dev/null || true)|$(systemctl is-active brain-recall-sync.timer 2>/dev/null || true)"
+if [[ "$timer_after" != "$timer_before" ]]; then
+  printf 'timer_changed|%s|%s\n' "$timer_before" "$timer_after" > "$result"
+else
+  printf 'ok|%s\n' "$timer_after" > "$result"
+fi
+rm -f "$ready" "$holder"
+RECALL_GUARD_HOLDER
+chmod 0700 "$holder"
+nohup bash "$holder" "$prefix" >/dev/null 2>&1 &
+for _ in $(seq 1 200); do
+  if [[ -s "$ready" ]]; then
+    cat "$ready"
+    exit 0
+  fi
+  if [[ -s "$result" ]]; then
+    cat "$result" >&2
+    exit 1
+  fi
+  sleep 0.05
+done
+echo '[deploy] timed out acquiring continuous Recall deploy guard' >&2
+rm -f "$hold"
+exit 1
+REMOTE_RECALL_DEPLOY_GUARD
+)" || {
+    RECALL_DEPLOY_GUARD_TOKEN=""
+    die "continuous Recall deploy guard could not be acquired"
+  }
+  [[ "$ready" == ready\|* ]] || die "continuous Recall deploy guard returned an invalid readiness response"
+  trap 'release_recall_deploy_guard false' EXIT
+  echo "[deploy] continuous Recall deploy guard acquired (${ready#ready|})."
+}
+
+release_recall_deploy_guard() {
+  local verify="${1:-true}"
+  [[ -n "$RECALL_DEPLOY_GUARD_TOKEN" ]] || return 0
+  local token="$RECALL_DEPLOY_GUARD_TOKEN"
+  local outcome
+  outcome="$(ssh "${SSH_HOST}" "sudo env RECALL_GUARD_TOKEN='${token}' bash -s" <<'REMOTE_RECALL_DEPLOY_RELEASE'
+set -euo pipefail
+prefix="/run/brain-recall/${RECALL_GUARD_TOKEN}"
+rm -f "${prefix}.hold"
+for _ in $(seq 1 200); do
+  if [[ -s "${prefix}.result" ]]; then
+    cat "${prefix}.result"
+    rm -f "${prefix}.result" "${prefix}.ready" "${prefix}.sh"
+    exit 0
+  fi
+  sleep 0.05
+done
+echo 'guard_release_timeout'
+exit 1
+REMOTE_RECALL_DEPLOY_RELEASE
+)" || outcome="guard_release_failed"
+  RECALL_DEPLOY_GUARD_TOKEN=""
+  trap - EXIT
+  if [[ "$verify" == "true" && "$outcome" != ok\|* ]]; then
+    die "continuous Recall deploy guard failed timer/state verification: $outcome"
+  fi
+  [[ "$outcome" == ok\|* ]] && echo "[deploy] continuous Recall deploy guard released (${outcome#ok|})."
+}
+
 require_command() {
   command -v "$1" >/dev/null 2>&1 || die "required command not found: $1"
 }
@@ -356,19 +480,57 @@ rm -rf .next
 npm run build
 npm run check:build-artifacts
 
+if [[ "${BRAIN_RECALL_PREPARE_MANUAL_SYNC:-0}" == "1" ]]; then
+  log "3a. Hold the private Recall lock across the complete runtime switch"
+  acquire_recall_deploy_guard
+fi
+
 log "4. Sync artifact to Hetzner"
 rsync -az --delete --exclude '/data/' .next/standalone/ "${SSH_HOST}:${REMOTE_DIR}/"
 rsync -az --delete .next/static/ "${SSH_HOST}:${REMOTE_DIR}/.next/static/"
 rsync -az --delete public/ "${SSH_HOST}:${REMOTE_DIR}/public/"
 ssh "${SSH_HOST}" "mkdir -p '${REMOTE_DIR}/scripts' '${REMOTE_DIR}/scripts/deploy' '${REMOTE_DIR}/scripts/lib' '${REMOTE_DIR}/docs/plans/spikes'"
-rsync -az scripts/check-ai-providers.mjs scripts/check-recall-key-rotation-evidence.mjs scripts/check-recall-dry-run-report.mjs scripts/check-recall-apply-report.mjs scripts/check-recall-live-spike-reports.mjs scripts/check-recall-public-privacy.mjs scripts/check-recall-public-manifest-privacy.mjs scripts/check-recall-second-manual-runtime-preflight.mjs scripts/backfill-embeddings-prod.mjs scripts/backfill-youtube-transcripts-prod.mjs scripts/restore-from-backup.sh scripts/recall-first-apply-preflight.mjs scripts/recall-scheduled-apply.sh scripts/recall-second-manual-verification-apply.sh scripts/dist/sync-recall-prod.mjs scripts/dist/audit-vector-index-prod.mjs scripts/dist/repair-vector-index-prod.mjs "${SSH_HOST}:${REMOTE_DIR}/scripts/"
+rsync -az scripts/check-ai-providers.mjs scripts/check-recall-key-rotation-evidence.mjs scripts/check-recall-dry-run-report.mjs scripts/check-recall-apply-report.mjs scripts/check-recall-live-spike-reports.mjs scripts/check-recall-public-privacy.mjs scripts/check-recall-public-manifest-privacy.mjs scripts/check-recall-second-manual-runtime-preflight.mjs scripts/backfill-embeddings-prod.mjs scripts/backfill-youtube-transcripts-prod.mjs scripts/restore-from-backup.sh scripts/recall-first-apply-preflight.mjs scripts/recall-second-manual-verification-apply.sh scripts/dist/audit-vector-index-prod.mjs scripts/dist/repair-vector-index-prod.mjs "${SSH_HOST}:${REMOTE_DIR}/scripts/"
 rsync -az scripts/lib/recall-controlled-samples.mjs "${SSH_HOST}:${REMOTE_DIR}/scripts/lib/"
 rsync -az docs/plans/spikes/SPIKE-013-recall-rest-enumeration-*.md docs/plans/spikes/SPIKE-014-recall-content-fidelity-*.md "${SSH_HOST}:${REMOTE_DIR}/docs/plans/spikes/"
-rsync -az --delete scripts/dist/db/ "${SSH_HOST}:${REMOTE_DIR}/scripts/db/"
-rsync -az scripts/deploy/brain-recall-sync.service scripts/deploy/brain-recall-sync.timer "${SSH_HOST}:${REMOTE_DIR}/scripts/deploy/"
-ssh "${SSH_HOST}" "sudo install -m 0644 '${REMOTE_DIR}/scripts/deploy/brain-recall-sync.service' /etc/systemd/system/brain-recall-sync.service"
-ssh "${SSH_HOST}" "sudo install -m 0644 '${REMOTE_DIR}/scripts/deploy/brain-recall-sync.timer' /etc/systemd/system/brain-recall-sync.timer"
-ssh "${SSH_HOST}" "sudo systemctl daemon-reload"
+rsync -az scripts/deploy/brain.service "${SSH_HOST}:${REMOTE_DIR}/scripts/deploy/"
+if [[ "${BRAIN_RECALL_PREPARE_MANUAL_SYNC:-0}" == "1" ]]; then
+  rsync -az scripts/dist/sync-recall-prod.mjs scripts/dist/recall-sync-lifecycle-prod.mjs scripts/dist/recall-manual-sync-worker-prod.mjs "${SSH_HOST}:${REMOTE_DIR}/scripts/"
+  rsync -az --delete scripts/dist/db/ "${SSH_HOST}:${REMOTE_DIR}/scripts/db/"
+  rsync -az scripts/deploy/brain-recall-sync.service scripts/deploy/brain-recall-sync.timer scripts/deploy/brain-recall-manual-sync.service scripts/deploy/brain-recall-manual-sync.path scripts/deploy/brain-recall-manual-sync.timer scripts/deploy/brain-recall-manual-sync.tmpfiles.conf "${SSH_HOST}:${REMOTE_DIR}/scripts/deploy/"
+  rsync -az scripts/recall-scheduled-apply.sh "${SSH_HOST}:${REMOTE_DIR}/scripts/"
+  ssh "${SSH_HOST}" "sudo env BRAIN_REMOTE_DIR='${REMOTE_DIR}' bash -s" <<'REMOTE_RECALL_MANUAL_PREPARE'
+set -euo pipefail
+if grep -Eq '^(export[[:space:]]+)?RECALL_API_KEY[[:space:]]*=' /etc/brain/.env; then
+  echo '[deploy] shared web EnvironmentFile must not contain RECALL_API_KEY' >&2
+  exit 1
+fi
+getent group brain-data >/dev/null || groupadd --system brain-data
+id brain-recall >/dev/null 2>&1 || useradd --system --home /nonexistent --shell /usr/sbin/nologin --gid brain-data brain-recall
+usermod -a -G brain-data brain
+test "$(stat -c '%U %a' /etc/brain/recall-api-key)" = 'root 400' || {
+  echo '[deploy] /etc/brain/recall-api-key must already be root-owned mode 0400' >&2
+  exit 1
+}
+chgrp -R brain-data /opt/brain/data
+find /opt/brain/data -type d -exec chmod 2770 {} +
+find /opt/brain/data -type f -exec chmod 0660 {} +
+install -m 0644 "${BRAIN_REMOTE_DIR}/scripts/deploy/brain.service" /etc/systemd/system/brain.service
+install -m 0644 "${BRAIN_REMOTE_DIR}/scripts/deploy/brain-recall-sync.service" /etc/systemd/system/brain-recall-sync.service
+install -m 0644 "${BRAIN_REMOTE_DIR}/scripts/deploy/brain-recall-sync.timer" /etc/systemd/system/brain-recall-sync.timer
+install -m 0644 "${BRAIN_REMOTE_DIR}/scripts/deploy/brain-recall-manual-sync.service" /etc/systemd/system/brain-recall-manual-sync.service
+install -m 0644 "${BRAIN_REMOTE_DIR}/scripts/deploy/brain-recall-manual-sync.path" /etc/systemd/system/brain-recall-manual-sync.path
+install -m 0644 "${BRAIN_REMOTE_DIR}/scripts/deploy/brain-recall-manual-sync.timer" /etc/systemd/system/brain-recall-manual-sync.timer
+install -m 0644 "${BRAIN_REMOTE_DIR}/scripts/deploy/brain-recall-manual-sync.tmpfiles.conf" /etc/tmpfiles.d/brain-recall-manual-sync.conf
+systemd-tmpfiles --create /etc/tmpfiles.d/brain-recall-manual-sync.conf
+systemctl daemon-reload
+systemctl is-enabled --quiet brain-recall-manual-sync.path && exit 1 || true
+systemctl is-enabled --quiet brain-recall-manual-sync.timer && exit 1 || true
+REMOTE_RECALL_MANUAL_PREPARE
+  release_recall_deploy_guard true
+else
+  echo "[deploy] Recall runtime, migrations, wrapper, and units were preserved. BRAIN_RECALL_PREPARE_MANUAL_SYNC=1 plus the continuous private-lock guard is required to replace them."
+fi
 
 log "5. Repair remote native dependencies"
 repair_remote_native_deps

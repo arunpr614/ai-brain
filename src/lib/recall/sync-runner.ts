@@ -1,11 +1,14 @@
 import {
   advanceRecallCheckpoint,
+  beginRecallSyncRun,
+  finishRecallSyncRun,
   getRecallCheckpoint,
   getRecallSyncItem,
-  insertRecallSyncRun,
   releaseRecallSyncLock,
   tryAcquireRecallSyncLock,
+  updateRecallSyncRunProgress,
 } from "@/db/recall-sync";
+import { newId } from "@/db/client";
 import { findItemByUrl } from "@/db/items";
 import { needsUpgradeReason } from "@/lib/capture/quality";
 import {
@@ -60,9 +63,19 @@ export interface RunRecallSyncInput {
   staleLockMs?: number;
   allowStaleLockRecovery?: boolean;
   persistRunReport?: boolean;
+  runId?: string;
+  executionId?: string | null;
+  trigger?: "automatic" | "manual_ui";
+  requestId?: string | null;
+  /** Test seam for deterministic late-card crash verification. */
+  importCard?: typeof importRecallCard;
 }
 
 export interface RecallSyncRunReport {
+  runId: string;
+  executionId: string | null;
+  trigger: "automatic" | "manual_ui";
+  requestId: string | null;
   mode: RecallSyncMode;
   state: "done" | "error" | "blocked";
   exitCode: number;
@@ -101,6 +114,8 @@ export async function runRecallSync(input: RunRecallSyncInput): Promise<RecallSy
   const maxChunks = input.maxChunksPerCard ?? 50;
   const lockOwner = input.lockOwner ?? `recall-sync:${input.now}`;
   const startedAt = input.now;
+  const runId = input.runId ?? newId();
+  const trigger = input.trigger ?? "automatic";
   const staleLockMs = input.staleLockMs ?? 2 * 60 * 60 * 1000;
   const checkpointIso =
     input.checkpointIso === undefined ? getRecallCheckpoint() : input.checkpointIso;
@@ -111,6 +126,10 @@ export async function runRecallSync(input: RunRecallSyncInput): Promise<RecallSy
     overlapMs: input.overlapMs,
   });
   const baseReport = (): RecallSyncRunReport => ({
+    runId,
+    executionId: input.executionId ?? null,
+    trigger,
+    requestId: input.requestId ?? null,
     mode: input.mode,
     state: "error",
     exitCode: RECALL_SYNC_EXIT_CODES.unexpected_error,
@@ -138,6 +157,19 @@ export async function runRecallSync(input: RunRecallSyncInput): Promise<RecallSy
     staleLockRecovered: false,
   });
 
+  if (input.persistRunReport !== false) {
+    beginRecallSyncRun({
+      id: runId,
+      mode: input.mode,
+      startedAt,
+      dateFrom: window.dateFrom,
+      dateTo: window.dateTo,
+      executionId: input.executionId,
+      trigger,
+      requestId: input.requestId,
+    });
+  }
+
   const lock = tryAcquireRecallSyncLock({
     owner: lockOwner,
     now: input.now,
@@ -154,6 +186,7 @@ export async function runRecallSync(input: RunRecallSyncInput): Promise<RecallSy
     });
   }
 
+  const committedResults: RecallImportResult[] = [];
   try {
     const listResult = normalizeCardList(await input.client.listCards(window));
     const listed = listResult.cards;
@@ -351,13 +384,24 @@ export async function runRecallSync(input: RunRecallSyncInput): Promise<RecallSy
       });
     }
 
-    const importResults = planned.map(({ detail }) =>
-      importRecallCard(detail, {
+    for (const { detail } of planned) {
+      let progressPersistedInCardTransaction = false;
+      const result = (input.importCard ?? importRecallCard)(detail, {
         importedAt: input.now,
         upgradeWeakExistingByUrl: input.upgradeWeakExistingByUrl,
         fidelityPolicy: input.fidelityPolicy,
-      }),
-    );
+        onBeforeCommit: (pendingResult) => {
+          if (input.persistRunReport === false) return;
+          persistCommittedProgress(runId, [...committedResults, pendingResult]);
+          progressPersistedInCardTransaction = true;
+        },
+      });
+      committedResults.push(result);
+      if (input.persistRunReport !== false && !progressPersistedInCardTransaction) {
+        persistCommittedProgress(runId, committedResults);
+      }
+    }
+    const importResults = committedResults;
 
     const blockingImportResults = importResults.filter(isBlockingImportResult);
     if (blockingImportResults.length > 0) {
@@ -422,18 +466,41 @@ export async function runRecallSync(input: RunRecallSyncInput): Promise<RecallSy
     });
   } catch (error) {
     const classified = classifyRecallSyncError(error);
+    const cardsImported = countImportResults(committedResults, "imported");
+    const cardsUpgraded = countImportResults(committedResults, "upgraded_existing_weak");
+    const cardsSkipped =
+      countImportResults(committedResults, "skipped_existing") +
+      countImportResults(committedResults, "skipped_existing_source_url");
     return persistRunReport(input, startedAt, {
       ...baseReport(),
       state: "error",
       exitCode: classified.exitCode,
       errorName: classified.name,
       lastError: error instanceof Error ? error.message : String(error),
+      cardsImported,
+      cardsUpgraded,
+      cardsSkipped,
       lockAcquired: true,
       staleLockRecovered: lock.recoveredStale,
     });
   } finally {
     releaseRecallSyncLock(lockOwner);
   }
+}
+
+function persistCommittedProgress(runId: string, results: RecallImportResult[]): void {
+  updateRecallSyncRunProgress({
+    id: runId,
+    cardsImported: countImportResults(results, "imported"),
+    cardsUpgraded: countImportResults(results, "upgraded_existing_weak"),
+    cardsSkipped:
+      countImportResults(results, "skipped_existing") +
+      countImportResults(results, "skipped_existing_source_url"),
+    cardsChangedRemote: countImportResults(results, "changed_remote"),
+    cardsBlocked:
+      countImportResults(results, "blocked_weak_existing") +
+      countImportResults(results, "blocked_by_fidelity_policy"),
+  });
 }
 
 function persistRunReport(
@@ -443,23 +510,20 @@ function persistRunReport(
 ): RecallSyncRunReport {
   if (input.persistRunReport === false) return report;
   const sanitized = sanitizeRecallSyncReport(report) as Record<string, unknown>;
-  insertRecallSyncRun({
-    mode: report.mode,
-    started_at: startedAt,
-    completed_at: Date.now(),
+  finishRecallSyncRun({
+    id: report.runId,
+    completedAt: Date.now(),
     state: report.state,
-    date_from: report.dateFrom,
-    date_to: report.dateTo,
-    cards_seen: report.cardsSeen,
-    cards_imported: report.cardsImported,
-    cards_upgraded: report.cardsUpgraded,
-    cards_skipped: report.cardsSkipped,
-    cards_changed_remote: report.cardsChangedRemote,
-    cards_blocked: report.cardsBlocked,
-    total_chars_planned: report.totalCharsPlanned,
-    total_chunks_fetched: report.totalChunksFetched,
-    last_error: typeof sanitized.lastError === "string" ? sanitized.lastError : null,
-    report_json: JSON.stringify(sanitized),
+    cardsSeen: report.cardsSeen,
+    cardsImported: report.cardsImported,
+    cardsUpgraded: report.cardsUpgraded,
+    cardsSkipped: report.cardsSkipped,
+    cardsChangedRemote: report.cardsChangedRemote,
+    cardsBlocked: report.cardsBlocked,
+    totalCharsPlanned: report.totalCharsPlanned,
+    totalChunksFetched: report.totalChunksFetched,
+    lastError: typeof sanitized.lastError === "string" ? sanitized.lastError : null,
+    reportJson: JSON.stringify(sanitized),
   });
   return report;
 }
