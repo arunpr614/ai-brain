@@ -6,7 +6,7 @@
 
 Availability and runtime evidence are separate from status. `Feature-flagged` is used when a capability is materially controlled by rollout configuration. An enabled production flag does not make a feature unflagged.
 
-The normalized `MASTER_FEATURE_AND_IDEA_EVIDENCE_DETAILS.csv` record contains 46 current-feature rows and 37 non-current idea/capability rows. Every row includes user problem/opportunity, target users, behavior, coverage/boundary, code/test/documentation evidence, routes/components/services, data/schema, flags/configuration, dependencies/integrations, limitations, related features/ideas, aliases, runtime evidence, and last-verified commit/date. Explicit `No current…` values distinguish absence from missing analysis.
+The normalized `MASTER_FEATURE_AND_IDEA_EVIDENCE_DETAILS.csv` record contains 46 current-feature rows and 38 non-current idea/capability rows. Every row includes user problem/opportunity, target users, behavior, coverage/boundary, code/test/documentation evidence, routes/components/services, data/schema, flags/configuration, dependencies/integrations, limitations, related features/ideas, aliases, runtime evidence, and last-verified commit/date. Explicit `No current…` values distinguish absence from missing analysis.
 
 ## Current capabilities
 
@@ -79,6 +79,7 @@ All rows were last verified at current main on 2026-07-11. Runtime evidence is f
 | Rich note history/diff and editor tools | Explored | Medium | Revisions and Markdown editor exist | Diff/labels/find/outline/slash tools remain brainstorm concepts | F08 brainstorm |
 | Note-aware search explanations and source policies | Explored | Medium | Exact/semantic search and note consent exist | No provenance filter/explanation or original-only/note-only Ask control | F08 brainstorm |
 | Highlights, annotations, backlinks, synthesis, learning | Explored | Medium | Source/notes/related substrate | No committed product implementation | F08 brainstorm |
+| [Card Processing Workflow](Card-Processing-Workflow-Exploration) | Explored | High proposal; no runtime | Item/Library/detail, tags/topics, notes, responsive shell, and a fictional-data prototype | No Processing section, workflow schema/API/migration/navigation, rollout, or runtime behavior | Card Processing Workflow exploration and reviewed v2 package |
 | Multi-project/multi-vault workspace | Deferred | High | Single store only | Council intentionally postponed | Council tracker RN-F01 |
 | Full writing IDE/block editor | Deferred | High | Markdown note editor | Immediate product model rejects expanded IDE scope | tracker RN-F05 |
 | Neo4j export | Deferred | High | No current exporter | Postponed | tracker RN-F09 |

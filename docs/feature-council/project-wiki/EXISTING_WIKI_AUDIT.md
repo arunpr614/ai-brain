@@ -4,7 +4,7 @@
 **Audit date:** 2026-07-11
 **History:** 8 commits preserved in the separate wiki repository
 
-The page-by-page audit and before/after decision map is `EXISTING_WIKI_PAGE_AUDIT_AND_MIGRATION.csv`. It contains all 63 pre-existing pages plus 21 additions, with purpose, prior quality/accuracy/duplication/completeness, orphan/broken-link status, preservation value, action, destination, reason, and before/after hashes.
+The page-by-page audit and before/after decision map is `EXISTING_WIKI_PAGE_AUDIT_AND_MIGRATION.csv`. It contains all 63 pre-existing pages plus 22 additions, with purpose, prior quality/accuracy/duplication/completeness, orphan/broken-link status, preservation value, action, destination, reason, and before/after hashes.
 
 ## Inventory and verification
 

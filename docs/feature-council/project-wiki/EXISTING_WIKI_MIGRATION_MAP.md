@@ -1,6 +1,6 @@
 # Existing Wiki Migration Map
 
-The exhaustive 84-row before/after map is `EXISTING_WIKI_PAGE_AUDIT_AND_MIGRATION.csv`. The summary below highlights migration patterns.
+The exhaustive 85-row before/after map is `EXISTING_WIKI_PAGE_AUDIT_AND_MIGRATION.csv`. The summary below highlights migration patterns.
 
 | Existing content | Action | Reason and inbound-link handling |
 |---|---|---|
