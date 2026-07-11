@@ -1,0 +1,27 @@
+[Unit]
+Description=AI Brain trusted Recall manual sync worker
+After=network-online.target brain.service
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+User=brain-recall
+Group=brain-data
+WorkingDirectory=/opt/brain
+EnvironmentFile=/etc/brain/.env
+Environment=BRAIN_RECALL_MANUAL_WORKER_ENABLED=1
+Environment=BRAIN_RECALL_WAKE_MARKER=/opt/brain/data/recall-manual-sync/wake
+LoadCredential=recall-api-key:/etc/brain/recall-api-key
+ExecStart=/usr/bin/node /opt/brain/scripts/recall-manual-sync-worker-prod.mjs
+TimeoutStartSec=3h16m
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=brain-recall-manual-sync
+
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/opt/brain/data
+ReadWritePaths=/run/brain-recall
+UMask=0007

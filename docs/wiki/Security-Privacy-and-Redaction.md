@@ -2,7 +2,7 @@
 
 Purpose: Document authentication, trust boundaries, content handling, publication safety, and verified risks.
 Audience: AI agents, security reviewers, and contributors touching auth, integrations, notes, logs or operations.
-Verified against: `23868faf13c8e3d0821715e6f5d0e3d2af1e1a34`.
+Verified against: main documentation baseline `23868faf13c8e3d0821715e6f5d0e3d2af1e1a34` plus review candidate `fdd740617685c1ce730a6150c306152a04070f86` on `feat/recall-manual-sync`.
 Runtime evidence through: 2026-07-10 for the deployed session/provider/note-consent release boundaries.
 Last reviewed: 2026-07-11.
 Owner: AI Brain maintainer.
@@ -14,10 +14,12 @@ Owner: AI Brain maintainer.
 - Pairing: short-lived one-use code that exchanges for the global bearer token.
 - Telegram: webhook secret plus owner/private-chat policy.
 - Attached notes: same-origin mutation checks plus feature flags, per-note AI opt-in and provider acknowledgement.
-- Recall and providers: separate private environment credentials.
+- Recall and providers: separate private environment credentials. The manual-sync candidate further separates the web and trusted Recall identities; the web side can persist intent and write an empty marker but cannot receive the credential, execute the wrapper, or open the private outer lock.
 - Managed edge terminates public TLS before the loopback Node service.
 
 Private means single-owner/authenticated/default-unshared, not end-to-end encrypted. SQLite, local backups, artifact files, browser note journals/service-worker caches, extension storage and Android preferences lack application-level encryption.
+
+The Recall manual-sync route exposes only allowlisted lifecycle state, safe reasons, aggregate counts, trusted timestamps, and opaque request identifiers. Raw Recall content, reports, exceptions, credentials, private paths, provider identifiers, and schedule command output are denied. Actual host permissions remain an explicit pre-enablement proof gate; static unit definitions are not runtime evidence.
 
 ## Verified risks
 

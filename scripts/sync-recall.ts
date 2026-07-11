@@ -54,6 +54,10 @@ interface CliArgs {
   allowMetadataOnlyImport: boolean;
   warningUiAvailable: boolean;
   recoverStaleLock: boolean;
+  runId: string | null;
+  executionId: string | null;
+  trigger: "automatic" | "manual_ui";
+  requestId: string | null;
 }
 
 const SCRIPT_DIR = dirname(fileURLToPath(import.meta.url));
@@ -164,6 +168,10 @@ async function main(): Promise<void> {
       warningUiAvailable: args.warningUiAvailable,
     },
     allowStaleLockRecovery: args.recoverStaleLock,
+    runId: args.runId ?? undefined,
+    executionId: args.executionId,
+    trigger: args.trigger,
+    requestId: args.requestId,
   });
   const redactedReport = sanitizeRecallSyncReport(report);
   const output = `${JSON.stringify(redactedReport, null, 2)}\n`;
@@ -223,6 +231,10 @@ function parseArgs(argv: string[]): CliArgs {
     allowMetadataOnlyImport: false,
     warningUiAvailable: false,
     recoverStaleLock: false,
+    runId: null,
+    executionId: null,
+    trigger: "automatic",
+    requestId: null,
   };
 
   for (let i = 0; i < argv.length; i += 1) {
@@ -409,6 +421,27 @@ function parseArgs(argv: string[]): CliArgs {
       case "--recover-stale-lock":
         args.recoverStaleLock = true;
         break;
+      case "--run-id":
+        args.runId = requireValue(arg, next);
+        i += 1;
+        break;
+      case "--execution-id":
+        args.executionId = requireValue(arg, next);
+        i += 1;
+        break;
+      case "--trigger": {
+        const trigger = requireValue(arg, next);
+        if (trigger !== "automatic" && trigger !== "manual_ui") {
+          throw new Error("--trigger must be automatic or manual_ui");
+        }
+        args.trigger = trigger;
+        i += 1;
+        break;
+      }
+      case "--request-id":
+        args.requestId = requireValue(arg, next);
+        i += 1;
+        break;
       default:
         throw new Error(`Unknown or incomplete argument: ${arg}`);
     }
@@ -552,7 +585,7 @@ function verifyKeyRotationEvidence(args: CliArgs): string | null {
     return `Key rotation evidence failed: ${previewProofFailure(result.stderr || result.stdout)}`;
   }
 
-  console.error(`[recall-sync] key rotation evidence ok: ${keyRotationEnvFile}`);
+  console.error("[recall-sync] key rotation evidence ok");
   return null;
 }
 
@@ -602,7 +635,7 @@ function verifyLiveSpikeReportProof(args: CliArgs): string | null {
     return `Live spike report proof failed: ${previewProofFailure(result.stderr || result.stdout)}`;
   }
 
-  console.error(`[recall-sync] live spike report proof ok: ${enumerationPath}, ${fidelityPath}`);
+  console.error("[recall-sync] live spike report proof ok");
   return null;
 }
 
@@ -980,6 +1013,10 @@ Options:
   --allow-metadata-only-import      Allow metadata-only Recall cards; retrieval remains blocked.
   --warning-ui-available            Mark allowed unverified chunks as retrieval-eligible.
   --recover-stale-lock              Explicitly recover stale lock rows.
+  --run-id <id>                     Trusted stable run correlation ID.
+  --execution-id <id>               Trusted wrapper execution correlation ID.
+  --trigger <automatic|manual_ui>   Trusted trigger classification.
+  --request-id <id>                 Trusted manual request correlation ID.
   --db-path <path>                  Sets BRAIN_DB_PATH before loading the DB layer.
   --migrations-dir <path>           Sets BRAIN_MIGRATIONS_DIR. Bundled CLI defaults to ./db/migrations.
   --api-key-env <name>              Env var that contains the Recall API key. Default RECALL_API_KEY.

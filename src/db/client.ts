@@ -27,6 +27,7 @@ if (!existsSync(dir)) {
 }
 
 let instance: Database.Database | null = null;
+export const DB_BUSY_TIMEOUT_MS = 5_000;
 
 export function getDb(): Database.Database {
   if (instance) return instance;
@@ -35,6 +36,7 @@ export function getDb(): Database.Database {
   db.pragma("journal_mode = WAL");
   db.pragma("foreign_keys = ON");
   db.pragma("synchronous = NORMAL");
+  db.pragma(`busy_timeout = ${DB_BUSY_TIMEOUT_MS}`);
 
   // F-048 (self-critique A-6): verify the pragmas actually took effect.
   // Bulk writes in F-207 rely on WAL to avoid serializing the enrichment

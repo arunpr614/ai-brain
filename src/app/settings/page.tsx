@@ -14,12 +14,14 @@ import {
 } from "lucide-react";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { NoteAiDefaultSetting } from "@/components/note-ai-default-setting";
+import { RecallManualSync } from "@/components/recall-manual-sync";
 import { getJsonSetting } from "@/db/settings";
 import { verifySessionCookie } from "@/lib/auth";
 import { getNoteAiDefaultPreference } from "@/lib/notes/default-ai-policy";
 import { manualNotesUiEnabled } from "@/lib/notes/flags";
 import { noteAiProviderPolicy } from "@/lib/notes/provider-policy";
 import { getProviderStatusReport, type ProviderStatus } from "@/lib/providers/status";
+import { recallManualSyncStatus, recallManualUiEnabled } from "@/lib/recall/manual-sync-service";
 import {
   BACKUP_TRUST_COPY,
   OFFLINE_TRUST_COPY,
@@ -53,9 +55,10 @@ export default async function SettingsPage() {
   const providerStatus = await getProviderStatusReport();
   const noteAiDefault = getNoteAiDefaultPreference();
   const noteAiPolicy = noteAiProviderPolicy();
+  const recallStatus = recallManualUiEnabled() ? recallManualSyncStatus() : null;
 
   return (
-    <div className="mx-auto max-w-[680px] px-8 py-10">
+    <div className="mx-auto max-w-[680px] px-4 py-10 sm:px-8">
       <h1 className="mb-8 text-[30px] font-semibold leading-[1.2] tracking-[-0.01em] text-[var(--text-primary)]">
         Settings
       </h1>
@@ -157,6 +160,8 @@ export default async function SettingsPage() {
           </p>
         </div>
       </section>
+
+      {recallStatus && <RecallManualSync initialStatus={recallStatus} />}
 
       {manualNotesUiEnabled() && (
         <section className="mb-10">

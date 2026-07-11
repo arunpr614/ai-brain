@@ -791,6 +791,49 @@ test("apply can report weak source-URL upgrades when explicitly enabled", async 
   assert.equal(getRecallCheckpoint(), "2026-06-24T06:50:00.000Z");
 });
 
+test("late-card apply failure persists exact prior writes without advancing checkpoint", async () => {
+  const details: RecallCardDetail[] = [
+    {
+      id: "runner-partial-first-001",
+      title: "First committed card",
+      source_url: "https://example.com/partial-first",
+      chunks: [{ content: "The first card is committed before the injected later-card failure." }],
+    },
+    {
+      id: "runner-partial-second-001",
+      title: "Second failing card",
+      source_url: "https://example.com/partial-second",
+      chunks: [{ content: "The second card reaches the apply loop and then fails deterministically." }],
+    },
+  ];
+  let calls = 0;
+  const checkpointBefore = getRecallCheckpoint();
+  const report = await runRecallSync({
+    mode: "apply",
+    client: fakeClient(details),
+    now: Date.parse("2026-06-24T13:00:00.000Z"),
+    checkpointIso: checkpointBefore,
+    firstRunLookbackMs: 60_000,
+    overlapMs: 0,
+    fidelityPolicy: { allowUnverifiedImport: true },
+    importCard(detail, options) {
+      calls += 1;
+      if (calls === 2) throw new Error("injected late-card failure");
+      return importRecallCard(detail, options);
+    },
+  });
+
+  assert.equal(report.state, "error");
+  assert.equal(report.cardsImported, 1);
+  assert.equal(getRecallSyncItem(details[0].id)?.sync_status, "imported");
+  assert.equal(getRecallSyncItem(details[1].id), null);
+  assert.equal(getRecallCheckpoint(), checkpointBefore);
+  const persisted = listRecallSyncRuns(1)[0];
+  assert.equal(persisted.id, report.runId);
+  assert.equal(persisted.cards_imported, 1);
+  assert.equal(persisted.state, "error");
+});
+
 function fakeClient(
   details: RecallCardDetail[],
   options: { failDetailId?: string; totalCount?: number; onDetailFetch?: () => void } = {},

@@ -5,18 +5,21 @@ import { build } from "esbuild";
 
 const root = process.cwd();
 const outdir = resolve(root, "scripts/dist");
-const outfile = resolve(outdir, "sync-recall-prod.mjs");
 const tempOutdir = resolve(outdir, `.tmp-recall-cli-build-${process.pid}-${Date.now()}`);
-const tempOutfile = resolve(tempOutdir, "sync-recall-prod.mjs");
 const migrationsOut = resolve(outdir, "db/migrations");
+const bundles = {
+  "sync-recall-prod": resolve(root, "scripts/sync-recall.ts"),
+  "recall-sync-lifecycle-prod": resolve(root, "scripts/recall-sync-lifecycle.ts"),
+  "recall-manual-sync-worker-prod": resolve(root, "scripts/recall-manual-sync-worker.ts"),
+};
 
 rmSync(tempOutdir, { recursive: true, force: true });
-mkdirSync(dirname(tempOutfile), { recursive: true });
+mkdirSync(tempOutdir, { recursive: true });
 
 try {
   await build({
-    entryPoints: [resolve(root, "scripts/sync-recall.ts")],
-    outfile: tempOutfile,
+    entryPoints: bundles,
+    outdir: tempOutdir,
     bundle: true,
     platform: "node",
     format: "esm",
@@ -36,14 +39,16 @@ try {
     ],
   });
 
-  mkdirSync(dirname(outfile), { recursive: true });
-  renameSync(tempOutfile, outfile);
+  mkdirSync(outdir, { recursive: true });
+  for (const name of Object.keys(bundles)) {
+    renameSync(resolve(tempOutdir, `${name}.js`), resolve(outdir, `${name}.mjs`));
+  }
   copySqlMigrations(resolve(root, "src/db/migrations"), migrationsOut);
 } finally {
   rmSync(tempOutdir, { recursive: true, force: true });
 }
 
-console.log(`[build:recall-cli] wrote ${outfile}`);
+console.log(`[build:recall-cli] wrote ${Object.keys(bundles).join(", ")}`);
 console.log(`[build:recall-cli] copied migrations to ${migrationsOut}`);
 
 function copySqlMigrations(sourceDir, targetDir) {
