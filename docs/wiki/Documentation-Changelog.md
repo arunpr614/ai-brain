@@ -11,7 +11,7 @@ Owner: AI Brain maintainer.
 
 | Change | Implementation baseline | Runtime baseline | State |
 |---|---|---|---|
-| Added Card Processing Workflow research, three directions, recommendation, adversarially reviewed v2 product/UX/technical plans, fictional prototypes, and architecture/status/catalog records | `1cb5d36f37611e60442b4f2c4433b45455273500` exploration baseline | None; no production change | **Explored — not implemented** |
+| Added Card Processing Workflow research, three directions, recommendation, adversarially reviewed v2 product/UX/technical plans, fictional prototypes, and architecture/status/catalog records | Application baseline `1cb5d36f37611e60442b4f2c4433b45455273500`; exploration package `df4c42b9869f8a35b9557bc64bf6ecdb9d11b416` | None; no production change | **Explored — not implemented** |
 
 - Added [Card Processing Workflow Exploration](Card-Processing-Workflow-Exploration) and cross-linked the ideas catalog, feature-status matrix, product roadmap posture, architecture proposals, and sidebar.
 - The recommended Direction B is an Inbox-first Processing section. Batch mutation and manual rank are deferred; no production implementation, migration, API, flag, rollout, or merge is claimed.

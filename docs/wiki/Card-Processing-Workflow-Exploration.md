@@ -68,12 +68,12 @@ Archive is a separate Done-only `workflow_archived_at` timestamp that hides a so
 
 The concept branch includes a locally runnable isolated gallery, three responsive directions, a route-based item-detail simulation, and inspected screenshots. It uses fictional data and no production APIs.
 
-- [Feature-council package](https://github.com/arunpr614/ai-brain/tree/concept/card-processing-workflow/docs/feature-council/card-processing-workflow)
-- [Prototype gallery source](https://github.com/arunpr614/ai-brain/blob/concept/card-processing-workflow/docs/feature-council/card-processing-workflow/prototypes/index.html)
-- [PRD v2](https://github.com/arunpr614/ai-brain/blob/concept/card-processing-workflow/docs/feature-council/card-processing-workflow/product/prd-v2.md)
-- [UX/UI v2](https://github.com/arunpr614/ai-brain/blob/concept/card-processing-workflow/docs/feature-council/card-processing-workflow/ux/ux-ui-v2.md)
-- [Technical plan v2](https://github.com/arunpr614/ai-brain/blob/concept/card-processing-workflow/docs/feature-council/card-processing-workflow/technical/technical-plan-v2.md)
-- [Decision log](https://github.com/arunpr614/ai-brain/blob/concept/card-processing-workflow/docs/feature-council/card-processing-workflow/decisions/decision-log.md)
+- [Feature-council package](https://github.com/arunpr614/ai-brain/tree/df4c42b9869f8a35b9557bc64bf6ecdb9d11b416/docs/feature-council/card-processing-workflow)
+- [Prototype gallery source](https://github.com/arunpr614/ai-brain/blob/df4c42b9869f8a35b9557bc64bf6ecdb9d11b416/docs/feature-council/card-processing-workflow/prototypes/index.html)
+- [PRD v2](https://github.com/arunpr614/ai-brain/blob/df4c42b9869f8a35b9557bc64bf6ecdb9d11b416/docs/feature-council/card-processing-workflow/product/prd-v2.md)
+- [UX/UI v2](https://github.com/arunpr614/ai-brain/blob/df4c42b9869f8a35b9557bc64bf6ecdb9d11b416/docs/feature-council/card-processing-workflow/ux/ux-ui-v2.md)
+- [Technical plan v2](https://github.com/arunpr614/ai-brain/blob/df4c42b9869f8a35b9557bc64bf6ecdb9d11b416/docs/feature-council/card-processing-workflow/technical/technical-plan-v2.md)
+- [Decision log](https://github.com/arunpr614/ai-brain/blob/df4c42b9869f8a35b9557bc64bf6ecdb9d11b416/docs/feature-council/card-processing-workflow/decisions/decision-log.md)
 
 Interactive hosting is not established by this wiki page; the files run locally from the concept branch.
 
