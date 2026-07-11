@@ -1,12 +1,12 @@
 {
-  "generatedAt": "2026-07-11T07:30:00Z",
+  "generatedAt": "2026-07-11T11:31:00Z",
   "defaultBranch": "main",
   "defaultBranchSha": "23868faf13c8e3d0821715e6f5d0e3d2af1e1a34",
-  "worktreeBranch": "docs/definitive-project-wiki",
-  "worktreeSha": "23868faf13c8e3d0821715e6f5d0e3d2af1e1a34",
+  "worktreeBranch": "feat/recall-manual-sync",
+  "worktreeSha": "fdd740617685c1ce730a6150c306152a04070f86",
   "worktreeDivergence": {
     "mainOnlyCommits": 0,
-    "worktreeOnlyCommits": 0
+    "worktreeOnlyCommits": 1
   },
   "productionSha": "6858529ef179a51442d319c6c58e5ace79757619",
   "productionEvidence": "docs/feature-council/note-focus-mode/validation/release-and-rollback.md",
@@ -21,5 +21,10 @@
   "publicationRepositoryMergeSha": "0b1cb475bb179626e9357d6f427ef2a2345ee679",
   "publishedWikiContentSha": "8909215124883e5b0d24a09bc3bec0ec6ff79b83",
   "publishedWikiSha": "88a3520038703108a0533501c7a384c6def7b74e",
-  "publicationVerifiedAt": "2026-07-11T07:30:00Z"
+  "publicationVerifiedAt": "2026-07-11T07:30:00Z",
+  "recallManualSyncCandidateBranch": "feat/recall-manual-sync",
+  "recallManualSyncCandidateSha": "fdd740617685c1ce730a6150c306152a04070f86",
+  "repositoryDefaultBranchShaAtCandidate": "1cb5d36f37611e60442b4f2c4433b45455273500",
+  "recallManualSyncRuntimeStatus": "default-off-not-deployed",
+  "recallManualSyncHostProofStatus": "separately-authorized-enablement-gate"
 }

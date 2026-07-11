@@ -29138,3 +29138,394 @@ Close the adversarial review, publish and merge the canonical wiki source throug
 - **Published wiki state:** `master` at `88a3520`; 84 pages; fresh-clone, privacy, structure, live URL, and rendered-page QA green.
 - **Deployed/runtime state:** Unchanged at latest verified application baseline `6858529`.
 - **Next milestone:** Routine maintenance only; no remaining action for this goal.
+
+---
+
+## 2026-07-11 14:18 - Recall Manual Sync Discovery and v1 Planning Milestone
+
+**Entry author:** AI agent (Codex) · **Triggered by:** User supplied an autonomous goal to design, implement, test, document, and deliver Recall last-sync status and owner manual synchronization through a review-ready PR and published wiki update.
+
+### Planned since last entry
+
+Start from the definitive-wiki closeout main, preserve every unrelated checkout/change, create a clean latest-main feature worktree, inspect the supplied PRD and rendered desktop/mobile/state designs, trace the existing Recall pipeline and wiki, coordinate product/technical/UX specialists, resolve source conflicts, create discovery/council/decision/tracker artifacts, and produce v1 PRD/UX/technical plans for adversarial review before implementation.
+
+### Done
+
+- Read the complete attached goal and activated the substantive Recall delivery goal after closing the file-read setup goal.
+- Verified the repository origin is `arunpr614/ai-brain`, the supplied checkout was clean, all authoritative inputs were readable, GitHub.com credentials were available, and the unrelated enterprise GitHub credential was irrelevant.
+- Fetched remote state and created a clean sibling worktree at latest `origin/main` commit `1cb5d36` on `feat/recall-manual-sync`; no other worktree was reset, cleaned, overwritten, or deleted.
+- Read repository `AGENTS.md`; no APK is being built or shared at this phase.
+- Installed exact dependencies with `npm ci`: 675 packages, zero audit vulnerabilities.
+- Established a green baseline:
+  - `npm run typecheck` passed;
+  - focused ESLint over Settings/Recall modules passed;
+  - 25 focused Recall migration/scheduler/runner tests passed.
+- Rendered and visually inspected all three supplied HTML assets in Chrome:
+  - desktop at 1440px, including a full-page Recall-ready and partial-failure view;
+  - mobile at 390px, including clean ready/running/failed states;
+  - all-states board at desktop and narrow width.
+- Coordinated bounded specialist lanes:
+  - Expert Project Manager + Growth/Platform/Power User PMs + AI Expert Brainstorm Council produced `product-council-working-notes.md`;
+  - Technical Architect produced `technical-discovery-working-notes.md`;
+  - Expert UX/UI Designer produced `ux-design-working-notes.md` after independent rendering and interaction inspection;
+  - coordinator independently inspected the supplied PRD, current Settings/auth/DB/runner/wrapper/units/tests/history/wiki, and visual evidence.
+- Confirmed the complete reuse boundary is `scripts/recall-scheduled-apply.sh` plus `runRecallSync`: dry run, report validation/caps, backup proof, apply, final report validation, checkpoint, and inner lock.
+- Confirmed current product gaps:
+  - no manual request table, API, worker, activation, or Settings status/action;
+  - checkpoint is coverage rather than completion;
+  - terminal apply row precedes final wrapper validation;
+  - the inner DB lock is released between dry-run and apply;
+  - runs are persisted only at terminal return;
+  - a late per-card failure can under-report earlier writes;
+  - exact timer next-elapse is not persisted;
+  - web and Recall units currently share user/environment, so Recall credential separation is unproven.
+- Confirmed rendered-design gaps:
+  - missing loading, never-synced, automatic/active, long-running, cooldown, expired, unavailable, offline/status-unknown, and session-expired states;
+  - queued/running/partial views drop persistent freshness metadata;
+  - timestamp copy conflicts with authoritative IST semantics;
+  - prototype modal focus escapes and is not restored;
+  - several mobile targets are below 44px;
+  - small muted text contrast is insufficient;
+  - prototype palette/shell must not replace current tokens/safe-area shell.
+- Created coordinator synthesis artifacts:
+  - `discovery-report.md`;
+  - `source-and-design-assessment.md`;
+  - `council-findings.md`;
+  - `decision-log.md`;
+  - `project-tracker.md`.
+- Created the immutable v1 review package:
+  - `prd-v1.md` with 24 numbered acceptance criteria;
+  - `ux-ui-v1.md` with full state/copy/accessibility/responsive matrix;
+  - `technical-plan-v1.md` with durable request/execution/run design, full-wrapper flock, worker/path/fallback architecture, route/DTO contract, credential boundary, tests, rollout, and rollback.
+- Started an independent adversarial reviewer that is required to use the `adversarial-review` skill and produce separate PRD, UX, and technical v1 reports before v2.
+
+### Cross-lane notes
+
+- Specialist agents edited only their bounded working-note artifacts. The coordinator owns synthesis and all future implementation integration.
+- No implementation files, existing wiki pages, production runtime, timer, environment, credentials, remote branch, or pull request were changed in this milestone.
+- The supplied designs and working-note references include local evidence paths; publication artifacts will be sanitized before commit/wiki publication.
+
+### Learned
+
+- “Last successful sync” cannot safely use the existing checkpoint or latest `done` apply row: the checkpoint is a coverage end and the run row is written before final wrapper validation.
+- Existing item-level idempotency is strong, but whole-wrapper concurrency is incomplete because the dry-run and apply CLIs acquire/release the core lock separately.
+- Product `partial_failure` must be derived from persisted non-zero writes, not the existing internal error name.
+- The PRD’s fixed IST requirement intentionally overrides a general local-time principle.
+- The randomized systemd timer makes a client-computed exact next-run time misleading; trusted next-elapse state or an unavailable fallback is required.
+- Current units do not prove the stated browser/Recall credential boundary because both services share the same user and environment file.
+- The supplied prototype is compositional guidance, not literal accessible implementation evidence.
+
+### Deployed / Released
+
+Nothing deployed, enabled, committed, pushed, merged, or published this milestone.
+
+### Documents created or updated this period
+
+**Created:**
+- `docs/feature-council/recall-manual-sync/` discovery, council, decision, tracker, v1 PRD/UX/technical, working-note, and visual-evidence artifacts.
+
+**Updated:**
+- `RUNNING_LOG.md` - appended this milestone only; all prior entries preserved.
+
+### Current remaining to-do
+
+1. Receive the three v1 adversarial reports and disposition every material finding.
+2. Create `prd-v2.md`, `ux-ui-v2.md`, and `technical-plan-v2.md` as aligned implementation sources of truth.
+3. Create the focused revised HTML state prototype and render/verify it.
+4. Assign the bounded implementation agent after v2 approval; integrate migration, request/execution/run persistence, partial-write truth, outer lock/lifecycle, worker/units, route, Settings UI, and tests.
+5. Run independent QA/reviewer and implementation adversarial lanes; fix all critical/high findings.
+6. Run complete automated, visual, mobile, keyboard, accessibility, privacy, wrapper, timer-invariance, regression, and production-build verification.
+7. Update repository docs and canonical wiki, publish the separate wiki with remote-SHA protection, and verify a fresh clone/live pages.
+8. Final diff review, focused commits, push, review-ready PR, screenshots/evidence, and final handoff. Do not merge or deploy.
+
+### Open questions / decisions needed
+
+1. Adversarial review must choose or challenge outer `flock` versus a durable DB wrapper lease.
+2. Adversarial review must challenge whether systemd `LoadCredential` with the current identity is sufficient or a distinct Recall identity/shared data group is required.
+3. Heartbeat cadence, stale thresholds, and service timeout must be calibrated to the tested worst-case wrapper duration.
+
+### Session self-critique
+
+- The v1 plan is intentionally comprehensive and may be broader than the smallest implementation; the adversarial pass must cut unjustified complexity without weakening truth, concurrency, credential, or recovery gates.
+- The initial coordinator mobile running screenshot had headless Chrome rendering corruption; ready/failed and UX-agent independent captures are valid, and implementation evidence must replace the corrupt capture.
+- Production credential separation cannot be claimed from static units alone; host proof remains an enablement gate even if the review-ready PR adds the required configuration.
+
+### Action items for the next agent
+
+1. Work only in the clean Recall worktree on `feat/recall-manual-sync` at base `1cb5d36`.
+2. Read `decision-log.md`, all three v1 artifacts, and every adversarial report before editing v2.
+3. Preserve v1 artifacts; resolve findings only in v2 and explicit disposition text.
+4. Do not implement a route-side importer or grant the web process command/systemd/Recall credential access.
+5. Keep the feature flag off and do not merge, deploy, enable units, or mutate the existing daily timer.
+
+### State snapshot
+
+- **Current phase / version:** Discovery/council complete; v1 package complete; independent adversarial review in progress.
+- **Active branch:** `feat/recall-manual-sync` at `1cb5d36`.
+- **Working tree:** Dirty only with intended untracked Recall feature-council artifacts and this append-only log entry.
+- **Deployed/runtime state:** Unchanged; production and daily Recall timer not touched.
+- **Next milestone:** Adversarial closure and aligned PRD/UX/technical v2 approval.
+
+---
+
+## 2026-07-11 14:48 - Recall Manual Sync v2 Approval Milestone
+
+**Entry author:** AI agent (Codex) · **Triggered by:** Completion of adversarial review, disposition, and revised state-prototype verification.
+
+### Planned since last entry
+
+Challenge the v1 product, UX, and technical contracts; preserve the immutable v1 package; record every material finding in separate reports; disposition each accepted, rejected, or deferred item; align product, interaction, persistence, concurrency, privilege, timing, and recovery semantics in v2; then render and measure a focused revised prototype before implementation begins.
+
+### Done
+
+- Produced separate adversarial reports for `prd-v1.md`, `ux-ui-v1.md`, and `technical-plan-v1.md` using the required adversarial-review method after delegated reviewers failed to return usable artifacts.
+- Closed the release-blocking technical gaps identified by review:
+  - manual requests and automatic starts cannot bypass a whole-wrapper execution lock;
+  - the lock moves to a Recall-only runtime directory rather than a web-writable path;
+  - automatic runs wait through contention instead of silently losing the daily run;
+  - lifecycle finalization atomically updates execution, linked request, and last-success truth;
+  - the runner owns run/progress writes while lifecycle code owns execution/request/last-success state;
+  - heartbeat, stale detection, reconciliation, service timeouts, and trusted next-elapse capture have explicit contracts;
+  - review readiness is separated from the host credential-isolation proof required before production enablement.
+- Approved the aligned sources of truth:
+  - `prd-v2.md`;
+  - `ux-ui-v2.md`;
+  - `technical-plan-v2.md`.
+- Resolved product and UX ambiguities:
+  - both new and deduplicated POST responses use HTTP 202 and an explicit `deduplicated` field;
+  - a Requesting state prevents ambiguous double-submit;
+  - a confirmed request racing an automatic run queues durably;
+  - terminal outcomes remain visible while the five-minute action cooldown counts down;
+  - offline data is labeled `Last known` with `Last checked` recency;
+  - normative never-synced copy is `Not yet synced`;
+  - all product timestamps use fixed `Asia/Kolkata` semantics;
+  - pluralization is deterministic and zero-count clauses are omitted.
+- Created `revised-states.html`, covering 20 primary/status/action/recovery combinations plus the confirmation dialog.
+- Rendered and inspected the revised board at 1440px in light and dark themes and at 390px and 320px mobile widths.
+- Corrected narrow-layout containment and then measured the DOM in Chrome: at both 320px and 390px, document width exactly equals viewport width and no element extends beyond the viewport.
+- Marked M3, RMS-PROD-01, and RMS-UX-01 complete in the tracker.
+
+### Cross-lane notes
+
+- V1 files remain unchanged as review evidence. Every change after review is isolated to v2 artifacts and the focused revised prototype.
+- No application code, database, systemd unit, deployed environment, existing daily timer, remote branch, wiki remote, or pull request changed in this milestone.
+- The coordinator remains responsible for keeping implementation within the approved v2 contracts; deviations require an explicit decision-log entry.
+
+### Learned
+
+- A non-blocking outer lock is unsafe for the daily automatic path because it can turn ordinary contention into a skipped day.
+- Lock-file placement is part of the privilege boundary: a path writable by the web identity lets the browser-facing process influence Recall execution even without direct command access.
+- Per-service credential directories improve delivery isolation, but a distinct `brain-recall` identity is still the clearer reviewable boundary; host proof remains mandatory before enablement.
+- A fixed stale threshold is credible only when paired with a heartbeat cadence and corroborating process/lock/run evidence.
+- Mobile visual inspection alone was ambiguous; direct viewport-versus-document measurements provided deterministic overflow evidence.
+
+### Deployed / Released
+
+Nothing deployed, enabled, committed, pushed, merged, or published this milestone.
+
+### Documents created or updated this period
+
+**Created:**
+- `docs/feature-council/recall-manual-sync/prd-v1-adversarial-review.md`
+- `docs/feature-council/recall-manual-sync/ux-ui-v1-adversarial-review.md`
+- `docs/feature-council/recall-manual-sync/technical-plan-v1-adversarial-review.md`
+- `docs/feature-council/recall-manual-sync/prd-v2.md`
+- `docs/feature-council/recall-manual-sync/ux-ui-v2.md`
+- `docs/feature-council/recall-manual-sync/technical-plan-v2.md`
+- `docs/feature-council/recall-manual-sync/revised-states.html`
+- Revised desktop, dark-theme, 390px, and 320px prototype evidence under `visual-evidence/`.
+
+**Updated:**
+- `docs/feature-council/recall-manual-sync/decision-log.md`
+- `docs/feature-council/recall-manual-sync/project-tracker.md`
+- `RUNNING_LOG.md` - appended this milestone only; all prior entries preserved.
+
+### Current remaining to-do
+
+1. Hand the approved v2 contracts to the bounded implementation agent.
+2. Integrate and verify persistence, lifecycle, locking, worker, unit, API, Settings UI, and test changes with the feature flag off.
+3. Run independent QA/reviewer and implementation adversarial passes; fix every critical/high issue.
+4. Complete automated, production-build, responsive, keyboard, accessibility, privacy, timer-invariance, and rollback verification.
+5. Update repository docs and canonical wiki, publish the separate wiki with protected remote-SHA workflow, and verify a fresh clone and live rendering.
+6. Complete final diff review, focused commits, push, review-ready PR, evidence attachment, and handoff. Do not merge or deploy.
+
+### Open questions / decisions needed
+
+None before implementation. Production enablement remains intentionally blocked on host credential-isolation proof and is outside this goal's authorized actions.
+
+### Session self-critique
+
+- The contract is intentionally rigorous and introduces several new lifecycle components; implementation should prefer small, testable modules and avoid adding behavior outside the accepted criteria.
+- The revised prototype verifies composition and overflow, not production accessibility; semantic, keyboard, focus, live-region, contrast, and reduced-motion evidence must come from the real Settings implementation.
+
+### Action items for the next agent
+
+1. Read `prd-v2.md`, `ux-ui-v2.md`, `technical-plan-v2.md`, and `decision-log.md` before editing code.
+2. Treat the v2 acceptance criteria and ownership matrix as normative; report any conflict before deviating.
+3. Keep the feature flag default-off and never give the web process Recall credentials, command execution, systemd control, or write access to the Recall-only runtime lock directory.
+4. Preserve existing automatic sync behavior, inner DB lock, and item-level idempotency while adding whole-wrapper serialization and durable lifecycle truth.
+5. Add tests with each module and return an implementation evidence summary for coordinator integration.
+
+### State snapshot
+
+- **Current phase / version:** Product, UX, and technical v2 approved; focused prototype verified; implementation authorized.
+- **Active branch:** `feat/recall-manual-sync` at base `1cb5d36`.
+- **Working tree:** Dirty only with intended Recall planning/review/prototype artifacts and append-only log entries.
+- **Deployed/runtime state:** Unchanged; production and daily Recall timer not touched.
+- **Next milestone:** Backend dark launch and Settings implementation with feature flag off.
+
+---
+
+## 2026-07-11 15:42 - Recall Manual Sync Independent No-Go Review Milestone
+
+**Entry author:** AI agent (Codex) · **Triggered by:** Completion of first-pass implementation and independent QA/adversarial review.
+
+### Planned since last entry
+
+Implement the approved v2 contracts with the feature and new units default off, verify the application and Recall-specific gates, then require independent acceptance/release-risk and adversarial reviews before documentation or delivery claims.
+
+### Done
+
+- The dedicated implementation agent completed the first end-to-end code pass:
+  - migration `024` and durable request/execution/run correlation;
+  - exact per-card committed progress and partial-write truth;
+  - wrapper lifecycle, heartbeat, worker, path/fallback units, and whole-wrapper lock;
+  - owner-authenticated GET/POST route with exact-origin, body, privacy, and idempotency controls;
+  - responsive Settings panel/dialog, IST copy, cooldown, recovery, visibility, and online behavior;
+  - distinct Recall identity, credential delivery, private runtime lock, tmpfiles, deploy preparation, and three bundles.
+- First-pass implementation verification reported green:
+  - 829 application tests;
+  - full typecheck and lint;
+  - production build;
+  - Recall bundles, artifact/security check, CLI and scheduled-wrapper smokes;
+  - shell syntax and diff whitespace.
+- Coordinator integration review found and the implementation agent fixed three pre-review issues: deterministic empty wake-marker replacement, idle visibility refresh, and raw lifecycle error logging.
+- Independent QA/reviewer produced:
+  - `acceptance-criteria-traceability-report.md`;
+  - `qa-release-risk-report.md`.
+- Independent adversarial reviewer used the required skill and produced `implementation-adversarial-review.md`.
+- Both independent lanes issued a no-go rather than accepting green command results as release proof.
+- Accepted blocking findings were consolidated for a dedicated remediation agent:
+  1. automatic restart can reuse a non-terminal occurrence and begin the core pipeline again before stale reconciliation;
+  2. stale pre-execution claim recovery extends the immutable 30-minute request deadline;
+  3. lifecycle completion does not structurally require the `apply_validated` stage;
+  4. terminal idempotency replay can be returned as `202 queued` even though no work will run;
+  5. process evidence is insufficient for lock/no-skip/wake/heartbeat/concurrent-claim guarantees;
+  6. deploy preparation lacks a fail-closed active-work guard before asset/permission mutation;
+  7. client ambiguous-response correlation, server-authoritative countdown, offline/state, and interaction coverage require hardening.
+- Started a bounded implementation-remediation agent with the complete finding set and required deterministic test gates.
+
+### Cross-lane notes
+
+- QA and adversarial reviewers did not edit application code. Their artifacts preserve the original no-go snapshot and must not be overwritten by remediation.
+- Production host identity/credential/filesystem/timer proof remains a separate unauthorized enablement gate, not a reason to weaken static review-ready requirements.
+- No repository commit, push, pull request, wiki publication, deploy, service enablement, timer mutation, real credential access, or real Recall call occurred.
+
+### Learned
+
+- A stable occurrence key is insufficient when `start` cannot distinguish newly created work from an already-running crash residue.
+- Default-off rollout limits exposure but does not excuse correctness defects in a future trusted worker path.
+- Idempotency must distinguish active replay from terminal replay at the repository/API boundary; a generic row replay can produce false queued copy.
+- Final wrapper-validation order must also be encoded as a persistence precondition, not only shell command ordering.
+- Green unit/build results do not replace multi-process evidence for SQLite, `flock`, systemd-style restart, wake, and crash contracts.
+
+### Deployed / Released
+
+Nothing deployed, enabled, committed, pushed, merged, or published. Review-ready status is explicitly withheld.
+
+### Documents created or updated this period
+
+**Created:**
+- `docs/feature-council/recall-manual-sync/acceptance-criteria-traceability-report.md`
+- `docs/feature-council/recall-manual-sync/qa-release-risk-report.md`
+- `docs/feature-council/recall-manual-sync/implementation-adversarial-review.md`
+
+**Updated:**
+- `docs/feature-council/recall-manual-sync/project-tracker.md`
+- `RUNNING_LOG.md` - appended this milestone only; all prior entries preserved.
+
+### Current remaining to-do
+
+1. Remediate every accepted high and medium finding and add deterministic repository/process/controller tests.
+2. Rerun independent QA and adversarial closure; no critical/high item may remain.
+3. Complete implementation visual/mobile/keyboard/screen-reader/contrast/reduced-motion evidence.
+4. Run the complete final automated/privacy/docs/build/regression gate ledger.
+5. Update and safely publish canonical wiki pages; verify a fresh clone and live rendering.
+6. Finalize focused commits, push, review-ready PR, screenshots/evidence, and handoff. Do not merge or deploy.
+
+### Open questions / decisions needed
+
+None from the user. Remediation must remain within v2. Any proposed contract deviation must be escalated to the coordinator and recorded before implementation.
+
+### Session self-critique
+
+- First-pass implementation evidence over-weighted same-process tests; the independent lanes correctly exposed restart and process-boundary gaps.
+- The initial implementation scope was large. Subsequent closure must prefer explicit discriminated lifecycle results and small deterministic process fixtures over additional implicit behavior.
+
+### Action items for the next agent
+
+1. Treat both independent reports as mandatory inputs, not advisory summaries.
+2. Never allow existing-running occurrence state to enter a new core wrapper run.
+3. Preserve original request expiry and require `apply_validated` structurally for success.
+4. Return truthful non-accepting semantics for terminal idempotency replay.
+5. Prove concurrency/crash/wake/timer behavior with fixture-only processes and no live host mutations.
+
+### State snapshot
+
+- **Current phase / version:** First implementation complete; independent no-go issued; remediation active.
+- **Active branch:** `feat/recall-manual-sync` at base `1cb5d36` with intended uncommitted feature changes.
+- **Deployed/runtime state:** Unchanged; production, credentials, services, and daily timer not touched.
+- **Next milestone:** Remediation closure and independent re-review.
+
+---
+
+## 2026-07-11 17:01 IST — Recall manual sync remediation, independent closure, and documentation milestone
+
+**Entry author:** AI agent (Codex) · **Triggered by:** Continued autonomous execution of the active Recall manual-sync goal after the first independent no-go.
+
+### What changed
+
+- Remediated and independently closed every accepted lifecycle, expiry, final-validation, terminal-replay, concurrency, deployment-exclusion, client-recovery, exact-request supersession, and ambiguity-timing finding.
+- Added deterministic multi-process SQLite races, real `flock`, killed-heartbeat, six crash-stage, expired-worker, continuous-deploy-guard, and built worker/lifecycle path/fallback fixture evidence.
+- Completed real-browser responsive, dark/light, 200% zoom, keyboard-dialog, focus-return, live-region, reduced-motion, target-size, contrast, axe, offline, session-expiry, queued, long-running, and partial-state evidence.
+- Independent QA issued GO for AC 1–21 in review-ready scope. Independent adversarial review records no unresolved P0, P1, or P2 implementation finding.
+- Ran the complete implementation gates successfully, including full typecheck, lint, repository tests, production build, bundles, wrapper smoke, artifact/security/privacy checks, and diff validation.
+- Created focused implementation commit `fdd740617685c1ce730a6150c306152a04070f86` (`feat: add durable Recall manual sync`).
+- Updated the canonical Recall, API, data, configuration, deployment, security, limitations, feature-catalog, changelog, source-baseline, agent-ledger, and command-safety documentation.
+- Updated the project tracker and decision log with the final contracts and separately authorized host-enablement boundary.
+
+### Review disposition
+
+- No Critical/High or P0/P1/P2 implementation-review finding remains.
+- Review-ready local/static/process/browser evidence is complete.
+- Production remains unchanged. No merge, deploy, enablement, timer mutation, credential access, or real Recall request occurred.
+- Actual Linux identity/credential/lock/data/SQLite/WAL/backup/unit/tmpfiles/timer proof, one controlled request, and following daily completion remain a separate authorized enablement gate.
+
+### Documents created or updated this period
+
+**Created:**
+- `docs/feature-council/recall-manual-sync/final-implementation-report.md`
+- implementation visual evidence and `visual-accessibility-qa-report.md`
+
+**Updated:**
+- independent QA/adversarial closure reports and acceptance traceability
+- `docs/feature-council/recall-manual-sync/project-tracker.md`
+- `docs/feature-council/recall-manual-sync/decision-log.md`
+- canonical `docs/wiki/` Recall-related pages
+- agent documentation ledgers and Wiki audit hashes
+- `RUNNING_LOG.md` (append-only)
+
+### Current remaining to-do
+
+1. Commit the canonical documentation/evidence update.
+2. Concurrency-check, publish, fresh-clone verify, and live-inspect the separate GitHub Wiki.
+3. Record the Wiki publication commit in repository closeout documentation.
+4. Push the branch, open the review-ready PR, attach evidence, and verify checks.
+5. Stop before merge or deployment.
+
+### State snapshot
+
+- **Current phase:** Documentation and Wiki publication.
+- **Active branch:** `feat/recall-manual-sync` at implementation commit `fdd7406` plus documentation changes.
+- **Deployed/runtime state:** Unchanged; manual feature remains default off and undeployed.
+- **Next milestone:** Verified Wiki publication followed by review-ready PR.

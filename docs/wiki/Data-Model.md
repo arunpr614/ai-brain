@@ -2,8 +2,8 @@
 
 Purpose: Document persistent domains, relationships, migrations, indexing, retention, and privacy boundaries.
 Audience: AI agents and engineers changing storage or data flow.
-Verified against: `23868faf13c8e3d0821715e6f5d0e3d2af1e1a34`.
-Runtime evidence through: 2026-07-10; the verified release applied migrations through `023`.
+Verified against: main documentation baseline `23868faf13c8e3d0821715e6f5d0e3d2af1e1a34` plus review candidate `fdd740617685c1ce730a6150c306152a04070f86` on `feat/recall-manual-sync`.
+Runtime evidence through: 2026-07-10; the deployed release applied migrations through `023`, while candidate migration `024` is not deployed.
 Last reviewed: 2026-07-11.
 Owner: AI Brain maintainer.
 
@@ -18,13 +18,15 @@ Owner: AI Brain maintainer.
 | Chat | threads and messages with citation metadata |
 | Capture evidence | artifacts and metadata cache; artifact bytes live outside SQLite |
 | Transcript policy/provenance | jobs, attempts, policy decisions, sources, segments |
-| Integrations | Telegram updates, device-pairing codes, Recall state/runs/items |
+| Integrations | Telegram updates, device-pairing codes, Recall state/runs/items plus manual requests/executions/schedule snapshot |
 | Attached notes | state, current note, revisions, mutation receipts, note FTS/index jobs/provider consents |
 | Review substrate | `cards` table exists, but no spaced-repetition product implementation was found |
 
 ## Migrations
 
-Migrations are tracked in `_migrations` by full filename and applied lexicographically. Current main contains 24 SQL files through `023`, including both `017_topics.sql` and `017_transcript_recovery.sql`. The former branch conflict is resolved, but duplicate numeric prefixes remain a tooling/human hazard. Do not rename applied migrations or infer order from the prefix alone.
+Migrations are tracked in `_migrations` by full filename and applied lexicographically. The review candidate adds `024_recall_manual_sync.sql` after the deployed `023` baseline. It introduces durable manual request and whole-wrapper execution records, a trusted schedule snapshot, and a post-validation last-success field. Both `017_topics.sql` and `017_transcript_recovery.sql` remain; duplicate numeric prefixes are a tooling/human hazard. Do not rename applied migrations or infer order from the prefix alone.
+
+Recall request rows preserve the immutable 30-minute request deadline, idempotency key, safe terminal reason, and aggregate counts. Execution rows link manual or automatic occurrences to dry-run/apply core run IDs and persist stage, heartbeat, counts, and terminal outcome. The last-success marker is updated atomically only when a linked apply is complete and final validation has passed.
 
 ## Retrieval storage
 

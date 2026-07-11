@@ -32,6 +32,7 @@ This registry classifies every package script at the documentation baseline. Com
 | `check:recall-key-rotation-evidence` | R0 read-only local | No | No | No | No | Static or local-evidence checker; live variants remain prohibited by project gate |
 | `check:recall-live-diagnostic-report` | R0 read-only local | No | No | No | No | Static or local-evidence checker; live variants remain prohibited by project gate |
 | `check:recall-live-spike-reports` | R0 read-only local | No | No | No | No | Static or local-evidence checker; live variants remain prohibited by project gate |
+| `check:recall-manual-sync-artifacts` | R0 read-only local | No | No | No | No | Static default-off identity, unit, private-boundary, deployment-lock, and timer-invariant checks |
 | `check:recall-node-env-file-separators` | R0 read-only local | No | No | No | No | Static or local-evidence checker; live variants remain prohibited by project gate |
 | `check:recall-prelive` | R0 read-only local | No | No | No | No | Static or local-evidence checker; live variants remain prohibited by project gate |
 | `check:recall-prelive:live-confirmed-status` | R0 read-only local | No | No | No | No | Static or local-evidence checker; live variants remain prohibited by project gate |
@@ -147,4 +148,5 @@ This registry classifies every package script at the documentation baseline. Com
 | `start` | W2 local persistent write | Local listener | Application/local database possible | No | Intentional app start | Running app can mutate local state through use |
 | `test` | W1 local ephemeral write | No | Temporary/fixture state | No | No | Test or rehearsal source inspected; keep isolated |
 | `test:coverage` | W1 local ephemeral write | No | Temporary/fixture state | No | No | Test or rehearsal source inspected; keep isolated |
+| `test:recall-manual-sync-process` | W1 local ephemeral write | No | Temporary fixture databases, files, processes, and bundles | No | No | Isolated multi-process SQLite, real flock, crash, worker/lifecycle, and fake-systemd path/fallback evidence; no real Recall access |
 | `typecheck` | R0 read-only local | No | No | No | No | Local source/config inspection |
