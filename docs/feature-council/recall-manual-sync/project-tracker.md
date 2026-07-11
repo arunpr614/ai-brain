@@ -1,8 +1,8 @@
 # Recall manual sync project tracker
 
-Updated: 2026-07-11 17:12 IST
+Updated: 2026-07-11 17:18 IST
 Branch: `feat/recall-manual-sync`
-Project phase: documentation, Wiki publication, and review-ready delivery
+Project phase: review-ready delivery complete; awaiting human review
 
 ## Milestones
 
@@ -16,7 +16,7 @@ Project phase: documentation, Wiki publication, and review-ready delivery
 | M5 Settings experience | Implementation agent, UX | Responsive accessible panel/dialog/polling and every v2 state | Complete |
 | M6 Verification and independent review | QA/reviewer, adversarial reviewer | Automated gates, visual/mobile/a11y/manual evidence, no critical/high findings | Complete — GO |
 | M7 Repository and wiki documentation | Coordinator | Canonical docs updated; separate wiki committed, pushed, fresh-clone verified | Complete |
-| M8 Review-ready delivery | Coordinator | Final diff, commits, push, PR, screenshots, evidence, running log, final report | In progress |
+| M8 Review-ready delivery | Coordinator | Final diff, commits, push, PR, screenshots, evidence, running log, final report | Complete |
 
 ## Work items
 
@@ -44,13 +44,13 @@ Project phase: documentation, Wiki publication, and review-ready delivery
 | RMS-QA-01 | Acceptance traceability and release risk | QA/reviewer | Complete — GO | AC 1–21 closed for review-ready scope; no Critical/High; host proof separate |
 | RMS-DOC-01 | Repository docs and wiki source | Coordinator | Complete | Feature, API, data, ops, security, limitations, catalog, changelog, baseline |
 | RMS-DOC-02 | Separate wiki publication | Coordinator | Complete | Base `9e3f7d9`; normal push `703077d`; fresh clone, 85-page privacy, byte and live verification |
-| RMS-DEL-01 | Review-ready PR | Coordinator | Pending | Green checks, screenshots, rollback, no production enablement |
+| RMS-DEL-01 | Review-ready PR | Coordinator | Complete | [PR #22](https://github.com/arunpr614/ai-brain/pull/22) open/non-draft/mergeable; Agent documentation check passed; screenshots, rollback, no-enablement boundary attached |
 
 ## Current blockers and risks
 
 - Production enablement remains blocked until an authorized real-host proof shows the web process cannot read the Recall credential or open the private lock and verifies identity, data/SQLite/WAL/backup permissions, installed units, timer continuity, a controlled request, and the next daily completion. This does not block a default-off review-ready PR.
 - No Critical, High, or P2 implementation-review finding remains. Physical VoiceOver/TalkBack and physical touch hardware were unavailable; browser AX/live-region/keyboard/zoom/contrast/axe/reduced-motion evidence is recorded without claiming a physical AT lab.
-- Remaining delivery work is the publication closeout commit, branch push, review-ready PR, and checks. No merge or deploy is authorized.
+- Required delivery work is complete. Human review remains; no merge or deploy is authorized.
 
 ## Operating constraints
 

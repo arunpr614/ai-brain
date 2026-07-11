@@ -29576,3 +29576,48 @@ None from the user. Remediation must remain within v2. Any proposed contract dev
 - **Published Wiki:** `703077dd74c3cbc18936357a9b5bde0397f972a3`.
 - **Deployed/runtime state:** Unchanged; manual feature remains default off and undeployed.
 - **Next milestone:** Branch push and review-ready pull request.
+
+---
+
+## 2026-07-11 17:18 IST — Recall manual sync review-ready pull request delivered
+
+**Entry author:** AI agent (Codex) · **Triggered by:** Verified Wiki publication and clean final regression ledger.
+
+### What changed
+
+- Ran the complete final regression ledger from the committed branch:
+  - typecheck and full lint passed;
+  - full repository suite passed **843/843 tests across 92 suites**;
+  - production build passed with only the pre-existing `unpdf` `import.meta` warning;
+  - three Recall bundles, six process-fixture groups, artifact/default-off/deployment-lock/timer checks, full scheduled-wrapper smoke, documentation structure/privacy/coverage/artifact gates, documentation smoke fixtures, Recall public privacy gates, shell syntax, and whitespace checks all passed.
+- Pushed `feat/recall-manual-sync` normally to origin with four focused commits at the PR opening snapshot.
+- Opened review-ready, non-draft [pull request #22](https://github.com/arunpr614/ai-brain/pull/22): **Add durable Recall manual sync in Settings**.
+- Attached the implementation summary, safety and enablement boundary, rollback, exact test ledger, process evidence, visual/accessibility evidence, Wiki links, and reviewer focus areas.
+- Verified the PR is open and mergeable; the required **Agent documentation / validate** check passed in 26 seconds.
+
+### Delivery disposition
+
+- Review-ready goal scope is complete.
+- Application code is not merged or deployed.
+- Manual UI, worker, path, and fallback timer remain default off and undeployed.
+- Existing production timer, credentials, data, services, and Recall provider were not touched.
+- Actual-host enablement proof remains separately gated and requires new authorization.
+
+### Documents updated this period
+
+- `docs/feature-council/recall-manual-sync/final-implementation-report.md`
+- `docs/feature-council/recall-manual-sync/project-tracker.md`
+- `docs/agent-docs/source-baseline.json`
+- `RUNNING_LOG.md` (append-only)
+
+### Current remaining to-do
+
+None within the authorized delivery scope. Await human review of PR #22. Do not merge or deploy without a new explicit instruction.
+
+### State snapshot
+
+- **Current phase:** Review-ready handoff complete.
+- **Pull request:** #22, open/non-draft/mergeable, required check passed.
+- **Published Wiki:** `703077dd74c3cbc18936357a9b5bde0397f972a3`.
+- **Deployed/runtime state:** Unchanged; manual feature remains default off and undeployed.
+- **Next milestone:** Human review; merge/deployment only under separate authorization.

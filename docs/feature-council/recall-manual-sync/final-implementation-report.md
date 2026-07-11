@@ -3,7 +3,7 @@
 Date: 2026-07-11
 Branch: `feat/recall-manual-sync`
 Implementation commit: `fdd740617685c1ce730a6150c306152a04070f86`
-Delivery status: Review-ready code and evidence; default off; not merged, deployed, or enabled
+Delivery status: Review-ready pull request [#22](https://github.com/arunpr614/ai-brain/pull/22) open with passing required check; default off; not merged, deployed, or enabled
 
 ## Outcome
 
@@ -42,7 +42,7 @@ Browser evidence covers 1440, 1024, 390, and 320 pixel layouts; light and dark t
 
 ## Delivery and enablement boundary
 
-This report supports a review-ready pull request only. It does not authorize merge, deployment, feature enablement, production timer mutation, credential access, or real Recall data access.
+This report supports review-ready pull request [#22](https://github.com/arunpr614/ai-brain/pull/22) only. The PR is open, non-draft, mergeable, and its required Agent documentation check passed. It does not authorize merge, deployment, feature enablement, production timer mutation, credential access, or real Recall data access.
 
 Before any future enablement, an authorized operator must verify the effective Linux identity/group, credential readability and web denial, private lock and tmpfiles permissions, data/SQLite/WAL/backup access, installed unit contents, actual path/timer behavior, timer continuity, rollback/lock cleanup, one controlled request, and the following daily completion. Physical VoiceOver/TalkBack and touch-hardware validation also remain separate from the browser AX/keyboard evidence recorded here.
 

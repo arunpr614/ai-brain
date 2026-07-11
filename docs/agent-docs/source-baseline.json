@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-11T11:42:59Z",
+  "generatedAt": "2026-07-11T11:48:00Z",
   "defaultBranch": "main",
   "defaultBranchSha": "23868faf13c8e3d0821715e6f5d0e3d2af1e1a34",
   "worktreeBranch": "feat/recall-manual-sync",
@@ -29,6 +29,9 @@
   "recallManualSyncWikiSha": "703077dd74c3cbc18936357a9b5bde0397f972a3",
   "recallManualSyncWikiPagesUpdated": 10,
   "recallManualSyncWikiPageCountAfterPublication": 85,
+  "recallManualSyncPullRequest": "https://github.com/arunpr614/ai-brain/pull/22",
+  "recallManualSyncPullRequestOpeningSha": "4308be91b20d6211e9599c0b388376cef3e33c3f",
+  "recallManualSyncPullRequestStatus": "open-non-draft-mergeable-required-check-passed",
   "repositoryDefaultBranchShaAtCandidate": "1cb5d36f37611e60442b4f2c4433b45455273500",
   "recallManualSyncRuntimeStatus": "default-off-not-deployed",
   "recallManualSyncHostProofStatus": "separately-authorized-enablement-gate"
