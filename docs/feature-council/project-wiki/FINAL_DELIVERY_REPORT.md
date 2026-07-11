@@ -41,7 +41,7 @@ Local documentation, privacy, structure, link-graph, semantic coverage, artifact
 | Fresh-clone verification | Exact final SHA; 84/84 canonical pages byte-equal; structure and privacy checks passed |
 | Live page/link verification | 82/82 user-facing wiki URLs and 16/16 unique external evidence/prototype URLs returned HTTP 200 |
 | Live render verification | Home/sidebar/footer, both catalogs, architecture, representative feature/history pages, long tables, and Mermaid diagrams passed visual inspection |
-| Closeout record | `docs/definitive-project-wiki-closeout`; follow-up PR recorded in GitHub history |
+| Closeout record | `docs/definitive-project-wiki-closeout`; [PR #20](https://github.com/arunpr614/ai-brain/pull/20) |
 
 ## Preserved history and rollback
 
