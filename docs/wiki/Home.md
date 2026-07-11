@@ -26,7 +26,7 @@ Several capabilities are deliberately not current product behavior. Official cap
 ## Architecture at a glance
 
 ```mermaid
-flowchart LR
+flowchart TB
   clients["Web, Android, extension, Telegram, Recall"] --> app["Next.js pages, actions, and APIs"]
   app --> domain["Capture, notes, search, Ask, organization"]
   domain --> db["SQLite, FTS5, sqlite-vec"]

@@ -8,7 +8,7 @@ Last reviewed: 2026-07-11.
 Owner: AI Brain maintainer.
 
 ```mermaid
-flowchart LR
+flowchart TB
   clients["Browser, Android, extension, Telegram, Recall"] --> edge["Managed edge and authenticated entrypoints"]
   edge --> web["Next.js standalone Node process"]
   web --> domain["Capture, notes, library, search, Ask"]
