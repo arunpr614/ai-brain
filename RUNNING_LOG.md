@@ -30514,6 +30514,7 @@ Nothing deployed, pushed, published, merged, or released.
 - Added an explicit commit-history rationale explaining why evidence gates and truthful documentation are required before graph-oriented product adoption.
 - Opened draft review-only [PR #34](https://github.com/arunpr614/ai-brain/pull/34) against `main` with the final Defer decision, evidence boundaries, validation results, safety exclusions, live Wiki links, and reviewer focus areas.
 - Confirmed the PR is open and draft, targets `main`, and contains no authorization to merge, deploy, or implement a feature.
+- The first Agent documentation run exposed an 86-page smoke fixture that had not included the two new required Wiki pages. Updated only that synthetic fixture, then passed the full smoke and agent-documentation suites locally before the normal follow-up push.
 
 ### Final state
 

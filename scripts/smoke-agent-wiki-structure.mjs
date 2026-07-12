@@ -21,6 +21,7 @@ const pages = [
   "Deployment-and-Operations.md", "Agent-Workflows.md", "Troubleshooting.md",
   "Known-Limitations-and-Technical-Debt.md", "Glossary.md", "Documentation-Maintenance.md",
   "Documentation-Changelog.md", "Feature-Page-Template.md", "Explored-Idea-Template.md",
+  "Graphify-Opportunity-Research.md", "Graphify-Opportunity-Decision.md",
 ];
 const root = mkdtempSync(join(tmpdir(), "agent-wiki-structure-"));
 const wiki = join(root, "wiki");
