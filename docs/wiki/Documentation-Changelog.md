@@ -18,6 +18,7 @@ Owner: AI Brain maintainer.
 - Added reciprocal deferred/superseded banners to FCP-004 PRD/UX/technical v2 and updated the central council log, tracker, catalog, and ideas page so no current entry point presents FCP-004 as active implementation authority.
 - Corrected current documentation: Recall manual sync is merged in code but host enablement remains Unknown; protected Product CI runs the repository suite/build/release smokes but not host/runtime verification; current topics mirror generated tag labels, write null confidence, and generic evidence.
 - No Graphify production dependency, copied code, feature implementation, prototype, deployment, or merge was created by the council.
+- Initial canonical Wiki publication `4ee6c92b31d17603569bc9cae363365cf020ecd2` was fresh-cloned and matched all 88 repository pages byte-for-byte; privacy, structure, reachability, and live HTTP checks for the decision, research, catalog, and decision-log pages passed.
 
 ## 2026-07-12 — Card Processing production release
 

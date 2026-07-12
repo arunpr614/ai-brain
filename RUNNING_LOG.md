@@ -30476,3 +30476,28 @@ Nothing deployed, pushed, published, merged, or released.
 - **Repository documentation:** merged through PR #32 at `8028fcbe23e58dc9889895278126447472b972e2`.
 - **GitHub Wiki:** published and verified at `5a9e100134141770ed87d959b7cd67aa4460f3ca`, 86/86 pages.
 - **Release objective:** direct Library selected-item enrollment, live production behavior, protected delivery, current repository documentation, canonical Wiki publication, and append-only project logging are complete.
+
+---
+
+## 2026-07-13 01:08 IST — Graphify council deferred feature selection; canonical Wiki published and verified
+
+**Entry author:** AI agent (Codex) · **Triggered by:** Final recommendation v2, upstream documentation reconciliation, and completion of canonical Wiki publication.
+
+### Done
+
+- Completed five blind Round 1 evaluations, the Round 2 comparison, recommendation v1, independent adversarial review, and final recommendation v2.
+- Final decision is **Defer feature selection**: C-01/C-02 defer, C-03/FCP-004 current no-go, and no Graphify production mode is authorized.
+- Preserved the gated stop: no feature charter, PRD, UX/UI, prototype, technical plan, production code, dependency, deployment, or merge was created.
+- Reconciled two newer documentation-only `origin/main` commits without changing the audited application baseline or frozen council packet.
+- Made FCP-004 supersession reciprocal across canonical Feature Council sources and current Wiki entry points.
+- Published the canonical 88-page Wiki through normal concurrency-checked pushes: initial `4ee6c92b31d17603569bc9cae363365cf020ecd2`, final `e884daa628c28498bbbacd09c164b8cbba6030d5`.
+- Fresh-cloned the final Wiki, proved 88/88 byte identity, passed privacy/structure/reachability, and received HTTP 200 from the checked live decision, research, catalog, decision-log, and changelog pages.
+- Passed the complete agent-documentation gate: 44 generated research pages, 44 living/core pages, 238 coverage rows, 46 feature rows, 37 idea rows, 155 package scripts, 17,989 inventory rows, and 88 page-audit rows with zero findings.
+
+### State snapshot
+
+- **Decision:** Defer feature selection; no implementation authority.
+- **Branch:** `codex/research-graphify-feature-council`, merged with the latest documentation-only `origin/main` history.
+- **Production:** Unchanged by this goal.
+- **Wiki:** Published and verified at `e884daa628c28498bbbacd09c164b8cbba6030d5`.
+- **Remaining:** Final repository commit/push, review-only PR, and PR-linked handoff log entry.

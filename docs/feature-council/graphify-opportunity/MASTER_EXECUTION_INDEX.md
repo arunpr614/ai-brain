@@ -1,6 +1,6 @@
 # Graphify Opportunity — Master Execution Index
 
-**Status:** Source research complete; opportunity shortlist v1 in progress  
+**Status:** Final decision complete — **Defer feature selection**; Wiki published and verified
 **Verification baseline:** AI Brain `8c1341100b174fe4ca518e6a745c30b9078df21c` (`origin/main`, verified 2026-07-12)  
 **Proposal classification:** Explored / Proposed — not implemented
 
@@ -31,12 +31,14 @@ This is the stable map for the Graphify-inspired feature council. Every finalize
 - Round 1 submissions: [user value](council/round1/2026-07-12_user-value-engagement-evaluation.md), [memory/trust](council/round1/2026-07-12_memory-knowledge-trust-evaluation.md), [platform/architecture](council/round1/2026-07-12_platform-data-architecture-evaluation.md), [security/privacy/license](council/round1/2026-07-12_security-privacy-licensing-evaluation.md), [UX/accessibility](council/round1/2026-07-12_ux-accessibility-evaluation.md)
 - [Round 2 comparative debate](council/2026-07-13_round2-comparative-debate.md)
 - Council recommendation chain: [v1](decisions/2026-07-13_council-recommendation_v1.md) → [Round 3 adversarial review](decisions/COUNCIL_RECOMMENDATION_V1_ADVERSARIAL_REVIEW_2026-07-13_00-43-03_IST.md) → [v2 final — Defer](decisions/2026-07-13_council-recommendation_v2.md)
+- [Final consistency and publication review](reviews/2026-07-13_final-consistency-and-publication-review.md)
+- [Wiki publication record](wiki/2026-07-13_wiki-publication-record.md)
 - Council recommendation: **Defer feature selection**; C-01/C-02 deferred, C-03 current no-go
 - Feature charter: stopped by final Defer decision
 - PRD: stopped by final Defer decision
 - UX/UI and prototypes: stopped by final Defer decision
 - Technical plan: stopped by final Defer decision
-- Wiki publication package: repository pages complete; separate Wiki publication/verification pending
+- Wiki publication: complete and verified at `e884daa628c28498bbbacd09c164b8cbba6030d5`; 88/88 pages match the canonical repository corpus
 
 ## Current stage gate
 
@@ -49,5 +51,5 @@ This is the stable map for the Graphify-inspired feature council. Every finalize
 - Dedicated branch: `codex/research-graphify-feature-council`
 - Production application changes: none authorized
 - Production dependency changes: none authorized
-- Wiki update: pending
+- Wiki update: published and independently verified
 - Review-only pull request: pending

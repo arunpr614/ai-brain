@@ -3,7 +3,7 @@
 | Stage | Owner | Status | Evidence / exit gate |
 |---|---|---|---|
 | Worktree and baseline | Coordinator | Complete | Clean worktree from verified `origin/main` SHA |
-| Shared controls and logging | Coordinator / project manager | In progress | Index, tracker, decision log, source inventory, risk register, running log |
+| Shared controls and logging | Coordinator / project manager | Complete | Index, tracker, decision log, source inventory, risk register, running log |
 | AI Brain live-feature audit v1 | AI Brain audit specialist | Complete | Five evidence artifacts; protected CI and Wiki baseline verified |
 | Graphify source research | Research specialists | Complete | Product/capability/claims plus architecture/security/license/risk notes; all-extras tests and POCs recorded |
 | Canonical Graphify research note v1 | Coordinator | Complete | Product, technical, risk, license, POC, and AI Brain comparison synthesized |
@@ -25,11 +25,11 @@
 | PRD v1/review/v2 | New product manager / adversarial reviewer | Stopped by Defer | Not authorized |
 | UX and prototypes v1/review/v2 | New UX designer / adversarial reviewer | Stopped by Defer | Not authorized; candidate comparison requires a future separate council decision |
 | Technical plan v1/review/v2 | New technical architect / adversarial reviewer | Stopped by Defer | Not authorized |
-| Final cross-artifact consistency review | Coordinator / QA | In progress | Audit/research/candidates/decision/Wiki/status/stop rules agree |
-| Wiki publication package | Coordinator / QA | Complete in repository | Live-feature corrections, Graphify research/decision, FCP-004 reciprocal defer banners, changelog |
-| Wiki validation/publication/verification | Coordinator / QA | Pending | Privacy/link/structure, fresh base, normal push, fresh clone/live pages |
-| Repository validation and diff review | Coordinator / QA | Pending | Artifact reachability, privacy, links, checks, visuals if go, unrelated changes excluded |
-| Commit and push | Coordinator | Pending | Focused commits on dedicated branch |
+| Final cross-artifact consistency review | Coordinator / QA | Complete | Audit/research/candidates/decision/Wiki/status/stop rules agree; [review](reviews/2026-07-13_final-consistency-and-publication-review.md) |
+| Wiki publication package | Coordinator / QA | Complete | Live-feature corrections, Graphify research/decision, FCP-004 reciprocal defer banners, changelog |
+| Wiki validation/publication/verification | Coordinator / QA | Complete | Wiki `e884daa…`; 88/88 fresh-clone match; privacy/structure/reachability clean; live pages HTTP 200 |
+| Repository validation and diff review | Coordinator / QA | Complete | Agent-doc gates, privacy, links, inventory, checks, and diff validation pass; no production files changed |
+| Commit and push | Coordinator | In progress | Focused commits on dedicated branch; final publication/control commit pending |
 | Review-only PR and final handoff | Coordinator | Pending | PR opened, not merged; final index/log/report complete |
 
 ## Agent file ownership
@@ -43,4 +43,4 @@
 
 ## Current blockers
 
-No unavoidable external blocker. Direct user-problem frequency evidence is limited and may legitimately force defer. Temporary Graphify research state is cleaned under D-007. The local worktree showed an unresolved dependency-import failure, but exact-baseline protected CI is authoritative. Wiki read access and repository admin access are verified; concurrency-safe write/push will be exercised only with finalized pages.
+No unavoidable external blocker. Direct user-problem frequency evidence forced Defer under the eight-gate rule. Temporary Graphify research state is cleaned under D-007. The local nested worktree showed an unresolved dependency-import failure, while exact-baseline protected CI is authoritative for the audited baseline. Wiki publication and independent fresh-clone/live-page verification are complete.
