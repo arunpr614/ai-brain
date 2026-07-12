@@ -12,6 +12,7 @@
  *   Loaded as an extension on connection. The virtual table for embeddings
  *   (`vec_items`) is created by a later migration in v0.4.0.
  */
+import { createHash } from "node:crypto";
 import { existsSync, mkdirSync, readFileSync, readdirSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import Database from "better-sqlite3";
@@ -102,27 +103,44 @@ export function runMigrations(db: Database.Database): void {
     CREATE TABLE IF NOT EXISTS _migrations (
       id         INTEGER PRIMARY KEY,
       name       TEXT NOT NULL UNIQUE,
+      sha256     TEXT,
       applied_at INTEGER NOT NULL DEFAULT (unixepoch() * 1000)
     );
   `);
 
-  const applied = new Set(
-    db
-      .prepare("SELECT name FROM _migrations")
-      .all()
-      .map((r) => (r as { name: string }).name),
+  // Older databases tracked only the filename. Establish a one-time hash
+  // baseline before applying any new migration; every later application stores
+  // its source hash atomically with the schema change.
+  const migrationColumns = new Set(
+    (db.pragma("table_info('_migrations')") as Array<{ name: string }>).map((column) => column.name),
   );
+  if (!migrationColumns.has("sha256")) db.exec("ALTER TABLE _migrations ADD COLUMN sha256 TEXT");
 
   const migrationsDir = resolveMigrationsDir();
   const files = readdirSync(migrationsDir)
     .filter((f) => f.endsWith(".sql"))
     .sort(); // NNN_ prefix ensures lexicographic == numeric order
 
+  const applied = new Map(
+    (db.prepare("SELECT name,sha256 FROM _migrations").all() as Array<{ name: string; sha256: string | null }>)
+      .map((row) => [row.name, row.sha256]),
+  );
+
   for (const file of files) {
-    if (applied.has(file)) continue;
     const sql = readFileSync(join(migrationsDir, file), "utf8");
+    const sha256 = createHash("sha256").update(sql).digest("hex");
+    if (applied.has(file)) {
+      const recorded = applied.get(file);
+      if (recorded && recorded !== sha256) {
+        throw new Error(`[db] applied migration hash mismatch: ${file}`);
+      }
+      if (!recorded) {
+        db.prepare("UPDATE _migrations SET sha256=? WHERE name=? AND sha256 IS NULL").run(sha256, file);
+      }
+      continue;
+    }
     const insert = db.prepare(
-      "INSERT INTO _migrations (name) VALUES (?)",
+      "INSERT INTO _migrations (name,sha256) VALUES (?,?)",
     );
     // SQLite ignores PRAGMA foreign_keys changes made after BEGIN. Migrations
     // that rebuild a referenced table therefore declare the OFF pragma in SQL,
@@ -138,7 +156,7 @@ export function runMigrations(db: Database.Database): void {
       if (foreignKeysBefore !== null && stableForeignKeyCheck(db) !== foreignKeysBefore) {
         throw new Error("migration changed the foreign-key violation manifest");
       }
-      insert.run(file);
+      insert.run(file, sha256);
     });
     try {
       tx();
@@ -204,6 +222,18 @@ export interface ItemRow {
    * submitted to a daily batch. Null otherwise. Added v0.6.0 (migration 008).
    */
   batch_id: string | null;
+  /** Processing projection. Optional in hand-built legacy test fixtures only. */
+  workflow_status?: "inbox" | "todo" | "in_progress" | "done";
+  workflow_version?: number;
+  workflow_legacy_baseline?: 0 | 1;
+  workflow_enrolled_at?: number | null;
+  workflow_initialized_at?: number | null;
+  workflow_inbox_entered_at?: number | null;
+  workflow_inbox_episode_id?: string | null;
+  workflow_status_changed_at?: number | null;
+  workflow_current_done_entered_at?: number | null;
+  workflow_archived_at?: number | null;
+  workflow_last_event_uuid?: string | null;
 }
 
 export interface CaptureArtifactRow {

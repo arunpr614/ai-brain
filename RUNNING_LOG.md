@@ -29621,3 +29621,250 @@ None within the authorized delivery scope. Await human review of PR #22. Do not 
 - **Published Wiki:** `703077dd74c3cbc18936357a9b5bde0397f972a3`.
 - **Deployed/runtime state:** Unchanged; manual feature remains default off and undeployed.
 - **Next milestone:** Human review; merge/deployment only under separate authorization.
+
+---
+
+## 2026-07-12 11:05 IST - Kanban Card Processing goal initialized and clean worktree established
+
+**Entry author:** AI agent (Codex) · **Triggered by:** Persistent goal to research, plan, implement, test, document, release, and verify Kanban Card Processing in production.
+
+### Planned since last entry
+
+Begin a new independently scoped feature from the latest `origin/main`; preserve the supplied checkout and source artifacts; inspect every approved PRD/design and the current application/Wiki; create reconciled product, UX, and technical v2 contracts after adversarial review; implement and verify end to end; then complete the normal PR, merge, production deployment, smoke, monitoring, and Wiki lifecycle.
+
+### Done
+
+- Read the complete goal objective and registered the production-release outcome as the active persistent goal.
+- Verified the supplied repository remote is `https://github.com/arunpr614/ai-brain.git` and matches the required repository.
+- Inspected the supplied checkout before mutation: branch `codex/note-ai-default-final`, with the original `Kanban-designs/` source folder untracked; no reset, clean, deletion, or source-folder modification occurred.
+- Fetched and pruned remote references; confirmed latest `origin/main` is `5b92e68` (`Merge pull request #23 from arunpr614/codex/recall-manual-sync-rollout-fixes`).
+- Inspected existing worktrees and confirmed the requested branch/path were unused.
+- Created a clean sibling worktree at `/Users/arun.prakash/Library/CloudStorage/GoogleDrive-arun.prakash@toasttab.com/Other computers/My MacBook Pro M1 2025/arun-cursor/Initiatives/Arun_AI_Projects/ai-brain-kanban-card-processing-20260712` on `feat/kanban-card-processing`, tracking `origin/main`.
+- Read repository `AGENTS.md`; its APK versioning rule will apply if a distributable Android APK is created.
+- Read the required `codex-project-running-log`, `adversarial-review`, and worktree skill instructions, including the adversarial report template.
+- Created the feature-council directory skeleton and started three non-overlapping specialist lanes: source/design/accessibility discovery; project-management/product council across Growth, Platform/Data, and Power User perspectives; and architecture/data-migration/security/current-state discovery.
+
+### Cross-lane notes
+
+- Coordinator/implementation lead owns integration and `RUNNING_LOG.md`.
+- `artifact_ux_a11y` owns only discovery inventory/requirements/design-state/conflict/open-question artifacts and screenshots.
+- `product_council_pm` owns only the approved-requirements baseline, brainstorm recommendation, decision log, and project tracker.
+- `technical_discovery` owns only current-state/code-map and initial migration/security assessments.
+- The original `Kanban-designs/` folder remains read-only input outside the clean worktree.
+
+### Learned
+
+- A prior exploratory worktree exists on `concept/card-processing-workflow`; it is not the implementation base and has not been modified.
+- The repository has a separate, very large append-only running-log history; this entry preserves it and begins the Kanban milestone trail.
+- No secret-bearing `.env` file was found in the main or supplied checkout; only tracked `.env.example` files exist, so no environment symlink was needed.
+
+### Deployed / Released
+
+Nothing committed, pushed, merged, deployed, enabled, or published in this milestone. Production is unchanged.
+
+### Documents created or updated this period
+
+**Updated:**
+- `RUNNING_LOG.md` - appended this initialization/worktree milestone; all prior entries preserved.
+
+### Current remaining to-do
+
+1. Complete recursive source inventory and browser-based desktop/mobile inspection of every HTML design.
+2. Complete latest-main and relevant GitHub Wiki discovery, including every card creation/ingestion path.
+3. Reconcile the product model and discovery evidence into approved baseline/current-state artifacts.
+4. Produce PRD, UX/UI, and technical v1 packages, run required adversarial reviews, and finalize aligned v2 sources of truth.
+5. Implement, test, document, deliver through PR/CI/merge, deploy, and verify production before completing the goal.
+
+### Open questions / decisions needed
+
+No user decision is currently required. Consequential ambiguities will be resolved from approved evidence and recorded in the decision log.
+
+### Session self-critique
+
+- Discovery has started but no product claim is yet approved; the existing exploratory card-processing worktree and Wiki material may be historical rather than authoritative.
+- Production release depends on repository CI/review/deployment permissions and live credentials, which have not yet been tested; all safe local and repository work will proceed first.
+
+### Action items for the next agent
+
+1. Treat `/Users/arun.prakash/Library/CloudStorage/GoogleDrive-arun.prakash@toasttab.com/Other computers/My MacBook Pro M1 2025/arun-cursor/Initiatives/Arun_AI_Projects/ai-brain-kanban-card-processing-20260712` as `PROJECT` and `feat/kanban-card-processing` as the active branch.
+2. Read the specialist artifacts under `docs/feature-council/kanban-card-processing/` when they land; do not overwrite lane-owned files.
+3. Keep the original `/Users/arun.prakash/Documents/arunvault/arun-cursor/Initiatives/Arun_AI_Projects/ai-brain/Phase3/Kanban-designs` tree read-only.
+
+### State snapshot
+
+- **Current phase / version:** Phase 1-2 discovery in progress.
+- **Active branch:** `feat/kanban-card-processing` at `5b92e68`, tracking `origin/main`.
+- **Working tree:** Clean before empty directory creation; only this append-only running-log entry is now tracked as modified until specialist artifacts land.
+- **Deployed/runtime state:** Production unchanged; no local application server started yet.
+- **Next milestone:** Completed discovery baseline and source/current-state conflict resolution.
+
+## 2026-07-12 12:09 IST — Discovery and aligned v2 implementation gate
+
+### What changed
+
+- Completed recursive discovery of the read-only `Kanban-designs` source package: 131 relevant files across requirements, prototypes, handoffs, and visual references.
+- Opened every one of the 16 HTML prototype/handoff documents in a real browser at desktop (1440×1024) and mobile (390×844), and exercised Inbox, Process next, Leave, Move, Undo, Board, List, grouping, sorting, filters, offline/error/empty states, Archived/restore, detail, notes, and keyboard-focus paths.
+- Captured 65 browser screenshots in `docs/feature-council/kanban-card-processing/discovery/screenshots/` and resolved Direction B as the exact implementation target, including compact group/sort behavior and light/dark parity.
+- Completed current-main architecture, ingestion-path, schema, authentication, deployment, production-readiness, and rollback discovery. Read-only production checks confirmed an active service, Node 22.22.3, SQLite integrity, 129 items, all 26 migrations applied, sufficient disk, and authenticated loopback health; production was not changed.
+- Established the approved product model: AI Topics only; Inbox/Board/List/Archived; exact status counts; visible Processed and Completed today/week metrics; session-private no-store reads; latest-current-Done projection separated from first-lifetime completion; 30-second per-tab Undo plus permanent reversal paths; and deterministic oldest-Inbox Process next ordering.
+- Produced PRD, UX/UI, and technical v1 sources, then ran three independent adversarial reviews. Each v1 was correctly held at no-go until authority, archive semantics, receipts, pagination/grouping, readiness, undo, accessibility, data invariants, and production evidence gaps were resolved.
+- Produced aligned v2 sources of truth and a cross-document consistency review. The implementation gate is **Go**; release remains **No-go** until code, tests, CI, production deployment, live workflow verification, documentation, and rollback evidence pass.
+- Added release and rollback plans, a migration plan, initial data assessment, current-state report, code map, design inventory, source-conflict report, requirements baseline, open-question register, decision log, and project tracker.
+
+### Specialist roles completed
+
+- Coordinator / implementation lead: repository safety, production baseline, alignment, and implementation gate.
+- Expert PM, AI Brainstorm Council, and three independent PM perspectives: product model, recommendation, PRD v1/v2, decisions, and tracker.
+- UX/accessibility specialist: source inspection and browser evidence.
+- UX/UI author and adversarial UX reviewer: UX v1, no-go review, and resolved v2 specification.
+- Technical/data/security architect and adversarial technical reviewer: current-state model, technical v1/v2, migration plan, and no-go review.
+- Release/observability specialist: deployment, validation, rollback, and recovery plans.
+
+### Evidence and artifacts
+
+- `docs/feature-council/kanban-card-processing/product/prd-v2.md` is the product source of truth with 61 acceptance criteria.
+- `docs/feature-council/kanban-card-processing/ux/ux-ui-v2.md` is the interaction, responsive, accessibility, and visual source of truth.
+- `docs/feature-council/kanban-card-processing/technical/technical-plan-v2.md` and `technical/migration-plan.md` are the architecture and data-migration sources of truth.
+- `docs/feature-council/kanban-card-processing/reviews/v2-consistency-review.md` records the implementation go/no-go decision and remaining release gates.
+- The feature-council package currently contains 90 files (approximately 4.4 MB), including browser evidence.
+- Clean-main baseline remains green: typecheck, lint, 843 tests across 92 suites, and production build. The pre-existing `unpdf import.meta` build warning is documented and unchanged.
+
+### Important implementation decisions
+
+- The prototype's fixture-order bug must not be copied: production Process next is `workflow_inbox_entered_at ASC, id ASC`, not array-first/newest-first.
+- Existing captured `items` remain the aggregate. Workflow is added as validated projections plus durable terminal mutation receipts, append-only events, undo slots, preferences, enrollment/runtime state, and exact metrics.
+- All genuine new capture paths continue through `insertCaptured`; existing updates, duplicate repair, and enrichment preserve workflow identity.
+- Board status pagination uses four independent cursors; other grouping uses server-provided group descriptors and per-group keysets. The UI requests ten group descriptors at a time within the API maximum of twenty.
+- Deep database/readiness checks run at deploy, startup, and periodic intervals off the request path; request-time mutation gates stay bounded.
+- Drag-and-drop and virtualization are intentionally disabled for initial rollout; accessible explicit actions and keyset load-more behavior are required.
+
+### Documents created or updated this period
+
+**Created:**
+- The 90-file feature-council package under `docs/feature-council/kanban-card-processing/`, including discovery, product, UX, technical, review, QA-baseline, release, and rollback artifacts.
+
+**Updated:**
+- `RUNNING_LOG.md` — appended this discovery/v2 gate; all earlier entries remain intact.
+
+### Current remaining to-do
+
+1. Implement migration 025, workflow domain services, authenticated APIs, receipts/events/undo, exact metrics, and readiness controls.
+2. Implement the responsive Processing experience and current-app integration points against the selected Direction B visual target.
+3. Add and pass backend, frontend, accessibility, security, migration, scale, synthetic 10k/50k, and visual design QA.
+4. Complete independent implementation review, remediate findings, and finalize operator/user/developer documentation and Wiki updates.
+5. Create the pull request, pass CI/review, merge, deploy with a known-good rollback artifact, and verify production end to end before completing the goal.
+
+### Open questions / decisions needed
+
+No user decision is currently required. Release authority is already in the goal objective; normal repository and production safeguards remain mandatory.
+
+### Session self-critique
+
+- Planning evidence is unusually comprehensive, but implementation and live validation have not begun; none of the v2 claims should be treated as shipped behavior yet.
+- The new Temporal polyfill is a deliberate dependency and must receive license/vulnerability review before release.
+- The compact native `details` interaction and mobile dialog need explicit keyboard, focus-return, screen-reader, and visual parity tests rather than being assumed accessible.
+
+### Action items for the next agent
+
+1. Treat PRD v2, UX/UI v2, technical plan v2, and the migration plan as aligned sources of truth; do not fall back to v1 or prototype fixture behavior.
+2. Preserve the original source package and the user's unrelated checkout exactly as found.
+3. Keep backend/data and frontend file ownership disjoint during parallel implementation, then run an integration reconciliation before QA.
+
+### State snapshot
+
+- **Current phase / version:** Phase 5 implementation starting from aligned v2.
+- **Active branch:** `feat/kanban-card-processing` at `5b92e68`, tracking `origin/main`.
+- **Working tree:** Modified only by the append-only running log and the new feature-council documentation package; no production feature code has been written yet.
+- **Deployed/runtime state:** Production unchanged and healthy on its pre-feature main release.
+- **Next milestone:** Integrated backend/data and frontend implementation with green local verification.
+
+## 2026-07-12 14:04 IST — Kanban Processing implemented; local candidate and release-safety gates green
+
+### What changed
+
+- Implemented migration 025 with validated workflow projection fields on `items`, immutable terminal receipts, append-only events, actor-tab Undo slots, enrollment jobs, preferences/readiness state, epoch invalidation, raw old-runtime initialization, and targeted partial indexes.
+- Made every genuine new capture atomically enter Inbox/version 1 with exactly one initialization receipt and event; existing repair, transcript, enrichment, embedding, indexing, taxonomy, archive-independent Library, and notes paths preserve workflow identity.
+- Implemented compare-and-swap Move/Archive/Restore/Reprocess, current-truth replay/outcome lookup, exact-prior-fact 30-second Undo, confirmation-only tab-slot replacement, and permanent reversal paths.
+- Implemented exact four-state totals/matching counts, owner-local Today/week metrics, signed keyset cursors, User-tag/AI-Topic filtering, status and non-status bounded grouping, taxonomy/workflow epoch invalidation, and deterministic current-Inbox ordering.
+- Implemented the responsive private `/processing` experience with Inbox, Board, List, and Archived; Process next; filters; group/sort; enrollment; counts/metrics; workflow controls; detail/notes integration; desktop navigation; mobile More; Library summary; command palette; and capture feedback.
+- Fixed the independently discovered 320 px mobile P1 where the Archived tab clipped. Fresh 320×844 and 390×844 evidence proves four visible/selectable 44 px tabs with no horizontal overflow.
+- Added default-off read/write/navigation flags, strict green/fresh readiness gates, a non-mutating status tool, six-hour deep-audit timer, strict production timezone/HMAC/origin validation, and migration SHA-256 tracking.
+- Added streaming request-size enforcement and per-valid-session write throttling after the independent application security review identified two P2 abuse bounds.
+- Added deterministic 10k/50k benchmarking. The first 50k run exposed two slow descriptor modes; an EXPLAIN-backed grouped count pass plus capture-channel/captured-at partial indexes reduced them from 230.733/274.741 ms to 50.550/47.658 ms without relaxing budgets.
+- Added immutable release packaging, runtime/file/native/migration manifests, protected-main GitHub provenance attestations, pinned Actions, known-good main-ancestor packaging, canonical DB identity binding, exact backup proof, unprivileged bounded extraction, immutable tool sets, atomic activation, and full post-cutover automatic state rollback.
+
+### Independent review disposition
+
+- Application security final verdict: **GO**, no remaining P0/P1/P2 after streaming-limit and session-throttle remediation.
+- Release security initial verdict: **NO-GO**, including a P0 where backup/compatibility checks could target a different database than the application plus artifact provenance, privileged bootstrap, archive, migration-binding, and partial-rollback findings.
+- Release security final verdict after remediation: **GO for integration/CI**. Production deployment has not yet occurred and is not implied.
+- Visual design QA remains correctly blocked until a browser-accessible deployed candidate can be compared in the final live dark/light task state.
+
+### Verification
+
+- TypeScript: pass.
+- ESLint: pass.
+- Product tests: 877 tests across 93 suites, 0 failed/skipped/todo.
+- Production build: pass; only the pre-existing `unpdf import.meta` warning remains.
+- Documentation privacy/structure/coverage: pass; 155/155 package scripts classified.
+- Readiness smoke: 17 checks passed.
+- Immutable artifact smoke: 20 checks passed.
+- Full artifact rehearsal: 3,612 regular files, approximately 72 MB expanded, 26 migrations, no raw environment files, runtime verification clean.
+- Performance: every approved 10k/50k readiness/query/page/mutation/deep-audit/contention/payload budget passed; 50k DB-busy outcomes were zero.
+- Release shell syntax and diff whitespace: pass.
+
+### Documents created or updated this period
+
+- Added implementation, user, operator, security/adversarial, acceptance-traceability, performance, and candidate-verification reports under `docs/feature-council/kanban-card-processing/`.
+- Added visual comparison and corrected 320/390 mobile evidence.
+- Updated command-safety classification for all nine new operator/build/benchmark commands.
+- Updated `RUNNING_LOG.md` through this append-only checkpoint.
+
+### Current remaining to-do
+
+1. Rehearse migration, backup/restore, interruption/resume, old-code guard, and schema-025 known-good rollback against an isolated copy of the current production database.
+2. Freeze/stage the diff, commit, push, open the PR, pass protected CI/review, and merge.
+3. Produce/download/verify candidate and known-good Linux attestations from protected main/workflow dispatch.
+4. Install production configuration privately, deploy dark with the exact bound backup, then stage reads, writes, and navigation with observation windows.
+5. Complete the live synthetic workflow and cleanup plus deployed browser/design/accessibility evidence.
+6. Update canonical repository Wiki sources with the deployed SHA, publish the GitHub Wiki, and verify the published commit/content before completing the persistent goal.
+
+### State snapshot
+
+- **Current phase:** Local candidate complete; production-copy rehearsal and PR/release beginning.
+- **Active branch:** `feat/kanban-card-processing`, still based on pre-feature `5b92e68` until the first feature commit.
+- **Working tree:** Intentionally contains the complete uncommitted feature, release tooling, documentation, and append-only log; unrelated user work remains untouched.
+- **Deployed/runtime state:** Production remains unchanged on the pre-feature runtime; no feature flags or schema changes have been applied there.
+- **Next milestone:** Isolated production-copy rehearsal, then committed PR candidate.
+
+## 2026-07-12 14:32 IST — Production-copy rehearsal passed; historical migration identity reconciled
+
+### What changed
+
+- Created an owner-only local rehearsal copy through SQLite online backup of the database selected by production `BRAIN_DB_PATH`, then removed every local/remote temporary database artifact after recording content-free evidence.
+- Discovered that production had applied historical `018_topics.sql` while latest main no longer packaged that filename. Recovered its exact bytes from Git commit `3bead0c` (SHA-256 `e6185834406c6da4596d4af514cf9c97737b125ba8554fe0012506e3e1b377cf`), restored the idempotent file, recorded KCP-040, and added the same hash-verified compatibility overlay to the known-good CI build.
+- Applied 025 to the current production copy in 383 ms with all 129 historical items dormant, zero automatic enrollment, zero missing initialization, 27/27 applied migration hashes present, readiness green, quick check `ok`, FK zero, and no residual WAL after process close.
+- Forced an in-transaction migration failure; connection close left zero workflow columns/tables and no 025 ledger row, then the real command resumed cleanly.
+- Held a separate immediate write lock for seven seconds; migration failed closed after the five-second busy timeout with no partial schema, then succeeded after release.
+- Interrupted All enrollment after 40/129 rows; a new process resumed exactly one durable job and completed 129/129 with no duplicates or deletions.
+- Proved old-shape raw insert creates Inbox/version 1 plus exactly one raw event/receipt, then the application delete path removes every synthetic dependent with FK zero.
+- Proved backup/restore logical equality and integrity after enrollment; source and restore counts matched `129:129:130:1:27` for items/events/receipts/jobs/migrations.
+- Proved known-good compatibility rejects schema 025 by default and accepts exactly that one unknown migration only with the explicit rollback guard; all 26 shared migration hashes match.
+- Rechecked production after cleanup: service active, 129 items, 26 migrations through 024, quick `ok`, FK zero.
+
+### Correction to the preceding checkpoint
+
+The preceding local-candidate entry recorded the artifact before restoring production's historical migration identity: 3,612 files and 26 migrations. The final post-reconciliation artifact is 3,613 regular files, 71,973,337 expanded bytes, and 27 migrations; runtime verification passes with no raw environment files.
+
+### Verification and dependency review
+
+- Fresh full suite after the compatibility migration: 877/877 tests across 93 suites.
+- Typecheck, lint, production build, documentation checks, workflow YAML parse, readiness 17/17, artifact smoke 20/20, release runtime verify, and diff whitespace all pass.
+- Clean `npm ci`; npm audit reports zero vulnerabilities. New direct dependencies: `@js-temporal/polyfill` 0.5.1 (ISC) and `tar` 7.5.16 (BlueOak-1.0.0).
+
+### State snapshot
+
+- **Current phase:** PR candidate freeze and commit.
+- **Production:** Unchanged on pre-feature runtime/schema/flags.
+- **Release gate closed:** Isolated production-copy migration/lock/interruption/resume/backup/restore/old-code/explicit-025 compatibility.
+- **Next milestone:** Commit, push, PR, protected CI/review, and merge.

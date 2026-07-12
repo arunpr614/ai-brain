@@ -4,6 +4,7 @@ import {
   AlertTriangle,
   CirclePlus,
   KeyRound,
+  Inbox,
   Library,
   MessageSquare,
   MoreHorizontal,
@@ -16,7 +17,7 @@ import {
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useSyncExternalStore } from "react";
+import { useEffect, useState, useSyncExternalStore } from "react";
 import { cn } from "@/lib/cn";
 import { useCommandPalette } from "./command-palette";
 import {
@@ -37,6 +38,7 @@ interface NavItem {
 
 const PRIMARY_ITEMS: NavItem[] = [
   { href: "/library", label: "Library", icon: Library, target: "library" },
+  { href: "/processing", label: "Processing", icon: Inbox, target: "processing" },
   { href: "/needs-upgrade", label: "Needs Upgrade", icon: AlertTriangle, target: "needs-upgrade" },
   { href: "/ask", label: "Ask", icon: MessageSquare, target: "ask" },
   { href: "/settings", label: "Settings", icon: Settings, target: "settings" },
@@ -60,9 +62,10 @@ function subscribeCollapsed(callback: () => void): () => void {
   };
 }
 
-export function Sidebar({ needsUpgradeCount = 0 }: { needsUpgradeCount?: number }) {
+export function Sidebar({ needsUpgradeCount = 0, processingEnabled = false }: { needsUpgradeCount?: number; processingEnabled?: boolean }) {
   const pathname = usePathname();
   const { open } = useCommandPalette();
+  const [processingInboxCount, setProcessingInboxCount] = useState(0);
   const desktopTarget = getDesktopShellTarget(pathname);
   const mobileTarget = getMobileShellTarget(pathname);
   const collapsed =
@@ -78,11 +81,25 @@ export function Sidebar({ needsUpgradeCount = 0 }: { needsUpgradeCount?: number 
     window.dispatchEvent(new Event(SIDEBAR_COLLAPSED_EVENT));
   };
 
-  const primaryItems = PRIMARY_ITEMS.map((item) =>
-    item.target === "needs-upgrade"
-      ? { ...item, badge: needsUpgradeCount }
-      : item,
-  );
+  useEffect(() => {
+    if (!processingEnabled) return;
+    const controller = new AbortController();
+    fetch("/api/processing/summary", { cache: "no-store", credentials: "same-origin", signal: controller.signal })
+      .then(async (response) => (response.ok ? response.json() : null))
+      .then((body: unknown) => {
+        const raw = body && typeof body === "object" ? (body as Record<string, unknown>) : {};
+        const data = raw.data && typeof raw.data === "object" ? (raw.data as Record<string, unknown>) : raw;
+        if (typeof data.inboxNow === "number") setProcessingInboxCount(data.inboxNow);
+      })
+      .catch(() => {});
+    return () => controller.abort();
+  }, [pathname, processingEnabled]);
+
+  const primaryItems = PRIMARY_ITEMS.filter((item) => processingEnabled || item.target !== "processing").map((item) => {
+    if (item.target === "needs-upgrade") return { ...item, badge: needsUpgradeCount };
+    if (item.target === "processing") return { ...item, badge: processingInboxCount };
+    return item;
+  });
 
   const standardMobileCapture = usesStandardMobileCapture(pathname);
   const captureActive = desktopTarget === "capture";
@@ -208,7 +225,7 @@ export function Sidebar({ needsUpgradeCount = 0 }: { needsUpgradeCount?: number 
                     collapsed ? "absolute ml-7 mt-[-18px]" : "ml-auto",
                   )}
                 >
-                  {badge}
+                  {badge && badge > 99 ? "99+" : badge}
                 </span>
               )}
             </Link>

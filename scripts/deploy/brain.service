@@ -7,11 +7,12 @@ Wants=network-online.target
 Type=simple
 User=brain
 Group=brain-data
-WorkingDirectory=/opt/brain
+WorkingDirectory=/opt/brain/current
 EnvironmentFile=/etc/brain/.env
+EnvironmentFile=-/etc/brain/release.env
 Environment=HOSTNAME=127.0.0.1
 Environment=PORT=3000
-ExecStart=/usr/bin/node /opt/brain/server.js
+ExecStart=/usr/bin/node /opt/brain/current/server.js
 Restart=always
 RestartSec=5
 StandardOutput=journal

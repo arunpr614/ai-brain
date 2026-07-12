@@ -11,6 +11,7 @@ import { countNeedsUpgradeItems } from "@/db/items";
 import { SESSION_COOKIE, verifySessionToken } from "@/lib/auth";
 import { resolvePrivateShellCounts } from "@/lib/shell/private-counts";
 import { resolveThemePreference, THEME_COOKIE } from "@/lib/theme";
+import { processingNavigationEnabled } from "@/lib/processing/flags";
 
 const inter = Inter({
   variable: "--font-ui",
@@ -59,6 +60,7 @@ export default async function RootLayout({
     verifySession: verifySessionToken,
     countNeedsUpgrade: countNeedsUpgradeItems,
   });
+  const processingNavigation = processingNavigationEnabled();
 
   return (
     <html
@@ -70,12 +72,12 @@ export default async function RootLayout({
     >
       <head />
       <body>
-        <CommandPaletteProvider>
+        <CommandPaletteProvider processingEnabled={processingNavigation}>
           <ThemeBootstrap />
           <SWBootstrap />
           <ShareHandler />
           <div className="flex min-h-full">
-            <Sidebar needsUpgradeCount={needsUpgradeCount} />
+            <Sidebar needsUpgradeCount={needsUpgradeCount} processingEnabled={processingNavigation} />
             {/*
               v0.5.0 T-15 / F-019 — bottom padding on mobile keeps the
               content clear of the fixed bottom-nav (see sidebar.tsx).
