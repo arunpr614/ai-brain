@@ -35,6 +35,7 @@ export const timezoneMutationSchema = z.object({
 }).strict();
 
 export const enrollmentPreviewSchema = z.object({
+  requestId: mutationIdSchema.optional(),
   mode: z.enum(["selected", "recent", "all"]),
   selectedItemIds: z.array(opaqueId).max(100).optional(),
 }).strict().superRefine((value, context) => {
@@ -43,6 +44,9 @@ export const enrollmentPreviewSchema = z.object({
   }
   if (value.mode !== "selected" && value.selectedItemIds !== undefined) {
     context.addIssue({ code: z.ZodIssueCode.custom, message: "selected items not allowed" });
+  }
+  if (value.mode !== "selected" && value.requestId !== undefined) {
+    context.addIssue({ code: z.ZodIssueCode.custom, message: "request id is only allowed for selected items" });
   }
 });
 

@@ -3,6 +3,7 @@
 import { ChevronRight, Inbox } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { PROCESSING_INBOX_UPDATED_EVENT } from "@/lib/processing/events";
 
 type State =
   | { kind: "loading" }
@@ -33,6 +34,8 @@ export function ProcessingEntrySummary({ variant }: { variant: "more" | "library
 
   useEffect(() => {
     queueMicrotask(load);
+    window.addEventListener(PROCESSING_INBOX_UPDATED_EVENT, load);
+    return () => window.removeEventListener(PROCESSING_INBOX_UPDATED_EVENT, load);
   }, []);
 
   const copy =

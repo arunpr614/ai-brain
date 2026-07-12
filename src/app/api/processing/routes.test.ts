@@ -23,6 +23,7 @@ import { GET as workflowGet, PATCH as workflowPatch } from "../items/[id]/workfl
 import { POST as undoPost } from "../items/[id]/workflow/undo/route";
 import { GET as mutationGet } from "./mutations/[mutationId]/route";
 import { POST as enrollmentStart } from "./enrollment/jobs/route";
+import { POST as enrollmentConfirm } from "./enrollment/jobs/[jobId]/confirm/route";
 
 let session = "";
 let itemId = "";
@@ -204,6 +205,42 @@ test("red or stale readiness fails closed with private unavailable truth", async
   assert.equal(stale.status, 503); assertPrivate(stale);
   assert.equal((await stale.json()).reason, "stale");
   assert.equal(runProcessingDeepAudit({ appSha: "test" }).ok, true);
+});
+
+test("selected enrollment route returns exact already-present and unavailable outcomes", async () => {
+  const missingId = `route-missing-${crypto.randomUUID()}`;
+  const requestId = crypto.randomUUID();
+  const beforeVersion = (getDb().prepare("SELECT workflow_version version FROM items WHERE id=?").get(itemId) as { version: number }).version;
+  const beforeEvents = (getDb().prepare("SELECT count(*) n FROM item_workflow_events WHERE item_id=?").get(itemId) as { n: number }).n;
+
+  const response = await enrollmentStart(request("/api/processing/enrollment/jobs", {
+    method: "POST", session, origin: "https://brain.test",
+    body: { requestId, mode: "selected", selectedItemIds: [itemId, missingId] },
+  }));
+  assert.equal(response.status, 201); assertPrivate(response);
+  const preview = (await response.json()).job;
+  assert.equal(preview.id, requestId);
+  assert.equal(preview.frozenCount, 0);
+
+  const confirmed = await enrollmentConfirm(request(`/api/processing/enrollment/jobs/${requestId}/confirm`, {
+    method: "POST", session, origin: "https://brain.test",
+    body: {
+      mutationId: crypto.randomUUID(),
+      expectedVersion: preview.version,
+      frozenHash: preview.frozenHash,
+    },
+  }), { params: Promise.resolve({ jobId: requestId }) });
+  assert.equal(confirmed.status, 200); assertPrivate(confirmed);
+  const { getEnrollmentJob, runEnrollmentBatch } = await import("@/db/processing-enrollment");
+  while (!runEnrollmentBatch(requestId)) {}
+  const complete = getEnrollmentJob(requestId)!;
+  assert.equal(complete.state, "completed");
+  assert.equal(complete.enrolledCount, 0);
+  assert.equal(complete.alreadyEnrolledCount, 1);
+  assert.equal(complete.deletedCount, 1);
+  assert.equal(complete.processedCount, 2);
+  assert.equal((getDb().prepare("SELECT workflow_version version FROM items WHERE id=?").get(itemId) as { version: number }).version, beforeVersion);
+  assert.equal((getDb().prepare("SELECT count(*) n FROM item_workflow_events WHERE item_id=?").get(itemId) as { n: number }).n, beforeEvents);
 });
 
 test("recent enrollment with every source already enrolled returns a typed empty preview", async () => {
