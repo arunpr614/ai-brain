@@ -6,6 +6,7 @@ MANIFEST="${2:-}"
 RELEASE_ROOT="${BRAIN_RELEASE_ROOT:-/opt/brain/releases}"
 CURRENT_LINK="${BRAIN_CURRENT_LINK:-/opt/brain/current}"
 VERIFY_TOOL="${BRAIN_RELEASE_VERIFY_TOOL:-/opt/brain/release-tools/current/verify-release-runtime.mjs}"
+HEALTH_TOOL="${BRAIN_RELEASE_HEALTH_TOOL:-/opt/brain/release-tools/current/wait-for-release-health.mjs}"
 ENV_FILE="${BRAIN_ENV_FILE:-/etc/brain/.env}"
 MAX_EXPANDED_BYTES="${BRAIN_RELEASE_MAX_EXPANDED_BYTES:-2147483648}"
 MAX_ARCHIVE_FILES="${BRAIN_RELEASE_MAX_FILES:-250000}"
@@ -138,9 +139,11 @@ write_release_env() {
   local temporary
   temporary="$(mktemp /etc/brain/.release.env.XXXXXXXX)"
   if [[ -f /etc/brain/release.env ]]; then
-    grep -Ev '^BRAIN_APP_SHA=' /etc/brain/release.env > "$temporary" || true
+    grep -Ev '^(BRAIN_APP_SHA|BRAIN_BUILDER_SHA|BRAIN_RELEASE_ID)=' /etc/brain/release.env > "$temporary" || true
   fi
   printf 'BRAIN_APP_SHA=%s\n' "$APP_SHA" >> "$temporary"
+  printf 'BRAIN_BUILDER_SHA=%s\n' "$BUILDER_SHA" >> "$temporary"
+  printf 'BRAIN_RELEASE_ID=%s\n' "$RELEASE_ID" >> "$temporary"
   chmod 0644 "$temporary"
   chown root:root "$temporary"
   mv -f -- "$temporary" /etc/brain/release.env
@@ -162,7 +165,7 @@ load_db_identity
 if [[ -n "${BRAIN_ACTIVATION_HEALTH_URL:-}" ]]; then
   node -e 'const u=new URL(process.argv[1]); if(u.protocol!=="https:"||u.username||u.password)process.exit(1)' \
     "$BRAIN_ACTIVATION_HEALTH_URL" || die "activation health URL must be HTTPS without credentials"
-  command -v curl >/dev/null || die "curl is required for activation health verification"
+  [[ -f "$HEALTH_TOOL" ]] || die "release health verifier is not installed: $HEALTH_TOOL"
   VERIFIED_DB_PATH="$BRAIN_DB_PATH"
   set -a
   # shellcheck disable=SC1090 -- root-owned production EnvironmentFile
@@ -174,8 +177,11 @@ if [[ -n "${BRAIN_ACTIVATION_HEALTH_URL:-}" ]]; then
   export BRAIN_DB_PATH
 fi
 
-APP_SHA="$(node -e 'const m=require(process.argv[1]); if(!/^[a-f0-9]{40}$/i.test(m.appSha||""))process.exit(1); process.stdout.write(m.appSha.toLowerCase())' "$MANIFEST")" \
-  || die "invalid manifest app SHA"
+IDENTITY="$(node -e 'const m=require(process.argv[1]); if(!/^[a-f0-9]{40}$/i.test(m.appSha||"")||!/^[a-f0-9]{40}$/i.test(m.builderSha||""))process.exit(1); process.stdout.write(`${m.appSha.toLowerCase()} ${m.builderSha.toLowerCase()}`)' "$MANIFEST")" \
+  || die "invalid manifest application/builder identity"
+read -r APP_SHA BUILDER_SHA <<< "$IDENTITY"
+RELEASE_ID="$APP_SHA"
+[[ "$APP_SHA" == "$BUILDER_SHA" ]] || RELEASE_ID="$APP_SHA-$BUILDER_SHA"
 ARTIFACT_NAME="brain-release-${APP_SHA:0:12}.tar.gz"
 MANIFEST_NAME="${ARTIFACT_NAME}.manifest.json"
 [[ "$(basename -- "$ARTIFACT")" == "$ARTIFACT_NAME" && "$(basename -- "$MANIFEST")" == "$MANIFEST_NAME" ]] \
@@ -235,9 +241,9 @@ read -r ARCHIVE_FILE_COUNT ARCHIVE_BYTES <<< "$ARCHIVE_SUMMARY"
 mkdir -p "$RELEASE_ROOT"
 chown root:brain-data "$RELEASE_ROOT"
 chmod 0750 "$RELEASE_ROOT"
-FINAL="$RELEASE_ROOT/$APP_SHA"
-[[ ! -e "$FINAL" ]] || die "immutable release already exists: $APP_SHA"
-STAGING="$(mktemp -d "$RELEASE_ROOT/.staging-${APP_SHA}.XXXXXXXX")"
+FINAL="$RELEASE_ROOT/$RELEASE_ID"
+[[ ! -e "$FINAL" ]] || die "immutable release already exists: $RELEASE_ID"
+STAGING="$(mktemp -d "$RELEASE_ROOT/.staging-${RELEASE_ID}.XXXXXXXX")"
 chown brain:brain-data "$STAGING"
 chmod 0700 "$STAGING"
 EXTRACT_ARTIFACT="$STAGING/.artifact.tar.gz"
@@ -311,21 +317,23 @@ install -m 0644 "$CURRENT_LINK/scripts/deploy/brain-processing-audit.timer" /etc
 systemctl daemon-reload
 if ! systemctl restart brain; then
   trap - ERR
-  restore_previous_state || true
   MUTATED=0
+  if restore_previous_state; then
+    cleanup
+    die "candidate failed to start; complete previous system state restored"
+  fi
   cleanup
-  die "candidate failed to start; complete previous system state restored"
+  die "candidate failed to start; AUTOMATIC RESTORATION INCOMPLETE"
 fi
 if [[ "${BRAIN_SKIP_PROCESSING_AUDIT_TIMER:-0}" != "1" ]]; then
   systemctl enable --now brain-processing-audit.timer
 fi
 if [[ -n "${BRAIN_ACTIVATION_HEALTH_URL:-}" ]]; then
-  status="$(curl --silent --show-error --output /dev/null --write-out '%{http_code}' \
-    --header "Authorization: Bearer $ACTIVATION_API_TOKEN" "$BRAIN_ACTIVATION_HEALTH_URL")"
-  [[ "$status" == "200" ]]
+  BRAIN_RELEASE_HEALTH_TOKEN="$ACTIVATION_API_TOKEN" node "$HEALTH_TOOL" "$BRAIN_ACTIVATION_HEALTH_URL" 45000
 fi
 MUTATED=0
 trap - ERR
 cleanup
-printf '{"ok":true,"appSha":"%s","previous":"%s","current":"%s","dbPathSha256":"%s","dbDeviceInode":"%s"}\n' \
-  "$APP_SHA" "$PREVIOUS" "$FINAL/runtime" "$BRAIN_DB_PATH_SHA256_ACTUAL" "$BRAIN_DB_DEVICE_INODE_ACTUAL"
+printf '{"ok":true,"appSha":"%s","builderSha":"%s","releaseId":"%s","previous":"%s","current":"%s","dbPathSha256":"%s","dbDeviceInode":"%s"}\n' \
+  "$APP_SHA" "$BUILDER_SHA" "$RELEASE_ID" "$PREVIOUS" "$FINAL/runtime" \
+  "$BRAIN_DB_PATH_SHA256_ACTUAL" "$BRAIN_DB_DEVICE_INODE_ACTUAL"

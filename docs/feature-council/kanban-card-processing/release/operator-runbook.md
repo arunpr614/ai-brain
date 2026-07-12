@@ -10,7 +10,7 @@
 - For the first immutable cutover, a known-good artifact directory produced by `workflow_dispatch` from the approved pre-feature main ancestor.
 - Authenticated GitHub CLI access capable of reading private artifact attestations.
 - SSH access through the configured `brain` host.
-- Exact candidate and known-good full SHAs recorded in the private release record.
+- Exact candidate/known-good application SHAs, builder SHAs, and installed release IDs recorded in the private release record. A same-build candidate uses `<app-sha>`; a known-good runtime overlaid with current release tooling uses `<app-sha>-<builder-sha>` so failed evidence is never overwritten or ambiguously reused.
 
 The deployment refuses PR artifacts, self-consistent but unattested archives, self-hosted provenance, the wrong repository/workflow/ref/source SHA, multiple archives in one directory, renamed files, non-Linux Node ABI 127 artifacts, or bootstrap tools whose bytes differ from the attested manifest.
 
@@ -57,11 +57,11 @@ The command performs, in order:
 3. free-space check;
 4. a SQLite online backup of the exact bound database, checksum, quick/FK check, and isolated restore proof;
 5. known-good installation/health proof for the first immutable cutover;
-6. private transfer through a random owner-only directory;
+6. private transfer through a random owner-only directory and staging of the exact builder tool set without advancing the global tool pointer;
 7. bounded regular-file-only archive validation and extraction as the unprivileged `brain` user;
 8. exact runtime file, migration, native dependency, Node ABI, and applied migration compatibility verification;
-9. immutable installation, full system-state snapshot, atomic current-link switch, unit reload, service restart, timer state, and authenticated health;
-10. migration 025 application, exact applied hash recording, deep readiness/config audit, timer verification, external health, and Telegram 401 boundary check.
+9. immutable installation, full system-state snapshot, atomic current-link switch, unit reload, service restart, timer state, and bounded authenticated health with permanent auth failures rejected immediately;
+10. migration 025 application, exact applied hash recording, durable-root writability and startup-backup proof, absence of runtime-local data, deep readiness/config audit, timer verification, external health, Telegram 401 boundary check, and only then atomic promotion of the verified builder tool set.
 
 Any failure after cutover automatically restores the previous symlink, release environment, service/audit unit files, timer enable/active state, and application service; rollback is authenticated-health verified before the deploy returns failure. Failed candidate directories remain immutable evidence and can be retried only through the verified switch path.
 
@@ -129,7 +129,7 @@ Use the least destructive option:
 
 1. Set navigation, writes, and reads to zero; restart and verify core Library/capture/Ask health.
 2. Run a forward repair and strict audit if data is intact.
-3. For code rollback, use the installed known-good full SHA through `/opt/brain/release-tools/current/switch-release.sh` with the explicit schema-025 compatibility guard. Keep flags zero.
+3. For code rollback, use the exact installed known-good release ID reported by activation through `/opt/brain/release-tools/current/switch-release.sh` with the explicit schema-025 compatibility guard. Keep flags zero. The switch tool verifies that the release ID exactly matches the manifest's application/builder identity.
 4. Snapshot restore is last resort only after stopping writers and accounting for every post-backup capture/workflow mutation that would be lost.
 
 Never delete an immutable release to make a retry work. Never revert migration 025 or remove its raw initialization guard while an older runtime can still write captures.
@@ -140,7 +140,7 @@ The release record must include:
 
 - merged PR and protected-main SHA;
 - CI run and attestation verification;
-- candidate/known-good artifact and builder SHAs;
+- candidate/known-good artifact SHAs, builder SHAs, and installed release IDs;
 - bound backup proof;
 - migration/readiness outputs;
 - staged flag timestamps and observation results;

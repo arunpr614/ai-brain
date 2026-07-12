@@ -15,9 +15,10 @@ import {
   renameSync,
   statSync,
 } from "node:fs";
-import { dirname, resolve } from "node:path";
+import { dirname } from "node:path";
+import { brainDataPath } from "@/lib/data-root";
 
-export const ERRORS_LOG_PATH = resolve(process.cwd(), "data/errors.jsonl");
+export const ERRORS_LOG_PATH = brainDataPath("errors.jsonl");
 export const ERRORS_LOG_MAX_BYTES = 5 * 1024 * 1024;
 
 /**

@@ -29891,3 +29891,60 @@ The preceding local-candidate entry recorded the artifact before restoring produ
 - **Current phase:** Small release-preflight correction awaiting protected PR/CI/merge and fresh attestations.
 - **Active branch:** `codex/fix-release-provenance-auth` from merged `main`.
 - **Next milestone:** Publish the correction, rebuild both artifacts from corrected main, and retry the immutable dark deployment.
+
+## 2026-07-12 15:06 IST — First-cutover defects failed safe; integrated release remediation under review
+
+### Production attempts and safe state
+
+- PR #26 passed protected CI and merged to `main` at `9f6c878f2e087c7cf56e746f5e5e20c944f1f227`. Fresh candidate and known-good artifacts from that builder passed checksum, 27/26-migration identity, and exact GitHub provenance verification.
+- The corrected deploy passed scoped GitHub auth, remote configuration/database preflight, and created a bound production backup at 7,520,256 bytes with quick/FK/restore proof.
+- Known-good activation failed its immediate external health probe and transactionally restored the prior service before migration or candidate cutover. Production recheck remained service active, health 200, 129 items, 26 migrations through 024, quick `ok`, FK zero.
+- Journal evidence showed the packaged server became ready, but Next standalone forcibly changed cwd into the immutable runtime. The startup backup and error sink therefore attempted runtime-local `data` paths and failed under the read-only boundary. The health probe also had no startup grace.
+- No Processing flag was enabled. No schema migration, enrollment, workflow mutation, or candidate cutover occurred. The failed known-good runtime remains immutable evidence; it was not removed or overwritten.
+
+### Integrated remediation
+
+- Added canonical durable-root resolution from the parent of absolute `BRAIN_DB_PATH` for backups, shared/enrichment error sinks, capture artifacts, and the Recall wake marker. Added tests proving an immutable runtime cwd still resolves `/opt/brain/data`.
+- Made startup backup filenames collision-safe with seconds, milliseconds, and a random 12-hex nonce; two same-millisecond backups now receive distinct names.
+- Added preflight containment for capture-artifact and Recall marker overrides, bound-root writability, post-startup backup proof, no runtime-local `data`, and journal-negative proof.
+- Added app+builder release IDs for overlaid known-good runtimes while same-build candidates retain the app SHA. Exact manifest/release-env/evidence identity is verified before a rollback target is trusted.
+- Split tool staging from activation: the exact candidate builder tool set is staged before prior-state proof, invoked directly for activation/switch/rollback, and the global tool pointer advances only after every candidate boundary passes.
+- Added an executable bounded health verifier: transient startup states retry for at most 45 seconds, 401/403/404 fail immediately, token values never enter argv/output, and delayed-success/permanent/exhaustion cases are tested.
+- Propagated incomplete state restoration explicitly and distinguish a pre-mutation failure where the prior release stayed healthy from a true rollback attempt.
+- Expanded release smoke from 21 to 46 checks, including composite identity/collision/retry/rollback modeling, source-order gates, delayed health, permanent failure, exhaustion, restoration wording, packaged durable service path, and exact tool-set invocation.
+
+### Verification
+
+- Full product suite before the final two ordering/backup fixes: 879/879 tests, 93 suites.
+- Latest targeted backup/durable-root tests, typecheck, lint, shell syntax, health-tool syntax, whitespace, readiness 17/17, and release smoke 46/46 pass.
+- Full production build and documentation privacy/structure checks passed after durable-root/release-instance integration; a final full suite/build will be rerun after independent release re-review closes.
+
+### State snapshot
+
+- **Current phase:** Third release-safety PR candidate under final independent review; production deployment paused.
+- **Production:** Prior runtime/schema healthy; private Processing configuration installed with all flags zero.
+- **Preserved evidence:** Bound backups, failed immutable known-good instance, CI runs, artifact attestations, journal interval, and content-free failure results.
+- **Next milestone:** Close review, commit/push/CI/merge, produce a fresh app+builder artifact pair, then rerun first cutover with the durable-path and staged-tool proofs.
+
+## 2026-07-12 15:11 IST — First-cutover remediation review and complete local gate passed
+
+### Review closure
+
+- Independent release-instance re-review returned **GO for integration and guarded production retry**, with no P0 or P1 findings.
+- Integrated its final P2 cleanup: Telegram failure notification now has explicit connection/total timeouts; a blank Recall marker override falls back to the durable data root; override containment canonicalizes symlinks and rejects escapes; the startup-backup filename comment matches the collision-safe implementation.
+- The remediation preserves the failed known-good runtime, bound backup, and prior healthy production state as immutable evidence. No production mutation was attempted during this checkpoint.
+
+### Complete validation
+
+- Typecheck and ESLint passed.
+- Full product suite passed: 880/880 tests across 93 suites, zero failed/skipped/todo.
+- Immutable release smoke passed all 46 checks.
+- Release shell syntax, executable health-tool syntax, and diff whitespace checks passed.
+- The immediately preceding post-integration production build, readiness 17/17, and documentation privacy/structure gates remain green; the final four changes were bounded TypeScript/shell/comment corrections and were covered by the fresh complete type/lint/test/release-smoke run.
+
+### State snapshot
+
+- **Current phase:** Corrective PR candidate ready to freeze and publish.
+- **Active branch:** `codex/fix-release-first-cutover` from merged main `9f6c878f2e087c7cf56e746f5e5e20c944f1f227`.
+- **Production:** Prior runtime/schema healthy; all Processing flags remain zero; no migration 025, enrollment, workflow mutation, or candidate cutover has occurred.
+- **Next milestone:** Commit, protected PR/CI/merge, fresh candidate and composite known-good attestations, then guarded first-cutover retry.

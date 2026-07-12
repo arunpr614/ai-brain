@@ -7,7 +7,7 @@ Wants=network-online.target
 Type=simple
 User=brain
 Group=brain-data
-WorkingDirectory=/opt/brain/current
+WorkingDirectory=/opt/brain
 EnvironmentFile=/etc/brain/.env
 EnvironmentFile=-/etc/brain/release.env
 Environment=HOSTNAME=127.0.0.1

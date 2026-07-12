@@ -21,10 +21,11 @@ import {
   renameSync,
   statSync,
 } from "node:fs";
-import { dirname, resolve } from "node:path";
+import { dirname } from "node:path";
 import { getDb } from "@/db/client";
 import { enrichItem } from "@/lib/enrich/pipeline";
 import { embedItemWithRetry } from "@/lib/embed/pipeline";
+import { ERRORS_LOG_MAX_BYTES, ERRORS_LOG_PATH } from "@/lib/errors/sink";
 import { getEnrichProvider } from "@/lib/llm/factory";
 
 const POLL_INTERVAL_MS = 2_000;
@@ -40,9 +41,6 @@ const LLM_PROVIDER_DOWN_BACKOFF_MS = 30_000;
 // enrichment failures so the user has a retrospective trail beyond the
 // console log. Rotates at 5 MB by renaming the current file to .1 and
 // dropping the previous .1 on the next rotation (two-file policy).
-const ERRORS_LOG_PATH = resolve(process.cwd(), "data/errors.jsonl");
-const ERRORS_LOG_MAX_BYTES = 5 * 1024 * 1024;
-
 // F-044 (self-critique A-2): module-level flags do not survive Next's HMR
 // re-evaluation — every fast-refresh would boot a second worker. A
 // globalThis attribute persists across module reloads within the same

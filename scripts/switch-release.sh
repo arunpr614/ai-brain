@@ -1,10 +1,11 @@
 #!/usr/bin/env bash
 set -Eeuo pipefail
 
-APP_SHA="${1:-}"
+RELEASE_ID="${1:-}"
 RELEASE_ROOT="${BRAIN_RELEASE_ROOT:-/opt/brain/releases}"
 CURRENT_LINK="${BRAIN_CURRENT_LINK:-/opt/brain/current}"
 VERIFY_TOOL="${BRAIN_RELEASE_VERIFY_TOOL:-/opt/brain/release-tools/current/verify-release-runtime.mjs}"
+HEALTH_TOOL="${BRAIN_RELEASE_HEALTH_TOOL:-/opt/brain/release-tools/current/wait-for-release-health.mjs}"
 ENV_FILE="${BRAIN_ENV_FILE:-/etc/brain/.env}"
 STATE_DIR=""
 MUTATED=0
@@ -116,16 +117,20 @@ write_release_env() {
   local temporary
   temporary="$(mktemp /etc/brain/.release.env.XXXXXXXX)"
   if [[ -f /etc/brain/release.env ]]; then
-    grep -Ev '^BRAIN_APP_SHA=' /etc/brain/release.env > "$temporary" || true
+    grep -Ev '^(BRAIN_APP_SHA|BRAIN_BUILDER_SHA|BRAIN_RELEASE_ID)=' /etc/brain/release.env > "$temporary" || true
   fi
   printf 'BRAIN_APP_SHA=%s\n' "$APP_SHA" >> "$temporary"
+  printf 'BRAIN_BUILDER_SHA=%s\n' "$BUILDER_SHA" >> "$temporary"
+  printf 'BRAIN_RELEASE_ID=%s\n' "$RELEASE_ID" >> "$temporary"
   chmod 0644 "$temporary"
   chown root:root "$temporary"
   mv -f -- "$temporary" /etc/brain/release.env
 }
 
-[[ "$APP_SHA" =~ ^[a-fA-F0-9]{40}$ ]] || die "usage: switch-release.sh <full-installed-app-sha>"
-APP_SHA="${APP_SHA,,}"
+[[ "$RELEASE_ID" =~ ^[a-fA-F0-9]{40}(-[a-fA-F0-9]{40})?$ ]] \
+  || die "usage: switch-release.sh <installed-release-id>"
+RELEASE_ID="${RELEASE_ID,,}"
+APP_SHA="${RELEASE_ID:0:40}"
 [[ "$(id -u)" == "0" ]] || die "must run as root"
 for command in node flock readlink stat sha256sum; do command -v "$command" >/dev/null || die "$command is required"; done
 [[ -f "$VERIFY_TOOL" ]] || die "release verifier not installed: $VERIFY_TOOL"
@@ -135,7 +140,7 @@ load_db_identity
 if [[ -n "${BRAIN_ACTIVATION_HEALTH_URL:-}" ]]; then
   node -e 'const u=new URL(process.argv[1]); if(u.protocol!=="https:"||u.username||u.password)process.exit(1)' \
     "$BRAIN_ACTIVATION_HEALTH_URL" || die "activation health URL must be HTTPS without credentials"
-  command -v curl >/dev/null || die "curl is required for switch health verification"
+  [[ -f "$HEALTH_TOOL" ]] || die "release health verifier is not installed: $HEALTH_TOOL"
   VERIFIED_DB_PATH="$BRAIN_DB_PATH"
   set -a
   # shellcheck disable=SC1090 -- root-owned production EnvironmentFile
@@ -147,13 +152,24 @@ if [[ -n "${BRAIN_ACTIVATION_HEALTH_URL:-}" ]]; then
   export BRAIN_DB_PATH
 fi
 
-FINAL="$RELEASE_ROOT/$APP_SHA"
+FINAL="$RELEASE_ROOT/$RELEASE_ID"
 RUNTIME="$FINAL/runtime"
 ARTIFACT_NAME="brain-release-${APP_SHA:0:12}.tar.gz"
 MANIFEST_NAME="${ARTIFACT_NAME}.manifest.json"
 MANIFEST="$FINAL/evidence/$MANIFEST_NAME"
 ARTIFACT="$FINAL/evidence/$ARTIFACT_NAME"
 [[ -d "$RUNTIME" && -f "$MANIFEST" && -f "$ARTIFACT" ]] || die "installed immutable release evidence is incomplete"
+BUILDER_SHA="$(node - "$MANIFEST" "$RELEASE_ID" <<'NODE'
+const manifest = require(process.argv[2]);
+const releaseId = process.argv[3];
+if (!/^[a-f0-9]{40}$/i.test(manifest.appSha || "") || !/^[a-f0-9]{40}$/i.test(manifest.builderSha || "")) process.exit(1);
+const appSha = manifest.appSha.toLowerCase();
+const builderSha = manifest.builderSha.toLowerCase();
+const expected = appSha === builderSha ? appSha : `${appSha}-${builderSha}`;
+if (releaseId !== expected) process.exit(1);
+process.stdout.write(builderSha);
+NODE
+)" || die "installed release ID does not match manifest application/builder identity"
 node "$VERIFY_TOOL" "$RUNTIME" "$MANIFEST" "$ARTIFACT"
 
 node - "$RUNTIME" "$MANIFEST" "$BRAIN_DB_PATH" "${BRAIN_ALLOW_SCHEMA_025_ROLLBACK:-0}" <<'NODE' \
@@ -213,13 +229,11 @@ else
   systemctl stop brain-processing-audit.timer >/dev/null 2>&1 || true
 fi
 if [[ -n "${BRAIN_ACTIVATION_HEALTH_URL:-}" ]]; then
-  status="$(curl --silent --show-error --output /dev/null --write-out '%{http_code}' \
-    --header "Authorization: Bearer $ACTIVATION_API_TOKEN" "$BRAIN_ACTIVATION_HEALTH_URL")"
-  [[ "$status" == "200" ]]
+  BRAIN_RELEASE_HEALTH_TOKEN="$ACTIVATION_API_TOKEN" node "$HEALTH_TOOL" "$BRAIN_ACTIVATION_HEALTH_URL" 45000
 fi
 MUTATED=0
 trap - ERR
 cleanup
-printf '{"ok":true,"appSha":"%s","previous":"%s","current":"%s","dbPathSha256":"%s","dbDeviceInode":"%s","timerEnabled":%s,"timerActive":%s}\n' \
-  "$APP_SHA" "$PREVIOUS" "$RUNTIME" "$BRAIN_DB_PATH_SHA256_ACTUAL" "$BRAIN_DB_DEVICE_INODE_ACTUAL" \
+printf '{"ok":true,"appSha":"%s","builderSha":"%s","releaseId":"%s","previous":"%s","current":"%s","dbPathSha256":"%s","dbDeviceInode":"%s","timerEnabled":%s,"timerActive":%s}\n' \
+  "$APP_SHA" "$BUILDER_SHA" "$RELEASE_ID" "$PREVIOUS" "$RUNTIME" "$BRAIN_DB_PATH_SHA256_ACTUAL" "$BRAIN_DB_DEVICE_INODE_ACTUAL" \
   "$TARGET_TIMER_ENABLED" "$TARGET_TIMER_ACTIVE"
