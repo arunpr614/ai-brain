@@ -29868,3 +29868,26 @@ The preceding local-candidate entry recorded the artifact before restoring produ
 - **Production:** Unchanged on pre-feature runtime/schema/flags.
 - **Release gate closed:** Isolated production-copy migration/lock/interruption/resume/backup/restore/old-code/explicit-025 compatibility.
 - **Next milestone:** Commit, push, PR, protected CI/review, and merge.
+
+## 2026-07-12 14:33 IST — Feature merged; dark deployment preflight found a scoped-auth defect
+
+### Release progress
+
+- PR #25 passed Product CI and agent-documentation validation, then squash-merged to protected `main` at `f4b653dbd9d2df557e908b8d5642ba0a1c78011b`.
+- Protected-main Product CI passed and published the candidate runtime; the authorized workflow dispatch passed and published the pre-feature known-good runtime for `5b92e68ec09ceb03f010db1c4fb14be5348a54bf`.
+- Candidate and known-good archives, manifests, and checksum files all passed local SHA-256 and GitHub provenance verification. Candidate identity is app/builder `f4b653d`; known-good identity is app `5b92e68`, builder `f4b653d`, with the exact historical 018 hash and 26 migrations.
+- Installed the private production configuration gate with root-only mode 0600: canonical origin, owner timezone, dedicated generated 64-hex HMAC, rate limit 60, and read/write/navigation flags all zero. No secret values were printed.
+- Rechecked production before deployment: service active, 129 items, 26 migrations through 024, quick check `ok`, FK zero.
+
+### Safe stop and correction
+
+- The immutable deploy stopped before artifact transfer, backup, migration, service restart, or cutover because its authentication preflight used unscoped `gh auth status`.
+- This machine has a valid `github.com` session plus an unrelated stale enterprise-host session; the unscoped command therefore failed even though provenance verification for `arunpr614/ai-brain` is authorized.
+- Corrected the release tool to check only the explicit provenance host `github.com` and added a regression assertion to release smoke coverage. Shell syntax, diff whitespace, lint, and all 21 release smoke checks pass.
+- Production remains on the prior application/schema with Processing flags dark. The new root-only configuration is inert until the corrected attested runtime is released.
+
+### State snapshot
+
+- **Current phase:** Small release-preflight correction awaiting protected PR/CI/merge and fresh attestations.
+- **Active branch:** `codex/fix-release-provenance-auth` from merged `main`.
+- **Next milestone:** Publish the correction, rebuild both artifacts from corrected main, and retry the immutable dark deployment.

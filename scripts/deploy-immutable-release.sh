@@ -6,6 +6,7 @@ KNOWN_GOOD_DIR="${2:-}"
 SSH_HOST="${BRAIN_SSH_HOST:-brain}"
 BASE_URL="${BRAIN_BASE_URL:-https://brain.arunp.in}"
 PROVENANCE_REPO="arunpr614/ai-brain"
+PROVENANCE_HOST="github.com"
 PROVENANCE_WORKFLOW="${PROVENANCE_REPO}/.github/workflows/product-ci.yml"
 SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd -P)"
 
@@ -16,7 +17,8 @@ for command in node ssh rsync curl gh; do command -v "$command" >/dev/null || di
 [[ "$(node -p 'process.versions.node.split(".")[0]')" == "22" ]] || die "Node 22 is required"
 node -e 'const raw=process.argv[1]; const u=new URL(raw); if(u.protocol!=="https:"||u.username||u.password||u.pathname!=="/"||u.search||u.hash||raw!==u.origin)process.exit(1)' "$BASE_URL" \
   || die "BRAIN_BASE_URL must be a canonical HTTPS origin without credentials, path, query, or fragment"
-gh auth status >/dev/null 2>&1 || die "GitHub CLI authentication is required for provenance verification"
+gh auth status --hostname "$PROVENANCE_HOST" >/dev/null 2>&1 \
+  || die "GitHub CLI authentication is required for provenance verification"
 
 artifact_paths() {
   local directory="$1" artifacts manifests artifact manifest count
