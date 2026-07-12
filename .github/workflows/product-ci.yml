@@ -1,0 +1,155 @@
+name: Product CI
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+    inputs:
+      known_good_ref:
+        description: "Optional prior main commit to package as the schema-025 rollback runtime"
+        required: false
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Locked install
+        run: npm ci
+      - name: Static verification
+        run: npm run typecheck && npm run lint && npm run check:env
+      - name: Product tests
+        run: npm test
+      - name: Documentation privacy and structure
+        run: npm run smoke:agent-docs && npm run check:agent-docs
+      - name: Build production operator tools
+        run: npm run build:vector-tools && npm run build:processing-tools
+      - name: Production build
+        run: npm run build && npm run check:build-artifacts
+      - name: Release-tool smoke tests
+        run: npm run smoke:processing-readiness && npm run smoke:release-artifact
+
+  package-main-release:
+    if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+    needs: verify
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+      id-token: write
+      attestations: write
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Locked install
+        run: npm ci
+      - name: Build immutable Linux runtime
+        run: npm run build:vector-tools && npm run build:processing-tools && npm run build && npm run check:build-artifacts
+      - name: Package immutable Linux release
+        env:
+          RELEASE_SHA: ${{ github.sha }}
+        run: |
+          created_at="$(git show -s --format=%cI HEAD)"
+          npm run release:artifact -- \
+            --output release-artifacts \
+            --sha "$RELEASE_SHA" \
+            --builder-sha "$RELEASE_SHA" \
+            --created-at "$created_at"
+      - name: Attest immutable release provenance
+        uses: actions/attest-build-provenance@43d14bc2b83dec42d39ecae14e916627a18bb661 # v3
+        with:
+          subject-path: release-artifacts/*
+      - name: Upload immutable release
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: ai-brain-release-${{ github.sha }}
+          path: release-artifacts/*
+          if-no-files-found: error
+          retention-days: 30
+          compression-level: 0
+
+  package-known-good:
+    if: ${{ github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main' && inputs.known_good_ref != '' }}
+    needs: verify
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    permissions:
+      contents: read
+      id-token: write
+      attestations: write
+    steps:
+      - name: Checkout release tools from main
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          path: tools
+      - name: Checkout known-good application
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          ref: ${{ inputs.known_good_ref }}
+          fetch-depth: 0
+          path: known-good
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: |
+            tools/package-lock.json
+            known-good/package-lock.json
+      - name: Resolve and authorize known-good commit
+        id: known-good
+        run: |
+          git -C known-good fetch --no-tags origin refs/heads/main:refs/remotes/origin/main
+          resolved_sha="$(git -C known-good rev-parse HEAD)"
+          git -C known-good merge-base --is-ancestor "$resolved_sha" origin/main
+          printf 'sha=%s\n' "$resolved_sha" >> "$GITHUB_OUTPUT"
+      - name: Restore historical production migration identity
+        run: |
+          expected=e6185834406c6da4596d4af514cf9c97737b125ba8554fe0012506e3e1b377cf
+          actual="$(sha256sum tools/src/db/migrations/018_topics.sql | cut -d' ' -f1)"
+          test "$actual" = "$expected"
+          install -m 0644 tools/src/db/migrations/018_topics.sql known-good/src/db/migrations/018_topics.sql
+      - name: Build known-good Linux runtime
+        working-directory: known-good
+        run: npm ci && npm run typecheck && npm run lint && npm test && npm run build:vector-tools && npm run build && npm run check:build-artifacts
+      - name: Build current release tools
+        working-directory: tools
+        run: npm ci && npm run build:processing-tools
+      - name: Package known-good rollback artifact
+        env:
+          BUILDER_SHA: ${{ github.sha }}
+          RESOLVED_SHA: ${{ steps.known-good.outputs.sha }}
+        run: |
+          created_at="$(git -C known-good show -s --format=%cI HEAD)"
+          node tools/scripts/build-release-artifact.mjs \
+            --root known-good \
+            --tools-root tools \
+            --output known-good-artifacts \
+            --sha "$RESOLVED_SHA" \
+            --builder-sha "$BUILDER_SHA" \
+            --created-at "$created_at"
+      - name: Attest known-good provenance
+        uses: actions/attest-build-provenance@43d14bc2b83dec42d39ecae14e916627a18bb661 # v3
+        with:
+          subject-path: known-good-artifacts/*
+      - name: Upload known-good rollback artifact
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: ai-brain-known-good-${{ steps.known-good.outputs.sha }}
+          path: known-good-artifacts/*
+          if-no-files-found: error
+          retention-days: 30
+          compression-level: 0

@@ -1,7 +1,7 @@
 "use client";
 
 import { Command } from "cmdk";
-import { BookOpen, FileText, Globe, Library, Search, Settings, StickyNote } from "lucide-react";
+import { BookOpen, FileText, Globe, Inbox, Library, Search, Settings, StickyNote } from "lucide-react";
 import { useRouter } from "next/navigation";
 import {
   createContext,
@@ -26,7 +26,7 @@ export function useCommandPalette(): CommandPaletteCtx {
   return v;
 }
 
-export function CommandPaletteProvider({ children }: { children: React.ReactNode }) {
+export function CommandPaletteProvider({ children, processingEnabled = false }: { children: React.ReactNode; processingEnabled?: boolean }) {
   const [isOpen, setOpen] = useState(false);
   const router = useRouter();
 
@@ -90,6 +90,11 @@ export function CommandPaletteProvider({ children }: { children: React.ReactNode
                 <PaletteItem icon={Library} onSelect={() => go("/library")}>
                   Go to Library
                 </PaletteItem>
+                {processingEnabled && (
+                  <PaletteItem icon={Inbox} onSelect={() => go("/processing")}>
+                    Go to Processing
+                  </PaletteItem>
+                )}
                 <PaletteItem icon={Settings} onSelect={() => go("/settings")}>
                   Go to Settings
                 </PaletteItem>

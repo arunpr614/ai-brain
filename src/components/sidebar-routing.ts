@@ -1,5 +1,6 @@
 export type DesktopShellTarget =
   | "library"
+  | "processing"
   | "needs-upgrade"
   | "ask"
   | "capture"
@@ -28,6 +29,7 @@ export function getDesktopShellTarget(pathname: string): DesktopShellTarget {
   const path = normalizePathname(pathname);
 
   if (path === "/" || path === "/library") return "library";
+  if (isPathOrChild(path, "/processing")) return "processing";
   if (path.startsWith("/items/") && path.endsWith("/ask")) return "ask";
   if (path.startsWith("/items/")) return "library";
   if (path.startsWith("/topics/")) return "library";
@@ -49,6 +51,7 @@ export function getMobileShellTarget(pathname: string): MobileShellTarget {
   if (isPathOrChild(path, "/ask")) return "ask";
   if (isPathOrChild(path, "/capture")) return "capture";
   if (path === "/more" || path.startsWith("/more/")) return "more";
+  if (isPathOrChild(path, "/processing")) return "more";
   if (isPathOrChild(path, "/settings")) return "more";
 
   return "library";

@@ -23,6 +23,9 @@ export async function register(): Promise<void> {
   }
 
   const { getDb } = await import("@/db/client");
+  const { resumeProcessingEnrollmentJobs } = await import(
+    "@/db/processing-enrollment"
+  );
   const { startBackupScheduler } = await import("@/lib/backup");
   const { startEnrichmentWorker } = await import("@/lib/queue/enrichment-worker");
   const { startTranscriptRecoveryWorker } = await import("@/lib/queue/transcript-worker");
@@ -35,6 +38,11 @@ export async function register(): Promise<void> {
 
   // Touching getDb() warms the connection + runs migrations.
   getDb();
+
+  // Processing enrollment previews/runs are persisted jobs. Resume any
+  // interrupted work after migrations have completed; the scheduler is
+  // idempotent and guarded against duplicate in-process runners.
+  resumeProcessingEnrollmentJobs();
 
   // v0.5.0 T-4: auto-generate BRAIN_API_TOKEN on first boot if absent.
   // Writes the value back to .env at the repo root so it survives restarts.

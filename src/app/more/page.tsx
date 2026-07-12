@@ -19,6 +19,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { countNeedsUpgradeItems } from "@/db/items";
 import { verifySessionCookie } from "@/lib/auth";
+import { ProcessingEntrySummary } from "@/components/processing/entry-summary";
 import { getProviderStatusReport, type ProviderStatus } from "@/lib/providers/status";
 import {
   OFFLINE_TRUST_COPY,
@@ -26,6 +27,7 @@ import {
   PROVIDER_TRUST_COPY,
 } from "@/lib/settings/trust-copy";
 import pkg from "../../../package.json";
+import { processingNavigationEnabled } from "@/lib/processing/flags";
 
 export default async function MorePage() {
   const c = await cookies();
@@ -35,6 +37,7 @@ export default async function MorePage() {
 
   const needsUpgradeCount = countNeedsUpgradeItems();
   const providerStatus = await getProviderStatusReport();
+  const processingNavigation = processingNavigationEnabled();
 
   return (
     <div className="mx-auto max-w-[720px] px-5 py-8 md:px-8 md:py-10">
@@ -77,6 +80,12 @@ export default async function MorePage() {
           </span>
           <ChevronRight className="h-5 w-5 shrink-0" strokeWidth={2} />
         </Link>
+      )}
+
+      {processingNavigation && (
+        <MoreSection title="Workflows">
+          <ProcessingEntrySummary variant="more" />
+        </MoreSection>
       )}
 
       <MoreSection title="Preferences">

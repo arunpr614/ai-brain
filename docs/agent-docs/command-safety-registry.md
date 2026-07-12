@@ -10,8 +10,10 @@ This registry classifies every package script at the documentation baseline. Com
 | `backfill:youtube-transcripts` | W2 local persistent write | Provider dependent | Local database and artifacts | No | Explicit local data approval | Transcript recovery can call configured providers and persist results |
 | `backfill:youtube-transcripts:prod` | W4 production write | Yes | Production database and artifacts | Yes | Exact private approval | Guarded production transcript recovery |
 | `bench:ask` | W2 local persistent write | Provider dependent | Benchmark output/local reads | No | Explicit local data approval | Uses library/provider data and writes results |
+| `bench:processing` | W1 local ephemeral write | No | Temporary benchmark databases and output | No | No | Generates isolated 10k/50k fixtures under a temporary directory and removes them after the run |
 | `build` | W2 local persistent write | Dependency dependent | Generated artifacts | No | No | Build output written locally |
 | `build:apk` | W2 local persistent write | Dependency dependent | Generated artifacts | No | No | Build output written locally |
+| `build:processing-tools` | W2 local persistent write | No | Generated deployment-tool artifacts | No | No | Bundles processing readiness and audit tools for immutable releases |
 | `build:recall-cli` | W2 local persistent write | Dependency dependent | Generated artifacts | No | No | Build output written locally |
 | `build:vector-tools` | W2 local persistent write | Dependency dependent | Generated artifacts | No | No | Bundles vector audit and repair tools for deployment |
 | `check:agent-doc-coverage` | R0 read-only local | No | No | No | No | Local source/config inspection |
@@ -45,7 +47,10 @@ This registry classifies every package script at the documentation baseline. Com
 | `check:recall-scheduler-enable-evidence` | R0 read-only local | No | No | No | No | Static or local-evidence checker; live variants remain prohibited by project gate |
 | `check:recall-second-manual-local-gate-resolution` | R0 read-only local | No | No | No | No | Static or local-evidence checker; live variants remain prohibited by project gate |
 | `dev` | W2 local persistent write | Local listener | Application/local database possible | No | Intentional app start | Running app can mutate local state through use |
+| `deploy:immutable` | W4 production write | Yes | Production release files, database migration, backups, service and timer state | Yes | Exact release approval | Guarded immutable deployment performs preflight, backup, activation, health checks, audit, and automatic rollback on failure |
 | `lint` | R0 read-only local | No | No | No | No | Local source/config inspection |
+| `processing:audit` | W2 local persistent write | No | Target SQLite readiness records and possible schema migration | Possible | Explicit target-database review | Deep processing invariant audit; scope follows `BRAIN_DB_PATH` and can initialize current migrations |
+| `processing:readiness` | R0 read-only local | No | No | Possible read target | Explicit target-database review | Opens the configured existing SQLite database read-only and never creates or migrates it |
 | `recall:controlled-samples:guide` | R0 read-only local | No | No | No | Private context required | Command/status renderer; do not publish rendered sensitive output |
 | `recall:controlled-samples:init` | W2 local persistent write | Possible | Private local files | No | Explicit private operation | Creates or changes private operational state |
 | `recall:current-gate` | R0 read-only local | No | No | No | Private context required | Reads local/private evidence metadata |
@@ -82,6 +87,7 @@ This registry classifies every package script at the documentation baseline. Com
 | `recall:second-manual:remote-runtime-preflight` | W4 production write | Yes | Possible production/private state | Yes | Exact private approval | Guarded Recall operational path; never public executable guidance |
 | `recall:second-manual:runtime-preflight` | W4 production write | Yes | Possible production/private state | Yes | Exact private approval | Guarded Recall operational path; never public executable guidance |
 | `repair:vectors` | W4 production write | No | SQLite vector and queue state | Possible | Exact audit ID plus verified-backup approval | Guarded repair refuses stale audits and records a content-free post-audit |
+| `release:artifact` | W2 local persistent write | No | Immutable release archive, manifest, and file inventory | No | No | Packages the built application and operator tooling without environment files or data |
 | `smoke` | W1 local ephemeral write | No | Temporary/fixture state | No | No | Test or rehearsal source inspected; keep isolated |
 | `smoke:0.3.1` | W1 local ephemeral write | No | Temporary/fixture state | No | No | Test or rehearsal source inspected; keep isolated |
 | `smoke:0.4.0` | W1 local ephemeral write | No | Temporary/fixture state | No | No | Test or rehearsal source inspected; keep isolated |
@@ -91,6 +97,8 @@ This registry classifies every package script at the documentation baseline. Com
 | `smoke:agent-docs` | W1 local ephemeral write | No | Temporary files | No | No | Synthetic temporary fixtures |
 | `smoke:agent-wiki-privacy` | W1 local ephemeral write | No | Temporary files | No | No | Synthetic temporary fixtures |
 | `smoke:agent-wiki-structure` | W1 local ephemeral write | No | Temporary files | No | No | Synthetic temporary fixtures |
+| `smoke:processing-readiness` | W1 local ephemeral write | No | Temporary SQLite fixtures and generated tool artifacts | No | No | Exercises readiness and audit behavior against isolated databases |
+| `smoke:release-artifact` | W1 local ephemeral write | No | Temporary release archives, manifests, and extraction trees | No | No | Verifies deterministic packaging, exclusions, integrity checks, and tamper rejection in isolation |
 | `smoke:batch` | W2 local persistent write | Provider dependent | Local database | No | Explicit local data approval | Batch pipeline smoke may mutate local state |
 | `smoke:capture-quality` | W2 local persistent write | Yes | Evaluation output | No | Explicit evaluation approval | Capture evaluation may call providers and write reports |
 | `smoke:recall-apply-report` | W1 local ephemeral write | No | Temporary/fixture state | No | No | Test or rehearsal source inspected; keep isolated |
@@ -150,3 +158,4 @@ This registry classifies every package script at the documentation baseline. Com
 | `test:coverage` | W1 local ephemeral write | No | Temporary/fixture state | No | No | Test or rehearsal source inspected; keep isolated |
 | `test:recall-manual-sync-process` | W1 local ephemeral write | No | Temporary fixture databases, files, processes, and bundles | No | No | Isolated multi-process SQLite, real flock, crash, worker/lifecycle, and fake-systemd path/fallback evidence; no real Recall access |
 | `typecheck` | R0 read-only local | No | No | No | No | Local source/config inspection |
+| `verify:release-runtime` | R0 read-only local | No | No | No | No | Verifies an installed release manifest, file inventory, runtime ABI, native dependencies, and migration compatibility |

@@ -25,6 +25,7 @@ import { CollectionEditor } from "@/components/collection-editor";
 import { ItemEnrichmentWatch } from "@/components/item-enrichment-watch";
 import { ItemCompanionTabs } from "@/components/item-companion-tabs";
 import { ManualNoteEditor } from "@/components/manual-note-editor";
+import { ItemWorkflowSection } from "@/components/processing/workflow-controls";
 import { RelatedItems } from "@/components/related-items";
 import { ScrollToHash } from "@/components/scroll-to-hash";
 import { TagEditor } from "@/components/tag-editor";
@@ -68,6 +69,11 @@ import { verifySessionCookie } from "@/lib/auth";
 import { manualNotesUiEnabled, noteFocusModeEnabled } from "@/lib/notes/flags";
 import { canUpgradeWithPastedText } from "@/lib/capture/upgrade-policy";
 import { findRelatedItems } from "@/lib/related";
+import {
+  processingNavigationEnabled,
+  processingReadEnabled,
+  processingWriteEnabled,
+} from "@/lib/processing/flags";
 import { UpgradeTextForm } from "./upgrade-text-form";
 
 function parseQuotes(raw: string | null): string[] {
@@ -128,6 +134,22 @@ function parseItemDetailTab(value: string | undefined, notesEnabled: boolean): I
   return "original";
 }
 
+function validatedProcessingReturn(value: string | undefined): string | null {
+  if (!value || !value.startsWith("/") || value.startsWith("//")) return null;
+  try {
+    const url = new URL(value, "https://ai-memory.local");
+    if (url.origin !== "https://ai-memory.local" || url.pathname !== "/processing") return null;
+    const allowed = new Set(["view", "group", "sort", "userTag", "aiTopic", "noUserTags", "noAiTopics"]);
+    const normalized = new URLSearchParams();
+    for (const [key, entry] of url.searchParams) {
+      if (allowed.has(key) && entry.length <= 128) normalized.append(key, entry);
+    }
+    return normalized.size ? `/processing?${normalized}` : "/processing";
+  } catch {
+    return null;
+  }
+}
+
 function stateFromLegacyCaptureKind(
   item: ItemRow,
   kind: CaptureResultKind | null,
@@ -149,11 +171,14 @@ export default async function ItemDetailPage({
     note_mode?: string;
     repair?: string;
     tab?: string;
+    return?: string;
+    anchor?: string;
   }>;
 }) {
   const { id } = await params;
-  const { highlight, mode, capture, capture_state, note_mode, repair, tab } =
-    await searchParams;
+  const detailParams = await searchParams;
+  const { highlight, mode, capture, capture_state, note_mode, repair, tab, anchor } = detailParams;
+  const processingReturn = validatedProcessingReturn(detailParams.return);
   const notesEnabled = manualNotesUiEnabled();
   const focusEnabled = notesEnabled && noteFocusModeEnabled();
   const validNoteFocusRequest =
@@ -242,6 +267,9 @@ export default async function ItemDetailPage({
     : null;
   const repairQueued = repair === "queued";
   const activeTab = parseItemDetailTab(tab, notesEnabled);
+  const processingRead = processingReadEnabled();
+  const processingWrite = processingWriteEnabled();
+  const processingNavigation = processingNavigationEnabled();
 
   // T-12: when arriving via an Ask citation chip, resolve the chunk body so
   // we can render a highlight panel with an anchor the scroll-to-hash hook
@@ -277,11 +305,11 @@ export default async function ItemDetailPage({
     <div className="mx-auto max-w-[1180px] px-5 pb-28 pt-8 md:px-8 md:pb-10 md:pt-10">
       <ScrollToHash />
       <Link
-        href="/library"
+        href={processingReturn ?? "/library"}
         className="mb-6 inline-flex min-h-11 items-center gap-1.5 text-sm text-[var(--text-secondary)] transition-colors hover:text-[var(--text-primary)] md:min-h-0"
       >
         <ArrowLeft className="h-3.5 w-3.5" strokeWidth={2} />
-        Back to Library
+        {processingReturn ? "Back to Processing" : "Back to Library"}
       </Link>
 
       {repairQueued && <RepairResultBanner item={item} />}
@@ -294,6 +322,7 @@ export default async function ItemDetailPage({
           quality={quality}
           limitedQuality={limitedQuality}
           upgradeReason={upgradeReason}
+          processingNavigation={processingNavigation}
         />
       )}
 
@@ -342,15 +371,14 @@ export default async function ItemDetailPage({
           transcriptAttempts={transcriptAttempts}
           canUpgradeWithText={canUpgradeWithText}
           notesEnabled={notesEnabled}
-          preserveQuery={{ capture_state, repair, highlight }}
+          focusEnabled={focusEnabled}
+          processingRead={processingRead}
+          processingWrite={processingWrite}
+          preserveQuery={{ capture_state, repair, highlight, processingReturn, anchor }}
         />
       </div>
 
-      <div
-        className={`gap-10 md:grid lg:grid-cols-[minmax(0,68ch)_360px] ${
-          notesEnabled && activeTab === "notes" ? "grid" : "hidden"
-        }`}
-      >
+      <div className="hidden gap-10 md:grid lg:grid-cols-[minmax(0,68ch)_360px]">
         {/* LEFT: original content */}
         <article className="article hidden md:block">
           <header className="mb-6 border-b border-[var(--border)] pb-5">
@@ -530,6 +558,13 @@ export default async function ItemDetailPage({
             {canUpgradeWithText && <UpgradeTextForm itemId={item.id} />}
           </div>
 
+          {processingRead && (<div className="rounded-lg border border-[var(--border)] bg-[var(--surface)] p-5">
+            <p className="mb-2 text-[11px] font-medium uppercase tracking-wider text-[var(--text-muted)]">
+              Processing
+            </p>
+            <ItemWorkflowSection itemId={item.id} itemTitle={item.title} writeEnabled={processingWrite} />
+          </div>)}
+
           {/* F-301: Collections editor — always visible so the user can
               attach/detach without waiting for enrichment to finish. */}
           <div className="rounded-lg border border-[var(--border)] bg-[var(--surface)] p-5">
@@ -675,6 +710,8 @@ function itemTabHref({
     capture_state?: string;
     repair?: string;
     highlight?: string;
+    processingReturn?: string | null;
+    anchor?: string;
   };
 }) {
   const params = new URLSearchParams();
@@ -684,6 +721,8 @@ function itemTabHref({
   }
   if (preserveQuery.repair) params.set("repair", preserveQuery.repair);
   if (preserveQuery.highlight) params.set("highlight", preserveQuery.highlight);
+  if (preserveQuery.processingReturn) params.set("return", preserveQuery.processingReturn);
+  if (preserveQuery.anchor) params.set("anchor", preserveQuery.anchor);
   const qs = params.toString();
   return qs ? `/items/${itemId}?${qs}` : `/items/${itemId}`;
 }
@@ -711,6 +750,9 @@ function MobileItemDetailTabs({
   transcriptAttempts,
   canUpgradeWithText,
   notesEnabled,
+  focusEnabled,
+  processingRead,
+  processingWrite,
   preserveQuery,
 }: {
   item: ItemRow;
@@ -735,10 +777,15 @@ function MobileItemDetailTabs({
   transcriptAttempts: TranscriptAttemptRow[];
   canUpgradeWithText: boolean;
   notesEnabled: boolean;
+  focusEnabled: boolean;
+  processingRead: boolean;
+  processingWrite: boolean;
   preserveQuery: {
     capture_state?: string;
     repair?: string;
     highlight?: string;
+    processingReturn?: string | null;
+    anchor?: string;
   };
 }) {
   const tabs = notesEnabled
@@ -782,6 +829,8 @@ function MobileItemDetailTabs({
           upgradeReason={upgradeReason}
           processingStatus={processingStatus}
           transcriptPreview={transcriptPreview}
+          processingRead={processingRead}
+          processingWrite={processingWrite}
         />
       )}
       {activeTab === "digest" && (
@@ -809,7 +858,24 @@ function MobileItemDetailTabs({
           transcriptJob={transcriptJob}
           transcriptAttempts={transcriptAttempts}
           canUpgradeWithText={canUpgradeWithText}
+          processingRead={processingRead}
+          processingWrite={processingWrite}
         />
+      )}
+      {activeTab === "notes" && notesEnabled && (
+        <div className="space-y-4">
+          {processingRead && <section className="rounded-lg border border-[var(--border)] bg-[var(--surface)] p-4">
+            <p className="mb-2 text-[11px] font-medium uppercase tracking-wider text-[var(--text-muted)]">
+              Processing
+            </p>
+            <ItemWorkflowSection itemId={item.id} itemTitle={item.title} writeEnabled={processingWrite} />
+          </section>}
+          <ManualNoteEditor
+            itemId={item.id}
+            itemTitle={item.title}
+            focusEnabled={focusEnabled}
+          />
+        </div>
       )}
     </section>
   );
@@ -824,6 +890,8 @@ function MobileOriginalTab({
   upgradeReason,
   processingStatus,
   transcriptPreview,
+  processingRead,
+  processingWrite,
 }: {
   item: ItemRow;
   captured: string;
@@ -833,6 +901,8 @@ function MobileOriginalTab({
   upgradeReason: string | null;
   processingStatus: ItemProcessingStatus;
   transcriptPreview: TranscriptPreview | null;
+  processingRead: boolean;
+  processingWrite: boolean;
 }) {
   return (
     <article className="article">
@@ -880,6 +950,15 @@ function MobileOriginalTab({
       </header>
 
       {transcriptPreview && <TranscriptPanel preview={transcriptPreview} />}
+
+      {processingRead && (
+        <section className="mb-5 rounded-lg border border-[var(--border)] bg-[var(--surface)] p-4 font-sans">
+          <p className="mb-2 text-[11px] font-medium uppercase tracking-wider text-[var(--text-muted)]">
+            Processing
+          </p>
+          <ItemWorkflowSection itemId={item.id} itemTitle={item.title} writeEnabled={processingWrite} />
+        </section>
+      )}
 
       <div className="whitespace-pre-wrap">{item.body}</div>
 
@@ -1047,6 +1126,8 @@ function MobileDetailsTab({
   transcriptJob,
   transcriptAttempts,
   canUpgradeWithText,
+  processingRead,
+  processingWrite,
 }: {
   item: ItemRow;
   platform: string;
@@ -1060,6 +1141,8 @@ function MobileDetailsTab({
   transcriptJob: TranscriptJobRow | null;
   transcriptAttempts: TranscriptAttemptRow[];
   canUpgradeWithText: boolean;
+  processingRead: boolean;
+  processingWrite: boolean;
 }) {
   return (
     <section className="flex flex-col gap-5 font-sans text-sm">
@@ -1120,6 +1203,13 @@ function MobileDetailsTab({
         )}
         {canUpgradeWithText && <UpgradeTextForm itemId={item.id} />}
       </div>
+
+      {processingRead && (<div className="rounded-lg border border-[var(--border)] bg-[var(--surface)] p-5">
+        <p className="mb-2 text-[11px] font-medium uppercase tracking-wider text-[var(--text-muted)]">
+          Processing
+        </p>
+        <ItemWorkflowSection itemId={item.id} itemTitle={item.title} writeEnabled={processingWrite} />
+      </div>)}
 
       <IncludedTopicsPanel topics={topics} />
 
@@ -1353,6 +1443,7 @@ function CaptureResultBanner({
   quality,
   limitedQuality,
   upgradeReason,
+  processingNavigation,
 }: {
   item: ItemRow;
   result: CaptureResultPayload;
@@ -1360,12 +1451,14 @@ function CaptureResultBanner({
   quality: string;
   limitedQuality: boolean;
   upgradeReason: string | null;
+  processingNavigation: boolean;
 }) {
   const isWarning =
     limitedQuality ||
     result.state === "error_with_saved_item" ||
     result.state === "duplicate_existing";
   const label = captureResultTitle(item, result, limitedQuality);
+  const createdNew = result.state.startsWith("created_");
   const Icon = isWarning ? AlertTriangle : CheckCircle2;
   return (
     <section
@@ -1395,6 +1488,14 @@ function CaptureResultBanner({
                 ? upgradeReason
                 : result.message}
             </p>
+            {createdNew && processingNavigation && (
+              <p className="mt-2 text-sm text-[var(--text-secondary)]">
+                Saved to Library and Processing Inbox.{" "}
+                <Link href="/processing" className="font-medium text-[var(--accent-11)] hover:underline">
+                  Open Inbox
+                </Link>
+              </p>
+            )}
             <div className="mt-3 flex flex-wrap gap-1.5 text-xs text-[var(--text-secondary)]">
               <span className="rounded-full border border-[var(--border)] px-2 py-0.5">
                 {platform}

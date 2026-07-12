@@ -8,6 +8,7 @@ import type { CapturePlatform, CaptureQuality } from "@/lib/capture/types";
 import { deleteArtifactsForItem } from "@/lib/capture/artifacts";
 import { deleteChunksAndVectors } from "./chunks";
 import { deleteMessagesCitingManualNote } from "./chat";
+import { fingerprint, newUuid, scopeHash } from "@/lib/processing/crypto";
 
 export type SourceType = ItemRow["source_type"];
 export type CaptureSource = ItemRow["capture_source"];
@@ -55,36 +56,95 @@ export function insertCaptured(input: InsertCapturedInput): ItemRow {
   const db = getDb();
   const id = newId();
   const now = input.captured_at ?? Date.now();
+  const workflowNow = Date.now();
+  const eventUuid = newUuid();
+  const mutationId = newUuid();
+  const episodeId = newUuid();
   const totalChars = input.total_chars ?? input.body.length;
-  db.prepare(
-    `INSERT INTO items (
+  const captureSource = input.capture_source ?? "web";
+  const tx = db.transaction(() => {
+    db.prepare(
+      `INSERT INTO items (
         id, source_type, capture_source, source_url, title, author, body,
         captured_at, total_pages, total_chars, extraction_warning,
         duration_seconds, source_platform, capture_quality, extraction_method,
-        extraction_version, published_at, thumbnail_url, description
+        extraction_version, published_at, thumbnail_url, description,
+        workflow_status, workflow_version, workflow_legacy_baseline,
+        workflow_enrolled_at, workflow_initialized_at, workflow_inbox_entered_at,
+        workflow_inbox_episode_id, workflow_status_changed_at, workflow_last_event_uuid
      )
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-  ).run(
-    id,
-    input.source_type,
-    input.capture_source ?? "web",
-    input.source_url ?? null,
-    input.title,
-    input.author ?? null,
-    input.body,
-    now,
-    input.total_pages ?? null,
-    totalChars,
-    input.extraction_warning ?? null,
-    input.duration_seconds ?? null,
-    input.source_platform ?? null,
-    input.capture_quality ?? null,
-    input.extraction_method ?? null,
-    input.extraction_version ?? null,
-    input.published_at ?? null,
-    input.thumbnail_url ?? null,
-    input.description ?? null,
-  );
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,
+             'inbox', 1, 0, ?, ?, ?, ?, ?, ?)`,
+    ).run(
+      id,
+      input.source_type,
+      captureSource,
+      input.source_url ?? null,
+      input.title,
+      input.author ?? null,
+      input.body,
+      now,
+      input.total_pages ?? null,
+      totalChars,
+      input.extraction_warning ?? null,
+      input.duration_seconds ?? null,
+      input.source_platform ?? null,
+      input.capture_quality ?? null,
+      input.extraction_method ?? null,
+      input.extraction_version ?? null,
+      input.published_at ?? null,
+      input.thumbnail_url ?? null,
+      input.description ?? null,
+      workflowNow,
+      workflowNow,
+      workflowNow,
+      episodeId,
+      workflowNow,
+      eventUuid,
+    );
+
+    db.prepare(
+      `INSERT INTO processing_mutation_receipts(
+        mutation_id,scope_type,item_id,scope_key_hash,action_type,request_fingerprint,
+        outcome_class,result_code,accepted_event_uuid,accepted_item_version,
+        observed_item_version,confirmed_at,created_at)
+       VALUES(?,?,?,?,? ,?,'accepted_effective','initialized',?,1,0,?,?)`,
+    ).run(
+      mutationId,
+      "initialization",
+      id,
+      scopeHash(`item:${id}`),
+      "initialize",
+      fingerprint({ id, captureSource, sourceType: input.source_type }),
+      eventUuid,
+      workflowNow,
+      workflowNow,
+    );
+
+    const surface = captureSource === "telegram" ? "telegram"
+      : captureSource === "recall" ? "recall"
+        : captureSource === "web" ? "web_capture" : "api_capture";
+    const actorChannel = captureSource === "unknown" ? "unknown_raw" : captureSource;
+    db.prepare(
+      `INSERT INTO item_workflow_events(
+        event_uuid,item_id,item_version,mutation_id,event_type,from_status,to_status,
+        to_inbox_entered_at,to_inbox_episode_id,to_status_changed_at,
+        origin,surface,actor_channel,occurred_at)
+       VALUES(?,?,?,?, 'initialized',NULL,'inbox',?,?,?,'capture',?,?,?)`,
+    ).run(
+      eventUuid,
+      id,
+      1,
+      mutationId,
+      workflowNow,
+      episodeId,
+      workflowNow,
+      surface,
+      actorChannel,
+      workflowNow,
+    );
+  });
+  tx();
   return getItem(id)!;
 }
 

@@ -12,6 +12,8 @@ describe("getDesktopShellTarget", () => {
   const cases: Array<[string, DesktopShellTarget]> = [
     ["/", "library"],
     ["/library", "library"],
+    ["/processing", "processing"],
+    ["/processing?view=board", "processing"],
     ["/items/fixture-1", "library"],
     ["/items/fixture-1?mode=focus", "library"],
     ["/items/fixture-1/ask", "ask"],
@@ -44,6 +46,8 @@ describe("getMobileShellTarget", () => {
   const cases: Array<[string, MobileShellTarget]> = [
     ["/", "library"],
     ["/library", "library"],
+    ["/processing", "more"],
+    ["/processing?view=archived", "more"],
     ["/items/fixture-1", "library"],
     ["/items/fixture-1?mode=focus", "library"],
     ["/items/fixture-1/ask", "ask"],
@@ -79,6 +83,7 @@ describe("usesStandardMobileCapture", () => {
     ["/capture?tab=note", true],
     ["/capture/share-result", true],
     ["/library", false],
+    ["/processing", false],
     ["/items/fixture-1", false],
     ["/more", false],
     ["/settings", false],

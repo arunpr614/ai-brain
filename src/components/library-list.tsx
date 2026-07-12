@@ -3,6 +3,7 @@
 import {
   FileText,
   Globe,
+  Inbox,
   MessageCircle,
   StickyNote,
   Video,
@@ -106,9 +107,11 @@ function QualityBadge({ quality }: { quality: string | null | undefined }) {
 export function LibraryList({
   items,
   collections,
+  processingEnabled = false,
 }: {
   items: ItemRow[];
   collections: CollectionRow[];
+  processingEnabled?: boolean;
 }) {
   const router = useRouter();
   const [selectedIds, setSelectedIds] = useState<Set<string>>(() => new Set());
@@ -184,6 +187,13 @@ export function LibraryList({
     params.set("scope", "selected");
     params.set("ids", ids.join(","));
     router.push(`/ask?${params.toString()}`);
+  }, [selectedIds, router]);
+
+  const handleProcessingSelected = useCallback(() => {
+    const ids = Array.from(selectedIds).slice(0, 100);
+    if (ids.length === 0) return;
+    window.sessionStorage.setItem("processing-enrollment-selected", JSON.stringify(ids));
+    router.push("/processing?enroll=selected");
   }, [selectedIds, router]);
 
   // Auto-dismiss flash after 3s.
@@ -361,6 +371,7 @@ export function LibraryList({
           onTag={handleBulkTag}
           onAddToCollection={handleBulkCollection}
           onAskSelected={handleAskSelected}
+          onProcessingSelected={processingEnabled ? handleProcessingSelected : undefined}
           onClear={clear}
         />
       )}
@@ -442,6 +453,7 @@ function BulkBar({
   onTag,
   onAddToCollection,
   onAskSelected,
+  onProcessingSelected,
   onClear,
 }: {
   count: number;
@@ -450,6 +462,7 @@ function BulkBar({
   onTag: (tagName: string) => void;
   onAddToCollection: (collectionId: string) => void;
   onAskSelected: () => void;
+  onProcessingSelected?: () => void;
   onClear: () => void;
 }) {
   const [tagValue, setTagValue] = useState("");
@@ -476,6 +489,11 @@ function BulkBar({
           <MessageCircle className="h-4 w-4" strokeWidth={2} />
           {askState.label}
         </button>
+        {onProcessingSelected && (
+          <button type="button" onClick={onProcessingSelected} disabled={disabled} title="Add selected sources to Processing" aria-label="Add selected sources to Processing" className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-md border border-[var(--border)] text-[var(--text-primary)] disabled:opacity-50">
+            <Inbox className="h-4 w-4" />
+          </button>
+        )}
         <button
           type="button"
           aria-label="Clear selection"
@@ -485,6 +503,7 @@ function BulkBar({
         >
           <X className="h-4 w-4" strokeWidth={2} />
         </button>
+
       </div>
 
       <div
@@ -506,6 +525,12 @@ function BulkBar({
           <MessageCircle className="h-3 w-3" strokeWidth={2} />
           {askState.label}
         </button>
+
+        {onProcessingSelected && (
+          <button type="button" onClick={onProcessingSelected} disabled={disabled} className="inline-flex h-7 items-center gap-1 rounded-sm border border-[var(--border)] px-2 text-xs font-medium text-[var(--text-primary)] hover:bg-[var(--surface)] disabled:opacity-50">
+            <Inbox className="h-3 w-3" /> Processing
+          </button>
+        )}
 
         <form
           onSubmit={(e) => {
