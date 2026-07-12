@@ -2,7 +2,7 @@
 
 Purpose: Summarize internal HTTP contracts, external clients, authentication, and operational constraints.
 Audience: AI agents and engineers changing interfaces or integrations.
-Verified against: deployed application `ea7b159515fc37f76ffdb83dedf2d33d17f9a193` plus retained route-specific evidence.
+Verified against: deployed application `8c1341100b174fe4ca518e6a745c30b9078df21c` plus retained route-specific evidence.
 Runtime evidence through: 2026-07-12; route-level runtime evidence varies.
 Last reviewed: 2026-07-12.
 Owner: AI Brain maintainer.

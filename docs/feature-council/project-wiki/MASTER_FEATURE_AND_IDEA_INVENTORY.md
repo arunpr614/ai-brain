@@ -66,7 +66,7 @@ All rows were last verified at current main on 2026-07-11. Runtime evidence is f
 |---|---|---:|---|---|---|
 | Reading Studio Lite | Planned | High | Source-reading Focus, trust strip, transcript panel, My notes | No PDF viewer, anchors/highlights, editable citations, or citation workflow | FCP-002 v2 |
 | Contextual Ask Evidence Scan | Planned | High | Scoped Ask, selected-source scope, citations | No claim-support verdicts, retrieval snapshot, source-kind/high-quality policies | FCP-003 v2 and Ask code |
-| Relationship Graph/Connection Map | Planned | High | Related items and semantic events | No edge model, graph route/UI, accessible alternate view, or rebuild UI | FCP-004 v2 |
+| Relationship Graph/Connection Map | Deferred | High | Query-time Related similarity and partial semantic events | No demonstrated recurring job, edge model/lifecycle, comparative advantage, graph route/UI, accessible parity, measurement owner, or exit proof | 2026-07-13 Graphify council decision; historical FCP-004 v2 |
 | AI Services/Privacy Trust Center | Planned | High | Provider status, consent, privacy copy, backup/export visibility | No complete data-flow/readiness/eligibility dashboard or diagnostic bundle | FCP-005 v2 and Settings code |
 | GenPage, GenLink, clusters, smart filters | Planned | Medium | Related/retrieval substrate | No current product route/flow | roadmap lanes |
 | Spaced repetition/FSRS review | Planned | High | Quality Review inbox only | No scheduling/queue/streak/retention behavior | roadmap; no current service code |

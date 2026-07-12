@@ -2,14 +2,14 @@
 
 Purpose: Document the shipped owner-only workflow for triaging captured cards through Inbox, To Do, In Progress, Done, and archive.
 Audience: AI Brain users, agents, engineers, designers, and operators.
-Verified against: deployed application `ea7b159515fc37f76ffdb83dedf2d33d17f9a193`.
+Verified against: deployed application `8c1341100b174fe4ca518e6a745c30b9078df21c`.
 Runtime evidence through: 2026-07-12 staged production rollout and live workflow verification.
 Last reviewed: 2026-07-12.
 Owner: AI Brain maintainer.
 
 **Status:** Implemented · **Confidence:** High · **Availability:** Enabled in the verified private production release
 
-AI Brain provides a dedicated `/processing` workspace for reducing the backlog of captured cards without changing Library membership or replacing the canonical item-detail experience. Newly created items enter Inbox automatically. Historical items remain dormant until the owner explicitly enrolls selected items, the most recent 30 days (capped at 25), or all items.
+AI Brain provides a dedicated `/processing` workspace for reducing the backlog of captured cards without changing Library membership or replacing the canonical item-detail experience. Newly created items enter Inbox automatically. Historical items remain dormant until the owner explicitly enrolls selected items directly from Library, the most recent 30 days (capped at 25), or all items.
 
 ## User problem and journey
 
@@ -35,11 +35,11 @@ Processing has four views:
 
 The owner can filter by User tags and AI Topics, group or sort within supported modes, and see exact total/matching counts for Inbox, To Do, In Progress, and Done. Today and week-to-date metrics distinguish cards added, processing episodes, and first-lifetime completion without streaks, overdue pressure, or celebration mechanics.
 
-Desktop navigation exposes Processing beside Library. Mobile exposes it through More, with additional entry points from the Library summary, command palette, and successful capture feedback. Item detail and My notes remain the existing canonical surfaces; moving a card never saves, discards, or remounts an unsaved note draft.
+Desktop navigation exposes Processing beside Library. Mobile exposes it through More, with additional entry points from the Library summary, command palette, and successful capture feedback. In Library, selecting up to 100 sources exposes **Add to Inbox**: eligible sources are added directly, while already-enrolled or unavailable sources are reported without duplication or state reset. Item detail and My notes remain the existing canonical surfaces; moving a card never saves, discards, or remounts an unsaved note draft.
 
 ## Workflow behavior and recovery
 
-Moves use compare-and-swap versioning. A stale tab receives current truth instead of overwriting a newer change. Repeating the same mutation ID returns its durable outcome. The most recent eligible action in a browser tab has a server-backed 30-second Undo window; permanent Move, Restore, Reprocess, and archive controls remain available when Undo expires.
+Moves use compare-and-swap versioning. A stale tab receives current truth instead of overwriting a newer change. Repeating the same mutation or selected-enrollment request ID returns its durable outcome. A direct Library add classifies every requested source as added, already present, missing, or deleted, including a concurrent enrollment, so the result always accounts for the exact submitted set. The most recent eligible action in a browser tab has a server-backed 30-second Undo window; permanent Move, Restore, Reprocess, and archive controls remain available when Undo expires.
 
 Only Done cards can be archived. Restore returns an archived card to Done. Reprocess atomically returns it to Inbox. Archive changes Processing visibility only: Library, search, Ask, detail, export, enrichment, and attached notes continue to use the same retained item.
 
@@ -63,6 +63,6 @@ Protecting tests cover ingestion initialization, dormant/enrolled history, order
 
 ## Boundaries
 
-The release does not add drag-and-drop, batch workflow actions, manual rank, due dates, assignees, sprints, WIP limits, collaboration, an offline mutation queue, a global archive, or a replacement AI taxonomy.
+The release does not add drag-and-drop, bulk workflow-state mutations, manual rank, due dates, assignees, sprints, WIP limits, collaboration, an offline mutation queue, a global archive, or a replacement AI taxonomy.
 
 Related: [Library and Items](Library-and-Item-Management), [Capture and Ingestion](Capture-and-Ingestion), [Organization](Organization-Tags-Topics-and-Collections), [APIs and Integrations](APIs-and-Integrations), [Deployment and Operations](Deployment-and-Operations), and [Backups and Restore](Backups-and-Restore).

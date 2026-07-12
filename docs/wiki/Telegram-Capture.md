@@ -2,7 +2,7 @@
 
 Purpose: Document the private-owner Telegram ingestion path.
 Audience: AI agents and integration maintainers.
-Verified against: `ea7b159515fc37f76ffdb83dedf2d33d17f9a193`.
+Verified against: `8c1341100b174fe4ca518e6a745c30b9078df21c`.
 Runtime evidence through: 2026-07-10 webhook boundary checks; content flows remain capability-specific.
 Last reviewed: 2026-07-11.
 Owner: AI Brain maintainer.

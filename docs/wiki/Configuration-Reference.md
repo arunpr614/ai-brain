@@ -2,7 +2,7 @@
 
 Purpose: Describe configuration domains and feature flags without publishing private values.
 Audience: AI agents, contributors, and operators.
-Verified against: deployed application `ea7b159515fc37f76ffdb83dedf2d33d17f9a193`.
+Verified against: deployed application `8c1341100b174fe4ca518e6a745c30b9078df21c`.
 Runtime evidence through: 2026-07-12 for documented Processing flags; private values are not published.
 Last reviewed: 2026-07-12.
 Owner: AI Brain maintainer.

@@ -15,7 +15,7 @@ An idea can overlap an implemented substrate without being implemented as propos
 |---|---|---|---|
 | Reading Studio Lite | Planned | Item reading Focus, trust strip, transcript preview, My notes | PDF canvas, anchors, highlights, citation metadata and export workflow |
 | Contextual Ask Evidence Scan | Planned | Scoped Ask, selected-source retrieval, citations | Claim verdicts, retrieval snapshot, quality/source policies |
-| [Relationship Graph/Connection Map](Graphify-Opportunity-Decision) | **Deferred; historical FCP-004 posture superseded** | Related is query-time similarity; `item_semantic_events` is partial and has no graph consumer | Demonstrated recurring job, comparative advantage, complete lifecycle/deletion, privacy, scale, accessible parity, measurement, ownership, and exit proof |
+| Relationship Graph/Connection Map | **[Deferred; historical FCP-004 posture superseded](Graphify-Opportunity-Decision)** | Related is query-time similarity; `item_semantic_events` is partial and has no graph consumer | Demonstrated recurring job, comparative advantage, complete lifecycle/deletion, privacy, scale, accessible parity, measurement, ownership, and exit proof |
 | AI Services/Privacy Trust Center | Planned | Provider status, note consent/default, privacy/offline copy | Complete data-flow, eligibility, readiness history, and diagnostics dashboard |
 | GenPage, GenLink, clusters, smart filters | Planned | Related and retrieval substrate | Current product route, generation contract, or smart-filter flow |
 | Spaced repetition/FSRS review | Planned | Attention Review exists | Scheduling, FSRS state, learning queue, reminders, retention metrics |

@@ -2,7 +2,7 @@
 
 Purpose: Describe public-safe runtime, build/deploy, scheduling, health, monitoring and rollback concepts.
 Audience: AI agents, contributors, and operators.
-Verified against: current code baseline `8c1341100b174fe4ca518e6a745c30b9078df21c` plus deployed application evidence `ea7b159515fc37f76ffdb83dedf2d33d17f9a193`.
+Verified against: deployed application `8c1341100b174fe4ca518e6a745c30b9078df21c`.
 Runtime evidence through: 2026-07-12 staged Card Processing release.
 Last reviewed: 2026-07-13.
 Owner: AI Brain maintainer.

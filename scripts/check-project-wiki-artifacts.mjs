@@ -41,7 +41,7 @@ const features = readCsv(join(root, "MASTER_FEATURE_AND_IDEA_EVIDENCE_DETAILS.cs
 ]);
 
 expectCount(local, 17_989, "local_inventory_count");
-expectCount(pageAudit, 86, "page_audit_count");
+expectCount(pageAudit, 88, "page_audit_count");
 
 const ledgerFeatureCount = tableRowCount(featureLedger, "| Feature | Product status |");
 const masterIdeaCount = tableRowCount(masterInventoryPath, "| Idea or capability | Status |");
@@ -108,7 +108,7 @@ for (const [index, row] of pageAudit.rows.entries()) {
   if (row.current_sha256 !== current) findings.push({ rule: "stale_page_audit_hash", row: index + 2, destination });
 }
 const existingCoreAudits = pageAudit.rows.filter((row) => row.existing_page !== "<new>" && !row.existing_page.startsWith("Feature-Council-"));
-if (existingCoreAudits.length !== 41) findings.push({ rule: "existing_core_page_audit_count", expected: 41, actual: existingCoreAudits.length });
+if (existingCoreAudits.length !== 42) findings.push({ rule: "existing_core_page_audit_count", expected: 42, actual: existingCoreAudits.length });
 for (const row of existingCoreAudits) {
   if (!/\d+ words, \d+ headings, \d+ Markdown links inspected/.test(row.quality_before)) findings.push({ rule: "core_page_audit_missing_content_metrics", page: row.existing_page });
 }

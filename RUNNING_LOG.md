@@ -30439,3 +30439,40 @@ Nothing deployed, pushed, published, merged, or released.
 - **Frozen packet:** `05048a7a000ede70034bd06e0de05c70d0216b076c1d86dc545b3027f4355512`.
 - **Deployed/runtime state:** Production and Wiki remote untouched.
 - **Next milestone:** Five valid Round 1 submissions; Round 2 unlock.
+
+---
+
+## 2026-07-12 23:20 IST — Direct Library “Add to Inbox” released and documented
+
+**Entry author:** AI agent (Codex) · **Triggered by:** Completion of the selected Library source → Processing Inbox production follow-up.
+
+### Protected merge and immutable deployment
+
+- PR #31 passed protected Product CI and merged as application `8c1341100b174fe4ca518e6a745c30b9078df21c`; protected-main run `29200243743` produced the attested `ai-brain-release-8c1341100b174fe4ca518e6a745c30b9078df21c` artifact.
+- The immutable production deployment activated that exact release after a restore-checked 7,643,136-byte SQLite backup at `/opt/brain/data/backups/pre-processing-2026-07-12_16-39-26.sqlite`, SHA-256 `0ac318e10c2d3c60ff3ee35a9593beb0fed3296bdc1cd92f6e98fb3da7cf11dd`.
+- The release retained migration 025, the canonical durable data root, no runtime-local durable data, quick check `ok`, zero foreign-key rows, and the enabled/active six-hour audit timer.
+
+### Staged production verification
+
+- Re-established dark flags, then completed Stage A reads-only with 30/30 health checkpoints across a full 15-minute observation and a green deep audit.
+- Stage B enabled writes with navigation dark. One bounded dormant production source was added through the exact selected-enrollment API: Inbox increased by exactly one, workflow version and event count were each one, and the result accounted for the full selected set.
+- Repeating the same source returned already present without a second event or state reset. A wrong-origin request returned 403 without mutation.
+- Both Stage B write windows passed 60/60 health checkpoints and two green deep audits.
+- Stage C enabled read/write/navigation flags 1/1/1. Authenticated Library and Processing summary returned 200 with private/no-store, Cookie-varying, nosniff responses; unauthenticated and bearer-only Processing requests returned 401. The final state had Inbox 2 and 129 retained items.
+- The Stage C navigation window passed 30/30 health checkpoints and a final green deep audit. Exact release identity, database quick check, foreign keys, application service, and audit timer remained green.
+- Local browser verification on the final UI had already proved direct selection, immediate Inbox-summary refresh, repeat safety, Processing visibility, desktop comparison, 390×844 responsive behavior, accessible naming, and no application console errors. The production follow-up then proved the final backend behavior on the live domain without reusing the finalized browser session.
+
+### Repository and Wiki closeout
+
+- Documentation PR #32 passed both protected checks and merged as `8028fcbe23e58dc9889895278126447472b972e2`.
+- The repository user guide, implementation and QA reports, Library/Card Processing Wiki pages, release changelog, current baselines, and page-audit hashes now describe the direct selected-source path, exact outcome accounting, recovery, and idempotency boundaries.
+- All documentation gates passed: 44 Feature Council sources, 86/86 reachable Wiki pages, privacy clean, 238 inventory rows, 46 feature rows, 155/155 package scripts classified, and 17,989 project-inventory rows with no findings.
+- Fresh-cloned the GitHub Wiki at base `10a3e2b66bffbf362ffc87596d29fa5adb65b9f1`, synchronized the exact merged canonical corpus, concurrency-checked the remote again, and pushed normally as `5a9e100134141770ed87d959b7cd67aa4460f3ca`.
+- A second fresh clone matched all 86 canonical pages byte-for-byte and passed privacy/structure/reachability. Live rendered Home, Card Processing Workflow, Library and Item Management, and Documentation Changelog pages returned HTTP 200.
+
+### Final state snapshot
+
+- **Production:** `8c1341100b174fe4ca518e6a745c30b9078df21c` active with Processing flags 1/1/1, Inbox 2, 129 retained items, quick check `ok`, foreign keys zero, and green app-SHA-bound audit/timer evidence.
+- **Repository documentation:** merged through PR #32 at `8028fcbe23e58dc9889895278126447472b972e2`.
+- **GitHub Wiki:** published and verified at `5a9e100134141770ed87d959b7cd67aa4460f3ca`, 86/86 pages.
+- **Release objective:** direct Library selected-item enrollment, live production behavior, protected delivery, current repository documentation, canonical Wiki publication, and append-only project logging are complete.

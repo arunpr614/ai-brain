@@ -2,7 +2,7 @@
 
 Purpose: Explain the private Markdown note attached to each saved library item.
 Audience: AI agents, engineers, product collaborators, and operators maintaining item notes.
-Verified against: current main `ea7b159515fc37f76ffdb83dedf2d33d17f9a193`, original release `8654f293d0f8615617df883e4703c0ca098a6029`, global-default integration `01721d1c2bbb686b9768d38c688352f78933205f`, and Note Focus production main `6858529ef179a51442d319c6c58e5ace79757619`.
+Verified against: current main `8c1341100b174fe4ca518e6a745c30b9078df21c`, original release `8654f293d0f8615617df883e4703c0ca098a6029`, global-default integration `01721d1c2bbb686b9768d38c688352f78933205f`, and Note Focus production main `6858529ef179a51442d319c6c58e5ace79757619`.
 Runtime evidence through: 2026-07-10 Note Focus guarded deployment, deep-link hotfix, deliberate enablement, authenticated read-only Notes/Focus/default-setting smoke, strict provider check, and scheduler/service health verification.
 Last reviewed: 2026-07-11.
 Owner: AI Brain maintainer.

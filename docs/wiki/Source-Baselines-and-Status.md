@@ -2,7 +2,7 @@
 
 Purpose: Define authoritative revisions, verification scope, status, availability, and confidence vocabulary.
 Audience: AI agents, reviewers, and documentation/release maintainers.
-Verified against: deployed application `ea7b159515fc37f76ffdb83dedf2d33d17f9a193` plus retained historical baselines below.
+Verified against: deployed application `8c1341100b174fe4ca518e6a745c30b9078df21c` plus retained historical baselines below.
 Runtime evidence through: 2026-07-12 for the Card Processing release; older rows retain their dated scope.
 Last reviewed: 2026-07-12.
 Owner: AI Brain maintainer.

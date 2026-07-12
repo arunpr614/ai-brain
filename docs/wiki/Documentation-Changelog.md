@@ -2,7 +2,7 @@
 
 Purpose: Record material wiki revisions, baselines, and publication state without replacing Git history.
 Audience: Maintainers and future AI agents.
-Verified against: current code baseline `8c1341100b174fe4ca518e6a745c30b9078df21c`, deployed application evidence `ea7b159515fc37f76ffdb83dedf2d33d17f9a193`, and retained historical baselines.
+Verified against: deployed application `8c1341100b174fe4ca518e6a745c30b9078df21c` plus retained historical baselines.
 Runtime evidence through: 2026-07-12 for Card Processing; older entries retain their dated scope.
 Last reviewed: 2026-07-13.
 Owner: AI Brain maintainer.
@@ -24,11 +24,13 @@ Owner: AI Brain maintainer.
 | Change | Implementation baseline | Runtime baseline | State |
 |---|---|---|---|
 | Dedicated Inbox/Board/List/Archived processing workflow, migration 025, authenticated APIs, exact metrics/counts, staged flags/readiness, immutable rollback, operations, and user guidance | `ea7b159515fc37f76ffdb83dedf2d33d17f9a193` | Staged private production rollout on 2026-07-12 | Implemented and enabled |
+| Direct selected-source **Add to Inbox** from Library with exact accounting, retry recovery, idempotent replay, scoped summary refresh, and responsive pending feedback | `8c1341100b174fe4ca518e6a745c30b9078df21c` | Staged private production follow-up on 2026-07-12 | Implemented and enabled |
 
 - Replaced the explored-only catalog status with the shipped [Card Processing Workflow](Card-Processing-Workflow) page.
 - Updated Library integration, API, data, configuration, security, deployment/rollback, source-baseline, Home, and navigation documentation.
 - Authenticated desktop/mobile Light/Dark tasks, keyboard/focus/live-region behavior, staged private headers, and exact synthetic cleanup back to 129 retained items passed on the deployed application.
 - The original exploration remains historical design evidence; it no longer describes current product availability.
+- The Library and Card Processing guides now document the direct selected-source path and distinguish it from the existing Recent/All preview flow.
 
 ## 2026-07-11 — Recall manual-sync review candidate
 
