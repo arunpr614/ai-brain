@@ -2,8 +2,8 @@
 
 **Updated:** 2026-07-12
 **Goal:** implement, release, and live-verify Kanban Card Processing in production, then update repository documentation and GitHub Wiki
-**Branch/worktree:** closeout branch `codex/finalize-kanban-processing-release` in the dedicated Kanban worktree
-**Current product status:** application `ea7b159515fc37f76ffdb83dedf2d33d17f9a193` is deployed with migration 025 and read/write/navigation enabled after guarded observation windows; live API/domain and authenticated browser/design verification passed; the synthetic fixture and every dependent row/vector were removed; closeout merge and Wiki publication remain
+**Branch/worktree:** publication-record branch `codex/record-kanban-wiki-publication` in the dedicated Kanban worktree
+**Current product status:** complete — application `ea7b159515fc37f76ffdb83dedf2d33d17f9a193` is deployed and live-verified; the synthetic fixture and every dependent row/vector were removed; PR #29 merged the closeout sources; Wiki commit `10a3e2b66bffbf362ffc87596d29fa5adb65b9f1` is published and fresh-clone/live-URL verified
 
 ## Status legend
 
@@ -32,7 +32,7 @@ Read-only checks on 2026-07-12 found the service active on Node 22.22.3, authent
 | M9 — Adversarial review and v2 consistency | Complete | Adversarial reviewer + coordinator | Product v1 challenged and PRD v2 dispositions verified; UX/technical v1 challenged; all v2 artifacts cross-consistent; requirements traceability updated; no unresolved P0/P1. | Three v1 reviews, v2 consistency review, and remediated implementation security/adversarial review. |
 | M10 — Controlled rollout and observability | Complete | Release/observability lead | Backup/readiness verified; flag rollout; operational logs/timer; rollback exercised; trust boundaries checked. | Bound backup, production-copy rollback, immutable candidate/known-good attestations, dark deploy, Stage A/B/C windows, timer, journals, deep audit, integrity and FK evidence passed. |
 | M11 — Production release and live verification | Complete | Release lead + coordinator | Deployed through normal safeguards; live owner flow verified for capture→Inbox→Move→Done→Archive/Restore/Undo; errors/counts inspected; synthetic removed. | Deployed flow passed API/domain and authenticated desktop/mobile browser paths. Cleanup returned production to 129 retained items with zero synthetic dependents, a one-vector delta, quick check `ok`, foreign keys zero, and a successful app-SHA-bound installed audit. |
-| M12 — Documentation/wiki closeout | In progress | Coordinator + documentation owner | Repository docs/wiki/status catalog/migrations/API/operations/rollback current and publication verified. | Canonical closeout edits are on `codex/finalize-kanban-processing-release`; merge and GitHub Wiki publication/verification remain. |
+| M12 — Documentation/wiki closeout | Complete | Coordinator + documentation owner | Repository docs/wiki/status catalog/migrations/API/operations/rollback current and publication verified. | PR #29 merged as `2760837`; the concurrency-checked 86-page Wiki published as `10a3e2b`, fresh-cloned byte-for-byte, passed privacy/structure/reachability, and returned expected rendered live pages. |
 
 ## Product workstream tracker
 
@@ -159,8 +159,7 @@ Read-only checks on 2026-07-12 found the service active on Node 22.22.3, authent
 
 ## Immediate next actions
 
-1. Commit/push the closeout branch, pass protected CI, merge, and record the canonical documentation SHA.
-2. Publish canonical `docs/wiki/` through the concurrency gate and verify a fresh clone plus live GitHub rendering/content.
+None for the release goal. Continue normal dogfood monitoring and separately schedule physical assistive-technology coverage when the relevant devices are available.
 
 ## Completion rule
 
