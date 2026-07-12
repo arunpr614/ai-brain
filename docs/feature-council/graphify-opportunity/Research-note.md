@@ -5,6 +5,8 @@
 
 This stable entry point will link the finalized AI Brain audit, Graphify research, capability comparison, council recommendation, and any gated downstream feature package.
 
+Final council result: **Defer feature selection.** See [recommendation v2](decisions/2026-07-13_council-recommendation_v2.md). No downstream feature package was authorized.
+
 ## Current research streams
 
 - AI Brain implemented-feature audit v2: complete; independent QA/evidence recheck passed for bounded council use

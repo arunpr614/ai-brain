@@ -2,23 +2,23 @@
 
 Purpose: Explain AI Brain's organization model and its terminology boundaries.
 Audience: AI agents and contributors changing taxonomy or navigation.
-Verified against: `ea7b159515fc37f76ffdb83dedf2d33d17f9a193`.
+Verified against: current code baseline `8c1341100b174fe4ca518e6a745c30b9078df21c`.
 Runtime evidence through: 2026-07-10; organization behavior was not independently re-tested for this revision.
-Last reviewed: 2026-07-11.
+Last reviewed: 2026-07-13.
 Owner: AI Brain maintainer.
 
 **Status:** Implemented · **Confidence:** High · **Availability:** Default
 
 - Category is a single enrichment-generated classifier on an item.
 - Tags are many-to-many labels and can be manual or generated.
-- Topics are generated concepts with dedicated topic pages and evidence-bearing joins.
+- Topics are generated navigable labels stored separately from tags; joins have nullable evidence/confidence fields.
 - Collections are explicit manual groups/folders.
 
-Users manage tags and collections from Settings, open topic/collection pages, and apply taxonomy through item or bulk actions. Enrichment can add generated category/tags/topics.
+Users manage tags and collections from Settings, open topic/collection pages, and apply taxonomy through item or bulk actions. Current enrichment uses the same generated label list for auto-tags and topics, writes topic confidence as null, and records generic category-level evidence. Topics are therefore not independently extracted semantic entities or topic-to-topic/item-to-item graph relationships.
 
 The feature does not include hierarchical taxonomies, smart rule collections, multi-vault organization, backlinks, or a graph. Historical documents sometimes use category/topic/tag interchangeably; current database concepts are distinct.
 
-Primary files: `src/db/tags.ts`, `topics.ts`, `collections.ts`, taxonomy actions, topic/collection pages and tests.
+Primary files: `src/db/tags.ts`, `src/db/topics.ts`, `src/db/collections.ts`, `src/lib/enrich/pipeline.ts`, taxonomy actions, topic/collection pages and tests.
 
 ## User problem, entry points, and journey
 

@@ -3,6 +3,8 @@
 Created: 2026-06-28 21:23 IST  
 Branch: `codex/ai-brain-feature-council-20260628`
 
+> **FCP-004 status update (2026-07-13): Deferred; not active for implementation.** See the [Graphify opportunity decision](Graphify-Opportunity-Decision).
+
 ## Status Board
 
 | Work item | Status | Owner | Artifact |
@@ -19,6 +21,7 @@ Branch: `codex/ai-brain-feature-council-20260628`
 | FCP-005 planning package | Complete | Product/UX/tech | `prd/`, `ux/`, `technical/`, `reviews/` |
 | Master index | Complete | Coordinator | `MASTER_FEATURE_COUNCIL_INDEX.md` |
 | Final handoff | Complete | Coordinator | `FINAL_HANDOFF_SUMMARY.md` |
+| Graphify opportunity audit, research, and council | Complete | Multi-agent council | [Research](Graphify-Opportunity-Research) · [Decision](Graphify-Opportunity-Decision) |
 
 ## Approved Feature Tracker
 
@@ -27,7 +30,7 @@ Branch: `codex/ai-brain-feature-council-20260628`
 | FCP-001 | Capture Quality And Repair Center | Planning v2 complete | P0 | Proceed | Requires channel-by-channel UX QA before implementation | Create implementation issue/phase only after user approval |
 | FCP-002 | Source Workspace And Reading Studio Lite | Planning v2 complete | P1 | Proceed reduced scope | PDF viewer/anchor data proof needed | Spike PDF viewing/anchor storage |
 | FCP-003 | Contextual Ask And Evidence Scan | Planning v2 complete | P1 | Proceed reduced scope | Evidence classifications and retrieval snapshots need test fixtures | Prototype source-set Ask contract |
-| FCP-004 | Relationship Graph And Connection Map | Planning v2 complete | P2 | Proceed reduced scope | Needs graph schema/event proof and scale budget | Build graph proof packet before code |
+| FCP-004 | Relationship Graph And Connection Map | Historical planning v2; superseded current posture | Not active | **Deferred by 2026-07-13 council** | Demonstrated job, comparative advantage, lifecycle, privacy, scale, accessibility, measurement, ownership, and exit all non-passing | No code/prototype; reopen only through a new council after evidence gates pass |
 | FCP-005 | AI Services And Privacy Trust Center | Planning v2 complete | P0 | Proceed | Must avoid false local-only claims | Define provider/privacy copy and diagnostics DTO |
 
 ## Parked / Rejected Tracker

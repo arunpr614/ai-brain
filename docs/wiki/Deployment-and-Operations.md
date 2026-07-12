@@ -2,12 +2,12 @@
 
 Purpose: Describe public-safe runtime, build/deploy, scheduling, health, monitoring and rollback concepts.
 Audience: AI agents, contributors, and operators.
-Verified against: deployed application `ea7b159515fc37f76ffdb83dedf2d33d17f9a193`.
+Verified against: current code baseline `8c1341100b174fe4ca518e6a745c30b9078df21c` plus deployed application evidence `ea7b159515fc37f76ffdb83dedf2d33d17f9a193`.
 Runtime evidence through: 2026-07-12 staged Card Processing release.
-Last reviewed: 2026-07-12.
+Last reviewed: 2026-07-13.
 Owner: AI Brain maintainer.
 
-The hosted Next.js standalone service runs unprivileged on loopback behind a managed edge. Instrumentation applies migrations and starts database backup, enrichment, transcript and conditional note-index workers plus batch cron. A separate persistent timer runs Recall import. The review candidate adds default-off manual Recall path/timer/service units under a distinct trusted identity. Off-site database backup is separately scheduled.
+The hosted Next.js standalone service runs unprivileged on loopback behind a managed edge. Instrumentation applies migrations and starts database backup, enrichment, transcript and conditional note-index workers plus batch cron. A separate persistent timer runs Recall import. Current code includes default-off manual Recall path/timer/service units under a distinct trusted identity; current host installation/enablement is not established by merge. Off-site database backup is separately scheduled.
 
 ## Release model
 
@@ -27,7 +27,7 @@ Use service state/restarts, authenticated health, provider status, queue/backlog
 
 Rollback requires an attested known application artifact, configuration/flag state, database backup, and migration compatibility. Card Processing first disables navigation, writes, and reads. The installed pre-feature known-good runtime can operate on schema 025 only with its explicit compatibility guard; restore is a last resort because later writes would be lost. Preserve current data before restore. Use [Backups and Restore](Backups-and-Restore) and private operator context.
 
-Operational coupling is significant: HTTP, workers, cron, backups and SQLite share one Node process/database. GitHub CI validates documentation but not the full product suite; release validation remains an explicit gate.
+Operational coupling is significant: HTTP, workers, cron, backups and SQLite share one Node process/database. Protected Product CI performs locked install, typecheck, lint, environment checks, the repository product test suite, documentation checks, selected tool builds, production build, and release-tool smokes. It does not reproduce production host, provider, client-device, systemd, or private-data runtime verification; release/runtime validation remains a separate gate.
 
 ## Local status tooling
 

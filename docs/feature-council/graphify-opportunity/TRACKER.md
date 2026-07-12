@@ -26,7 +26,7 @@
 | UX and prototypes v1/review/v2 | New UX designer / adversarial reviewer | Stopped by Defer | Not authorized; candidate comparison requires a future separate council decision |
 | Technical plan v1/review/v2 | New technical architect / adversarial reviewer | Stopped by Defer | Not authorized |
 | Final cross-artifact consistency review | Coordinator / QA | In progress | Audit/research/candidates/decision/Wiki/status/stop rules agree |
-| Wiki publication package | Coordinator / QA | Pending | Publication-safe current/proposed classification and changelog |
+| Wiki publication package | Coordinator / QA | Complete in repository | Live-feature corrections, Graphify research/decision, FCP-004 reciprocal defer banners, changelog |
 | Wiki validation/publication/verification | Coordinator / QA | Pending | Privacy/link/structure, fresh base, normal push, fresh clone/live pages |
 | Repository validation and diff review | Coordinator / QA | Pending | Artifact reachability, privacy, links, checks, visuals if go, unrelated changes excluded |
 | Commit and push | Coordinator | Pending | Focused commits on dedicated branch |

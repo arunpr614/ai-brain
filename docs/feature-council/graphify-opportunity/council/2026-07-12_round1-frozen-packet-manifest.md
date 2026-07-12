@@ -2,6 +2,7 @@
 
 **Frozen:** 2026-07-12 23:50:33 IST  
 **Combined packet SHA-256:** `05048a7a000ede70034bd06e0de05c70d0216b076c1d86dc545b3027f4355512`  
+**Freeze commit:** `bad4fbd2af6a480aa8c208324bbb23e7234990a2` (use this commit to reproduce listed bytes after post-decision log/Wiki updates)
 **Candidates:** B-00, C-01, C-02, C-03; C-03 variants are conditional only
 
 ## Hash construction
@@ -33,4 +34,5 @@ a2ea9bd58b4900ebc662ca50b6300122be0b43964c0c255d72216ab3200a5014  docs/wiki/Feat
 - Each evaluator owns one separate file. No shared-file edits are allowed during Round 1.
 - Any material change to a listed packet file invalidates all submissions and restarts Round 1 with a new hash.
 - Evaluation files are not packet inputs and do not change the hash.
+- Post-decision updates to `DECISION_LOG.md` and FCP-004 Wiki status do not retroactively change the frozen evaluation evidence; the freeze commit above preserves the exact packet.
 - `Unknown` remains non-passing. No Round 1 submission authorizes code, dependency, prototype, deployment, or merge.

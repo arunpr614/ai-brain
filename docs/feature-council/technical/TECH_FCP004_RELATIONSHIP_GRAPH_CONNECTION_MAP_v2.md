@@ -3,6 +3,8 @@
 Status: v2 final planning package  
 Review addressed: `reviews/FCP004_PACKAGE_V1_ADVERSARIAL_REVIEW_2026-06-28_21-23-55_IST.md`
 
+> **Deferred on 2026-07-13; not active for implementation.** This technical plan is historical evidence. No schema, projection, dependency, route, background process, or proof implementation is authorized by the [current decision](Graphify-Opportunity-Decision).
+
 ## Recommended Architecture
 
 Create a derived graph projection service that reads owner tables and emits graph DTOs. Owner tables remain source of truth. Graph snapshots are cache artifacts and can be rebuilt.

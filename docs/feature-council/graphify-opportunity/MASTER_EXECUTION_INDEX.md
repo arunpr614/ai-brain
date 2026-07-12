@@ -36,7 +36,7 @@ This is the stable map for the Graphify-inspired feature council. Every finalize
 - PRD: stopped by final Defer decision
 - UX/UI and prototypes: stopped by final Defer decision
 - Technical plan: stopped by final Defer decision
-- Wiki publication package: pending
+- Wiki publication package: repository pages complete; separate Wiki publication/verification pending
 
 ## Current stage gate
 

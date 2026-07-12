@@ -43,6 +43,8 @@ const CORE_REQUIRED_PAGES = [
   "Glossary.md",
   "Documentation-Maintenance.md",
   "Documentation-Changelog.md",
+  "Graphify-Opportunity-Research.md",
+  "Graphify-Opportunity-Decision.md",
   "Feature-Page-Template.md",
   "Explored-Idea-Template.md",
 ];

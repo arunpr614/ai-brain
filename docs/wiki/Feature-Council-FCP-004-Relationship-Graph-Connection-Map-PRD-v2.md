@@ -18,6 +18,8 @@ Review addressed: [reviews/FCP004_PACKAGE_V1_ADVERSARIAL_REVIEW_2026-06-28_21-23
 Council outcome: Proceed with reduced scope  
 Priority: P2
 
+> **Deferred on 2026-07-13; not active for implementation.** The historical “Proceed with reduced scope” outcome below is superseded by the [Graphify opportunity final decision](Graphify-Opportunity-Decision). Historical scope and safety constraints are retained as evidence only.
+
 ## Review Response
 
 v2 defines graph as a derived projection, adds edge taxonomy/provenance, requires a list fallback, and excludes export/Neo4j from first release.

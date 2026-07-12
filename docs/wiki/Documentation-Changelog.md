@@ -2,10 +2,22 @@
 
 Purpose: Record material wiki revisions, baselines, and publication state without replacing Git history.
 Audience: Maintainers and future AI agents.
-Verified against: deployed application `ea7b159515fc37f76ffdb83dedf2d33d17f9a193` plus retained historical baselines.
+Verified against: current code baseline `8c1341100b174fe4ca518e6a745c30b9078df21c`, deployed application evidence `ea7b159515fc37f76ffdb83dedf2d33d17f9a193`, and retained historical baselines.
 Runtime evidence through: 2026-07-12 for Card Processing; older entries retain their dated scope.
-Last reviewed: 2026-07-12.
+Last reviewed: 2026-07-13.
 Owner: AI Brain maintainer.
+
+## 2026-07-13 — Graphify opportunity council and live-feature reconciliation
+
+| Change | Implementation baseline | Runtime baseline | State |
+|---|---|---|---|
+| Audited current AI Brain features, researched Graphify `0.9.13`, evaluated independent opportunities through five blind perspectives, and dispositioned FCP-004 | AI Brain `8c1341100b174fe4ca518e6a745c30b9078df21c`; council artifact commit `bad4fbd2af6a480aa8c208324bbb23e7234990a2` | No production feature/runtime change | **Defer feature selection; explored/proposed, not implemented** |
+
+- Added [Graphify Opportunity Research](Graphify-Opportunity-Research) and the [final Council Decision](Graphify-Opportunity-Decision).
+- Five blind evaluations found no candidate with eight Pass gates. Retrieval Evidence Upgrade and Organization Hygiene remain deferred hypotheses. Relationship Inspection/FCP-004 is no-go for current selection.
+- Added reciprocal deferred/superseded banners to FCP-004 PRD/UX/technical v2 and updated the central council log, tracker, catalog, and ideas page so no current entry point presents FCP-004 as active implementation authority.
+- Corrected current documentation: Recall manual sync is merged in code but host enablement remains Unknown; protected Product CI runs the repository suite/build/release smokes but not host/runtime verification; current topics mirror generated tag labels, write null confidence, and generic evidence.
+- No Graphify production dependency, copied code, feature implementation, prototype, deployment, or merge was created by the council.
 
 ## 2026-07-12 — Card Processing production release
 
@@ -19,6 +31,8 @@ Owner: AI Brain maintainer.
 - The original exploration remains historical design evidence; it no longer describes current product availability.
 
 ## 2026-07-11 — Recall manual-sync review candidate
+
+> Historical state at the time of this entry. The feature subsequently merged through PR #22, followed by PR #23 rollout fixes. Current host enablement remains Unknown; see [Recall Synchronization](Recall-Synchronization).
 
 | Change | Implementation baseline | Runtime baseline | State |
 |---|---|---|---|

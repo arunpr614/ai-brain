@@ -50,3 +50,18 @@
 - **Decision:** After canonical research v1 synthesis, delete every temporary Graphify clone, isolated runtime, fictional fixture, generated graph/output, scan report, and local installer artifact created by the research lanes. Retain only repository Markdown evidence. Keep the clean Wiki baseline clone because it is required for the separately authorized publication workflow.
 - **Verification:** No Graphify-named temporary path or Graphify process remained; no listener, hook, skill, or global configuration was created.
 - **Rationale:** Satisfies the research cleanup boundary and prevents source-derived or dependency state from outliving the evaluation.
+
+## D-008 — Defer Graphify-inspired feature selection
+
+- **Date:** 2026-07-13
+- **Status:** Accepted / final for this goal
+- **Decision:** Select no feature. Defer C-01 Retrieval Evidence Upgrade and C-02 Organization Hygiene. Reject C-03/FCP-004 Relationship Inspection for current selection and mark the historical FCP-004 implementation posture deferred. Keep Graphify production modes at no-go.
+- **Evidence:** Five blind evaluations at frozen packet SHA-256 `05048a7a000ede70034bd06e0de05c70d0216b076c1d86dc545b3027f4355512`; Round 2 comparative matrix; Round 3 adversarial review; recommendation v2.
+- **Gate result:** No feature has eight Pass gates. Demonstrated problem, advantage, feasibility, privacy/security, measurable outcome, and rollback remain Unknown for every feature as applicable.
+- **Downstream effect:** Stop charter, PRD, UX/prototype, and technical implementation plan. Continue only documentation/Wiki, validation, commit/push, review-only PR, and handoff.
+- **B-00:** Conditional evidence action only. It requires a separate start decision and natural-recurrence Step A; no concept/prototype is authorized.
+- **Rationale:** Technical adjacency, Graphify capability, and prior FCP-004 approval do not establish current user value. Defer/no-go preserves trust, privacy, accessibility, lifecycle, cost, and reversibility gates without manufacturing consensus.
+
+## Post-freeze integrity note
+
+`DECISION_LOG.md` was a Round 1 packet input and is intentionally updated only after final recommendation v2. The exact frozen bytes remain reproducible at repository commit `bad4fbd2af6a480aa8c208324bbb23e7234990a2`; the current post-decision file is expected to have a different hash.

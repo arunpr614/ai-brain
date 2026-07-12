@@ -8,6 +8,7 @@
   "sourceRoot": "docs/feature-council",
   "excludedSourceRoots": [
     "docs/feature-council/F08-manual-content-notes",
+    "docs/feature-council/graphify-opportunity",
     "docs/feature-council/kanban-card-processing",
     "docs/feature-council/note-focus-mode",
     "docs/feature-council/project-wiki",
@@ -48,8 +49,8 @@
       "lifecycle": "current",
       "successors": [],
       "disclosure": "reviewed-sanitized",
-      "sourceSha256": "76821868d97599a09e8871f2522117b7d039a79d6bd0efa178652f1a10c946c0",
-      "destinationSha256": "0a80fdde0feef6e0b66f1f7dcef223a203dd990e8e8d1a5e313aa809bd105d2b"
+      "sourceSha256": "734c28bca6ce53199cbcd067f2f30dff12e8763f45887b473e8d35923b9ab52a",
+      "destinationSha256": "4c0bcd9b057ec1851c655f1aef487cd5df7e593ebf59e0c385855a8982156e91"
     },
     {
       "source": "docs/feature-council/FEATURE_GAP_MATRIX.md",
@@ -93,8 +94,8 @@
       "lifecycle": "current",
       "successors": [],
       "disclosure": "reviewed-sanitized",
-      "sourceSha256": "328f9dece58bfba547ce07eb8530c846d13ba79b503baa7863b801ce7cbe7223",
-      "destinationSha256": "1aacac465114edbf1526d89451b99bf6cd3fe11a65c0be9e9e7b90ff03dd90e6"
+      "sourceSha256": "a7ad0f5ba03012bcd3cb3701c3bf2605af14e361e6bc984d1957c41684987bd9",
+      "destinationSha256": "e2899b6dded191611d0c3420f0ac6990ef6ce9a29f713f840a016bfacb9de755"
     },
     {
       "source": "docs/feature-council/RESEARCH_FEATURE_INVENTORY.md",
@@ -182,8 +183,8 @@
       "lifecycle": "current",
       "successors": [],
       "disclosure": "reviewed-sanitized",
-      "sourceSha256": "cafae98c393ed8a599d01c3623c9a5f1db41ff502398fec06507ce4bb662c2b3",
-      "destinationSha256": "36952331e825e379e5ea9388982bddbe2cbac6aba8200354765ce6d384f007d0"
+      "sourceSha256": "79d59615d6b0444bcc9037ab9ec13cb4fca6ce46e00cb6086056eaa39b217095",
+      "destinationSha256": "4d90cb3c1006d2c530196f76d7155118c4b405fa81146060a5981c4d2c86c92a"
     },
     {
       "source": "docs/feature-council/prd/PRD_FCP005_AI_SERVICES_PRIVACY_TRUST_CENTER_v1.md",
@@ -358,8 +359,8 @@
       "lifecycle": "current",
       "successors": [],
       "disclosure": "reviewed-sanitized",
-      "sourceSha256": "6680e332c476e4b45fbc171c366f67203f9c437e577cb5d3b2167781b1c17fb2",
-      "destinationSha256": "d436da0aa99e1470b12d06ca33de524b7a48ef5a9ac476e3e6d7dbd5dba611fa"
+      "sourceSha256": "95f169d6d8f072ec2c0807bf00d172d2c12dea44f6a9fd727c2815b0ba20a710",
+      "destinationSha256": "9200d192bde7c6f722151e4026f5f50921aa1291de66af0d34a63ef31e155b9b"
     },
     {
       "source": "docs/feature-council/technical/TECH_FCP005_AI_SERVICES_PRIVACY_TRUST_CENTER_v1.md",
@@ -458,8 +459,8 @@
       "lifecycle": "current",
       "successors": [],
       "disclosure": "reviewed-sanitized",
-      "sourceSha256": "696fe686ebc2ef552924bc09c8bb6851c13ce964f91530409d745edae9c01523",
-      "destinationSha256": "a2ea9bd58b4900ebc662ca50b6300122be0b43964c0c255d72216ab3200a5014"
+      "sourceSha256": "e29b6da9908d99eb9a96dd88b4757bb0b1c12d3e812f5df570bb66d0163785db",
+      "destinationSha256": "bc2fb18096250c612ab286150cd1f865df6326b2e67d9815f19315e3dc286dd1"
     },
     {
       "source": "docs/feature-council/ux/UX_FCP005_AI_SERVICES_PRIVACY_TRUST_CENTER_v1.md",
