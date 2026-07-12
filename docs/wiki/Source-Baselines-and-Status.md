@@ -15,7 +15,7 @@ Owner: AI Brain maintainer.
 | Recall manual-sync review candidate | `fdd740617685c1ce730a6150c306152a04070f86` on `feat/recall-manual-sync` | Implemented and locally verified; not merged, deployed, or enabled |
 | Repository main at candidate start | `1cb5d36f37611e60442b4f2c4433b45455273500` | Clean base for the Recall candidate; includes the definitive Wiki closeout |
 | Living Wiki documentation baseline | `23868faf13c8e3d0821715e6f5d0e3d2af1e1a34` | Application baseline used by unchanged core pages and the structure gate |
-| Latest verified deployed application code | `6858529ef179a51442d319c6c58e5ace79757619` | Dated Note Focus release/hotfix tree; later repository commits are documentation closeout |
+| Latest verified deployed application code | `ea7b159515fc37f76ffdb83dedf2d33d17f9a193` | Dated Card Processing release tree; staged API/domain, authenticated browser, cleanup, readiness, integrity, and rollback evidence passed |
 | Existing wiki before this revision | `3d578c3f66e61de3f124a855253e713758f6a49b` | Eight-commit wiki baseline audited before editing |
 | Feature Council artifact source | `9de8de87de915e874e8290aa556e2b6772d6fabf` | Dated planning/research corpus, not product runtime |
 

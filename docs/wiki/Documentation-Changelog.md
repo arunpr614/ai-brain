@@ -15,6 +15,7 @@ Owner: AI Brain maintainer.
 
 - Replaced the explored-only catalog status with the shipped [Card Processing Workflow](Card-Processing-Workflow) page.
 - Updated Library integration, API, data, configuration, security, deployment/rollback, source-baseline, Home, and navigation documentation.
+- Authenticated desktop/mobile Light/Dark tasks, keyboard/focus/live-region behavior, staged private headers, and exact synthetic cleanup back to 129 retained items passed on the deployed application.
 - The original exploration remains historical design evidence; it no longer describes current product availability.
 
 ## 2026-07-11 — Recall manual-sync review candidate

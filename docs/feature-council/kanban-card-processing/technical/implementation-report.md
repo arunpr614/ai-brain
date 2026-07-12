@@ -3,7 +3,7 @@
 **Implementation date:** 2026-07-12
 **Authority:** `product/prd-v2.md`, `ux/ux-ui-v2.md`, `technical/technical-plan-v2.md`
 **Deployed application:** `ea7b159515fc37f76ffdb83dedf2d33d17f9a193`
-**Status:** Implemented, merged through PRs #25–#28, and deployed with schema 025 and all three Processing stages enabled. Final browser evidence, synthetic cleanup, and documentation publication are recorded separately.
+**Status:** Implemented, merged through PRs #25–#28, deployed with schema 025 and all three Processing stages enabled, and live-verified through the authenticated browser and synthetic cleanup. Documentation publication is recorded separately.
 
 ## Delivered product surface
 
@@ -70,14 +70,14 @@ The immutable release path packages standalone runtime files, public/static asse
 The integrated candidate has passed:
 
 - TypeScript and ESLint;
-- all 877 tests across 93 suites, including streaming-limit, write-rate-limit, migration-hash, and production-configuration assertions;
+- all 880 tests across 93 suites, including streaming-limit, write-rate-limit, migration-hash, and production-configuration assertions;
 - production Next.js build (with only the pre-existing `unpdf` `import.meta` warning);
 - documentation privacy/structure/coverage checks;
 - processing-readiness and immutable-artifact smoke suites;
 - deterministic 10k/50k performance budgets;
 - desktop/mobile visual comparison and the corrected 320/390 px four-tab layout.
 
-The authoritative final counts and commands belong in `qa/verification-report.md`. Production-copy migration/rollback rehearsal, protected artifact attestations, immutable cutover, read/write/navigation observation windows, and the live API/domain lifecycle have passed. Authenticated deployed browser evidence, synthetic cleanup, repository closeout merge, and GitHub Wiki publication remain the final gates and are not claimed here.
+The authoritative final counts and commands belong in `qa/verification-report.md`. Production-copy migration/rollback rehearsal, protected artifact attestations, immutable cutover, read/write/navigation observation windows, live API/domain lifecycle, authenticated deployed browser tasks, and synthetic cleanup have passed. Repository closeout merge and GitHub Wiki publication remain the final gates and are not claimed here.
 
 ## Scope explicitly not added
 

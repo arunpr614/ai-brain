@@ -1,7 +1,7 @@
 # Processing — user guide
 
 **Audience:** AI Brain owner
-**Status:** Candidate behavior. The repository Wiki is updated to shipped status only after live production verification.
+**Status:** Shipped behavior on deployed application `ea7b159515fc37f76ffdb83dedf2d33d17f9a193`; repository and Wiki publication evidence is maintained separately.
 
 ## What Processing is for
 

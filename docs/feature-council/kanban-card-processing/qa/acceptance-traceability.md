@@ -1,13 +1,13 @@
 # Kanban Card Processing — acceptance traceability
 
 **Source of truth:** `product/prd-v2.md` §29
-**Last updated:** 2026-07-12, pre-release candidate
-**Rule:** “Local pass” proves implementation behavior only. “Pending live” remains a release blocker until production evidence is linked.
+**Last updated:** 2026-07-12, deployed browser and cleanup closeout
+**Rule:** “Local pass” proves implementation behavior only. Production claims require linked live evidence; physical assistive-technology claims remain explicit when the selected browser cannot prove speech or switch hardware.
 
 | AC | Status | Primary implementation/evidence |
 |---:|---|---|
 | 1 | Local pass | PRD/UX/technical v2 authority headers, v2 consistency review, implementation report |
-| 2 | Local pass; predeploy refresh pending | `qa/baseline-verification.md`; release plan requires a fresh content-free baseline |
+| 2 | Pass | Fresh predeploy content-free baseline, bound backups, production-copy rehearsal, and deployed integrity/readiness evidence |
 | 3 | Local pass | Migration projection isolation; workflow preservation tests; existing 876-test regression suite |
 | 4 | Local pass | `processingFilterSql`, query fixtures proving AI Topic IDs and manual/auto-tag separation |
 | 5 | Local pass | 024→025/fresh migration tests, quick/FK checks, runtime migration hash manifest |
@@ -34,7 +34,7 @@
 | 26 | Local pass | Temporal timezone/midnight/week boundary tests and CAS preference route |
 | 27 | Local pass | FK cascade plus retained-source recomputation queries |
 | 28 | Local pass | No-preselection/Process-next/focus/empty behavior in `ProcessingApp` |
-| 29 | Local pass; live task pending | Shared card/actions across Board/List and responsive local QA |
+| 29 | Pass | Shared card/actions across Board/List plus authenticated deployed desktop/mobile parity task |
 | 30 | Local pass | Existing detail route integration; independent notes/workflow versions; regression suite |
 | 31 | Local pass | Active/archive query predicates and Restore/Reprocess transition tests |
 | 32 | Local pass | Existing Library/detail behavior preserved; workflow badge/actions added independently |
@@ -49,25 +49,25 @@
 | 41 | Local pass | Rapid same-item slot/version test |
 | 42 | Local pass | Actor-tab keyed slots and intervening-version conflict behavior |
 | 43 | Local pass | Inclusive boundary, expiry 410, replay, and Undo-of-Undo rejection tests |
-| 44 | Local pass; live accessibility task pending | Native Move/Restore/Reprocess controls available after timed Undo |
-| 45 | Pending live | Manual keyboard/screen-reader/switch timed and permanent reversal evidence |
+| 44 | Pass for keyboard/native controls; physical AT residual | Deployed keyboard Move/Undo/Archive/Restore/Reprocess plus native button/select semantics and permanent reversal paths |
+| 45 | Partial; physical device residual | Deployed timed Undo and permanent reversal completed by keyboard with live announcements; actual NVDA/VoiceOver/TalkBack speech and switch hardware were not claimed by browser automation |
 | 46 | Local pass | Load/error/offline UI states; rollback/current-truth logic; no offline queue |
 | 47 | Local pass | All Processing read/write/outcome/enrollment route session/bearer negative tests |
 | 48 | Local pass | Exact configured-origin tests, missing-config 503, cross-origin 403 |
-| 49 | Local pass; live header check pending | Central private/no-store/Vary/nosniff response helper and route tests |
+| 49 | Pass | Central helper/route tests plus Stage A authenticated/unauthenticated live header matrix |
 | 50 | Local pass | Allow-listed DTOs, normalized errors/logging, independent application security review |
 | 51 | Local pass | Zod bounds, streaming 16 KiB limit, signed cursor bounds, per-session write throttle, normalized enumeration outcomes |
 | 52 | Pass | `qa/performance-10k-50k.md`; every p95/contention/payload/deep-audit budget green |
 | 53 | Not applicable | Virtualization is intentionally not used in v1 |
 | 54 | Local pass | Bounded page/group sizes, Load more/focus behavior, 50k payload/performance evidence |
-| 55 | Partial; live task pending | 320/390 four-tab/no-overflow/44 px QA passed; full Move/Archive/Restore/Reprocess/Undo task remains live gate |
-| 56 | Partial; live task pending | Semantic/focus/contrast/reduced-motion/mobile automation passed; screen-reader/switch/forced-colors/live zoom task remains |
+| 55 | Pass | Deployed 320/390 no-overflow/44px view proof; mobile More discovery; Move/Archive/Restore/Reprocess/Undo task on the responsive surface |
+| 56 | Pass for browser-verifiable scope; physical AT residual | Deployed keyboard/focus/live-region/mobile/theme evidence plus automated semantic/contrast/reduced-motion/zoom/text-spacing/forced-colors coverage; actual speech and switch hardware remain unclaimed |
 | 57 | Pass | `qa/production-copy-migration-rehearsal.md`: migration/WAL/lock/interruption/resume/backup/restore/old-code/explicit-025 compatibility all pass |
-| 58 | Pending rollout | Default-off flags/readiness and staged commands implemented; observed production stages not yet run |
-| 59 | Pending live | Full synthetic production capture/workflow/count/metric/header journey and cleanup |
+| 58 | Pass | Default-off readiness, guarded immutable deploy, Stage A/B/C observation windows, deep-audit service/timer, and rollback evidence |
+| 59 | Pass | Full synthetic production capture/workflow/count/metric/header journey, authenticated browser journey, and exact dependent cleanup back to 129 retained items |
 | 60 | Partial | Implementation/user/operator/release docs are being finalized; GitHub Wiki publish/verification waits for shipped SHA |
 | 61 | Local pass | Diff/scope review confirms no deferred project-management or drag/queue features |
 
 ## Current release blockers
 
-AC 45, 55-56, and 58-60 retain live/manual or release-state work. They cannot be closed by additional local code assertions alone. The final verification report must link the PR/CI artifacts, staged rollout windows, production synthetic journey and cleanup, final browser/design/accessibility evidence, installed rollback proof, and published Wiki commit.
+AC 60 remains open until the closeout PR is merged and the canonical Wiki is published and verified. AC 44-45/56 separately preserve the honest boundary that browser semantics and keyboard operation do not prove physical screen-reader speech or switch hardware; this is residual manual-device coverage rather than an unreported product defect.

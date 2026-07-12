@@ -30014,3 +30014,33 @@ The preceding local-candidate entry recorded the artifact before restoring produ
 - **Production:** `ea7b159` active with schema 025, read/write/navigation enabled, deep audit timer enabled/active, 130 items including one retained synthetic browser fixture.
 - **Closeout branch:** `codex/finalize-kanban-processing-release` with draft repository/Wiki evidence; not yet committed or published because Design QA remains blocked.
 - **Next milestone:** Owner unlocks the handed-off Chrome tab; complete desktop/mobile/light/dark interaction and accessibility QA, delete the synthetic fixture with dependent cleanup proof, finalize/merge closeout docs, publish and verify the GitHub Wiki.
+
+## 2026-07-12 20:50 IST — Authenticated browser acceptance and synthetic cleanup passed
+
+### Deployed browser and design verification
+
+- Resumed the owner-unlocked Chrome session on deployed application `ea7b159515fc37f76ffdb83dedf2d33d17f9a193` and completed the authenticated Processing task pass.
+- Verified desktop 1440×1024 and mobile 390×844/320×844 in Light and Dark. All four mobile views remain visible/selectable at 44px with no horizontal overflow; fixed bottom navigation does not obscure the core task controls.
+- Exercised Process next, selection/Open separation, canonical detail, independent My notes, Back/Forward, Board/List parity, native Move, timed Undo, Archive, Restore, Reprocess, User-tag filtering, URL/Clear all, Group by Source type/reset, enrollment preview/Escape focus return, Library summary, mobile More, and command-palette search.
+- Verified polite/assertive live announcements, current/pressed semantics, native controls, keyboard operation, and restored focus. Browser console review found only stale extension connection messages from the pre-unlock page and no application error during the authenticated task pass.
+- Captured deployed Light/Dark desktop/mobile evidence and inspected same-theme, same-state Direction B comparisons. No broken layout, cropped content, visual-system mismatch, or release-blocking P0/P1/P2 remained. `design-qa.md` now records `Final result: passed`.
+
+### Synthetic cleanup and final production health
+
+- Created a fresh mode-restricted 7,643,136-byte SQLite backup immediately before cleanup; recorded its checksum and verified quick check `ok` and zero foreign-key rows.
+- Deleted the synthetic vector through its `chunks_rowid` bridge, removed any qualifying manual-note citations, and hard-deleted the synthetic item with foreign keys enabled so content, workflow history/receipts, Undo slots, jobs, tags/topics, notes, enrollment references, FTS, and other item dependents followed the application's cleanup contract.
+- Exact post-cleanup proof: 129 retained items; synthetic item, FTS, content/workflow/job/tag/topic/note/enrollment/Undo/citation dependents all zero; total vector count reduced by exactly one; quick check `ok`; foreign keys zero.
+- Ran the installed `brain-processing-audit.service`. It exited successfully and wrote a green checkpoint bound to application `ea7b159`; the application service remains active and the six-hour audit timer remains enabled/active.
+
+### Closeout state
+
+- Added production browser captures and combined reference comparisons to the closeout branch.
+- Updated the verification report, tracker, user guide, implementation report, acceptance traceability, and canonical Design QA result.
+- Physical screen-reader speech, switch hardware, and Android TalkBack remain honestly documented manual-device coverage; browser automation proves keyboard operation, native semantics, live regions, focus, responsive layout, and permanent reversal paths but does not claim physical AT output.
+
+### State snapshot
+
+- **Current phase:** Production release/live browser/cleanup acceptance complete; repository closeout merge and GitHub Wiki publication remain.
+- **Production:** `ea7b159` active, schema 025, flags enabled, 129 retained items, green app-SHA-bound readiness, quick check `ok`, foreign keys zero, audit timer enabled/active.
+- **Closeout branch:** `codex/finalize-kanban-processing-release`; follow-up evidence/doc changes pending commit and protected CI.
+- **Next milestone:** finalize and merge PR #29, then publish canonical `docs/wiki/` through the concurrency gate and verify a fresh clone plus live Wiki content.

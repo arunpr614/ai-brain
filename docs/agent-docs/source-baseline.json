@@ -1,17 +1,17 @@
 {
-  "generatedAt": "2026-07-12T11:15:00Z",
+  "generatedAt": "2026-07-12T15:20:00Z",
   "defaultBranch": "main",
   "defaultBranchSha": "ea7b159515fc37f76ffdb83dedf2d33d17f9a193",
   "worktreeBranch": "codex/finalize-kanban-processing-release",
-  "worktreeSha": "ea7b159515fc37f76ffdb83dedf2d33d17f9a193",
+  "worktreeSha": "7ec2610826f793c0be885b7ceaec5e119cf77c33",
   "worktreeDivergence": {
     "mainOnlyCommits": 0,
-    "worktreeOnlyCommits": 1
+    "worktreeOnlyCommits": 2
   },
   "productionSha": "ea7b159515fc37f76ffdb83dedf2d33d17f9a193",
   "productionEvidence": "docs/feature-council/kanban-card-processing/qa/verification-report.md",
   "productionStatus": "verified",
-  "productionNotes": "Application ea7b159 was built on protected main, verified through GitHub-hosted provenance, deployed as an immutable runtime with migration 025, and enabled through read, write, and navigation observation stages on 2026-07-12. Authenticated API/domain lifecycle, readiness, audit timer, integrity, foreign-key, privacy, concurrency, Undo, archive, rate-limit, and rollback boundaries passed. Authenticated deployed browser evidence and final synthetic cleanup remain recorded as the last acceptance gates.",
+  "productionNotes": "Application ea7b159 was built on protected main, verified through GitHub-hosted provenance, deployed as an immutable runtime with migration 025, and enabled through read, write, and navigation observation stages on 2026-07-12. Authenticated API/domain and desktop/mobile browser lifecycles, readiness, audit timer, integrity, foreign-key, privacy, concurrency, Undo, archive, rate-limit, visual/keyboard behavior, rollback, and exact synthetic cleanup boundaries passed. Production returned to 129 retained items with a green app-SHA-bound installed audit.",
   "livingWikiDocumentationSha": "23868faf13c8e3d0821715e6f5d0e3d2af1e1a34",
   "cardProcessingExplorationSha": "df4c42b9869f8a35b9557bc64bf6ecdb9d11b416",
   "featureCouncilArtifactBranch": "codex/ai-brain-feature-council-20260628",
