@@ -7,12 +7,14 @@
  *   - retention_count (default 28, ≈1 week of 6h snapshots)
  *   - enabled         (default true)
  *
- * Backups live at data/backups/YYYY-MM-DD_HHMM.sqlite and are pruned
+ * Backups live at data/backups/YYYY-MM-DD_HHMMSS_mmm_<nonce>.sqlite and are pruned
  * to the newest N after each run.
  */
 import { existsSync, mkdirSync, readdirSync, rmSync, statSync } from "node:fs";
-import { join, resolve } from "node:path";
+import { randomBytes } from "node:crypto";
+import { join } from "node:path";
 import { getDb } from "@/db/client";
+import { brainDataPath } from "@/lib/data-root";
 import { getJsonSetting, setJsonSetting } from "@/db/settings";
 
 interface BackupConfig {
@@ -27,7 +29,7 @@ const DEFAULTS: BackupConfig = {
   retention_count: 28,
 };
 
-const BACKUP_DIR = resolve(process.cwd(), "data/backups");
+const BACKUP_DIR = brainDataPath("backups");
 
 let timer: NodeJS.Timeout | null = null;
 let started = false;
@@ -36,14 +38,19 @@ function ensureDir(): void {
   if (!existsSync(BACKUP_DIR)) mkdirSync(BACKUP_DIR, { recursive: true });
 }
 
-function timestampName(now = new Date()): string {
+export function backupFilename(
+  now = new Date(),
+  nonce = randomBytes(6).toString("hex"),
+): string {
   const pad = (n: number) => n.toString().padStart(2, "0");
-  return `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}_${pad(now.getHours())}${pad(now.getMinutes())}.sqlite`;
+  const millis = now.getMilliseconds().toString().padStart(3, "0");
+  if (!/^[a-f0-9]{12}$/.test(nonce)) throw new Error("backup nonce must be 12 lowercase hexadecimal characters");
+  return `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}_${pad(now.getHours())}${pad(now.getMinutes())}${pad(now.getSeconds())}_${millis}_${nonce}.sqlite`;
 }
 
 export function runBackupOnce(): string {
   ensureDir();
-  const dest = join(BACKUP_DIR, timestampName());
+  const dest = join(BACKUP_DIR, backupFilename());
   const db = getDb();
   // VACUUM INTO emits a consistent point-in-time copy. Path is single-quoted.
   db.exec(`VACUUM INTO '${dest.replace(/'/g, "''")}'`);

@@ -3,7 +3,7 @@
 **Review date:** 2026-07-12
 **Reviewers:** independent application-security and release-safety agents; coordinator performed integration verification
 **Scope:** migration/schema, workflow domain, private APIs, frontend data boundary, readiness/configuration, CI artifacts, immutable activation, backup, rollback
-**Final verdict:** **GO for PR/CI integration. Production remains gated on rehearsal, staged deployment, and live verification.**
+**Final verdict:** **GO for corrective PR/CI integration and guarded production retry. Production acceptance remains gated on a successful staged deployment and live verification.**
 
 ## Initial adversarial result
 
@@ -32,12 +32,17 @@ The independent application review found no P0/P1. It held two P2 abuse concerns
 | Privileged filename injection | Exactly one SHA-derived archive/manifest name is accepted; transfer uses a random private directory and fixed validated server paths | Filename guards and shell syntax review |
 | Artifact provenance gap | PR runs verify only; deployable artifacts are protected-main/workflow-dispatch outputs with GitHub provenance attestations. Deploy verifies repository, pinned workflow, main ref, builder source SHA, and non-self-hosted builder | Pinned workflow YAML and deploy verifier review |
 | Bootstrap substitution | Local tool bytes must match the attested manifest; remote bytes are rehashed into immutable builder-SHA tool sets selected atomically | Artifact manifest/tool-set checks |
-| Archive link/special/bomb risk | Builder and verifier accept regular files only; activation validates member paths/types/count/expanded bytes and extracts as unprivileged `brain:brain-data` before root promotion | 20-check release smoke and 3,612-file full artifact verification |
+| Archive link/special/bomb risk | Builder and verifier accept regular files only; activation validates member paths/types/count/expanded bytes and extracts as unprivileged `brain:brain-data` before root promotion | 46-check release smoke and 3,613-file full artifact verification |
 | Migration manifest/runtime split | Builder compares source and runtime migrations exactly; verifier rehashes runtime files; `_migrations.sha256` records/backfills the verified baseline and stores new hashes atomically; activation/switch/readiness reject mismatches | Migration test, readiness smoke, full artifact verification |
 | Mutating status command | Status opens only an existing SQLite file through an explicit read-only connection and never imports the migration-running client; a file-hash assertion proves no change | 17-check readiness smoke |
 | Missing production configuration proof | Pre-activation and strict audit require dedicated 64-hex HMAC, valid effective IANA timezone, exact HTTPS public origin, and valid flag ordering | Readiness configuration negative test and deploy preflight |
 | Buffered oversized body | `readBoundedJson` counts stream bytes incrementally, cancels above 16 KiB, and never accumulates an oversized body | Streamed multi-chunk 413 route test |
 | Receipt-flood abuse | Exact session and origin checks precede a rolling per-valid-session write cap; excess requests return private 429/`Retry-After` before parsing or durable work | Rate-limit route test |
+| Immutable runtime writes durable files under `process.cwd()` | Backup, error, capture-artifact, enrichment, and Recall marker defaults resolve from the absolute configured database parent; production preflight canonicalizes override paths and rejects symlink escapes | Durable-root tests plus deployed service/runtime source gates |
+| Immediate health probe rejects a healthy but still-starting release | A bounded verifier retries transient connection/status failures for up to 45 seconds, gives each request a three-second timeout, and fails 401/403/404 immediately without placing the token in argv or output | Executable delayed-success, permanent-auth, and exhaustion fixtures |
+| Known-good app SHA collides across different builders | Overlaid known-good releases use an app+builder ID; candidate same-build releases retain the app SHA; manifest, `release.env`, archive, and installed evidence must agree exactly | Composite identity and collision fixtures |
+| Bootstrap tool pointer can select the wrong release logic | Candidate builder tools are staged and verified before prior-state proof; activate/switch/rollback call that exact immutable set; the shared pointer advances only after every boundary passes | Source-order and exact-tool invocation fixtures |
+| Partial restoration is reported as success | Activation and switch propagate restart/restore failures as `AUTOMATIC RESTORATION INCOMPLETE`; pre-mutation failures distinguish an unchanged healthy prior state from an actual rollback | Restoration wording and failure-model fixtures |
 
 ## Positive security properties retained
 
@@ -56,8 +61,11 @@ The independent application review found no P0/P1. It held two P2 abuse concerns
 
 - Application security targeted suite: 7/7 passed after remediation.
 - Readiness smoke: 17 checks passed.
-- Release artifact smoke: 20 checks passed.
+- Product suite: 880 tests across 93 suites, 0 failed/skipped/todo.
+- Release artifact smoke: 46 checks passed.
 - Final standalone release build/verify: 3,613 regular files, 71,973,337 bytes expanded, 27 migrations including the restored historical production identity and 025, no raw environment files.
 - Typecheck, lint, workflow YAML parsing, shell syntax, and whitespace validation passed in the release-safety lane.
 
-This review authorizes integration and CI, not a claim of production safety already observed. Production-copy migration/rollback rehearsal, protected-main attestation verification, staged owner rollout, live private-header/security negatives, synthetic cleanup, and rollback health remain mandatory evidence.
+The independent first-cutover re-review found no P0/P1 and authorized integration plus a guarded retry after four P2 cleanups: bound Telegram notification timeouts, blank Recall marker normalization, canonical symlink-aware override containment, and corrected backup-format documentation. All four are integrated and the complete local gate passes.
+
+This review authorizes integration, CI, and a guarded production retry, not a claim of production acceptance already observed. The production-copy migration/rollback rehearsal and the first protected-main attestation verification have passed; fresh post-remediation attestations, staged owner rollout, live private-header/security negatives, synthetic cleanup, durable-path proof, and rollback health remain mandatory evidence.

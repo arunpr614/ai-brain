@@ -1,8 +1,8 @@
 # Kanban Card Processing — candidate verification report
 
 **Candidate date:** 2026-07-12
-**Branch:** `feat/kanban-card-processing`
-**Verdict:** **Local candidate GO for commit/PR/CI. Production acceptance remains pending.**
+**Branch:** `codex/fix-release-first-cutover` from merged main `9f6c878f2e087c7cf56e746f5e5e20c944f1f227`
+**Verdict:** **Merged feature plus first-cutover remediation GO for corrective PR/CI. Production acceptance remains pending.**
 
 ## Integrated automated gates
 
@@ -10,13 +10,13 @@
 |---|---|
 | TypeScript | Pass — `tsc --noEmit` |
 | ESLint | Pass |
-| Product tests | Pass — 877 tests, 93 suites, 0 failed/skipped/todo |
+| Product tests | Pass — 880 tests, 93 suites, 0 failed/skipped/todo |
 | Production build | Pass — Next.js 16.2.9; only the documented pre-existing `unpdf` `import.meta` warning |
 | Build-artifact privacy | Pass — no standalone `data` directory |
 | Environment safety | Pass — local `.env` ignored, `.env.example` tracked |
 | Documentation | Pass — 44 Feature Council pages, 84 reachable Wiki pages, 155/155 package scripts classified, privacy/structure/project-Wiki checks clean |
 | Processing readiness smoke | Pass — 17 checks, including non-mutating status, migration hashes, strict production configuration, red/green behavior |
-| Immutable release smoke | Pass — 20 checks, including deterministic archive, env/data exclusion, runtime/source migration binding, symlink rejection, tamper rejection |
+| Immutable release smoke | Pass — 46 checks, including deterministic archive, env/data exclusion, runtime/source migration binding, symlink rejection, tamper rejection, app+builder release identity, collision safety, staged-tool ordering, delayed/permanent/exhausted health behavior, and explicit restoration failure propagation |
 | Release scripts | Pass — shell syntax and whitespace checks |
 | Full artifact rehearsal | Pass — 3,613 regular files, 71,973,337 bytes expanded, 27 migrations, no raw environment files, runtime verification clean |
 | Dependency audit | Pass — clean `npm ci`; npm audit 0 total vulnerabilities; `@js-temporal/polyfill` 0.5.1 ISC and `tar` 7.5.16 BlueOak-1.0.0 |
@@ -40,7 +40,7 @@ The initial capture-channel and capture-age descriptor failures were fixed with 
 
 The independent application review is GO with no remaining P0/P1/P2. It verified session-only routes, bearer negatives, exact-origin writes, private/no-store responses, bounded/parameterized inputs, replay/CAS/Undo scoping, content-safe DTOs, streaming 16 KiB enforcement, and per-valid-session write throttling.
 
-The independent release review initially returned no-go and found the database-target split plus artifact/rollback trust gaps. `reviews/implementation-security-adversarial-review.md` records every remediation. The final release-safety verdict is GO for integration/CI; production has not been executed.
+The independent release review initially returned no-go and found the database-target split plus artifact/rollback trust gaps. `reviews/implementation-security-adversarial-review.md` records every remediation. Two production attempts then failed safe before schema 025 or feature enablement and exposed immutable-runtime data-root, startup-health, release-instance identity, and staged-tool trust defects. The corrective re-review found no P0/P1; its final P2 cleanup (bounded Telegram notification, blank Recall override normalization, symlink-aware override containment, and backup-format documentation) is integrated. The current release-safety verdict is GO for corrective PR/CI and a guarded retry; production acceptance has not passed.
 
 ## Visual and responsive QA
 
@@ -55,7 +55,7 @@ No batch actions, drag-and-drop, manual rank, dates, assignees, sprints, WIP lim
 
 ## Remaining release gates
 
-1. Commit, push, PR, protected CI, review resolution, merge, main artifact and attestation verification.
+1. Commit, push, corrective PR, protected CI, review resolution, merge, and fresh candidate/known-good artifact plus attestation verification.
 2. Installed Linux known-good/candidate switch and authenticated rollback-health proof.
 3. Dark production deployment with bound backup and strict audit.
 4. Staged read, write, and navigation enablement with observation windows.

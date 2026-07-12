@@ -8,9 +8,8 @@ import {
   listCaptureArtifactsForItem,
 } from "@/db/capture-artifacts";
 import { newId, type CaptureArtifactRow } from "@/db/client";
+import { brainDataPath } from "@/lib/data-root";
 import type { CaptureArtifactCandidate } from "./types";
-
-const DEFAULT_ARTIFACT_ROOT = resolve(process.cwd(), "data/artifacts/captures");
 
 const KIND_CAPS: Record<string, number> = {
   youtube_oembed_json: 64 * 1024,
@@ -51,7 +50,7 @@ export async function saveCaptureArtifacts(
 }
 
 export function captureArtifactRoot(): string {
-  return process.env.BRAIN_CAPTURE_ARTIFACT_ROOT?.trim() || DEFAULT_ARTIFACT_ROOT;
+  return process.env.BRAIN_CAPTURE_ARTIFACT_ROOT?.trim() || brainDataPath("artifacts", "captures");
 }
 
 export function resolveCaptureArtifactPath(row: CaptureArtifactRow): string | null {

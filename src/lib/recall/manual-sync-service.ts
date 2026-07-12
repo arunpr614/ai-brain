@@ -16,6 +16,7 @@ import {
   type RecallSyncExecutionRow,
   type RecallSyncRequestRow,
 } from "@/db/recall-manual-sync";
+import { brainDataPath } from "@/lib/data-root";
 import type {
   RecallManualActivity,
   RecallManualSyncStatus,
@@ -170,7 +171,7 @@ export function wakeRecallManualWorker(): boolean {
   let temporaryMarker: string | null = null;
   try {
     const marker = resolve(
-      process.env.BRAIN_RECALL_WAKE_MARKER ?? resolve(process.cwd(), "data/recall-manual-sync/wake"),
+      process.env.BRAIN_RECALL_WAKE_MARKER?.trim() || brainDataPath("recall-manual-sync", "wake"),
     );
     mkdirSync(dirname(marker), { recursive: true, mode: 0o770 });
     temporaryMarker = `${marker}.${process.pid}.${Date.now()}.tmp`;
