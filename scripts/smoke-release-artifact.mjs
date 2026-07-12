@@ -77,6 +77,16 @@ try {
   );
   assert.match(deployScript, /promote_release_tools\(\)/);
   assert.match(deployScript, /release-tools\/sets\/\$TOOL_BUILDER_SHA/);
+  assert.match(
+    deployScript,
+    /node "\$verify_tool" "\$target" "\$manifest" "\$artifact" >\/dev\/null/,
+    "release-state capture must suppress verifier diagnostics and emit only the parseable state tuple",
+  );
+  assert.match(
+    deployScript,
+    /node scripts\/dist\/processing-readiness-prod\.mjs audit --require-ready --require-production-config/,
+    "deep readiness must execute the packaged generated tool path",
+  );
   assert.ok(
     deployScript.indexOf('remote_stage_artifact "$CANDIDATE_ARTIFACT" "$CANDIDATE_MANIFEST"') <
       deployScript.indexOf('PREVIOUS_STATE="$(remote_release_state)"'),
@@ -197,8 +207,16 @@ try {
   assert.ok(!existsSync(resolve(extract, "runtime/.env")));
   assert.ok(!existsSync(resolve(extract, "runtime/data")));
   const packagedService = readFileSync(resolve(extract, "runtime/scripts/deploy/brain.service"), "utf8");
+  const packagedProcessingAuditService = readFileSync(
+    resolve(extract, "runtime/scripts/deploy/brain-processing-audit.service"),
+    "utf8",
+  );
   assert.match(packagedService, /^WorkingDirectory=\/opt\/brain$/m);
   assert.doesNotMatch(packagedService, /^WorkingDirectory=\/opt\/brain\/current$/m);
+  assert.match(
+    packagedProcessingAuditService,
+    /^ExecStart=\/usr\/bin\/node \/opt\/brain\/current\/scripts\/dist\/processing-readiness-prod\.mjs audit --require-ready --require-production-config$/m,
+  );
   const packagedActivate = readFileSync(resolve(extract, "runtime/scripts/activate-release.sh"), "utf8");
   const packagedSwitch = readFileSync(resolve(extract, "runtime/scripts/switch-release.sh"), "utf8");
   assert.ok(existsSync(resolve(extract, "runtime/scripts/wait-for-release-health.mjs")));
@@ -224,7 +242,7 @@ try {
   cpSync(first.artifact, resolve(fixture, "tampered.tar.gz"));
   writeFileSync(resolve(fixture, "tampered.tar.gz"), "tampered", { flag: "a" });
   assert.notEqual(sha256(resolve(fixture, "tampered.tar.gz")), first.artifactSha256);
-  console.log(JSON.stringify({ ok: true, checks: 46, artifactSha256: first.artifactSha256 }));
+  console.log(JSON.stringify({ ok: true, checks: 49, artifactSha256: first.artifactSha256 }));
 } finally {
   rmSync(fixture, { recursive: true, force: true });
 }

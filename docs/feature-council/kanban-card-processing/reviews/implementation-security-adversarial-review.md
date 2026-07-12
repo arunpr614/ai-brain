@@ -3,7 +3,7 @@
 **Review date:** 2026-07-12
 **Reviewers:** independent application-security and release-safety agents; coordinator performed integration verification
 **Scope:** migration/schema, workflow domain, private APIs, frontend data boundary, readiness/configuration, CI artifacts, immutable activation, backup, rollback
-**Final verdict:** **GO for corrective PR/CI integration and guarded production retry. Production acceptance remains gated on a successful staged deployment and live verification.**
+**Final verdict:** **GO for the audit-path/state correction to enter PR/CI. Production acceptance remains gated on a successful staged deployment and live verification.**
 
 ## Initial adversarial result
 
@@ -43,6 +43,8 @@ The independent application review found no P0/P1. It held two P2 abuse concerns
 | Known-good app SHA collides across different builders | Overlaid known-good releases use an app+builder ID; candidate same-build releases retain the app SHA; manifest, `release.env`, archive, and installed evidence must agree exactly | Composite identity and collision fixtures |
 | Bootstrap tool pointer can select the wrong release logic | Candidate builder tools are staged and verified before prior-state proof; activate/switch/rollback call that exact immutable set; the shared pointer advances only after every boundary passes | Source-order and exact-tool invocation fixtures |
 | Partial restoration is reported as success | Activation and switch propagate restart/restore failures as `AUTOMATIC RESTORATION INCOMPLETE`; pre-mutation failures distinguish an unchanged healthy prior state from an actual rollback | Restoration wording and failure-model fixtures |
+| Generated readiness tool is invoked at its source path | Both the deploy deep-audit boundary and installed audit service execute `scripts/dist/processing-readiness-prod.mjs`, the exact generated path included in the immutable manifest | Packaged-service and deploy-source release-smoke assertions |
+| Runtime verifier diagnostics pollute the captured rollback tuple | `remote_release_state` suppresses the already-validated verifier JSON and emits only the release/timer tuple consumed by rollback | Parseable-state release-smoke assertion and manual exact-instance rollback evidence |
 
 ## Positive security properties retained
 
@@ -62,10 +64,10 @@ The independent application review found no P0/P1. It held two P2 abuse concerns
 - Application security targeted suite: 7/7 passed after remediation.
 - Readiness smoke: 17 checks passed.
 - Product suite: 880 tests across 93 suites, 0 failed/skipped/todo.
-- Release artifact smoke: 46 checks passed.
+- Release artifact smoke: 49 checks passed.
 - Final standalone release build/verify: 3,613 regular files, 71,973,337 bytes expanded, 27 migrations including the restored historical production identity and 025, no raw environment files.
 - Typecheck, lint, workflow YAML parsing, shell syntax, and whitespace validation passed in the release-safety lane.
 
-The independent first-cutover re-review found no P0/P1 and authorized integration plus a guarded retry after four P2 cleanups: bound Telegram notification timeouts, blank Recall marker normalization, canonical symlink-aware override containment, and corrected backup-format documentation. All four are integrated and the complete local gate passes.
+The independent first-cutover re-review found no P0/P1 and authorized integration plus a guarded retry after four P2 cleanups: bound Telegram notification timeouts, blank Recall marker normalization, canonical symlink-aware override containment, and corrected backup-format documentation. All four were integrated. Live execution subsequently exposed two additional harness reference defects—the generated readiness path and mixed verifier/state stdout—that are now corrected with packaged-artifact regression checks.
 
 This review authorizes integration, CI, and a guarded production retry, not a claim of production acceptance already observed. The production-copy migration/rollback rehearsal and the first protected-main attestation verification have passed; fresh post-remediation attestations, staged owner rollout, live private-header/security negatives, synthetic cleanup, durable-path proof, and rollback health remain mandatory evidence.
