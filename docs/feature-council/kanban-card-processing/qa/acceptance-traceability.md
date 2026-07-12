@@ -65,9 +65,9 @@
 | 57 | Pass | `qa/production-copy-migration-rehearsal.md`: migration/WAL/lock/interruption/resume/backup/restore/old-code/explicit-025 compatibility all pass |
 | 58 | Pass | Default-off readiness, guarded immutable deploy, Stage A/B/C observation windows, deep-audit service/timer, and rollback evidence |
 | 59 | Pass | Full synthetic production capture/workflow/count/metric/header journey, authenticated browser journey, and exact dependent cleanup back to 129 retained items |
-| 60 | Partial | Implementation/user/operator/release docs are being finalized; GitHub Wiki publish/verification waits for shipped SHA |
+| 60 | Pass | PR #29 merged repository sources as `2760837`; Wiki `10a3e2b` published through an unchanged-base gate, fresh-cloned byte-for-byte, privacy/structure/reachability clean, and live-page verified |
 | 61 | Local pass | Diff/scope review confirms no deferred project-management or drag/queue features |
 
 ## Current release blockers
 
-AC 60 remains open until the closeout PR is merged and the canonical Wiki is published and verified. AC 44-45/56 separately preserve the honest boundary that browser semantics and keyboard operation do not prove physical screen-reader speech or switch hardware; this is residual manual-device coverage rather than an unreported product defect.
+No release-state acceptance criterion remains open. AC 44-45/56 separately preserve the honest boundary that browser semantics and keyboard operation do not prove physical screen-reader speech or switch hardware; this is residual manual-device coverage rather than an unreported product defect.

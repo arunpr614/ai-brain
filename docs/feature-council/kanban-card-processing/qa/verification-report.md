@@ -2,7 +2,7 @@
 
 **Candidate date:** 2026-07-12
 **Deployed application:** `ea7b159515fc37f76ffdb83dedf2d33d17f9a193`
-**Verdict:** **Production rollout, live API/domain verification, authenticated browser/design verification, and synthetic cleanup passed. Repository closeout merge and GitHub Wiki publication remain before the persistent goal can close.**
+**Verdict:** **Production acceptance passed. Rollout, live API/domain verification, authenticated browser/design verification, synthetic cleanup, repository closeout merge, and GitHub Wiki publication/verification are complete.**
 
 ## Integrated automated gates
 
@@ -62,7 +62,6 @@ No batch actions, drag-and-drop, manual rank, dates, assignees, sprints, WIP lim
 
 ## Remaining release gates
 
-1. Merge the repository closeout documentation with the deployed SHA and final evidence.
-2. Publish the canonical Wiki corpus, then fresh-clone and verify privacy, structure, reachability, byte equality, and live content.
+None. PR #29 passed protected checks and merged as `2760837e8294a56c0be7ece928d8300c382b069a`. The canonical 86-page corpus was concurrency-checked against Wiki base `703077dd74c3cbc18936357a9b5bde0397f972a3`, published normally as `10a3e2b66bffbf362ffc87596d29fa5adb65b9f1`, then fresh-cloned. The clone passed privacy and structure/reachability checks and matched all 86 canonical pages byte-for-byte. Home, Card Processing current/history, Feature Catalog, and Deployment and Operations returned rendered HTTP 200 pages with their expected headings.
 
-Until these pass, this report must not be cited as production acceptance.
+Physical screen-reader speech, switch hardware, and Android TalkBack remain explicit manual-device residual coverage; no browser-only evidence is represented as those physical outputs.

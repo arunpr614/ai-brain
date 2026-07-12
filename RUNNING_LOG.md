@@ -30044,3 +30044,25 @@ The preceding local-candidate entry recorded the artifact before restoring produ
 - **Production:** `ea7b159` active, schema 025, flags enabled, 129 retained items, green app-SHA-bound readiness, quick check `ok`, foreign keys zero, audit timer enabled/active.
 - **Closeout branch:** `codex/finalize-kanban-processing-release`; follow-up evidence/doc changes pending commit and protected CI.
 - **Next milestone:** finalize and merge PR #29, then publish canonical `docs/wiki/` through the concurrency gate and verify a fresh clone plus live Wiki content.
+
+## 2026-07-12 20:59 IST — Closeout PR merged and canonical Wiki published
+
+### Repository closeout
+
+- PR #29 passed both protected checks: Agent documentation `validate` and Product CI `verify`, including locked install, static verification, all product tests, documentation privacy/structure, production operator tool build, production build, and release-tool smoke tests.
+- Marked the draft ready only after the refreshed checks were green, then merged through the normal squash path as `2760837e8294a56c0be7ece928d8300c382b069a`.
+- The merged repository contains the deployed SHA, final production/browser/cleanup evidence, Design QA pass, canonical 86-page Wiki source, and production screenshots/comparisons.
+
+### Wiki publication and verification
+
+- Fresh-cloned the Wiki at base `703077dd74c3cbc18936357a9b5bde0397f972a3`, synchronized the exact merged canonical corpus, and passed public privacy plus 42-core/44-research structure/reachability validation.
+- Fetched and independently re-read the remote immediately before publication; it still matched the recorded base. Committed and pushed normally as `10a3e2b66bffbf362ffc87596d29fa5adb65b9f1`; no force push or protection bypass was used.
+- A second fresh clone resolved to the published commit, contained 86 pages, passed privacy/structure/reachability, and matched every canonical page byte-for-byte.
+- Live rendered Home, Card Processing Workflow, Card Processing Workflow Exploration, Feature Catalog, and Deployment and Operations pages returned HTTP 200 with their expected headings.
+
+### Final state snapshot
+
+- **Production:** `ea7b159` active and live-verified, schema 025, flags enabled, 129 retained items, exact synthetic cleanup complete, green app-SHA-bound readiness, quick check `ok`, foreign keys zero, audit timer enabled/active.
+- **Repository documentation:** merged on main at `2760837`.
+- **GitHub Wiki:** published and verified at `10a3e2b`, 86/86 canonical pages.
+- **Release goal:** all production, live-experience, cleanup, repository-documentation, and GitHub Wiki completion conditions satisfied. Physical screen-reader speech, switch hardware, and Android TalkBack remain explicit normal follow-up coverage rather than browser-automation claims.
