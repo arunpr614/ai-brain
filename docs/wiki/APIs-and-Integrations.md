@@ -2,9 +2,9 @@
 
 Purpose: Summarize internal HTTP contracts, external clients, authentication, and operational constraints.
 Audience: AI agents and engineers changing interfaces or integrations.
-Verified against: main documentation baseline `23868faf13c8e3d0821715e6f5d0e3d2af1e1a34` plus review candidate `fdd740617685c1ce730a6150c306152a04070f86` on `feat/recall-manual-sync`.
-Runtime evidence through: 2026-07-10 for the deployed application baseline; route-level runtime evidence varies.
-Last reviewed: 2026-07-11.
+Verified against: deployed application `ea7b159515fc37f76ffdb83dedf2d33d17f9a193` plus retained route-specific evidence.
+Runtime evidence through: 2026-07-12; route-level runtime evidence varies.
+Last reviewed: 2026-07-12.
 Owner: AI Brain maintainer.
 
 ## Route families
@@ -12,6 +12,7 @@ Owner: AI Brain maintainer.
 - Capture: note, URL, PDF, and user-provided transcript.
 - Retrieval: search and streamed Ask.
 - Items: enrichment trigger/status, item/note exports, attached-note CRUD/policy/revisions/restore.
+- Processing: summary, bounded item/group pages, filters, preferences, enrollment, mutation outcomes, Move/Archive/Restore/Reprocess/Undo.
 - Library: ZIP export.
 - Threads: create/list/read/rename/delete and messages.
 - Settings: pairing/exchange, token rotation, provider status, note consent/default, and default-off Recall manual-sync status/request.
@@ -36,6 +37,10 @@ Browser routes use the signed PIN session. Android and extension capture use one
 | Off-site backup service | Outbound backup | Database snapshot workflow; private runbook details excluded |
 
 Error behavior is intentionally capability-specific. Preserve explicit `401/403/409/422/429/503` semantics and avoid converting inactive routes into apparent configuration-only features.
+
+### Processing endpoints
+
+`/api/processing/**` and `/api/items/[id]/workflow/**` are browser-session-only. Bearer-only requests remain unauthorized. Reads expose allow-listed summaries, groups, cards, filters, preferences, enrollment state, and mutation outcomes. Writes require the exact configured HTTPS origin, a streaming 16 KiB request ceiling, validated bounded bodies, and per-valid-session throttling. Mutation IDs provide durable replay; expected versions provide compare-and-swap conflict protection; Undo is actor-tab scoped and expires after its server-backed window.
 
 ### Recall manual-sync endpoint
 

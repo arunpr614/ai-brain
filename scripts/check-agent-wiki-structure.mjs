@@ -11,6 +11,7 @@ const CORE_REQUIRED_PAGES = [
   "Source-Baselines-and-Status.md",
   "Feature-Catalog.md",
   "Ideas-and-Exploration-Catalog.md",
+  "Card-Processing-Workflow-Exploration.md",
   "Manual-Content-Notes.md",
   "System-Architecture.md",
   "Feature-Architecture.md",
@@ -19,6 +20,7 @@ const CORE_REQUIRED_PAGES = [
   "Data-Model.md",
   "APIs-and-Integrations.md",
   "Library-and-Item-Management.md",
+  "Card-Processing-Workflow.md",
   "Capture-and-Ingestion.md",
   "Capture-Quality-Review-and-Repair.md",
   "Organization-Tags-Topics-and-Collections.md",
@@ -69,6 +71,7 @@ const REQUIRED_RESEARCH_METADATA = [
 
 const DETAILED_FEATURE_PAGES = new Set([
   "Library-and-Item-Management.md",
+  "Card-Processing-Workflow.md",
   "Capture-and-Ingestion.md",
   "Capture-Quality-Review-and-Repair.md",
   "Manual-Content-Notes.md",
@@ -128,6 +131,8 @@ const approvedShas = new Set(
     baseline?.defaultBranchSha,
     baseline?.worktreeSha,
     baseline?.productionSha,
+    baseline?.livingWikiDocumentationSha,
+    baseline?.cardProcessingExplorationSha,
     baseline?.featureCouncilArtifactSha,
   ].filter(
     (value) => typeof value === "string" && /^[0-9a-f]{40}$/i.test(value),

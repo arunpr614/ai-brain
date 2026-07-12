@@ -2,35 +2,46 @@
 
 **Date:** 2026-07-12
 **Selected target:** Direction B Inbox, desktop 1440×1024 and mobile 390×844/320×844
-**Final result:** blocked
+**Deployed application:** `ea7b159515fc37f76ffdb83dedf2d33d17f9a193`
+**Final result:** passed
 
-final result: blocked
+final result: passed
 
 ## Evidence compared
 
-- Source desktop: `Kanban-designs/prototypes/screenshots/direction-b-inbox-desktop-1440x1024.png`
-- Implementation desktop: `/tmp/processing-desktop-dark-final-1440x1024.png`
-- Source mobile: `Kanban-designs/prototypes/screenshots/direction-b-inbox-mobile-390x844.png`
-- Implementation mobile: `/tmp/processing-mobile-dark-390x844.png` and `/tmp/processing-mobile-dark-320x844.png`
-- Combined comparisons: `docs/feature-council/kanban-card-processing/qa/visual-comparison-desktop-1440x1024.png` and `visual-comparison-mobile-390x844.png`
+- Direction B desktop reference: `docs/feature-council/kanban-card-processing/discovery/screenshots/20-direction-b-desktop-1440x1024.png`
+- Deployed desktop captures: `docs/feature-council/kanban-card-processing/qa/production-desktop-light-1440x1024.png` and `production-desktop-dark-1440x1024.png`
+- Direction B mobile reference: `docs/feature-council/kanban-card-processing/discovery/screenshots/30-direction-b-mobile-390x844.png`
+- Deployed mobile captures: `docs/feature-council/kanban-card-processing/qa/production-mobile-light-390x844.png`, `production-mobile-dark-390x844.png`, and `production-mobile-dark-320x844.png`
+- Same-theme, same-state comparisons: `docs/feature-council/kanban-card-processing/qa/production-reference-comparison-desktop-1440x1024.png` and `production-reference-comparison-mobile-390x844.png`
 
-## Current assessment
+## Final assessment
 
-The production mapping preserves Direction B's dark information hierarchy, serif title, neutral metrics, four work views, bounded filters, split queue/detail model, current application navigation, and mobile bottom navigation. Prototype-only banners and review controls were correctly omitted. The compact desktop Group & sort disclosure now matches the approved two-row 322px handoff rather than rendering an unbounded menu.
+The authenticated deployed experience preserves Direction B's dark information hierarchy, serif title, neutral metrics, four work views, bounded filters, split queue/detail model, current application navigation, and mobile bottom navigation. Prototype-only banners and review controls are correctly omitted. Light and dark themes use the existing application tokens and remain visually coherent. No broken layout, clipped content, incorrect type treatment, border/radius mismatch, or horizontal overflow was found at the release viewports.
 
-### Findings
+### Resolved findings
 
-1. **Resolved P1 — 320px view navigation clipping:** the initial 320×844 capture omitted Archived. The control now uses a four-column grid with narrow-screen spacing and a hidden mobile Inbox badge. Browser recapture proves all four tabs visible, enabled, selected in turn, and 44px high with `clientWidth === scrollWidth` at both 320 and 390. Evidence: `implementation-mobile-tabs-archived-320x844.png` and `implementation-mobile-tabs-archived-390x844.png` in the feature QA directory.
-2. **P2 — mobile metric density:** implementation metrics are taller than the reference, but primary actions remain above them and the hierarchy is clear. Re-evaluate on the recapture; compact only if it materially delays the first Inbox row at 390px.
-3. **P3 — fixture differences:** implementation screenshots contain three synthetic Inbox sources rather than the five reference sources. This is acceptable if spacing and empty/detail behavior remain faithful.
+1. **Resolved P1 — 320px view navigation clipping:** all four tabs are visible, enabled, selectable, 44px high, and contained with `scrollWidth === innerWidth` at 320 and 390. The deployed 320×844 capture reconfirms the earlier implementation fix.
+2. **Resolved P2 — mobile metric density:** the metrics intentionally stack above the first result on a narrow screen, but both primary actions, all four view controls, exact count copy, and Filters remain visible without overlap. This matches the approved information priority and does not block the task.
+3. **Accepted P3 — live-data differences:** the production comparison uses the owner's bounded live backlog rather than prototype fixtures. Layout, hierarchy, empty/detail behavior, and interaction affordances remain faithful.
 
-## Blocking reason
+## Authenticated interaction pass
 
-The configured in-app browser redirected local preview traffic to its own usage-login surface, and the available Chrome integration blocked loopback navigation. Per the selected Product Design workflow, prior screenshots and build success do not substitute for a fresh same-viewport browser verification after the P1 fix. The gate remains blocked until the candidate is reachable through an approved browser-accessible staging or dark production URL, then desktop/mobile interaction and visual comparison must be repeated.
+- Process next selects the oldest Inbox source and moves focus to its decision heading.
+- Open uses the canonical detail route; My notes remains independently editable and is never saved, cleared, or submitted by Processing.
+- Browser Back and Forward preserve the validated return route and detail context.
+- Board and List retain action parity; native Move, Archive, Restore, Reprocess, and timed Undo all work from the keyboard and announce current truth.
+- Group by Source type, reset to Status · Oldest, No User tags, filter chips, URL persistence, and Clear all behave as specified.
+- Add existing sources opens the exact frozen-set preview dialog; Escape closes it and restores focus to the opener without mutating data.
+- Library shows the Processing Inbox summary; mobile More exposes Processing; command-palette search opens Processing.
+- Archived recovery was exercised both as Restore to Done and Reprocess to Inbox.
 
-## Required unblock checks
+## Responsive and accessibility evidence
 
-- 1440×1024 and 390×844 dark/light captures after the final code SHA.
-- Reconfirm the already-passing 320×844 four-view proof on the final browser-accessible candidate SHA.
-- Process next, select/open separation, Move+Undo, Archive/Restore/Reprocess, Group & sort, filters, enrollment, load-more/group paging, error/offline, keyboard focus return, and console-error checks.
-- Update this document to `Final result: passed` only after all P0/P1/P2 findings are resolved or explicitly downgraded with evidence.
+- Desktop 1440×1024: light/dark, no horizontal overflow, four views, live regions, filters, selection/detail layout, and current app navigation passed.
+- Mobile 390×844 and 320×844: no horizontal overflow; four 44px tabs; bottom navigation and fixed controls remain unobscured; More → Processing passed.
+- Keyboard-only activation passed for theme controls, views, Process next, Archive, Restore, Reprocess, Undo, dialog dismissal/focus return, navigation, and command palette.
+- Native button/select/radio/checkbox semantics, polite/assertive live regions, visible current/pressed state, and permanent reversal paths are present in the deployed accessibility tree.
+- The only captured console errors were stale browser-extension connection messages from the pre-unlock page; no application error was emitted during the authenticated task pass.
+
+Physical screen-reader speech, switch hardware, and Android TalkBack remain documented manual-device coverage rather than claims made from browser automation. They do not change this visual/interaction result.

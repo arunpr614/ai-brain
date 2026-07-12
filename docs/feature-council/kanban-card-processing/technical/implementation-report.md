@@ -2,8 +2,8 @@
 
 **Implementation date:** 2026-07-12
 **Authority:** `product/prd-v2.md`, `ux/ux-ui-v2.md`, `technical/technical-plan-v2.md`
-**Branch:** `feat/kanban-card-processing`
-**Status:** Implemented and locally verified; production release evidence is recorded separately and must not be inferred from this report.
+**Deployed application:** `ea7b159515fc37f76ffdb83dedf2d33d17f9a193`
+**Status:** Implemented, merged through PRs #25–#28, deployed with schema 025 and all three Processing stages enabled, and live-verified through the authenticated browser and synthetic cleanup. Documentation publication is recorded separately.
 
 ## Delivered product surface
 
@@ -70,14 +70,14 @@ The immutable release path packages standalone runtime files, public/static asse
 The integrated candidate has passed:
 
 - TypeScript and ESLint;
-- all 877 tests across 93 suites, including streaming-limit, write-rate-limit, migration-hash, and production-configuration assertions;
+- all 880 tests across 93 suites, including streaming-limit, write-rate-limit, migration-hash, and production-configuration assertions;
 - production Next.js build (with only the pre-existing `unpdf` `import.meta` warning);
 - documentation privacy/structure/coverage checks;
 - processing-readiness and immutable-artifact smoke suites;
 - deterministic 10k/50k performance budgets;
 - desktop/mobile visual comparison and the corrected 320/390 px four-tab layout.
 
-The authoritative final counts and commands belong in `qa/verification-report.md` after the last post-review full run. Live browser, production workflow, rollout-window, rollback-rehearsal, and GitHub Wiki evidence remain release gates and are not claimed here.
+The authoritative final counts and commands belong in `qa/verification-report.md`. Production-copy migration/rollback rehearsal, protected artifact attestations, immutable cutover, read/write/navigation observation windows, live API/domain lifecycle, authenticated deployed browser tasks, and synthetic cleanup have passed. Repository closeout merge and GitHub Wiki publication remain the final gates and are not claimed here.
 
 ## Scope explicitly not added
 

@@ -9,7 +9,9 @@
 ## Product and Features
 
 - [Ideas and Exploration](Ideas-and-Exploration-Catalog)
+- [Card Processing Exploration](Card-Processing-Workflow-Exploration)
 - [Library and Items](Library-and-Item-Management)
+- [Card Processing Workflow](Card-Processing-Workflow)
 - [Capture and Ingestion](Capture-and-Ingestion)
 - [Capture Quality, Review, and Repair](Capture-Quality-Review-and-Repair)
 - [Manual Content Notes](Manual-Content-Notes)

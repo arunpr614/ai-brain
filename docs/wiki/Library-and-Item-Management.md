@@ -2,9 +2,9 @@
 
 Purpose: Document browsing, filtering, selection, reading, bulk actions, and exports.
 Audience: AI agents and contributors changing core library workflows.
-Verified against: `23868faf13c8e3d0821715e6f5d0e3d2af1e1a34`.
-Runtime evidence through: 2026-07-10; core library runtime was not independently re-tested for this revision.
-Last reviewed: 2026-07-11.
+Verified against: deployed application `ea7b159515fc37f76ffdb83dedf2d33d17f9a193`.
+Runtime evidence through: 2026-07-12 for Processing integration; core Library retains its feature-specific evidence boundary.
+Last reviewed: 2026-07-12.
 Owner: AI Brain maintainer.
 
 **Status:** Implemented · **Confidence:** High · **Availability:** Default
@@ -22,6 +22,8 @@ Related: [Organization](Organization-Tags-Topics-and-Collections), [Search and A
 ## User problem, entry points, and journey
 
 The single owner needs to scan a growing library, narrow it, act on several items, and inspect one source without losing provenance. Entry points are `/library`, `/items/[id]`, topic/collection links, global navigation and command palette. The typical journey is filter → select or open → read/inspect companions → organize, repair, ask, export or delete.
+
+The separate [Card Processing Workflow](Card-Processing-Workflow) adds an owner-controlled Inbox/Board/List/Archived lifecycle over the same `items`. Workflow state does not remove an item from Library, search, Ask, export, detail, notes, enrichment, or hard-delete cleanup. Library shows a Processing summary, and the existing detail/notes surface remains canonical.
 
 ## State and failure matrix
 

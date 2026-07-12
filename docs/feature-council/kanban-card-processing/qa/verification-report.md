@@ -1,8 +1,8 @@
 # Kanban Card Processing — candidate verification report
 
 **Candidate date:** 2026-07-12
-**Branch:** `codex/fix-release-audit-path-state` from merged main `efba7af54c88dfa29fa536421b4df89599ff9a01`
-**Verdict:** **Merged feature; post-cutover audit/rollback correction GO for corrective PR/CI. Production acceptance remains pending.**
+**Deployed application:** `ea7b159515fc37f76ffdb83dedf2d33d17f9a193`
+**Verdict:** **Production rollout, live API/domain verification, authenticated browser/design verification, and synthetic cleanup passed. Repository closeout merge and GitHub Wiki publication remain before the persistent goal can close.**
 
 ## Integrated automated gates
 
@@ -14,7 +14,7 @@
 | Production build | Pass — Next.js 16.2.9; only the documented pre-existing `unpdf` `import.meta` warning |
 | Build-artifact privacy | Pass — no standalone `data` directory |
 | Environment safety | Pass — local `.env` ignored, `.env.example` tracked |
-| Documentation | Pass — 44 Feature Council pages, 84 reachable Wiki pages, 155/155 package scripts classified, privacy/structure/project-Wiki checks clean |
+| Documentation | Pass — 44 Feature Council pages, 86 reachable Wiki pages, 155/155 package scripts classified, privacy/structure/project-Wiki checks clean |
 | Processing readiness smoke | Pass — 17 checks, including non-mutating status, migration hashes, strict production configuration, red/green behavior |
 | Immutable release smoke | Pass — 49 checks, including deterministic archive, env/data exclusion, runtime/source migration binding, symlink rejection, tamper rejection, app+builder release identity, collision safety, staged-tool ordering, delayed/permanent/exhausted health behavior, parseable rollback state, generated readiness-tool paths, and explicit restoration failure propagation |
 | Release scripts | Pass — shell syntax and whitespace checks |
@@ -40,14 +40,21 @@ The initial capture-channel and capture-age descriptor failures were fixed with 
 
 The independent application review is GO with no remaining P0/P1/P2. It verified session-only routes, bearer negatives, exact-origin writes, private/no-store responses, bounded/parameterized inputs, replay/CAS/Undo scoping, content-safe DTOs, streaming 16 KiB enforcement, and per-valid-session write throttling.
 
-The independent release review initially returned no-go and found the database-target split plus artifact/rollback trust gaps. `reviews/implementation-security-adversarial-review.md` records every remediation. Two production attempts failed safe before schema 025 or feature enablement and exposed immutable-runtime data-root, startup-health, release-instance identity, and staged-tool trust defects. A third attempt installed schema 025 dark and proved durable startup behavior, then exposed a generated readiness-tool path mismatch; verifier diagnostics also polluted the captured rollback tuple. The exact attested composite known-good rollback was completed manually and health-verified. Production is currently healthy with schema 025 compatible, 129 items, quick check `ok`, foreign keys zero, a green manual deep audit, and all flags off. The three reference defects are corrected and covered by 49 release checks; production acceptance has not passed.
+The independent release review initially returned no-go and found the database-target split plus artifact/rollback trust gaps. `reviews/implementation-security-adversarial-review.md` records every remediation. Three pre-acceptance attempts failed safe and exposed immutable-runtime data-root, startup-health, release-instance identity, staged-tool trust, generated readiness-tool path, and rollback-state parsing defects. PRs #26–#28 corrected those boundaries and expanded release smoke to 49 checks.
+
+The final immutable deployment of `ea7b159515fc37f76ffdb83dedf2d33d17f9a193` succeeded with a bound, restore-checked 7,626,752-byte SQLite backup. Production is healthy on the exact candidate runtime/tool set with 27 migrations through 025, quick check `ok`, foreign keys zero, a green app-SHA-bound deep readiness audit, no runtime-local durable data, and an enabled/active six-hour audit timer.
+
+Stage A enabled reads only and completed a full 15-minute observation window with authenticated 200s, unauthenticated/bearer-only 401s, private/no-store cookie-varying responses, green health/readiness/integrity, and zero post-ready warnings. Stage B enabled writes with navigation dark; the bounded one-item legacy enrollment and synthetic capture lifecycle proved replay, outcome lookup, exact-origin 403/no mutation, oversized 413, compare-and-swap 409, status transitions, archive/restore/reprocess/Undo, 410 expired Undo, exact metric deltas, and 429/Retry-After rate limiting. Two full write observation windows stayed green. Stage C then enabled navigation and retained green readiness/runtime evidence.
+
+After authenticated browser verification, cleanup used the application's hard-delete order: delete the synthetic vector through its relational bridge, remove any manual-note citations, then delete the item under foreign keys so all content/workflow dependents cascade. A fresh 7,643,136-byte pre-cleanup SQLite backup was mode-restricted, SHA-256 recorded, restore-readable, quick-check `ok`, and foreign-key clean. Post-cleanup evidence is exact: 129 retained items, synthetic item/FTS/content/workflow/job/tag/topic/note/enrollment/Undo/citation dependents zero, vector count reduced by exactly one, quick check `ok`, and foreign keys zero. The installed deep-audit service then completed successfully and restored a green checkpoint bound to application `ea7b159`; the application service and six-hour timer remain active.
 
 ## Visual and responsive QA
 
-- Direction B desktop and mobile references were compared side-by-side with the implementation at matching 1440×1024 and 390×844 viewports.
+- Direction B desktop and mobile references were compared side-by-side with the authenticated deployment in the same dark Inbox state at matching 1440×1024 and 390×844 viewports.
 - A P1 mobile defect that clipped Archived at 320 px was fixed.
-- Fresh 320×844 and 390×844 captures prove all four tabs visible, enabled, selectable, 44 px high, and contained without horizontal overflow.
-- `design-qa.md` correctly remains `final result: blocked` until the same comparison and core task pass against the browser-accessible deployed candidate, including dark mode.
+- Fresh deployed 320×844 and 390×844 captures prove all four tabs visible, enabled, selectable, 44 px high, and contained without horizontal overflow.
+- Authenticated desktop/mobile light/dark tasks passed Process next, selection/open separation, canonical detail and independent My notes, Back/Forward, Board/List parity, filters, Group & sort, enrollment preview and focus return, Archive/Restore/Reprocess/Undo, Library/More/command-palette discovery, live announcements, and keyboard operation.
+- `design-qa.md` records `Final result: passed`. Browser console review found only stale extension connection messages from the pre-unlock page and no application error during the authenticated task pass.
 
 ## Scope check
 
@@ -55,12 +62,7 @@ No batch actions, drag-and-drop, manual rank, dates, assignees, sprints, WIP lim
 
 ## Remaining release gates
 
-1. Commit, push, corrective PR, protected CI, review resolution, merge, and fresh candidate/known-good artifact plus attestation verification.
-2. Installed Linux known-good/candidate switch and authenticated rollback-health proof.
-3. Dark production deployment with bound backup and strict audit.
-4. Staged read, write, and navigation enablement with observation windows.
-5. Live synthetic capture→Inbox→Move→Done→Archive/Restore/Reprocess/Undo/count/metric/header journey and complete cleanup.
-6. Browser/design and manual accessibility tasks on the deployed experience.
-7. Repository documentation final deployed SHA plus GitHub Wiki publication and verification.
+1. Merge the repository closeout documentation with the deployed SHA and final evidence.
+2. Publish the canonical Wiki corpus, then fresh-clone and verify privacy, structure, reachability, byte equality, and live content.
 
 Until these pass, this report must not be cited as production acceptance.

@@ -2,10 +2,21 @@
 
 Purpose: Record material wiki revisions, baselines, and publication state without replacing Git history.
 Audience: Maintainers and future AI agents.
-Verified against: main documentation baseline `23868faf13c8e3d0821715e6f5d0e3d2af1e1a34` plus review candidate `fdd740617685c1ce730a6150c306152a04070f86` on `feat/recall-manual-sync`.
-Runtime evidence through: 2026-07-10 at `6858529ef179a51442d319c6c58e5ace79757619` for its dated scope.
-Last reviewed: 2026-07-11.
+Verified against: deployed application `ea7b159515fc37f76ffdb83dedf2d33d17f9a193` plus retained historical baselines.
+Runtime evidence through: 2026-07-12 for Card Processing; older entries retain their dated scope.
+Last reviewed: 2026-07-12.
 Owner: AI Brain maintainer.
+
+## 2026-07-12 — Card Processing production release
+
+| Change | Implementation baseline | Runtime baseline | State |
+|---|---|---|---|
+| Dedicated Inbox/Board/List/Archived processing workflow, migration 025, authenticated APIs, exact metrics/counts, staged flags/readiness, immutable rollback, operations, and user guidance | `ea7b159515fc37f76ffdb83dedf2d33d17f9a193` | Staged private production rollout on 2026-07-12 | Implemented and enabled |
+
+- Replaced the explored-only catalog status with the shipped [Card Processing Workflow](Card-Processing-Workflow) page.
+- Updated Library integration, API, data, configuration, security, deployment/rollback, source-baseline, Home, and navigation documentation.
+- Authenticated desktop/mobile Light/Dark tasks, keyboard/focus/live-region behavior, staged private headers, and exact synthetic cleanup back to 129 retained items passed on the deployed application.
+- The original exploration remains historical design evidence; it no longer describes current product availability.
 
 ## 2026-07-11 — Recall manual-sync review candidate
 

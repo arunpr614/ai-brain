@@ -2,7 +2,7 @@
 
 Purpose: Document the guarded Recall import architecture, the manual Settings control, and their operational limits.
 Audience: AI Brain owners, agents, and operators changing the integration.
-Verified against: main documentation baseline `23868faf13c8e3d0821715e6f5d0e3d2af1e1a34` plus review candidate `fdd740617685c1ce730a6150c306152a04070f86` on `feat/recall-manual-sync`.
+Verified against: main documentation baseline `ea7b159515fc37f76ffdb83dedf2d33d17f9a193` plus review candidate `fdd740617685c1ce730a6150c306152a04070f86` on `feat/recall-manual-sync`.
 Runtime evidence through: 2026-07-10 for the previously deployed daily timer; the manual control is not enabled or deployed.
 Last reviewed: 2026-07-11.
 Owner: AI Brain maintainer.

@@ -2,9 +2,9 @@
 
 Purpose: Explain AI Brain's users, jobs, workflows, terminology, and current product boundaries.
 Audience: AI agents, engineers, and product/design collaborators.
-Verified against: `23868faf13c8e3d0821715e6f5d0e3d2af1e1a34`.
-Runtime evidence through: 2026-07-10 at deployed application `6858529ef179a51442d319c6c58e5ace79757619`; feature scope varies.
-Last reviewed: 2026-07-11.
+Verified against: `ea7b159515fc37f76ffdb83dedf2d33d17f9a193`.
+Runtime evidence through: 2026-07-12 at deployed application `ea7b159515fc37f76ffdb83dedf2d33d17f9a193`; feature scope varies.
+Last reviewed: 2026-07-12.
 Owner: AI Brain maintainer.
 
 AI Brain serves one owner who wants to capture material from several channels, retain trustworthy source context, let background AI organize/index it, find it later, and ask cited questions without turning the system into a collaborative workspace or full research-writing IDE.
@@ -14,11 +14,12 @@ AI Brain serves one owner who wants to capture material from several channels, r
 1. Capture or import a source.
 2. Assess fidelity and preserve provenance.
 3. Enrich, chunk, and index it.
-4. Browse, organize, read, review, and repair it.
-5. Find it through exact, semantic, or hybrid retrieval.
-6. Ask cited questions over a controlled source scope.
-7. Add private attached notes and optionally include them in retrieval/AI under explicit policy.
-8. Export and back up the library.
+4. Process captured cards through Inbox, To Do, In Progress, Done, and a workflow-only archive when deliberate triage is useful.
+5. Browse, organize, read, review, and repair retained items.
+6. Find them through exact, semantic, or hybrid retrieval.
+7. Ask cited questions over a controlled source scope.
+8. Add private attached notes and optionally include them in retrieval/AI under explicit policy.
+9. Export and back up the library.
 
 ## Product jobs
 
@@ -26,6 +27,7 @@ AI Brain serves one owner who wants to capture material from several channels, r
 |---|---|---|
 | Capture | Notes, URLs/articles, selected text, YouTube, PDFs, transcripts, Android, extension, Telegram, Recall | Source fidelity varies; inactive recovery adapters remain visible only as unavailable options |
 | Organize/read | Library/item views, category/tags/topics/collections, Review/Needs Upgrade, source Focus, My notes | No multi-vault workspace, annotations, or graph |
+| Process backlog | Inbox/Board/List/Archived, versioned single-item moves, filters, exact counts/metrics, enrollment, Restore/Reprocess/Undo | No batch, rank, project fields, collaboration, global archive, or drag dependency |
 | Find/ask | FTS, semantic/hybrid retrieval, Related, scoped cited Ask, persisted chat | Retrieval quality and provider/citation behavior can fail independently |
 | Operate remotely | Hosted web app, private Android shell, extension, Telegram | Not a public multi-user or complete offline-native product |
 | Protect/recover | PIN/session/bearer boundaries, consent, database backups, health and queues | Private does not mean E2EE; artifact files are outside database backups |

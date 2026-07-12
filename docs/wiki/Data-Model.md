@@ -2,9 +2,9 @@
 
 Purpose: Document persistent domains, relationships, migrations, indexing, retention, and privacy boundaries.
 Audience: AI agents and engineers changing storage or data flow.
-Verified against: main documentation baseline `23868faf13c8e3d0821715e6f5d0e3d2af1e1a34` plus review candidate `fdd740617685c1ce730a6150c306152a04070f86` on `feat/recall-manual-sync`.
-Runtime evidence through: 2026-07-10; the deployed release applied migrations through `023`, while candidate migration `024` is not deployed.
-Last reviewed: 2026-07-11.
+Verified against: deployed application `ea7b159515fc37f76ffdb83dedf2d33d17f9a193`.
+Runtime evidence through: 2026-07-12; production applies 27 migrations through `025_item_workflow.sql` including the preserved historical `018_topics.sql` identity.
+Last reviewed: 2026-07-12.
 Owner: AI Brain maintainer.
 
 `items` is the central aggregate. It separates content kind (`source_type`) from ingestion channel (`capture_source`) and carries quality/provenance, generated output, and processing state.
@@ -20,13 +20,16 @@ Owner: AI Brain maintainer.
 | Transcript policy/provenance | jobs, attempts, policy decisions, sources, segments |
 | Integrations | Telegram updates, device-pairing codes, Recall state/runs/items plus manual requests/executions/schedule snapshot |
 | Attached notes | state, current note, revisions, mutation receipts, note FTS/index jobs/provider consents |
+| Card workflow | validated item projection, append-only events, mutation receipts, tab Undo slots, enrollment jobs, readiness/preferences/epochs |
 | Review substrate | `cards` table exists, but no spaced-repetition product implementation was found |
 
 ## Migrations
 
-Migrations are tracked in `_migrations` by full filename and applied lexicographically. The review candidate adds `024_recall_manual_sync.sql` after the deployed `023` baseline. It introduces durable manual request and whole-wrapper execution records, a trusted schedule snapshot, and a post-validation last-success field. Both `017_topics.sql` and `017_transcript_recovery.sql` remain; duplicate numeric prefixes are a tooling/human hazard. Do not rename applied migrations or infer order from the prefix alone.
+Migrations are tracked in `_migrations` by full filename, SHA-256, and lexicographic application order. The deployed baseline includes `024_recall_manual_sync.sql` and `025_item_workflow.sql`, plus the exact preserved historical `018_topics.sql` identity. Both `017_topics.sql` and `017_transcript_recovery.sql` remain; duplicate numeric prefixes are a tooling/human hazard. Do not rename applied migrations or infer order from the prefix alone.
 
 Recall request rows preserve the immutable 30-minute request deadline, idempotency key, safe terminal reason, and aggregate counts. Execution rows link manual or automatic occurrences to dry-run/apply core run IDs and persist stage, heartbeat, counts, and terminal outcome. The last-success marker is updated atomically only when a linked apply is complete and final validation has passed.
+
+Workflow fields on `items` hold current status, version, current-entry timestamps, and Done-only archive state. Content-free events preserve lifecycle history; immutable receipts preserve terminal mutation outcomes; Undo slots scope one eligible reversal to an actor tab; enrollment jobs freeze and resume an explicit legacy-item selection. New captures initialize the projection/event/receipt atomically. Historical items remain dormant until explicitly enrolled. Existing content repair, enrichment, taxonomy, attached notes, retrieval, and duplicate handling preserve workflow identity.
 
 ## Retrieval storage
 

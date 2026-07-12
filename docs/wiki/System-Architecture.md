@@ -2,16 +2,16 @@
 
 Purpose: Explain AI Brain's components, trust boundaries, data flow, failure isolation, and deployment shape.
 Audience: AI agents and engineers making cross-cutting changes.
-Verified against: `23868faf13c8e3d0821715e6f5d0e3d2af1e1a34`.
-Runtime evidence through: 2026-07-10 at deployed application `6858529ef179a51442d319c6c58e5ace79757619`.
-Last reviewed: 2026-07-11.
+Verified against: `ea7b159515fc37f76ffdb83dedf2d33d17f9a193`.
+Runtime evidence through: 2026-07-12 at deployed application `ea7b159515fc37f76ffdb83dedf2d33d17f9a193`.
+Last reviewed: 2026-07-12.
 Owner: AI Brain maintainer.
 
 ```mermaid
 flowchart TB
   clients["Browser, Android, extension, Telegram, Recall"] --> edge["Managed edge and authenticated entrypoints"]
   edge --> web["Next.js standalone Node process"]
-  web --> domain["Capture, notes, library, search, Ask"]
+  web --> domain["Capture, processing, notes, library, search, Ask"]
   domain --> db["SQLite + FTS5 + sqlite-vec"]
   domain --> artifacts["Capture artifact files"]
   web --> workers["Enrichment, transcript, note-index workers"]
@@ -25,7 +25,7 @@ The Node process handles HTTP, migrations, workers, some schedules, backups, and
 ## Component responsibilities
 
 - Next.js pages/actions/APIs implement browser UI and client contracts.
-- Domain modules enforce capture, retrieval, AI, notes, integration, and security policy.
+- Domain modules enforce capture, card workflow, retrieval, AI, notes, integration, and security policy.
 - SQLite stores canonical state, FTS, queues, chat, provenance, notes and vectors.
 - Capture artifact files retain bounded extraction evidence outside SQLite.
 - In-process workers handle enrichment, transcript recovery and note indexing.
@@ -34,11 +34,11 @@ The Node process handles HTTP, migrations, workers, some schedules, backups, and
 
 ## Primary flows
 
-Capture validates/authenticates, normalizes/deduplicates, extracts, writes item/provenance/artifacts, then queues enrichment and transcript work. Enrichment writes generated fields/taxonomy and triggers chunk/embed. Search and Related query FTS/vectors. Ask retrieves eligible chunks, streams citation-constrained output, filters citations and optionally persists chat. Attached notes add independent journal/save/revision/FTS/semantic/consent state.
+Capture validates/authenticates, normalizes/deduplicates, extracts, writes item/provenance/artifacts, initializes new items in Processing Inbox, then queues enrichment and transcript work. Processing reads bounded projections/counts/metrics and commits versioned moves, archive, replay, Undo, and enrollment records without changing content ownership. Enrichment writes generated fields/taxonomy and triggers chunk/embed. Search and Related query FTS/vectors. Ask retrieves eligible chunks, streams citation-constrained output, filters citations and optionally persists chat. Attached notes add independent journal/save/revision/FTS/semantic/consent state.
 
 ## Trust boundaries
 
-Browser sessions use PIN-derived session state. API clients share a bearer token. Pairing exchanges a short-lived one-use code. Telegram requires secret plus owner/private-chat policy. Notes add same-origin and AI consent rules. Provider/Recall credentials remain private. The managed edge terminates public TLS before the loopback service.
+Browser sessions use PIN-derived session state. Processing routes require that browser session and reject bearer-only access; mutations also require exact origin. API clients share a bearer token for their documented integrations. Pairing exchanges a short-lived one-use code. Telegram requires secret plus owner/private-chat policy. Notes add same-origin and AI consent rules. Provider/Recall credentials remain private. The managed edge terminates public TLS before the loopback service.
 
 ## Failure isolation
 

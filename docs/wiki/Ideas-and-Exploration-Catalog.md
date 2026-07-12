@@ -2,7 +2,7 @@
 
 Purpose: Separate future, deferred, rejected, and superseded ideas from current product behavior.
 Audience: AI agents, product/design collaborators, and maintainers.
-Verified against: `23868faf13c8e3d0821715e6f5d0e3d2af1e1a34`.
+Verified against: `ea7b159515fc37f76ffdb83dedf2d33d17f9a193`.
 Runtime evidence through: 2026-07-10; ideas have no runtime claim unless a current subset is linked.
 Last reviewed: 2026-07-11.
 Owner: AI Brain maintainer.

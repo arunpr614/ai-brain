@@ -2,9 +2,9 @@
 
 Purpose: Map symptoms to safe diagnostic areas without exposing production-write instructions.
 Audience: AI agents and engineers diagnosing AI Brain.
-Verified against: `23868faf13c8e3d0821715e6f5d0e3d2af1e1a34`.
-Runtime evidence through: 2026-07-10 at deployed application `6858529ef179a51442d319c6c58e5ace79757619`; current diagnosis remains evidence-specific.
-Last reviewed: 2026-07-11.
+Verified against: `ea7b159515fc37f76ffdb83dedf2d33d17f9a193`.
+Runtime evidence through: 2026-07-12 at deployed application `ea7b159515fc37f76ffdb83dedf2d33d17f9a193`; current diagnosis remains evidence-specific.
+Last reviewed: 2026-07-12.
 Owner: AI Brain maintainer.
 
 ## Safe Local Baseline
@@ -30,6 +30,8 @@ Do not broaden into builds, live probes, backfills, deploys, restores, migration
 | Enrichment is stuck | queue state, claim/attempt/error | worker unavailable, provider timeout, stale running job | Reset/backfill proposed |
 | Embeddings are missing | enrichment completion, embedding job, vector dimension | provider unavailable, dimension mismatch, partial write | Persistent backfill proposed |
 | Search misses an item | FTS projection, chunks, scope, vector rows | unindexed content, scope filter, stale vector state | Production DB inspection required |
+| Processing is unavailable | read/write/navigation flags, readiness checkpoint, audit timer, migration/config identity | staged flag order, stale/red checkpoint, migration hash/config mismatch | Live flag/audit mutation proposed |
+| Processing action conflicts or is unknown | current item version, mutation outcome, actor-tab Undo slot | stale tab, lost response, replay after later mutation, expired/superseded Undo | Manual DB edit proposed |
 | Ask has weak/no citations | retrieval chunks, SSE, citation parser | weak capture, missing vectors, malformed model markers | Private answer/source would be logged |
 | Recall status is stale | local redacted status, timer metadata, latest report | scheduler failure, lock, policy block, no new cards | Live call or write is required |
 | Telegram rejects updates | webhook auth result, schema, chat policy, idempotency | secret mismatch, non-private chat, duplicate update | Live webhook material required |

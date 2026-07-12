@@ -2,7 +2,7 @@
 
 Purpose: Explain lexical/vector retrieval, Related, cited Ask, chat persistence, and evidence boundaries.
 Audience: AI agents changing search, indexing, ranking, citations, or chat.
-Verified against: `23868faf13c8e3d0821715e6f5d0e3d2af1e1a34`.
+Verified against: `ea7b159515fc37f76ffdb83dedf2d33d17f9a193`.
 Runtime evidence through: 2026-07-10; strict provider and Ask boundaries were verified for the deployed release.
 Last reviewed: 2026-07-11.
 Owner: AI Brain maintainer.
