@@ -40,6 +40,7 @@
   "publicationVerifiedAt": "2026-07-12T19:38:41Z",
   "graphifyCouncilArtifactSha": "bad4fbd2af6a480aa8c208324bbb23e7234990a2",
   "graphifyCouncilApplicationBaselineSha": "8c1341100b174fe4ca518e6a745c30b9078df21c",
+  "graphifyCouncilPullRequest": "https://github.com/arunpr614/ai-brain/pull/34",
   "graphifyCouncilInitialWikiSha": "4ee6c92b31d17603569bc9cae363365cf020ecd2",
   "graphifyCouncilFinalWikiSha": "e884daa628c28498bbbacd09c164b8cbba6030d5",
   "graphifyCouncilWikiPageCount": 88,

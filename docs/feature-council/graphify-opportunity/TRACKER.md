@@ -29,8 +29,8 @@
 | Wiki publication package | Coordinator / QA | Complete | Live-feature corrections, Graphify research/decision, FCP-004 reciprocal defer banners, changelog |
 | Wiki validation/publication/verification | Coordinator / QA | Complete | Wiki `e884daa…`; 88/88 fresh-clone match; privacy/structure/reachability clean; live pages HTTP 200 |
 | Repository validation and diff review | Coordinator / QA | Complete | Agent-doc gates, privacy, links, inventory, checks, and diff validation pass; no production files changed |
-| Commit and push | Coordinator | In progress | Focused commits on dedicated branch; final publication/control commit pending |
-| Review-only PR and final handoff | Coordinator | Pending | PR opened, not merged; final index/log/report complete |
+| Commit and push | Coordinator | Complete | Focused commits pushed normally to the dedicated branch; no force push |
+| Review-only PR and final handoff | Coordinator | Complete | Draft [PR #34](https://github.com/arunpr614/ai-brain/pull/34) opened for review; not merged; final index/log/report complete |
 
 ## Agent file ownership
 
