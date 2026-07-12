@@ -51,6 +51,12 @@ function buildMustFail(output, message) {
 }
 
 try {
+  const deployScript = readFileSync(resolve(root, "scripts/deploy-immutable-release.sh"), "utf8");
+  assert.match(
+    deployScript,
+    /gh auth status --hostname "\$PROVENANCE_HOST"/,
+    "GitHub auth preflight must be scoped to the provenance host",
+  );
   put(".next/standalone/server.js", "server\n");
   put(".next/standalone/package.json", "{}\n");
   put(".next/standalone/.env.production", "SECRET=must-not-ship\n");
@@ -121,7 +127,7 @@ try {
   cpSync(first.artifact, resolve(fixture, "tampered.tar.gz"));
   writeFileSync(resolve(fixture, "tampered.tar.gz"), "tampered", { flag: "a" });
   assert.notEqual(sha256(resolve(fixture, "tampered.tar.gz")), first.artifactSha256);
-  console.log(JSON.stringify({ ok: true, checks: 20, artifactSha256: first.artifactSha256 }));
+  console.log(JSON.stringify({ ok: true, checks: 21, artifactSha256: first.artifactSha256 }));
 } finally {
   rmSync(fixture, { recursive: true, force: true });
 }
