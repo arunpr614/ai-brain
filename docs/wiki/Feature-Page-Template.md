@@ -2,7 +2,7 @@
 
 Purpose: Provide the required structure for significant implemented or partial feature documentation.
 Audience: Documentation contributors and AI agents.
-Verified against: `ea7b159515fc37f76ffdb83dedf2d33d17f9a193`.
+Verified against: `8c1341100b174fe4ca518e6a745c30b9078df21c`.
 Runtime evidence through: Not applicable; this is a template.
 Last reviewed: 2026-07-11.
 Owner: AI Brain maintainer.

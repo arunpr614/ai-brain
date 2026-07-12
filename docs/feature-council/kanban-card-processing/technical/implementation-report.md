@@ -2,8 +2,8 @@
 
 **Implementation date:** 2026-07-12
 **Authority:** `product/prd-v2.md`, `ux/ux-ui-v2.md`, `technical/technical-plan-v2.md`
-**Deployed application:** `ea7b159515fc37f76ffdb83dedf2d33d17f9a193`
-**Status:** Implemented, merged through PRs #25–#28, deployed with schema 025 and all three Processing stages enabled, and live-verified through the authenticated browser and synthetic cleanup. Documentation publication is recorded separately.
+**Deployed application:** `8c1341100b174fe4ca518e6a745c30b9078df21c`
+**Status:** Implemented, merged through PRs #25–#28 and direct-Library follow-up PR #31, deployed with schema 025 and all three Processing stages enabled, and live-verified. Documentation publication is recorded separately.
 
 ## Delivered product surface
 
@@ -16,7 +16,7 @@ AI Brain now has a private `/processing` workspace with four top-level views:
 
 The surface includes exact four-state totals and matching counts, Processed/Completed Today, Processed/Added/Completed week-to-date, User tag and AI Topic filters, approved group/sort options, bounded Load more behavior, card detail links, native Move/Archive/Restore/Reprocess controls, and a 30-second tab-scoped Undo with permanent reversal paths.
 
-Processing is integrated with desktop navigation, mobile More, Library summary, command palette, capture feedback, and the existing item-detail/notes experience. The notes editor remains an independent state owner and is not remounted or submitted by workflow actions.
+Processing is integrated with desktop navigation, mobile More, Library summary, command palette, capture feedback, and the existing item-detail/notes experience. Selecting up to 100 Library sources exposes a direct **Add to Inbox** action with stable request recovery, exact result accounting, idempotent replay, pending-state protection, and scoped summary refresh. The notes editor remains an independent state owner and is not remounted or submitted by workflow actions.
 
 ## Data and domain implementation
 
@@ -33,6 +33,8 @@ Migration `025_item_workflow.sql` adds:
 - raw-insert initialization and projection/history integrity triggers.
 
 Historical rows remain dormant after migration. Genuine new captures created through `insertCaptured` atomically commit the item, Inbox projection, initialization receipt, and initialization event. The raw-insert guard gives an old runtime the same safe initialization property after migration 025. Content repair, transcript recovery, enrichment, embedding, indexing, taxonomy, notes, duplicate handling, and existing Library membership preserve workflow identity.
+
+Exact selected enrollment accepts a selected-only stable request ID and creates its frozen preview atomically. Confirmation classifies each submitted ID as eligible, already enrolled, missing, or deleted; concurrent enrollment resolves as already present. Durable replay returns the same completed job, while a request-ID fingerprint mismatch is rejected. Client recovery looks up the exact job after an uncertain start or confirmation response and rejects any terminal result that does not account for the full submitted set.
 
 Migration execution now records SHA-256 values in `_migrations`. Existing filename-only rows receive a one-time hash baseline after the verified backup; every newly applied migration records its hash in the same transaction as the schema change. Release verification binds the manifest to the migrations inside the runtime and rejects a recorded hash mismatch.
 
@@ -70,15 +72,15 @@ The immutable release path packages standalone runtime files, public/static asse
 The integrated candidate has passed:
 
 - TypeScript and ESLint;
-- all 880 tests across 93 suites, including streaming-limit, write-rate-limit, migration-hash, and production-configuration assertions;
+- all 894 tests across 95 suites, including direct selected enrollment/recovery, streaming-limit, write-rate-limit, migration-hash, and production-configuration assertions;
 - production Next.js build (with only the pre-existing `unpdf` `import.meta` warning);
 - documentation privacy/structure/coverage checks;
 - processing-readiness and immutable-artifact smoke suites;
 - deterministic 10k/50k performance budgets;
 - desktop/mobile visual comparison and the corrected 320/390 px four-tab layout.
 
-The authoritative final counts and commands belong in `qa/verification-report.md`. Production-copy migration/rollback rehearsal, protected artifact attestations, immutable cutover, read/write/navigation observation windows, live API/domain lifecycle, authenticated deployed browser tasks, and synthetic cleanup have passed. Repository closeout merge and GitHub Wiki publication remain the final gates and are not claimed here.
+The authoritative final counts and commands belong in `qa/verification-report.md`. Production-copy migration/rollback rehearsal, protected artifact attestations, immutable cutover, read/write/navigation observation windows, live API/domain lifecycle, authenticated deployed browser tasks for the original workflow, direct-Library local responsive interaction, and production selected-enrollment behavior have passed. Repository documentation and GitHub Wiki publication are recorded separately.
 
 ## Scope explicitly not added
 
-The implementation does not add drag-and-drop, batch actions, manual rank, project dates, assignees, sprints, WIP limits, collaboration, offline mutation queues, quick preview, a global archive, or a replacement AI taxonomy.
+The implementation does not add drag-and-drop, bulk workflow-state mutations, manual rank, project dates, assignees, sprints, WIP limits, collaboration, offline mutation queues, quick preview, a global archive, or a replacement AI taxonomy.

@@ -2,7 +2,7 @@
 
 Purpose: Map major capabilities from user entrypoints through domain logic, storage, jobs, and integrations.
 Audience: AI agents and engineers planning code changes.
-Verified against: `ea7b159515fc37f76ffdb83dedf2d33d17f9a193`.
+Verified against: `8c1341100b174fe4ca518e6a745c30b9078df21c`.
 Runtime evidence through: 2026-07-12 at deployed application `ea7b159515fc37f76ffdb83dedf2d33d17f9a193`; feature scope varies.
 Last reviewed: 2026-07-12.
 Owner: AI Brain maintainer.

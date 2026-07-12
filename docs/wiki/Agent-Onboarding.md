@@ -2,7 +2,7 @@
 
 Purpose: Establish a safe, evidence-first workflow for understanding and changing AI Brain.
 Audience: AI agents and engineers entering the repository.
-Verified against: `ea7b159515fc37f76ffdb83dedf2d33d17f9a193`.
+Verified against: `8c1341100b174fe4ca518e6a745c30b9078df21c`.
 Runtime evidence through: 2026-07-10 at `6858529ef179a51442d319c6c58e5ace79757619`; current runtime must be verified separately.
 Last reviewed: 2026-07-11.
 Owner: AI Brain maintainer.

@@ -2,7 +2,7 @@
 
 Purpose: Provide a current, compact status matrix with links to evidence-backed feature documentation.
 Audience: AI agents, engineers, and product/design collaborators.
-Verified against: deployed application `ea7b159515fc37f76ffdb83dedf2d33d17f9a193` plus retained feature-specific historical evidence.
+Verified against: deployed application `8c1341100b174fe4ca518e6a745c30b9078df21c` plus retained feature-specific historical evidence.
 Runtime evidence through: 2026-07-12; each row retains its own runtime boundary.
 Last reviewed: 2026-07-12.
 Owner: AI Brain maintainer.

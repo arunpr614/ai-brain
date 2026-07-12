@@ -1,7 +1,7 @@
 # Kanban Card Processing — candidate verification report
 
 **Candidate date:** 2026-07-12
-**Deployed application:** `ea7b159515fc37f76ffdb83dedf2d33d17f9a193`
+**Deployed application:** `8c1341100b174fe4ca518e6a745c30b9078df21c`
 **Verdict:** **Production acceptance passed. Rollout, live API/domain verification, authenticated browser/design verification, synthetic cleanup, repository closeout merge, and GitHub Wiki publication/verification are complete.**
 
 ## Integrated automated gates
@@ -10,7 +10,7 @@
 |---|---|
 | TypeScript | Pass — `tsc --noEmit` |
 | ESLint | Pass |
-| Product tests | Pass — 880 tests, 93 suites, 0 failed/skipped/todo |
+| Product tests | Pass — 894 tests, 95 suites, 0 failed/skipped/todo |
 | Production build | Pass — Next.js 16.2.9; only the documented pre-existing `unpdf` `import.meta` warning |
 | Build-artifact privacy | Pass — no standalone `data` directory |
 | Environment safety | Pass — local `.env` ignored, `.env.example` tracked |
@@ -46,6 +46,14 @@ The final immutable deployment of `ea7b159515fc37f76ffdb83dedf2d33d17f9a193` suc
 
 Stage A enabled reads only and completed a full 15-minute observation window with authenticated 200s, unauthenticated/bearer-only 401s, private/no-store cookie-varying responses, green health/readiness/integrity, and zero post-ready warnings. Stage B enabled writes with navigation dark; the bounded one-item legacy enrollment and synthetic capture lifecycle proved replay, outcome lookup, exact-origin 403/no mutation, oversized 413, compare-and-swap 409, status transitions, archive/restore/reprocess/Undo, 410 expired Undo, exact metric deltas, and 429/Retry-After rate limiting. Two full write observation windows stayed green. Stage C then enabled navigation and retained green readiness/runtime evidence.
 
+## Direct Library add follow-up
+
+PR #31 shipped the selected-items **Add to Inbox** action on application `8c1341100b174fe4ca518e6a745c30b9078df21c`. The protected main run `29200243743` produced the attested `ai-brain-release-8c1341100b174fe4ca518e6a745c30b9078df21c` artifact. The immutable deployment used the restore-checked 7,643,136-byte backup `/opt/brain/data/backups/pre-processing-2026-07-12_16-39-26.sqlite` with SHA-256 `0ac318e10c2d3c60ff3ee35a9593beb0fed3296bdc1cd92f6e98fb3da7cf11dd`.
+
+Local browser verification selected a Library source, added it directly, observed the Library Inbox summary increase, and found the source in Processing. Repeating the selection was safe; a 390×844 mobile pass had no horizontal overflow and exposed the direct action by its accessible name. There were no application console errors. The final code passed 894 tests across 95 suites, TypeScript, ESLint, and the production build.
+
+The staged production follow-up re-established read-only Stage A before writes. In Stage B, one bounded dormant production source was added through the exact selected API, the Inbox delta was exactly one, the workflow version and event count were each one, a retry returned already present without a second event or state reset, and a wrong-origin negative returned 403. The full write observation remained health/readiness green before navigation was enabled in Stage C.
+
 After authenticated browser verification, cleanup used the application's hard-delete order: delete the synthetic vector through its relational bridge, remove any manual-note citations, then delete the item under foreign keys so all content/workflow dependents cascade. A fresh 7,643,136-byte pre-cleanup SQLite backup was mode-restricted, SHA-256 recorded, restore-readable, quick-check `ok`, and foreign-key clean. Post-cleanup evidence is exact: 129 retained items, synthetic item/FTS/content/workflow/job/tag/topic/note/enrollment/Undo/citation dependents zero, vector count reduced by exactly one, quick check `ok`, and foreign keys zero. The installed deep-audit service then completed successfully and restored a green checkpoint bound to application `ea7b159`; the application service and six-hour timer remain active.
 
 ## Visual and responsive QA
@@ -58,7 +66,7 @@ After authenticated browser verification, cleanup used the application's hard-de
 
 ## Scope check
 
-No batch actions, drag-and-drop, manual rank, dates, assignees, sprints, WIP limits, collaboration, offline mutation queue, quick preview, global archive, or AI-taxonomy substitution entered the candidate.
+No bulk workflow-state actions, drag-and-drop, manual rank, dates, assignees, sprints, WIP limits, collaboration, offline mutation queue, quick preview, global archive, or AI-taxonomy substitution entered the candidate.
 
 ## Remaining release gates
 

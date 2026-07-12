@@ -2,7 +2,7 @@
 
 Purpose: Separate verified implementation limitations from proposals and speculative concerns.
 Audience: AI agents, maintainers, and reviewers.
-Verified against: main documentation baseline `ea7b159515fc37f76ffdb83dedf2d33d17f9a193` plus review candidate `fdd740617685c1ce730a6150c306152a04070f86` on `feat/recall-manual-sync`.
+Verified against: main documentation baseline `8c1341100b174fe4ca518e6a745c30b9078df21c` plus review candidate `fdd740617685c1ce730a6150c306152a04070f86` on `feat/recall-manual-sync`.
 Runtime evidence through: 2026-07-12 where cited; most findings are static-code evidence.
 Last reviewed: 2026-07-12.
 Owner: AI Brain maintainer.

@@ -1,7 +1,7 @@
 # Processing — user guide
 
 **Audience:** AI Brain owner
-**Status:** Shipped behavior on deployed application `ea7b159515fc37f76ffdb83dedf2d33d17f9a193`; repository and Wiki publication evidence is maintained separately.
+**Status:** Shipped behavior on deployed application `8c1341100b174fe4ca518e6a745c30b9078df21c`; repository and Wiki publication evidence is maintained separately.
 
 ## What Processing is for
 
@@ -63,11 +63,20 @@ These permanent controls are always the accessible equivalent of the timed actio
 
 New captures enter Inbox automatically. Existing pre-feature sources remain outside Processing until you explicitly add them.
 
-1. Choose **Add existing sources**.
-2. Select **Recent captures**, **All existing sources**, or an exact selection carried from Library.
-3. Choose **Preview exact set**.
-4. Review the frozen count and owner timezone. Nothing has changed yet.
-5. Choose **Confirm**.
+To add specific sources directly from Library:
+
+1. Select up to 100 sources in **Library**.
+2. Choose **Add to Inbox** in the selected-items toolbar.
+3. Wait for the confirmation. It reports how many were added, were already in Processing, or were no longer available.
+
+Repeating the action is safe: a source already in Processing is left exactly where it is and is not duplicated or reset to Inbox. If you select more sources while an add is pending, those later selections remain selected.
+
+For a larger or date-based enrollment, open Processing and use **Add existing sources**:
+
+1. Choose **Recent captures** or **All existing sources**.
+2. Choose **Preview exact set**.
+3. Review the frozen count and owner timezone. Nothing has changed yet.
+4. Choose **Confirm**.
 
 Large enrollments run in durable batches. You can close the dialog, cancel at a batch boundary, or resume a safely paused job without duplicating completed work.
 
