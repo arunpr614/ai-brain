@@ -262,7 +262,7 @@ manifest="$release_root/evidence/$artifact_name.manifest.json"
 artifact="$release_root/evidence/$artifact_name"
 verify_tool="/opt/brain/release-tools/sets/$TOOL_BUILDER_SHA/verify-release-runtime.mjs"
 [[ -f "$manifest" && -f "$artifact" && -f "$verify_tool" && -f /etc/brain/release.env ]]
-node "$verify_tool" "$target" "$manifest" "$artifact"
+node "$verify_tool" "$target" "$manifest" "$artifact" >/dev/null
 set -a
 source /etc/brain/release.env
 set +a
@@ -491,7 +491,7 @@ canonical="$(readlink -e -- "$BRAIN_DB_PATH")"
 [[ "$(stat -Lc '%d:%i' -- "$canonical")" == "$EXPECTED_DB_DEVICE_INODE" ]]
 export BRAIN_DB_PATH="$canonical"
 cd /opt/brain/current
-node scripts/processing-readiness-prod.mjs audit --require-ready --require-production-config
+node scripts/dist/processing-readiness-prod.mjs audit --require-ready --require-production-config
 systemctl is-enabled --quiet brain-processing-audit.timer
 systemctl is-active --quiet brain-processing-audit.timer
 REMOTE_AUDIT

@@ -29948,3 +29948,33 @@ The preceding local-candidate entry recorded the artifact before restoring produ
 - **Active branch:** `codex/fix-release-first-cutover` from merged main `9f6c878f2e087c7cf56e746f5e5e20c944f1f227`.
 - **Production:** Prior runtime/schema healthy; all Processing flags remain zero; no migration 025, enrollment, workflow mutation, or candidate cutover has occurred.
 - **Next milestone:** Commit, protected PR/CI/merge, fresh candidate and composite known-good attestations, then guarded first-cutover retry.
+
+## 2026-07-12 15:33 IST — Dark candidate reached durable proof; exact known-good rollback completed after audit-harness failure
+
+### Protected publication and artifact proof
+
+- PR #27 passed protected checks and merged to `main` at `efba7af54c88dfa29fa536421b4df89599ff9a01`.
+- Protected-main run `29188056731` passed the full product gate and produced the candidate; authorized dispatch `29188138286` produced the pre-feature known-good application `5b92e68ec09ceb03f010db1c4fb14be5348a54bf` with builder `efba7af`.
+- Candidate and known-good checksum, exact app/builder identity, extracted runtime, GitHub-hosted runner, protected-main source/ref/workflow, and non-self-hosted provenance verification passed. Candidate has 3,621 files and 27 migrations; known-good has 3,551 files and 26 migrations.
+
+### Guarded retry and safe state
+
+- Created a new bound 7,520,256-byte production backup with checksum, source-path hash, device/inode, quick/FK, and restore proof.
+- Installed and health-verified the collision-safe composite known-good release, then activated the candidate. Candidate health passed, schema 025 applied, the six-hour audit timer was enabled, and durable-root/startup-backup/no-runtime-data proof passed.
+- The deploy then failed at deep readiness because it invoked the generated tool at `scripts/processing-readiness-prod.mjs` instead of its packaged `scripts/dist/processing-readiness-prod.mjs` path. The timer service contained the same incorrect reference.
+- Automatic rollback could not parse the prior release ID because `remote_release_state` captured the verifier's JSON diagnostic together with its intended release/timer tuple.
+- Immediately invoked the exact builder-pinned switch tool with the explicit schema-025 compatibility guard. The attested composite known-good runtime restored successfully and authenticated health returned 200.
+- Final safe-state proof: known-good composite current, service active, timer enabled/active, flags `0/0/0`, 129 items, 27 migrations through 025, quick check `ok`, foreign keys zero. A manual deep audit using the candidate's exact packaged generated tool is green with no audit, migration, or configuration failures.
+
+### Corrective change and verification
+
+- Changed the deploy deep audit and installed audit service to the exact `scripts/dist/processing-readiness-prod.mjs` path.
+- Suppressed successful verifier diagnostics inside `remote_release_state`, leaving only the strict parseable rollback tuple.
+- Added packaged-service, deploy-path, and rollback-state regression assertions. Immutable release smoke now passes 49/49; shell syntax and diff whitespace pass.
+
+### State snapshot
+
+- **Current phase:** Minimal fourth release-harness correction ready for protected PR/CI.
+- **Active branch:** `codex/fix-release-audit-path-state` from merged main `efba7af`.
+- **Production:** Healthy on the composite known-good application with schema 025 retained and all Processing flags dark; no enrollment or workflow mutation occurred.
+- **Next milestone:** Publish/merge the three-reference correction, rebuild fresh artifacts, re-activate the candidate, and resume dark/staged verification.

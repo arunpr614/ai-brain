@@ -1,8 +1,8 @@
 # Kanban Card Processing — candidate verification report
 
 **Candidate date:** 2026-07-12
-**Branch:** `codex/fix-release-first-cutover` from merged main `9f6c878f2e087c7cf56e746f5e5e20c944f1f227`
-**Verdict:** **Merged feature plus first-cutover remediation GO for corrective PR/CI. Production acceptance remains pending.**
+**Branch:** `codex/fix-release-audit-path-state` from merged main `efba7af54c88dfa29fa536421b4df89599ff9a01`
+**Verdict:** **Merged feature; post-cutover audit/rollback correction GO for corrective PR/CI. Production acceptance remains pending.**
 
 ## Integrated automated gates
 
@@ -16,7 +16,7 @@
 | Environment safety | Pass — local `.env` ignored, `.env.example` tracked |
 | Documentation | Pass — 44 Feature Council pages, 84 reachable Wiki pages, 155/155 package scripts classified, privacy/structure/project-Wiki checks clean |
 | Processing readiness smoke | Pass — 17 checks, including non-mutating status, migration hashes, strict production configuration, red/green behavior |
-| Immutable release smoke | Pass — 46 checks, including deterministic archive, env/data exclusion, runtime/source migration binding, symlink rejection, tamper rejection, app+builder release identity, collision safety, staged-tool ordering, delayed/permanent/exhausted health behavior, and explicit restoration failure propagation |
+| Immutable release smoke | Pass — 49 checks, including deterministic archive, env/data exclusion, runtime/source migration binding, symlink rejection, tamper rejection, app+builder release identity, collision safety, staged-tool ordering, delayed/permanent/exhausted health behavior, parseable rollback state, generated readiness-tool paths, and explicit restoration failure propagation |
 | Release scripts | Pass — shell syntax and whitespace checks |
 | Full artifact rehearsal | Pass — 3,613 regular files, 71,973,337 bytes expanded, 27 migrations, no raw environment files, runtime verification clean |
 | Dependency audit | Pass — clean `npm ci`; npm audit 0 total vulnerabilities; `@js-temporal/polyfill` 0.5.1 ISC and `tar` 7.5.16 BlueOak-1.0.0 |
@@ -40,7 +40,7 @@ The initial capture-channel and capture-age descriptor failures were fixed with 
 
 The independent application review is GO with no remaining P0/P1/P2. It verified session-only routes, bearer negatives, exact-origin writes, private/no-store responses, bounded/parameterized inputs, replay/CAS/Undo scoping, content-safe DTOs, streaming 16 KiB enforcement, and per-valid-session write throttling.
 
-The independent release review initially returned no-go and found the database-target split plus artifact/rollback trust gaps. `reviews/implementation-security-adversarial-review.md` records every remediation. Two production attempts then failed safe before schema 025 or feature enablement and exposed immutable-runtime data-root, startup-health, release-instance identity, and staged-tool trust defects. The corrective re-review found no P0/P1; its final P2 cleanup (bounded Telegram notification, blank Recall override normalization, symlink-aware override containment, and backup-format documentation) is integrated. The current release-safety verdict is GO for corrective PR/CI and a guarded retry; production acceptance has not passed.
+The independent release review initially returned no-go and found the database-target split plus artifact/rollback trust gaps. `reviews/implementation-security-adversarial-review.md` records every remediation. Two production attempts failed safe before schema 025 or feature enablement and exposed immutable-runtime data-root, startup-health, release-instance identity, and staged-tool trust defects. A third attempt installed schema 025 dark and proved durable startup behavior, then exposed a generated readiness-tool path mismatch; verifier diagnostics also polluted the captured rollback tuple. The exact attested composite known-good rollback was completed manually and health-verified. Production is currently healthy with schema 025 compatible, 129 items, quick check `ok`, foreign keys zero, a green manual deep audit, and all flags off. The three reference defects are corrected and covered by 49 release checks; production acceptance has not passed.
 
 ## Visual and responsive QA
 
