@@ -106,10 +106,15 @@ async function requestJson(url: string, init?: RequestInit): Promise<unknown> {
   const body = await response.json().catch(() => null);
   if (!response.ok) {
     const raw = record(body);
+    const rawError = raw.error;
+    const errorCode =
+      typeof rawError === "string"
+        ? rawError
+        : string(raw.code ?? record(rawError).code);
     const error = new Error(
-      string(raw.message ?? record(raw.error).message, "Processing is temporarily unavailable."),
+      string(raw.message ?? record(rawError).message, "Processing is temporarily unavailable."),
     );
-    Object.assign(error, { status: response.status, code: raw.code ?? record(raw.error).code });
+    Object.assign(error, { status: response.status, code: errorCode });
     throw error;
   }
   return body;
@@ -330,11 +335,19 @@ export async function undoWorkflow(item: ProcessingItem, slot: UndoSlot): Promis
   };
 }
 
-export async function startEnrollment(mode: ProcessingEnrollmentMode, selectedItemIds: string[] = []): Promise<ProcessingEnrollmentJobDto> {
+export async function startEnrollment(
+  mode: ProcessingEnrollmentMode,
+  selectedItemIds: string[] = [],
+  requestId?: string,
+): Promise<ProcessingEnrollmentJobDto> {
   const body = record(await requestJson("/api/processing/enrollment/jobs", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ mode, ...(mode === "selected" ? { selectedItemIds } : {}) }),
+    body: JSON.stringify({
+      ...(requestId ? { requestId } : {}),
+      mode,
+      ...(mode === "selected" ? { selectedItemIds } : {}),
+    }),
   }));
   return (body.job ?? record(body.data).job) as ProcessingEnrollmentJobDto;
 }
@@ -347,9 +360,10 @@ export async function fetchEnrollmentJob(jobId: string): Promise<ProcessingEnrol
 export async function mutateEnrollmentJob(
   job: ProcessingEnrollmentJobDto,
   action: "confirm" | "cancel" | "retry",
+  mutationId = crypto.randomUUID(),
 ): Promise<ProcessingEnrollmentMutationDto> {
   const body: Record<string, unknown> = {
-    mutationId: crypto.randomUUID(),
+    mutationId,
     expectedVersion: job.version,
   };
   if (action === "confirm") body.frozenHash = job.frozenHash;
@@ -358,4 +372,140 @@ export async function mutateEnrollmentJob(
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(body),
   })) as ProcessingEnrollmentMutationDto;
+}
+
+export interface AddSelectedToProcessingInboxResult {
+  requestedCount: number;
+  addedCount: number;
+  alreadyInProcessingCount: number;
+  unavailableCount: number;
+}
+
+interface AddSelectedToProcessingInboxOptions {
+  pollIntervalMs?: number;
+  maxPolls?: number;
+  requestId?: string;
+  confirmMutationId?: string;
+}
+
+function enrollmentError(message: string, code: string): Error {
+  return Object.assign(new Error(message), { code });
+}
+
+function enrollmentStateError(job: ProcessingEnrollmentJobDto): Error | null {
+  if (!(["failed", "cancelled", "expired"] as const).includes(
+    job.state as "failed" | "cancelled" | "expired",
+  )) return null;
+  return enrollmentError(
+    "Adding the selected sources paused safely. Finish or retry it in Processing.",
+    `selected_enrollment_${job.state}`,
+  );
+}
+
+/**
+ * Enrolls the exact Library selection without navigating away from Library.
+ * The existing frozen preview + durable confirmation machinery remains the
+ * authority; this helper simply completes that safe selected-only flow for a
+ * bounded set and waits for its durable result.
+ */
+export async function addSelectedToProcessingInbox(
+  selectedItemIds: string[],
+  options: AddSelectedToProcessingInboxOptions = {},
+): Promise<AddSelectedToProcessingInboxResult> {
+  const ids = Array.from(
+    new Set(selectedItemIds.filter((id) => typeof id === "string" && id.trim().length > 0)),
+  ).slice(0, 100);
+  if (ids.length === 0) {
+    throw enrollmentError("Select at least one source.", "empty_selection");
+  }
+
+  const pollIntervalMs = Math.max(0, options.pollIntervalMs ?? 150);
+  const maxPolls = Math.max(1, options.maxPolls ?? 40);
+  const requestId = options.requestId ?? crypto.randomUUID();
+  const confirmMutationId = options.confirmMutationId ?? crypto.randomUUID();
+  let job: ProcessingEnrollmentJobDto;
+  try {
+    job = await startEnrollment("selected", ids, requestId);
+  } catch (startError) {
+    const status = (startError as Error & { status?: number }).status;
+    if (typeof status === "number" && status >= 400 && status < 500) {
+      throw startError;
+    }
+    try {
+      job = await fetchEnrollmentJob(requestId);
+    } catch {
+      throw startError;
+    }
+  }
+
+  let stateError = enrollmentStateError(job);
+  if (stateError) throw stateError;
+  if (job.state === "previewing") {
+    job = await fetchEnrollmentJob(job.id);
+  }
+  if (job.state === "preview_ready" && job.frozenHash === null) {
+    throw enrollmentError(
+      "The selected sources could not be prepared. Nothing changed.",
+      "selected_preview_unavailable",
+    );
+  }
+  if (job.state === "preview_ready") {
+    let confirmationError: unknown = null;
+    for (let attempt = 0; attempt < 2 && job.state === "preview_ready"; attempt += 1) {
+      try {
+        const mutation = await mutateEnrollmentJob(job, "confirm", confirmMutationId);
+        if (mutation.receipt?.outcomeClass !== "accepted_effective") {
+          throw enrollmentError(
+            "The selected sources were not added. Refresh and try again.",
+            mutation.receipt?.resultCode ?? "selected_confirmation_failed",
+          );
+        }
+        job = mutation.job;
+        confirmationError = null;
+      } catch (cause) {
+        confirmationError = cause;
+        try {
+          job = await fetchEnrollmentJob(job.id);
+        } catch {
+          throw cause;
+        }
+      }
+    }
+    if (job.state === "preview_ready") {
+      throw confirmationError ?? enrollmentError(
+        "The selected sources were not added. Refresh and try again.",
+        "selected_confirmation_failed",
+      );
+    }
+  }
+
+  for (let attempt = 0; attempt < maxPolls && job.state !== "completed"; attempt += 1) {
+    stateError = enrollmentStateError(job);
+    if (stateError) throw stateError;
+    await new Promise((resolve) => globalThis.setTimeout(resolve, pollIntervalMs));
+    job = await fetchEnrollmentJob(job.id);
+  }
+
+  stateError = enrollmentStateError(job);
+  if (stateError) throw stateError;
+  if (job.state !== "completed") {
+    throw enrollmentError(
+      "Adding the selected sources is still running. Check Processing for progress.",
+      "selected_enrollment_pending",
+    );
+  }
+
+  const result = {
+    requestedCount: ids.length,
+    addedCount: job.enrolledCount,
+    alreadyInProcessingCount: job.alreadyEnrolledCount,
+    unavailableCount: job.deletedCount,
+  };
+  if (result.addedCount + result.alreadyInProcessingCount + result.unavailableCount !== ids.length) {
+    throw enrollmentError(
+      "Processing completed, but its result could not be verified. Refresh before retrying.",
+      "selected_result_mismatch",
+    );
+  }
+  return result;
 }

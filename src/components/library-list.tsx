@@ -11,7 +11,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useCallback, useEffect, useState, useTransition } from "react";
+import { useCallback, useEffect, useRef, useState, useTransition } from "react";
 import {
   bulkAttachCollectionAction,
   bulkTagItemsAction,
@@ -25,7 +25,14 @@ import {
   qualityLabel,
 } from "@/lib/capture/quality";
 import { isFullTextCapture, isNeedsUpgrade } from "@/lib/capture/upgrade-policy";
-import { getAskSelectedActionState } from "@/lib/library/selected-actions";
+import {
+  getAskSelectedActionState,
+  getProcessingSelectedActionState,
+  processingSelectedResultMessage,
+  removeSubmittedSelection,
+} from "@/lib/library/selected-actions";
+import { PROCESSING_INBOX_UPDATED_EVENT } from "@/lib/processing/events";
+import { addSelectedToProcessingInbox } from "./processing/api";
 import { ItemEnrichmentWatch } from "./item-enrichment-watch";
 import { SourceLogo } from "./source-logo";
 
@@ -37,8 +44,8 @@ import { SourceLogo } from "./source-logo";
  * and appear on hover once there is enough room for a cleaner list view.
  *
  * The floating BulkBar appears once selectedIds.size > 0 and offers Ask,
- * Tag, and Add to collection. Mutating actions go through the server actions
- * in src/app/actions.ts and use useTransition() for back-pressure (F-053).
+ * Add to Inbox, Tag, and Add to collection. Mutating actions use the existing
+ * server/API contracts and useTransition() for back-pressure (F-053).
  */
 
 function formatRelative(ts: number): string {
@@ -118,6 +125,11 @@ export function LibraryList({
   const [filter, setFilter] = useState<LibraryFilter>("all");
   const [flash, setFlash] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
+  const processingCommandRef = useRef<{
+    selectionKey: string;
+    requestId: string;
+    confirmMutationId: string;
+  } | null>(null);
 
   const clear = useCallback(() => setSelectedIds(new Set()), []);
   const showFlash = useCallback((message: string) => {
@@ -190,11 +202,47 @@ export function LibraryList({
   }, [selectedIds, router]);
 
   const handleProcessingSelected = useCallback(() => {
-    const ids = Array.from(selectedIds).slice(0, 100);
+    const ids = Array.from(selectedIds);
     if (ids.length === 0) return;
-    window.sessionStorage.setItem("processing-enrollment-selected", JSON.stringify(ids));
-    router.push("/processing?enroll=selected");
-  }, [selectedIds, router]);
+    const selectionKey = ids.join("\0");
+    const command = processingCommandRef.current?.selectionKey === selectionKey
+      ? processingCommandRef.current
+      : {
+          selectionKey,
+          requestId: crypto.randomUUID(),
+          confirmMutationId: crypto.randomUUID(),
+        };
+    processingCommandRef.current = command;
+    startTransition(async () => {
+      try {
+        const result = await addSelectedToProcessingInbox(ids, {
+          requestId: command.requestId,
+          confirmMutationId: command.confirmMutationId,
+        });
+        processingCommandRef.current = null;
+        showFlash(processingSelectedResultMessage(result));
+        setSelectedIds((current) => removeSubmittedSelection(current, ids));
+        window.dispatchEvent(new Event(PROCESSING_INBOX_UPDATED_EVENT));
+        router.refresh();
+      } catch (cause) {
+        const code = (cause as Error & { code?: string }).code;
+        if (
+          code === "selected_enrollment_failed" ||
+          code === "selected_enrollment_cancelled" ||
+          code === "selected_enrollment_expired" ||
+          code === "selected_result_mismatch" ||
+          code === "enrollment_request_mismatch"
+        ) {
+          processingCommandRef.current = null;
+        }
+        showFlash(
+          code === "enrollment_job_active"
+            ? "Another Processing enrollment is active. Finish it in Processing, then try again."
+            : (cause as Error).message || "The selected sources were not added. Nothing changed.",
+        );
+      }
+    });
+  }, [selectedIds, router, showFlash]);
 
   // Auto-dismiss flash after 3s.
   useEffect(() => {
@@ -246,9 +294,10 @@ export function LibraryList({
                     <input
                       type="checkbox"
                       checked={checked}
+                      disabled={isPending}
                       onChange={() => toggle(it.id)}
                       aria-label={`Select ${it.title}`}
-                      className="h-[18px] w-[18px] cursor-pointer accent-[var(--accent-9)]"
+                      className="h-[18px] w-[18px] cursor-pointer accent-[var(--accent-9)] disabled:cursor-not-allowed disabled:opacity-50"
                     />
                   </label>
                   <Link href={`/items/${it.id}`} className="min-w-0 flex-1">
@@ -299,9 +348,10 @@ export function LibraryList({
                   <input
                     type="checkbox"
                     checked={checked}
+                    disabled={isPending}
                     onChange={() => toggle(it.id)}
                     aria-label={`Select ${it.title}`}
-                    className="h-4 w-4 cursor-pointer accent-[var(--accent-9)]"
+                    className="h-4 w-4 cursor-pointer accent-[var(--accent-9)] disabled:cursor-not-allowed disabled:opacity-50"
                   />
                 </label>
                 <Link
@@ -467,7 +517,9 @@ function BulkBar({
 }) {
   const [tagValue, setTagValue] = useState("");
   const askState = getAskSelectedActionState(count);
+  const processingState = getProcessingSelectedActionState(count);
   const askDisabled = disabled || askState.disabled;
+  const processingDisabled = disabled || processingState.disabled;
 
   return (
     <>
@@ -490,7 +542,7 @@ function BulkBar({
           {askState.label}
         </button>
         {onProcessingSelected && (
-          <button type="button" onClick={onProcessingSelected} disabled={disabled} title="Add selected sources to Processing" aria-label="Add selected sources to Processing" className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-md border border-[var(--border)] text-[var(--text-primary)] disabled:opacity-50">
+          <button type="button" onClick={onProcessingSelected} disabled={processingDisabled} title={processingState.title} aria-label={processingState.title} className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-md border border-[var(--border)] text-[var(--text-primary)] disabled:opacity-50">
             <Inbox className="h-4 w-4" />
           </button>
         )}
@@ -527,8 +579,8 @@ function BulkBar({
         </button>
 
         {onProcessingSelected && (
-          <button type="button" onClick={onProcessingSelected} disabled={disabled} className="inline-flex h-7 items-center gap-1 rounded-sm border border-[var(--border)] px-2 text-xs font-medium text-[var(--text-primary)] hover:bg-[var(--surface)] disabled:opacity-50">
-            <Inbox className="h-3 w-3" /> Processing
+          <button type="button" onClick={onProcessingSelected} disabled={processingDisabled} title={processingState.title} className="inline-flex h-7 items-center gap-1 rounded-sm border border-[var(--border)] px-2 text-xs font-medium text-[var(--text-primary)] hover:bg-[var(--surface)] disabled:opacity-50">
+            <Inbox className="h-3 w-3" /> {processingState.label}
           </button>
         )}
 

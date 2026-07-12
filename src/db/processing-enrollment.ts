@@ -75,7 +75,7 @@ function recentBoundary(timezone: string, asOf: number): number {
 
 function finishPreview(jobId: string, now: number) {
   const db = getDb();
-  const hashes = db.prepare("SELECT scope_key_hash hash FROM processing_enrollment_job_items WHERE job_id=? ORDER BY ordinal")
+  const hashes = db.prepare("SELECT scope_key_hash hash FROM processing_enrollment_job_items WHERE job_id=? AND result='pending' ORDER BY ordinal")
     .all(jobId) as Array<{ hash: string }>;
   const frozenHash = crypto.createHash("sha256").update(hashes.map((row) => row.hash).join("\n")).digest("hex");
   db.prepare(`UPDATE processing_enrollment_jobs SET state='preview_ready',version=version+1,
@@ -120,30 +120,66 @@ function schedulePreview(jobId: string) {
   });
 }
 
-export function startEnrollmentPreview(input: { mode: ProcessingEnrollmentMode; selectedItemIds?: string[] }, now = Date.now()): ProcessingEnrollmentJobDto {
+export function startEnrollmentPreview(input: {
+  requestId?: string;
+  mode: ProcessingEnrollmentMode;
+  selectedItemIds?: string[];
+}, now = Date.now()): ProcessingEnrollmentJobDto {
   const db = getDb();
+  const requestedId = input.requestId;
+  const uniqueSelected = [...new Set(input.selectedItemIds ?? [])].slice(0, 100);
+  if (requestedId) {
+    const existing = jobRow(requestedId);
+    if (existing) {
+      const storedHashes = db.prepare(`SELECT scope_key_hash hash
+        FROM processing_enrollment_job_items WHERE job_id=? ORDER BY ordinal`)
+        .all(requestedId) as Array<{ hash: string }>;
+      const expectedHashes = uniqueSelected.map((itemId) => scopeHash(`item:${itemId}`));
+      if (
+        existing.mode !== input.mode ||
+        storedHashes.length !== expectedHashes.length ||
+        storedHashes.some((row, index) => row.hash !== expectedHashes[index])
+      ) {
+        throw new ProcessingDomainError("enrollment_request_mismatch", 422);
+      }
+      return dto(existing);
+    }
+  }
   const active = db.prepare(`SELECT * FROM processing_enrollment_jobs WHERE state IN
     ('previewing','preview_ready','confirmed','running','cancel_requested') LIMIT 1`).get() as JobRow | undefined;
   if (active) throw new ProcessingDomainError("enrollment_job_active", 409, { error: "enrollment_job_active", job: dto(active) });
   const pref = db.prepare("SELECT owner_timezone,timezone_version FROM processing_preferences WHERE singleton=1").get() as { owner_timezone: string | null; timezone_version: number };
   const timezone = pref.owner_timezone ?? process.env.BRAIN_OWNER_TIMEZONE ?? "UTC";
-  const id = newUuid();
+  const id = requestedId ?? newUuid();
   const recentStart = input.mode === "recent" ? recentBoundary(timezone, now) : null;
-  db.prepare(`INSERT INTO processing_enrollment_jobs(
-    id,mode,state,preview_as_of_utc,recent_start_utc,owner_timezone,timezone_version,created_at,updated_at)
-    VALUES(?,?,'previewing',?,?,?,?,?,?)`).run(id, input.mode, now, recentStart, timezone, pref.timezone_version, now, now);
+  const insertJob = () => db.prepare(`INSERT INTO processing_enrollment_jobs(
+      id,mode,state,preview_as_of_utc,recent_start_utc,owner_timezone,timezone_version,created_at,updated_at)
+      VALUES(?,?,'previewing',?,?,?,?,?,?)`)
+    .run(id, input.mode, now, recentStart, timezone, pref.timezone_version, now, now);
   if (input.mode === "selected") {
-    const unique = [...new Set(input.selectedItemIds ?? [])].slice(0, 100);
     db.transaction(() => {
-      const exists = db.prepare("SELECT id FROM items WHERE id=? AND workflow_legacy_baseline=1 AND workflow_version=0");
-      const insert = db.prepare("INSERT INTO processing_enrollment_job_items(job_id,ordinal,item_id,scope_key_hash) VALUES(?,?,?,?)");
-      let ordinal = 0;
-      for (const itemId of unique) {
-        if (exists.get(itemId)) insert.run(id, ordinal++, itemId, scopeHash(`item:${itemId}`));
+      insertJob();
+      const findItem = db.prepare(`SELECT id,workflow_version,workflow_legacy_baseline
+        FROM items WHERE id=?`);
+      const insert = db.prepare(`INSERT INTO processing_enrollment_job_items(
+        job_id,ordinal,item_id,scope_key_hash,result) VALUES(?,?,?,?,?)`);
+      for (const [ordinal, itemId] of uniqueSelected.entries()) {
+        const item = findItem.get(itemId) as {
+          id: string;
+          workflow_version: number;
+          workflow_legacy_baseline: number;
+        } | undefined;
+        const result = !item
+          ? "deleted"
+          : item.workflow_version > 0 || item.workflow_legacy_baseline !== 1
+            ? "already_enrolled"
+            : "pending";
+        insert.run(id, ordinal, item?.id ?? null, scopeHash(`item:${itemId}`), result);
       }
+      finishPreview(id, now);
     })();
-    finishPreview(id, now);
   } else {
+    insertJob();
     schedulePreview(id);
   }
   return dto(jobRow(id)!);
@@ -239,8 +275,25 @@ export function runEnrollmentBatch(jobId: string, batchSize = 100): boolean {
   const rows = db.prepare(`SELECT ordinal,item_id FROM processing_enrollment_job_items
     WHERE job_id=? AND result='pending' ORDER BY ordinal LIMIT ?`).all(jobId, Math.min(100, Math.max(1, batchSize))) as Array<{ ordinal: number; item_id: string | null }>;
   if (rows.length === 0) {
-    db.prepare("UPDATE processing_enrollment_jobs SET state='completed',version=version+1,completed_at=?,updated_at=? WHERE id=?")
-      .run(Date.now(), Date.now(), jobId);
+    const now = Date.now();
+    db.transaction(() => {
+      db.prepare(`UPDATE processing_enrollment_job_items SET result='deleted'
+        WHERE job_id=? AND item_id IS NULL AND result!='deleted'`).run(jobId);
+      const counts = db.prepare(`SELECT count(*) processed,
+          coalesce(sum(result='enrolled'),0) enrolled,
+          coalesce(sum(result='already_enrolled'),0) already,
+          coalesce(sum(result='deleted'),0) deleted
+        FROM processing_enrollment_job_items WHERE job_id=?`).get(jobId) as {
+          processed: number;
+          enrolled: number;
+          already: number;
+          deleted: number;
+        };
+      db.prepare(`UPDATE processing_enrollment_jobs SET state='completed',version=version+1,
+        processed_count=?,enrolled_count=?,already_enrolled_count=?,deleted_count=?,
+        completed_at=?,updated_at=? WHERE id=?`)
+        .run(counts.processed, counts.enrolled, counts.already, counts.deleted, now, now, jobId);
+    })();
     return true;
   }
   db.transaction(() => {

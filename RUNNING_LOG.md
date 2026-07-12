@@ -30066,3 +30066,62 @@ The preceding local-candidate entry recorded the artifact before restoring produ
 - **Repository documentation:** merged on main at `2760837`.
 - **GitHub Wiki:** published and verified at `10a3e2b`, 86/86 canonical pages.
 - **Release goal:** all production, live-experience, cleanup, repository-documentation, and GitHub Wiki completion conditions satisfied. Physical screen-reader speech, switch hardware, and Android TalkBack remain explicit normal follow-up coverage rather than browser-automation claims.
+
+---
+
+## 2026-07-12 21:44 IST — Direct Library “Add to Inbox” follow-up implemented and locally verified
+
+**Entry author:** AI agent (Codex) · **Triggered by:** User asked to add a selected Library source directly to the Processing Inbox without leaving Library.
+
+### Done
+
+- Replaced the selected-source `Processing` navigation handoff with an in-place `Add to Inbox` action on desktop and an accessible icon action on mobile.
+- Reused the durable selected-enrollment machinery while making one-click execution end-to-end idempotent: stable request and confirmation IDs, exact-job recovery after lost responses, authoritative 4xx propagation, atomic selected-preview creation, and server-side replay mismatch rejection.
+- Made selected enrollment outcome truth exact for eligible, already-enrolled, concurrently enrolled, deleted, and missing IDs. Final job aggregates must sum to the requested unique set; repeat enrollment never resets workflow state or adds another workflow event.
+- Added pending-state protections: selection checkboxes and bulk controls are disabled during the command, while submitted-only removal preserves any later selection defensively.
+- Added immediate Library Inbox-summary refresh through a scoped browser event after successful enrollment.
+- Kept the action behind effective Processing navigation and write flags and bounded it to 100 selected sources.
+- Completed independent correctness review. The first review correctly returned NO-GO on outcome accounting and ambiguous-response idempotency; all P1/P2 findings were remediated. Final verdict: **GO**, no remaining P0/P1/P2.
+
+### Verification
+
+- TypeScript: pass.
+- ESLint: pass.
+- Full product suite: 894 tests across 95 suites, zero failed/skipped/todo.
+- Focused selected-action/enrollment suite: 33/33 pass, including real route/database outcomes, deletion/concurrent-enrollment races, repeat safety, lost start/confirm responses, request mismatch, materialization rollback, and final-poll terminal state.
+- Production build: pass; only the pre-existing `unpdf import.meta` warning remains.
+- Desktop selected-state visual comparison against the supplied 2120×1878 reference: consistent existing Library pattern with the new `Add to Inbox` label.
+- Local browser smoke: direct add succeeded, Library summary refreshed from 1 to 2, Processing showed both Inbox sources, mobile 390×844 had no horizontal overflow, the icon action had an explicit accessible name, and browser console errors were empty.
+
+### Documents created or updated this period
+
+**Created:**
+- `src/lib/processing/events.ts` — scoped event contract for refreshing Processing Inbox entry summaries.
+
+**Updated:**
+- `src/components/library-list.tsx`, `src/app/library/page.tsx`, `src/components/processing/entry-summary.tsx` — direct action, pending-state protection, feature gating, feedback, and summary refresh.
+- `src/components/processing/api.ts`, `src/db/processing-enrollment.ts`, `src/lib/processing/contracts.ts` — idempotent exact selected-enrollment execution and accounting.
+- `src/components/processing/api.test.ts`, `src/db/migrations/025_item_workflow.test.ts`, `src/app/api/processing/routes.test.ts`, `src/lib/library/selected-actions*.ts` — focused UI-policy, client-recovery, route, database, race, and rollback coverage.
+
+### Deployed / Released
+
+Nothing deployed yet. The verified change is local on `codex/library-add-selected-to-inbox`.
+
+### Current remaining to-do
+
+1. Freeze the diff, commit, push, open a protected pull request, and pass CI/review.
+2. Merge through the normal process, build the immutable candidate, deploy using the established production release path, and verify the live Library → Add to Inbox → Processing flow.
+3. Update/publish canonical repository and Wiki documentation if the user-facing workflow wording changes, then append final production evidence.
+
+### Session self-critique
+
+- The initial client-only mocks encoded incorrect exclusion accounting; independent review exposed this before publication. The corrected implementation now derives results from durable job-item truth and real database/route tests.
+- Browser visual and interaction QA preceded the final backend idempotency hardening because the browser session had already been finalized. The final backend changes are covered by real route/database tests and did not alter rendered UI; production browser verification remains required after deployment.
+
+### State snapshot
+
+- **Current phase:** Locally verified follow-up release candidate.
+- **Active branch:** `codex/library-add-selected-to-inbox`.
+- **Working tree:** Intentional uncommitted direct-action code, tests, and this append-only log entry only.
+- **Production:** Existing Processing release remains live and unchanged by this follow-up.
+- **Next milestone:** Protected PR/CI merge, immutable deployment, and live authenticated verification.

@@ -14,7 +14,10 @@ import {
 } from "@/db/items";
 import { verifySessionCookie } from "@/lib/auth";
 import { ProcessingEntrySummary } from "@/components/processing/entry-summary";
-import { processingNavigationEnabled } from "@/lib/processing/flags";
+import {
+  processingNavigationEnabled,
+  processingWriteEnabled,
+} from "@/lib/processing/flags";
 
 const SOURCE_FILTERS: Array<{ value: LibrarySourceFilter; label: string }> = [
   { value: "all", label: "All" },
@@ -90,6 +93,7 @@ export default async function LibraryPage({
     tag ? `#${tag}` : null,
   ].filter((label): label is string => Boolean(label));
   const processingNavigation = processingNavigationEnabled();
+  const processingSelectionWrite = processingNavigation && processingWriteEnabled();
 
   return (
     <div className="mx-auto max-w-[960px] px-5 py-8 md:px-8 md:py-10">
@@ -211,7 +215,7 @@ export default async function LibraryPage({
       {items.length === 0 ? (
         hasFilters ? <FilteredEmptyState /> : <EmptyState />
       ) : (
-        <LibraryList items={items} collections={collections} processingEnabled={processingNavigation} />
+        <LibraryList items={items} collections={collections} processingEnabled={processingSelectionWrite} />
       )}
     </div>
   );
