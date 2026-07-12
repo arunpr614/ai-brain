@@ -2,7 +2,7 @@
 
 Purpose: Document the public-safe backup model, recovery boundaries, and known coverage gap.
 Audience: AI agents, maintainers, and operators.
-Verified against: `23868faf13c8e3d0821715e6f5d0e3d2af1e1a34`.
+Verified against: `ea7b159515fc37f76ffdb83dedf2d33d17f9a193`.
 Runtime evidence through: Dated database backup and restore evidence exists; current operator state must be checked privately.
 Last reviewed: 2026-07-11.
 Owner: AI Brain maintainer.

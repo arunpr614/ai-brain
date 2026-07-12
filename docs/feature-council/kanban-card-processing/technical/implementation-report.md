@@ -2,8 +2,8 @@
 
 **Implementation date:** 2026-07-12
 **Authority:** `product/prd-v2.md`, `ux/ux-ui-v2.md`, `technical/technical-plan-v2.md`
-**Branch:** `feat/kanban-card-processing`
-**Status:** Implemented and locally verified; production release evidence is recorded separately and must not be inferred from this report.
+**Deployed application:** `ea7b159515fc37f76ffdb83dedf2d33d17f9a193`
+**Status:** Implemented, merged through PRs #25–#28, and deployed with schema 025 and all three Processing stages enabled. Final browser evidence, synthetic cleanup, and documentation publication are recorded separately.
 
 ## Delivered product surface
 
@@ -77,7 +77,7 @@ The integrated candidate has passed:
 - deterministic 10k/50k performance budgets;
 - desktop/mobile visual comparison and the corrected 320/390 px four-tab layout.
 
-The authoritative final counts and commands belong in `qa/verification-report.md` after the last post-review full run. Live browser, production workflow, rollout-window, rollback-rehearsal, and GitHub Wiki evidence remain release gates and are not claimed here.
+The authoritative final counts and commands belong in `qa/verification-report.md`. Production-copy migration/rollback rehearsal, protected artifact attestations, immutable cutover, read/write/navigation observation windows, and the live API/domain lifecycle have passed. Authenticated deployed browser evidence, synthetic cleanup, repository closeout merge, and GitHub Wiki publication remain the final gates and are not claimed here.
 
 ## Scope explicitly not added
 

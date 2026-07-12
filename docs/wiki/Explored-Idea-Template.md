@@ -2,7 +2,7 @@
 
 Purpose: Prevent proposals and prototypes from being mistaken for implemented product behavior.
 Audience: Product/design/engineering contributors and AI agents.
-Verified against: `23868faf13c8e3d0821715e6f5d0e3d2af1e1a34`.
+Verified against: `ea7b159515fc37f76ffdb83dedf2d33d17f9a193`.
 Runtime evidence through: Not applicable unless a partial current implementation is separately cited.
 Last reviewed: 2026-07-11.
 Owner: AI Brain maintainer.

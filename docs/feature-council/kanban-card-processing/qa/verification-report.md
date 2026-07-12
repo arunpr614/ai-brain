@@ -1,8 +1,8 @@
 # Kanban Card Processing — candidate verification report
 
 **Candidate date:** 2026-07-12
-**Branch:** `codex/fix-release-audit-path-state` from merged main `efba7af54c88dfa29fa536421b4df89599ff9a01`
-**Verdict:** **Merged feature; post-cutover audit/rollback correction GO for corrective PR/CI. Production acceptance remains pending.**
+**Deployed application:** `ea7b159515fc37f76ffdb83dedf2d33d17f9a193`
+**Verdict:** **Production rollout and live API/domain verification passed. Final browser visual/interaction evidence and synthetic cleanup remain before production acceptance can close.**
 
 ## Integrated automated gates
 
@@ -40,14 +40,18 @@ The initial capture-channel and capture-age descriptor failures were fixed with 
 
 The independent application review is GO with no remaining P0/P1/P2. It verified session-only routes, bearer negatives, exact-origin writes, private/no-store responses, bounded/parameterized inputs, replay/CAS/Undo scoping, content-safe DTOs, streaming 16 KiB enforcement, and per-valid-session write throttling.
 
-The independent release review initially returned no-go and found the database-target split plus artifact/rollback trust gaps. `reviews/implementation-security-adversarial-review.md` records every remediation. Two production attempts failed safe before schema 025 or feature enablement and exposed immutable-runtime data-root, startup-health, release-instance identity, and staged-tool trust defects. A third attempt installed schema 025 dark and proved durable startup behavior, then exposed a generated readiness-tool path mismatch; verifier diagnostics also polluted the captured rollback tuple. The exact attested composite known-good rollback was completed manually and health-verified. Production is currently healthy with schema 025 compatible, 129 items, quick check `ok`, foreign keys zero, a green manual deep audit, and all flags off. The three reference defects are corrected and covered by 49 release checks; production acceptance has not passed.
+The independent release review initially returned no-go and found the database-target split plus artifact/rollback trust gaps. `reviews/implementation-security-adversarial-review.md` records every remediation. Three pre-acceptance attempts failed safe and exposed immutable-runtime data-root, startup-health, release-instance identity, staged-tool trust, generated readiness-tool path, and rollback-state parsing defects. PRs #26–#28 corrected those boundaries and expanded release smoke to 49 checks.
+
+The final immutable deployment of `ea7b159515fc37f76ffdb83dedf2d33d17f9a193` succeeded with a bound, restore-checked 7,626,752-byte SQLite backup. Production is healthy on the exact candidate runtime/tool set with 27 migrations through 025, quick check `ok`, foreign keys zero, a green app-SHA-bound deep readiness audit, no runtime-local durable data, and an enabled/active six-hour audit timer.
+
+Stage A enabled reads only and completed a full 15-minute observation window with authenticated 200s, unauthenticated/bearer-only 401s, private/no-store cookie-varying responses, green health/readiness/integrity, and zero post-ready warnings. Stage B enabled writes with navigation dark; the bounded one-item legacy enrollment and synthetic capture lifecycle proved replay, outcome lookup, exact-origin 403/no mutation, oversized 413, compare-and-swap 409, status transitions, archive/restore/reprocess/Undo, 410 expired Undo, exact metric deltas, and 429/Retry-After rate limiting. Two full write observation windows stayed green. Stage C then enabled navigation and retained green readiness/runtime evidence. The synthetic item still awaits deletion after browser verification.
 
 ## Visual and responsive QA
 
 - Direction B desktop and mobile references were compared side-by-side with the implementation at matching 1440×1024 and 390×844 viewports.
 - A P1 mobile defect that clipped Archived at 320 px was fixed.
 - Fresh 320×844 and 390×844 captures prove all four tabs visible, enabled, selectable, 44 px high, and contained without horizontal overflow.
-- `design-qa.md` correctly remains `final result: blocked` until the same comparison and core task pass against the browser-accessible deployed candidate, including dark mode.
+- `design-qa.md` correctly remains `final result: blocked` until an authenticated browser completes the same-viewport deployed comparison and core task pass, including light/dark, 320/390 mobile, keyboard/focus, navigation, detail/notes independence, and Back/Forward.
 
 ## Scope check
 
@@ -55,12 +59,9 @@ No batch actions, drag-and-drop, manual rank, dates, assignees, sprints, WIP lim
 
 ## Remaining release gates
 
-1. Commit, push, corrective PR, protected CI, review resolution, merge, and fresh candidate/known-good artifact plus attestation verification.
-2. Installed Linux known-good/candidate switch and authenticated rollback-health proof.
-3. Dark production deployment with bound backup and strict audit.
-4. Staged read, write, and navigation enablement with observation windows.
-5. Live synthetic capture→Inbox→Move→Done→Archive/Restore/Reprocess/Undo/count/metric/header journey and complete cleanup.
-6. Browser/design and manual accessibility tasks on the deployed experience.
-7. Repository documentation final deployed SHA plus GitHub Wiki publication and verification.
+1. Authenticated browser/design and accessibility task pass on the deployed experience.
+2. Delete the synthetic production item and verify all workflow/content dependents, counts, integrity, and foreign keys.
+3. Merge the repository closeout documentation with the deployed SHA.
+4. Publish the canonical Wiki corpus, then fresh-clone and verify privacy, structure, reachability, byte equality, and live content.
 
 Until these pass, this report must not be cited as production acceptance.

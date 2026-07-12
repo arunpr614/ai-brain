@@ -2,16 +2,18 @@
 
 Purpose: Describe public-safe runtime, build/deploy, scheduling, health, monitoring and rollback concepts.
 Audience: AI agents, contributors, and operators.
-Verified against: main documentation baseline `23868faf13c8e3d0821715e6f5d0e3d2af1e1a34` plus review candidate `fdd740617685c1ce730a6150c306152a04070f86` on `feat/recall-manual-sync`.
-Runtime evidence through: 2026-07-10 at deployed application `6858529ef179a51442d319c6c58e5ace79757619`.
-Last reviewed: 2026-07-11.
+Verified against: deployed application `ea7b159515fc37f76ffdb83dedf2d33d17f9a193`.
+Runtime evidence through: 2026-07-12 staged Card Processing release.
+Last reviewed: 2026-07-12.
 Owner: AI Brain maintainer.
 
 The hosted Next.js standalone service runs unprivileged on loopback behind a managed edge. Instrumentation applies migrations and starts database backup, enrichment, transcript and conditional note-index workers plus batch cron. A separate persistent timer runs Recall import. The review candidate adds default-off manual Recall path/timer/service units under a distinct trusted identity. Off-site database backup is separately scheduled.
 
 ## Release model
 
-The guarded workflow checks toolchain/environment/private integration readiness, creates and integrity-checks a SQLite backup, runs code/document/provider gates, builds against isolated temporary data, synchronizes the standalone server/public/static artifacts, rebuilds native SQLite dependencies, restarts the service, then verifies authenticated health, providers, webhook boundaries and selected features. The candidate holds one release lock across every application and Recall artifact switch, captures the daily timer state before changes, and requires the state to match afterward. New manual units and flags remain disabled unless separately authorized. Exact commands/hosts/credentials remain private.
+The current immutable release workflow accepts only protected-main GitHub-hosted artifacts with verified build provenance. It binds the candidate to the canonical production database, creates and restores-checks a SQLite backup, verifies every runtime/native/migration/file hash, stages builder-pinned tools, installs immutable runtime directories, switches the current link atomically, and restores the complete prior release/timer state on failure. The candidate holds one release lock across application and Recall artifact switches. Exact commands, hosts, and credentials remain private.
+
+Card Processing adds a deep readiness audit at deploy, startup, and every six hours. Its production rollout enables reads, then writes, then navigation, with health/readiness/integrity/journal observation windows after each stage. The verified release applied migration 025, retained all 129 historical items dormant, enrolled one selected legacy item as a bounded proof, exercised the synthetic lifecycle, and kept the audit timer active.
 
 ### Recall manual-sync enablement gate
 
@@ -23,7 +25,7 @@ Use service state/restarts, authenticated health, provider status, queue/backlog
 
 ## Rollback and recovery
 
-Rollback requires a known application artifact, configuration/flag state, database backup and migration compatibility. Feature flags can disable Note UI/processing/Focus but cannot reverse structural code or applied migrations. Preserve current data before restore. Use [Backups and Restore](Backups-and-Restore) and private operator context.
+Rollback requires an attested known application artifact, configuration/flag state, database backup, and migration compatibility. Card Processing first disables navigation, writes, and reads. The installed pre-feature known-good runtime can operate on schema 025 only with its explicit compatibility guard; restore is a last resort because later writes would be lost. Preserve current data before restore. Use [Backups and Restore](Backups-and-Restore) and private operator context.
 
 Operational coupling is significant: HTTP, workers, cron, backups and SQLite share one Node process/database. GitHub CI validates documentation but not the full product suite; release validation remains an explicit gate.
 

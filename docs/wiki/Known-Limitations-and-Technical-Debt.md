@@ -2,9 +2,9 @@
 
 Purpose: Separate verified implementation limitations from proposals and speculative concerns.
 Audience: AI agents, maintainers, and reviewers.
-Verified against: main documentation baseline `23868faf13c8e3d0821715e6f5d0e3d2af1e1a34` plus review candidate `fdd740617685c1ce730a6150c306152a04070f86` on `feat/recall-manual-sync`.
-Runtime evidence through: 2026-07-10 where cited; most findings are static-code evidence.
-Last reviewed: 2026-07-11.
+Verified against: main documentation baseline `ea7b159515fc37f76ffdb83dedf2d33d17f9a193` plus review candidate `fdd740617685c1ce730a6150c306152a04070f86` on `feat/recall-manual-sync`.
+Runtime evidence through: 2026-07-12 where cited; most findings are static-code evidence.
+Last reviewed: 2026-07-12.
 Owner: AI Brain maintainer.
 
 ## Verified limitations
@@ -12,7 +12,8 @@ Owner: AI Brain maintainer.
 - Official-caption recovery and owned-media speech-to-text are inactive/not wired.
 - Android accepts one PDF; multiple-PDF share is intentionally rejected.
 - Offline support is cached fallback/visited content and note-draft recovery, not offline parity.
-- Recall is a guarded one-way import, not two-way synchronization. Its manual control is default off and not production-enabled; real host identity/credential/permission proof is intentionally separate from repository review.
+- Recall is a guarded one-way import, not two-way synchronization. Its manual control has separate flags and trusted-host permission boundaries; consult its feature-specific page before inferring current availability.
+- Card Processing is intentionally single-item and owner-only: no batch moves, rank, drag dependency, project dates/assignees/sprints/WIP limits, collaboration, global archive, or offline mutation queue.
 - Related items is similarity output, not a graph.
 - Review/Needs Upgrade are quality queues, not spaced repetition.
 - Attached notes are not end-to-end encrypted and are excluded from default bulk export.
@@ -30,7 +31,7 @@ Owner: AI Brain maintainer.
 - Export caching headers and error-context redaction are inconsistent.
 - Workers, schedules, backups, HTTP, and one SQLite database share operational fate.
 - Duplicate numeric migration prefix `017` is resolved in current main but remains a tooling/human hazard.
-- GitHub CI validates documentation, not the complete product type/lint/test suite.
+- Protected Product CI validates typecheck, lint, the complete product suite, production build, Processing readiness/release smoke, and documentation gates for the shipped workflow.
 
 ## Documentation debt
 

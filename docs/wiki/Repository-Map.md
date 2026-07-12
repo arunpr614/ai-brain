@@ -2,9 +2,9 @@
 
 Purpose: Explain directory ownership, architectural boundaries, and safe change entrypoints.
 Audience: AI agents and contributors.
-Verified against: `23868faf13c8e3d0821715e6f5d0e3d2af1e1a34`.
+Verified against: `ea7b159515fc37f76ffdb83dedf2d33d17f9a193`.
 Runtime evidence through: Not applicable; this is source structure.
-Last reviewed: 2026-07-11.
+Last reviewed: 2026-07-12.
 Owner: AI Brain maintainer.
 
 | Path | Responsibility |
@@ -12,6 +12,7 @@ Owner: AI Brain maintainer.
 | `src/app/` | App Router pages, API routes, server actions, auth entrypoints |
 | `src/components/` | Shared interactive web UI, navigation, share handling, attached-note editor |
 | `src/db/` | SQLite client, migrations, typed repositories, queue state |
+| `src/db/item-workflow.ts`, `src/lib/processing/`, `src/app/processing/`, Processing API routes | Card workflow mutations, queries/readiness/config, responsive UI, and private HTTP contracts |
 | `src/lib/capture/` | Extraction, safety, policy, provenance, fidelity, transcript inputs |
 | `src/lib/enrich/`, `llm/`, `embed/`, `queue/` | AI providers, enrichment, chunk/embed and workers |
 | `src/lib/search/`, `retrieve/`, `related/`, `ask/` | Lexical/vector retrieval, ranking, similarity, RAG and citations |

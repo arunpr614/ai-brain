@@ -3,7 +3,7 @@
 **Updated:** 2026-07-12
 **Goal:** implement, release, and live-verify Kanban Card Processing in production, then update repository documentation and GitHub Wiki
 **Branch/worktree:** `feat/kanban-card-processing` at `/Users/arun.prakash/Library/CloudStorage/GoogleDrive-arun.prakash@toasttab.com/Other computers/My MacBook Pro M1 2025/arun-cursor/Initiatives/Arun_AI_Projects/ai-brain-kanban-card-processing-20260712`
-**Current product status:** aligned v2 contracts, implementation, independent security review, 877-test local suite, 10k/50k performance, responsive visual QA, and immutable release safeguards are complete; candidate is ready for production-copy rehearsal and PR/CI, but no production release is claimed
+**Current product status:** application `ea7b159515fc37f76ffdb83dedf2d33d17f9a193` is deployed with migration 025 and read/write/navigation enabled after guarded observation windows; live domain/API verification passed; authenticated browser evidence, synthetic cleanup, closeout merge, and Wiki publication remain
 
 ## Status legend
 
@@ -28,11 +28,11 @@ Read-only checks on 2026-07-12 found the service active on Node 22.22.3, authent
 | M5 — Inbox and canonical detail integration | Complete | Implementation lead + UX/accessibility | Processing route/nav, Inbox loop, native Move, exact pending/failure/conflict/unknown/Undo, canonical detail/notes independence/return, mobile entry. | `/processing`, shared controls, detail/navigation integrations, local visual evidence. |
 | M6 — Board/List/Archived and scale behavior | Complete | Implementation lead + UX | Shared filters/counts/Group & sort, Board/List parity, archive/restore/reprocess, per-status cursor, responsive mobile, optional gated drag. | Board/List/Archived shipped in candidate; drag remains intentionally off; performance evidence passes. |
 | M7 — Automated quality gates | Complete | QA/reviewer + security/data specialists | Every-ingestion, migration, order, filters/counts, metrics/DST, archive matrix, concurrency/replay/Undo, hard delete, auth/privacy, performance, regression tests green. | `qa/verification-report.md`: 877 tests/93 suites, independent security GO, all build/smoke/performance gates green. |
-| M8 — Manual UX/accessibility/production-size validation | In progress | UX + accessibility + QA | Real Library/More discovery; 320/390/mobile tasks; keyboard/NVDA/VoiceOver/TalkBack/switch/zoom/reflow/contrast/reduced motion; 10k/50k DB rehearsal. | 320/390 and 10k/50k pass. Deployed browser plus manual AT/switch/forced-colors tasks remain. |
+| M8 — Manual UX/accessibility/production-size validation | In progress | UX + accessibility + QA | Real Library/More discovery; 320/390/mobile tasks; keyboard/semantic/focus/zoom/reflow/contrast/reduced motion; 10k/50k DB rehearsal. | 320/390 and 10k/50k pass. Authenticated deployed browser task/visual/keyboard evidence remains. Physical NVDA/VoiceOver/TalkBack/switch evidence is residual manual-device coverage, not automated browser proof. |
 | M9 — Adversarial review and v2 consistency | Complete | Adversarial reviewer + coordinator | Product v1 challenged and PRD v2 dispositions verified; UX/technical v1 challenged; all v2 artifacts cross-consistent; requirements traceability updated; no unresolved P0/P1. | Three v1 reviews, v2 consistency review, and remediated implementation security/adversarial review. |
-| M10 — Controlled rollout and observability | In progress | Release/observability lead | Backup/readiness verified; flag rollout; operational dashboards/logs; rollback exercised; dogfood trust/discovery checks. | Attested immutable release/readiness/rollback tooling is locally green; production-copy rehearsal and staged rollout remain. |
-| M11 — Production release and live verification | Pending | Release lead + coordinator | Deployed through normal safeguards; live owner flow verified for capture→Inbox→Move→Done→Archive/Restore/Undo; errors/counts inspected. | Goal cannot complete before this evidence. |
-| M12 — Documentation/wiki closeout | In progress | Coordinator + documentation owner | README/repo docs/wiki/status catalog/migrations/API/operations/rollback current and publication verified. | Implementation/user/operator/acceptance/security/verification docs drafted; canonical Wiki updates wait for deployed SHA. |
+| M10 — Controlled rollout and observability | Complete | Release/observability lead | Backup/readiness verified; flag rollout; operational logs/timer; rollback exercised; trust boundaries checked. | Bound backup, production-copy rollback, immutable candidate/known-good attestations, dark deploy, Stage A/B/C windows, timer, journals, deep audit, integrity and FK evidence passed. |
+| M11 — Production release and live verification | In progress | Release lead + coordinator | Deployed through normal safeguards; live owner flow verified for capture→Inbox→Move→Done→Archive/Restore/Undo; errors/counts inspected; synthetic removed. | Deployed and live API/domain flow passed. Browser owner-flow evidence and final synthetic cleanup remain. |
+| M12 — Documentation/wiki closeout | In progress | Coordinator + documentation owner | Repository docs/wiki/status catalog/migrations/API/operations/rollback current and publication verified. | Canonical closeout edits are on `codex/finalize-kanban-processing-release`; merge and GitHub Wiki publication/verification remain. |
 
 ## Product workstream tracker
 
@@ -159,11 +159,10 @@ Read-only checks on 2026-07-12 found the service active on Node 22.22.3, authent
 
 ## Immediate next actions
 
-1. Run migration/backup/restore/interruption/old-code/known-good rollback rehearsal on an isolated current production copy.
-2. Commit, push, open the PR, pass protected CI/review, and merge.
-3. Download and verify protected-main candidate plus known-good attestations.
-4. Deploy dark, then stage reads/writes/navigation with observation and live synthetic cleanup.
-5. Finish deployed browser/accessibility evidence, publish canonical repository docs to the GitHub Wiki, and verify the published commit.
+1. Finish authenticated deployed browser/design/accessibility evidence.
+2. Delete the synthetic production item and verify dependent cleanup, counts, integrity, and foreign keys.
+3. Commit/push the closeout branch, pass protected CI, merge, and record the canonical documentation SHA.
+4. Publish canonical `docs/wiki/` through the concurrency gate and verify a fresh clone plus live GitHub rendering/content.
 
 ## Completion rule
 

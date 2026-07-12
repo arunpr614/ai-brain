@@ -2,7 +2,7 @@
 
 Purpose: Document the single-owner trust model and browser/API/device authentication flows.
 Audience: AI agents, security reviewers, and client developers.
-Verified against: `23868faf13c8e3d0821715e6f5d0e3d2af1e1a34`.
+Verified against: `ea7b159515fc37f76ffdb83dedf2d33d17f9a193`.
 Runtime evidence through: 2026-07-10 for deployed session/pairing boundaries.
 Last reviewed: 2026-07-11.
 Owner: AI Brain maintainer.

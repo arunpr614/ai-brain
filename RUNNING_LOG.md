@@ -29978,3 +29978,39 @@ The preceding local-candidate entry recorded the artifact before restoring produ
 - **Active branch:** `codex/fix-release-audit-path-state` from merged main `efba7af`.
 - **Production:** Healthy on the composite known-good application with schema 025 retained and all Processing flags dark; no enrollment or workflow mutation occurred.
 - **Next milestone:** Publish/merge the three-reference correction, rebuild fresh artifacts, re-activate the candidate, and resume dark/staged verification.
+
+## 2026-07-12 16:57 IST — Processing deployed and fully staged; browser acceptance awaits owner unlock
+
+### Protected publication and final immutable cutover
+
+- PR #28 passed protected checks and merged the audit-path/rollback-state correction to `main` at `ea7b159515fc37f76ffdb83dedf2d33d17f9a193`.
+- Fresh protected-main candidate and authorized known-good artifacts passed checksum, exact app/builder identity, runtime/native/file/migration manifests, GitHub-hosted runner, protected-main workflow/ref/source, and non-self-hosted provenance verification.
+- The final immutable deployment created and restore-checked a fresh bound SQLite backup, installed the exact candidate/runtime tool set, applied schema 025, activated `ea7b159`, proved durable-root/startup-backup/no-runtime-data boundaries, and left the six-hour Processing audit timer enabled and active.
+- Final dark evidence was green: service active, authenticated health, 27 migrations, quick check `ok`, foreign keys zero, exact migration manifest hash, and app-SHA-bound readiness.
+
+### Staged rollout and live domain verification
+
+- **Stage A — reads:** enabled read only. Authenticated summary/items/board/groups/filters/timezone requests returned 200; unauthenticated and bearer-only requests returned 401; successful and error responses remained private/no-store, cookie-varying, and nosniff. The complete 15-minute observation window retained green health, readiness, integrity, audit timer/service, and zero post-ready warnings.
+- **Stage B — writes:** enabled writes while navigation remained dark. A bounded one-item legacy enrollment completed exactly once. A synthetic capture entered Inbox exactly once and proved exact-origin 403/no mutation, 413 oversized-body rejection, durable replay/outcome lookup, compare-and-swap 409, Inbox → To Do → In Progress → Done, Archive → Restore → Archive → Reprocess → Undo → Restore, exact Added/Processed/Completed metric deltas, and 429 with Retry-After.
+- Two complete Stage B observation windows stayed green. The second window also proved 410 expired Undo without mutation followed by an explicit permanent Restore.
+- **Stage C — navigation:** enabled navigation after the read/write windows. Health, exact candidate readiness, database integrity, foreign keys, audit timer, and journal evidence remained green.
+- The synthetic item is intentionally retained only until authenticated browser verification completes; its identifier remains in owner-only production evidence, not public documentation.
+
+### Browser and documentation closeout
+
+- The in-app browser and Chrome both reached the production PIN screen without an authenticated session. The Chrome tab was handed off for the owner to unlock; no cookie, storage, password, PIN, or profile data was inspected.
+- Drafted the deployed-SHA verification, implementation, tracker, Design QA blocker, and canonical Wiki updates on `codex/finalize-kanban-processing-release`.
+- Added a current Card Processing feature page, preserved the original exploration as superseded history, and reconciled Home, catalog, Library, API, data, configuration, architecture, operations, security, troubleshooting, limitations, source-baseline, changelog, sidebar, and Wiki validation artifacts.
+- All 86 canonical Wiki pages pass privacy, structure, reachability, package/command coverage, project-audit, and whitespace checks.
+- Fresh closeout validation passed TypeScript, ESLint, all 880 tests across 93 suites, and the production build; only the pre-existing `unpdf import.meta` warning remains.
+
+### Operational note
+
+- One later ad-hoc deep-audit invocation omitted the systemd unit's application-SHA environment and briefly wrote a green checkpoint with a null audited app SHA. The installed audit service was run immediately afterward and restored the exact `ea7b159` app-SHA-bound green checkpoint; the application service stayed active. Future production checks must invoke the installed audit service rather than the generated tool directly without its release environment.
+
+### State snapshot
+
+- **Current phase:** Production and staged live domain verification complete; authenticated deployed browser acceptance and synthetic cleanup pending.
+- **Production:** `ea7b159` active with schema 025, read/write/navigation enabled, deep audit timer enabled/active, 130 items including one retained synthetic browser fixture.
+- **Closeout branch:** `codex/finalize-kanban-processing-release` with draft repository/Wiki evidence; not yet committed or published because Design QA remains blocked.
+- **Next milestone:** Owner unlocks the handed-off Chrome tab; complete desktop/mobile/light/dark interaction and accessibility QA, delete the synthetic fixture with dependent cleanup proof, finalize/merge closeout docs, publish and verify the GitHub Wiki.

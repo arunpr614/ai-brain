@@ -2,7 +2,7 @@
 
 Purpose: Provide repeatable, safety-scoped playbooks for common AI Brain tasks.
 Audience: AI agents and engineers implementing or debugging changes.
-Verified against: `23868faf13c8e3d0821715e6f5d0e3d2af1e1a34`.
+Verified against: `ea7b159515fc37f76ffdb83dedf2d33d17f9a193`.
 Runtime evidence through: 2026-07-10 at deployed application `6858529ef179a51442d319c6c58e5ace79757619`; workflow runtime evidence is task-specific.
 Last reviewed: 2026-07-11.
 Owner: AI Brain maintainer.

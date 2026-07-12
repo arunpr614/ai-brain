@@ -2,9 +2,9 @@
 
 Purpose: Document authentication, trust boundaries, content handling, publication safety, and verified risks.
 Audience: AI agents, security reviewers, and contributors touching auth, integrations, notes, logs or operations.
-Verified against: main documentation baseline `23868faf13c8e3d0821715e6f5d0e3d2af1e1a34` plus review candidate `fdd740617685c1ce730a6150c306152a04070f86` on `feat/recall-manual-sync`.
-Runtime evidence through: 2026-07-10 for the deployed session/provider/note-consent release boundaries.
-Last reviewed: 2026-07-11.
+Verified against: deployed application `ea7b159515fc37f76ffdb83dedf2d33d17f9a193` plus retained feature-specific evidence.
+Runtime evidence through: 2026-07-12 for Card Processing session/privacy boundaries.
+Last reviewed: 2026-07-12.
 Owner: AI Brain maintainer.
 
 ## Trust boundaries
@@ -14,6 +14,7 @@ Owner: AI Brain maintainer.
 - Pairing: short-lived one-use code that exchanges for the global bearer token.
 - Telegram: webhook secret plus owner/private-chat policy.
 - Attached notes: same-origin mutation checks plus feature flags, per-note AI opt-in and provider acknowledgement.
+- Card Processing: PIN-session-only reads and writes, bearer-negative routes, exact-origin mutations, private/no-store responses, allow-listed DTOs, bounded bodies, compare-and-swap/replay controls, and per-session throttling.
 - Recall and providers: separate private environment credentials. The manual-sync candidate further separates the web and trusted Recall identities; the web side can persist intent and write an empty marker but cannot receive the credential, execute the wrapper, or open the private outer lock.
 - Managed edge terminates public TLS before the loopback Node service.
 

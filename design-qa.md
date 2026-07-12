@@ -26,11 +26,11 @@ The production mapping preserves Direction B's dark information hierarchy, serif
 
 ## Blocking reason
 
-The configured in-app browser redirected local preview traffic to its own usage-login surface, and the available Chrome integration blocked loopback navigation. Per the selected Product Design workflow, prior screenshots and build success do not substitute for a fresh same-viewport browser verification after the P1 fix. The gate remains blocked until the candidate is reachable through an approved browser-accessible staging or dark production URL, then desktop/mobile interaction and visual comparison must be repeated.
+Application `ea7b159515fc37f76ffdb83dedf2d33d17f9a193` is deployed at the browser-accessible production URL with read, write, and navigation stages enabled. Server-side authenticated workflow, privacy, readiness, integrity, audit-timer, and observation-window evidence is green. Both the selected in-app browser and the available Chrome profile currently reach the production PIN unlock screen without an authenticated session. Per the selected Product Design workflow, server/API evidence and prior local screenshots do not substitute for a fresh authenticated same-viewport browser verification. The gate remains blocked only on the owner unlocking the handed-off Chrome tab.
 
 ## Required unblock checks
 
-- 1440×1024 and 390×844 dark/light captures after the final code SHA.
+- 1440×1024 and 390×844 dark/light captures from deployed `ea7b159`.
 - Reconfirm the already-passing 320×844 four-view proof on the final browser-accessible candidate SHA.
 - Process next, select/open separation, Move+Undo, Archive/Restore/Reprocess, Group & sort, filters, enrollment, load-more/group paging, error/offline, keyboard focus return, and console-error checks.
 - Update this document to `Final result: passed` only after all P0/P1/P2 findings are resolved or explicitly downgraded with evidence.
