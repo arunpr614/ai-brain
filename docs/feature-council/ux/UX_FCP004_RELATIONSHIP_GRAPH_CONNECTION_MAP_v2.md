@@ -3,6 +3,8 @@
 Status: v2 final planning package  
 Review addressed: `reviews/FCP004_PACKAGE_V1_ADVERSARIAL_REVIEW_2026-06-28_21-23-55_IST.md`
 
+> **Deferred on 2026-07-13; not active for implementation.** This UX plan is historical evidence. No graph, list, path, or prototype work is authorized by the [current decision](Graphify-Opportunity-Decision).
+
 ## UX Direction
 
 The graph is an inspection tool. It should reveal relationships and provenance, not become a decorative constellation.

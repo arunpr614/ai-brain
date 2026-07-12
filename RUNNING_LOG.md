@@ -30126,6 +30126,322 @@ Nothing deployed yet. The verified change is local on `codex/library-add-selecte
 - **Production:** Existing Processing release remains live and unchanged by this follow-up.
 - **Next milestone:** Protected PR/CI merge, immutable deployment, and live authenticated verification.
 
+---
+
+## 2026-07-12 22:22 IST — Graphify opportunity council initialized on a clean main baseline
+
+**Entry author:** AI agent (Codex) · **Triggered by:** User started a persistent autonomous goal to audit AI Brain, research Graphify, run a specialist feature council, and deliver a review-only research package without production implementation.
+
+### Planned since last entry
+
+The prior entry concerned the separate Library “Add to Inbox” follow-up. This new goal is isolated from that work: inspect current `origin/main`, preserve every unrelated checkout, audit live AI Brain capabilities, research Graphify from source and tests, run independent council evaluations, and proceed to PRD/UX/technical artifacts only if a candidate clears explicit gates.
+
+### Done
+
+- Located multiple AI Brain checkouts and inspected origin, branch, and dirty state without modifying unrelated work.
+- Fetched the latest remote state and recorded `origin/main` at `8c1341100b174fe4ca518e6a745c30b9078df21c` dated 2026-07-12.
+- Inspected the requested `Phase3-Graphify` location; it existed as an empty directory and contained no user work.
+- Created clean worktree branch `codex/research-graphify-feature-council` from the verified `origin/main` baseline.
+- Corrected a worktree-environment-link nesting edge case created during this session and verified the new worktree returned to a clean state before artifact work.
+- Loaded and adopted the create-worktree, append-only running-log, and adversarial-review operating rules.
+- Created the Graphify opportunity artifact directories and initialized the master index, tracker, decision log, source inventory, risk register, and stable research entry point.
+
+### Cross-lane notes
+
+- This goal owns only branch `codex/research-graphify-feature-council` and `docs/feature-council/graphify-opportunity/` plus append-only entries in this log.
+- No production application code, deployment state, Wiki repository, or unrelated checkout has been modified.
+
+### Learned
+
+- The repository currently has many active worktrees; file and branch isolation is essential.
+- The requested directory is nested beneath another worktree path. Environment-file discovery must exclude the new nested worktree to avoid recursive links.
+- Current repository convention strongly favors `codex/` branch names, which informed the dedicated branch name.
+
+### Deployed / Released
+
+Nothing deployed, pushed, published, or released during this milestone.
+
+### Documents created or updated this period
+
+**Created:**
+- `docs/feature-council/graphify-opportunity/MASTER_EXECUTION_INDEX.md`
+- `docs/feature-council/graphify-opportunity/TRACKER.md`
+- `docs/feature-council/graphify-opportunity/DECISION_LOG.md`
+- `docs/feature-council/graphify-opportunity/SOURCE_INVENTORY.md`
+- `docs/feature-council/graphify-opportunity/RISK_REGISTER.md`
+- `docs/feature-council/graphify-opportunity/Research-note.md`
+
+**Updated:**
+- `RUNNING_LOG.md` — appended this isolated-goal initialization checkpoint.
+
+### Current remaining to-do
+
+1. Run independent AI Brain audit and Graphify product/technical/security/licensing research with disjoint artifact ownership.
+2. Verify the AI Brain Wiki and Graphify exact source commit, tests, releases, activity, license, and external-service boundaries.
+3. Create evidence-backed v1 audit and research artifacts, run adversarial reviews, and produce v2 versions.
+4. Evaluate three to five opportunities through the four-round council and stop downstream work on a no-go/defer outcome.
+5. If approved, produce reviewed PRD, UX/prototype, and technical-plan v2 artifacts; then validate, update the Wiki, commit, push, and open a review-only PR.
+
+### Open questions / decisions needed
+
+1. No user decision is currently required. Wiki permissions and any need for an isolated Graphify proof of concept remain evidence-dependent.
+
+### Session self-critique
+
+- The initial environment-link routine briefly changed the tracked `.env.example` and created one nested symlink because the worktree is inside the discovery source path. Both were session-created, removed immediately, and the file was restored from the worktree index before artifacts were written.
+- The worktree path is valid but structurally nested; all recursive scans must explicitly exclude it when scanning the parent checkout.
+
+### Action items for the next agent
+
+1. Read `AGENTS.md`, this latest log entry, and `docs/feature-council/graphify-opportunity/TRACKER.md` before editing.
+2. Stay within assigned file ownership; never edit production application code.
+3. Cite file paths, line numbers, commits, and source URLs for every material claim, labeling inference and unverified claims.
+
+### State snapshot
+
+- **Current phase / version:** Stage 1–2 evidence collection starting.
+- **Active branch:** `codex/research-graphify-feature-council` at base `8c134110`.
+- **Working tree:** Documentation control files and this append-only log entry only.
+- **Deployed/runtime state:** Production untouched.
+- **Next milestone:** Independent audit/research v1 source artifacts ready for adversarial review.
+
+---
+
+## 2026-07-12 22:50 IST — Audit and Graphify evidence wave complete; non-bypassable council controls adopted
+
+**Entry author:** AI agent (Codex) · **Triggered by:** Completion of the Stage 1 AI Brain audit, Graphify product/technical/risk research, isolated proof of concept, and expert project-management assessment.
+
+### Planned since last entry
+
+The initialization entry required independent AI Brain and Graphify evidence, exact source baselines, adversarial review, and a gated council process. The immediate objective was to finish source notes without creating a feature recommendation prematurely.
+
+### Done
+
+- Completed the five-file AI Brain audit package at code baseline `8c1341100b174fe4ca518e6a745c30b9078df21c` and Wiki baseline `10a3e2b66bffbf362ffc87596d29fa5adb65b9f1`.
+- Verified the canonical Wiki clone and repository `docs/wiki/` are byte-identical at their recorded baselines.
+- Verified protected AI Brain Product CI run `29200243743`: 894/894 tests across 95 suites, static/build/documentation/release gates green. Recorded the nested-worktree dependency failure as environment-only because exact-baseline locked CI is authoritative.
+- Completed Graphify product/capability/claims source notes and architecture/security/privacy/license/dependency/risk notes at release `0.9.13`, SHA `eec7a0183847cbdc8a87d92b233759a5204b89fe`.
+- Verified Graphify's default branch/version-line conflict: the current release is `v0.9.13`; the historical `v1.0.0` tag is on a divergent older lineage.
+- Verified Graphify tests: upstream exact-SHA CI passed 3,168 tests with 3 skipped on Python 3.10 and 3.12; the technical reviewer independently reproduced 3,168 passed/3 skipped on Python 3.12 with all extras.
+- Recorded that Graphify's Bandit and dependency-audit commands exit nonzero while CI treats them as non-blocking; green tests are not a clean security attestation.
+- Ran one isolated, fictional, no-key Graphify code-only proof of concept. It mapped TypeScript software structure rather than memory instances, supporting concept reuse/native implementation over direct integration.
+- Reproduced Graphify absolute-path identifier disclosure, verified optional-auth HTTP MCP isolation gaps, CDN-loaded HTML, v0.x churn/large-graph risks, and the optional AGPL-only Pascal dependency included by `[all]`.
+- Completed expert project-management assessment and accepted D-005 major-artifact stop rules plus D-006 frozen/blind Round 1 protocol with `Unknown` as non-passing.
+- Expanded tracker, risks, assignments, source inventory, research entry point, and master index. Started the independent adversarial review of AI Brain audit v1.
+
+### Cross-lane notes
+
+- Research agents owned distinct audit/product/technical files; no simultaneous edits occurred.
+- Coordinator owns only shared controls and canonical synthesis. The adversarial reviewer owns only review reports.
+- No production application code, dependency, Wiki remote, deployment, global skill, hook, or assistant configuration was modified.
+
+### Learned
+
+- AI Brain has strong item, topic/tag/collection, chunk/citation, provenance, and transient vector-similarity primitives, but no generalized node/edge model, path query, community analysis, or graph UI.
+- Current AI topics are navigable labels but enrichment mirrors auto-tag names, writes null confidence, and generic evidence; they are not independent semantic entities.
+- Graphify's query is lexical seed selection plus bounded BFS/DFS, path is undirected/unweighted, and explain is a neighborhood inspector—not semantic QA or per-edge derivation.
+- Graphify's code graph can inspire provenance/confidence/path/community concepts, but its default domain model and Python/runtime/security boundary do not fit AI Brain as a drop-in.
+- Direct user-problem frequency evidence remains limited; the council may need to defer even if a technically attractive opportunity exists.
+
+### Deployed / Released
+
+Nothing deployed, pushed, published, merged, or released.
+
+### Documents created or updated this period
+
+**Created:**
+- Five AI Brain audit files under `docs/feature-council/graphify-opportunity/audit/`.
+- Seven Graphify product/technical/risk source notes plus a synthetic POC report under `research/`.
+- `council/2026-07-12_project-management-assessment.md`.
+
+**Updated:**
+- Shared index, tracker, decision log, risk register, source inventory, research entry point, assignment register, and this append-only log.
+
+### Current remaining to-do
+
+1. Complete AI Brain audit v1 adversarial review and produce audit v2.
+2. Create canonical Graphify research v1 and AI Brain-versus-Graphify comparison, run adversarial review, and produce research v2.
+3. Delete temporary Graphify POC clones/environments/fixtures/outputs after synthesis and record cleanup.
+4. Create and review three to five opportunity briefs; freeze shortlist v2 and hash the packet.
+5. Run five blind Round 1 evaluations, comparative Round 2, adversarial Round 3, and final Round 4 go/defer/no-go decision.
+6. Follow only the authorized downstream branch, then complete Wiki, validation, commit/push, review-only PR, and handoff.
+
+### Open questions / decisions needed
+
+1. No user input is required now. The council must determine whether demonstrated problem frequency is sufficient; `Unknown` cannot become a go.
+
+### Session self-critique
+
+- Initial controls compressed review/council stages and could have allowed a gate bypass; D-005/D-006 and the expanded tracker correct that before candidate work.
+- Temporary POC material still exists in isolated temporary locations for evidence synthesis and must be removed before final review.
+- Product source notes initially described the overall security job as successful without surfacing its non-blocking inner failures; canonical synthesis must correct that distinction.
+
+### Action items for the next agent
+
+1. Treat audit/research v2—not source notes or v1—as the only candidate-ideation inputs.
+2. Preserve blind Round 1: freeze/hash shortlist v2, separate files, declarations, no cross-reading, restart on material packet change.
+3. Keep proposal classification visible and never turn dated runtime evidence into a live-now claim.
+
+### State snapshot
+
+- **Current phase / version:** Audit/research adversarial-review and v2 chain.
+- **Active branch:** `codex/research-graphify-feature-council` at AI Brain base `8c134110`.
+- **Working tree:** Documentation artifacts and append-only running-log entries only.
+- **Deployed/runtime state:** Production and Wiki remote untouched.
+- **Next milestone:** Audit v2 and Graphify research v2 accepted under D-005.
+
+---
+
+## 2026-07-12 23:17 IST — Graphify research v2 closes adversarial blockers; audit QA remains the shortlist gate
+
+**Entry author:** AI agent (Codex) · **Triggered by:** Completion of both source-stage adversarial reviews and their required v2 revisions.
+
+### Planned since last entry
+
+The preceding entry required audit/research v2—not source notes or v1—to become the only inputs to opportunity ideation. It also required prior FCP-004 history, incomplete semantic lifecycle, POC cleanup, and independent evidence challenges to be resolved before the shortlist could start.
+
+### Done
+
+- Completed the independent adversarial review of AI Brain audit v1. It blocked sign-off on three P1 issues: omitted FCP-004 prior decisions, omitted `item_semantic_events`, and unsupported user-value conclusions.
+- Produced AI Brain audit v2 with an explicit FCP-004 current-main delta, multi-axis capability status, lifecycle matrix, 24-page/43-route/27-migration coverage closure ledger, corrected browser-unlock boundary, and a finding-resolution table.
+- Started a separate QA/evidence review of audit v2; opportunity ideation remains gated on its verdict.
+- Completed the independent adversarial review of Graphify research v1. It blocked packet freeze on three P1 issues: missing FCP-004 reconciliation, a POC conclusion broader than its tested scope, and premature concept-family selection.
+- Produced Graphify research v2. It now:
+  - reconciles each material FCP-004 product, technical, UX, lifecycle, and exclusion commitment;
+  - separates raw runtime/MCP/viewer, offline sidecar, custom adapter, fork/copy, and concepts-only modes;
+  - narrows the POC conclusion to default code-graph behavior and path-derived IDs;
+  - treats sidecar/adapter modes as out of scope and untested rather than universally disproven;
+  - separates default, optional, development, reachable, contextual, false-positive, vulnerability, and license evidence;
+  - replaces preferred concept families with a neutral option frame including no feature, FCP-004 completion/amendment/rejection, and smaller current-surface improvements;
+  - defines production-fit criteria, validation coverage, non-passing Unknowns, and a complete review-resolution ledger.
+- Updated the master index, tracker, stable research entry point, and agent assignment register to reflect the completed Graphify chain and active audit QA gate.
+- Re-ran the publication-safety scan across 30 council files with zero findings and passed whitespace/diff validation.
+
+### Cross-lane notes
+
+- Independent reviewers created only their assigned review files. The coordinator alone revised the canonical v2 synthesis and shared controls.
+- The Graphify source-stage reviewer explicitly preserved the current no-go for raw runtime, HTTP MCP, generated viewer, fork, and copied implementation while rejecting the v1 overreach against every possible adapter boundary.
+- No production source, runtime dependency, Wiki remote, deployment, or merge was changed.
+
+### Learned
+
+- Graphify research materially strengthens constraints and terminology but does not establish a new feature opportunity beyond the already-planned FCP-004 family.
+- A tiny code-only POC can establish default-domain behavior and data-shape risks; it cannot reject every integration topology or prove production feasibility.
+- Direct user-value evidence remains the decisive gap. The later council must compare no feature and simpler improvements under the same rubric as graph-like options.
+
+### Deployed / Released
+
+Nothing deployed, pushed, published, merged, or released.
+
+### Documents created or updated this period
+
+**Created:**
+- AI Brain audit v1 adversarial review, audit v2, semantic-event/lifecycle matrix, and surface-coverage closure ledger.
+- Graphify research v1 adversarial review and canonical Graphify research note v2.
+
+**Updated:**
+- Master execution index, tracker, research entry point, agent assignment register, POC cleanup record, shared risks/decisions, and this append-only log.
+
+### Current remaining to-do
+
+1. Finish audit-v2 QA/evidence review and resolve any blocker.
+2. Create opportunity shortlist v1 from neutral audited problems, review it adversarially, and freeze/hash shortlist v2.
+3. Run five blind Round 1 evaluations, comparative Round 2, recommendation v1, adversarial Round 3, and final Round 4 go/defer/no-go.
+4. Follow only the authorized downstream branch, then complete Wiki publication, validation, commit/push, review-only PR, and handoff.
+
+### Open questions / decisions needed
+
+1. No user input is required now. User-value frequency and measurable improvement may remain Unknown and force defer.
+
+### Session self-critique
+
+- Research v1 still allowed tool-visible concepts to anchor selection; v2 corrects this before packet freeze.
+- Integration evidence is strongest for raw runtime/MCP/viewer and weakest for custom adapter/sidecar. V2 now represents that asymmetry instead of masking it.
+
+### Action items for the next agent
+
+1. Do not reintroduce the five v1 concept families as an already-approved shortlist.
+2. Treat FCP-004 as a historical option to complete, narrow, amend, or reject—not live functionality and not proof of value.
+3. Preserve the blind-evaluation protocol and `Unknown` as non-passing.
+
+### State snapshot
+
+- **Current phase / version:** Audit QA closure before opportunity shortlist v1.
+- **Active branch:** `codex/research-graphify-feature-council` at AI Brain base `8c134110`.
+- **Working tree:** Documentation artifacts and append-only running-log entries only.
+- **Deployed/runtime state:** Production and Wiki remote untouched.
+- **Next milestone:** Audit v2 QA accepted; shortlist v1 starts under D-005.
+
+---
+
+## 2026-07-12 23:52 IST — Audit QA passed; shortlist v2 reviewed and blind council packet frozen
+
+**Entry author:** AI agent (Codex) · **Triggered by:** Independent audit-v2 QA recheck, shortlist adversarial review, and D-006 packet freeze.
+
+### Planned since last entry
+
+The prior milestone blocked opportunity work on audit-v2 QA, then required an evidence-neutral shortlist v1, adversarial review, v2, and a reproducible blind-evaluation packet.
+
+### Done
+
+- Resolved audit QA findings without changing production code:
+  - corrected exact semantic-event enums and split `indexed` from unasserted `purged` event evidence;
+  - documented that cascading event rows are not durable deletion tombstones;
+  - added a 38-capability per-axis status/confidence/date ledger;
+  - added a 38-capability positive/negative test-closure ledger;
+  - expanded classification closure to 24 pages, 43 APIs, 27 migrations, 3 clients, 10 workers/services, and 11 deployment units;
+  - corrected PR #22/#23 history and removed unsupported local dependency root-cause wording.
+- Independent QA recheck passed audit v2 as bounded technical/historical council input. Implementation, runtime, and user value remain Unknown/non-passing.
+- Created shortlist v1 with four feature narratives and a no-feature baseline, then completed the required adversarial review.
+- The shortlist review rejected v1 sign-off because B-00 was structurally weaker, relationship scopes split one FCP-004 family, the portfolio remained Graphify-shaped, and the 17-criteria/eight-gate instrument was not executable.
+- Produced shortlist v2 with four equal first-level decisions:
+  - B-00 bounded discovery/defer;
+  - C-01 minimal retrieval evidence upgrade;
+  - C-02 organization hygiene inside existing surfaces;
+  - C-03 FCP-004 relationship-inspection family, with pair/path/map only as conditional scope variants.
+- Added equal templates, evidence-labeled hypotheses, minimum-change comparators, controlled FCP-004 dispositions, comparable cost ranges, candidate-specific no-go tests, an exact 17-criterion matrix, and a complete eight-gate ledger.
+- Created the common blind rubric and froze a 14-file evidence packet at combined SHA-256 `05048a7a000ede70034bd06e0de05c70d0216b076c1d86dc545b3027f4355512`.
+- Started blind Round 1 wave one with separate user-value and memory/trust evaluators. They may read only manifest-listed files and may not read each other's submissions.
+- Publication-safety, relative-link, CSV-integrity, hash-reproduction, and whitespace checks passed.
+
+### Cross-lane notes
+
+- Two earlier shortlist-review attempts were stopped after stalling without an artifact; a third independent reviewer completed the required report. No conclusion from the stopped attempts was used.
+- The review owner corrected one slash-delimited phrase that resembled a local path to the privacy scanner; review substance did not change.
+- Frozen packet inputs may not change during Round 1. Any material change forces a new hash and restart.
+- No application code, production test, dependency, Wiki remote, deployment, or merge changed.
+
+### Learned
+
+- Pair explanation, path, and whole-library map are scope variants of one relationship-inspection family, not independent investment votes.
+- A no-feature/defer option is fair only when it has the same detail, evidence budget, timebox, cost, metrics, ownership, and exit logic as feature options.
+- Existing-surface minimum changes are necessary comparators; workarounds alone do not establish a need for a new product surface.
+
+### Deployed / Released
+
+Nothing deployed, pushed, published, merged, or released.
+
+### Current remaining to-do
+
+1. Complete five valid blind Round 1 submissions at the frozen hash.
+2. Run the 17-criterion Round 2 debate and recommendation v1.
+3. Run recommendation adversarial review and final Round 4 go/defer/no-go.
+4. Follow only the authorized downstream branch, then complete Wiki, validation, commit/push, review-only PR, and handoff.
+
+### Open questions / decisions needed
+
+1. No user input is required. Current evidence may legitimately make B-00 the only gate-valid option.
+
+### State snapshot
+
+- **Current phase / version:** Blind Round 1, frozen shortlist v2 packet.
+- **Active branch:** `codex/research-graphify-feature-council` at AI Brain base `8c134110`.
+- **Frozen packet:** `05048a7a000ede70034bd06e0de05c70d0216b076c1d86dc545b3027f4355512`.
+- **Deployed/runtime state:** Production and Wiki remote untouched.
+- **Next milestone:** Five valid Round 1 submissions; Round 2 unlock.
+
+---
+
 ## 2026-07-12 23:20 IST — Direct Library “Add to Inbox” released and documented
 
 **Entry author:** AI agent (Codex) · **Triggered by:** Completion of the selected Library source → Processing Inbox production follow-up.
@@ -30160,3 +30476,49 @@ Nothing deployed yet. The verified change is local on `codex/library-add-selecte
 - **Repository documentation:** merged through PR #32 at `8028fcbe23e58dc9889895278126447472b972e2`.
 - **GitHub Wiki:** published and verified at `5a9e100134141770ed87d959b7cd67aa4460f3ca`, 86/86 pages.
 - **Release objective:** direct Library selected-item enrollment, live production behavior, protected delivery, current repository documentation, canonical Wiki publication, and append-only project logging are complete.
+
+---
+
+## 2026-07-13 01:08 IST — Graphify council deferred feature selection; canonical Wiki published and verified
+
+**Entry author:** AI agent (Codex) · **Triggered by:** Final recommendation v2, upstream documentation reconciliation, and completion of canonical Wiki publication.
+
+### Done
+
+- Completed five blind Round 1 evaluations, the Round 2 comparison, recommendation v1, independent adversarial review, and final recommendation v2.
+- Final decision is **Defer feature selection**: C-01/C-02 defer, C-03/FCP-004 current no-go, and no Graphify production mode is authorized.
+- Preserved the gated stop: no feature charter, PRD, UX/UI, prototype, technical plan, production code, dependency, deployment, or merge was created.
+- Reconciled two newer documentation-only `origin/main` commits without changing the audited application baseline or frozen council packet.
+- Made FCP-004 supersession reciprocal across canonical Feature Council sources and current Wiki entry points.
+- Published the canonical 88-page Wiki through normal concurrency-checked pushes: initial `4ee6c92b31d17603569bc9cae363365cf020ecd2`, final `e884daa628c28498bbbacd09c164b8cbba6030d5`.
+- Fresh-cloned the final Wiki, proved 88/88 byte identity, passed privacy/structure/reachability, and received HTTP 200 from the checked live decision, research, catalog, decision-log, and changelog pages.
+- Passed the complete agent-documentation gate: 44 generated research pages, 44 living/core pages, 238 coverage rows, 46 feature rows, 37 idea rows, 155 package scripts, 17,989 inventory rows, and 88 page-audit rows with zero findings.
+
+### State snapshot
+
+- **Decision:** Defer feature selection; no implementation authority.
+- **Branch:** `codex/research-graphify-feature-council`, merged with the latest documentation-only `origin/main` history.
+- **Production:** Unchanged by this goal.
+- **Wiki:** Published and verified at `e884daa628c28498bbbacd09c164b8cbba6030d5`.
+- **Remaining:** Final repository commit/push, review-only PR, and PR-linked handoff log entry.
+
+---
+
+## 2026-07-13 01:12 IST — Graphify council review-only PR opened; handoff complete
+
+**Entry author:** AI agent (Codex) · **Triggered by:** Successful repository publication and creation of the requested review-only pull request.
+
+### Done
+
+- Committed and pushed the complete documentation-only council package on `codex/research-graphify-feature-council` without force-pushing.
+- Added an explicit commit-history rationale explaining why evidence gates and truthful documentation are required before graph-oriented product adoption.
+- Opened draft review-only [PR #34](https://github.com/arunpr614/ai-brain/pull/34) against `main` with the final Defer decision, evidence boundaries, validation results, safety exclusions, live Wiki links, and reviewer focus areas.
+- Confirmed the PR is open and draft, targets `main`, and contains no authorization to merge, deploy, or implement a feature.
+- The first Agent documentation run exposed an 86-page smoke fixture that had not included the two new required Wiki pages. Updated only that synthetic fixture, then passed the full smoke and agent-documentation suites locally before the normal follow-up push.
+
+### Final state
+
+- **Goal outcome:** Complete — Defer feature selection.
+- **Application/runtime:** Unchanged.
+- **Wiki:** Published and verified at `e884daa628c28498bbbacd09c164b8cbba6030d5`.
+- **Repository review:** Draft PR #34 open; merge deliberately left to reviewers.

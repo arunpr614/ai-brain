@@ -4,7 +4,7 @@ Purpose: Provide a current, compact status matrix with links to evidence-backed 
 Audience: AI agents, engineers, and product/design collaborators.
 Verified against: deployed application `8c1341100b174fe4ca518e6a745c30b9078df21c` plus retained feature-specific historical evidence.
 Runtime evidence through: 2026-07-12; each row retains its own runtime boundary.
-Last reviewed: 2026-07-12.
+Last reviewed: 2026-07-13.
 Owner: AI Brain maintainer.
 
 Implementation status, availability, confidence, and runtime evidence are independent. `Historical dated evidence; not reverified` means an earlier feature-specific record exists, but this review did not reproduce it. The 2026-07-10 label is reserved for boundaries explicitly exercised in that release.
@@ -38,16 +38,17 @@ Implementation status, availability, confidence, and runtime evidence are indepe
 | Multi-PDF Android share | Rejected | Inactive | High | Rejected by classifier | [Mobile and Pairing](Mobile-Extension-and-Pairing) | `23868faf…` | Single-PDF contract |
 | Browser extension | Implemented | User-installed | High | Historical runtime evidence | [Browser Extension](Browser-Extension) | `23868faf…` | No store/overlay proof |
 | Telegram capture | Implemented | Configured | High | Webhook boundary verified | [Telegram Capture](Telegram-Capture) | `23868faf…` | Private owner chat only |
-| Recall synchronization | Implemented | Default-off flags plus configured daily timer | High code/local proof; host proof pending | Daily timer evidence 2026-07-10; manual control not deployed | [Recall Synchronization](Recall-Synchronization) | `fdd7406…` candidate | Guarded one-way import and manual request UI; not two-way sync |
+| Recall synchronization | Implemented in current code; manual control feature-flagged | Default-off manual flags plus host-dependent scheduled import | High code/CI; current host state Unknown | Daily timer evidence 2026-07-10; manual control enablement not freshly verified | [Recall Synchronization](Recall-Synchronization) | `8c134110…`; PR #22 merge `4e917c7…`, PR #23 fixes `5b92e68…` | Guarded one-way import and manual request UI; merge does not prove deployment or enablement |
 | AI enrichment/taxonomy | Implemented | Background | High | Historical dated evidence; not reverified | [Enrichment](Enrichment-and-AI-Providers) | `23868faf…` | Queue/provider failures remain |
 | Provider abstraction/health | Implemented | Configured | High | Strict providers verified | [Enrichment](Enrichment-and-AI-Providers) | `23868faf…` | Health is point-in-time |
-| Tags/categories/topics/collections | Implemented | Default | High | Historical dated evidence; not reverified | [Organization](Organization-Tags-Topics-and-Collections) | `23868faf…` | No hierarchy/smart rules |
+| Tags/categories/topics/collections | Implemented; topic semantics limited | Default | High code | Code/test verified 2026-07-12; runtime/adoption not freshly verified | [Organization](Organization-Tags-Topics-and-Collections) | `8c134110…` | Current topics mirror generated tag labels, confidence is null, and evidence is generic; no hierarchy/smart rules/graph |
 | Item/library export | Implemented | Default | High | Code/test; runtime scope varies | [Library and Items](Library-and-Item-Management) | `23868faf…` | One-way; notes excluded by default |
 | Chunking/semantic indexing | Implemented | Background | High | Historical dated evidence; not reverified | [Search and Ask](Search-RAG-and-Ask) | `23868faf…` | Provider/index generation dependent |
 | FTS/semantic/hybrid search | Implemented | Default | High | Historical dated evidence; not reverified | [Search and Ask](Search-RAG-and-Ask) | `23868faf…` | No rank explanation/source-kind UI |
 | Ask with scopes/citations | Implemented | Provider-configured | High | Historical dated evidence; not reverified | [Search and Ask](Search-RAG-and-Ask) | `23868faf…` | Not Evidence Scan |
 | Chat persistence | Implemented | Default | High | Historical dated evidence; not reverified | [Search and Ask](Search-RAG-and-Ask) | `23868faf…` | Single-owner only |
 | Related items | Implemented | Default | High | Code/test; runtime scope varies | [Search and Ask](Search-RAG-and-Ask) | `23868faf…` | Similarity, not graph |
+| Relationship graph / connection map | **Explored / Proposed — deferred; not implemented** | Not available | High | No runtime | [Graphify Opportunity Decision](Graphify-Opportunity-Decision) | `8c134110…` audit; council `bad4fbd…` | Historical FCP-004 “Proceed” posture superseded; no route, generalized graph schema/service, UI, export, or implementation authorization |
 | Attached My notes | Feature-flagged | Enabled in verified release | High | Verified 2026-07-10 lifecycle/Focus scope | [Manual Content Notes](Manual-Content-Notes) | `23868faf…` | One note/item; not E2EE |
 | Notes in AI/connections | Feature-flagged | Consent-gated | High | Verified 2026-07-10 consent/provider boundary | [Manual Content Notes](Manual-Content-Notes) | `23868faf…` | Flags + opt-in + provider acknowledgement |
 | Global note AI default | Feature-flagged | Parent note UI/write flags | High | Verified 2026-07-10 Settings/first-save scope | [Manual Content Notes](Manual-Content-Notes) | `23868faf…` | First save/recreation only |

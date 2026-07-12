@@ -3,6 +3,8 @@
 Created: 2026-06-28 21:23 IST  
 Version: v2 after core adversarial review
 
+> **Current FCP-004 status (2026-07-13): Deferred; not active for implementation.** The Graphify opportunity council supersedes only FCP-004's former “Proceed with reduced scope” posture. Historical evidence and safety constraints remain preserved. See the [final decision](Graphify-Opportunity-Decision).
+
 ## Council Roles
 
 | Role | Decision lens |
@@ -23,7 +25,7 @@ Version: v2 after core adversarial review
 | FCP-001 Capture Quality And Repair Center | Proceed | P0 | Directly fixes trust gaps in the core capture loop across web, Android, extension, review, and Ask. |
 | FCP-002 Source Workspace And Reading Studio Lite | Proceed with reduced scope | P1 | Builds a source-centered reading and citation foundation without taking on a full writing IDE. |
 | FCP-003 Contextual Ask And Evidence Scan | Proceed with reduced scope | P1 | Improves existing Ask/search with source control, high-quality retrieval, and claim-level evidence without overbuilding Matrix. |
-| FCP-004 Relationship Graph And Connection Map | Proceed with reduced scope | P2 | Extends existing related-items substrate into an inspectable derived graph, but only after owner events and rebuild semantics are clear. |
+| FCP-004 Relationship Graph And Connection Map | **Deferred by 2026-07-13 council; historical reduced-scope plan superseded** | Not active | No demonstrated user problem or comparative advantage; lifecycle, privacy, scale, accessibility, ownership, measurement, and exit gates remain non-passing. [Decision](Graphify-Opportunity-Decision). |
 | FCP-005 AI Services And Privacy Trust Center | Proceed | P0 | Reduces confusion around provider readiness, privacy, diagnostics, offline limits, and source eligibility. |
 
 ## Feature-By-Feature Council Decisions
@@ -37,7 +39,7 @@ Version: v2 after core adversarial review
 | RN-F05 | Park for later | Full Markdown editor/slash commands is too broad and changes product identity. Revisit after source anchors/citations are real. |
 | RN-F06 | Proceed with reduced scope through FCP-002 | Citation metadata and export are valuable once anchors/source records exist. Limit v1 to item/PDF sources and simple `.bib`/APA output. |
 | RN-F07 | Proceed through FCP-001/FCP-002 | Metadata editing supports display, search, citations, repair, and trust. |
-| RN-F08 | Proceed with reduced scope through FCP-004 | Graph should be derived from existing item/tag/collection/chunk/anchor/evidence data. Do not let graph become source of truth. |
+| RN-F08 | Deferred through the 2026-07-13 Graphify council | Historical constraints remain: derived from owner data, never graph as source of truth. Future anchors/evidence are unavailable and excluded from current value. |
 | RN-F09 | Park for later | Neo4j export depends on a mature graph and is not core to daily AI Brain use. |
 | RN-F10 | Proceed through FCP-003 | Existing search can be made more trustworthy with source quality filters, freshness checks, and better result explanation. |
 | RN-F11 | Proceed through FCP-001/FCP-003 | Existing indexing needs readiness contracts and reset behavior more than a brand-new pipeline. |
@@ -68,3 +70,7 @@ Outcome: accepted. No production code should be implemented from this package. E
 ### DR-003 - Make repair and readiness first-class before advanced AI
 
 Outcome: accepted. Weak-source repair, capture quality, source eligibility, and provider readiness are prerequisites for Evidence Scan, Graph, and Reading Studio.
+
+### DR-004 - Defer FCP-004 and Graphify-inspired feature selection
+
+Outcome: accepted 2026-07-13. Five blind perspectives found no feature with eight Pass gates. Retrieval Evidence Upgrade and Organization Hygiene remain deferred hypotheses; the Relationship Inspection family is no-go for current selection. Graphify remains research vocabulary only. Any future reopening requires demonstrated natural demand, comparative advantage over current/minimum surfaces, and a new proof council. See the [final decision](Graphify-Opportunity-Decision).

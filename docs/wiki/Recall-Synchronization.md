@@ -2,9 +2,9 @@
 
 Purpose: Document the guarded Recall import architecture, the manual Settings control, and their operational limits.
 Audience: AI Brain owners, agents, and operators changing the integration.
-Verified against: main documentation baseline `8c1341100b174fe4ca518e6a745c30b9078df21c` plus review candidate `fdd740617685c1ce730a6150c306152a04070f86` on `feat/recall-manual-sync`.
+Verified against: current code baseline `8c1341100b174fe4ca518e6a745c30b9078df21c`; feature commit `fdd740617685c1ce730a6150c306152a04070f86`, PR #22 merge `4e917c7c1fb665ef487f508de8d8984ec13642b6`, and PR #23 rollout fixes `5b92e68ec09ceb03f010db1c4fb14be5348a54bf`.
 Runtime evidence through: 2026-07-10 for the previously deployed daily timer; the manual control is not enabled or deployed.
-Last reviewed: 2026-07-11.
+Last reviewed: 2026-07-13.
 Owner: AI Brain maintainer.
 
 **Status:** Implemented, default off · **Confidence:** High for code and local verification · **Availability:** Feature-flagged and host-dependent
@@ -53,7 +53,7 @@ Path activation provides fast pickup and a one-minute safety timer recovers a lo
 
 The intended host model uses a distinct `brain-recall` service identity, a restricted shared data group, a private `/run/brain-recall` lock, and Recall credentials readable only by trusted Recall units. The web service may enqueue in SQLite and write the empty marker, but must not read the Recall credential, execute the wrapper, or open the private lock.
 
-This repository proves that boundary statically and with isolated process fixtures. Production enablement remains blocked until an authorized operator proves the actual host identity, credential permissions, directory permissions, installed unit contents, timer invariant, and rollback path. This review candidate does not merge, deploy, enable a timer, or change production state.
+This implementation is merged into current main and proves that boundary statically and with isolated process fixtures. Merge does not prove deployment or enablement. Current host state remains Unknown until an authorized operator proves the actual host identity, credential permissions, directory permissions, installed unit contents, timer invariant, flags, and rollback path.
 
 ## Verification and operations
 

@@ -53,3 +53,5 @@
 - [Feature Page Template](Feature-Page-Template)
 - [Explored Idea Template](Explored-Idea-Template)
 - [Feature Council Research](Feature-Council-Research)
+- [Graphify Opportunity Research](Graphify-Opportunity-Research)
+- [Graphify Opportunity Decision](Graphify-Opportunity-Decision)
