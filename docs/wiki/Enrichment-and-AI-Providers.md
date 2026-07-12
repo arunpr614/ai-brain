@@ -2,7 +2,7 @@
 
 Purpose: Explain generated content, provider selection, queues, retries, note consent, and known telemetry/batch risks.
 Audience: AI agents changing AI, embeddings, prompts, queues, or provider configuration.
-Verified against: `ea7b159515fc37f76ffdb83dedf2d33d17f9a193`.
+Verified against: `8c1341100b174fe4ca518e6a745c30b9078df21c`.
 Runtime evidence through: 2026-07-10; strict Anthropic/Gemini checks passed for the verified release.
 Last reviewed: 2026-07-11.
 Owner: AI Brain maintainer.

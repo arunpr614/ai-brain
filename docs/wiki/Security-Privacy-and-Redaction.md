@@ -2,7 +2,7 @@
 
 Purpose: Document authentication, trust boundaries, content handling, publication safety, and verified risks.
 Audience: AI agents, security reviewers, and contributors touching auth, integrations, notes, logs or operations.
-Verified against: deployed application `ea7b159515fc37f76ffdb83dedf2d33d17f9a193` plus retained feature-specific evidence.
+Verified against: deployed application `8c1341100b174fe4ca518e6a745c30b9078df21c` plus retained feature-specific evidence.
 Runtime evidence through: 2026-07-12 for Card Processing session/privacy boundaries.
 Last reviewed: 2026-07-12.
 Owner: AI Brain maintainer.

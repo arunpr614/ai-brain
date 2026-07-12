@@ -1,17 +1,17 @@
 {
   "generatedAt": "2026-07-12T15:29:00Z",
   "defaultBranch": "main",
-  "defaultBranchSha": "ea7b159515fc37f76ffdb83dedf2d33d17f9a193",
+  "defaultBranchSha": "8c1341100b174fe4ca518e6a745c30b9078df21c",
   "worktreeBranch": "codex/record-kanban-wiki-publication",
   "worktreeSha": "2760837e8294a56c0be7ece928d8300c382b069a",
   "worktreeDivergence": {
     "mainOnlyCommits": 0,
     "worktreeOnlyCommits": 0
   },
-  "productionSha": "ea7b159515fc37f76ffdb83dedf2d33d17f9a193",
+  "productionSha": "8c1341100b174fe4ca518e6a745c30b9078df21c",
   "productionEvidence": "docs/feature-council/kanban-card-processing/qa/verification-report.md",
   "productionStatus": "verified",
-  "productionNotes": "Application ea7b159 was built on protected main, verified through GitHub-hosted provenance, deployed as an immutable runtime with migration 025, and enabled through read, write, and navigation observation stages on 2026-07-12. Authenticated API/domain and desktop/mobile browser lifecycles, readiness, audit timer, integrity, foreign-key, privacy, concurrency, Undo, archive, rate-limit, visual/keyboard behavior, rollback, and exact synthetic cleanup boundaries passed. Production returned to 129 retained items with a green app-SHA-bound installed audit.",
+  "productionNotes": "Application 8c134110 was built on protected main, verified through GitHub-hosted provenance, and deployed as an immutable follow-up runtime with migration 025. The original authenticated API/domain and desktop/mobile workflow lifecycles remain verified; the follow-up added local desktop/mobile direct-Library interaction coverage plus a bounded production selected-enrollment, idempotent repeat, exact-origin negative, staged observation, readiness, audit-timer, integrity, and foreign-key evidence.",
   "livingWikiDocumentationSha": "23868faf13c8e3d0821715e6f5d0e3d2af1e1a34",
   "cardProcessingCloseoutPullRequest": "https://github.com/arunpr614/ai-brain/pull/29",
   "cardProcessingRepositoryDocumentationSha": "2760837e8294a56c0be7ece928d8300c382b069a",

@@ -2,7 +2,7 @@
 
 Purpose: Document persistent domains, relationships, migrations, indexing, retention, and privacy boundaries.
 Audience: AI agents and engineers changing storage or data flow.
-Verified against: deployed application `ea7b159515fc37f76ffdb83dedf2d33d17f9a193`.
+Verified against: deployed application `8c1341100b174fe4ca518e6a745c30b9078df21c`.
 Runtime evidence through: 2026-07-12; production applies 27 migrations through `025_item_workflow.sql` including the preserved historical `018_topics.sql` identity.
 Last reviewed: 2026-07-12.
 Owner: AI Brain maintainer.

@@ -2,7 +2,7 @@
 
 Purpose: Document browsing, filtering, selection, reading, bulk actions, and exports.
 Audience: AI agents and contributors changing core library workflows.
-Verified against: deployed application `ea7b159515fc37f76ffdb83dedf2d33d17f9a193`.
+Verified against: deployed application `8c1341100b174fe4ca518e6a745c30b9078df21c`.
 Runtime evidence through: 2026-07-12 for Processing integration; core Library retains its feature-specific evidence boundary.
 Last reviewed: 2026-07-12.
 Owner: AI Brain maintainer.
@@ -23,7 +23,7 @@ Related: [Organization](Organization-Tags-Topics-and-Collections), [Search and A
 
 The single owner needs to scan a growing library, narrow it, act on several items, and inspect one source without losing provenance. Entry points are `/library`, `/items/[id]`, topic/collection links, global navigation and command palette. The typical journey is filter → select or open → read/inspect companions → organize, repair, ask, export or delete.
 
-The separate [Card Processing Workflow](Card-Processing-Workflow) adds an owner-controlled Inbox/Board/List/Archived lifecycle over the same `items`. Workflow state does not remove an item from Library, search, Ask, export, detail, notes, enrichment, or hard-delete cleanup. Library shows a Processing summary, and the existing detail/notes surface remains canonical.
+The separate [Card Processing Workflow](Card-Processing-Workflow) adds an owner-controlled Inbox/Board/List/Archived lifecycle over the same `items`. Workflow state does not remove an item from Library, search, Ask, export, detail, notes, enrichment, or hard-delete cleanup. Library shows a Processing summary, and its selected-items toolbar can add up to 100 exact sources directly to Inbox. The confirmation accounts for added, already-present, and unavailable sources; retries do not duplicate or reset existing workflow state. The existing detail/notes surface remains canonical.
 
 ## State and failure matrix
 
@@ -31,7 +31,7 @@ The separate [Card Processing Workflow](Card-Processing-Workflow) adds an owner-
 |---|---|
 | Empty | Library guidance and capture entrypoint; empty filters distinguish no library from no matches |
 | Loading | Server-rendered page transition and client selection/action pending state |
-| Success | Stable item identity, selected count, action confirmation and refreshed list/detail |
+| Success | Stable item identity, selected count, action confirmation and refreshed list/detail/Processing summary |
 | Failure | Auth/session redirect, invalid selection, transaction/export error or unavailable derived content without deleting valid source |
 
 ## Architecture, data, APIs, and security

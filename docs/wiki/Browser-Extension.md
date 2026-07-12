@@ -2,7 +2,7 @@
 
 Purpose: Document the Chrome extension capture client and its security/operational boundaries.
 Audience: AI agents and client contributors.
-Verified against: `ea7b159515fc37f76ffdb83dedf2d33d17f9a193`.
+Verified against: `8c1341100b174fe4ca518e6a745c30b9078df21c`.
 Runtime evidence through: Historical end-to-end evidence exists; latest production selected-text flow was not independently re-verified.
 Last reviewed: 2026-07-11.
 Owner: AI Brain maintainer.

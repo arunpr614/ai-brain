@@ -2,7 +2,7 @@
 
 Purpose: Preserve the 2026-07-11 feature-council exploration that preceded the shipped Card Processing Workflow.
 Audience: Product/design reviewers, engineers, maintainers, and AI agents.
-Verified against: deployed application `ea7b159515fc37f76ffdb83dedf2d33d17f9a193`; original exploration baseline `df4c42b9869f8a35b9557bc64bf6ecdb9d11b416`.
+Verified against: deployed application `8c1341100b174fe4ca518e6a745c30b9078df21c`; original exploration baseline `df4c42b9869f8a35b9557bc64bf6ecdb9d11b416`.
 Runtime evidence through: 2026-07-12 for the successor implementation; this historical prototype itself used fictional in-memory data.
 Last reviewed: 2026-07-12.
 Owner: AI Brain maintainer.
