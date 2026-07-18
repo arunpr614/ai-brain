@@ -1,0 +1,254 @@
+{
+  "schema_version": "1.0",
+  "rubric_version": "public-official-metadata-v1",
+  "locked_before_model_output": true,
+  "prepared_at": "2026-07-18T00:00:00Z",
+  "source_policy": {
+    "basis": "official_nasa_svs_public_page_metadata",
+    "full_transcript_used": false,
+    "media_used": false,
+    "claim_boundary": "coverage_rubric_not_independent_transcript_ground_truth"
+  },
+  "items": [
+    {
+      "item_id": "YT-01",
+      "source_page_url": "https://svs.gsfc.nasa.gov/14743/",
+      "source_title": "2024 is the Warmest Year on Record",
+      "text_groundable": [
+        {
+          "rubric_point_id": "YT-01:TXT:01",
+          "essential_meaning": "NASA's analysis identified 2024 as the warmest year in its surface-temperature record, exceeding 2023.",
+          "metadata_basis": "The official page title and description state the record finding and comparison with 2023.",
+          "weight": 1,
+          "contradiction_rule": "Fail if another year is named as NASA's record warmest year or if 2024 is described as cooler than 2023."
+        },
+        {
+          "rubric_point_id": "YT-01:TXT:02",
+          "essential_meaning": "The 2024 global average was about 1.28 degrees Celsius above NASA's 1951–1980 baseline.",
+          "metadata_basis": "The official description publishes the baseline and value.",
+          "weight": 1,
+          "contradiction_rule": "Fail if the value, unit, direction, or baseline is materially changed."
+        },
+        {
+          "rubric_point_id": "YT-01:TXT:03",
+          "essential_meaning": "NASA estimated 2024 at about 1.47 degrees Celsius above the 1850–1900 average.",
+          "metadata_basis": "The official description publishes the estimate and comparison period.",
+          "weight": 1,
+          "contradiction_rule": "Fail if the estimate is presented as exact, reversed, or attached to the wrong comparison period."
+        },
+        {
+          "rubric_point_id": "YT-01:TXT:04",
+          "essential_meaning": "NASA's Goddard Institute for Space Studies maintains the agency's surface-temperature record.",
+          "metadata_basis": "The official description identifies GISS as record maintainer.",
+          "weight": 1,
+          "contradiction_rule": "Fail if the record is attributed to a different organization."
+        }
+      ],
+      "visual_only": [
+        {
+          "rubric_point_id": "YT-01:VIS:01",
+          "essential_meaning": "The production uses a climate visualization to communicate the temperature record.",
+          "metadata_basis": "The official credits identify a visualization role and the media group labels the item a global-temperature update.",
+          "weight": 1,
+          "contradiction_rule": "Fail if a visual-specific claim describes a different measured phenomenon."
+        }
+      ],
+      "caveats": [
+        "The benchmark input is Spanish (es-LA); semantic coverage is scored in that language.",
+        "The rubric is public metadata, not an independent transcription reference."
+      ]
+    },
+    {
+      "item_id": "YT-02",
+      "source_page_url": "https://svs.gsfc.nasa.gov/13322/",
+      "source_title": "NASA's Guide To Black Hole Safety",
+      "text_groundable": [
+        {
+          "rubric_point_id": "YT-02:TXT:01",
+          "essential_meaning": "The source frames visiting a black hole as dangerous and strongly discourages the trip.",
+          "metadata_basis": "The official overview and safety-video description use a deliberately cautionary travel-guide framing.",
+          "weight": 1,
+          "contradiction_rule": "Fail if visiting a black hole is described as safe or recommended."
+        },
+        {
+          "rubric_point_id": "YT-02:TXT:02",
+          "essential_meaning": "The safety video is intended to explain black-hole features, how to identify or find them, and travel-safety considerations.",
+          "metadata_basis": "The official safety-video description lists orientation, finding black holes, and staying safe as its scope.",
+          "weight": 1,
+          "contradiction_rule": "Fail if the video is characterized as unrelated to black-hole orientation and safety."
+        },
+        {
+          "rubric_point_id": "YT-02:TXT:03",
+          "essential_meaning": "The video is an educational guide presented through a fictional traveler or vacation scenario.",
+          "metadata_basis": "The official page consistently presents the material as pre-trip guidance for a hypothetical traveler.",
+          "weight": 1,
+          "contradiction_rule": "Fail if the fictional framing is presented as a real NASA travel program."
+        }
+      ],
+      "visual_only": [
+        {
+          "rubric_point_id": "YT-02:VIS:01",
+          "essential_meaning": "Animated travel-guide imagery supplies context that cannot be proven from captions alone.",
+          "metadata_basis": "The page classifies and credits the item as an animation and provides visual assets.",
+          "weight": 1,
+          "contradiction_rule": "Fail if the enrichment invents a specific visual event without frame evidence."
+        }
+      ],
+      "caveats": [
+        "The travel scenario is fictional and must not be converted into a literal recommendation.",
+        "The rubric is public metadata, not an independent transcription reference."
+      ]
+    },
+    {
+      "item_id": "YT-07",
+      "source_page_url": "https://svs.gsfc.nasa.gov/14894/",
+      "source_title": "NASA Flew Over a Fire — to Better Understand Future Ones",
+      "text_groundable": [
+        {
+          "rubric_point_id": "YT-07:TXT:01",
+          "essential_meaning": "NASA FireSense coordinated a multi-agency prescribed-burn research operation at Fort Stewart-Hunter Army Field in Georgia in April 2025.",
+          "metadata_basis": "The official description identifies the project, operation type, place, partners, and date range.",
+          "weight": 1,
+          "contradiction_rule": "Fail if the event is described as an uncontrolled NASA-set wildfire or placed at a different site."
+        },
+        {
+          "rubric_point_id": "YT-07:TXT:02",
+          "essential_meaning": "The campaign measured vegetation, fire, and smoke through field and airborne sampling.",
+          "metadata_basis": "The official description names the three measurement targets and both sampling modes.",
+          "weight": 1,
+          "contradiction_rule": "Fail if the campaign is reduced to an unrelated measurement objective."
+        },
+        {
+          "rubric_point_id": "YT-07:TXT:03",
+          "essential_meaning": "The work aims to improve understanding of fire behavior and smoke dynamics and provide actionable information to practitioners.",
+          "metadata_basis": "The official description states the scientific and practical aims.",
+          "weight": 1,
+          "contradiction_rule": "Fail if the purpose is presented as fire suppression during an emergency rather than research."
+        },
+        {
+          "rubric_point_id": "YT-07:TXT:04",
+          "essential_meaning": "Satellite, airborne, and field technologies support fire detection, prescribed-fire research, and ecosystem management.",
+          "metadata_basis": "The official description connects these technologies to practitioner-facing fire and ecosystem work.",
+          "weight": 1,
+          "contradiction_rule": "Fail if any technology is claimed to guarantee prevention or prediction."
+        }
+      ],
+      "visual_only": [
+        {
+          "rubric_point_id": "YT-07:VIS:01",
+          "essential_meaning": "The production visually distinguishes field crews, airborne sampling, and the prescribed-burn environment.",
+          "metadata_basis": "The official page describes and publishes a field-production media group with airborne and ground research context.",
+          "weight": 1,
+          "contradiction_rule": "Fail if a specific platform, instrument, or visual sequence is asserted without frame evidence."
+        }
+      ],
+      "caveats": [
+        "Partner and defense-organization naming must follow the source and is not a policy endorsement.",
+        "The rubric is public metadata, not an independent transcription reference."
+      ]
+    },
+    {
+      "item_id": "YT-08",
+      "source_page_url": "https://svs.gsfc.nasa.gov/14893/",
+      "source_title": "Three Missions Launch to Track Space Weather (Official NASA Trailer)",
+      "text_groundable": [
+        {
+          "rubric_point_id": "YT-08:TXT:01",
+          "essential_meaning": "The trailer introduces NASA's IMAP and Carruthers Geocorona Observatory missions together with NOAA's SWFO-L1 spacecraft.",
+          "metadata_basis": "The official description names the three spacecraft and their organizations.",
+          "weight": 1,
+          "contradiction_rule": "Fail if a mission is omitted from a purported complete trio or assigned to the wrong organization."
+        },
+        {
+          "rubric_point_id": "YT-08:TXT:02",
+          "essential_meaning": "The missions study different aspects of solar wind and space weather across the solar system.",
+          "metadata_basis": "The official description explains the shared topic and complementary study scope.",
+          "weight": 1,
+          "contradiction_rule": "Fail if their primary shared purpose is described as unrelated to the Sun or space weather."
+        },
+        {
+          "rubric_point_id": "YT-08:TXT:03",
+          "essential_meaning": "The research is intended to improve understanding of the Sun's influence and help protect satellites and astronauts from space-weather threats.",
+          "metadata_basis": "The official description states these knowledge and protection goals.",
+          "weight": 1,
+          "contradiction_rule": "Fail if the research is claimed to eliminate space-weather risk."
+        },
+        {
+          "rubric_point_id": "YT-08:TXT:04",
+          "essential_meaning": "The source announced a September 23, 2025 launch from Kennedy Space Center.",
+          "metadata_basis": "The official page preserves the trailer's point-in-time launch announcement.",
+          "weight": 1,
+          "contradiction_rule": "Fail if the historical announcement is presented as a current future schedule without a date qualifier."
+        }
+      ],
+      "visual_only": [
+        {
+          "rubric_point_id": "YT-08:VIS:01",
+          "essential_meaning": "Mission and spacecraft imagery visually distinguishes the three members of the launch trio.",
+          "metadata_basis": "The official page groups the trailer and mission visual assets.",
+          "weight": 1,
+          "contradiction_rule": "Fail if specific spacecraft appearance is asserted without frame evidence."
+        }
+      ],
+      "caveats": [
+        "The launch statement is historical source content, not a current schedule claim.",
+        "The short-trailer variant is distinct from the extended trailer."
+      ]
+    },
+    {
+      "item_id": "YT-09",
+      "source_page_url": "https://svs.gsfc.nasa.gov/14754/",
+      "source_title": "NASA’s Pandora Mission Closer To Probing Alien Atmospheres",
+      "text_groundable": [
+        {
+          "rubric_point_id": "YT-09:TXT:01",
+          "essential_meaning": "Pandora is designed to study the atmospheres of known exoplanets, including clouds, hazes, and water-related signals.",
+          "metadata_basis": "The official page describes the mission's exoplanet-atmosphere purpose and target properties.",
+          "weight": 1,
+          "contradiction_rule": "Fail if Pandora is described as visiting exoplanets or directly finding life."
+        },
+        {
+          "rubric_point_id": "YT-09:TXT:02",
+          "essential_meaning": "Astronomers infer atmospheric chemistry during transits by examining starlight that passes through a planet's atmosphere.",
+          "metadata_basis": "The official mission description explains the transit measurement mechanism.",
+          "weight": 1,
+          "contradiction_rule": "Fail if the mechanism is materially reversed or presented as a direct atmospheric sample."
+        },
+        {
+          "rubric_point_id": "YT-09:TXT:03",
+          "essential_meaning": "Changing bright and dark regions on a star can mask or mimic planetary atmospheric signals.",
+          "metadata_basis": "The official page identifies stellar-surface variation as the measurement problem.",
+          "weight": 1,
+          "contradiction_rule": "Fail if stellar variation is said to have no effect on the measurement."
+        },
+        {
+          "rubric_point_id": "YT-09:TXT:04",
+          "essential_meaning": "Pandora separates star and planet signals by collecting visible-light and near-infrared measurements together.",
+          "metadata_basis": "The official page describes simultaneous visible and near-infrared observation.",
+          "weight": 1,
+          "contradiction_rule": "Fail if the method is described as relying on only one unrelated wavelength band."
+        },
+        {
+          "rubric_point_id": "YT-09:TXT:05",
+          "essential_meaning": "The planned prime mission studies at least 20 known exoplanets and supports interpretation by Webb and future missions.",
+          "metadata_basis": "The official description provides the target count and relationship to broader exoplanet research.",
+          "weight": 1,
+          "contradiction_rule": "Fail if the target count is reduced, inflated without support, or described as confirmed habitable worlds."
+        }
+      ],
+      "visual_only": [
+        {
+          "rubric_point_id": "YT-09:VIS:01",
+          "essential_meaning": "The visual explanation contrasts the star, a transiting planet, and the observing spacecraft to illustrate signal separation.",
+          "metadata_basis": "The official page's mission imagery and descriptions present these visual roles.",
+          "weight": 1,
+          "contradiction_rule": "Fail if a specific depiction is claimed without frame evidence."
+        }
+      ],
+      "caveats": [
+        "The main horizontal item is scored; the vertical reel is excluded.",
+        "The rubric is public metadata, not an independent transcription reference."
+      ]
+    }
+  ]
+}

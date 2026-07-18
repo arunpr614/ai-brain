@@ -1,0 +1,58 @@
+{
+  "schema_version": "1.2",
+  "item_id": "YT-03",
+  "youtube_video_id": "bSt5peITUBo",
+  "attested_at": "2026-07-16T18:13:23Z",
+  "content_rights": {
+    "state": "provisionally_allowed_for_private_benchmark_review_required",
+    "evidence_url": "https://svs.gsfc.nasa.gov/13430/",
+    "rationale": "NASA/SVS publishes the item under its public-domain-unless-noted baseline; partner credits and licensed music are preserved and media are not materialized.",
+    "review_required": true
+  },
+  "transcript_rights": {
+    "state": "provisionally_allowed_for_private_benchmark_review_required",
+    "evidence_url": "https://svs.gsfc.nasa.gov/13430/",
+    "rationale": "NASA/SVS publishes the exact VTT as an official same-group caption asset. Private preservation is provisional under the cited terms; partner-content and legal/policy review remain unresolved.",
+    "review_required": true
+  },
+  "source": {
+    "owner": "NASA Goddard Space Flight Center",
+    "source_page_url": "https://svs.gsfc.nasa.gov/13430/",
+    "sidecar_url": "https://svs.gsfc.nasa.gov/vis/a010000/a013400/a013430/VISIONS2.en_US.vtt",
+    "sidecar_sha256": "fd66f8e62779561047f57f505e24916cbf6293f6de8c775d7df30407f69ddbb5",
+    "private_relative_path": "inputs/nasa/YT_VISIONS2_bSt5peITUBo.vtt"
+  },
+  "input_contract": {
+    "format": "vtt",
+    "language_tag": "en-US",
+    "declared_duration_ms": 478293,
+    "expected_cue_count": 108,
+    "last_cue_end_ms": 478293,
+    "content_completeness": {
+      "state": "complete",
+      "basis": "explicit_source_assertion",
+      "rationale": "The official source publishes the associated transcript and the final cue reaches the source-media duration."
+    },
+    "expected_class": "expected_safe_rejection"
+  },
+  "retention_and_derivation": {
+    "full_text_private": true,
+    "publication": "hashes_and_derived_metrics_only",
+    "embeddings": "not_created",
+    "model_upload": "prohibited_in_protocol_v2",
+    "delete_by": "2026-10-14",
+    "evidence_url": "https://svs.gsfc.nasa.gov/help/",
+    "rationale": "Private caption-preservation evaluation only; no music, media, or partner footage is downloaded or republished."
+  },
+  "attribution": {
+    "credit": "NASA's Goddard Space Flight Center",
+    "no_endorsement": true,
+    "third_party_caveats": ["Multiple licensed production-music tracks and partner credits remain source-page-only."]
+  },
+  "version_equivalence": {
+    "state": "official_row_level_publication_association",
+    "evidence": "The primary SVS group names VISIONS2_YouTube.mp4 and co-locates its VTT/SRT, official transcript, and exact YouTube link.",
+    "youtube_side_verified": false
+  },
+  "claims_boundary": ["input_preservation_only", "not_independent_wer_reference", "youtube_caption_state_unverified", "not_legal_approval", "not_production_readiness"]
+}

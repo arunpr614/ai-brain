@@ -1,0 +1,141 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://brain.arunp.in/schemas/youtube-blinded-enrichment-evaluation-v1.1.json",
+  "title": "Exact-five blinded Gate 4 evaluator result",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "packet_id", "packet_sha256", "execution_contract_sha256", "role", "execution_attestation", "started_at", "completed_at", "items", "claims_boundary"],
+  "properties": {
+    "schema_version": { "const": "1.1" },
+    "packet_id": { "type": "string", "pattern": "^G4-EVAL-[AB]-[0-9a-f]{12}$" },
+    "packet_sha256": { "$ref": "#/$defs/sha256" },
+    "execution_contract_sha256": { "$ref": "#/$defs/sha256" },
+    "role": { "enum": ["evaluator_a", "evaluator_b"] },
+    "execution_attestation": { "$ref": "#/$defs/executionAttestation" },
+    "started_at": { "type": "string", "format": "date-time" },
+    "completed_at": { "type": "string", "format": "date-time" },
+    "items": {
+      "type": "array",
+      "minItems": 5,
+      "maxItems": 5,
+      "uniqueItems": true,
+      "items": { "$ref": "#/$defs/itemResult" }
+    },
+    "claims_boundary": { "const": "ai_evaluated_provisional_pending_human_stakeholder_review" }
+  },
+  "$defs": {
+    "sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+    "excerptIds": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 12,
+      "uniqueItems": true,
+      "items": { "type": "string", "pattern": "^E[0-9]{3}$" }
+    },
+    "executionAttestation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["fresh_process", "packet_only_file_context", "candidate_identity_hidden", "candidate_runtime_hidden", "price_latency_hidden", "other_evaluator_unseen", "pinned_runtime_verified", "pinned_model_verified", "role_prompt_hash_verified", "deny_network_sandbox_verified", "tools_available", "network_available", "external_content_transfer", "evaluator_initiated_provider_calls", "external_api_calls", "incremental_spend_usd", "local_model_identity", "same_model_evaluator_bias_acknowledged", "training_performed", "private_retention_delete_by", "contract_accepted", "consent_attestation_present"],
+      "properties": {
+        "fresh_process": { "const": true },
+        "packet_only_file_context": { "const": true },
+        "candidate_identity_hidden": { "const": true },
+        "candidate_runtime_hidden": { "const": true },
+        "price_latency_hidden": { "const": true },
+        "other_evaluator_unseen": { "const": true },
+        "pinned_runtime_verified": { "const": true },
+        "pinned_model_verified": { "const": true },
+        "role_prompt_hash_verified": { "const": true },
+        "deny_network_sandbox_verified": { "const": true },
+        "tools_available": { "const": false },
+        "network_available": { "const": false },
+        "external_content_transfer": { "const": false },
+        "evaluator_initiated_provider_calls": { "const": 0 },
+        "external_api_calls": { "const": 0 },
+        "incremental_spend_usd": { "const": 0 },
+        "local_model_identity": { "const": "LOCAL-QWEN3-8B-Q4_K_M-LLAMA_CPP-B9637" },
+        "same_model_evaluator_bias_acknowledged": { "const": true },
+        "training_performed": { "const": false },
+        "private_retention_delete_by": { "const": "2026-10-14" },
+        "contract_accepted": { "const": true },
+        "consent_attestation_present": { "const": true }
+      }
+    },
+    "claimScore": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["claim_id", "support", "evidence_excerpt_ids", "rationale"],
+      "properties": {
+        "claim_id": { "type": "string", "pattern": "^C[0-9]{3}$" },
+        "support": { "enum": ["fully_supported", "partially_supported", "unsupported", "contradicted"] },
+        "evidence_excerpt_ids": { "$ref": "#/$defs/excerptIds" },
+        "rationale": { "type": "string", "minLength": 1, "maxLength": 1200 }
+      }
+    },
+    "citationScore": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["citation_id", "assessment", "evidence_excerpt_ids", "rationale"],
+      "properties": {
+        "citation_id": { "type": "string", "pattern": "^Q[0-9]{3}$" },
+        "assessment": { "enum": ["correct", "incorrect", "missing"] },
+        "evidence_excerpt_ids": { "$ref": "#/$defs/excerptIds" },
+        "rationale": { "type": "string", "minLength": 1, "maxLength": 1200 }
+      }
+    },
+    "keyPointScore": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["rubric_point_id", "kind", "covered", "cause", "evidence_excerpt_ids", "rationale"],
+      "properties": {
+        "rubric_point_id": { "type": "string", "pattern": "^[TV][0-9]{3}$" },
+        "kind": { "enum": ["text_groundable", "visual_only"] },
+        "covered": { "type": "boolean" },
+        "cause": { "enum": ["supported_by_transcript_and_output", "output_omission", "essential_visual_evidence_absent", "contradicted"] },
+        "evidence_excerpt_ids": {
+          "type": "array",
+          "maxItems": 12,
+          "uniqueItems": true,
+          "items": { "type": "string", "pattern": "^E[0-9]{3}$" }
+        },
+        "rationale": { "type": "string", "minLength": 1, "maxLength": 1200 }
+      }
+    },
+    "criticalHallucination": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["claim_id", "category", "evidence_excerpt_ids", "rationale"],
+      "properties": {
+        "claim_id": { "type": "string", "pattern": "^C[0-9]{3}$" },
+        "category": { "enum": ["safety", "rights_policy", "identity_attribution", "quantity", "chronology", "recommended_action", "source_evidence"] },
+        "evidence_excerpt_ids": { "$ref": "#/$defs/excerptIds" },
+        "rationale": { "type": "string", "minLength": 1, "maxLength": 1200 }
+      }
+    },
+    "schemaIssue": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["subject_id", "field_pointer", "rationale"],
+      "properties": {
+        "subject_id": { "type": "string", "pattern": "^(PACKET|C[0-9]{3}|Q[0-9]{3}|[TV][0-9]{3})$" },
+        "field_pointer": { "type": "string", "pattern": "^/", "minLength": 2, "maxLength": 300 },
+        "rationale": { "type": "string", "minLength": 1, "maxLength": 1200 }
+      }
+    },
+    "itemResult": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["blinded_item_id", "packet_item_sha256", "claim_scores", "citation_scores", "key_point_scores", "critical_hallucinations", "schema_or_reference_issues", "confidence"],
+      "properties": {
+        "blinded_item_id": { "type": "string", "pattern": "^B00[1-5]$" },
+        "packet_item_sha256": { "$ref": "#/$defs/sha256" },
+        "claim_scores": { "type": "array", "minItems": 1, "maxItems": 12, "uniqueItems": true, "items": { "$ref": "#/$defs/claimScore" } },
+        "citation_scores": { "type": "array", "minItems": 1, "maxItems": 12, "uniqueItems": true, "items": { "$ref": "#/$defs/citationScore" } },
+        "key_point_scores": { "type": "array", "minItems": 1, "maxItems": 30, "uniqueItems": true, "items": { "$ref": "#/$defs/keyPointScore" } },
+        "critical_hallucinations": { "type": "array", "maxItems": 12, "uniqueItems": true, "items": { "$ref": "#/$defs/criticalHallucination" } },
+        "schema_or_reference_issues": { "type": "array", "maxItems": 30, "uniqueItems": true, "items": { "$ref": "#/$defs/schemaIssue" } },
+        "confidence": { "enum": ["low", "medium", "high"] }
+      }
+    }
+  }
+}

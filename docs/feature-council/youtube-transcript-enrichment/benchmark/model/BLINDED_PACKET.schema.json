@@ -1,0 +1,126 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://brain.arunp.in/schemas/youtube-blinded-enrichment-packet-v1.json",
+  "title": "Exact-five blinded Gate 4 evaluator packet",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "packet_id", "role", "content_commit", "seal_commit", "benchmark_lock_sha256", "execution_contract_sha256", "execution_readiness_sha256", "consent_attestation_sha256", "runtime_ledger_sha256", "role_system_prompt_sha256", "role_generation_schema_sha256", "sandbox_profile_sha256", "ordering_sha256", "transfer_boundary", "items", "instructions", "claims_boundary"],
+  "properties": {
+    "schema_version": { "const": "1.0" },
+    "packet_id": { "type": "string", "pattern": "^G4-EVAL-[AB]-[0-9a-f]{12}$" },
+    "role": { "enum": ["evaluator_a", "evaluator_b"] },
+    "content_commit": { "$ref": "#/$defs/gitSha" },
+    "seal_commit": { "$ref": "#/$defs/gitSha" },
+    "benchmark_lock_sha256": { "$ref": "#/$defs/sha256" },
+    "execution_contract_sha256": { "$ref": "#/$defs/sha256" },
+    "execution_readiness_sha256": { "$ref": "#/$defs/sha256" },
+    "consent_attestation_sha256": { "$ref": "#/$defs/sha256" },
+    "runtime_ledger_sha256": { "$ref": "#/$defs/sha256" },
+    "role_system_prompt_sha256": { "$ref": "#/$defs/sha256" },
+    "role_generation_schema_sha256": { "$ref": "#/$defs/sha256" },
+    "sandbox_profile_sha256": { "$ref": "#/$defs/sha256" },
+    "ordering_sha256": { "$ref": "#/$defs/sha256" },
+    "transfer_boundary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["maximum_excerpts_per_item", "maximum_words_per_excerpt", "maximum_total_excerpt_words_per_item", "maximum_unique_transcript_word_position_fraction", "complete_or_reconstructable_transcript_prohibited"],
+      "properties": {
+        "maximum_excerpts_per_item": { "const": 12 },
+        "maximum_words_per_excerpt": { "const": 40 },
+        "maximum_total_excerpt_words_per_item": { "const": 240 },
+        "maximum_unique_transcript_word_position_fraction": { "const": 0.35 },
+        "complete_or_reconstructable_transcript_prohibited": { "const": true }
+      }
+    },
+    "items": { "type": "array", "minItems": 5, "maxItems": 5, "uniqueItems": true, "items": { "$ref": "#/$defs/item" } },
+    "instructions": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["score_every_claim_citation_and_rubric_point_once", "no_new_summary_or_claim_text", "use_only_approved_excerpt_ids", "no_tools_network_or_external_calls", "thresholds_computed_by_coordinator"],
+      "properties": {
+        "score_every_claim_citation_and_rubric_point_once": { "const": true },
+        "no_new_summary_or_claim_text": { "const": true },
+        "use_only_approved_excerpt_ids": { "const": true },
+        "no_tools_network_or_external_calls": { "const": true },
+        "thresholds_computed_by_coordinator": { "const": true }
+      }
+    },
+    "claims_boundary": { "const": "ai_evaluated_provisional_pending_human_stakeholder_review" }
+  },
+  "$defs": {
+    "sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+    "gitSha": { "type": "string", "pattern": "^[0-9a-f]{40}$" },
+    "excerptIds": { "type": "array", "minItems": 1, "maxItems": 12, "uniqueItems": true, "items": { "type": "string", "pattern": "^E[0-9]{3}$" } },
+    "claim": {
+      "type": "object", "additionalProperties": false,
+      "required": ["claim_id", "claim_text", "citation_id", "cited_start_ms", "cited_end_ms", "evidence_excerpt_ids"],
+      "properties": {
+        "claim_id": { "type": "string", "pattern": "^C[0-9]{3}$" },
+        "claim_text": { "type": "string", "minLength": 1, "maxLength": 600 },
+        "citation_id": { "type": "string", "pattern": "^Q[0-9]{3}$" },
+        "cited_start_ms": { "type": "integer", "minimum": 0 },
+        "cited_end_ms": { "type": "integer", "minimum": 1 },
+        "evidence_excerpt_ids": { "$ref": "#/$defs/excerptIds" }
+      }
+    },
+    "generatedPoint": {
+      "type": "object", "additionalProperties": false,
+      "required": ["generated_key_point_id", "point_text", "evidence_excerpt_ids"],
+      "properties": {
+        "generated_key_point_id": { "type": "string", "pattern": "^K[0-9]{3}$" },
+        "point_text": { "type": "string", "minLength": 1, "maxLength": 600 },
+        "evidence_excerpt_ids": { "$ref": "#/$defs/excerptIds" }
+      }
+    },
+    "rubricPoint": {
+      "type": "object", "additionalProperties": false,
+      "required": ["rubric_point_id", "kind", "essential_meaning", "contradiction_rule", "weight"],
+      "properties": {
+        "rubric_point_id": { "type": "string", "pattern": "^[TV][0-9]{3}$" },
+        "kind": { "enum": ["text_groundable", "visual_only"] },
+        "essential_meaning": { "type": "string", "minLength": 1, "maxLength": 1200 },
+        "contradiction_rule": { "type": "string", "minLength": 1, "maxLength": 1200 },
+        "weight": { "const": 1 }
+      }
+    },
+    "excerpt": {
+      "type": "object", "additionalProperties": false,
+      "required": ["excerpt_id", "text", "word_count", "cited_start_ms", "cited_end_ms", "authorized_for_claim_ids", "authorized_for_generated_key_point_ids"],
+      "properties": {
+        "excerpt_id": { "type": "string", "pattern": "^E[0-9]{3}$" },
+        "text": { "type": "string", "minLength": 1, "maxLength": 1000 },
+        "word_count": { "type": "integer", "minimum": 1, "maximum": 40 },
+        "cited_start_ms": { "type": "integer", "minimum": 0 },
+        "cited_end_ms": { "type": "integer", "minimum": 1 },
+        "authorized_for_claim_ids": { "type": "array", "maxItems": 12, "uniqueItems": true, "items": { "type": "string", "pattern": "^C[0-9]{3}$" } },
+        "authorized_for_generated_key_point_ids": { "type": "array", "maxItems": 24, "uniqueItems": true, "items": { "type": "string", "pattern": "^K[0-9]{3}$" } }
+      }
+    },
+    "item": {
+      "type": "object", "additionalProperties": false,
+      "required": ["blinded_item_id", "packet_item_sha256", "generated_summary", "claims", "generated_key_points", "rubric_points", "excerpts", "boundary_counts"],
+      "properties": {
+        "blinded_item_id": { "type": "string", "pattern": "^B00[1-5]$" },
+        "packet_item_sha256": { "$ref": "#/$defs/sha256" },
+        "generated_summary": { "type": "string", "minLength": 1, "maxLength": 2400 },
+        "claims": { "type": "array", "minItems": 1, "maxItems": 12, "uniqueItems": true, "items": { "$ref": "#/$defs/claim" } },
+        "generated_key_points": { "type": "array", "minItems": 1, "maxItems": 24, "uniqueItems": true, "items": { "$ref": "#/$defs/generatedPoint" } },
+        "rubric_points": { "type": "array", "minItems": 1, "maxItems": 30, "uniqueItems": true, "items": { "$ref": "#/$defs/rubricPoint" } },
+        "excerpts": { "type": "array", "minItems": 1, "maxItems": 12, "uniqueItems": true, "items": { "$ref": "#/$defs/excerpt" } },
+        "boundary_counts": {
+          "type": "object", "additionalProperties": false,
+          "required": ["excerpt_count", "total_excerpt_words", "unique_transcript_word_positions", "transcript_word_positions", "unique_transcript_word_position_fraction", "complete_transcript_included", "reconstructable_transcript_detected"],
+          "properties": {
+            "excerpt_count": { "type": "integer", "minimum": 1, "maximum": 12 },
+            "total_excerpt_words": { "type": "integer", "minimum": 1, "maximum": 240 },
+            "unique_transcript_word_positions": { "type": "integer", "minimum": 1 },
+            "transcript_word_positions": { "type": "integer", "minimum": 1 },
+            "unique_transcript_word_position_fraction": { "type": "number", "minimum": 0, "maximum": 0.35 },
+            "complete_transcript_included": { "const": false },
+            "reconstructable_transcript_detected": { "const": false }
+          }
+        }
+      }
+    }
+  }
+}

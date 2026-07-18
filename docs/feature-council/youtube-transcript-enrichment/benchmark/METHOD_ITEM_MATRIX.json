@@ -1,0 +1,147 @@
+{
+  "$schema": "https://brain.arunp.in/schemas/youtube-method-item-matrix-v1.1.json",
+  "schema_version": "1.1",
+  "authority": "prospective_primary_method_item_and_gate_authority",
+  "items": [
+    {
+      "item_id": "YT-01",
+      "rights_screened": true,
+      "authorized_ingestible_sidecar": true,
+      "independently_authorized_source_media": false,
+      "a1_cell_state": "eligible_supported",
+      "a2_cell_state": "excluded_before_run_no_editor_authorization",
+      "a3_cell_state": "excluded_before_run_gate_2_not_triggered",
+      "reference_ledger_state": "ready"
+    },
+    {
+      "item_id": "YT-02",
+      "rights_screened": true,
+      "authorized_ingestible_sidecar": true,
+      "independently_authorized_source_media": false,
+      "a1_cell_state": "eligible_supported",
+      "a2_cell_state": "excluded_before_run_no_editor_authorization",
+      "a3_cell_state": "excluded_before_run_gate_2_not_triggered",
+      "reference_ledger_state": "ready"
+    },
+    {
+      "item_id": "YT-03",
+      "rights_screened": true,
+      "authorized_ingestible_sidecar": false,
+      "independently_authorized_source_media": false,
+      "a1_cell_state": "expected_structural_rejection",
+      "a2_cell_state": "excluded_before_run_no_editor_authorization",
+      "a3_cell_state": "excluded_before_run_gate_2_not_triggered",
+      "reference_ledger_state": "expected_structural_rejection"
+    },
+    {
+      "item_id": "YT-04",
+      "rights_screened": true,
+      "authorized_ingestible_sidecar": false,
+      "independently_authorized_source_media": false,
+      "a1_cell_state": "expected_supported_class_rejection",
+      "a2_cell_state": "excluded_before_run_no_editor_authorization",
+      "a3_cell_state": "excluded_before_run_gate_2_not_triggered",
+      "reference_ledger_state": "expected_supported_class_rejection"
+    },
+    {
+      "item_id": "YT-05",
+      "rights_screened": true,
+      "authorized_ingestible_sidecar": false,
+      "independently_authorized_source_media": false,
+      "a1_cell_state": "expected_structural_rejection",
+      "a2_cell_state": "excluded_before_run_no_editor_authorization",
+      "a3_cell_state": "excluded_before_run_gate_2_not_triggered",
+      "reference_ledger_state": "expected_structural_rejection"
+    },
+    {
+      "item_id": "YT-06",
+      "rights_screened": true,
+      "authorized_ingestible_sidecar": false,
+      "independently_authorized_source_media": false,
+      "a1_cell_state": "expected_structural_rejection",
+      "a2_cell_state": "excluded_before_run_no_editor_authorization",
+      "a3_cell_state": "excluded_before_run_gate_2_not_triggered",
+      "reference_ledger_state": "expected_structural_rejection"
+    },
+    {
+      "item_id": "YT-07",
+      "rights_screened": true,
+      "authorized_ingestible_sidecar": true,
+      "independently_authorized_source_media": false,
+      "a1_cell_state": "eligible_supported",
+      "a2_cell_state": "excluded_before_run_no_editor_authorization",
+      "a3_cell_state": "excluded_before_run_gate_2_not_triggered",
+      "reference_ledger_state": "ready"
+    },
+    {
+      "item_id": "YT-08",
+      "rights_screened": true,
+      "authorized_ingestible_sidecar": true,
+      "independently_authorized_source_media": false,
+      "a1_cell_state": "eligible_supported",
+      "a2_cell_state": "excluded_before_run_no_editor_authorization",
+      "a3_cell_state": "excluded_before_run_gate_2_not_triggered",
+      "reference_ledger_state": "ready"
+    },
+    {
+      "item_id": "YT-09",
+      "rights_screened": true,
+      "authorized_ingestible_sidecar": true,
+      "independently_authorized_source_media": false,
+      "a1_cell_state": "eligible_supported",
+      "a2_cell_state": "excluded_before_run_no_editor_authorization",
+      "a3_cell_state": "excluded_before_run_gate_2_not_triggered",
+      "reference_ledger_state": "ready"
+    },
+    {
+      "item_id": "YT-10",
+      "rights_screened": true,
+      "authorized_ingestible_sidecar": false,
+      "independently_authorized_source_media": true,
+      "a1_cell_state": "excluded_before_run_no_ingestible_sidecar",
+      "a2_cell_state": "excluded_before_run_no_editor_authorization",
+      "a3_cell_state": "excluded_before_run_gate_2_not_triggered",
+      "reference_ledger_state": null
+    }
+  ],
+  "denominators": {
+    "a1_primary_positive_cells": 5,
+    "a1_expected_safe_rejection_cells": 4,
+    "a2_primary_cells": 0,
+    "a3_primary_positive_cells": 0,
+    "a3_expected_safe_rejection_cells": 0,
+    "rights_screened_real_items": 10
+  },
+  "gate_2_trigger": {
+    "rule": "no_authorized_ingestible_sidecar_and_independently_authorized_source_media",
+    "qualifying_item_ids": [
+      "YT-10"
+    ],
+    "qualifying_item_count": 1,
+    "corpus_item_count": 10,
+    "qualifying_percentage_basis_points": 1000,
+    "minimum_qualifying_item_count": 2,
+    "minimum_qualifying_percentage_basis_points": 2000,
+    "count_threshold_met": false,
+    "percentage_threshold_met": false,
+    "triggered": false,
+    "claim_scope": "prospective_corpus_work_allocation_not_prevalence"
+  },
+  "gate_states": {
+    "gate_1": "eligible",
+    "gate_2": "not_triggered",
+    "gate_3": "eligible_conditional",
+    "gate_4": "eligible_conditional",
+    "gate_5": "not_triggered",
+    "gate_6": "eligible"
+  },
+  "conditional_gate_rules": {
+    "gate_3": "run_only_after_gate_1_passes",
+    "gate_4": "run_only_after_gates_1_and_3_pass_and_local_model_package_is_frozen",
+    "gate_5": "if_valid_gate_4_transcript_only_baseline_is_below_80_percent_due_solely_to_missing_visual_evidence_record_triggered_but_blocked_no_visual_method_or_media_sealed_no_post_result_addition"
+  },
+  "conditional_artifacts": {
+    "gate_4_model_package_tree": "docs/feature-council/youtube-transcript-enrichment/benchmark/model",
+    "gate_4_model_harness_tree": "docs/feature-council/youtube-transcript-enrichment/spikes/model-harness"
+  }
+}

@@ -1,0 +1,58 @@
+{
+  "schema_version": "1.2",
+  "item_id": "YT-06",
+  "youtube_video_id": "uwnOO54_m3o",
+  "attested_at": "2026-07-16T18:13:23Z",
+  "content_rights": {
+    "state": "provisionally_allowed_for_private_benchmark_review_required",
+    "evidence_url": "https://svs.gsfc.nasa.gov/13509/",
+    "rationale": "NASA/SVS publishes the Spanish trailer, while ESA animation and licensed music remain third-party and are not processed.",
+    "review_required": true
+  },
+  "transcript_rights": {
+    "state": "provisionally_allowed_for_private_benchmark_review_required",
+    "evidence_url": "https://svs.gsfc.nasa.gov/13509/",
+    "rationale": "NASA publishes the exact SpanishV2 VTT/translation as an official same-group caption asset; retain privately with translator/source provenance.",
+    "review_required": true
+  },
+  "source": {
+    "owner": "NASA Goddard Space Flight Center",
+    "source_page_url": "https://svs.gsfc.nasa.gov/13509/",
+    "sidecar_url": "https://svs.gsfc.nasa.gov/vis/a010000/a013500/a013509/SolO_Trailer_SpanishV2.es_US.vtt",
+    "sidecar_sha256": "a537b3352459728a99785fdae94ea372e0552c32ee0efd688c134a7253442a36",
+    "private_relative_path": "inputs/nasa/YT_SOLAR_ORBITER_ES_uwnOO54_m3o.vtt"
+  },
+  "input_contract": {
+    "format": "vtt",
+    "language_tag": "es-US",
+    "declared_duration_ms": 77525,
+    "expected_cue_count": 15,
+    "last_cue_end_ms": 77525,
+    "content_completeness": {
+      "state": "complete",
+      "basis": "explicit_source_assertion",
+      "rationale": "The official source publishes the associated Spanish transcript and the final cue reaches the rounded source-media duration."
+    },
+    "expected_class": "expected_safe_rejection"
+  },
+  "retention_and_derivation": {
+    "full_text_private": true,
+    "publication": "hashes_and_derived_metrics_only",
+    "embeddings": "not_created",
+    "model_upload": "prohibited_in_protocol_v2",
+    "delete_by": "2026-10-14",
+    "evidence_url": "https://www.nasa.gov/nasa-brand-center/images-and-media/",
+    "rationale": "Caption-only private evaluation; ESA animation, media, and music remain link-only."
+  },
+  "attribution": {
+    "credit": "NASA's Goddard Space Flight Center; ESA/ATG Medialab animation; named NASA translator",
+    "no_endorsement": true,
+    "third_party_caveats": ["ESA/ATG Medialab animation and Yuri Sazonoff music are not retained or redistributed."]
+  },
+  "version_equivalence": {
+    "state": "official_row_level_publication_association",
+    "evidence": "The Spanish media group co-locates the SpanishV2 MP4, same-stem VTT/SRT and transcript, and exact NASA en español YouTube link.",
+    "youtube_side_verified": false
+  },
+  "claims_boundary": ["input_preservation_only", "not_independent_wer_reference", "youtube_caption_state_unverified", "not_legal_approval", "not_production_readiness"]
+}

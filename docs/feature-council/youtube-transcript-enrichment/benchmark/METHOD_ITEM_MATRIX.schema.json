@@ -1,0 +1,263 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://brain.arunp.in/schemas/youtube-method-item-matrix-v1.1.json",
+  "title": "Prospective YouTube benchmark method-item and gate authority",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "$schema",
+    "schema_version",
+    "authority",
+    "items",
+    "denominators",
+    "gate_2_trigger",
+    "gate_states",
+    "conditional_gate_rules",
+    "conditional_artifacts"
+  ],
+  "properties": {
+    "$schema": {
+      "const": "https://brain.arunp.in/schemas/youtube-method-item-matrix-v1.1.json"
+    },
+    "schema_version": { "const": "1.1" },
+    "authority": { "const": "prospective_primary_method_item_and_gate_authority" },
+    "items": {
+      "type": "array",
+      "minItems": 10,
+      "maxItems": 10,
+      "prefixItems": [
+        { "$ref": "#/$defs/yt01" },
+        { "$ref": "#/$defs/yt02" },
+        { "$ref": "#/$defs/yt03" },
+        { "$ref": "#/$defs/yt04" },
+        { "$ref": "#/$defs/yt05" },
+        { "$ref": "#/$defs/yt06" },
+        { "$ref": "#/$defs/yt07" },
+        { "$ref": "#/$defs/yt08" },
+        { "$ref": "#/$defs/yt09" },
+        { "$ref": "#/$defs/yt10" }
+      ],
+      "items": false
+    },
+    "denominators": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "a1_primary_positive_cells",
+        "a1_expected_safe_rejection_cells",
+        "a2_primary_cells",
+        "a3_primary_positive_cells",
+        "a3_expected_safe_rejection_cells",
+        "rights_screened_real_items"
+      ],
+      "properties": {
+        "a1_primary_positive_cells": { "const": 5 },
+        "a1_expected_safe_rejection_cells": { "const": 4 },
+        "a2_primary_cells": { "const": 0 },
+        "a3_primary_positive_cells": { "const": 0 },
+        "a3_expected_safe_rejection_cells": { "const": 0 },
+        "rights_screened_real_items": { "const": 10 }
+      }
+    },
+    "gate_2_trigger": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "rule",
+        "qualifying_item_ids",
+        "qualifying_item_count",
+        "corpus_item_count",
+        "qualifying_percentage_basis_points",
+        "minimum_qualifying_item_count",
+        "minimum_qualifying_percentage_basis_points",
+        "count_threshold_met",
+        "percentage_threshold_met",
+        "triggered",
+        "claim_scope"
+      ],
+      "properties": {
+        "rule": { "const": "no_authorized_ingestible_sidecar_and_independently_authorized_source_media" },
+        "qualifying_item_ids": {
+          "type": "array",
+          "prefixItems": [{ "const": "YT-10" }],
+          "items": false,
+          "minItems": 1,
+          "maxItems": 1
+        },
+        "qualifying_item_count": { "const": 1 },
+        "corpus_item_count": { "const": 10 },
+        "qualifying_percentage_basis_points": { "const": 1000 },
+        "minimum_qualifying_item_count": { "const": 2 },
+        "minimum_qualifying_percentage_basis_points": { "const": 2000 },
+        "count_threshold_met": { "const": false },
+        "percentage_threshold_met": { "const": false },
+        "triggered": { "const": false },
+        "claim_scope": { "const": "prospective_corpus_work_allocation_not_prevalence" }
+      }
+    },
+    "gate_states": { "$ref": "#/$defs/gateStates" },
+    "conditional_gate_rules": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["gate_3", "gate_4", "gate_5"],
+      "properties": {
+        "gate_3": { "const": "run_only_after_gate_1_passes" },
+        "gate_4": {
+          "const": "run_only_after_gates_1_and_3_pass_and_local_model_package_is_frozen"
+        },
+        "gate_5": {
+          "const": "if_valid_gate_4_transcript_only_baseline_is_below_80_percent_due_solely_to_missing_visual_evidence_record_triggered_but_blocked_no_visual_method_or_media_sealed_no_post_result_addition"
+        }
+      }
+    },
+    "conditional_artifacts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["gate_4_model_package_tree", "gate_4_model_harness_tree"],
+      "properties": {
+        "gate_4_model_package_tree": { "$ref": "#/$defs/safeRepoPath" },
+        "gate_4_model_harness_tree": { "$ref": "#/$defs/safeRepoPath" }
+      }
+    }
+  },
+  "$defs": {
+    "safeRepoPath": {
+      "type": "string",
+      "pattern": "^(?!/)(?!.*(?:^|/)\\.\\.?/)(?!.*\\\\)[A-Za-z0-9._/-]+$"
+    },
+    "gateStates": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["gate_1", "gate_2", "gate_3", "gate_4", "gate_5", "gate_6"],
+      "properties": {
+        "gate_1": { "const": "eligible" },
+        "gate_2": { "const": "not_triggered" },
+        "gate_3": { "const": "eligible_conditional" },
+        "gate_4": { "const": "eligible_conditional" },
+        "gate_5": { "const": "not_triggered" },
+        "gate_6": { "const": "eligible" }
+      }
+    },
+    "baseItem": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "item_id",
+        "rights_screened",
+        "authorized_ingestible_sidecar",
+        "independently_authorized_source_media",
+        "a1_cell_state",
+        "a2_cell_state",
+        "a3_cell_state",
+        "reference_ledger_state"
+      ],
+      "properties": {
+        "item_id": { "type": "string" },
+        "rights_screened": { "const": true },
+        "authorized_ingestible_sidecar": { "type": "boolean" },
+        "independently_authorized_source_media": { "type": "boolean" },
+        "a1_cell_state": {
+          "enum": [
+            "eligible_supported",
+            "expected_structural_rejection",
+            "expected_supported_class_rejection",
+            "excluded_before_run_no_ingestible_sidecar"
+          ]
+        },
+        "a2_cell_state": { "const": "excluded_before_run_no_editor_authorization" },
+        "a3_cell_state": { "const": "excluded_before_run_gate_2_not_triggered" },
+        "reference_ledger_state": {
+          "oneOf": [
+            {
+              "enum": [
+                "ready",
+                "expected_structural_rejection",
+                "expected_supported_class_rejection"
+              ]
+            },
+            { "type": "null" }
+          ]
+        }
+      }
+    },
+    "yt01": { "$ref": "#/$defs/eligibleYT01" },
+    "yt02": { "$ref": "#/$defs/eligibleYT02" },
+    "yt03": { "$ref": "#/$defs/structuralYT03" },
+    "yt04": { "$ref": "#/$defs/boundaryYT04" },
+    "yt05": { "$ref": "#/$defs/structuralYT05" },
+    "yt06": { "$ref": "#/$defs/structuralYT06" },
+    "yt07": { "$ref": "#/$defs/eligibleYT07" },
+    "yt08": { "$ref": "#/$defs/eligibleYT08" },
+    "yt09": { "$ref": "#/$defs/eligibleYT09" },
+    "yt10": { "$ref": "#/$defs/excludedYT10" },
+    "eligibleYT01": {
+      "allOf": [
+        { "$ref": "#/$defs/baseItem" },
+        { "type": "object", "properties": { "item_id": { "const": "YT-01" }, "authorized_ingestible_sidecar": { "const": true }, "independently_authorized_source_media": { "const": false }, "a1_cell_state": { "const": "eligible_supported" }, "reference_ledger_state": { "const": "ready" } } }
+      ]
+    },
+    "eligibleYT02": {
+      "allOf": [
+        { "$ref": "#/$defs/baseItem" },
+        { "type": "object", "properties": { "item_id": { "const": "YT-02" }, "authorized_ingestible_sidecar": { "const": true }, "independently_authorized_source_media": { "const": false }, "a1_cell_state": { "const": "eligible_supported" }, "reference_ledger_state": { "const": "ready" } } }
+      ]
+    },
+    "structuralYT03": {
+      "allOf": [
+        { "$ref": "#/$defs/baseItem" },
+        { "type": "object", "properties": { "item_id": { "const": "YT-03" }, "authorized_ingestible_sidecar": { "const": false }, "independently_authorized_source_media": { "const": false }, "a1_cell_state": { "const": "expected_structural_rejection" }, "reference_ledger_state": { "const": "expected_structural_rejection" } } }
+      ]
+    },
+    "boundaryYT04": {
+      "allOf": [
+        { "$ref": "#/$defs/baseItem" },
+        { "type": "object", "properties": { "item_id": { "const": "YT-04" }, "authorized_ingestible_sidecar": { "const": false }, "independently_authorized_source_media": { "const": false }, "a1_cell_state": { "const": "expected_supported_class_rejection" }, "reference_ledger_state": { "const": "expected_supported_class_rejection" } } }
+      ]
+    },
+    "structuralYT05": {
+      "allOf": [
+        { "$ref": "#/$defs/baseItem" },
+        { "type": "object", "properties": { "item_id": { "const": "YT-05" }, "authorized_ingestible_sidecar": { "const": false }, "independently_authorized_source_media": { "const": false }, "a1_cell_state": { "const": "expected_structural_rejection" }, "reference_ledger_state": { "const": "expected_structural_rejection" } } }
+      ]
+    },
+    "structuralYT06": {
+      "allOf": [
+        { "$ref": "#/$defs/baseItem" },
+        { "type": "object", "properties": { "item_id": { "const": "YT-06" }, "authorized_ingestible_sidecar": { "const": false }, "independently_authorized_source_media": { "const": false }, "a1_cell_state": { "const": "expected_structural_rejection" }, "reference_ledger_state": { "const": "expected_structural_rejection" } } }
+      ]
+    },
+    "eligibleYT07": {
+      "allOf": [
+        { "$ref": "#/$defs/baseItem" },
+        { "type": "object", "properties": { "item_id": { "const": "YT-07" }, "authorized_ingestible_sidecar": { "const": true }, "independently_authorized_source_media": { "const": false }, "a1_cell_state": { "const": "eligible_supported" }, "reference_ledger_state": { "const": "ready" } } }
+      ]
+    },
+    "eligibleYT08": {
+      "allOf": [
+        { "$ref": "#/$defs/baseItem" },
+        { "type": "object", "properties": { "item_id": { "const": "YT-08" }, "authorized_ingestible_sidecar": { "const": true }, "independently_authorized_source_media": { "const": false }, "a1_cell_state": { "const": "eligible_supported" }, "reference_ledger_state": { "const": "ready" } } }
+      ]
+    },
+    "eligibleYT09": {
+      "allOf": [
+        { "$ref": "#/$defs/baseItem" },
+        { "type": "object", "properties": { "item_id": { "const": "YT-09" }, "authorized_ingestible_sidecar": { "const": true }, "independently_authorized_source_media": { "const": false }, "a1_cell_state": { "const": "eligible_supported" }, "reference_ledger_state": { "const": "ready" } } }
+      ]
+    },
+    "excludedYT10": {
+      "allOf": [
+        { "$ref": "#/$defs/baseItem" },
+        {
+          "type": "object",
+          "properties": {
+            "item_id": { "const": "YT-10" },
+            "authorized_ingestible_sidecar": { "const": false },
+            "independently_authorized_source_media": { "const": true },
+            "a1_cell_state": { "const": "excluded_before_run_no_ingestible_sidecar" },
+            "reference_ledger_state": { "type": "null" }
+          }
+        }
+      ]
+    }
+  }
+}

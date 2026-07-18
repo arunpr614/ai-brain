@@ -206,6 +206,8 @@
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "ajv": "^8.18.0",
+    "ajv-formats": "^3.0.1",
     "chrome-remote-interface": "^0.34.0",
     "esbuild": "^0.28.1",
     "eslint": "^9",

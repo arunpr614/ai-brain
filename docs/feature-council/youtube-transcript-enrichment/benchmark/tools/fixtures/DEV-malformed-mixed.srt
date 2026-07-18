@@ -1,0 +1,7 @@
+1
+00:00:01,000 --> 00:00:02,000
+Valid first cue must not hide a later failure.
+
+2
+not-a-timestamp
+Malformed second cue.

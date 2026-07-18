@@ -1,0 +1,17 @@
+1
+00:00:01,000 --> 00:00:03,000
+Publication-safe alpha.
+
+2
+00:00:02,500 --> 00:00:04,000
+Unicode café line one.
+Line two.
+
+3
+00:00:02,500 --> 00:00:04,000
+Unicode café line one.
+Line two.
+
+4
+01:02:03,000 --> 01:02:05,000
+Hours-long timestamp fixture.

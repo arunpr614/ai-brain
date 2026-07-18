@@ -1,0 +1,202 @@
+{
+  "schema_version": "1.0",
+  "candidate_id": "LOCAL-QWEN3-8B-Q4_K_M-LLAMA_CPP-B9637",
+  "prepared_at": "2026-07-18T06:04:13Z",
+  "seal_state": "verified_ready_for_content_freeze",
+  "runtime": {
+    "project": "ggml-org/llama.cpp",
+    "release_tag": "b9637",
+    "commit": "aedb2a5e9ca3d4064148bbb919e0ddc0c1b70ab3",
+    "license": "MIT",
+    "archive_url": "https://github.com/ggml-org/llama.cpp/releases/download/b9637/llama-b9637-bin-macos-arm64.zip",
+    "archive_filename": "llama-b9637-bin-macos-arm64.zip",
+    "expected_archive": {
+      "bytes": 10586927,
+      "sha256": "72a93f3e68c31de3e438d462669aad1fcdb423b995e9c41033cc7d27a9a3ac69"
+    },
+    "observed_archive": {
+      "bytes": 10586927,
+      "sha256": "72a93f3e68c31de3e438d462669aad1fcdb423b995e9c41033cc7d27a9a3ac69",
+      "mode": "0600",
+      "recovery_retries": 0
+    },
+    "extracted": {
+      "llama_cli_relative_path": "llama-cli",
+      "llama_cli": {
+        "bytes": 33448,
+        "sha256": "b8c1891d697f72c1e9c05d0613b4f3d091e388acc2c4e1afa535c19df5d50fc3"
+      },
+      "file_manifest": [
+        {
+          "relative_path": "LICENSE",
+          "role": "license",
+          "bytes": 1078,
+          "sha256": "94f29bbed6a22c35b992c5c6ebf0e7c92f13b836b90f36f461c9cf2f0f1d010d",
+          "mode": "0600"
+        },
+        {
+          "relative_path": "llama-cli",
+          "role": "executable",
+          "bytes": 33448,
+          "sha256": "b8c1891d697f72c1e9c05d0613b4f3d091e388acc2c4e1afa535c19df5d50fc3",
+          "mode": "0700"
+        },
+        {
+          "relative_path": "libllama-cli-impl.dylib",
+          "role": "runtime_library",
+          "bytes": 1455288,
+          "sha256": "21f5b1bf641333ebc1d2e4cd890c0944fa3caf2895b73a592cf200b557443d43",
+          "mode": "0700"
+        },
+        {
+          "relative_path": "libllama-common.0.0.9637.dylib",
+          "role": "runtime_library",
+          "bytes": 7523592,
+          "sha256": "521f8af9de9d31c168602f020287e583fd4a20d56abdf5fe02cdcf3e65eeabd9",
+          "mode": "0700"
+        },
+        {
+          "relative_path": "libllama.0.0.9637.dylib",
+          "role": "runtime_library",
+          "bytes": 2485712,
+          "sha256": "2b0d6f098258cf279fdeb0ff5fae538ed82eb63a01989931a24528b869f49b79",
+          "mode": "0700"
+        },
+        {
+          "relative_path": "libggml.0.15.1.dylib",
+          "role": "runtime_library",
+          "bytes": 59872,
+          "sha256": "147fce74227047e2550b9c374c39deb0813cf676e2ba1b4e90337a38a4e2fcbf",
+          "mode": "0700"
+        },
+        {
+          "relative_path": "libggml-base.0.15.1.dylib",
+          "role": "runtime_library",
+          "bytes": 710040,
+          "sha256": "2f390f1b7de09677a7d5a6e35d12b8cce937c5c9fe037fe5281000448a3fe03e",
+          "mode": "0700"
+        },
+        {
+          "relative_path": "libggml-cpu.0.15.1.dylib",
+          "role": "runtime_library",
+          "bytes": 900912,
+          "sha256": "1c66814aa5ce115a2f117de8dcb590b59a263fc71b854d3d38d6aa4e93353bc6",
+          "mode": "0700"
+        },
+        {
+          "relative_path": "libggml-metal.0.15.1.dylib",
+          "role": "runtime_library",
+          "bytes": 832440,
+          "sha256": "f9b4133c5c3e5025d0e06feb3f0e3aefd766983e241f333875f05ab571d65adc",
+          "mode": "0700"
+        },
+        {
+          "relative_path": "libggml-blas.0.15.1.dylib",
+          "role": "runtime_library",
+          "bytes": 58776,
+          "sha256": "5c70f1824514b72113c7f35187ca986634b2d45d7fe92933838970c5795474d4",
+          "mode": "0700"
+        },
+        {
+          "relative_path": "libggml-rpc.0.15.1.dylib",
+          "role": "runtime_library",
+          "bytes": 133392,
+          "sha256": "b6b5beb86bb2e4398e2d41c1a633d775c2c486e8755a3240f57fcc95ff8dda9c",
+          "mode": "0700"
+        }
+      ],
+      "dylib_manifest_hash_algorithm": "sha256_utf8_json_stringify_runtime_library_entries_sorted_by_relative_path",
+      "dylib_manifest_sha256": "dd81d17cde282c0438f2c78df725915bc636aaba403cc7c799c8674c9dbcf313",
+      "license_sha256": "94f29bbed6a22c35b992c5c6ebf0e7c92f13b836b90f36f461c9cf2f0f1d010d",
+      "build_info_hash_algorithm": "sha256_utf8_json_stringify",
+      "build_info_sha256": "a7e5dc045a04caff8d0a9bdf46d09264ecc787015d88d456d54973a6fd5f4624",
+      "build_info": {
+        "version_output": "9637 (aedb2a5e9)",
+        "compiler": "AppleClang 21.0.0.21000101",
+        "platform": "Darwin",
+        "architecture": "arm64",
+        "codesign": {
+          "identifier": "llama-cli",
+          "signature": "adhoc",
+          "team_identifier": "not set"
+        }
+      }
+    }
+  },
+  "model": {
+    "repository": "Qwen/Qwen3-8B-GGUF",
+    "revision": "6a569868d07d3bd59e8b97fb001bf8c0b254bb20",
+    "filename": "Qwen3-8B-Q4_K_M.gguf",
+    "download_url": "https://huggingface.co/Qwen/Qwen3-8B-GGUF/resolve/6a569868d07d3bd59e8b97fb001bf8c0b254bb20/Qwen3-8B-Q4_K_M.gguf",
+    "license": "Apache-2.0",
+    "license_url": "https://huggingface.co/Qwen/Qwen3-8B-GGUF/blob/6a569868d07d3bd59e8b97fb001bf8c0b254bb20/LICENSE",
+    "expected_file": {
+      "bytes": 5027783488,
+      "sha256": "d98cdcbd03e17ce47681435b5150e34c1417f50b5c0019dd560e4882c5745785"
+    },
+    "observed_file": {
+      "bytes": 5027783488,
+      "sha256": "d98cdcbd03e17ce47681435b5150e34c1417f50b5c0019dd560e4882c5745785",
+      "mode": "0600",
+      "recovery_retries": 0
+    }
+  },
+  "locked_files": {
+    "system_prompt": {
+      "path": "docs/feature-council/youtube-transcript-enrichment/benchmark/model/SYSTEM_PROMPT.txt",
+      "sha256": "9c2606f695ecab22bd5b35f0116a98ae01992095eca3409b00fc0008d75b7da2"
+    },
+    "format_repair_prompt": {
+      "path": "docs/feature-council/youtube-transcript-enrichment/benchmark/model/FORMAT_REPAIR_PROMPT.txt",
+      "sha256": "76584662651e4185eba7c82efa1d11da2a9b33df4a90d34ff4c8152f26879e62"
+    },
+    "output_schema": {
+      "path": "docs/feature-council/youtube-transcript-enrichment/benchmark/model/ENRICHMENT_OUTPUT.schema.json",
+      "sha256": "b3690892848d7b47d5ef5e31966af3caec52828aa570ac09f546529f3d345b55"
+    },
+    "authorization_ledger": {
+      "path": "docs/feature-council/youtube-transcript-enrichment/benchmark/model/LOCAL_DERIVATION_AUTHORIZATION.json",
+      "sha256": "5cbd5f6877687882c59ba7a81cea5bcc42434445577816e1ebafbd7ea4ddd370"
+    },
+    "key_point_rubric": {
+      "path": "docs/feature-council/youtube-transcript-enrichment/benchmark/model/KEY_POINT_RUBRIC.json",
+      "sha256": "fc0170b08f504bfd50470f04ce3a7a3d7039932dc698ed29951c0c1ba8bab762"
+    },
+    "sandbox_profile": {
+      "path": "docs/feature-council/youtube-transcript-enrichment/spikes/model-harness/deny-network.sb",
+      "sha256": "28fbf7e712236b6f3baa33f1d85f3312f5ef0d8096b3e5b6c2229d08120811c0"
+    }
+  },
+  "execution_contract": {
+    "interface": "llama-cli_files_only",
+    "network": "sandbox_exec_deny_network_plus_llama_offline",
+    "server_mode": "prohibited",
+    "remote_model_resolution": "prohibited",
+    "temperature": 0,
+    "seed": 424242,
+    "top_k": 1,
+    "top_p": 1,
+    "min_p": 0,
+    "repeat_penalty": 1,
+    "context_size": 16384,
+    "max_output_tokens": 4096,
+    "threads": 8,
+    "threads_batch": 8,
+    "gpu_layers": "all",
+    "reasoning": "disabled",
+    "attempt_limit": 2,
+    "retry_policy": "one_sealed_format_only_retry_no_semantic_retry",
+    "timeout_ms_per_attempt": 1800000,
+    "incremental_cost_usd": 0
+  },
+  "verification": {
+    "status": "verified",
+    "ledger_verified_at": "2026-07-18T17:56:44Z",
+    "locked_files_hashed_at": "2026-07-18T17:55:07Z",
+    "verified_by": "coordinator local SHA-256/stat/version/codesign verification plus model-package locked-file SHA-256 verification",
+    "runtime_expected_matches_observed": true,
+    "model_expected_matches_observed": true,
+    "extracted_manifest_complete": true,
+    "blocked_reasons": []
+  }
+}

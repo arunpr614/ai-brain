@@ -1,0 +1,75 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://brain.arunp.in/schemas/youtube-a1-operator-receipt-v1.1.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "operator_version", "seal", "cell", "execution_boundary", "publication_eligible", "attempt_claim_sha256", "process", "hashes", "outcomes"],
+  "properties": {
+    "schema_version": { "const": "1.1" },
+    "operator_version": { "const": "1.1.0" },
+    "seal": { "$ref": "#/$defs/seal" },
+    "cell": { "$ref": "#/$defs/cell" },
+    "execution_boundary": { "enum": ["sealed_default_dependencies", "development_test_only"] },
+    "publication_eligible": { "type": "boolean" },
+    "attempt_claim_sha256": { "$ref": "#/$defs/sha256" },
+    "process": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["harness_exit_code", "scorer_exit_code"],
+      "properties": {
+        "harness_exit_code": { "type": "integer", "minimum": 0 },
+        "scorer_exit_code": { "anyOf": [{ "type": "integer", "minimum": 0 }, { "type": "null" }] }
+      }
+    },
+    "hashes": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["harness_report_sha256", "normalized_transcript_sha256", "scorer_options_sha256", "scorer_report_sha256", "database_sha256"],
+      "properties": {
+        "harness_report_sha256": { "$ref": "#/$defs/sha256" },
+        "normalized_transcript_sha256": { "$ref": "#/$defs/nullableSha256" },
+        "scorer_options_sha256": { "$ref": "#/$defs/nullableSha256" },
+        "scorer_report_sha256": { "$ref": "#/$defs/nullableSha256" },
+        "database_sha256": { "$ref": "#/$defs/nullableSha256" }
+      }
+    },
+    "outcomes": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["expected_outcome_observed", "rerun_policy", "selection_policy"],
+      "properties": {
+        "expected_outcome_observed": { "const": true },
+        "rerun_policy": { "const": "reject_if_claim_or_fixed_cell_receipt_or_terminal_exists_before_any_attempt_write" },
+        "selection_policy": { "const": "fixed_seal_stage_item_paths_no_caller_selected_evidence" }
+      }
+    }
+  },
+  "allOf": [
+    { "if": { "properties": { "execution_boundary": { "const": "sealed_default_dependencies" } } }, "then": { "properties": { "publication_eligible": { "const": true } } } },
+    { "if": { "properties": { "execution_boundary": { "const": "development_test_only" } } }, "then": { "properties": { "publication_eligible": { "const": false } } } }
+  ],
+  "$defs": {
+    "sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+    "nullableSha256": { "anyOf": [{ "$ref": "#/$defs/sha256" }, { "type": "null" }] },
+    "seal": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["content_commit", "seal_commit", "lock_sha256"],
+      "properties": {
+        "content_commit": { "type": "string", "pattern": "^[0-9a-f]{40}$" },
+        "seal_commit": { "type": "string", "pattern": "^[0-9a-f]{40}$" },
+        "lock_sha256": { "$ref": "#/$defs/sha256" }
+      }
+    },
+    "cell": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["stage", "item_id", "expected_outcome"],
+      "properties": {
+        "stage": { "enum": ["gate1-primary", "gate3-repeat"] },
+        "item_id": { "enum": ["YT-01", "YT-02", "YT-03", "YT-04", "YT-05", "YT-06", "YT-07", "YT-08", "YT-09"] },
+        "expected_outcome": { "enum": ["eligible_pass", "supported_class_safe_rejection", "structural_safe_rejection"] }
+      }
+    }
+  }
+}

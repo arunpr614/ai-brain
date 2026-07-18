@@ -1,0 +1,58 @@
+{
+  "schema_version": "1.2",
+  "item_id": "YT-01",
+  "youtube_video_id": "8GEIN8WPTJ4",
+  "attested_at": "2026-07-16T18:13:23Z",
+  "content_rights": {
+    "state": "provisionally_allowed_for_private_benchmark_review_required",
+    "evidence_url": "https://svs.gsfc.nasa.gov/14743/",
+    "rationale": "The exact Spanish-horizontal source group says the intact video may be freely shared and downloaded; NASA/SVS attribution, no-endorsement, and third-party-music limits remain controlling.",
+    "review_required": true
+  },
+  "transcript_rights": {
+    "state": "provisionally_allowed_for_private_benchmark_review_required",
+    "evidence_url": "https://svs.gsfc.nasa.gov/14743/",
+    "rationale": "NASA/SVS publishes the same-group es-LA VTT as an official caption asset. Private preservation is provisional under the cited terms; third-party and legal/policy review remain unresolved and controlling.",
+    "review_required": true
+  },
+  "source": {
+    "owner": "NASA Goddard Space Flight Center",
+    "source_page_url": "https://svs.gsfc.nasa.gov/14743/",
+    "sidecar_url": "https://svs.gsfc.nasa.gov/vis/a010000/a014700/a014743/GTU2024SPANISH.es_LA.vtt",
+    "sidecar_sha256": "f8b2dbe1c9ec0521f1589453c2399c558241ba5a6b351f7f7b7fa691f0d14c1b",
+    "private_relative_path": "inputs/nasa/YT_GLOBAL_TEMP_ES_8GEIN8WPTJ4.vtt"
+  },
+  "input_contract": {
+    "format": "vtt",
+    "language_tag": "es-LA",
+    "declared_duration_ms": 68395,
+    "expected_cue_count": 7,
+    "last_cue_end_ms": 57357,
+    "content_completeness": {
+      "state": "complete",
+      "basis": "explicit_source_assertion",
+      "rationale": "The official source page labels the associated transcript complete; the 11.038-second uncovered tail remains recorded as source coverage rather than inferred speech."
+    },
+    "expected_class": "eligible_supported"
+  },
+  "retention_and_derivation": {
+    "full_text_private": true,
+    "publication": "hashes_and_derived_metrics_only",
+    "embeddings": "not_created",
+    "model_upload": "prohibited_in_protocol_v2",
+    "delete_by": "2026-10-14",
+    "evidence_url": "https://www.nasa.gov/nasa-brand-center/images-and-media/",
+    "rationale": "Private preservation evaluation only; no soundtrack extraction, model upload, general training, or full-text publication."
+  },
+  "attribution": {
+    "credit": "NASA's Goddard Space Flight Center",
+    "no_endorsement": true,
+    "third_party_caveats": ["Universal Production Music soundtrack is not extracted, remixed, or redistributed."]
+  },
+  "version_equivalence": {
+    "state": "official_row_level_publication_association",
+    "evidence": "The Spanish-horizontal SVS media group co-locates ESP_Horizontal.mp4, the es-LA sidecars, transcript artifact, and exact NASA en español YouTube link.",
+    "youtube_side_verified": false
+  },
+  "claims_boundary": ["input_preservation_only", "not_independent_wer_reference", "youtube_caption_state_unverified", "not_legal_approval", "not_production_readiness"]
+}

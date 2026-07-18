@@ -1,0 +1,169 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://brain.arunp.in/schemas/youtube-local-derivation-authorization-v1.json",
+  "title": "Provisional local derivation and evaluator-excerpt authorization ledger",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "prepared_at",
+    "authorization_scope",
+    "review_boundary",
+    "items"
+  ],
+  "properties": {
+    "schema_version": { "const": "1.0" },
+    "prepared_at": { "type": "string", "format": "date-time" },
+    "authorization_scope": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "state",
+        "local_full_transcript_inference",
+        "external_full_transcript_upload",
+        "evaluator_excerpt_transfer",
+        "publication",
+        "training",
+        "embeddings",
+        "media_processing"
+      ],
+      "properties": {
+        "state": { "const": "provisional_local_benchmark_only_review_required" },
+        "local_full_transcript_inference": { "const": "allowed_in_deny_network_sandbox" },
+        "external_full_transcript_upload": { "const": "prohibited" },
+        "evaluator_excerpt_transfer": { "const": "allowed_with_per_item_limits_and_blinding" },
+        "publication": { "const": "hashes_metrics_and_public_safe_rubric_only" },
+        "training": { "const": "prohibited" },
+        "embeddings": { "const": "not_created" },
+        "media_processing": { "const": "prohibited" }
+      }
+    },
+    "review_boundary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "legal_approval",
+        "production_approval",
+        "independent_prelock_review_required",
+        "human_stakeholder_review_required"
+      ],
+      "properties": {
+        "legal_approval": { "const": false },
+        "production_approval": { "const": false },
+        "independent_prelock_review_required": { "const": true },
+        "human_stakeholder_review_required": { "const": true }
+      }
+    },
+    "items": {
+      "type": "array",
+      "minItems": 5,
+      "maxItems": 5,
+      "items": { "$ref": "#/$defs/item" }
+    }
+  },
+  "$defs": {
+    "sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+    "item": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "item_id",
+        "attestation_path",
+        "attestation_sha256",
+        "source_raw_sha256",
+        "official_source_page_url",
+        "rights_evidence_url",
+        "source_owner",
+        "authorized_derivations",
+        "evaluator_excerpt",
+        "retention",
+        "claims_boundary"
+      ],
+      "properties": {
+        "item_id": { "enum": ["YT-01", "YT-02", "YT-07", "YT-08", "YT-09"] },
+        "attestation_path": {
+          "type": "string",
+          "pattern": "^docs/feature-council/youtube-transcript-enrichment/benchmark/attestations/YT-[0-9]{2}\\.json$"
+        },
+        "attestation_sha256": { "$ref": "#/$defs/sha256" },
+        "source_raw_sha256": { "$ref": "#/$defs/sha256" },
+        "official_source_page_url": {
+          "type": "string",
+          "format": "uri",
+          "pattern": "^https://svs\\.gsfc\\.nasa\\.gov/[0-9]+/?$"
+        },
+        "rights_evidence_url": {
+          "type": "string",
+          "format": "uri",
+          "pattern": "^https://"
+        },
+        "source_owner": { "const": "NASA Goddard Space Flight Center" },
+        "authorized_derivations": {
+          "type": "array",
+          "minItems": 4,
+          "uniqueItems": true,
+          "items": {
+            "enum": [
+              "private_local_enrichment_output",
+              "publication_safe_aggregate_metrics",
+              "publication_safe_hashes",
+              "bounded_blinded_evaluator_excerpts"
+            ]
+          },
+          "allOf": [
+            { "contains": { "const": "private_local_enrichment_output" } },
+            { "contains": { "const": "bounded_blinded_evaluator_excerpts" } }
+          ]
+        },
+        "evaluator_excerpt": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "maximum_excerpts",
+            "maximum_words_per_excerpt",
+            "maximum_total_words",
+            "maximum_unique_transcript_word_fraction",
+            "selection",
+            "allowed_recipients",
+            "prohibited_content",
+            "retention"
+          ],
+          "properties": {
+            "maximum_excerpts": { "const": 12 },
+            "maximum_words_per_excerpt": { "const": 40 },
+            "maximum_total_words": { "const": 240 },
+            "maximum_unique_transcript_word_fraction": { "const": 0.35 },
+            "selection": { "const": "claim_or_citation_evidence_windows_only" },
+            "allowed_recipients": { "const": "two_blinded_ai_evaluators_and_threshold_adjudicator_only" },
+            "prohibited_content": { "const": "complete_or_reconstructable_transcript" },
+            "retention": { "const": "delete_with_private_benchmark_packet" }
+          }
+        },
+        "retention": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["private_delete_by", "public_artifacts", "raw_model_output"],
+          "properties": {
+            "private_delete_by": { "const": "2026-10-14" },
+            "public_artifacts": { "const": "hashes_metrics_rubric_and_decision_records_only" },
+            "raw_model_output": { "const": "private_delete_by_deadline" }
+          }
+        },
+        "claims_boundary": {
+          "type": "array",
+          "minItems": 5,
+          "uniqueItems": true,
+          "items": {
+            "enum": [
+              "not_legal_approval",
+              "not_production_authorization",
+              "not_training_authorization",
+              "not_full_transcript_external_upload_authorization",
+              "not_youtube_caption_equivalence_proof"
+            ]
+          }
+        }
+      }
+    }
+  }
+}

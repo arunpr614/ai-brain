@@ -1,0 +1,58 @@
+{
+  "schema_version": "1.2",
+  "item_id": "YT-07",
+  "youtube_video_id": "QFfZe9Zq2mY",
+  "attested_at": "2026-07-16T18:13:23Z",
+  "content_rights": {
+    "state": "provisionally_allowed_for_private_benchmark_review_required",
+    "evidence_url": "https://svs.gsfc.nasa.gov/14894/",
+    "rationale": "The page expressly permits intact sharing/downloading while forbidding excision/remixing of named third-party imagery; this run uses only captions.",
+    "review_required": true
+  },
+  "transcript_rights": {
+    "state": "provisionally_allowed_for_private_benchmark_review_required",
+    "evidence_url": "https://svs.gsfc.nasa.gov/14894/",
+    "rationale": "NASA/SVS publishes the exact FINAL_CUT_V2 VTT as an official same-group caption asset. Private preservation is provisional; partner imagery and legal/policy review remain unresolved.",
+    "review_required": true
+  },
+  "source": {
+    "owner": "NASA Goddard Space Flight Center",
+    "source_page_url": "https://svs.gsfc.nasa.gov/14894/",
+    "sidecar_url": "https://svs.gsfc.nasa.gov/vis/a010000/a014800/a014894/20250919_SVS14894_FireSense_at_Fort_Stewart_Rx_Burn_4096x2160_29.97fps_ENGLISH_GAW_FINAL_CUT_V2.en_US.vtt",
+    "sidecar_sha256": "6d8efa75edbbdb6bded8413445903bc5e049833b7f73ed99d5dbf42dc73f44cc",
+    "private_relative_path": "inputs/nasa/YT_FIRESENSE_QFfZe9Zq2mY.vtt"
+  },
+  "input_contract": {
+    "format": "vtt",
+    "language_tag": "en-US",
+    "declared_duration_ms": 752384,
+    "expected_cue_count": 421,
+    "last_cue_end_ms": 742708,
+    "content_completeness": {
+      "state": "complete",
+      "basis": "explicit_source_assertion",
+      "rationale": "The official page states that a complete transcript is available; the 9.676-second uncovered tail remains an explicit source-coverage fact."
+    },
+    "expected_class": "eligible_supported"
+  },
+  "retention_and_derivation": {
+    "full_text_private": true,
+    "publication": "hashes_and_derived_metrics_only",
+    "embeddings": "not_created",
+    "model_upload": "prohibited_in_protocol_v2",
+    "delete_by": "2026-10-14",
+    "evidence_url": "https://svs.gsfc.nasa.gov/14894/",
+    "rationale": "Caption-only private evaluation; no frames, clips, audio extraction, or remix."
+  },
+  "attribution": {
+    "credit": "NASA's Goddard Space Flight Center",
+    "no_endorsement": true,
+    "third_party_caveats": ["Tridant Sensing, U.S. Forest Service, Department of War, Pond5, and Universal Production Music material is not excised or remixed."]
+  },
+  "version_equivalence": {
+    "state": "official_row_level_publication_association",
+    "evidence": "The primary FireSense group co-locates the exact long FINAL_CUT_V2 MP4, same-stem VTT/SRT, and official NASA.gov Video YouTube link.",
+    "youtube_side_verified": false
+  },
+  "claims_boundary": ["input_preservation_only", "not_independent_wer_reference", "youtube_caption_state_unverified", "not_legal_approval", "not_production_readiness"]
+}

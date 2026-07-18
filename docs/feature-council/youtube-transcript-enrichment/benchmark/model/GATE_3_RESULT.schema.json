@@ -1,0 +1,274 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://brain.arunp.in/schemas/youtube-gate-3-result-v2.1.json",
+  "title": "Deterministically derived Gate 3 handoff to the local model harness",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "$schema",
+    "schema_version",
+    "generator_version",
+    "gate",
+    "state",
+    "claim_scope",
+    "content_commit",
+    "seal_commit",
+    "benchmark_lock_sha256",
+    "verified_lock",
+    "execution_boundary",
+    "publication_eligible",
+    "evidence_layout",
+    "denominators",
+    "gate_1_state",
+    "gate_3_state",
+    "network_attempts",
+    "provider_requests",
+    "created_at",
+    "items",
+    "rejection_controls"
+  ],
+  "properties": {
+    "$schema": { "const": "https://brain.arunp.in/schemas/youtube-gate-3-result-v2.1.json" },
+    "schema_version": { "const": "2.1" },
+    "generator_version": { "const": "1.1.0" },
+    "gate": { "const": "gate_3" },
+    "state": { "const": "pass" },
+    "claim_scope": { "const": "exact_five_sealed_a1_items_plus_four_gate_1_rejection_controls" },
+    "content_commit": { "$ref": "#/$defs/gitSha" },
+    "seal_commit": { "$ref": "#/$defs/gitSha" },
+    "benchmark_lock_sha256": { "$ref": "#/$defs/sha256" },
+    "verified_lock": { "const": true },
+    "execution_boundary": {
+      "enum": ["sealed_default_dependencies", "development_test_only"]
+    },
+    "publication_eligible": { "type": "boolean" },
+    "evidence_layout": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "private_root_publication",
+        "seal_relative_root",
+        "gate_1_primary_relative_root",
+        "gate_3_repeat_relative_root",
+        "operator_receipt_relative_root",
+        "attempt_claim_relative_root",
+        "attempt_terminal_relative_root",
+        "selection_policy",
+        "model_input_policy",
+        "operator_receipt_policy",
+        "attempt_claim_policy",
+        "attempt_uniqueness_scope",
+        "attempt_residual_limitation"
+      ],
+      "properties": {
+        "private_root_publication": { "const": "not_published" },
+        "seal_relative_root": { "type": "string", "pattern": "^outputs/[0-9a-f]{40}$" },
+        "gate_1_primary_relative_root": { "type": "string", "pattern": "^outputs/[0-9a-f]{40}/gate1-primary$" },
+        "gate_3_repeat_relative_root": { "type": "string", "pattern": "^outputs/[0-9a-f]{40}/gate3-repeat$" },
+        "operator_receipt_relative_root": { "type": "string", "pattern": "^outputs/[0-9a-f]{40}/operator-receipts$" },
+        "attempt_claim_relative_root": {
+          "type": "string",
+          "pattern": "^docs/feature-council/youtube-transcript-enrichment/decisions/a1-attempt-claims/[0-9a-f]{40}$"
+        },
+        "attempt_terminal_relative_root": {
+          "type": "string",
+          "pattern": "^docs/feature-council/youtube-transcript-enrichment/decisions/a1-attempt-terminals/[0-9a-f]{40}$"
+        },
+        "selection_policy": { "const": "fixed_seal_and_item_paths_no_caller_selected_evidence" },
+        "model_input_policy": { "const": "exact_gate_1_primary_normalized_file" },
+        "operator_receipt_policy": { "const": "mandatory_14_write_once_receipts_bound_to_same_seal_and_exact_evidence_hashes" },
+        "attempt_claim_policy": { "const": "mandatory_14_canonical_repository_claims_bound_to_fixed_execution_contract_and_receipts" },
+        "attempt_uniqueness_scope": { "const": "authoritative_worktree_only" },
+        "attempt_residual_limitation": {
+          "const": "copied_repositories_malicious_claim_deletion_or_same_user_forgery_require_procedural_external_audit"
+        }
+      }
+    },
+    "denominators": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "gate_1_positive_expected",
+        "gate_1_positive_passed",
+        "gate_1_rejection_expected",
+        "gate_1_rejection_passed",
+        "gate_3_repeat_expected",
+        "gate_3_repeat_passed"
+      ],
+      "properties": {
+        "gate_1_positive_expected": { "const": 5 },
+        "gate_1_positive_passed": { "const": 5 },
+        "gate_1_rejection_expected": { "const": 4 },
+        "gate_1_rejection_passed": { "const": 4 },
+        "gate_3_repeat_expected": { "const": 5 },
+        "gate_3_repeat_passed": { "const": 5 }
+      }
+    },
+    "gate_1_state": { "const": "pass" },
+    "gate_3_state": { "const": "pass" },
+    "network_attempts": { "const": 0 },
+    "provider_requests": { "const": 0 },
+    "created_at": { "type": "string", "format": "date-time" },
+    "items": {
+      "type": "array",
+      "minItems": 5,
+      "maxItems": 5,
+      "prefixItems": [
+        { "$ref": "#/$defs/yt01" },
+        { "$ref": "#/$defs/yt02" },
+        { "$ref": "#/$defs/yt07" },
+        { "$ref": "#/$defs/yt08" },
+        { "$ref": "#/$defs/yt09" }
+      ],
+      "items": false
+    },
+    "rejection_controls": {
+      "type": "array",
+      "minItems": 4,
+      "maxItems": 4,
+      "prefixItems": [
+        { "$ref": "#/$defs/yt03Rejection" },
+        { "$ref": "#/$defs/yt04Rejection" },
+        { "$ref": "#/$defs/yt05Rejection" },
+        { "$ref": "#/$defs/yt06Rejection" }
+      ],
+      "items": false
+    }
+  },
+  "allOf": [{
+    "if": {
+      "type": "object",
+      "properties": { "execution_boundary": { "const": "sealed_default_dependencies" } },
+      "required": ["execution_boundary"]
+    },
+    "then": {
+      "type": "object",
+      "properties": { "publication_eligible": { "const": true } }
+    },
+    "else": {
+      "type": "object",
+      "properties": { "publication_eligible": { "const": false } }
+    }
+  }],
+  "$defs": {
+    "sha256": { "type": "string", "pattern": "^(?!0{64}$)[0-9a-f]{64}$" },
+    "gitSha": { "type": "string", "pattern": "^(?!0{40}$)[0-9a-f]{40}$" },
+    "positiveItem": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "item_id",
+        "source_raw_sha256",
+        "gate_1_attempt_claim_sha256",
+        "gate_1_operator_receipt_sha256",
+        "gate_1_harness_report_sha256",
+        "gate_1_normalized_output_file_sha256",
+        "gate_1_score_options_sha256",
+        "gate_1_score_summary_sha256",
+        "gate_1_database_sha256",
+        "gate_3_repeat_attempt_claim_sha256",
+        "gate_3_repeat_operator_receipt_sha256",
+        "gate_3_repeat_harness_report_sha256",
+        "gate_3_repeat_normalized_output_file_sha256",
+        "gate_3_repeat_score_options_sha256",
+        "gate_3_repeat_score_summary_sha256",
+        "gate_3_repeat_database_sha256",
+        "model_input_private_root_relative_path",
+        "model_input_normalized_output_file_sha256",
+        "canonical_normalized_output_sha256",
+        "exact_run_1_repeat_model_input_file_hash_equal",
+        "canonical_output_comparison",
+        "token_preservation_rate",
+        "timestamp_anchor_match_rate",
+        "source_to_normalized_timing_equal",
+        "provenance_equal",
+        "network_attempts",
+        "provider_requests"
+      ],
+      "properties": {
+        "item_id": { "type": "string" },
+        "source_raw_sha256": { "$ref": "#/$defs/sha256" },
+        "gate_1_attempt_claim_sha256": { "$ref": "#/$defs/sha256" },
+        "gate_1_operator_receipt_sha256": { "$ref": "#/$defs/sha256" },
+        "gate_1_harness_report_sha256": { "$ref": "#/$defs/sha256" },
+        "gate_1_normalized_output_file_sha256": { "$ref": "#/$defs/sha256" },
+        "gate_1_score_options_sha256": { "$ref": "#/$defs/sha256" },
+        "gate_1_score_summary_sha256": { "$ref": "#/$defs/sha256" },
+        "gate_1_database_sha256": { "$ref": "#/$defs/sha256" },
+        "gate_3_repeat_attempt_claim_sha256": { "$ref": "#/$defs/sha256" },
+        "gate_3_repeat_operator_receipt_sha256": { "$ref": "#/$defs/sha256" },
+        "gate_3_repeat_harness_report_sha256": { "$ref": "#/$defs/sha256" },
+        "gate_3_repeat_normalized_output_file_sha256": { "$ref": "#/$defs/sha256" },
+        "gate_3_repeat_score_options_sha256": { "$ref": "#/$defs/sha256" },
+        "gate_3_repeat_score_summary_sha256": { "$ref": "#/$defs/sha256" },
+        "gate_3_repeat_database_sha256": { "$ref": "#/$defs/sha256" },
+        "model_input_private_root_relative_path": {
+          "type": "string",
+          "pattern": "^outputs/[0-9a-f]{40}/gate1-primary/YT-(01|02|07|08|09)/a1-normalized-transcript\\.private\\.json$"
+        },
+        "model_input_normalized_output_file_sha256": { "$ref": "#/$defs/sha256" },
+        "canonical_normalized_output_sha256": { "$ref": "#/$defs/sha256" },
+        "exact_run_1_repeat_model_input_file_hash_equal": { "const": true },
+        "canonical_output_comparison": { "const": "verified_equal" },
+        "token_preservation_rate": { "type": "number", "minimum": 0.95, "maximum": 1 },
+        "timestamp_anchor_match_rate": { "type": "number", "minimum": 0.9, "maximum": 1 },
+        "source_to_normalized_timing_equal": { "const": true },
+        "provenance_equal": { "const": true },
+        "network_attempts": { "const": 0 },
+        "provider_requests": { "const": 0 }
+      }
+    },
+    "yt01": { "allOf": [{ "$ref": "#/$defs/positiveItem" }, { "type": "object", "properties": { "item_id": { "const": "YT-01" } } }] },
+    "yt02": { "allOf": [{ "$ref": "#/$defs/positiveItem" }, { "type": "object", "properties": { "item_id": { "const": "YT-02" } } }] },
+    "yt07": { "allOf": [{ "$ref": "#/$defs/positiveItem" }, { "type": "object", "properties": { "item_id": { "const": "YT-07" } } }] },
+    "yt08": { "allOf": [{ "$ref": "#/$defs/positiveItem" }, { "type": "object", "properties": { "item_id": { "const": "YT-08" } } }] },
+    "yt09": { "allOf": [{ "$ref": "#/$defs/positiveItem" }, { "type": "object", "properties": { "item_id": { "const": "YT-09" } } }] },
+    "rejection": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "item_id",
+        "source_raw_sha256",
+        "gate_1_attempt_claim_sha256",
+        "gate_1_operator_receipt_sha256",
+        "gate_1_harness_report_sha256",
+        "expected_outcome",
+        "observed_outcome",
+        "private_normalized_output_absent",
+        "private_database_absent",
+        "network_attempts",
+        "provider_requests"
+      ],
+      "properties": {
+        "item_id": { "type": "string" },
+        "source_raw_sha256": { "$ref": "#/$defs/sha256" },
+        "gate_1_attempt_claim_sha256": { "$ref": "#/$defs/sha256" },
+        "gate_1_operator_receipt_sha256": { "$ref": "#/$defs/sha256" },
+        "gate_1_harness_report_sha256": { "$ref": "#/$defs/sha256" },
+        "expected_outcome": { "enum": ["structural_rejection", "supported_class_rejection"] },
+        "observed_outcome": { "enum": ["PREFLIGHT_REJECTED_INVALID_STRUCTURE", "safe_rejection"] },
+        "private_normalized_output_absent": { "const": true },
+        "private_database_absent": { "const": true },
+        "network_attempts": { "const": 0 },
+        "provider_requests": { "const": 0 }
+      }
+    },
+    "structuralRejection": {
+      "allOf": [{ "$ref": "#/$defs/rejection" }, {
+        "type": "object",
+        "properties": {
+          "expected_outcome": { "const": "structural_rejection" },
+          "observed_outcome": { "const": "PREFLIGHT_REJECTED_INVALID_STRUCTURE" }
+        }
+      }]
+    },
+    "yt03Rejection": { "allOf": [{ "$ref": "#/$defs/structuralRejection" }, { "type": "object", "properties": { "item_id": { "const": "YT-03" } } }] },
+    "yt04Rejection": { "allOf": [{ "$ref": "#/$defs/rejection" }, { "type": "object", "properties": {
+      "item_id": { "const": "YT-04" },
+      "expected_outcome": { "const": "supported_class_rejection" },
+      "observed_outcome": { "const": "safe_rejection" }
+    } }] },
+    "yt05Rejection": { "allOf": [{ "$ref": "#/$defs/structuralRejection" }, { "type": "object", "properties": { "item_id": { "const": "YT-05" } } }] },
+    "yt06Rejection": { "allOf": [{ "$ref": "#/$defs/structuralRejection" }, { "type": "object", "properties": { "item_id": { "const": "YT-06" } } }] }
+  }
+}

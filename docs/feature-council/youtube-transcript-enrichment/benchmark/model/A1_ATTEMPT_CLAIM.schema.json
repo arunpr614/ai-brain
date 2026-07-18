@@ -1,0 +1,163 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://brain.arunp.in/schemas/youtube-a1-attempt-claim-v1.json",
+  "title": "Canonical seal-scoped A1 attempt claim",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "operator_version",
+    "publication_eligible",
+    "seal",
+    "cell",
+    "execution_contract",
+    "scope"
+  ],
+  "properties": {
+    "schema_version": { "const": "1.0" },
+    "operator_version": { "const": "1.1.0" },
+    "publication_eligible": { "type": "boolean" },
+    "seal": { "$ref": "#/$defs/seal" },
+    "cell": { "$ref": "#/$defs/cell" },
+    "execution_contract": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["identity_sha256", "execution_boundary", "private_evidence_binding"],
+      "properties": {
+        "identity_sha256": {
+          "const": "7601a0335c32c230ad13311ff88475102db52112a4f13c437742e13173a81f3e"
+        },
+        "execution_boundary": {
+          "enum": ["sealed_default_dependencies", "development_test_only"]
+        },
+        "private_evidence_binding": {
+          "const": "sealed_source_and_anchor_authorities_no_path_device_or_user_identifier"
+        }
+      }
+    },
+    "scope": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["uniqueness", "residual_limitation"],
+      "properties": {
+        "uniqueness": { "const": "authoritative_worktree_only" },
+        "residual_limitation": {
+          "const": "copied_repositories_malicious_claim_deletion_or_same_user_forgery_require_procedural_external_audit"
+        }
+      }
+    }
+  },
+  "allOf": [
+    { "$ref": "#/$defs/cellSemantics" },
+    {
+      "if": {
+        "type": "object",
+        "properties": {
+          "execution_contract": {
+            "type": "object",
+            "properties": { "execution_boundary": { "const": "sealed_default_dependencies" } },
+            "required": ["execution_boundary"]
+          }
+        },
+        "required": ["execution_contract"]
+      },
+      "then": {
+        "type": "object",
+        "properties": { "publication_eligible": { "const": true } }
+      },
+      "else": {
+        "type": "object",
+        "properties": { "publication_eligible": { "const": false } }
+      }
+    }
+  ],
+  "$defs": {
+    "sha256": { "type": "string", "pattern": "^(?!0{64}$)[0-9a-f]{64}$" },
+    "gitSha": { "type": "string", "pattern": "^(?!0{40}$)[0-9a-f]{40}$" },
+    "seal": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["content_commit", "seal_commit", "lock_sha256"],
+      "properties": {
+        "content_commit": { "$ref": "#/$defs/gitSha" },
+        "seal_commit": { "$ref": "#/$defs/gitSha" },
+        "lock_sha256": { "$ref": "#/$defs/sha256" }
+      }
+    },
+    "cell": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["stage", "item_id", "expected_outcome"],
+      "properties": {
+        "stage": { "enum": ["gate1-primary", "gate3-repeat"] },
+        "item_id": {
+          "enum": ["YT-01", "YT-02", "YT-03", "YT-04", "YT-05", "YT-06", "YT-07", "YT-08", "YT-09"]
+        },
+        "expected_outcome": {
+          "enum": ["eligible_pass", "supported_class_safe_rejection", "structural_safe_rejection"]
+        }
+      }
+    },
+    "cellSemantics": {
+      "if": {
+        "type": "object",
+        "properties": {
+          "cell": {
+            "type": "object",
+            "properties": {
+              "item_id": { "enum": ["YT-01", "YT-02", "YT-07", "YT-08", "YT-09"] }
+            },
+            "required": ["item_id"]
+          }
+        },
+        "required": ["cell"]
+      },
+      "then": {
+        "type": "object",
+        "properties": {
+          "cell": {
+            "type": "object",
+            "properties": { "expected_outcome": { "const": "eligible_pass" } }
+          }
+        }
+      },
+      "else": {
+        "if": {
+          "type": "object",
+          "properties": {
+            "cell": {
+              "type": "object",
+              "properties": { "item_id": { "const": "YT-04" } },
+              "required": ["item_id"]
+            }
+          },
+          "required": ["cell"]
+        },
+        "then": {
+          "type": "object",
+          "properties": {
+            "cell": {
+              "type": "object",
+              "properties": {
+                "stage": { "const": "gate1-primary" },
+                "expected_outcome": { "const": "supported_class_safe_rejection" }
+              }
+            }
+          }
+        },
+        "else": {
+          "type": "object",
+          "properties": {
+            "cell": {
+              "type": "object",
+              "properties": {
+                "stage": { "const": "gate1-primary" },
+                "expected_outcome": { "const": "structural_safe_rejection" }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

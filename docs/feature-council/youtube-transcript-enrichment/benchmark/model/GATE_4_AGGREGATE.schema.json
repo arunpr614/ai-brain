@@ -1,0 +1,243 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://brain.arunp.in/schemas/youtube-gate4-aggregate-v1.1.json",
+  "title": "Canonical evidence-bound exact-five Gate 4 aggregate and Gate 5 trigger",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "finalizer_version", "execution_class", "publication_eligible", "content_commit", "seal_commit", "benchmark_lock_sha256", "evidence_bindings", "deterministic_baseline", "evaluator_result_sha256", "adjudication", "denominator", "per_item", "pooled", "macro", "thresholds", "gate_4_qualitative_pass", "gate_4_overall_pass", "gate_5_trigger", "claims_boundary"],
+  "properties": {
+    "schema_version": { "const": "1.1" },
+    "finalizer_version": { "const": "1.0.0" },
+    "execution_class": { "enum": ["SEALED", "DEV_TEST"] },
+    "publication_eligible": { "type": "boolean" },
+    "content_commit": { "$ref": "#/$defs/gitSha" },
+    "seal_commit": { "$ref": "#/$defs/gitSha" },
+    "benchmark_lock_sha256": { "$ref": "#/$defs/sha256" },
+    "evidence_bindings": { "$ref": "#/$defs/evidenceBindings" },
+    "deterministic_baseline": { "$ref": "#/$defs/deterministicBaseline" },
+    "evaluator_result_sha256": {
+      "type": "object", "additionalProperties": false,
+      "required": ["evaluator_a", "evaluator_b"],
+      "properties": { "evaluator_a": { "$ref": "#/$defs/sha256" }, "evaluator_b": { "$ref": "#/$defs/sha256" } }
+    },
+    "adjudication": {
+      "type": "object", "additionalProperties": false,
+      "required": ["state", "required_disputes", "resolved_disputes", "result_sha256"],
+      "properties": {
+        "state": { "enum": ["not_required", "completed"] },
+        "required_disputes": { "type": "integer", "minimum": 0 },
+        "resolved_disputes": { "type": "integer", "minimum": 0 },
+        "result_sha256": { "oneOf": [{ "$ref": "#/$defs/sha256" }, { "type": "null" }] }
+      }
+    },
+    "denominator": {
+      "type": "object", "additionalProperties": false,
+      "required": ["items", "item_ids"],
+      "properties": { "items": { "const": 5 }, "item_ids": { "const": ["YT-01", "YT-02", "YT-07", "YT-08", "YT-09"] } }
+    },
+    "per_item": { "type": "array", "minItems": 5, "maxItems": 5, "items": { "$ref": "#/$defs/itemMetrics" } },
+    "pooled": { "$ref": "#/$defs/metricRates" },
+    "macro": { "$ref": "#/$defs/macroRates" },
+    "thresholds": {
+      "type": "object", "additionalProperties": false,
+      "required": ["material_claim_support", "citation_accuracy", "text_key_point_coverage", "visual_key_point_trigger", "critical_hallucinations"],
+      "properties": {
+        "material_claim_support": { "const": 0.95 },
+        "citation_accuracy": { "const": 0.9 },
+        "text_key_point_coverage": { "const": 0.8 },
+        "visual_key_point_trigger": { "const": 0.8 },
+        "critical_hallucinations": { "const": 0 }
+      }
+    },
+    "gate_4_qualitative_pass": { "type": "boolean" },
+    "gate_4_overall_pass": { "type": "boolean" },
+    "gate_5_trigger": { "$ref": "#/$defs/gate5" },
+    "claims_boundary": { "const": "ai_evaluated_provisional_pending_human_stakeholder_review" }
+  },
+  "$defs": {
+    "sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+    "gitSha": { "type": "string", "pattern": "^[0-9a-f]{40}$" },
+    "rate": { "type": "number", "minimum": 0, "maximum": 1 },
+    "countRate": {
+      "type": "object", "additionalProperties": false,
+      "required": ["numerator", "denominator", "rate"],
+      "properties": { "numerator": { "type": "integer", "minimum": 0 }, "denominator": { "type": "integer", "minimum": 1 }, "rate": { "$ref": "#/$defs/rate" } }
+    },
+    "jsonBinding": {
+      "type": "object", "additionalProperties": false,
+      "required": ["file_sha256", "canonical_json_sha256"],
+      "properties": { "file_sha256": { "$ref": "#/$defs/sha256" }, "canonical_json_sha256": { "$ref": "#/$defs/sha256" } }
+    },
+    "roleBindings": {
+      "type": "object", "additionalProperties": false,
+      "required": ["public_attempt_claim", "public_terminal", "private_claim", "private_run_report", "private_result", "private_generation_decisions", "raw_stdout_sha256", "raw_stderr_sha256"],
+      "properties": {
+        "public_attempt_claim": { "$ref": "#/$defs/jsonBinding" },
+        "public_terminal": { "$ref": "#/$defs/jsonBinding" },
+        "private_claim": { "$ref": "#/$defs/jsonBinding" },
+        "private_run_report": { "$ref": "#/$defs/jsonBinding" },
+        "private_result": { "$ref": "#/$defs/jsonBinding" },
+        "private_generation_decisions": { "$ref": "#/$defs/jsonBinding" },
+        "raw_stdout_sha256": { "$ref": "#/$defs/sha256" },
+        "raw_stderr_sha256": { "$ref": "#/$defs/sha256" }
+      }
+    },
+    "adjudicatorBindings": {
+      "type": "object", "additionalProperties": false,
+      "required": ["public_attempt_claim", "public_terminal", "private_claim", "private_run_report", "private_result", "private_generation_decisions", "raw_stdout_sha256", "raw_stderr_sha256", "private_packet"],
+      "properties": {
+        "public_attempt_claim": { "$ref": "#/$defs/jsonBinding" },
+        "public_terminal": { "$ref": "#/$defs/jsonBinding" },
+        "private_claim": { "$ref": "#/$defs/jsonBinding" },
+        "private_run_report": { "$ref": "#/$defs/jsonBinding" },
+        "private_result": { "$ref": "#/$defs/jsonBinding" },
+        "private_generation_decisions": { "$ref": "#/$defs/jsonBinding" },
+        "raw_stdout_sha256": { "$ref": "#/$defs/sha256" },
+        "raw_stderr_sha256": { "$ref": "#/$defs/sha256" },
+        "private_packet": { "$ref": "#/$defs/jsonBinding" }
+      }
+    },
+    "evidenceBindings": {
+      "type": "object", "additionalProperties": false,
+      "required": ["package", "evaluators", "adjudication"],
+      "properties": {
+        "package": {
+          "type": "object", "additionalProperties": false,
+          "required": ["public_attempt_claim", "public_terminal", "private_receipt", "private_bundle"],
+          "properties": {
+            "public_attempt_claim": { "$ref": "#/$defs/jsonBinding" },
+            "public_terminal": { "$ref": "#/$defs/jsonBinding" },
+            "private_receipt": { "$ref": "#/$defs/jsonBinding" },
+            "private_bundle": { "$ref": "#/$defs/jsonBinding" }
+          }
+        },
+        "evaluators": {
+          "type": "object", "additionalProperties": false,
+          "required": ["evaluator_a", "evaluator_b"],
+          "properties": { "evaluator_a": { "$ref": "#/$defs/roleBindings" }, "evaluator_b": { "$ref": "#/$defs/roleBindings" } }
+        },
+        "adjudication": { "oneOf": [{ "$ref": "#/$defs/adjudicatorBindings" }, { "type": "null" }] }
+      }
+    },
+    "deterministicItem": {
+      "type": "object", "additionalProperties": false,
+      "required": ["item_id", "public_report_sha256", "run_id", "attempt_count", "first_attempt_schema_valid", "final_schema_valid", "semantic_reference_valid", "truthful_state", "latency_resource_measured", "zero_external_cost_and_provider_calls"],
+      "properties": {
+        "item_id": { "enum": ["YT-01", "YT-02", "YT-07", "YT-08", "YT-09"] },
+        "public_report_sha256": { "$ref": "#/$defs/sha256" },
+        "run_id": { "type": "string", "pattern": "^YT-[0-9]{2}-[0-9]{8}T[0-9]{6}Z-[0-9a-f]{12}$" },
+        "attempt_count": { "enum": [1, 2] },
+        "first_attempt_schema_valid": { "type": "boolean" },
+        "final_schema_valid": { "type": "boolean" },
+        "semantic_reference_valid": { "type": "boolean" },
+        "truthful_state": { "type": "boolean" },
+        "latency_resource_measured": { "type": "boolean" },
+        "zero_external_cost_and_provider_calls": { "type": "boolean" }
+      }
+    },
+    "deterministicBaseline": {
+      "type": "object", "additionalProperties": false,
+      "required": ["items", "summary", "all_required_criteria_pass"],
+      "properties": {
+        "items": {
+          "type": "array", "minItems": 5, "maxItems": 5,
+          "prefixItems": [
+            { "allOf": [{ "$ref": "#/$defs/deterministicItem" }, { "type": "object", "properties": { "item_id": { "const": "YT-01" } } }] },
+            { "allOf": [{ "$ref": "#/$defs/deterministicItem" }, { "type": "object", "properties": { "item_id": { "const": "YT-02" } } }] },
+            { "allOf": [{ "$ref": "#/$defs/deterministicItem" }, { "type": "object", "properties": { "item_id": { "const": "YT-07" } } }] },
+            { "allOf": [{ "$ref": "#/$defs/deterministicItem" }, { "type": "object", "properties": { "item_id": { "const": "YT-08" } } }] },
+            { "allOf": [{ "$ref": "#/$defs/deterministicItem" }, { "type": "object", "properties": { "item_id": { "const": "YT-09" } } }] }
+          ],
+          "items": false
+        },
+        "summary": {
+          "type": "object", "additionalProperties": false,
+          "required": ["first_attempt_schema_validity", "final_schema_validity", "semantic_reference_validity", "truthful_state", "latency_resource_measured", "zero_external_cost_and_provider_calls"],
+          "properties": {
+            "first_attempt_schema_validity": { "$ref": "#/$defs/countRate" },
+            "final_schema_validity": { "$ref": "#/$defs/countRate" },
+            "semantic_reference_validity": { "$ref": "#/$defs/countRate" },
+            "truthful_state": { "$ref": "#/$defs/countRate" },
+            "latency_resource_measured": { "$ref": "#/$defs/countRate" },
+            "zero_external_cost_and_provider_calls": { "$ref": "#/$defs/countRate" }
+          }
+        },
+        "all_required_criteria_pass": { "type": "boolean" }
+      }
+    },
+    "itemMetrics": {
+      "type": "object", "additionalProperties": false,
+      "required": ["item_id", "material_claim_support", "citation_accuracy", "text_key_point_coverage", "visual_key_point_coverage", "critical_hallucinations", "schema_or_reference_issue_count"],
+      "properties": {
+        "item_id": { "enum": ["YT-01", "YT-02", "YT-07", "YT-08", "YT-09"] },
+        "material_claim_support": { "$ref": "#/$defs/countRate" },
+        "citation_accuracy": { "$ref": "#/$defs/countRate" },
+        "text_key_point_coverage": { "$ref": "#/$defs/countRate" },
+        "visual_key_point_coverage": { "$ref": "#/$defs/countRate" },
+        "critical_hallucinations": { "type": "integer", "minimum": 0 },
+        "schema_or_reference_issue_count": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "metricRates": {
+      "type": "object", "additionalProperties": false,
+      "required": ["material_claim_support", "citation_accuracy", "text_key_point_coverage", "visual_key_point_coverage"],
+      "properties": {
+        "material_claim_support": { "$ref": "#/$defs/countRate" },
+        "citation_accuracy": { "$ref": "#/$defs/countRate" },
+        "text_key_point_coverage": { "$ref": "#/$defs/countRate" },
+        "visual_key_point_coverage": { "$ref": "#/$defs/countRate" }
+      }
+    },
+    "macroRate": {
+      "type": "object", "additionalProperties": false,
+      "required": ["item_count", "rate"],
+      "properties": { "item_count": { "const": 5 }, "rate": { "$ref": "#/$defs/rate" } }
+    },
+    "macroRates": {
+      "type": "object", "additionalProperties": false,
+      "required": ["material_claim_support", "citation_accuracy", "text_key_point_coverage", "visual_key_point_coverage"],
+      "properties": {
+        "material_claim_support": { "$ref": "#/$defs/macroRate" },
+        "citation_accuracy": { "$ref": "#/$defs/macroRate" },
+        "text_key_point_coverage": { "$ref": "#/$defs/macroRate" },
+        "visual_key_point_coverage": { "$ref": "#/$defs/macroRate" }
+      }
+    },
+    "gate5": {
+      "type": "object", "additionalProperties": false,
+      "required": ["state", "execution_state", "macro_visual_coverage", "threshold", "uncovered_visual_points", "uncovered_cause_counts", "due_solely_to_missing_visual_evidence", "trigger_fired", "visual_method_sealed", "rights_authorized_visual_media_set_present", "blocked_reasons"],
+      "properties": {
+        "state": { "enum": ["not_triggered", "triggered_but_blocked"] },
+        "execution_state": { "const": "not_run" },
+        "macro_visual_coverage": { "$ref": "#/$defs/rate" },
+        "threshold": { "const": 0.8 },
+        "uncovered_visual_points": { "type": "integer", "minimum": 0 },
+        "uncovered_cause_counts": {
+          "type": "object", "additionalProperties": false,
+          "required": ["output_omission", "essential_visual_evidence_absent", "contradicted"],
+          "properties": {
+            "output_omission": { "type": "integer", "minimum": 0 },
+            "essential_visual_evidence_absent": { "type": "integer", "minimum": 0 },
+            "contradicted": { "type": "integer", "minimum": 0 }
+          }
+        },
+        "due_solely_to_missing_visual_evidence": { "type": "boolean" },
+        "trigger_fired": { "type": "boolean" },
+        "visual_method_sealed": { "const": false },
+        "rights_authorized_visual_media_set_present": { "const": false },
+        "blocked_reasons": {
+          "oneOf": [
+            { "const": [] },
+            { "const": ["no_sealed_visual_method", "no_rights_authorized_visual_media_set"] }
+          ]
+        }
+      }
+    }
+  },
+  "allOf": [
+    { "if": { "properties": { "execution_class": { "const": "SEALED" } }, "required": ["execution_class"] }, "then": { "properties": { "publication_eligible": { "const": true } } } },
+    { "if": { "properties": { "execution_class": { "const": "DEV_TEST" } }, "required": ["execution_class"] }, "then": { "properties": { "publication_eligible": { "const": false } } } },
+    { "if": { "properties": { "adjudication": { "type": "object", "properties": { "state": { "const": "not_required" } }, "required": ["state"] } }, "required": ["adjudication"] }, "then": { "properties": { "evidence_bindings": { "type": "object", "properties": { "adjudication": { "type": "null" } } } } } },
+    { "if": { "properties": { "adjudication": { "type": "object", "properties": { "state": { "const": "completed" } }, "required": ["state"] } }, "required": ["adjudication"] }, "then": { "properties": { "evidence_bindings": { "type": "object", "properties": { "adjudication": { "$ref": "#/$defs/adjudicatorBindings" } } } } } }
+  ]
+}

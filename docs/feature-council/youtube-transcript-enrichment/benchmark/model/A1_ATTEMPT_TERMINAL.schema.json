@@ -1,0 +1,124 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://brain.arunp.in/schemas/youtube-a1-attempt-terminal-v1.json",
+  "title": "Canonical publication-safe A1 failed-attempt terminal",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "operator_version",
+    "seal",
+    "cell",
+    "execution_boundary",
+    "publication_eligible",
+    "attempt_claim_sha256",
+    "terminal",
+    "outcomes"
+  ],
+  "properties": {
+    "schema_version": { "const": "1.0" },
+    "operator_version": { "const": "1.1.0" },
+    "seal": { "$ref": "youtube-a1-attempt-claim-v1.json#/$defs/seal" },
+    "cell": { "$ref": "youtube-a1-attempt-claim-v1.json#/$defs/cell" },
+    "execution_boundary": {
+      "enum": ["sealed_default_dependencies", "development_test_only"]
+    },
+    "publication_eligible": { "type": "boolean" },
+    "attempt_claim_sha256": { "$ref": "#/$defs/sha256" },
+    "terminal": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["state", "error_code", "harness", "scorer"],
+      "properties": {
+        "state": { "const": "failed" },
+        "error_code": {
+          "enum": [
+            "A1_OPERATOR_ARGUMENT_INVALID",
+            "A1_OPERATOR_SEAL_INVALID",
+            "A1_OPERATOR_AUTHORITY_INVALID",
+            "A1_OPERATOR_PRIVATE_ROOT_INVALID",
+            "A1_OPERATOR_PRIVATE_EVIDENCE_INVALID",
+            "A1_OPERATOR_ATTEMPT_CLAIM_EXISTS",
+            "A1_OPERATOR_ATTEMPT_CLAIM_INVALID",
+            "A1_OPERATOR_RERUN_REJECTED",
+            "A1_OPERATOR_GATE1_INCOMPLETE",
+            "A1_OPERATOR_CHILD_FAILED",
+            "A1_OPERATOR_ORACLE_FAILED",
+            "A1_OPERATOR_TIMEOUT",
+            "A1_OPERATOR_TERMINAL_WRITE_FAILED",
+            "A1_OPERATOR_WRITE_FAILED"
+          ]
+        },
+        "harness": { "$ref": "#/$defs/nullableChild" },
+        "scorer": { "$ref": "#/$defs/nullableChild" }
+      }
+    },
+    "outcomes": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "rerun_permitted",
+        "raw_child_content_published",
+        "claim_without_terminal_after_hard_termination"
+      ],
+      "properties": {
+        "rerun_permitted": { "const": false },
+        "raw_child_content_published": { "const": false },
+        "claim_without_terminal_after_hard_termination": { "const": "aborted_no_pass" }
+      }
+    }
+  },
+  "allOf": [
+    { "$ref": "youtube-a1-attempt-claim-v1.json#/$defs/cellSemantics" },
+    {
+      "if": {
+        "type": "object",
+        "properties": { "execution_boundary": { "const": "sealed_default_dependencies" } },
+        "required": ["execution_boundary"]
+      },
+      "then": {
+        "type": "object",
+        "properties": { "publication_eligible": { "const": true } }
+      },
+      "else": {
+        "type": "object",
+        "properties": { "publication_eligible": { "const": false } }
+      }
+    }
+  ],
+  "$defs": {
+    "sha256": { "type": "string", "pattern": "^(?!0{64}$)[0-9a-f]{64}$" },
+    "nullableChild": {
+      "anyOf": [
+        { "type": "null" },
+        { "$ref": "#/$defs/child" }
+      ]
+    },
+    "child": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "exit_code",
+        "signal",
+        "timed_out",
+        "stdout_sha256",
+        "stdout_byte_count",
+        "stdout_truncated",
+        "stderr_sha256",
+        "stderr_byte_count",
+        "stderr_truncated"
+      ],
+      "properties": {
+        "exit_code": { "type": ["integer", "null"], "minimum": 0 },
+        "signal": { "type": ["string", "null"], "minLength": 1 },
+        "timed_out": { "type": "boolean" },
+        "stdout_sha256": { "$ref": "#/$defs/sha256" },
+        "stdout_byte_count": { "type": "integer", "minimum": 0 },
+        "stdout_truncated": { "type": "boolean" },
+        "stderr_sha256": { "$ref": "#/$defs/sha256" },
+        "stderr_byte_count": { "type": "integer", "minimum": 0 },
+        "stderr_truncated": { "type": "boolean" }
+      }
+    }
+  }
+}
