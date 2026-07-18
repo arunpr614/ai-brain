@@ -30285,3 +30285,33 @@ Nothing deployed yet. The verified change is local on `codex/library-add-selecte
 - Before the stabilized local model-harness result, one final-development run failed 0/28 during fixture setup because its synthetic database still used single-newline paragraph joining and the `development` policy environment after the frozen contract moved to double-newline joining and `lab`. Only that publication-safe synthetic fixture was aligned to the already-frozen contract; the corrected suite then passed 28/28, and the added malformed-runtime-ledger regression produced the final 29/29 pass. The failed run and correction are development evidence, not primary attempts or results.
 - The statement that no transcript body was accessed means no real or private corpus transcript body was accessed. Publication-safe synthetic transcript text was necessarily exercised by the declared development tests.
 - The full repository lint command did pass as stated. These qualifications do not change the exact stabilized counts, zero-primary-call/spend state, or prohibition on Commit A and all primary work until the ordered readiness, review, closure, and seal controls complete.
+
+## 2026-07-19 03:27 IST — YouTube benchmark sealed; Gate 1 failed and council deferred the feature
+
+**Entry author:** AI agent (Codex) · **Triggered by:** Completion of the sealed primary acquisition cells, mandatory Gate 6 controls, independent PM reviews, and council reconciliation.
+
+### Prospective seal and fixed primary result
+
+- Completed the formal same-reviewer readiness/review/closure chronology, froze Commit A as `6b829798101a59fadd9a1d0efd65428539f400ad`, and created LOCK-only Commit B as `0ed1b13729802f4ded921f1a94369ddc110dabc3`. The canonical LOCK SHA-256 is `bef4437a05ac20418a49f3c06a99a1f74ad93c9395dcc780d1c0307aa354b8c3`; the official verifier accepts the direct A→B seal and unchanged protected tree.
+- Ran all nine predeclared A1 cells exactly once in frozen order. Eligible positives passed **3/5**; YT-02 and YT-08 ended as immutable `A1_OPERATOR_ORACLE_FAILED` failures with no scorer and no retry. All **4/4** structural/supported-class rejection controls passed truthfully. The three successful eligible cells preserved tokens and timestamp anchors at `1.00` / `1.00`.
+- The result is local sidecar ingestion/input-preservation evidence for the exact sealed class only. It is not automatic YouTube acquisition, WER, audio-relative timing, arbitrary-video coverage, or current-product readiness evidence. The two failure terminals do not publish per-cell network counters and are not safety passes.
+
+### Stop-rule and mandatory-control outcomes
+
+- Gate 1 failed its exact 5/5 eligible first-attempt threshold. No failed cell was retried, repaired, replaced, or removed.
+- Gate 2 remained Not triggered / Not run at 1/10 and 10%; no STT or media work ran. Gate 3 was ineligible, Gate 4 was blocked, and Gate 5 was not triggered; no repeat normalization, local/model inference, qualitative evaluation, or visual work ran.
+- Mandatory Gate 6 completed the 33 frozen controls under an external deny-network boundary: 18 narrow passes, 8 named gaps, and 7 not-applicable checks. The exact unavailable/retry suite passed 5/5 and the exact isolated A1 integration suite passed 11/11.
+- Primary external/API/provider/model requests, OAuth tokens/calls, model inference, media downloads, STT, visual processing, subscriptions, and incremental spend remained zero / USD 0. Private transcripts, normalized outputs, database, scorer options, receipts, and raw logs remain outside Git/Wiki/PR and retain their deletion deadline of 2026-10-14.
+
+### Council decision
+
+- Three independent PMs—User Value/Engagement, Knowledge/Learning/Recall, and Platform/Data/Privacy—each recommended **Defer**.
+- Council v1 also recommended Defer. An independent adversarial review required clearer separation of the prospective input seal from post-seal result integrity, an explicit disposition for the current automatic route, non-circular authorization, prospectively measurable future thresholds, human review, failure observability, and reconciled governance.
+- Reconciled council v2 records **No-go / not approved for the current automatic route and any present supported-product claim; Defer future exact-class research until separately authorized and prospectively frozen**. The current council cannot change production behavior, so the already-active route remains an explicit product-owner and security/legal-policy decision rather than approval by inaction.
+- No PRD, UX/UI package, prototype, or technical implementation plan is applicable. No production code, dependency, migration, merge, deployment, or release was authorized or performed.
+
+### Current state
+
+- **Research decision:** Gate 1 Fail; council Defer with current-route No-go/not-approved disposition.
+- **Publication package:** Gate and council artifacts are being independently schema/link/privacy checked and committed after the seal; this later result history does not retroactively become part of Commit B.
+- **Outstanding:** reconcile mutable governance, publish and freshly verify the safe GitHub Wiki update, push the research branch, open a review-only pull request, rotate/revoke the disclosed OAuth credential, and produce non-secret private-data deletion evidence by 2026-10-14.
