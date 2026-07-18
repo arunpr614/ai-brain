@@ -30340,3 +30340,13 @@ Nothing deployed yet. The verified change is local on `codex/library-add-selecte
 - **Wiki:** published and fresh-clone verified at `317e40e8de08fc492e0e2662b5f45b8bb7e48fcd`.
 - **Pull request:** #35 open as a draft, review-only, unmerged PR.
 - **Remaining owner actions outside this research delivery:** revoke/rotate the disclosed OAuth credential before any future OAuth design; produce non-secret deletion and backup-expiry evidence for all private research material by 2026-10-14; and make an explicit product-owner/security/legal-policy decision about the current automatic route.
+
+## 2026-07-19 03:52 IST — Review-only PR documentation checks remediated locally
+
+**Entry author:** AI agent (Codex) · **Triggered by:** Initial PR #35 GitHub Actions failures in Agent documentation and Product CI.
+
+- Both failed jobs had the same cause: the fixed 2026-06-28 Feature Council Wiki manifest still expected its original 44-document historical corpus and did not explicitly exclude the new 54-document YouTube research package.
+- Added `docs/feature-council/youtube-transcript-enrichment` to that manifest's existing feature-package exclusion list. This keeps July research out of generated pages whose metadata would incorrectly identify it as part of the June planning package. The YouTube package remains independently governed by its master index, publication privacy/link/schema tests, sanitized live Wiki page, and review-only PR.
+- Exact local CI commands now pass: `smoke:agent-docs` is green; `check:agent-docs` validates the 44-page historical generator, scans 118 documentation files with no privacy findings, reaches 86/86 canonical Wiki pages, reconciles 238 inventory rows, 46 feature rows, all 155 package scripts, and 17,989 project-inventory rows with no findings.
+- Official seal verifier 3.3.0 remains `valid=true` for Commit A/B and all 653 frozen files. The remediation changes only the global historical-Wiki manifest; it does not change a benchmark input, primary result, council decision, live Wiki page, production code, or deployment state.
+- The fix still requires commit, push, and green remote reruns before final handoff. PR #35 remains draft, review-only, unmerged, and not deployed.

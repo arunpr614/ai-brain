@@ -112,7 +112,7 @@ PRD, UX/UI, HTML prototypes, and the technical implementation plan are intention
 |---|---|
 | Publication-safe Wiki source updates | [Published research decision](https://github.com/arunpr614/ai-brain/wiki/YouTube-Transcript-Enrichment-Research) at Wiki commit `317e40e8de08fc492e0e2662b5f45b8bb7e48fcd`; remote-head concurrency and fresh-clone verification passed |
 | Append-only `RUNNING_LOG.md` milestones | Post-result seal/gate/council and final review-only delivery milestones appended |
-| Documentation/link verification | Claims 9/9 and terminals 2/2 schema-valid; publication privacy, strict schema/reference, Markdown link/reachability, diff, typecheck, and lint checks pass; official seal verifier valid for 653 frozen files after the result commit |
+| Documentation/link verification | Claims 9/9 and terminals 2/2 schema-valid; publication privacy, strict schema/reference, Markdown link/reachability, diff, typecheck, lint, `smoke:agent-docs`, and full `check:agent-docs` pass; 86/86 canonical Wiki pages reachable; official seal verifier valid for 653 frozen files |
 | Research commits | Content Commit A `6b829798…`, lock-only Commit B `0ed1b137…`, and post-seal result commit `01059db…` complete; final delivery-status follow-up contains no frozen input change |
 | Remote research branch | `research/youtube-transcript-enrichment` pushed with the sealed inputs, result evidence, and final delivery-status history |
 | Review-only pull request | Draft [PR #35](https://github.com/arunpr614/ai-brain/pull/35) open against `main`; unmerged and not deployed |
