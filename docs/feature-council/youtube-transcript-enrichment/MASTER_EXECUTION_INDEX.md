@@ -76,7 +76,7 @@ The two-commit lock establishes prospective-input identity and chronology. The p
 
 | Artifact | Status |
 |---|---|
-| [A1 publication-safe evidence index](decisions/A1_EVIDENCE_INDEX.md) | Nine canonical claims and two canonical failure terminals; result evidence not yet committed |
+| [A1 publication-safe evidence index](decisions/A1_EVIDENCE_INDEX.md) | Nine canonical claims and two canonical failure terminals; committed in result commit `01059dbd57d38d9b9ae1d63f121e85502c3b7ee2` |
 | [Gate 1](decisions/GATE_1.md) | **Fail:** eligible 3/5; rejection controls 4/4; no retries |
 | [Gate 2](decisions/GATE_2.md) | Not triggered / Not run: 1/10 (10%) |
 | [Gate 3](decisions/GATE_3.md) | Ineligible / Not run |
@@ -110,9 +110,9 @@ PRD, UX/UI, HTML prototypes, and the technical implementation plan are intention
 
 | Deliverable | Status |
 |---|---|
-| Publication-safe Wiki source updates | Pending |
-| Append-only `RUNNING_LOG.md` milestones | Post-result seal/gate/council milestone appended; final delivery milestone pending |
-| Documentation/link verification | Post-seal claims/terminals schema-valid; publication privacy and Markdown link/reachability checks pass; final committed no-drift check pending |
-| Research commits | Content Commit A and lock-only Commit B complete; post-seal result/council/governance evidence remains uncommitted |
-| Remote research branch | Not pushed |
-| Review-only pull request | Not opened |
+| Publication-safe Wiki source updates | [Published research decision](https://github.com/arunpr614/ai-brain/wiki/YouTube-Transcript-Enrichment-Research) at Wiki commit `317e40e8de08fc492e0e2662b5f45b8bb7e48fcd`; remote-head concurrency and fresh-clone verification passed |
+| Append-only `RUNNING_LOG.md` milestones | Post-result seal/gate/council and final review-only delivery milestones appended |
+| Documentation/link verification | Claims 9/9 and terminals 2/2 schema-valid; publication privacy, strict schema/reference, Markdown link/reachability, diff, typecheck, and lint checks pass; official seal verifier valid for 653 frozen files after the result commit |
+| Research commits | Content Commit A `6b829798…`, lock-only Commit B `0ed1b137…`, and post-seal result commit `01059db…` complete; final delivery-status follow-up contains no frozen input change |
+| Remote research branch | `research/youtube-transcript-enrichment` pushed with the sealed inputs, result evidence, and final delivery-status history |
+| Review-only pull request | Draft [PR #35](https://github.com/arunpr614/ai-brain/pull/35) open against `main`; unmerged and not deployed |

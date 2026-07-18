@@ -1,7 +1,7 @@
 # YouTube Transcript and Enrichment — Tracker
 
 **Current status:** Prospective-input seal verified; Gate 1 failed at 3/5 eligible first attempts with 4/4 rejection controls; dependent experiments stopped; production remains unimplemented<br>
-**Current phase:** Mandatory post-failure governance, result-evidence reconciliation, and review-only delivery<br>
+**Current phase:** Research complete — review-only PR open; owner follow-ups remain outside this delivery<br>
 **Verified:** 2026-07-19<br>
 
 ## Baseline
@@ -15,7 +15,7 @@
 | Research branch | `research/youtube-transcript-enrichment` |
 | Worktree baseline | Clean when created from `origin/main` on 2026-07-16 |
 | Existing user work | Preserved in other checkouts/worktrees; no reset, clean, move, or overwrite performed |
-| GitHub Wiki | Enabled; Git remote readable; publication not yet attempted |
+| GitHub Wiki | Published at `317e40e8de08fc492e0e2662b5f45b8bb7e48fcd`; remote-head concurrency and fresh-clone verification passed |
 | Overlapping work | Draft PR #6 touches YouTube transcript recovery/repair and is conflicting with current `main`; audit required |
 
 ## Ordered execution
@@ -32,7 +32,7 @@
 | 8 | Gate 6 — product/security/ops | Complete with material gaps | Safety evaluator 18 pass / 8 known gaps / 7 not applicable; exact unavailable/retry suite 5/5; exact A1 CLI integration suite 11/11; production readiness not passed |
 | 9 | Product council | Complete | All three PMs and council v1 recommend **Defer**; adversarial review verdict was Revise; reconciled v2 records **No-go / not approved** for the current automatic route and **Defer** for separately authorized future exact-class research |
 | 10 | Conditional downstream artifacts | Not eligible | Only after Go or Limited-go |
-| 11 | Wiki and review-only PR | Pending | Result evidence is not yet committed; Wiki publication, branch push, and unmerged review-only PR remain pending |
+| 11 | Wiki and review-only PR | Complete | Result commit `01059dbd57d38d9b9ae1d63f121e85502c3b7ee2`; Wiki commit `317e40e8de08fc492e0e2662b5f45b8bb7e48fcd`; draft [PR #35](https://github.com/arunpr614/ai-brain/pull/35) open and unmerged |
 
 ## Hard-limit ledger
 
@@ -70,9 +70,9 @@ Free credits are not spending authorization. Any essential paid validation must 
 - The scoped primary ledger remains at zero external/API/provider/model/STT/visual calls and USD 0. The two public failure terminals do not expose per-cell network counters and are not safety passes.
 - Production implementation, dependencies, migrations, merge, deployment, browser cookies, private content, and bypass techniques remain outside scope. The credential-safe OAuth prerequisite exploration completed without a call; any future OAuth work requires separate authorization, and identifiers/secrets/tokens stay outside Git.
 
-## Immediate next actions
+## Remaining owner actions
 
-1. Validate and commit the publication-safe claims, terminals, gate decisions, council documents, and governance updates as post-seal result evidence; rerun the official verifier to prove prospective inputs remain unchanged.
-2. Publish privacy-checked Wiki updates from a fresh clone after a remote-head concurrency check.
-3. Push the research branch and open a review-only, unmerged pull request; do not merge or deploy.
-4. Keep credential rotation/revocation as an explicit owner action before any future OAuth exploration.
+1. Review draft PR [#35](https://github.com/arunpr614/ai-brain/pull/35); do not merge or deploy it under the present research authorization.
+2. Revoke/rotate the disclosed OAuth credential before any future OAuth work and retain only non-secret completion evidence.
+3. Produce publication-safe deletion and backup-expiry evidence for all private research material by 2026-10-14.
+4. Make an explicit product-owner/security/legal-policy decision about the current automatic route; this research branch records No-go/not-approved but does not mutate production.

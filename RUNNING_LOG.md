@@ -30315,3 +30315,28 @@ Nothing deployed yet. The verified change is local on `codex/library-add-selecte
 - **Research decision:** Gate 1 Fail; council Defer with current-route No-go/not-approved disposition.
 - **Publication package:** Gate and council artifacts are being independently schema/link/privacy checked and committed after the seal; this later result history does not retroactively become part of Commit B.
 - **Outstanding:** reconcile mutable governance, publish and freshly verify the safe GitHub Wiki update, push the research branch, open a review-only pull request, rotate/revoke the disclosed OAuth credential, and produce non-secret private-data deletion evidence by 2026-10-14.
+
+## 2026-07-19 03:44 IST — YouTube research evidence published for review without merge or deployment
+
+**Entry author:** AI agent (Codex) · **Triggered by:** Completion of post-seal evidence validation, Wiki publication, branch push, and review-only pull-request creation.
+
+### Post-seal repository publication
+
+- Committed the publication-safe claims, failure terminals, Gate 1–6 decisions, independent PM memos, council v1/review/v2, reconciled governance, and the preceding running-log milestone as result commit `01059dbd57d38d9b9ae1d63f121e85502c3b7ee2`. This commit follows Commit B and does not claim that the prospective seal covered later results.
+- Nine A1 attempt claims and both caught-failure terminals validate against their frozen schemas. Repository-relative Markdown links resolve, the master index reaches every required artifact, publication privacy and strict schema/reference checks pass, and `git diff --check`, TypeScript, and full lint pass.
+- Official verifier 3.3.0 accepts the post-result checkout, the exact Commit A/B pair, lock SHA-256, and all 653 frozen files with `valid=true`.
+- The final current-checkout benchmark-tools run passed 288/289. Its sole failure was the intentionally pre-seal-shaped production sandbox test refusing a checkout in which canonical `LOCK.json` already exists. The complete frozen test file passed 17/17 in a disposable checkout of the actual Commit A, including its generated two-commit sandbox. A1 harness tests passed 20/20 and model-harness tests passed 29/29. No sealed primary cell was rerun.
+
+### Wiki and review-only handoff
+
+- Fresh-cloned the GitHub Wiki at remote base `e884daa628c28498bbbacd09c164b8cbba6030d5`, added the sanitized research decision plus navigation/changelog updates, re-fetched to confirm no concurrent remote change, and pushed Wiki commit `317e40e8de08fc492e0e2662b5f45b8bb7e48fcd`.
+- A second fresh clone matched that Wiki commit, resolved 417 local links, passed the changed-page sensitive-data scan, and returned HTTP 200 for the rendered research page.
+- Pushed `research/youtube-transcript-enrichment` and opened draft review-only PR #35 against `main`. The PR explicitly says not to merge or deploy and carries the exact gate, validation, scope, credential, deletion, and current-route owner boundaries.
+- No production code, dependency, migration, feature flag, merge, deployment, subscription, paid request, model inference, STT, visual processing, or production mutation was performed.
+
+### Final handoff state
+
+- **Repository:** prospective content commit `6b829798101a59fadd9a1d0efd65428539f400ad`; lock-only commit `0ed1b13729802f4ded921f1a94369ddc110dabc3`; result commit `01059dbd57d38d9b9ae1d63f121e85502c3b7ee2`; final delivery-status follow-up pending this append-only entry's commit.
+- **Wiki:** published and fresh-clone verified at `317e40e8de08fc492e0e2662b5f45b8bb7e48fcd`.
+- **Pull request:** #35 open as a draft, review-only, unmerged PR.
+- **Remaining owner actions outside this research delivery:** revoke/rotate the disclosed OAuth credential before any future OAuth design; produce non-secret deletion and backup-expiry evidence for all private research material by 2026-10-14; and make an explicit product-owner/security/legal-policy decision about the current automatic route.
