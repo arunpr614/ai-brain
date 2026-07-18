@@ -30350,3 +30350,11 @@ Nothing deployed yet. The verified change is local on `codex/library-add-selecte
 - Exact local CI commands now pass: `smoke:agent-docs` is green; `check:agent-docs` validates the 44-page historical generator, scans 118 documentation files with no privacy findings, reaches 86/86 canonical Wiki pages, reconciles 238 inventory rows, 46 feature rows, all 155 package scripts, and 17,989 project-inventory rows with no findings.
 - Official seal verifier 3.3.0 remains `valid=true` for Commit A/B and all 653 frozen files. The remediation changes only the global historical-Wiki manifest; it does not change a benchmark input, primary result, council decision, live Wiki page, production code, or deployment state.
 - The fix still requires commit, push, and green remote reruns before final handoff. PR #35 remains draft, review-only, unmerged, and not deployed.
+
+## 2026-07-19 03:56 IST — PR documentation remediation passed remote CI
+
+**Entry author:** AI agent (Codex) · **Triggered by:** Completion of the protected reruns for documentation-CI remediation commit `ae1a019eadc0931e5ccf31e3d569e76ab04ac89d`.
+
+- Supersede only the preceding entry's pending remote-check state. Agent documentation `validate` passed in 32 seconds and Product CI `verify` passed in 2 minutes 48 seconds. `package-main-release` and `package-known-good` skipped as designed for a non-main research branch.
+- PR #35 remains open as a draft, review-only, unmerged, and not deployed. The repository research decision, Wiki commit, zero-call/spend boundary, owner actions, and 2026-10-14 deletion/expiry deadline are unchanged.
+- This append-only evidence entry changes only `RUNNING_LOG.md`. It will be pushed as the final history-only head; the same remote checks may rerun, and the final user handoff will report their live state without adding another check-status-only commit.
