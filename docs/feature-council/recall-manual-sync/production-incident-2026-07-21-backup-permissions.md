@@ -1,10 +1,10 @@
 # Recall sync production incident: backup directory permissions
 
 Date: 2026-07-21
-Status: Production permission repair verified without sync; controlled live recovery still requires separate authorization
+Status: Production permission repair and one controlled manual recovery verified; next automatic occurrence pending
 Affected release: `8c1341100b174fe4ca518e6a745c30b9078df21c`
 Root-cause fix: PR `#37`, merged to `main` as `077cf7382a706218864554a149b12b4e1cfa6081`
-Cleanup follow-up branch: `codex/fix-recall-backup-proof-cleanup`
+Cleanup follow-up: PR `#38`, merged to `main` as `2564474e37ca6dc6794bfea07df4474f8f03e527`
 
 ## Impact
 
@@ -83,15 +83,33 @@ The database quick check remained `ok`. Execution, request, run, and apply-run c
 
 The no-sync production proof exposed a separate cleanup defect: integrity checks could leave SQLite `-wal` and `-shm` files beside the retained backup and removed temporary restore database. The proof-specific files were removed. Twelve older restore-proof sidecars in `/tmp` predated this incident repair and were intentionally left untouched. The follow-up change removes future backup and restore sidecars and has a dedicated WAL-mode regression test.
 
+## Controlled recovery
+
+Arun then explicitly authorized exactly one production manual recovery sync through the existing guarded Settings path. The authorization retained the protected production credential, explicit live-API confirmation, the 20-import cap, existing fidelity policy, and conditional checkpoint movement. It continued to prohibit an application deployment, scheduler mutation, or a second manual sync.
+
+The request was accepted once at 2026-07-21 21:35:16 IST. Durable before-and-after evidence confirms exactly one new request, one execution, one dry run, and one apply run:
+
+| Evidence | Before | After |
+|---|---:|---:|
+| Manual requests | 3 | 4 |
+| Executions | 13 | 14 |
+| Runs | 46 | 48 |
+| Apply runs | 13 | 14 |
+| Library items | 129 | 147 |
+| Recall mappings | 59 | 77 |
+
+The linked dry run completed with 18 cards seen, zero writes, complete enumeration, and no blocked cards. The linked apply then completed with 18 imports, zero upgrades, zero skips, zero changed-remote cards, and zero blocked cards. Seventeen imports used the allowed `api_chunks_unverified` fidelity and one used the allowed `metadata_only` fidelity; none used `possibly_truncated`. The apply total remained below the cap of 20.
+
+The retained 7,733,248-byte pre-apply backup passes SQLite quick and foreign-key checks. It records the old checkpoint, 129 library items, and 59 Recall mappings while the execution was at the backup stage. The live database passes the same checks and records the new checkpoint only after the successful apply. All request, execution, dry-run, and apply foreign links match, the wrapper validation timestamp equals terminal completion, and no active Recall work remains.
+
+The Settings API returns the terminal activity as `done`, the same 18/0/0 counts, and `lastSuccessfulSyncAt=2026-07-21T16:06:16.795Z`. The production formatter renders that value as `Today, 9:36 PM IST` on the incident date.
+
+The current deployed runtime predates PR `#38`, so this recovery backup has a zero-byte `-wal` file and a 32 KiB `-shm` file beside it. They do not affect the verified backup. They were left untouched because this recovery authorization did not include cleanup or deployment; the merged follow-up prevents future sidecars once released.
+
+The Settings API's cached next-run snapshot reported 2026-07-22 01:38 IST, while the live unchanged systemd timer reported 2026-07-22 01:34 IST. This does not affect the required last-success timestamp or timer execution, but automatic verification must use the live timer and then refresh or investigate the stale UI schedule snapshot separately.
+
 ## Recovery boundary
 
-The permission repair is complete, but it proves only that the previous backup blocker is removed. Recovery still requires separately authorized live synchronization.
-
-After that authorization, the operator must:
-
-1. run one controlled manual sync through the public Settings workflow or its guarded worker path;
-2. validate the new execution, linked dry-run and apply runs, imported counts, and checkpoint behavior without exposing private data;
-3. confirm Settings reports the validated success timestamp in IST;
-4. verify the next automatic occurrence completes with a new `done` execution and linked validated apply run.
+The permission repair and controlled manual recovery are complete. Do not run another manual sync. The remaining incident boundary is to verify that the unchanged next automatic occurrence completes with a new `done` execution and linked validated apply run.
 
 Do not infer recovery from an active timer or a successful latest unit result. Require a new `done` execution with `wrapper_validated_at` and its linked apply run.
