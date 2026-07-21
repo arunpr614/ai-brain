@@ -2,12 +2,12 @@
 
 Purpose: Document the guarded Recall import architecture, the manual Settings control, and their operational limits.
 Audience: AI Brain owners, agents, and operators changing the integration.
-Verified against: main documentation baseline `8c1341100b174fe4ca518e6a745c30b9078df21c` plus review candidate `fdd740617685c1ce730a6150c306152a04070f86` on `feat/recall-manual-sync`.
-Runtime evidence through: 2026-07-10 for the previously deployed daily timer; the manual control is not enabled or deployed.
-Last reviewed: 2026-07-11.
+Verified against: deployed application `8c1341100b174fe4ca518e6a745c30b9078df21c` and the 2026-07-21 backup-permission hotfix.
+Runtime evidence through: 2026-07-21 production incident diagnosis.
+Last reviewed: 2026-07-21.
 Owner: AI Brain maintainer.
 
-**Status:** Implemented, default off · **Confidence:** High for code and local verification · **Availability:** Feature-flagged and host-dependent
+**Status:** Deployed; production recovery pending · **Confidence:** High for root cause and local hotfix verification · **Availability:** Temporarily blocked by the documented host permission incident
 
 Recall is a one-way guarded import, not two-way synchronization. The existing scheduled wrapper acquires a private outer lock, performs dry-run validation, backup, proof-backed apply, final validation, and checkpoint handling. The manual Settings control creates a durable request for that same wrapper; it does not call Recall or run the importer inside the web process.
 
@@ -47,19 +47,19 @@ The browser stores only the safe request identifier and idempotency key. `recall
 
 The trusted worker claims one request atomically, holds the same private `flock` used by the automatic wrapper, and launches the packaged lifecycle and wrapper. The existing SQLite core lock remains in place. A 15-second heartbeat and 90-second stale threshold support conservative crash reconciliation; recovery also requires outer-lock and linked-run evidence. Per-card progress is committed with each import transaction so a later failure reports exact persisted writes.
 
-Path activation provides fast pickup and a one-minute safety timer recovers a lost marker. Deployment holds one release lock across application and Recall artifacts, preserves the pre-release daily timer state, and leaves all new units and UI flags disabled by default.
+Path activation provides fast pickup and a one-minute safety timer recovers a lost marker. Deployment holds one release lock across application and Recall artifacts and preserves the pre-release daily timer state. The app and Recall worker share `/opt/brain/data/backups` through the restricted `brain-data` group; the required directory mode is `2770`, and release paths must prove `brain-recall` can create a pre-apply backup there.
 
 ## Security, configuration, and enablement boundary
 
 The intended host model uses a distinct `brain-recall` service identity, a restricted shared data group, a private `/run/brain-recall` lock, and Recall credentials readable only by trusted Recall units. The web service may enqueue in SQLite and write the empty marker, but must not read the Recall credential, execute the wrapper, or open the private lock.
 
-This repository proves that boundary statically and with isolated process fixtures. Production enablement remains blocked until an authorized operator proves the actual host identity, credential permissions, directory permissions, installed unit contents, timer invariant, and rollback path. This review candidate does not merge, deploy, enable a timer, or change production state.
+This repository proves that boundary statically and with isolated process fixtures. The feature is deployed, but the 2026-07-21 incident showed why every release must re-prove the actual host identity, credential permissions, shared backup-directory access, installed unit contents, timer invariant, and rollback path. The permission hotfix is verified locally; applying it and running a live recovery remain separately authorized production operations.
 
 ## Verification and operations
 
 Protecting evidence includes route, database, lifecycle, sync-runner, component, contract, wrapper, bundle, security-artifact, and six multi-process/crash/fake-systemd fixture groups. The full type, lint, test, build, privacy, shell, and documentation gates pass. Responsive evidence covers 1440, 1024, 390, and 320 pixel layouts, light/dark themes, 200% zoom, keyboard focus containment/restoration, reduced motion, live-region behavior, and the major lifecycle states.
 
-Operational diagnosis should compare request, execution, core run, final-validation, lock, and timer evidence without exposing private values. An active timer does not prove every later run succeeded. Start any separately authorized rollout with the UI and manual worker flags off, verify the host boundary, then enable and observe one bounded run before broader use.
+Operational diagnosis should compare request, execution, core run, final-validation, lock, backup, and timer evidence without exposing private values. An active timer or a latest systemd result of `success` does not prove an apply succeeded: an automatic retry can encounter an already-terminal occurrence and exit cleanly. Require a `done` execution with `wrapper_validated_at` and a linked successful apply run.
 
 Primary implementation areas: `src/components/recall-manual-sync.tsx`, `src/app/api/settings/recall-sync/`, `src/db/recall-manual-sync.ts`, `src/lib/recall/`, `scripts/recall-manual-sync-worker.ts`, `scripts/recall-sync-lifecycle.ts`, the guarded wrapper, and Recall deployment units.
 

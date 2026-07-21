@@ -29,6 +29,7 @@ const lifecycleSource = readFileSync("scripts/recall-sync-lifecycle.ts", "utf8")
 const wakeService = readFileSync("src/lib/recall/manual-sync-service.ts", "utf8");
 const wakePath = readFileSync("scripts/deploy/brain-recall-manual-sync.path", "utf8");
 const deploy = readFileSync("scripts/deploy.sh", "utf8");
+const immutableDeploy = readFileSync("scripts/deploy-immutable-release.sh", "utf8");
 const processFixture = readFileSync("scripts/test-recall-manual-sync-process.mjs", "utf8");
 for (const unit of [automatic, manual]) {
   if (!unit.includes("User=brain-recall") || !unit.includes("LoadCredential=recall-api-key:")) {
@@ -40,6 +41,23 @@ if (web.includes("LoadCredential=recall-api-key") || web.includes("/run/brain-re
 }
 if (!tmpfiles.includes("/run/brain-recall 0700 brain-recall brain-recall")) {
   throw new Error("private Recall runtime lock directory is not mode 0700");
+}
+if (!tmpfiles.includes("d /opt/brain/data/backups 2770 brain brain-data - -")) {
+  throw new Error("tmpfiles must preserve the shared Recall backup directory contract");
+}
+for (const releaseDeploy of [deploy, immutableDeploy]) {
+  if (
+    !releaseDeploy.includes('install -d -o brain -g brain-data -m 2770 "$backup_dir"') ||
+    /install -d[^\n]*-m\s+0?700[^\n]*"\$backup_dir"/.test(releaseDeploy)
+  ) {
+    throw new Error("release deploys must not revoke brain-recall access to the shared backup directory");
+  }
+}
+if (
+  !deploy.includes(".recall-backup-write-proof.XXXXXXXX") ||
+  !immutableDeploy.includes(".recall-backup-write-proof.XXXXXXXX")
+) {
+  throw new Error("release deploys must prove backup creation as the Recall worker identity");
 }
 if (!wrapper.includes("BRAIN_RECALL_MANUAL_LOCK_WAIT_SECONDS:-5") || !wrapper.includes("BRAIN_RECALL_AUTOMATIC_LOCK_WAIT_SECONDS:-10800")) {
   throw new Error("trigger-aware full-wrapper lock bounds drifted");
