@@ -1,6 +1,6 @@
 # AI Brain → NotebookLM Synchronization — Master Execution Index
 
-**Status:** Final product decision **Defer**; research and review-only delivery complete; Gate 0/live validation remains a re-entry condition — not implemented
+**Status:** Broad automatic synchronization remains **Defer**. Narrow consumer one-click repository analysis is complete with a technical recommendation for one separately authorized local synthetic feasibility spike; no new product Go/Limited-go decision — not implemented
 **Verified:** 2026-07-21
 **Worktree:** `Phase21-NotebookLM-sync`
 **Branch:** `research/notebooklm-sync`
@@ -30,6 +30,7 @@ This package evaluates a one-way, idempotent synchronization path from AI Brain 
 - [Integration pattern inventory](audit/integration-pattern-inventory.md)
 - [Wiki/code discrepancies](audit/wiki-code-discrepancies.md)
 - [Security and privacy assessment](research/2026-07-21_security-privacy-assessment.md)
+- [One-click consumer export repository-fit analysis](research/2026-07-21_one-click-export-repository-fit-analysis.md)
 - [QA/failure matrix](spikes/QA_FAILURE_MATRIX.md)
 - [S3 item-type mapping report](spikes/S3_ITEM_TYPE_MAPPING_2026-07-21.md)
 - [S5 adapter/idempotency report](spikes/S5_ADAPTER_IDEMPOTENCY_2026-07-21.md)
@@ -37,6 +38,7 @@ This package evaluates a one-way, idempotent synchronization path from AI Brain 
 - [S8 orchestration report](spikes/S8_ORCHESTRATION_2026-07-21.md)
 - [S9 capacity simulation report](spikes/S9_CAPACITY_SIMULATION_2026-07-21.md)
 - [S10 credential-lifecycle report](spikes/S10_CREDENTIAL_LIFECYCLE_2026-07-21.md)
+- [S11 one-click export contract report](spikes/S11_ONE_CLICK_EXPORT_CONTRACT_2026-07-21.md)
 - [Credential-free harness adversarial review](reviews/CREDENTIAL_FREE_HARNESS_ADVERSARIAL_REVIEW_2026-07-21.md)
 - [Gate 0 record](decisions/GATE_0_ELIGIBILITY_2026-07-21.md)
 - [PM — User Value and Engagement](council/individual/PM_USER_VALUE_2026-07-21.md)
@@ -57,7 +59,8 @@ This package evaluates a one-way, idempotent synchronization path from AI Brain 
 | Security/QA review | Threat model, scopes, credentials, cleanup, failure matrix, spike protocol review | Complete |
 | Research synthesis | Dated v1, independent adversarial review, revised v2 | Complete |
 | Eligibility gate | Edition/account decision and permitted live spike lane | Unresolved; retained as a re-entry condition under Defer |
-| Feasibility spikes | Reproducible synthetic evidence; official live evidence subject to Gate 0 | Credential-free complete: 46/46 local checks; authenticated live cases gated |
+| Feasibility spikes | Reproducible synthetic evidence; official or unofficial live evidence separately gated | Credential-free complete: 59/59 local checks; authenticated live cases gated |
+| Consumer one-click repository selection | Exact button contract, pinned source-level comparison, credential/deployment boundary, gated implementation blueprint | Complete — `notebooklm-py` wins; stable v0.7.3 local worker recommended only for a separately authorized feasibility spike; Chrome extension is the safest credential boundary |
 | Product council | Three independent PM recommendations and integrated v1/review/v2 | Complete — Defer, High confidence |
 | Conditional package | PRD v2, UX v2/prototype v2, technical plan v2 after Go/Limited-go only | Not applicable under Defer; intentionally not created |
 | Publication | Repository Wiki sources and GitHub Wiki | Complete — live Wiki commit `6b0e90a91d374dc88a746ab6b11a1dcf2c091d3c`, 90 pages, zero privacy/link findings |

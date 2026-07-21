@@ -14,5 +14,6 @@
 | S8 | Manual/daily orchestration | Local fake | Local pass | 0 | Temporary SQLite files removed by tests |
 | S9 | Capacity/scale simulation | Public limits and synthetic distributions | Pass | 0 | No remote state |
 | S10 | Credential-expiration handling | Fake state machine first; official auth after Gate 0 | Local pass; live lifecycle gated | 0 | Fake credential data only |
+| S11 | One-click item export contract | Credential-free; consumer unofficial live validation remains separately gated | Local pass (13/13); no Google call | 0 | In-memory fake only |
 
-Reports are stored beside the spike protocol with hypothesis, exact input, observed output, evidence class, timestamp, retries, and cleanup. Credential-free fake objects are not NotebookLM sources and do not consume the real-source counter. The shared catalog contains exactly ten unique synthetic AI Brain items; tests reuse those identities and create no additional item.
+Reports are stored beside the spike protocol with hypothesis, exact input, observed output, evidence class, timestamp, retries, and cleanup. Credential-free fake objects are not NotebookLM sources and do not consume the real-source counter. S1–S10 use the shared catalog of ten unique synthetic AI Brain items. S11 reuses the catalog's URL-item identity in a self-contained contract fixture and makes no Google call.

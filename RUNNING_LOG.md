@@ -30568,3 +30568,165 @@ Authenticated/live evidence remains unavailable because the one Gate 0 response 
 - **Hard limits used:** strategies 2/3 credential-free simulations and 0 live; authentication 0/2; synthetic item identities 10/10; real sources 0/10; simulated retries 2/2 for one failure and 0 live; unofficial-tool time 0/60 minutes; spend USD 0.
 - **Production/Google state:** Unchanged.
 - **Next milestone:** None in the current goal; PR review or future Gate 0 re-entry only.
+
+---
+
+## 2026-07-21 21:50 IST — Consumer one-click export scope reopened; repository audit and S11 contract spike completed
+
+**Entry author:** AI agent (Codex) · **Triggered by:** User clarified the destination as consumer NotebookLM at `https://notebooklm.google/` and requested a detailed repository-fit analysis plus spikes for one explicit AI Brain item → one specified notebook button action.
+
+### Planned since last entry
+
+The preceding delivered decision deferred broad automatic/daily synchronization and left unofficial execution outside authorization. The new request is materially narrower: one user click, one item, one configured consumer notebook. This period reopened research for that specific shape only, audited current candidates at pinned revisions, mapped the exact AI Brain integration surface, and built a credential-free contract spike. It did not authorize or perform Google authentication, a live internal-API call, production code, a dependency installation, or deployment.
+
+### Done
+
+- Re-read the complete 1,133-line goal brief and applied the user's consumer-NotebookLM correction rather than the separately licensed Gemini Notebook Enterprise API lane.
+- Inspected the current AI Brain item-detail UI, text-centric item schema, exports, Recall manual-sync request/claim patterns, security guards, generic plaintext settings, standalone VPS deployment, Android WebView, and existing MV3 Brain extension.
+- Identified the minimal product contract: server-owned target binding; immutable minimized copied-text snapshot; durable request identity; item/target/content/mapping dedupe; source-readiness polling; explicit authentication attention; and an unresolved state after an ambiguous remote create.
+- Located the desktop and mobile button insertion points next to the existing Markdown export. Recorded that cards should not gain an MVP nested action and that Android uses the same web UI.
+- Source-inspected current pinned clones without installing, importing, authenticating, or executing their integrations:
+  - `teng-lin/notebooklm-py` main `45fd4258e608fbb9685496f26cfcea48810c44ee` and stable `v0.7.3`;
+  - `jacob-bd/notebooklm-mcp-cli` `2f28855b1545ea321568be6e39dc8c2efb338dd5` / `v0.9.0`;
+  - `cola-runner/notebooklm-cli` `67adf52b514d4ae1bb7bc59b3c2d0757ce4d87e7` / `v0.1.2`;
+  - `vankcdhv/notebook-mcp` `ccc68713e4a75ca90fd92d7a32bbd9909ec3fb7d` / `v0.2.3`;
+  - `LocalKinAI/notebooklm-go` `2d17dd3599543e864ee0347eecf1ba73090ea59e` / `v0.2.2`;
+  - `MikeChongCan/10x-chat` `01aafcd77caff65d95e7c3197c1b974eece73500` / `v0.11.6`.
+- Confirmed the decisive retry-safety difference: `notebooklm-py` classifies copied-text creation as `NON_IDEMPOTENT_NO_RETRY`, while the inspected Node/TypeScript and Go transports retry generic mutating RPC failures and can duplicate a source after a committed write whose response is lost.
+- Confirmed that stable `notebooklm-py` v0.7.3 already provides notebook listing, copied-text creation, source listing/status, readiness waiting, typed auth failures, and the conservative text-write policy. Current main/PyPI `0.8.0rc1` additionally has an experimental guarded localhost REST server, but that surface is not yet stable.
+- Confirmed that consumer candidates use undocumented internal Google APIs and bearer-equivalent session authority. No candidate changes that support status.
+- Completed credential-free S11 with a narrow fake adapter and one synthetic item. The 13/13 passing cases cover minimized mapping, URL filtering, weak-capture gating, exact target binding, double-click and unchanged-content coalescing, changed-content versioning, processing/ready truth, accepted-but-response-lost reconciliation, inconclusive and multiple-match safety, expired auth, and browser/log redaction.
+- Added S11 to the spike register. No remote source, Google credential, real content, or persistent fake state was created.
+
+### Cross-lane notes
+
+- Parallel read-only agents audited AI Brain hook points, candidate protocol/retry behavior, and credential/deployment options. They did not edit files.
+- All repository edits remain confined to `docs/feature-council/notebooklm-sync/`, `SPIKE_REGISTER.md`, and this append-only log.
+- Temporary candidate clones live under the validated `/tmp/notebooklm-fit-audit.St1cek` research directory and are not part of the repository.
+
+### Learned
+
+- The one-click scope changes the product calculus: a small durable request ledger is still required, but continuous discovery, scheduling, and high-volume source-capacity design are not prerequisites for this button.
+- Copied text is the one representation that faithfully covers current reachable AI Brain note, URL, YouTube, and PDF items. AI Brain does not retain a guaranteed reusable original PDF; asking NotebookLM to re-fetch a URL can produce different content.
+- Exactly-once copied-text creation cannot be guaranteed by the provider. A visible opaque title marker plus no blind retry provides honest reconciliation, not mathematical exactly-once delivery.
+- The safest credential boundary keeps the Google session off the Hetzner web process. The existing Chrome extension or a local desktop companion can process durable server jobs; Android-originated clicks must remain visibly queued while the desktop connector is offline.
+- `notebooklm-py` is currently the best protocol/failure-handling foundation, but its server-friendly master token is full-account and high-blast-radius. It must not be placed on the VPS for a primary Google account.
+
+### Deployed / Released
+
+Nothing deployed, published, authenticated, installed, merged, pushed, or sent to Google. The existing draft PR and live Wiki were not changed during this milestone.
+
+### Documents created or updated this period
+
+**Created:**
+- `docs/feature-council/notebooklm-sync/spikes/prototype/one-click-export-contract.mjs` — provider-neutral queue, mapper, reconciliation, and fake adapter model.
+- `docs/feature-council/notebooklm-sync/spikes/prototype/one-click-export-contract.test.mjs` — 13-case one-click contract suite.
+- `docs/feature-council/notebooklm-sync/spikes/S11_ONE_CLICK_EXPORT_CONTRACT_2026-07-21.md` — hypothesis, observed output, limitations, and decision impact.
+
+**Updated:**
+- `docs/feature-council/notebooklm-sync/SPIKE_REGISTER.md` — registered S11 and clarified its self-contained fixture.
+- `RUNNING_LOG.md` — this append-only milestone entry.
+
+### Current remaining to-do
+
+1. Finish the source-level weighted comparison and integrate the remaining candidate-agent evidence, including browser-connector reference projects.
+2. Decide and document the recommended credential/deployment boundary: direct browser extension versus local `notebooklm-py` companion, with VPS credentials explicitly rejected by default.
+3. Write the detailed repository-fit analysis and implementation blueprint under `docs/feature-council/notebooklm-sync/research/`.
+4. Update the master index, tracker, decision log, and risk register only where the new one-click decision changes the prior broad-sync result.
+5. Re-run the 13-case S11 suite together with the existing 46 credential-free tests, validate links/privacy/diff, and complete the goal without a live Google call.
+
+### Open questions / decisions needed
+
+No user input is required to finish the credential-free recommendation. A separately approved live pilot would later need a dedicated synthetic notebook/account strategy and local authentication; credentials must never be pasted into chat.
+
+### Session self-critique
+
+- Static inspection and local fakes establish application semantics, not current live Google wire compatibility.
+- The browser-extension credential boundary is safer than copying cookies, but browser-managed-cookie RPC compatibility has not been live-tested and may still require a local sidecar.
+- Current `notebooklm-py` main has attractive REST/headless additions, but it is `0.8.0rc1`; recommending a moving prerelease as a production dependency would be premature.
+- Repository activity and test counts are useful indicators, not proof that an undocumented Google protocol will remain stable.
+
+### Action items for the next agent
+
+1. Start with `spikes/S11_ONE_CLICK_EXPORT_CONTRACT_2026-07-21.md` and the pending candidate-agent result; do not repeat the completed code audit.
+2. Preserve `notebooklm-py` v0.7.3 versus 0.8.0rc1 as two distinct adoption choices.
+3. Treat any copied-text client that blindly retries ambiguous writes as incompatible until patched.
+4. Keep all Google auth/live tests gated and use only synthetic content in any later approved pilot.
+
+### State snapshot
+
+- **Current phase / version:** Consumer one-click repository selection in progress; S11 credential-free contract complete.
+- **Active branch:** `research/notebooklm-sync` at `47e2e7f`, tracking `origin/research/notebooklm-sync`.
+- **Working tree:** Dirty only with intentional S11/register/log research changes; no app code or dependency change.
+- **Deployed/runtime state:** AI Brain production, Google account, NotebookLM, existing PR, and Wiki unchanged.
+- **Next milestone:** Final weighted repository recommendation plus credential-safe implementation blueprint.
+
+---
+
+## 2026-07-21 22:22 IST — Consumer one-click repository decision completed and independently audited
+
+**Entry author:** AI agent (Codex) · **Triggered by:** Completion of the clarified consumer NotebookLM repository-fit goal.
+
+### Done
+
+- Completed the detailed one-click repository-fit report and weighted source-level matrix. `teng-lin/notebooklm-py` ranks first at 93/100; `jacob-bd/notebooklm-mcp-cli` is second at 74/100; `agmmnn/notebooklm-sdk` is the closest direct TypeScript SDK at 68/100.
+- Added the late long-list TypeScript candidate `agmmnn/notebooklm-sdk` at pinned commit `e3be7175cdbf6133e488483f5a5eaf190ec2bb11`. Static inspection confirmed complete list/add-text/source-readiness coverage but no operation-specific copied-text idempotency policy, one generic auth-refresh replay path, and no explicit private modes for its default session path.
+- Recorded the exact stable `notebooklm-py` v0.7.3 tag commit `a6c54417058bd5e43e0162dd93a390308d2f99f6`; kept reviewed main `45fd4258e608fbb9685496f26cfcea48810c44ee` / `0.8.0rc1` separate as experimental REST/security reference material.
+- Chose a local credential boundary: the existing Brain Chrome extension is safest because it can leave cookies in Chrome; a local polling worker around stable `notebooklm-py` is the practical engine for at most one separately authorized synthetic feasibility spike. Primary-account session material on Hetzner remains rejected.
+- Clarified that the result is a technical repository recommendation, not a product Go/Limited-go decision and not implementation authorization. The earlier broad-sync Defer decision remains intact.
+- Strengthened S11 after independent review:
+  - removed browser-selectable target aliases and bound markers/dedupe to an immutable server target-binding ID/version;
+  - added a successful weak-capture confirmation path;
+  - added phase-aware reconnect/resume before a write, after a potentially committed write, and during source-status polling;
+  - normalized list/poll faults without raw provider text;
+  - added rebinding-marker separation; and
+  - explicitly retained durable concurrency, target sharing/privacy, source capacity, payload bounds, retention, cancellation, and cleanup as unproven rollout gates.
+- Added the read-only `getTargetHealth` capability to the proposed narrow adapter. Unknown collaborator/sharing posture blocks non-synthetic content; browser-visible setup shows only a safe target label and destination disclosure.
+- Added plan-aware occupancy/headroom, a maximum rollout envelope, explicit payload ceilings, terminal snapshot purge, bounded unresolved retention, cancellation semantics, and recorded-source cleanup to the gated blueprint and risk/decision records.
+- Completed an independent failure-oriented final audit. It reported no P0 findings; every material P1/P2 scope, target, auth, capacity, privacy, and scoring finding was resolved or retained as an explicit blocker.
+
+### Validation
+
+- Combined credential-free suites: **59/59 pass**, 0 fail, 0 skipped; no Google call, auth, real source, or production item.
+- Focused S11 suite: **13/13 pass**, 0 fail, 0 skipped.
+- `npm run check:agent-docs`: pass across feature-council generation, Wiki privacy, Wiki structure, agent-doc coverage, and project-Wiki artifacts.
+- All 43 Markdown files under the NotebookLM research package: zero missing relative links.
+- Diff whitespace check: pass.
+- Secret-shaped-value scan: zero findings. Credential-looking URL strings remain only as clearly synthetic negative-test fixtures.
+- Hard limits: 3/3 integration strategies used only as credential-free simulations; 0/2 authentication approaches; 10/10 synthetic identities with S11 reusing an existing identity; 0/10 real sources; 0 unofficial-tool execution minutes; USD 0 spend.
+
+### Decision
+
+- **Repository winner:** `teng-lin/notebooklm-py`.
+- **If one synthetic feasibility spike is separately approved:** pin stable v0.7.3 at `a6c54417058bd5e43e0162dd93a390308d2f99f6`, verify its package artifact hash, run it only in a local polling worker, call `add_text(..., wait=False)`, persist the source ID, and poll separately.
+- **Do not:** use current `0.8.0rc1` as a stable production dependency; embed Google cookies/master token in Next.js or Hetzner; expose a full MCP/CLI/REST surface; accept a browser notebook selector in the write request; or blind-retry ambiguous copied-text creates.
+- **Product status:** no product Go/Limited-go. One separately authorized local synthetic feasibility spike is the only recommended next evidence step. Any real-content proposal returns to product/security review with target-sharing, headroom, retention, cancellation, cleanup, and durable-concurrency evidence.
+
+### Deployed / Released
+
+Nothing was deployed, merged, authenticated, installed as a dependency, or sent to Google. The live Wiki and production AI Brain remain unchanged. Review-only branch/PR delivery follows this log entry and is reported in the final task handoff.
+
+### Documents created or updated this period
+
+**Created:**
+- `docs/feature-council/notebooklm-sync/research/2026-07-21_one-click-export-repository-fit-analysis.md`
+- `docs/feature-council/notebooklm-sync/spikes/S11_ONE_CLICK_EXPORT_CONTRACT_2026-07-21.md`
+- `docs/feature-council/notebooklm-sync/spikes/prototype/one-click-export-contract.mjs`
+- `docs/feature-council/notebooklm-sync/spikes/prototype/one-click-export-contract.test.mjs`
+
+**Updated:**
+- `docs/feature-council/notebooklm-sync/MASTER_EXECUTION_INDEX.md`
+- `docs/feature-council/notebooklm-sync/TRACKER.md`
+- `docs/feature-council/notebooklm-sync/DECISION_LOG.md`
+- `docs/feature-council/notebooklm-sync/RISK_REGISTER.md`
+- `docs/feature-council/notebooklm-sync/SOURCE_INVENTORY.md`
+- `docs/feature-council/notebooklm-sync/SPIKE_REGISTER.md`
+- `docs/feature-council/notebooklm-sync/research/Research-note.md`
+- `RUNNING_LOG.md`
+
+### State snapshot
+
+- **Current phase:** Analysis and credential-free spike complete; review-only delivery prepared.
+- **Product/Google state:** Unchanged; zero live calls and zero real sources.
+- **Unresolved external fact:** Current live consumer NotebookLM wire compatibility and target-sharing visibility remain unproven until separately authorized synthetic evidence exists.
+- **Next milestone:** Maintainer review of the repository recommendation; if desired, separate authorization for exactly one local synthetic feasibility spike.

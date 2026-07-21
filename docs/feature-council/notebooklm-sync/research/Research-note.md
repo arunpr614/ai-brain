@@ -1,7 +1,7 @@
 # AI Brain → NotebookLM Synchronization — Research Note
 
 **Started:** 2026-07-21
-**Current status:** Public research/audit, 46/46 credential-free validation, three independent PM reviews, and council v1/review/v2 complete. Product decision: **Defer**. Gate 0/live Google evidence remains pending; no implementation or authenticated spike.
+**Current status:** Broad-sync research, three independent PM reviews, and council v1/review/v2 are complete with product decision **Defer**. The later, narrower consumer one-click repository analysis is complete: `notebooklm-py` ranks first and S11 raises credential-free validation to 59/59. Live Google evidence and implementation remain separately gated.
 
 ## Research questions
 
@@ -13,6 +13,7 @@
 6. Which mapping and aggregation strategy remains viable at 10, 50, and 100 items/day?
 7. Can retries, overlapping triggers, and lost responses be reconciled without duplicate sources?
 8. What privacy disclosure, exclusion controls, credential storage, observability, and disconnect behavior are mandatory?
+9. For one explicit item and one preconfigured consumer notebook, which unofficial repository has the safest copied-text, readiness, ambiguity, and local-credential contract?
 
 ## Evidence discipline
 
@@ -22,4 +23,4 @@
 - Current code and tests outrank older plans for AI Brain behavior.
 - Unverified inferences are explicitly labeled and receive a revalidation date.
 
-Findings are integrated into dated research-synthesis v1/review/v2 and council v1/review/v2 artifacts. The Gate 0 request was issued once and is not repeated. The missing conditional account facts block authenticated evidence; they do not convert the local result into provider proof or change the Defer decision.
+Broad-sync findings are integrated into dated research-synthesis v1/review/v2 and council v1/review/v2 artifacts. The Gate 0 request was issued once and is not repeated. The later one-click repository-fit report makes a technical recommendation for one separately authorized local synthetic feasibility spike; it does not issue a product Go/Limited-go decision. Neither the 59 local checks nor static third-party source inspection establishes live provider compatibility or authorizes implementation.

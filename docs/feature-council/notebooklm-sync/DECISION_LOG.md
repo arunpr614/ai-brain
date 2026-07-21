@@ -133,3 +133,45 @@
 - **Decision:** Deliver the research package on `research/notebooklm-sync` through draft PR [#36](https://github.com/arunpr614/ai-brain/pull/36), leave it open and unmerged, and close the current goal at Defer without treating the absent Gate 0 response as authorization to broaden scope.
 - **Reason:** The brief permits review-only delivery and makes downstream product artifacts conditional on Go/Limited-go. Defer completes the current product decision while retaining authenticated evidence as an explicit re-entry gate.
 - **Evidence class:** Final delivery validation, live Wiki verification, and pull-request state.
+
+## D-020 — Treat consumer one-click export as a separate, narrower decision
+
+- **Date:** 2026-07-21
+- **Decision:** Preserve the broad automatic/daily synchronization decision as **Defer**, while evaluating the user's clarified one-item, one-click, one-preconfigured-consumer-notebook feature independently.
+- **Reason:** Explicit item selection and a frozen per-click payload remove discovery cursors, schedules, and aggregation from the first test. They reduce but do not eliminate source-capacity, frozen-snapshot retention, cleanup, unsupported-interface, and credential risks.
+- **Evidence class:** User clarification plus current-code and architecture audit.
+
+## D-021 — Select `teng-lin/notebooklm-py` as the repository foundation
+
+- **Date:** 2026-07-21
+- **Decision:** Rank `teng-lin/notebooklm-py` first for the one-click consumer export adapter. If one local synthetic feasibility spike is separately authorized, pin stable `v0.7.3` tag commit `a6c54417058bd5e43e0162dd93a390308d2f99f6` plus the package artifact hash behind an AI Brain-owned narrow local worker. Treat reviewed main commit `45fd4258e608fbb9685496f26cfcea48810c44ee` / `0.8.0rc1` and its experimental localhost REST server as reference/spike material until a stable `0.8` release is re-reviewed. This is not a product Go/Limited-go decision.
+- **Reason:** It uniquely combines the complete notebook/source/readiness contract with operation-aware `NON_IDEMPOTENT_NO_RETRY` handling for copied-text creation. Other leading candidates either apply generic retry behavior or lack a text-specific policy that blocks every post-send replay, so an accepted write whose response is lost can be duplicated.
+- **Evidence class:** Static source inspection at pinned revisions plus S11's credential-free ambiguity contract; no third-party package or Google interface was executed.
+
+## D-022 — Keep consumer Google credentials off the hosted AI Brain server
+
+- **Date:** 2026-07-21
+- **Decision:** Use a durable server queue and a local connector in any later authorized work. Prefer the existing Brain Chrome extension for the narrowest credential boundary; use a local `notebooklm-py` polling worker as the practical feasibility-spike dependency. Reject primary-account cookies, Playwright storage, or a headless master token on Hetzner, and do not expose a full MCP/CLI/REST surface to the browser.
+- **Reason:** Consumer automation has no narrow OAuth scope. Local Google session material is bearer-equivalent and creates broad account blast radius if copied to a remotely reachable process. The durable queue also permits truthful `waiting for desktop connector` behavior for Android-originated clicks.
+- **Evidence class:** AI Brain deployment/extension audit, Chrome extension security documentation, and third-party credential-path inspection.
+
+## D-023 — Export the saved AI Brain snapshot as minimized copied text
+
+- **Date:** 2026-07-21
+- **Decision:** Freeze an allowlisted copied-text payload at enqueue time. Include title, body, and only sanitized public provenance; exclude raw internal identifiers, hashes, capture internals, credential-bearing/private URLs, summaries, quotes, and attached notes by default. Gate weak captures and version changed content explicitly.
+- **Reason:** Copied text represents what the user actually reviewed in AI Brain. URL or YouTube refetch may differ, and original PDF bytes are not guaranteed to remain available. An immutable snapshot also survives in-place item repair without relying on an unreliable general update timestamp.
+- **Evidence class:** Current AI Brain schema/capture/export audit, official consumer source documentation, and S11 mapping/privacy cases.
+
+## D-024 — Never blindly retry an ambiguous copied-text create
+
+- **Date:** 2026-07-21
+- **Decision:** Coalesce by target/item/content/mapper version and put an opaque HMAC marker in the source title. After any potentially delivered failed response, reconcile by exact marker: adopt one match, stop in conflict on multiple, and remain unresolved on an inconclusive zero. Retry only when non-delivery is confirmed.
+- **Reason:** Consumer NotebookLM exposes no copied-text idempotency key or documented conclusive visibility horizon. Exactly-once cannot be guaranteed, but AI Brain can prevent automatic duplicate amplification and represent uncertainty honestly.
+- **Evidence class:** `notebooklm-py` idempotency contract plus S11 accepted-response-lost, zero-match, and multiple-match cases.
+
+## D-025 — Retain target privacy, capacity, retention, and cleanup as rollout gates
+
+- **Date:** 2026-07-21
+- **Decision:** A one-source synthetic feasibility spike does not authorize real-content rollout. Any later product proposal must add an immutable target-binding version; expected-account and sharing-posture checks; safe target disclosure; plan-aware source occupancy/headroom; explicit payload bounds; durable concurrent-click uniqueness; bounded frozen-snapshot retention; cancellation; and recorded-ID cleanup states. Unknown sharing posture blocks non-synthetic content.
+- **Reason:** Explicit clicking removes scheduling and aggregation but still creates a provider source per content version and another local content copy while work is unresolved. A correct write to a shared/wrong target is still a privacy incident.
+- **Evidence class:** Independent final audit, existing capacity/security evidence, and revised S11 limitations.
