@@ -1,0 +1,175 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://brain.arunp.in/schemas/youtube-local-enrichment-output-v1.json",
+  "title": "Local transcript enrichment output",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "item_id",
+    "input_sha256",
+    "language_tag",
+    "transcript_status",
+    "summary",
+    "material_claims",
+    "chapters",
+    "key_points",
+    "concepts",
+    "action_items",
+    "search_terms",
+    "user_tags",
+    "ai_categories",
+    "limitations"
+  ],
+  "properties": {
+    "schema_version": { "type": "string", "const": "1.0" },
+    "item_id": { "type": "string", "pattern": "^YT-[0-9]{2}$" },
+    "input_sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+    "language_tag": { "type": "string", "pattern": "^[A-Za-z]{2,3}(-[A-Za-z0-9]{2,8})*$" },
+    "transcript_status": { "type": "string", "enum": ["complete", "partial"] },
+    "summary": { "type": "string", "minLength": 1, "maxLength": 2400 },
+    "material_claims": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 12,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "claim_id",
+          "claim",
+          "evidence_segment_ids",
+          "evidence_start_ms",
+          "evidence_end_ms"
+        ],
+        "properties": {
+          "claim_id": { "type": "string", "pattern": "^C[0-9]{3}$" },
+          "claim": { "type": "string", "minLength": 1, "maxLength": 600 },
+          "evidence_segment_ids": {
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 8,
+            "items": { "type": "string", "pattern": "^YT-[0-9]{2}:S[0-9]{6}$" }
+          },
+          "evidence_start_ms": { "type": "integer", "minimum": 0 },
+          "evidence_end_ms": { "type": "integer", "minimum": 1 }
+        }
+      }
+    },
+    "chapters": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 24,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "chapter_id",
+          "title",
+          "summary",
+          "start_segment_id",
+          "end_segment_id",
+          "start_ms",
+          "end_ms"
+        ],
+        "properties": {
+          "chapter_id": { "type": "string", "pattern": "^H[0-9]{3}$" },
+          "title": { "type": "string", "minLength": 1, "maxLength": 160 },
+          "summary": { "type": "string", "minLength": 1, "maxLength": 700 },
+          "start_segment_id": { "type": "string", "pattern": "^YT-[0-9]{2}:S[0-9]{6}$" },
+          "end_segment_id": { "type": "string", "pattern": "^YT-[0-9]{2}:S[0-9]{6}$" },
+          "start_ms": { "type": "integer", "minimum": 0 },
+          "end_ms": { "type": "integer", "minimum": 1 }
+        }
+      }
+    },
+    "key_points": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 24,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "key_point_id",
+          "point",
+          "evidence_segment_ids",
+          "evidence_start_ms",
+          "evidence_end_ms"
+        ],
+        "properties": {
+          "key_point_id": { "type": "string", "pattern": "^K[0-9]{3}$" },
+          "point": { "type": "string", "minLength": 1, "maxLength": 600 },
+          "evidence_segment_ids": {
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 8,
+            "items": { "type": "string", "pattern": "^YT-[0-9]{2}:S[0-9]{6}$" }
+          },
+          "evidence_start_ms": { "type": "integer", "minimum": 0 },
+          "evidence_end_ms": { "type": "integer", "minimum": 1 }
+        }
+      }
+    },
+    "concepts": {
+      "type": "array",
+      "maxItems": 20,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["concept_id", "label", "explanation", "evidence_segment_ids"],
+        "properties": {
+          "concept_id": { "type": "string", "pattern": "^N[0-9]{3}$" },
+          "label": { "type": "string", "minLength": 1, "maxLength": 120 },
+          "explanation": { "type": "string", "minLength": 1, "maxLength": 500 },
+          "evidence_segment_ids": {
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 8,
+            "items": { "type": "string", "pattern": "^YT-[0-9]{2}:S[0-9]{6}$" }
+          }
+        }
+      }
+    },
+    "action_items": {
+      "type": "array",
+      "maxItems": 12,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["action_id", "action", "basis", "evidence_segment_ids"],
+        "properties": {
+          "action_id": { "type": "string", "pattern": "^A[0-9]{3}$" },
+          "action": { "type": "string", "minLength": 1, "maxLength": 500 },
+          "basis": { "type": "string", "const": "explicit_source_action" },
+          "evidence_segment_ids": {
+            "type": "array",
+            "maxItems": 8,
+            "items": { "type": "string", "pattern": "^YT-[0-9]{2}:S[0-9]{6}$" }
+          }
+        }
+      }
+    },
+    "search_terms": {
+      "type": "array",
+      "maxItems": 24,
+      "items": { "type": "string", "minLength": 1, "maxLength": 100 }
+    },
+    "user_tags": {
+      "type": "array",
+      "maxItems": 12,
+      "items": { "type": "string", "minLength": 1, "maxLength": 80 }
+    },
+    "ai_categories": {
+      "type": "array",
+      "maxItems": 8,
+      "items": { "type": "string", "minLength": 1, "maxLength": 80 }
+    },
+    "limitations": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 8,
+      "items": { "type": "string", "minLength": 1, "maxLength": 400 }
+    }
+  }
+}

@@ -1,0 +1,411 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://brain.arunp.in/schemas/youtube-local-model-public-run-report-v1.1.json",
+  "title": "Publication-safe local model run report",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "harness_version",
+    "execution_class",
+    "publication_eligible",
+    "run_id",
+    "run_state",
+    "item_id",
+    "candidate_id",
+    "started_at",
+    "completed_at",
+    "input",
+    "gate_3_handoff",
+    "runtime",
+    "attempts",
+    "validation",
+    "cost",
+    "privacy",
+    "retention",
+    "failure",
+    "claims_boundary"
+  ],
+  "properties": {
+    "schema_version": { "const": "1.1" },
+    "harness_version": { "const": "1.2.0" },
+    "execution_class": { "enum": ["SEALED", "DEV_TEST"] },
+    "publication_eligible": { "type": "boolean" },
+    "run_id": { "type": "string", "pattern": "^YT-[0-9]{2}-[0-9]{8}T[0-9]{6}Z-[0-9a-f]{12}$" },
+    "run_state": { "enum": ["succeeded", "failed"] },
+    "item_id": { "type": "string", "pattern": "^YT-[0-9]{2}$" },
+    "candidate_id": { "const": "LOCAL-QWEN3-8B-Q4_K_M-LLAMA_CPP-B9637" },
+    "started_at": { "type": "string", "format": "date-time" },
+    "completed_at": { "type": "string", "format": "date-time" },
+    "input": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "normalized_transcript_sha256",
+        "source_raw_sha256",
+        "segment_count",
+        "text_character_count",
+        "duration_ms",
+        "language_tag",
+        "transcript_status",
+        "chunk_count"
+      ],
+      "properties": {
+        "normalized_transcript_sha256": { "$ref": "#/$defs/sha256" },
+        "source_raw_sha256": { "$ref": "#/$defs/sha256" },
+        "segment_count": { "type": "integer", "minimum": 1 },
+        "text_character_count": { "type": "integer", "minimum": 1 },
+        "duration_ms": { "type": "integer", "minimum": 1 },
+        "language_tag": { "type": "string", "minLength": 2 },
+        "transcript_status": { "enum": ["complete", "partial"] },
+        "chunk_count": { "type": "integer", "minimum": 1 }
+      }
+    },
+    "gate_3_handoff": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "result_document_sha256",
+        "content_commit",
+        "seal_commit",
+        "git_bound",
+        "model_input_normalized_output_file_sha256",
+        "canonical_normalized_output_sha256",
+        "token_preservation_rate",
+        "timestamp_anchor_match_rate"
+      ],
+      "properties": {
+        "result_document_sha256": { "$ref": "#/$defs/sha256" },
+        "content_commit": { "$ref": "#/$defs/gitSha" },
+        "seal_commit": { "$ref": "#/$defs/gitSha" },
+        "git_bound": { "type": "boolean" },
+        "model_input_normalized_output_file_sha256": { "$ref": "#/$defs/sha256" },
+        "canonical_normalized_output_sha256": { "$ref": "#/$defs/sha256" },
+        "token_preservation_rate": { "type": "number", "minimum": 0.95, "maximum": 1 },
+        "timestamp_anchor_match_rate": { "type": "number", "minimum": 0.9, "maximum": 1 }
+      }
+    },
+    "runtime": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "ledger_sha256",
+        "llama_cli_sha256",
+        "model_sha256",
+        "system_prompt_sha256",
+        "format_repair_prompt_sha256",
+        "output_schema_sha256",
+        "key_point_rubric_sha256",
+        "sandbox_profile_sha256",
+        "sampling",
+        "network_boundary",
+        "post_execution_input_reverification"
+      ],
+      "properties": {
+        "ledger_sha256": { "$ref": "#/$defs/sha256" },
+        "llama_cli_sha256": { "$ref": "#/$defs/sha256" },
+        "model_sha256": { "$ref": "#/$defs/sha256" },
+        "system_prompt_sha256": { "$ref": "#/$defs/sha256" },
+        "format_repair_prompt_sha256": { "$ref": "#/$defs/sha256" },
+        "output_schema_sha256": { "$ref": "#/$defs/sha256" },
+        "key_point_rubric_sha256": { "$ref": "#/$defs/sha256" },
+        "sandbox_profile_sha256": { "$ref": "#/$defs/sha256" },
+        "sampling": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "temperature",
+            "seed",
+            "top_k",
+            "top_p",
+            "min_p",
+            "repeat_penalty",
+            "context_size",
+            "max_output_tokens",
+            "reasoning"
+          ],
+          "properties": {
+            "temperature": { "const": 0 },
+            "seed": { "const": 424242 },
+            "top_k": { "const": 1 },
+            "top_p": { "const": 1 },
+            "min_p": { "const": 0 },
+            "repeat_penalty": { "const": 1 },
+            "context_size": { "const": 16384 },
+            "max_output_tokens": { "const": 4096 },
+            "reasoning": { "const": "disabled" }
+          }
+        },
+        "network_boundary": { "const": "sandbox_exec_deny_network_and_user_home_except_bound_inputs_plus_llama_offline" },
+        "post_execution_input_reverification": { "type": "boolean" }
+      }
+    },
+    "attempts": {
+      "type": "array",
+      "minItems": 0,
+      "maxItems": 2,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "attempt",
+          "kind",
+          "started_at",
+          "completed_at",
+          "duration_ms",
+          "prompt_sha256",
+          "exit_code",
+          "signal",
+          "timed_out",
+          "maximum_resident_set_size_bytes",
+          "peak_memory_footprint_bytes",
+          "stdout_bytes",
+          "stdout_retained_bytes",
+          "stdout_sha256",
+          "stderr_bytes",
+          "stderr_retained_bytes",
+          "stderr_sha256",
+          "parse_valid",
+          "shape_valid",
+          "semantic_reference_valid",
+          "error_codes"
+        ],
+        "properties": {
+          "attempt": { "type": "integer", "minimum": 1, "maximum": 2 },
+          "kind": { "enum": ["initial", "sealed_format_only_retry"] },
+          "started_at": { "type": "string", "format": "date-time" },
+          "completed_at": { "type": "string", "format": "date-time" },
+          "duration_ms": { "type": "integer", "minimum": 0 },
+          "prompt_sha256": { "$ref": "#/$defs/sha256" },
+          "exit_code": { "type": ["integer", "null"] },
+          "signal": { "type": ["string", "null"] },
+          "timed_out": { "type": "boolean" },
+          "maximum_resident_set_size_bytes": { "type": ["integer", "null"], "minimum": 0 },
+          "peak_memory_footprint_bytes": { "type": ["integer", "null"], "minimum": 0 },
+          "stdout_bytes": { "type": "integer", "minimum": 0 },
+          "stdout_retained_bytes": { "type": "integer", "minimum": 0, "maximum": 4194304 },
+          "stdout_sha256": { "$ref": "#/$defs/sha256" },
+          "stderr_bytes": { "type": "integer", "minimum": 0 },
+          "stderr_retained_bytes": { "type": "integer", "minimum": 0, "maximum": 4194304 },
+          "stderr_sha256": { "$ref": "#/$defs/sha256" },
+          "parse_valid": { "type": "boolean" },
+          "shape_valid": { "type": "boolean" },
+          "semantic_reference_valid": { "type": "boolean" },
+          "error_codes": {
+            "type": "array",
+            "uniqueItems": true,
+            "items": { "type": "string", "pattern": "^[A-Z0-9_]+$" }
+          }
+        }
+      }
+    },
+    "validation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "output_sha256",
+        "schema_valid",
+        "semantic_reference_valid",
+        "material_claim_count",
+        "citation_count",
+        "invalid_reference_count",
+        "unsafe_markup_count",
+        "prompt_identity_stable",
+        "resource_measurement_complete"
+      ],
+      "properties": {
+        "output_sha256": {
+          "anyOf": [{ "$ref": "#/$defs/sha256" }, { "type": "null" }]
+        },
+        "schema_valid": { "type": "boolean" },
+        "semantic_reference_valid": { "type": "boolean" },
+        "material_claim_count": { "type": "integer", "minimum": 0 },
+        "citation_count": { "type": "integer", "minimum": 0 },
+        "invalid_reference_count": { "type": "integer", "minimum": 0 },
+        "unsafe_markup_count": { "type": "integer", "minimum": 0 },
+        "prompt_identity_stable": { "type": "boolean" },
+        "resource_measurement_complete": { "type": "boolean" }
+      }
+    },
+    "cost": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["incremental_external_service_usd", "paid_requests", "provider_requests", "measurement_scope"],
+      "properties": {
+        "incremental_external_service_usd": { "const": 0 },
+        "paid_requests": { "const": 0 },
+        "provider_requests": { "const": 0 },
+        "measurement_scope": { "const": "local_wall_clock_only_energy_not_metered" }
+      }
+    },
+    "privacy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "execution_location",
+        "network_denied",
+        "external_transcript_transfer",
+        "server_started",
+        "remote_model_resolution",
+        "raw_text_in_public_report",
+        "public_logs_content_free",
+        "filesystem_boundary"
+      ],
+      "properties": {
+        "execution_location": { "const": "local_process" },
+        "network_denied": { "const": true },
+        "external_transcript_transfer": { "const": false },
+        "server_started": { "const": false },
+        "remote_model_resolution": { "const": false },
+        "raw_text_in_public_report": { "const": false },
+        "public_logs_content_free": { "const": true },
+        "filesystem_boundary": { "const": "user_home_denied_except_runtime_model_schema_system_prompt_prompt_and_private_run_directory" }
+      }
+    },
+    "retention": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "private_output_delete_by",
+        "private_prompt_deleted_after_run",
+        "raw_output_private_only",
+        "normalized_transcript_copied",
+        "public_report_retention"
+      ],
+      "properties": {
+        "private_output_delete_by": { "const": "2026-10-14" },
+        "private_prompt_deleted_after_run": { "type": "boolean" },
+        "raw_output_private_only": { "const": true },
+        "normalized_transcript_copied": { "const": false },
+        "public_report_retention": { "const": "repository_permanent_hashes_and_metrics_only" }
+      }
+    },
+    "failure": {
+      "type": ["object", "null"],
+      "additionalProperties": false,
+      "required": ["code", "stage", "recoverable", "truthful_user_state", "retry_consumed", "detail"],
+      "properties": {
+        "code": { "type": "string", "pattern": "^[A-Z0-9_]+$" },
+        "stage": { "enum": ["preflight", "execution", "parse", "shape_validation", "semantic_validation", "retention_cleanup"] },
+        "recoverable": { "type": "boolean" },
+        "truthful_user_state": { "const": "enrichment_unavailable_transcript_preserved" },
+        "retry_consumed": { "type": "boolean" },
+        "detail": { "type": "string", "minLength": 1, "maxLength": 500 }
+      }
+    },
+    "claims_boundary": {
+      "type": "array",
+      "minItems": 4,
+      "uniqueItems": true,
+      "items": {
+        "enum": [
+          "local_candidate_only",
+          "ai_evaluated_pending_human_review",
+          "not_production_readiness",
+          "no_energy_cost_measurement",
+          "no_external_provider_comparison"
+        ]
+      }
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "type": "object",
+        "properties": { "execution_class": { "const": "SEALED" } },
+        "required": ["execution_class"]
+      },
+      "then": {
+        "type": "object",
+        "properties": {
+          "publication_eligible": { "const": true },
+          "gate_3_handoff": {
+            "type": "object",
+            "properties": { "git_bound": { "const": true } }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "type": "object",
+        "properties": { "execution_class": { "const": "DEV_TEST" } },
+        "required": ["execution_class"]
+      },
+      "then": {
+        "type": "object",
+        "properties": {
+          "publication_eligible": { "const": false },
+          "gate_3_handoff": {
+            "type": "object",
+            "properties": { "git_bound": { "const": false } }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "type": "object",
+        "properties": { "run_state": { "const": "succeeded" } },
+        "required": ["run_state"]
+      },
+      "then": {
+        "type": "object",
+        "properties": {
+          "failure": { "type": "null" },
+          "attempts": {
+            "type": "array",
+            "minItems": 1,
+            "contains": {
+              "type": "object",
+              "properties": { "semantic_reference_valid": { "const": true } },
+              "required": ["semantic_reference_valid"]
+            },
+            "minContains": 1
+          },
+          "runtime": {
+            "type": "object",
+            "properties": { "post_execution_input_reverification": { "const": true } }
+          },
+          "validation": {
+            "type": "object",
+            "properties": {
+              "output_sha256": { "$ref": "#/$defs/sha256" },
+              "schema_valid": { "const": true },
+              "semantic_reference_valid": { "const": true },
+              "invalid_reference_count": { "const": 0 },
+              "unsafe_markup_count": { "const": 0 },
+              "prompt_identity_stable": { "const": true },
+              "resource_measurement_complete": { "const": true }
+            }
+          },
+          "retention": {
+            "type": "object",
+            "properties": { "private_prompt_deleted_after_run": { "const": true } }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "type": "object",
+        "properties": { "run_state": { "const": "failed" } },
+        "required": ["run_state"]
+      },
+      "then": {
+        "type": "object",
+        "properties": {
+          "failure": { "type": "object" },
+          "validation": {
+            "type": "object",
+            "properties": { "output_sha256": { "type": "null" } }
+          }
+        }
+      }
+    }
+  ],
+  "$defs": {
+    "sha256": { "type": "string", "pattern": "^(?!0{64}$)[0-9a-f]{64}$" },
+    "gitSha": { "type": "string", "pattern": "^(?!0{40}$)[0-9a-f]{40}$" }
+  }
+}

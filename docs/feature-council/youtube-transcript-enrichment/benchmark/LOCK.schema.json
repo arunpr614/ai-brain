@@ -1,0 +1,148 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://brain.arunp.in/schemas/youtube-benchmark-lock-v1.4.json",
+  "title": "YouTube transcript and enrichment benchmark two-commit seal",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "protocol_version",
+    "content_commit",
+    "seal_created_at",
+    "frozen_files",
+    "corpus",
+    "denominators",
+    "gate_states",
+    "runtime",
+    "limits"
+  ],
+  "properties": {
+    "schema_version": { "const": "1.4" },
+    "protocol_version": { "const": "2.4" },
+    "content_commit": { "type": "string", "pattern": "^[0-9a-f]{40}$" },
+    "seal_created_at": { "type": "string", "format": "date-time" },
+    "frozen_files": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["path", "sha256"],
+        "properties": {
+          "path": { "type": "string", "minLength": 1 },
+          "sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" }
+        }
+      }
+    },
+    "corpus": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "rights_screened_real_items",
+        "real_unavailable_private_controls",
+        "source_sidecar_records",
+        "a1_preservation_reference_items",
+        "safe_rejection_records",
+        "independent_speech_reference_items"
+      ],
+      "properties": {
+        "rights_screened_real_items": { "const": 10 },
+        "real_unavailable_private_controls": { "const": 0 },
+        "source_sidecar_records": { "const": 9 },
+        "a1_preservation_reference_items": { "const": 5 },
+        "safe_rejection_records": { "const": 4 },
+        "independent_speech_reference_items": { "const": 0 }
+      }
+    },
+    "denominators": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "a1_primary_positive_cells",
+        "a1_expected_safe_rejection_cells",
+        "a2_primary_cells",
+        "a3_primary_positive_cells",
+        "a3_expected_safe_rejection_cells",
+        "rights_screened_real_items"
+      ],
+      "properties": {
+        "a1_primary_positive_cells": { "const": 5 },
+        "a1_expected_safe_rejection_cells": { "const": 4 },
+        "a2_primary_cells": { "const": 0 },
+        "a3_primary_positive_cells": { "const": 0 },
+        "a3_expected_safe_rejection_cells": { "const": 0 },
+        "rights_screened_real_items": { "const": 10 }
+      }
+    },
+    "gate_states": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["gate_1", "gate_2", "gate_3", "gate_4", "gate_5", "gate_6"],
+      "properties": {
+        "gate_1": { "const": "eligible" },
+        "gate_2": { "const": "not_triggered" },
+        "gate_3": { "const": "eligible_conditional" },
+        "gate_4": { "const": "eligible_conditional" },
+        "gate_5": { "const": "not_triggered" },
+        "gate_6": { "const": "eligible" }
+      }
+    },
+    "runtime": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "node_version",
+        "v8_version",
+        "unicode_version",
+        "icu_version",
+        "tsx_version",
+        "platform",
+        "arch"
+      ],
+      "properties": {
+        "node_version": { "type": "string", "minLength": 1 },
+        "v8_version": { "type": "string", "minLength": 1 },
+        "unicode_version": { "type": "string", "minLength": 1 },
+        "icu_version": { "type": "string", "minLength": 1 },
+        "tsx_version": { "type": "string", "minLength": 1 },
+        "platform": { "type": "string", "minLength": 1 },
+        "arch": { "type": "string", "minLength": 1 }
+      }
+    },
+    "limits": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "max_videos",
+        "max_acquisition_methods",
+        "max_stt_methods",
+        "max_models",
+        "max_visual_methods",
+        "max_recovery_attempts",
+        "max_recovery_minutes",
+        "max_spend_usd",
+        "max_new_subscriptions",
+        "max_a1_input_bytes",
+        "max_a1_text_chars",
+        "max_a1_cues",
+        "max_duration_ms"
+      ],
+      "properties": {
+        "max_videos": { "const": 12 },
+        "max_acquisition_methods": { "const": 3 },
+        "max_stt_methods": { "const": 2 },
+        "max_models": { "const": 4 },
+        "max_visual_methods": { "const": 1 },
+        "max_recovery_attempts": { "const": 2 },
+        "max_recovery_minutes": { "const": 60 },
+        "max_spend_usd": { "const": 0 },
+        "max_new_subscriptions": { "const": 0 },
+        "max_a1_input_bytes": { "const": 2000000 },
+        "max_a1_text_chars": { "const": 500000 },
+        "max_a1_cues": { "const": 7200 },
+        "max_duration_ms": { "const": 21600000 }
+      }
+    }
+  }
+}

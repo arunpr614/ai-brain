@@ -1,0 +1,147 @@
+{
+  "schema_version": "1.1",
+  "contract_id": "G4-LOCAL-QWEN-BLINDED-EVALUATION-1.0",
+  "workflow": {
+    "platform": "local_llama_cpp",
+    "role_kind": "pinned_local_ai_model",
+    "evaluator_roles": [
+      "evaluator_a",
+      "evaluator_b"
+    ],
+    "adjudicator_role": "adjudicator",
+    "fresh_process_per_role": true,
+    "separate_locked_prompt_per_role": true,
+    "separate_seed_per_role": true,
+    "separate_blinding_per_role": true,
+    "candidate_identity_hidden_from_roles": true,
+    "candidate_runtime_hidden_from_roles": true,
+    "candidate_price_latency_hidden_from_roles": true,
+    "other_evaluator_result_hidden_until_adjudication": true,
+    "same_model_family_as_candidate": true,
+    "same_model_evaluator_bias": "disclosed_material_reproducibility_limitation",
+    "independent_human_evaluation_claim": "not_asserted"
+  },
+  "pinned_runtime": {
+    "runtime_ledger_path": "docs/feature-council/youtube-transcript-enrichment/benchmark/model/LOCAL_MODEL_RUNTIME_LEDGER.json",
+    "candidate_id": "LOCAL-QWEN3-8B-Q4_K_M-LLAMA_CPP-B9637",
+    "runtime_project": "ggml-org/llama.cpp",
+    "runtime_release_tag": "b9637",
+    "runtime_commit": "aedb2a5e9ca3d4064148bbb919e0ddc0c1b70ab3",
+    "llama_cli_sha256": "b8c1891d697f72c1e9c05d0613b4f3d091e388acc2c4e1afa535c19df5d50fc3",
+    "model_repository": "Qwen/Qwen3-8B-GGUF",
+    "model_revision": "6a569868d07d3bd59e8b97fb001bf8c0b254bb20",
+    "model_filename": "Qwen3-8B-Q4_K_M.gguf",
+    "model_sha256": "d98cdcbd03e17ce47681435b5150e34c1417f50b5c0019dd560e4882c5745785",
+    "sandbox_profile_path": "docs/feature-council/youtube-transcript-enrichment/spikes/model-harness/deny-network.sb",
+    "sandbox_profile_sha256": "28fbf7e712236b6f3baa33f1d85f3312f5ef0d8096b3e5b6c2229d08120811c0"
+  },
+  "role_invocations": [
+    {
+      "role": "evaluator_a",
+      "seed": 424243,
+      "system_prompt_path": "docs/feature-council/youtube-transcript-enrichment/benchmark/model/EVALUATOR_A_SYSTEM_PROMPT.txt",
+      "system_prompt_sha256": "db09d88dee6a6d26546e300b1bd044261db0279cefb4f4cbbf37916378f74fad",
+      "output_generation_schema_path": "docs/feature-council/youtube-transcript-enrichment/benchmark/model/BLINDED_EVALUATION_GENERATION.schema.json",
+      "output_generation_schema_sha256": "6a81f8df59a2795ac7b4450a247996e5c322b35fdd97c90cbe57c8e1f10da0f3",
+      "strict_postparse_schema_path": "docs/feature-council/youtube-transcript-enrichment/benchmark/model/BLINDED_EVALUATION.schema.json",
+      "strict_postparse_schema_sha256": "114d266956a663d4ac849591c4bae6e0baaa465596e28f765712e3192407a0e2"
+    },
+    {
+      "role": "evaluator_b",
+      "seed": 424244,
+      "system_prompt_path": "docs/feature-council/youtube-transcript-enrichment/benchmark/model/EVALUATOR_B_SYSTEM_PROMPT.txt",
+      "system_prompt_sha256": "c30d7e6ec3e1bbdf305afb714ee5818ce904c2ab17ef3731b6eae5160259710b",
+      "output_generation_schema_path": "docs/feature-council/youtube-transcript-enrichment/benchmark/model/BLINDED_EVALUATION_GENERATION.schema.json",
+      "output_generation_schema_sha256": "6a81f8df59a2795ac7b4450a247996e5c322b35fdd97c90cbe57c8e1f10da0f3",
+      "strict_postparse_schema_path": "docs/feature-council/youtube-transcript-enrichment/benchmark/model/BLINDED_EVALUATION.schema.json",
+      "strict_postparse_schema_sha256": "114d266956a663d4ac849591c4bae6e0baaa465596e28f765712e3192407a0e2"
+    },
+    {
+      "role": "adjudicator",
+      "seed": 424245,
+      "system_prompt_path": "docs/feature-council/youtube-transcript-enrichment/benchmark/model/ADJUDICATOR_SYSTEM_PROMPT.txt",
+      "system_prompt_sha256": "1118a1683b3f8b2c5d253f2aa0b8e0db02df6601136f2fbbf106fea8998a5ad9",
+      "output_generation_schema_path": "docs/feature-council/youtube-transcript-enrichment/benchmark/model/BLINDED_ADJUDICATION_GENERATION.schema.json",
+      "output_generation_schema_sha256": "f0eaa99b6f689a48242b52465334a87f17a7f582d12cabbc7fcfb77ccc800396",
+      "strict_postparse_schema_path": "docs/feature-council/youtube-transcript-enrichment/benchmark/model/BLINDED_ADJUDICATION.schema.json",
+      "strict_postparse_schema_sha256": "470e1e606da562b6bae9771038d77b20758aa3bb3e6ee99324d628179f2f78e4"
+    }
+  ],
+  "inference_settings": {
+    "interface": "llama-cli_files_only",
+    "offline": true,
+    "server_mode": "prohibited",
+    "remote_model_resolution": "prohibited",
+    "temperature": 0,
+    "top_k": 1,
+    "top_p": 1,
+    "min_p": 0,
+    "repeat_penalty": 1,
+    "context_size": 16384,
+    "max_output_tokens": 4096,
+    "threads": 8,
+    "threads_batch": 8,
+    "gpu_layers": "all",
+    "reasoning": "disabled",
+    "attempt_limit_per_role": 1,
+    "semantic_or_format_retry": "prohibited",
+    "timeout_ms_per_role": 1800000
+  },
+  "inference_accounting": {
+    "candidate_initial_invocations": 5,
+    "candidate_format_only_retries_maximum": 5,
+    "candidate_invocations_maximum": 10,
+    "blinded_evaluator_invocations": 2,
+    "adjudicator_invocations_maximum": 1,
+    "total_local_inference_invocations_maximum": 13,
+    "model_roster_count": 1,
+    "external_provider_calls": 0
+  },
+  "execution_boundary": {
+    "local_private_machine_only": true,
+    "packet_only_file_binding": true,
+    "deny_network_sandbox_required": true,
+    "tools_available_to_model": false,
+    "network_available_to_model": false,
+    "evaluator_initiated_provider_calls": 0,
+    "external_api_calls": 0,
+    "external_content_transfer": false,
+    "complete_transcript_in_packet": false,
+    "private_paths_in_packet": false,
+    "credentials_in_packet": false,
+    "incremental_spend_usd": 0,
+    "fail_closed_if_runtime_model_prompt_sandbox_consent_or_posture_unavailable": true
+  },
+  "transfer_boundary": {
+    "content": "generated_enrichment_public_rubric_and_bounded_cited_excerpts_only",
+    "maximum_excerpts_per_item": 12,
+    "maximum_words_per_excerpt": 40,
+    "maximum_total_excerpt_words_per_item": 240,
+    "maximum_unique_transcript_word_position_fraction": 0.35,
+    "complete_or_reconstructable_transcript_prohibited": true,
+    "additional_content_for_adjudication_prohibited": true
+  },
+  "data_posture": {
+    "external_provider": "none",
+    "external_retention": "not_applicable_no_external_transfer",
+    "external_training": "not_applicable_no_external_transfer",
+    "zero_data_retention": "not_claimed_not_applicable_local_execution",
+    "local_training": "prohibited_and_not_performed",
+    "private_packet_and_result_retention": "delete_with_private_benchmark_packet_by_2026-10-14",
+    "publication": "hashes_counts_rates_and_provisional_decisions_only",
+    "incremental_subscription_or_usage_purchase": "prohibited"
+  },
+  "consent": {
+    "basis": "affirmative_user_authorization_of_local_multi_agent_evaluation_workflow",
+    "execution_time_private_consent_attestation_required": true,
+    "consent_attestation_must_predate_packet_generation": true,
+    "fail_closed_if_absent_or_withdrawn": true
+  },
+  "claims_boundary": "ai_evaluated_provisional_pending_human_stakeholder_review",
+  "visual_boundary": {
+    "visual_method_sealed": false,
+    "rights_authorized_visual_media_set_present": false,
+    "visual_processing_authorized": false,
+    "triggered_state": "triggered_but_blocked"
+  }
+}

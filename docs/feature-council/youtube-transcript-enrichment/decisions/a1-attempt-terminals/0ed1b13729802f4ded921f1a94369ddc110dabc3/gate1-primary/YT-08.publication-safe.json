@@ -1,0 +1,38 @@
+{
+  "schema_version": "1.0",
+  "operator_version": "1.1.0",
+  "seal": {
+    "content_commit": "6b829798101a59fadd9a1d0efd65428539f400ad",
+    "seal_commit": "0ed1b13729802f4ded921f1a94369ddc110dabc3",
+    "lock_sha256": "bef4437a05ac20418a49f3c06a99a1f74ad93c9395dcc780d1c0307aa354b8c3"
+  },
+  "cell": {
+    "stage": "gate1-primary",
+    "item_id": "YT-08",
+    "expected_outcome": "eligible_pass"
+  },
+  "execution_boundary": "sealed_default_dependencies",
+  "publication_eligible": true,
+  "attempt_claim_sha256": "c84e20ef0ec2087522ec0db11b7d62ba2ac3c8eb9ad02c3047fedb7aebb08b5e",
+  "terminal": {
+    "state": "failed",
+    "error_code": "A1_OPERATOR_ORACLE_FAILED",
+    "harness": {
+      "exit_code": 1,
+      "signal": null,
+      "timed_out": false,
+      "stdout_sha256": "ccab871af1997aaacc8aa18dc1cb2e883a2b3026650cd575c7ec6a472ae48393",
+      "stdout_byte_count": 304,
+      "stdout_truncated": false,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_byte_count": 0,
+      "stderr_truncated": false
+    },
+    "scorer": null
+  },
+  "outcomes": {
+    "rerun_permitted": false,
+    "raw_child_content_published": false,
+    "claim_without_terminal_after_hard_termination": "aborted_no_pass"
+  }
+}

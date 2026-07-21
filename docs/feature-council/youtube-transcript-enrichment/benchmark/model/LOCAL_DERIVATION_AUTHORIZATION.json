@@ -1,0 +1,207 @@
+{
+  "schema_version": "1.0",
+  "prepared_at": "2026-07-18T00:00:00Z",
+  "authorization_scope": {
+    "state": "provisional_local_benchmark_only_review_required",
+    "local_full_transcript_inference": "allowed_in_deny_network_sandbox",
+    "external_full_transcript_upload": "prohibited",
+    "evaluator_excerpt_transfer": "allowed_with_per_item_limits_and_blinding",
+    "publication": "hashes_metrics_and_public_safe_rubric_only",
+    "training": "prohibited",
+    "embeddings": "not_created",
+    "media_processing": "prohibited"
+  },
+  "review_boundary": {
+    "legal_approval": false,
+    "production_approval": false,
+    "independent_prelock_review_required": true,
+    "human_stakeholder_review_required": true
+  },
+  "items": [
+    {
+      "item_id": "YT-01",
+      "attestation_path": "docs/feature-council/youtube-transcript-enrichment/benchmark/attestations/YT-01.json",
+      "attestation_sha256": "35a1eaa09f29953e6dd44bae209c8af557fdded5ddd9ed49324d6b3c73c62432",
+      "source_raw_sha256": "f8b2dbe1c9ec0521f1589453c2399c558241ba5a6b351f7f7b7fa691f0d14c1b",
+      "official_source_page_url": "https://svs.gsfc.nasa.gov/14743/",
+      "rights_evidence_url": "https://www.nasa.gov/nasa-brand-center/images-and-media/",
+      "source_owner": "NASA Goddard Space Flight Center",
+      "authorized_derivations": [
+        "private_local_enrichment_output",
+        "publication_safe_aggregate_metrics",
+        "publication_safe_hashes",
+        "bounded_blinded_evaluator_excerpts"
+      ],
+      "evaluator_excerpt": {
+        "maximum_excerpts": 12,
+        "maximum_words_per_excerpt": 40,
+        "maximum_total_words": 240,
+        "maximum_unique_transcript_word_fraction": 0.35,
+        "selection": "claim_or_citation_evidence_windows_only",
+        "allowed_recipients": "two_blinded_ai_evaluators_and_threshold_adjudicator_only",
+        "prohibited_content": "complete_or_reconstructable_transcript",
+        "retention": "delete_with_private_benchmark_packet"
+      },
+      "retention": {
+        "private_delete_by": "2026-10-14",
+        "public_artifacts": "hashes_metrics_rubric_and_decision_records_only",
+        "raw_model_output": "private_delete_by_deadline"
+      },
+      "claims_boundary": [
+        "not_legal_approval",
+        "not_production_authorization",
+        "not_training_authorization",
+        "not_full_transcript_external_upload_authorization",
+        "not_youtube_caption_equivalence_proof"
+      ]
+    },
+    {
+      "item_id": "YT-02",
+      "attestation_path": "docs/feature-council/youtube-transcript-enrichment/benchmark/attestations/YT-02.json",
+      "attestation_sha256": "e5f7d74181946977ecd1091e1d995b3c37eacd4475929735ce9c0fb96bbc9b05",
+      "source_raw_sha256": "4341e975b77c42a4e15cf1368336f02f29031b462fd8da52a03209fa45e9689d",
+      "official_source_page_url": "https://svs.gsfc.nasa.gov/13322/",
+      "rights_evidence_url": "https://www.nasa.gov/nasa-brand-center/images-and-media/",
+      "source_owner": "NASA Goddard Space Flight Center",
+      "authorized_derivations": [
+        "private_local_enrichment_output",
+        "publication_safe_aggregate_metrics",
+        "publication_safe_hashes",
+        "bounded_blinded_evaluator_excerpts"
+      ],
+      "evaluator_excerpt": {
+        "maximum_excerpts": 12,
+        "maximum_words_per_excerpt": 40,
+        "maximum_total_words": 240,
+        "maximum_unique_transcript_word_fraction": 0.35,
+        "selection": "claim_or_citation_evidence_windows_only",
+        "allowed_recipients": "two_blinded_ai_evaluators_and_threshold_adjudicator_only",
+        "prohibited_content": "complete_or_reconstructable_transcript",
+        "retention": "delete_with_private_benchmark_packet"
+      },
+      "retention": {
+        "private_delete_by": "2026-10-14",
+        "public_artifacts": "hashes_metrics_rubric_and_decision_records_only",
+        "raw_model_output": "private_delete_by_deadline"
+      },
+      "claims_boundary": [
+        "not_legal_approval",
+        "not_production_authorization",
+        "not_training_authorization",
+        "not_full_transcript_external_upload_authorization",
+        "not_youtube_caption_equivalence_proof"
+      ]
+    },
+    {
+      "item_id": "YT-07",
+      "attestation_path": "docs/feature-council/youtube-transcript-enrichment/benchmark/attestations/YT-07.json",
+      "attestation_sha256": "37207aef5c4db8df36418a9edda922429b9e4e042914fe7d8fca83c1adafa1e9",
+      "source_raw_sha256": "6d8efa75edbbdb6bded8413445903bc5e049833b7f73ed99d5dbf42dc73f44cc",
+      "official_source_page_url": "https://svs.gsfc.nasa.gov/14894/",
+      "rights_evidence_url": "https://svs.gsfc.nasa.gov/14894/",
+      "source_owner": "NASA Goddard Space Flight Center",
+      "authorized_derivations": [
+        "private_local_enrichment_output",
+        "publication_safe_aggregate_metrics",
+        "publication_safe_hashes",
+        "bounded_blinded_evaluator_excerpts"
+      ],
+      "evaluator_excerpt": {
+        "maximum_excerpts": 12,
+        "maximum_words_per_excerpt": 40,
+        "maximum_total_words": 240,
+        "maximum_unique_transcript_word_fraction": 0.35,
+        "selection": "claim_or_citation_evidence_windows_only",
+        "allowed_recipients": "two_blinded_ai_evaluators_and_threshold_adjudicator_only",
+        "prohibited_content": "complete_or_reconstructable_transcript",
+        "retention": "delete_with_private_benchmark_packet"
+      },
+      "retention": {
+        "private_delete_by": "2026-10-14",
+        "public_artifacts": "hashes_metrics_rubric_and_decision_records_only",
+        "raw_model_output": "private_delete_by_deadline"
+      },
+      "claims_boundary": [
+        "not_legal_approval",
+        "not_production_authorization",
+        "not_training_authorization",
+        "not_full_transcript_external_upload_authorization",
+        "not_youtube_caption_equivalence_proof"
+      ]
+    },
+    {
+      "item_id": "YT-08",
+      "attestation_path": "docs/feature-council/youtube-transcript-enrichment/benchmark/attestations/YT-08.json",
+      "attestation_sha256": "f43c4da27e204036a035ecbf8c55a5d8cf6c2a7cece2454a0c5d854c658b8678",
+      "source_raw_sha256": "9bd59a52838db6b8030b3a5fb128f60fd2340f1226e96863d3366ee840fee06f",
+      "official_source_page_url": "https://svs.gsfc.nasa.gov/14893/",
+      "rights_evidence_url": "https://www.nasa.gov/nasa-brand-center/images-and-media/",
+      "source_owner": "NASA Goddard Space Flight Center",
+      "authorized_derivations": [
+        "private_local_enrichment_output",
+        "publication_safe_aggregate_metrics",
+        "publication_safe_hashes",
+        "bounded_blinded_evaluator_excerpts"
+      ],
+      "evaluator_excerpt": {
+        "maximum_excerpts": 12,
+        "maximum_words_per_excerpt": 40,
+        "maximum_total_words": 240,
+        "maximum_unique_transcript_word_fraction": 0.35,
+        "selection": "claim_or_citation_evidence_windows_only",
+        "allowed_recipients": "two_blinded_ai_evaluators_and_threshold_adjudicator_only",
+        "prohibited_content": "complete_or_reconstructable_transcript",
+        "retention": "delete_with_private_benchmark_packet"
+      },
+      "retention": {
+        "private_delete_by": "2026-10-14",
+        "public_artifacts": "hashes_metrics_rubric_and_decision_records_only",
+        "raw_model_output": "private_delete_by_deadline"
+      },
+      "claims_boundary": [
+        "not_legal_approval",
+        "not_production_authorization",
+        "not_training_authorization",
+        "not_full_transcript_external_upload_authorization",
+        "not_youtube_caption_equivalence_proof"
+      ]
+    },
+    {
+      "item_id": "YT-09",
+      "attestation_path": "docs/feature-council/youtube-transcript-enrichment/benchmark/attestations/YT-09.json",
+      "attestation_sha256": "4715cc1e53bb1d8ed0769e4a2a07a4578caae823d223f95d00cc1e47b54998b4",
+      "source_raw_sha256": "b2deffeae00423fad86435395f72bfa18cd143ba4fb1789ca13c93b023c80539",
+      "official_source_page_url": "https://svs.gsfc.nasa.gov/14754/",
+      "rights_evidence_url": "https://www.nasa.gov/nasa-brand-center/images-and-media/",
+      "source_owner": "NASA Goddard Space Flight Center",
+      "authorized_derivations": [
+        "private_local_enrichment_output",
+        "publication_safe_aggregate_metrics",
+        "publication_safe_hashes",
+        "bounded_blinded_evaluator_excerpts"
+      ],
+      "evaluator_excerpt": {
+        "maximum_excerpts": 12,
+        "maximum_words_per_excerpt": 40,
+        "maximum_total_words": 240,
+        "maximum_unique_transcript_word_fraction": 0.35,
+        "selection": "claim_or_citation_evidence_windows_only",
+        "allowed_recipients": "two_blinded_ai_evaluators_and_threshold_adjudicator_only",
+        "prohibited_content": "complete_or_reconstructable_transcript",
+        "retention": "delete_with_private_benchmark_packet"
+      },
+      "retention": {
+        "private_delete_by": "2026-10-14",
+        "public_artifacts": "hashes_metrics_rubric_and_decision_records_only",
+        "raw_model_output": "private_delete_by_deadline"
+      },
+      "claims_boundary": [
+        "not_legal_approval",
+        "not_production_authorization",
+        "not_training_authorization",
+        "not_full_transcript_external_upload_authorization",
+        "not_youtube_caption_equivalence_proof"
+      ]
+    }
+  ]
+}

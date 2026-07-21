@@ -1,0 +1,186 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://brain.arunp.in/schemas/youtube-preseal-readiness-v1.json",
+  "title": "YouTube benchmark Commit-A readiness and authority boundary",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "$schema",
+    "schema_version",
+    "authority",
+    "status",
+    "validated_at",
+    "validation",
+    "independent_review",
+    "prohibitions",
+    "authority_boundary"
+  ],
+  "properties": {
+    "$schema": {
+      "const": "https://brain.arunp.in/schemas/youtube-preseal-readiness-v1.json"
+    },
+    "schema_version": { "const": "1.0" },
+    "authority": { "const": "commit_a_preseal_readiness_and_governance_boundary" },
+    "status": { "enum": ["remediation_in_progress", "ready_for_commit_a"] },
+    "validated_at": {
+      "oneOf": [
+        { "type": "string", "format": "date-time" },
+        { "type": "null" }
+      ]
+    },
+    "validation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "benchmark_tool_tests_passed",
+        "benchmark_tool_tests_total",
+        "a1_harness_tests_passed",
+        "a1_harness_tests_total",
+        "model_harness_tests_passed",
+        "model_harness_tests_total",
+        "targeted_tests_passed",
+        "targeted_tests_total",
+        "typecheck_passed",
+        "targeted_lint_passed",
+        "strict_schema_validation_passed",
+        "markdown_links_passed",
+        "privacy_scan_passed",
+        "git_diff_check_passed"
+      ],
+      "properties": {
+        "benchmark_tool_tests_passed": { "type": "integer", "minimum": 0 },
+        "benchmark_tool_tests_total": { "type": "integer", "minimum": 0 },
+        "a1_harness_tests_passed": { "type": "integer", "minimum": 0 },
+        "a1_harness_tests_total": { "type": "integer", "minimum": 0 },
+        "model_harness_tests_passed": { "type": "integer", "minimum": 0 },
+        "model_harness_tests_total": { "type": "integer", "minimum": 0 },
+        "targeted_tests_passed": { "type": "integer", "minimum": 0 },
+        "targeted_tests_total": { "type": "integer", "minimum": 0 },
+        "typecheck_passed": { "type": "boolean" },
+        "targeted_lint_passed": { "type": "boolean" },
+        "strict_schema_validation_passed": { "type": "boolean" },
+        "markdown_links_passed": { "type": "boolean" },
+        "privacy_scan_passed": { "type": "boolean" },
+        "git_diff_check_passed": { "type": "boolean" }
+      }
+    },
+    "independent_review": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "artifact_path",
+        "same_reviewer_required",
+        "required_closure_marker"
+      ],
+      "properties": {
+        "artifact_path": {
+          "const": "docs/feature-council/youtube-transcript-enrichment/reviews/YOUTUBE_TRANSCRIPT_ENRICHMENT_PROSPECTIVE_BENCHMARK_PRE_LOCK_PACKAGE_ADVERSARIAL_REVIEW_2026-07-18_12-57-42_IST.md"
+        },
+        "same_reviewer_required": { "const": true },
+        "required_closure_marker": { "const": "prelock_review_closure_complete" }
+      }
+    },
+    "prohibitions": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "primary_outputs_present",
+        "lock_present_at_commit_a",
+        "request_counter_scope",
+        "primary_benchmark_external_requests",
+        "primary_benchmark_provider_calls",
+        "model_inference_calls",
+        "incremental_spend_usd"
+      ],
+      "properties": {
+        "primary_outputs_present": { "const": false },
+        "lock_present_at_commit_a": { "const": false },
+        "request_counter_scope": {
+          "const": "gate_1_through_gate_5_primary_execution_only_excludes_public_source_research_artifact_acquisition_and_repository_delivery_metadata"
+        },
+        "primary_benchmark_external_requests": { "const": 0 },
+        "primary_benchmark_provider_calls": { "const": 0 },
+        "model_inference_calls": { "const": 0 },
+        "incremental_spend_usd": { "const": 0 }
+      }
+    },
+    "authority_boundary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "immutable_claim_authorities",
+        "post_seal_mutable_status_documents",
+        "mutable_document_policy",
+        "conflict_rule"
+      ],
+      "properties": {
+        "immutable_claim_authorities": {
+          "const": [
+            "docs/feature-council/youtube-transcript-enrichment/benchmark/BENCHMARK_PROTOCOL.md",
+            "docs/feature-council/youtube-transcript-enrichment/benchmark/RUN_PLAN.md",
+            "docs/feature-council/youtube-transcript-enrichment/benchmark/METHOD_ITEM_MATRIX.json",
+            "docs/feature-council/youtube-transcript-enrichment/benchmark/REFERENCE_LEDGER.json",
+            "docs/feature-council/youtube-transcript-enrichment/benchmark/model/LOCAL_DERIVATION_AUTHORIZATION.json",
+            "docs/feature-council/youtube-transcript-enrichment/benchmark/model/LOCAL_MODEL_RUNTIME_LEDGER.json",
+            "docs/feature-council/youtube-transcript-enrichment/benchmark/model/EVALUATOR_EXECUTION_CONTRACT.json",
+            "docs/feature-council/youtube-transcript-enrichment/benchmark/model/A1_EXECUTION_CONTRACT.json",
+            "docs/feature-council/youtube-transcript-enrichment/benchmark/model/A1_EXECUTION_CONTRACT.schema.json",
+            "docs/feature-council/youtube-transcript-enrichment/benchmark/model/A1_OPERATOR_RECEIPT.schema.json",
+            "docs/feature-council/youtube-transcript-enrichment/benchmark/model/A1_ATTEMPT_CLAIM.schema.json",
+            "docs/feature-council/youtube-transcript-enrichment/benchmark/model/A1_ATTEMPT_TERMINAL.schema.json",
+            "docs/feature-council/youtube-transcript-enrichment/benchmark/PRESEAL_READINESS.json",
+            "docs/feature-council/youtube-transcript-enrichment/benchmark/LOCK.json"
+          ]
+        },
+        "post_seal_mutable_status_documents": {
+          "const": [
+            "RUNNING_LOG.md",
+            "docs/feature-council/youtube-transcript-enrichment/MASTER_EXECUTION_INDEX.md",
+            "docs/feature-council/youtube-transcript-enrichment/TRACKER.md",
+            "docs/feature-council/youtube-transcript-enrichment/DECISION_LOG.md",
+            "docs/feature-council/youtube-transcript-enrichment/spikes/SPIKE_REGISTER.md",
+            "docs/feature-council/youtube-transcript-enrichment/technical/RISK_REGISTER.md"
+          ]
+        },
+        "mutable_document_policy": {
+          "const": "result_status_evidence_links_and_append_only_history_only_no_redefinition_of_frozen_claims"
+        },
+        "conflict_rule": {
+          "const": "verified_lock_and_frozen_machine_authorities_control_over_mutable_governance_status"
+        }
+      }
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": { "status": { "const": "ready_for_commit_a" } },
+        "required": ["status"]
+      },
+      "then": {
+        "properties": {
+          "validated_at": { "type": "string", "format": "date-time" },
+          "validation": {
+            "type": "object",
+            "properties": {
+              "benchmark_tool_tests_passed": { "type": "integer", "minimum": 1 },
+              "benchmark_tool_tests_total": { "type": "integer", "minimum": 1 },
+              "a1_harness_tests_passed": { "type": "integer", "minimum": 1 },
+              "a1_harness_tests_total": { "type": "integer", "minimum": 1 },
+              "model_harness_tests_passed": { "type": "integer", "minimum": 1 },
+              "model_harness_tests_total": { "type": "integer", "minimum": 1 },
+              "targeted_tests_passed": { "type": "integer", "minimum": 1 },
+              "targeted_tests_total": { "type": "integer", "minimum": 1 },
+              "typecheck_passed": { "const": true },
+              "targeted_lint_passed": { "const": true },
+              "strict_schema_validation_passed": { "const": true },
+              "markdown_links_passed": { "const": true },
+              "privacy_scan_passed": { "const": true },
+              "git_diff_check_passed": { "const": true }
+            }
+          }
+        }
+      }
+    }
+  ]
+}

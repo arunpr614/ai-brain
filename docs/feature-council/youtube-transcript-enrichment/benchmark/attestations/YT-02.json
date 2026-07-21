@@ -1,0 +1,58 @@
+{
+  "schema_version": "1.2",
+  "item_id": "YT-02",
+  "youtube_video_id": "aMTwtb3TVIk",
+  "attested_at": "2026-07-16T18:13:23Z",
+  "content_rights": {
+    "state": "provisionally_allowed_for_private_benchmark_review_required",
+    "evidence_url": "https://svs.gsfc.nasa.gov/13322/",
+    "rationale": "NASA/SVS publishes the source item under its public-domain-unless-noted baseline; licensed music is excluded from this transcript-only benchmark.",
+    "review_required": true
+  },
+  "transcript_rights": {
+    "state": "provisionally_allowed_for_private_benchmark_review_required",
+    "evidence_url": "https://svs.gsfc.nasa.gov/13322/",
+    "rationale": "NASA/SVS publishes the exact English VTT as an official same-item caption asset. Private preservation is provisional under the cited terms; legal/policy review remains required.",
+    "review_required": true
+  },
+  "source": {
+    "owner": "NASA Goddard Space Flight Center",
+    "source_page_url": "https://svs.gsfc.nasa.gov/13322/",
+    "sidecar_url": "https://svs.gsfc.nasa.gov/vis/a010000/a013300/a013322/black_hole_safety_video_final_LQ.en_US.vtt",
+    "sidecar_sha256": "4341e975b77c42a4e15cf1368336f02f29031b462fd8da52a03209fa45e9689d",
+    "private_relative_path": "inputs/nasa/YT_BLACK_HOLE_aMTwtb3TVIk.vtt"
+  },
+  "input_contract": {
+    "format": "vtt",
+    "language_tag": "en-US",
+    "declared_duration_ms": 159744,
+    "expected_cue_count": 39,
+    "last_cue_end_ms": 159744,
+    "content_completeness": {
+      "state": "complete",
+      "basis": "explicit_source_assertion",
+      "rationale": "The official source publishes the complete associated transcript and the final cue reaches the source-media duration."
+    },
+    "expected_class": "eligible_supported"
+  },
+  "retention_and_derivation": {
+    "full_text_private": true,
+    "publication": "hashes_and_derived_metrics_only",
+    "embeddings": "not_created",
+    "model_upload": "prohibited_in_protocol_v2",
+    "delete_by": "2026-10-14",
+    "evidence_url": "https://www.nasa.gov/nasa-brand-center/images-and-media/",
+    "rationale": "Private transcript preservation only; soundtrack/media are link-only and model-generated output is not attributed to NASA."
+  },
+  "attribution": {
+    "credit": "NASA's Goddard Space Flight Center",
+    "no_endorsement": true,
+    "third_party_caveats": ["Universal Production Music track is not retained, extracted, or redistributed."]
+  },
+  "version_equivalence": {
+    "state": "official_row_level_publication_association",
+    "evidence": "NASA Science embeds the exact YouTube ID and links to SVS 13322; the SVS Safety Video group co-locates the LQ MP4 and same-stem VTT.",
+    "youtube_side_verified": false
+  },
+  "claims_boundary": ["input_preservation_only", "not_independent_wer_reference", "youtube_caption_state_unverified", "not_legal_approval", "not_production_readiness"]
+}

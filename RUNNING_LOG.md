@@ -30160,3 +30160,201 @@ Nothing deployed yet. The verified change is local on `codex/library-add-selecte
 - **Repository documentation:** merged through PR #32 at `8028fcbe23e58dc9889895278126447472b972e2`.
 - **GitHub Wiki:** published and verified at `5a9e100134141770ed87d959b7cd67aa4460f3ca`, 86/86 pages.
 - **Release objective:** direct Library selected-item enrollment, live production behavior, protected delivery, current repository documentation, canonical Wiki publication, and append-only project logging are complete.
+
+## 2026-07-16 23:02 IST — YouTube transcript/enrichment focused audit accepted; benchmark remains unlocked
+
+**Entry author:** AI agent (Codex) · **Triggered by:** User-requested rights-safe YouTube transcript and enrichment research council.
+
+### Isolated research baseline and audit
+
+- Refreshed `origin/main` and created the clean worktree/branch `research/youtube-transcript-enrichment` at `ad78d77495dcaa90f62aab038fe63ae95cf36862`; unrelated user changes in other checkouts/worktrees were not moved, reset, cleaned, or overwritten.
+- Completed the focused current-code/schema/test/Wiki/provider audit, obtained an independent adversarial review, accepted every correction, and published a reconciled audit v2 plus feature, flow, code, data, provider, Wiki-drift, QA, risk, source, tracker, and decision records.
+- Verified 194 focused mocked/unit tests across 28 suites with zero failures. No live transcript, STT, model, visual, credential, private-content, or production call was made.
+- The audit’s shipping P0 remains the active automatic InnerTube/timedtext path. Additional P0s for the safer sidecar strategy are missing rights/retention attestation, permissive invalid-UTF-8/malformed-cue handling, and the possibility of default-enabled legacy recovery during an otherwise local test.
+
+### Benchmark and stop decisions
+
+- Replaced the self-referential lock draft with a two-commit design: Commit A freezes all protocol/corpus/method/scorer/fixture/evaluator inputs; Commit B adds a machine-readable `LOCK.json` containing Commit A’s full SHA and file hashes. Experiments remain prohibited until both commits and lock verification exist.
+- Split rights into underlying content, transcript/captions, source-origin media, YouTube access mechanism, retention/derivation/provider disclosure, and attribution/license obligations. Synthetic fixtures are excluded from primary YouTube-acquisition denominators.
+- Defined first-attempt primary rates, separate recovery accounting, preservation versus independent WER, distributed timestamp anchors, method×item states, strict structured-output reliability, blinded evaluator roles, security fixtures, and explicit Gate 2/Gate 5 triggers.
+- Gate 4 is **Blocked / Not run**: the USD 0 free-route snapshot did not provide a stable four-role ZDR roster or eligible free multimodal route, and the current adapter cannot enforce or report the required exact route, privacy, schema, and price controls. Zero inference calls were made. Gate 5 is consequently not eligible.
+- Creator/user-supplied SRT/VTT remains the leading strategy candidate, but not a passing current-product implementation. Any Gate 1 run must locally seed items, disable both transcript-recovery flags, observe/deny egress, require explicit six-part attestation, fail closed on malformed input, and report strategy feasibility separately from shipping-route readiness.
+
+### State snapshot
+
+- **Spend/subscriptions:** USD 0 / 0.
+- **Prospective experimental runs:** 0.
+- **Benchmark status:** Draft and unlocked; no `LOCK.json`; corpus items/references still unresolved.
+- **Current phase:** verify ten exact real YouTube/source-version pairs, rights records, and at least four independent timestamped references; reconcile the transcript recommendation review; independently review every lock input before Commit A.
+- **Production/release:** unchanged; no production implementation, dependency, migration, merge, or deployment is authorized by this research.
+
+## 2026-07-16 23:31 IST — Official YouTube API OAuth prerequisite checked without a call
+
+**Entry author:** AI agent (Codex) · **Triggered by:** User-supplied OAuth client for the official YouTube Data API exploration.
+
+- Inspected only the credential's non-secret structure and kept its local path, client identifier, and secret out of project artifacts and command output. The file is a web-application client whose downloaded configuration contains no authorized redirect URI.
+- Confirmed from current official documentation that `captions.list` requires OAuth and costs 50 quota units, while `captions.download` costs 200 and requires the authorized user to have permission to edit the video. The client credential alone grants neither consent nor video permission.
+- Made zero OAuth, YouTube API, transcript, or model calls; created zero tokens; consumed zero quota units and USD 0. A2 remains Blocked / Not run until a redirect, API enablement/quota, explicit consent, an editable non-sensitive video, and a sealed token/data-lifecycle plan exist.
+- Recorded the smallest safe next action and the need to rotate the conversation-disclosed secret after exploration. The benchmark remains Draft and no prospective experiment has started.
+
+## 2026-07-16 23:24 IST — Timestamp correction for the preceding OAuth prerequisite entry
+
+**Entry author:** AI agent (Codex) · **Triggered by:** Append-only log accuracy check.
+
+- The preceding entry's `23:31 IST` header was entered in error. Its correct event time is `2026-07-16 23:23 IST`.
+- The entry's substantive evidence and zero-call/zero-token/zero-quota state are unchanged. The original header is preserved to honor this file's append-only rule.
+
+## 2026-07-17 00:20 IST — Corpus contract tightened before the benchmark seal
+
+**Entry author:** AI agent (Codex) · **Triggered by:** Pre-lock integration review of the rights corpus, deterministic tools, and isolated A1 harness.
+
+- Finalized a ten-real-video source ledger: nine official NASA timed sidecars and one NOAA authorized-media/no-sidecar coverage case. Eight A1 cells are prospective positives, the 8,974-cue greater-than-60-minute file is a predeclared safe-rejection boundary, and the NOAA row is excluded because Gate 2's two-part trigger is only 1/10 and 10%.
+- Kept YouTube-side caption authorship, auto-caption status, track count, and track languages explicitly unverified. No signed-in browser, cookie, alternate extractor, OAuth token, YouTube API call, media download, STT run, model call, or visual run occurred.
+- Added evidence-bound private-benchmark attestations and tightened schema 1.1 so file format, language, duration, cue count, last-cue coverage, completeness, and expected class are sealed rather than caller-controlled. Known partial coverage remains partial; unknown completeness cannot enter an eligible run.
+- Found two tool/protocol mismatches before results: a seven-cue reference cannot yield ten distinct cue-start anchors, and a quadratic-cell guard could reject a long near-identical preservation comparison. Prospective fixes and synthetic regression tests are in progress; no lock commits or primary outputs exist.
+- The benchmark remains Draft / experiments prohibited. Spend, subscriptions, quota units, OAuth tokens, model calls, and prospective primary attempts remain `0`.
+
+## 2026-07-18 11:17 IST — YouTube pre-lock denominators corrected and offline Gate 4 candidate prepared
+
+**Entry author:** AI agent (Codex) · **Triggered by:** Continued pre-lock reconciliation after strict corpus preparation and governance review.
+
+### Append-only correction and corpus state
+
+- Supersede the preceding entry's provisional claim of eight A1 positives. Strict offline preflight found five eligible A1 positives (YT-01, YT-02, YT-07, YT-08, YT-09), three predeclared empty-cue structural rejections (YT-03, YT-05, YT-06), one 8,974-cue supported-class rejection (YT-04), and one no-sidecar coverage row (YT-10).
+- The exact prospective Gate 1 requirement is now `5/5` positives plus `4/4` truthful rejection controls, with current-product readiness assessed separately on the five positives and expected to remain `0/5`. This is under-powered, screening-affected evidence for the five source-published VTTs only; it is not a support-prevalence, SRT, long-video, arbitrary-public-video, or production-readiness claim.
+- A1 attestation schema 1.2, nine content-free attestation records, private preparation hashes, five timestamp packets, and the reference ledger now reconcile. The private workspace is outside Git with directory/file modes restricted; no complete transcript or private path is published.
+- Gate 2 uses two booleans per row: no authorized ingestible sidecar and independently authorized source media. Only YT-10 satisfies both, so the trigger is 1/10 and fails the required ≥2 rows and ≥20%; STT remains Not triggered / Not run.
+
+### Seal and gate governance
+
+- Added append-only decisions D-014 through D-017: exact denominator correction, semantic machine-lock reconciliation, a one-candidate local Gate 4 supersession of the earlier provider-only stop, and mandatory Gate 6/product-council work for every upstream outcome.
+- A machine-readable method matrix and verifier hardening are in progress so Commit A/B cannot preserve a plausible but incorrect denominator, gate state, runtime, model package, or unresolved review. Commit B is now specified to add only `LOCK.json`.
+- An independent governance pass found pre-seal P0/P1 issues, including stale Gate 4 assumptions, missing semantic denominator verification, incomplete pre-lock review closure, and incorrect treatment of Gate 6/council as optional. Those findings are being remediated before a formal independent pre-lock adversarial review; no seal commit exists.
+
+### Zero-spend local model preparation
+
+- A single conditional local Gate 4 candidate is being frozen: Qwen3-8B Q4_K_M at exact publisher revision through `llama.cpp` release b9637/commit `aedb2a5e9ca3d4064148bbb919e0ddc0c1b70ab3` on Apple arm64.
+- The private model completed with 5,027,783,488 bytes and SHA-256 `d98cdcbd03e17ce47681435b5150e34c1417f50b5c0019dd560e4882c5745785`; the official runtime archive is 10,586,927 bytes with SHA-256 `72a93f3e68c31de3e438d462669aad1fcdb423b995e9c41033cc7d27a9a3ac69`. Exact extracted CLI/library hashes, an honest ad-hoc-signing record, prompt/schema/rubric, and offline fake-runtime tests are being added to the prospective package.
+- Download and metadata/runtime inspection are preparation only. Model inference, external-provider transfer, YouTube/OAuth/API calls, quota use, paid spend, subscriptions, visual processing, media download, and primary benchmark attempts remain `0`.
+
+### Current state
+
+- **Benchmark:** pre-lock candidate; primary runs prohibited; independent review and two-commit seal pending.
+- **Gates:** Gate 1 eligible only after seal; Gate 2 not triggered; Gate 3 conditional on Gate 1; Gate 4 conditional on Gates 1 and 3; Gate 5 not triggered before measured visual coverage; Gate 6 and the three-PM council are mandatory.
+- **Next milestone:** finish model/safety/verifier integration, pass the full tests and independent pre-lock review/closure, create Commit A then LOCK-only Commit B, and verify the protected tree before the first real A1 cell.
+
+## 2026-07-18 12:31 IST — Prospective seal semantics and local-model handoff hardened
+
+**Entry author:** AI agent (Codex) · **Triggered by:** Pre-lock consistency and security review of the final prospective package.
+
+- Reconciled the machine method/item authority to five preservation-reference positives, four safe-rejection records, one no-sidecar coverage row, and an exact 1/10 Gate 2 trigger. Protocol 2.4, lock schema 1.4, and reference-ledger schema 1.2 now distinguish source-sidecar preparations from scoring references and bind the frozen denominators semantically.
+- Added a prospective publication-safe Gate 3 handoff schema. The Gate 4 harness now requires a tracked, clean result bound to the verified content/seal commits and the exact per-item normalized-file hash; the command-line path accepts only sealed execution and derives the runtime ledger and public-report destinations canonically.
+- Tightened local isolation from network-only to network plus user-home denial outside explicitly bound runtime/model/schema/prompt/run paths. File reads use no-follow descriptors; private/public outputs reject symlink and replacement paths; timeouts/overflow kill the process group; observed-stream hashes remain complete under retained-byte caps; and all inputs are reverified after execution.
+- The expanded synthetic model-harness suite passes 8/8 and the repository type check passes. Tests use only generated development fixtures and a fake executable. No Qwen inference, transcript-provider call, OAuth/API call, media/STT/visual work, paid request, subscription, or primary benchmark attempt occurred.
+- Independent lock/ledger and model-hardening reviews are still being closed. Commit A, LOCK-only Commit B, every real gate, Gate 6, the three-PM council, Wiki publication, push, and review-only pull request remain pending; experiments are still prohibited.
+
+## 2026-07-19 02:12 IST — YouTube prospective package passed final pre-seal implementation validation
+
+**Entry author:** AI agent (Codex) · **Triggered by:** Completion of formal-review remediation and the stabilized pre-Commit-A validation pass.
+
+### Stabilized validation evidence
+
+- The complete benchmark-tools family passed 289/289 tests across 18 suites. The unskipped production-shaped macOS SEALED test completed a disposable two-commit seal, inner lock verification, a truthful structural rejection, and an eligible local app-import/native-SQLite/scorer/receipt chain without using private corpus content.
+- The A1 harness family passed 20/20 and the local model-harness family passed 29/29, for an exact derived readiness total of 338/338. Repository typecheck and full lint passed; strict/fatal-UTF-8 schema validation, reference-ledger semantics, Markdown links/master reachability, and the publication privacy scan passed.
+- Direct negative coverage now rejects malformed UTF-8 and duplicate keys at every production machine-JSON byte boundary. The synthetic eligible database is FULL-synchronized, checkpointed, converted to one rollback-journal-mode evidence file, and verified without WAL, shared-memory, or journal sidecars before scoring.
+- The earlier 8/8, 10/10, 163/163, and 193/193 figures remain historical snapshots only. They are superseded for Commit-A readiness by the stabilized 289/289 + 20/20 + 29/29 = 338/338 evidence above; no historical entry was rewritten.
+
+### Governance, privacy, and request accounting
+
+- All formal P0/P1 mechanisms and the supplemental P2 defenses are implemented and mechanically green: durable write-once A1 claims/terminals, exact Gate 3 derivation, consent-before-side-effect Gate 4 operation, strict A/B/adjudication evidence, durable atomic aggregate publication, candidate-tree privacy, and fatal machine-input decoding.
+- No private benchmark root, transcript body, credential, OAuth token, provider, API, external model, local Qwen inference, media, STT, or visual method was accessed or invoked during remediation. Gate 1–5 primary external requests, primary provider calls, model inference calls, quota use, subscriptions, and incremental spend remain 0 / USD 0.
+- One read-only repository remote metadata check occurred during delivery auditing. It made no mutation and is repository-delivery metadata outside the frozen Gate 1–5 primary benchmark/provider request scope; it is disclosed here rather than folded into an experimental counter.
+- The conversation-disclosed OAuth secret remains excluded from files and command output and still requires rotation/revocation after this work.
+
+### State at this milestone
+
+- **Benchmark:** implementation validation complete; primary experiments remain prohibited until the readiness authority, reference-ledger review chronology, same-reviewer closure, Commit A, LOCK-only Commit B, and lock verification are complete.
+- **Primary outputs / lock:** none; no `LOCK.json`, `decisions/`, or `council/` primary evidence has been created.
+- **Production/release:** unchanged. No production implementation, dependency addition, migration, merge, deployment, or bypass occurred.
+
+## 2026-07-19 02:19 IST — Qualification of final pre-seal validation chronology
+
+**Entry author:** AI agent (Codex) · **Triggered by:** Same-reviewer accuracy check of the immediately preceding append-only milestone.
+
+- The strict machine-JSON statement above means every production machine-JSON byte boundary is routed through the shared fatal-UTF-8 and duplicate-key parser. Representative direct regressions exercise that shared boundary and affected call sites; it does not mean every call site has a separate bespoke malformed-byte test.
+- Before the stabilized local model-harness result, one final-development run failed 0/28 during fixture setup because its synthetic database still used single-newline paragraph joining and the `development` policy environment after the frozen contract moved to double-newline joining and `lab`. Only that publication-safe synthetic fixture was aligned to the already-frozen contract; the corrected suite then passed 28/28, and the added malformed-runtime-ledger regression produced the final 29/29 pass. The failed run and correction are development evidence, not primary attempts or results.
+- The statement that no transcript body was accessed means no real or private corpus transcript body was accessed. Publication-safe synthetic transcript text was necessarily exercised by the declared development tests.
+- The full repository lint command did pass as stated. These qualifications do not change the exact stabilized counts, zero-primary-call/spend state, or prohibition on Commit A and all primary work until the ordered readiness, review, closure, and seal controls complete.
+
+## 2026-07-19 03:27 IST — YouTube benchmark sealed; Gate 1 failed and council deferred the feature
+
+**Entry author:** AI agent (Codex) · **Triggered by:** Completion of the sealed primary acquisition cells, mandatory Gate 6 controls, independent PM reviews, and council reconciliation.
+
+### Prospective seal and fixed primary result
+
+- Completed the formal same-reviewer readiness/review/closure chronology, froze Commit A as `6b829798101a59fadd9a1d0efd65428539f400ad`, and created LOCK-only Commit B as `0ed1b13729802f4ded921f1a94369ddc110dabc3`. The canonical LOCK SHA-256 is `bef4437a05ac20418a49f3c06a99a1f74ad93c9395dcc780d1c0307aa354b8c3`; the official verifier accepts the direct A→B seal and unchanged protected tree.
+- Ran all nine predeclared A1 cells exactly once in frozen order. Eligible positives passed **3/5**; YT-02 and YT-08 ended as immutable `A1_OPERATOR_ORACLE_FAILED` failures with no scorer and no retry. All **4/4** structural/supported-class rejection controls passed truthfully. The three successful eligible cells preserved tokens and timestamp anchors at `1.00` / `1.00`.
+- The result is local sidecar ingestion/input-preservation evidence for the exact sealed class only. It is not automatic YouTube acquisition, WER, audio-relative timing, arbitrary-video coverage, or current-product readiness evidence. The two failure terminals do not publish per-cell network counters and are not safety passes.
+
+### Stop-rule and mandatory-control outcomes
+
+- Gate 1 failed its exact 5/5 eligible first-attempt threshold. No failed cell was retried, repaired, replaced, or removed.
+- Gate 2 remained Not triggered / Not run at 1/10 and 10%; no STT or media work ran. Gate 3 was ineligible, Gate 4 was blocked, and Gate 5 was not triggered; no repeat normalization, local/model inference, qualitative evaluation, or visual work ran.
+- Mandatory Gate 6 completed the 33 frozen controls under an external deny-network boundary: 18 narrow passes, 8 named gaps, and 7 not-applicable checks. The exact unavailable/retry suite passed 5/5 and the exact isolated A1 integration suite passed 11/11.
+- Primary external/API/provider/model requests, OAuth tokens/calls, model inference, media downloads, STT, visual processing, subscriptions, and incremental spend remained zero / USD 0. Private transcripts, normalized outputs, database, scorer options, receipts, and raw logs remain outside Git/Wiki/PR and retain their deletion deadline of 2026-10-14.
+
+### Council decision
+
+- Three independent PMs—User Value/Engagement, Knowledge/Learning/Recall, and Platform/Data/Privacy—each recommended **Defer**.
+- Council v1 also recommended Defer. An independent adversarial review required clearer separation of the prospective input seal from post-seal result integrity, an explicit disposition for the current automatic route, non-circular authorization, prospectively measurable future thresholds, human review, failure observability, and reconciled governance.
+- Reconciled council v2 records **No-go / not approved for the current automatic route and any present supported-product claim; Defer future exact-class research until separately authorized and prospectively frozen**. The current council cannot change production behavior, so the already-active route remains an explicit product-owner and security/legal-policy decision rather than approval by inaction.
+- No PRD, UX/UI package, prototype, or technical implementation plan is applicable. No production code, dependency, migration, merge, deployment, or release was authorized or performed.
+
+### Current state
+
+- **Research decision:** Gate 1 Fail; council Defer with current-route No-go/not-approved disposition.
+- **Publication package:** Gate and council artifacts are being independently schema/link/privacy checked and committed after the seal; this later result history does not retroactively become part of Commit B.
+- **Outstanding:** reconcile mutable governance, publish and freshly verify the safe GitHub Wiki update, push the research branch, open a review-only pull request, rotate/revoke the disclosed OAuth credential, and produce non-secret private-data deletion evidence by 2026-10-14.
+
+## 2026-07-19 03:44 IST — YouTube research evidence published for review without merge or deployment
+
+**Entry author:** AI agent (Codex) · **Triggered by:** Completion of post-seal evidence validation, Wiki publication, branch push, and review-only pull-request creation.
+
+### Post-seal repository publication
+
+- Committed the publication-safe claims, failure terminals, Gate 1–6 decisions, independent PM memos, council v1/review/v2, reconciled governance, and the preceding running-log milestone as result commit `01059dbd57d38d9b9ae1d63f121e85502c3b7ee2`. This commit follows Commit B and does not claim that the prospective seal covered later results.
+- Nine A1 attempt claims and both caught-failure terminals validate against their frozen schemas. Repository-relative Markdown links resolve, the master index reaches every required artifact, publication privacy and strict schema/reference checks pass, and `git diff --check`, TypeScript, and full lint pass.
+- Official verifier 3.3.0 accepts the post-result checkout, the exact Commit A/B pair, lock SHA-256, and all 653 frozen files with `valid=true`.
+- The final current-checkout benchmark-tools run passed 288/289. Its sole failure was the intentionally pre-seal-shaped production sandbox test refusing a checkout in which canonical `LOCK.json` already exists. The complete frozen test file passed 17/17 in a disposable checkout of the actual Commit A, including its generated two-commit sandbox. A1 harness tests passed 20/20 and model-harness tests passed 29/29. No sealed primary cell was rerun.
+
+### Wiki and review-only handoff
+
+- Fresh-cloned the GitHub Wiki at remote base `e884daa628c28498bbbacd09c164b8cbba6030d5`, added the sanitized research decision plus navigation/changelog updates, re-fetched to confirm no concurrent remote change, and pushed Wiki commit `317e40e8de08fc492e0e2662b5f45b8bb7e48fcd`.
+- A second fresh clone matched that Wiki commit, resolved 417 local links, passed the changed-page sensitive-data scan, and returned HTTP 200 for the rendered research page.
+- Pushed `research/youtube-transcript-enrichment` and opened draft review-only PR #35 against `main`. The PR explicitly says not to merge or deploy and carries the exact gate, validation, scope, credential, deletion, and current-route owner boundaries.
+- No production code, dependency, migration, feature flag, merge, deployment, subscription, paid request, model inference, STT, visual processing, or production mutation was performed.
+
+### Final handoff state
+
+- **Repository:** prospective content commit `6b829798101a59fadd9a1d0efd65428539f400ad`; lock-only commit `0ed1b13729802f4ded921f1a94369ddc110dabc3`; result commit `01059dbd57d38d9b9ae1d63f121e85502c3b7ee2`; final delivery-status follow-up pending this append-only entry's commit.
+- **Wiki:** published and fresh-clone verified at `317e40e8de08fc492e0e2662b5f45b8bb7e48fcd`.
+- **Pull request:** #35 open as a draft, review-only, unmerged PR.
+- **Remaining owner actions outside this research delivery:** revoke/rotate the disclosed OAuth credential before any future OAuth design; produce non-secret deletion and backup-expiry evidence for all private research material by 2026-10-14; and make an explicit product-owner/security/legal-policy decision about the current automatic route.
+
+## 2026-07-19 03:52 IST — Review-only PR documentation checks remediated locally
+
+**Entry author:** AI agent (Codex) · **Triggered by:** Initial PR #35 GitHub Actions failures in Agent documentation and Product CI.
+
+- Both failed jobs had the same cause: the fixed 2026-06-28 Feature Council Wiki manifest still expected its original 44-document historical corpus and did not explicitly exclude the new 54-document YouTube research package.
+- Added `docs/feature-council/youtube-transcript-enrichment` to that manifest's existing feature-package exclusion list. This keeps July research out of generated pages whose metadata would incorrectly identify it as part of the June planning package. The YouTube package remains independently governed by its master index, publication privacy/link/schema tests, sanitized live Wiki page, and review-only PR.
+- Exact local CI commands now pass: `smoke:agent-docs` is green; `check:agent-docs` validates the 44-page historical generator, scans 118 documentation files with no privacy findings, reaches 86/86 canonical Wiki pages, reconciles 238 inventory rows, 46 feature rows, all 155 package scripts, and 17,989 project-inventory rows with no findings.
+- Official seal verifier 3.3.0 remains `valid=true` for Commit A/B and all 653 frozen files. The remediation changes only the global historical-Wiki manifest; it does not change a benchmark input, primary result, council decision, live Wiki page, production code, or deployment state.
+- The fix still requires commit, push, and green remote reruns before final handoff. PR #35 remains draft, review-only, unmerged, and not deployed.
+
+## 2026-07-19 03:56 IST — PR documentation remediation passed remote CI
+
+**Entry author:** AI agent (Codex) · **Triggered by:** Completion of the protected reruns for documentation-CI remediation commit `ae1a019eadc0931e5ccf31e3d569e76ab04ac89d`.
+
+- Supersede only the preceding entry's pending remote-check state. Agent documentation `validate` passed in 32 seconds and Product CI `verify` passed in 2 minutes 48 seconds. `package-main-release` and `package-known-good` skipped as designed for a non-main research branch.
+- PR #35 remains open as a draft, review-only, unmerged, and not deployed. The repository research decision, Wiki commit, zero-call/spend boundary, owner actions, and 2026-10-14 deletion/expiry deadline are unchanged.
+- This append-only evidence entry changes only `RUNNING_LOG.md`. It will be pushed as the final history-only head; the same remote checks may rerun, and the final user handoff will report their live state without adding another check-status-only commit.

@@ -1,0 +1,24 @@
+{
+  "schema_version": "1.0",
+  "operator_version": "1.1.0",
+  "publication_eligible": true,
+  "seal": {
+    "content_commit": "6b829798101a59fadd9a1d0efd65428539f400ad",
+    "seal_commit": "0ed1b13729802f4ded921f1a94369ddc110dabc3",
+    "lock_sha256": "bef4437a05ac20418a49f3c06a99a1f74ad93c9395dcc780d1c0307aa354b8c3"
+  },
+  "cell": {
+    "stage": "gate1-primary",
+    "item_id": "YT-01",
+    "expected_outcome": "eligible_pass"
+  },
+  "execution_contract": {
+    "identity_sha256": "7601a0335c32c230ad13311ff88475102db52112a4f13c437742e13173a81f3e",
+    "execution_boundary": "sealed_default_dependencies",
+    "private_evidence_binding": "sealed_source_and_anchor_authorities_no_path_device_or_user_identifier"
+  },
+  "scope": {
+    "uniqueness": "authoritative_worktree_only",
+    "residual_limitation": "copied_repositories_malicious_claim_deletion_or_same_user_forgery_require_procedural_external_audit"
+  }
+}

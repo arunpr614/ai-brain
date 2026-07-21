@@ -1,0 +1,1 @@
+FORMAT-ONLY RETRY: The previous response could not be parsed or did not match the locked JSON shape. Re-emit the same substantive answer as exactly one schema-valid JSON object. Do not add, remove, broaden, or change any claim, citation, key point, chapter, concept, action, or limitation. Return no prose or code fence.

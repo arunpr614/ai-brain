@@ -1,0 +1,80 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://brain.arunp.in/schemas/youtube-public-key-point-rubric-v1.json",
+  "title": "Publication-safe locked key-point rubric",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "rubric_version",
+    "locked_before_model_output",
+    "prepared_at",
+    "source_policy",
+    "items"
+  ],
+  "properties": {
+    "schema_version": { "const": "1.0" },
+    "rubric_version": { "const": "public-official-metadata-v1" },
+    "locked_before_model_output": { "const": true },
+    "prepared_at": { "type": "string", "format": "date-time" },
+    "source_policy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["basis", "full_transcript_used", "media_used", "claim_boundary"],
+      "properties": {
+        "basis": { "const": "official_nasa_svs_public_page_metadata" },
+        "full_transcript_used": { "const": false },
+        "media_used": { "const": false },
+        "claim_boundary": { "const": "coverage_rubric_not_independent_transcript_ground_truth" }
+      }
+    },
+    "items": {
+      "type": "array",
+      "minItems": 5,
+      "maxItems": 5,
+      "items": { "$ref": "#/$defs/item" }
+    }
+  },
+  "$defs": {
+    "item": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["item_id", "source_page_url", "source_title", "text_groundable", "visual_only", "caveats"],
+      "properties": {
+        "item_id": { "enum": ["YT-01", "YT-02", "YT-07", "YT-08", "YT-09"] },
+        "source_page_url": {
+          "type": "string",
+          "format": "uri",
+          "pattern": "^https://svs\\.gsfc\\.nasa\\.gov/[0-9]+/?$"
+        },
+        "source_title": { "type": "string", "minLength": 1 },
+        "text_groundable": {
+          "type": "array",
+          "minItems": 2,
+          "items": { "$ref": "#/$defs/point" }
+        },
+        "visual_only": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/point" }
+        },
+        "caveats": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "type": "string", "minLength": 1 }
+        }
+      }
+    },
+    "point": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["rubric_point_id", "essential_meaning", "metadata_basis", "weight", "contradiction_rule"],
+      "properties": {
+        "rubric_point_id": { "type": "string", "pattern": "^YT-[0-9]{2}:(TXT|VIS):[0-9]{2}$" },
+        "essential_meaning": { "type": "string", "minLength": 1, "maxLength": 500 },
+        "metadata_basis": { "type": "string", "minLength": 1, "maxLength": 500 },
+        "weight": { "const": 1 },
+        "contradiction_rule": { "type": "string", "minLength": 1, "maxLength": 500 }
+      }
+    }
+  }
+}

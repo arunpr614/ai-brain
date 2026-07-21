@@ -1,0 +1,58 @@
+{
+  "schema_version": "1.2",
+  "item_id": "YT-04",
+  "youtube_video_id": "Kdwyqctp908",
+  "attested_at": "2026-07-16T18:13:23Z",
+  "content_rights": {
+    "state": "provisionally_allowed_for_private_benchmark_review_required",
+    "evidence_url": "https://svs.gsfc.nasa.gov/14415/",
+    "rationale": "NASA/SVS publishes the full broadcast and caption file; the benchmark retains only captions/metadata and preserves likeness/partner limitations.",
+    "review_required": true
+  },
+  "transcript_rights": {
+    "state": "provisionally_allowed_for_private_benchmark_review_required",
+    "evidence_url": "https://svs.gsfc.nasa.gov/14415/",
+    "rationale": "NASA/SVS publishes the full-broadcast VTT as an official same-group asset. Private retention is provisional, limited to safe-rejection boundary validation, and remains subject to legal/policy review.",
+    "review_required": true
+  },
+  "source": {
+    "owner": "NASA Goddard Space Flight Center",
+    "source_page_url": "https://svs.gsfc.nasa.gov/14415/",
+    "sidecar_url": "https://svs.gsfc.nasa.gov/vis/a010000/a014400/a014415/OSIRIS-REx_Sample_Return_Broadcast_Captions.en_US.vtt",
+    "sidecar_sha256": "5ef1a804dbffdabe9349dc8efef79dbdbb183cfa183f115498aee8f9b3ff1250",
+    "private_relative_path": "inputs/nasa/YT_OSIRIS_Kdwyqctp908.vtt"
+  },
+  "input_contract": {
+    "format": "vtt",
+    "language_tag": "en-US",
+    "declared_duration_ms": 12077589,
+    "expected_cue_count": 8974,
+    "last_cue_end_ms": 11971826,
+    "content_completeness": {
+      "state": "unknown",
+      "basis": "unknown",
+      "rationale": "The official sidecar has a 105.763-second uncovered tail and no complete-transcript assertion; this row is sealed only as a cue-limit safe-rejection boundary."
+    },
+    "expected_class": "expected_safe_rejection"
+  },
+  "retention_and_derivation": {
+    "full_text_private": true,
+    "publication": "hashes_and_derived_metrics_only",
+    "embeddings": "not_created",
+    "model_upload": "prohibited_in_protocol_v2",
+    "delete_by": "2026-10-14",
+    "evidence_url": "https://www.nasa.gov/nasa-brand-center/images-and-media/",
+    "rationale": "The >7,200-cue file is retained privately to verify truthful rejection; the 56.3 GB media is not downloaded."
+  },
+  "attribution": {
+    "credit": "NASA's Goddard Space Flight Center",
+    "no_endorsement": true,
+    "third_party_caveats": ["Live-broadcast likeness and partner-insert rights require review before any media use."]
+  },
+  "version_equivalence": {
+    "state": "official_row_level_publication_association",
+    "evidence": "The first SVS 14415 media group explicitly identifies the full broadcast and co-locates its MP4, caption files, and official live-video YouTube link.",
+    "youtube_side_verified": false
+  },
+  "claims_boundary": ["input_preservation_only", "not_independent_wer_reference", "youtube_caption_state_unverified", "not_legal_approval", "not_production_readiness"]
+}

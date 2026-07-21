@@ -1,0 +1,154 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://brain.arunp.in/schemas/youtube-gate4-evaluation-terminal-v1.json",
+  "title": "Publication-safe terminal evidence for a claimed Gate 4 evaluation package or role attempt",
+  "type": "object",
+  "oneOf": [
+    { "$ref": "#/$defs/packageTerminal" },
+    { "$ref": "#/$defs/roleTerminal" }
+  ],
+  "$defs": {
+    "sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+    "gitSha": { "type": "string", "pattern": "^[0-9a-f]{40}$" },
+    "dateTime": { "type": "string", "pattern": "^20[0-9]{2}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(?:\\.[0-9]+)?(?:Z|[+-][0-9]{2}:[0-9]{2})$" },
+    "shaOrNull": { "oneOf": [{ "$ref": "#/$defs/sha256" }, { "type": "null" }] },
+    "failureOrNull": { "oneOf": [{ "type": "string", "pattern": "^[A-Z0-9_]{3,64}$" }, { "type": "null" }] },
+    "common": {
+      "type": "object",
+      "required": ["schema_version", "execution_class", "publication_eligible", "content_commit", "seal_commit", "public_package_attempt_claim_sha256", "state", "completed_at", "failure_code", "external_provider_calls", "external_content_transfer", "claims_boundary"],
+      "properties": {
+        "schema_version": { "const": "1.0" },
+        "execution_class": { "enum": ["SEALED", "DEV_TEST"] },
+        "publication_eligible": { "type": "boolean" },
+        "content_commit": { "$ref": "#/$defs/gitSha" },
+        "seal_commit": { "$ref": "#/$defs/gitSha" },
+        "public_package_attempt_claim_sha256": { "$ref": "#/$defs/sha256" },
+        "state": { "enum": ["succeeded", "failed"] },
+        "completed_at": { "$ref": "#/$defs/dateTime" },
+        "failure_code": { "$ref": "#/$defs/failureOrNull" },
+        "external_provider_calls": { "const": 0 },
+        "external_content_transfer": { "const": false },
+        "claims_boundary": { "const": "ai_evaluated_provisional_pending_human_stakeholder_review" }
+      },
+      "allOf": [
+        { "if": { "type": "object", "properties": { "execution_class": { "const": "SEALED" } }, "required": ["execution_class"] }, "then": { "type": "object", "properties": { "publication_eligible": { "const": true } } } },
+        { "if": { "type": "object", "properties": { "execution_class": { "const": "DEV_TEST" } }, "required": ["execution_class"] }, "then": { "type": "object", "properties": { "publication_eligible": { "const": false } } } },
+        { "if": { "type": "object", "properties": { "state": { "const": "succeeded" } }, "required": ["state"] }, "then": { "type": "object", "properties": { "failure_code": { "type": "null" } } } },
+        { "if": { "type": "object", "properties": { "state": { "const": "failed" } }, "required": ["state"] }, "then": { "type": "object", "properties": { "failure_code": { "type": "string", "pattern": "^[A-Z0-9_]{3,64}$" } } } }
+      ]
+    },
+    "process": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["invocation_count", "timeout_ms", "exit_code", "signal", "timed_out", "output_overflow", "stdout_bytes", "stdout_retained_bytes", "stdout_sha256", "stderr_bytes", "stderr_retained_bytes", "stderr_sha256"],
+      "properties": {
+        "invocation_count": { "enum": [0, 1] },
+        "timeout_ms": { "const": 1800000 },
+        "exit_code": { "oneOf": [{ "type": "integer", "minimum": 0 }, { "type": "null" }] },
+        "signal": { "oneOf": [{ "type": "string", "pattern": "^SIG[A-Z0-9]+$" }, { "type": "null" }] },
+        "timed_out": { "type": "boolean" },
+        "output_overflow": { "type": "boolean" },
+        "stdout_bytes": { "type": "integer", "minimum": 0 },
+        "stdout_retained_bytes": { "type": "integer", "minimum": 0, "maximum": 4194304 },
+        "stdout_sha256": { "$ref": "#/$defs/sha256" },
+        "stderr_bytes": { "type": "integer", "minimum": 0 },
+        "stderr_retained_bytes": { "type": "integer", "minimum": 0, "maximum": 4194304 },
+        "stderr_sha256": { "$ref": "#/$defs/sha256" }
+      }
+    },
+    "packageTerminal": {
+      "type": "object",
+      "allOf": [
+        {
+          "allOf": [
+            { "$ref": "#/$defs/common" },
+            {
+              "type": "object",
+              "required": ["terminal_type", "operator_version", "bundle_sha256", "bundle_file_sha256", "package_receipt_sha256"],
+              "properties": {
+                "terminal_type": { "const": "canonical_blinded_packet_package_terminal" },
+                "operator_version": { "const": "1.0.0" },
+                "bundle_sha256": { "$ref": "#/$defs/shaOrNull" },
+                "bundle_file_sha256": { "$ref": "#/$defs/shaOrNull" },
+                "package_receipt_sha256": { "$ref": "#/$defs/shaOrNull" }
+              }
+            }
+          ]
+        },
+        { "if": { "type": "object", "properties": { "state": { "const": "succeeded" } }, "required": ["state"] }, "then": { "type": "object", "properties": { "bundle_sha256": { "$ref": "#/$defs/sha256" }, "bundle_file_sha256": { "$ref": "#/$defs/sha256" }, "package_receipt_sha256": { "$ref": "#/$defs/sha256" } } } },
+        { "if": { "type": "object", "properties": { "state": { "const": "failed" } }, "required": ["state"] }, "then": { "type": "object", "properties": { "bundle_sha256": { "type": "null" }, "bundle_file_sha256": { "type": "null" }, "package_receipt_sha256": { "type": "null" } } } }
+      ],
+      "unevaluatedProperties": false
+    },
+    "roleTerminal": {
+      "type": "object",
+      "allOf": [
+        { "$ref": "#/$defs/common" },
+        {
+          "type": "object",
+          "required": ["terminal_type", "runner_version", "role", "public_role_attempt_claim_sha256", "result_sha256", "private_role_claim_sha256", "private_run_report_sha256", "process"],
+          "properties": {
+            "terminal_type": { "const": "canonical_blinded_evaluator_role_terminal" },
+            "runner_version": { "const": "1.0.0" },
+            "role": { "enum": ["evaluator_a", "evaluator_b", "adjudicator"] },
+            "public_role_attempt_claim_sha256": { "$ref": "#/$defs/sha256" },
+            "result_sha256": { "$ref": "#/$defs/shaOrNull" },
+            "private_role_claim_sha256": { "$ref": "#/$defs/shaOrNull" },
+            "private_run_report_sha256": { "$ref": "#/$defs/shaOrNull" },
+            "process": { "$ref": "#/$defs/process" }
+          }
+        },
+        {
+          "if": { "type": "object", "properties": { "state": { "const": "succeeded" } }, "required": ["state"] },
+          "then": {
+            "type": "object",
+            "properties": {
+              "result_sha256": { "$ref": "#/$defs/sha256" },
+              "private_role_claim_sha256": { "$ref": "#/$defs/sha256" },
+              "private_run_report_sha256": { "$ref": "#/$defs/sha256" },
+              "process": {
+                "type": "object",
+                "properties": {
+                  "invocation_count": { "const": 1 },
+                  "exit_code": { "const": 0 },
+                  "signal": { "type": "null" },
+                  "timed_out": { "const": false },
+                  "output_overflow": { "const": false }
+                }
+              }
+            }
+          }
+        },
+        { "if": { "type": "object", "properties": { "state": { "const": "failed" } }, "required": ["state"] }, "then": { "type": "object", "properties": { "result_sha256": { "type": "null" } } } },
+        {
+          "if": {
+            "type": "object",
+            "properties": { "process": { "type": "object", "properties": { "invocation_count": { "const": 0 } }, "required": ["invocation_count"] } },
+            "required": ["process"]
+          },
+          "then": {
+            "type": "object",
+            "properties": {
+              "process": {
+                "type": "object",
+                "properties": {
+                  "exit_code": { "type": "null" },
+                  "signal": { "type": "null" },
+                  "timed_out": { "const": false },
+                  "output_overflow": { "const": false },
+                  "stdout_bytes": { "const": 0 },
+                  "stdout_retained_bytes": { "const": 0 },
+                  "stdout_sha256": { "const": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855" },
+                  "stderr_bytes": { "const": 0 },
+                  "stderr_retained_bytes": { "const": 0 },
+                  "stderr_sha256": { "const": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855" }
+                }
+              }
+            }
+          }
+        }
+      ],
+      "unevaluatedProperties": false
+    }
+  }
+}

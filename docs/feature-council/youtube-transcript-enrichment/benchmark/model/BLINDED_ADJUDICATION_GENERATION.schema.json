@@ -1,0 +1,37 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://brain.arunp.in/schemas/youtube-blinded-adjudication-generation-v1.json",
+  "title": "Flattened llama.cpp generation shape for blinded adjudication",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "items", "claims_boundary"],
+  "properties": {
+    "schema_version": { "const": "1.0" },
+    "items": {
+      "type": "array",
+      "minItems": 5,
+      "maxItems": 5,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["blinded_item_id", "decisions"],
+        "properties": {
+          "blinded_item_id": { "type": "string", "pattern": "^J00[1-5]$" },
+          "decisions": {
+            "type": "array", "maxItems": 100,
+            "items": {
+              "type": "object", "additionalProperties": false,
+              "required": ["dispute_id", "selected_option", "rationale"],
+              "properties": {
+                "dispute_id": { "type": "string", "pattern": "^D[0-9a-f]{12}$" },
+                "selected_option": { "enum": ["evaluator_a", "evaluator_b"] },
+                "rationale": { "type": "string", "minLength": 1, "maxLength": 1200 }
+              }
+            }
+          }
+        }
+      }
+    },
+    "claims_boundary": { "const": "ai_evaluated_provisional_pending_human_stakeholder_review" }
+  }
+}

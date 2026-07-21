@@ -1,0 +1,442 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://brain.arunp.in/schemas/youtube-reference-ledger-v1.2.json",
+  "title": "Publication-safe private input and reference ledger",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "preparation_version",
+    "preflight_version",
+    "anchor_generator_version",
+    "normalization_profile",
+    "prepared_at",
+    "creation_procedure",
+    "independence_boundary",
+    "review",
+    "items"
+  ],
+  "properties": {
+    "schema_version": { "const": "1.2" },
+    "preparation_version": { "const": "1.2.0" },
+    "preflight_version": { "const": "1.0.0" },
+    "anchor_generator_version": { "const": "1.1.0" },
+    "normalization_profile": { "const": "unicode-whitespace-v1" },
+    "prepared_at": { "type": "string", "format": "date-time" },
+    "creation_procedure": {
+      "const": "strict_preflight_then_deterministic_private_anchor_generation_no_candidate_output"
+    },
+    "independence_boundary": {
+      "const": "eligible_a1_inputs_are_preservation_oracles_not_independent_speech_references"
+    },
+    "review": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status", "reviewer_role", "reviewed_at", "review_artifact_path"],
+      "properties": {
+        "status": {
+          "enum": ["pending_independent_prelock_review", "independent_prelock_review_complete"]
+        },
+        "reviewer_role": { "const": "independent_adversarial_reviewer" },
+        "reviewed_at": {
+          "oneOf": [
+            { "type": "string", "format": "date-time" },
+            { "type": "null" }
+          ]
+        },
+        "review_artifact_path": {
+          "oneOf": [
+            {
+              "type": "string",
+              "pattern": "^docs/feature-council/youtube-transcript-enrichment/reviews/[A-Za-z0-9._/-]+\\.md$"
+            },
+            { "type": "null" }
+          ]
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": { "status": { "const": "pending_independent_prelock_review" } },
+            "required": ["status"]
+          },
+          "then": {
+            "properties": {
+              "reviewed_at": { "type": "null" },
+              "review_artifact_path": { "type": "null" }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": { "status": { "const": "independent_prelock_review_complete" } },
+            "required": ["status"]
+          },
+          "then": {
+            "properties": {
+              "reviewed_at": { "type": "string" },
+              "review_artifact_path": { "type": "string" }
+            }
+          }
+        }
+      ]
+    },
+    "items": {
+      "type": "array",
+      "minItems": 9,
+      "maxItems": 9,
+      "prefixItems": [
+        { "$ref": "#/$defs/yt01" },
+        { "$ref": "#/$defs/yt02" },
+        { "$ref": "#/$defs/yt03" },
+        { "$ref": "#/$defs/yt04" },
+        { "$ref": "#/$defs/yt05" },
+        { "$ref": "#/$defs/yt06" },
+        { "$ref": "#/$defs/yt07" },
+        { "$ref": "#/$defs/yt08" },
+        { "$ref": "#/$defs/yt09" }
+      ],
+      "items": false
+    }
+  },
+  "$defs": {
+    "sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "nullableSha256": {
+      "oneOf": [
+        { "$ref": "#/$defs/sha256" },
+        { "type": "null" }
+      ]
+    },
+    "item": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "item_id",
+        "reference_role",
+        "reference_independence",
+        "attestation_sha256",
+        "source_raw_sha256",
+        "source_canonical_sha256",
+        "source_bytes",
+        "source_token_count",
+        "source_token_count_state",
+        "normalized_text_character_count",
+        "cue_count",
+        "declared_duration_ms",
+        "last_cue_end_ms",
+        "distinct_timed_start_count",
+        "base_anchor_target",
+        "actual_anchor_count",
+        "preparation_document_sha256",
+        "preparation_private_relative_path",
+        "preflight_state",
+        "preflight_error_code",
+        "preflight_failure_cue_ordinal",
+        "content_completeness_state",
+        "expected_class",
+        "rights_review_state",
+        "production_legal_policy_review_required",
+        "state"
+      ],
+      "properties": {
+        "item_id": { "type": "string", "pattern": "^YT-0[1-9]$" },
+        "reference_role": { "enum": ["a1_input_preservation_oracle", "a1_safe_rejection_record"] },
+        "reference_independence": { "enum": ["not_independent_speech_reference", "not_a_scoring_reference"] },
+        "attestation_sha256": { "$ref": "#/$defs/sha256" },
+        "source_raw_sha256": { "$ref": "#/$defs/sha256" },
+        "source_canonical_sha256": { "$ref": "#/$defs/nullableSha256" },
+        "source_bytes": { "type": "integer", "minimum": 1, "maximum": 2000000 },
+        "source_token_count": {
+          "oneOf": [
+            { "type": "integer", "minimum": 1, "maximum": 50000 },
+            { "type": "null" }
+          ]
+        },
+        "source_token_count_state": {
+          "enum": [
+            "counted",
+            "not_scored_above_eligible_cap",
+            "not_scored_strict_preflight_rejection"
+          ]
+        },
+        "normalized_text_character_count": {
+          "oneOf": [
+            { "type": "integer", "minimum": 1, "maximum": 500000 },
+            { "type": "null" }
+          ]
+        },
+        "cue_count": { "type": "integer", "minimum": 1, "maximum": 10000 },
+        "declared_duration_ms": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 21600000
+        },
+        "last_cue_end_ms": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 21600000
+        },
+        "distinct_timed_start_count": {
+          "oneOf": [
+            { "type": "integer", "minimum": 1, "maximum": 10000 },
+            { "type": "null" }
+          ]
+        },
+        "base_anchor_target": { "type": "integer", "minimum": 10, "maximum": 72 },
+        "actual_anchor_count": { "type": "integer", "minimum": 0, "maximum": 72 },
+        "preparation_document_sha256": { "$ref": "#/$defs/nullableSha256" },
+        "preparation_private_relative_path": {
+          "oneOf": [
+            {
+              "type": "string",
+              "pattern": "^references/YT-0[1-9]\\.anchors\\.private\\.json$"
+            },
+            { "type": "null" }
+          ]
+        },
+        "preflight_state": { "enum": ["passed", "rejected"] },
+        "preflight_error_code": {
+          "oneOf": [
+            { "type": "string", "minLength": 1 },
+            { "type": "null" }
+          ]
+        },
+        "preflight_failure_cue_ordinal": {
+          "oneOf": [
+            { "type": "integer", "minimum": 1, "maximum": 10000 },
+            { "type": "null" }
+          ]
+        },
+        "content_completeness_state": {
+          "enum": ["complete", "partial", "unknown"]
+        },
+        "expected_class": {
+          "enum": ["eligible_supported", "expected_safe_rejection"]
+        },
+        "rights_review_state": {
+          "const": "provisionally_allowed_for_private_benchmark_review_required"
+        },
+        "production_legal_policy_review_required": { "const": true },
+        "state": {
+          "enum": [
+            "ready",
+            "expected_supported_class_rejection",
+            "expected_structural_rejection"
+          ]
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": { "source_token_count_state": { "const": "counted" } },
+            "required": ["source_token_count_state"]
+          },
+          "then": { "properties": { "source_token_count": { "type": "integer" } } }
+        },
+        {
+          "if": {
+            "properties": {
+              "source_token_count_state": { "const": "not_scored_above_eligible_cap" }
+            },
+            "required": ["source_token_count_state"]
+          },
+          "then": {
+            "properties": {
+              "reference_role": { "const": "a1_safe_rejection_record" },
+              "reference_independence": { "const": "not_a_scoring_reference" },
+              "source_token_count": { "type": "null" },
+              "expected_class": { "const": "expected_safe_rejection" }
+            }
+          }
+        },
+        {
+          "if": { "properties": { "state": { "const": "ready" } }, "required": ["state"] },
+          "then": {
+            "properties": {
+              "reference_role": { "const": "a1_input_preservation_oracle" },
+              "reference_independence": { "const": "not_independent_speech_reference" },
+              "source_canonical_sha256": { "$ref": "#/$defs/sha256" },
+              "source_token_count": { "type": "integer" },
+              "source_token_count_state": { "const": "counted" },
+              "normalized_text_character_count": { "type": "integer" },
+              "distinct_timed_start_count": { "type": "integer" },
+              "actual_anchor_count": { "type": "integer", "minimum": 3 },
+              "preparation_document_sha256": { "$ref": "#/$defs/sha256" },
+              "preparation_private_relative_path": { "type": "string" },
+              "preflight_state": { "const": "passed" },
+              "preflight_error_code": { "type": "null" },
+              "preflight_failure_cue_ordinal": { "type": "null" },
+              "expected_class": { "const": "eligible_supported" },
+              "content_completeness_state": { "enum": ["complete", "partial"] }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": { "state": { "const": "expected_supported_class_rejection" } },
+            "required": ["state"]
+          },
+          "then": {
+            "properties": {
+              "reference_role": { "const": "a1_safe_rejection_record" },
+              "reference_independence": { "const": "not_a_scoring_reference" },
+              "source_canonical_sha256": { "$ref": "#/$defs/sha256" },
+              "normalized_text_character_count": { "type": "integer" },
+              "distinct_timed_start_count": { "type": "integer" },
+              "actual_anchor_count": { "const": 0 },
+              "preparation_document_sha256": { "$ref": "#/$defs/sha256" },
+              "preparation_private_relative_path": { "type": "string" },
+              "preflight_state": { "const": "passed" },
+              "preflight_error_code": { "type": "null" },
+              "preflight_failure_cue_ordinal": { "type": "null" },
+              "expected_class": { "const": "expected_safe_rejection" }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": { "state": { "const": "expected_structural_rejection" } },
+            "required": ["state"]
+          },
+          "then": {
+            "properties": {
+              "reference_role": { "const": "a1_safe_rejection_record" },
+              "reference_independence": { "const": "not_a_scoring_reference" },
+              "source_canonical_sha256": { "type": "null" },
+              "source_token_count": { "type": "null" },
+              "source_token_count_state": {
+                "const": "not_scored_strict_preflight_rejection"
+              },
+              "normalized_text_character_count": { "type": "null" },
+              "distinct_timed_start_count": { "type": "null" },
+              "actual_anchor_count": { "const": 0 },
+              "preparation_document_sha256": { "type": "null" },
+              "preparation_private_relative_path": { "type": "null" },
+              "preflight_state": { "const": "rejected" },
+              "preflight_error_code": { "type": "string" },
+              "preflight_failure_cue_ordinal": { "type": "integer" },
+              "expected_class": { "const": "expected_safe_rejection" }
+            }
+          }
+        }
+      ]
+    },
+    "yt01": {
+      "allOf": [
+        { "$ref": "#/$defs/item" },
+        {
+          "type": "object",
+          "properties": {
+            "item_id": { "const": "YT-01" },
+            "preparation_private_relative_path": {
+              "const": "references/YT-01.anchors.private.json"
+            }
+          }
+        }
+      ]
+    },
+    "yt02": {
+      "allOf": [
+        { "$ref": "#/$defs/item" },
+        {
+          "type": "object",
+          "properties": {
+            "item_id": { "const": "YT-02" },
+            "preparation_private_relative_path": {
+              "const": "references/YT-02.anchors.private.json"
+            }
+          }
+        }
+      ]
+    },
+    "yt03": {
+      "allOf": [
+        { "$ref": "#/$defs/item" },
+        { "type": "object", "properties": { "item_id": { "const": "YT-03" } } }
+      ]
+    },
+    "yt04": {
+      "allOf": [
+        { "$ref": "#/$defs/item" },
+        {
+          "type": "object",
+          "properties": {
+            "item_id": { "const": "YT-04" },
+            "state": { "const": "expected_supported_class_rejection" },
+            "reference_role": { "const": "a1_safe_rejection_record" },
+            "reference_independence": { "const": "not_a_scoring_reference" },
+            "source_token_count": { "type": "integer" },
+            "source_token_count_state": { "const": "counted" },
+            "cue_count": { "type": "integer", "minimum": 7201, "maximum": 10000 },
+            "actual_anchor_count": { "const": 0 },
+            "preparation_private_relative_path": {
+              "const": "references/YT-04.anchors.private.json"
+            },
+            "preflight_state": { "const": "passed" },
+            "preflight_error_code": { "type": "null" },
+            "preflight_failure_cue_ordinal": { "type": "null" },
+            "content_completeness_state": { "const": "unknown" },
+            "expected_class": { "const": "expected_safe_rejection" }
+          }
+        }
+      ]
+    },
+    "yt05": {
+      "allOf": [
+        { "$ref": "#/$defs/item" },
+        { "type": "object", "properties": { "item_id": { "const": "YT-05" } } }
+      ]
+    },
+    "yt06": {
+      "allOf": [
+        { "$ref": "#/$defs/item" },
+        { "type": "object", "properties": { "item_id": { "const": "YT-06" } } }
+      ]
+    },
+    "yt07": {
+      "allOf": [
+        { "$ref": "#/$defs/item" },
+        {
+          "type": "object",
+          "properties": {
+            "item_id": { "const": "YT-07" },
+            "preparation_private_relative_path": {
+              "const": "references/YT-07.anchors.private.json"
+            }
+          }
+        }
+      ]
+    },
+    "yt08": {
+      "allOf": [
+        { "$ref": "#/$defs/item" },
+        {
+          "type": "object",
+          "properties": {
+            "item_id": { "const": "YT-08" },
+            "preparation_private_relative_path": {
+              "const": "references/YT-08.anchors.private.json"
+            }
+          }
+        }
+      ]
+    },
+    "yt09": {
+      "allOf": [
+        { "$ref": "#/$defs/item" },
+        {
+          "type": "object",
+          "properties": {
+            "item_id": { "const": "YT-09" },
+            "preparation_private_relative_path": {
+              "const": "references/YT-09.anchors.private.json"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

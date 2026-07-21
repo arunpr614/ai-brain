@@ -1,0 +1,398 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://brain.arunp.in/schemas/youtube-local-model-runtime-ledger-v1.json",
+  "title": "Pinned local enrichment runtime and model ledger",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "candidate_id",
+    "prepared_at",
+    "seal_state",
+    "runtime",
+    "model",
+    "locked_files",
+    "execution_contract",
+    "verification"
+  ],
+  "properties": {
+    "schema_version": { "const": "1.0" },
+    "candidate_id": { "const": "LOCAL-QWEN3-8B-Q4_K_M-LLAMA_CPP-B9637" },
+    "prepared_at": { "type": "string", "format": "date-time" },
+    "seal_state": {
+      "enum": [
+        "blocked_pending_local_artifact_verification",
+        "verified_ready_for_content_freeze"
+      ]
+    },
+    "runtime": { "$ref": "#/$defs/runtimeArtifact" },
+    "model": { "$ref": "#/$defs/modelArtifact" },
+    "locked_files": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "system_prompt",
+        "format_repair_prompt",
+        "output_schema",
+        "authorization_ledger",
+        "key_point_rubric",
+        "sandbox_profile"
+      ],
+      "properties": {
+        "system_prompt": { "$ref": "#/$defs/lockedFile" },
+        "format_repair_prompt": { "$ref": "#/$defs/lockedFile" },
+        "output_schema": { "$ref": "#/$defs/lockedFile" },
+        "authorization_ledger": { "$ref": "#/$defs/lockedFile" },
+        "key_point_rubric": { "$ref": "#/$defs/lockedFile" },
+        "sandbox_profile": { "$ref": "#/$defs/lockedFile" }
+      }
+    },
+    "execution_contract": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "interface",
+        "network",
+        "server_mode",
+        "remote_model_resolution",
+        "temperature",
+        "seed",
+        "top_k",
+        "top_p",
+        "min_p",
+        "repeat_penalty",
+        "context_size",
+        "max_output_tokens",
+        "threads",
+        "threads_batch",
+        "gpu_layers",
+        "reasoning",
+        "attempt_limit",
+        "retry_policy",
+        "timeout_ms_per_attempt",
+        "incremental_cost_usd"
+      ],
+      "properties": {
+        "interface": { "const": "llama-cli_files_only" },
+        "network": { "const": "sandbox_exec_deny_network_plus_llama_offline" },
+        "server_mode": { "const": "prohibited" },
+        "remote_model_resolution": { "const": "prohibited" },
+        "temperature": { "const": 0 },
+        "seed": { "const": 424242 },
+        "top_k": { "const": 1 },
+        "top_p": { "const": 1 },
+        "min_p": { "const": 0 },
+        "repeat_penalty": { "const": 1 },
+        "context_size": { "const": 16384 },
+        "max_output_tokens": { "const": 4096 },
+        "threads": { "const": 8 },
+        "threads_batch": { "const": 8 },
+        "gpu_layers": { "const": "all" },
+        "reasoning": { "const": "disabled" },
+        "attempt_limit": { "const": 2 },
+        "retry_policy": { "const": "one_sealed_format_only_retry_no_semantic_retry" },
+        "timeout_ms_per_attempt": { "const": 1800000 },
+        "incremental_cost_usd": { "const": 0 }
+      }
+    },
+    "verification": {
+      "type": "object",
+      "$comment": "The sealed lock verifier and model harness additionally require ledger_verified_at >= locked_files_hashed_at; JSON Schema cannot compare date-time values.",
+      "additionalProperties": false,
+      "required": [
+        "status",
+        "ledger_verified_at",
+        "locked_files_hashed_at",
+        "verified_by",
+        "runtime_expected_matches_observed",
+        "model_expected_matches_observed",
+        "extracted_manifest_complete",
+        "blocked_reasons"
+      ],
+      "properties": {
+        "status": { "enum": ["pending", "verified"] },
+        "ledger_verified_at": { "type": ["string", "null"], "format": "date-time" },
+        "locked_files_hashed_at": { "type": ["string", "null"], "format": "date-time" },
+        "verified_by": { "type": ["string", "null"], "minLength": 1 },
+        "runtime_expected_matches_observed": { "type": "boolean" },
+        "model_expected_matches_observed": { "type": "boolean" },
+        "extracted_manifest_complete": { "type": "boolean" },
+        "blocked_reasons": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": { "type": "string", "minLength": 1 }
+        }
+      }
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": { "seal_state": { "const": "verified_ready_for_content_freeze" } },
+        "required": ["seal_state"]
+      },
+      "then": {
+        "type": "object",
+        "properties": {
+          "runtime": {
+            "type": "object",
+            "properties": {
+              "observed_archive": { "$ref": "#/$defs/verifiedDownloadedFile" },
+              "extracted": {
+                "type": "object",
+                "properties": {
+                  "llama_cli": { "$ref": "#/$defs/verifiedObservedFile" },
+                  "file_manifest": {
+                    "type": "array",
+                    "minItems": 11,
+                    "maxItems": 11,
+                    "items": { "$ref": "#/$defs/extractedFile" }
+                  },
+                  "dylib_manifest_hash_algorithm": {
+                    "const": "sha256_utf8_json_stringify_runtime_library_entries_sorted_by_relative_path"
+                  },
+                  "dylib_manifest_sha256": { "$ref": "#/$defs/sha256" },
+                  "license_sha256": { "$ref": "#/$defs/sha256" },
+                  "build_info_hash_algorithm": { "const": "sha256_utf8_json_stringify" },
+                  "build_info_sha256": { "$ref": "#/$defs/sha256" },
+                  "build_info": { "$ref": "#/$defs/buildInfo" }
+                }
+              }
+            }
+          },
+          "model": {
+            "type": "object",
+            "properties": {
+              "observed_file": { "$ref": "#/$defs/verifiedDownloadedFile" }
+            }
+          },
+          "verification": {
+            "type": "object",
+            "properties": {
+              "status": { "const": "verified" },
+              "ledger_verified_at": { "type": "string", "format": "date-time" },
+              "locked_files_hashed_at": { "type": "string", "format": "date-time" },
+              "verified_by": { "type": "string", "minLength": 1 },
+              "runtime_expected_matches_observed": { "const": true },
+              "model_expected_matches_observed": { "const": true },
+              "extracted_manifest_complete": { "const": true },
+              "blocked_reasons": { "type": "array", "maxItems": 0 }
+            }
+          }
+        }
+      }
+    }
+  ],
+  "$defs": {
+    "sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+    "expectedFile": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["bytes", "sha256"],
+      "properties": {
+        "bytes": { "type": "integer", "minimum": 1 },
+        "sha256": { "$ref": "#/$defs/sha256" }
+      }
+    },
+    "observedFile": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["bytes", "sha256"],
+      "properties": {
+        "bytes": { "type": ["integer", "null"], "minimum": 1 },
+        "sha256": {
+          "anyOf": [{ "$ref": "#/$defs/sha256" }, { "type": "null" }]
+        }
+      }
+    },
+    "verifiedObservedFile": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["bytes", "sha256"],
+      "properties": {
+        "bytes": { "type": "integer", "minimum": 1 },
+        "sha256": { "$ref": "#/$defs/sha256" }
+      }
+    },
+    "downloadedObservedFile": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["bytes", "sha256", "mode", "recovery_retries"],
+      "properties": {
+        "bytes": { "type": ["integer", "null"], "minimum": 1 },
+        "sha256": {
+          "anyOf": [{ "$ref": "#/$defs/sha256" }, { "type": "null" }]
+        },
+        "mode": { "enum": ["0600", null] },
+        "recovery_retries": { "type": ["integer", "null"], "minimum": 0 }
+      }
+    },
+    "verifiedDownloadedFile": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["bytes", "sha256", "mode", "recovery_retries"],
+      "properties": {
+        "bytes": { "type": "integer", "minimum": 1 },
+        "sha256": { "$ref": "#/$defs/sha256" },
+        "mode": { "const": "0600" },
+        "recovery_retries": { "const": 0 }
+      }
+    },
+    "lockedFile": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "sha256"],
+      "properties": {
+        "path": {
+          "type": "string",
+          "pattern": "^docs/feature-council/youtube-transcript-enrichment/.+",
+          "not": { "pattern": "(?:^|/)[.][.](?:/|$)|[\\\\]|//" }
+        },
+        "sha256": { "$ref": "#/$defs/sha256" }
+      }
+    },
+    "extractedFile": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["relative_path", "role", "bytes", "sha256", "mode"],
+      "properties": {
+        "relative_path": {
+          "enum": [
+            "LICENSE",
+            "llama-cli",
+            "libllama-cli-impl.dylib",
+            "libllama-common.0.0.9637.dylib",
+            "libllama.0.0.9637.dylib",
+            "libggml.0.15.1.dylib",
+            "libggml-base.0.15.1.dylib",
+            "libggml-cpu.0.15.1.dylib",
+            "libggml-metal.0.15.1.dylib",
+            "libggml-blas.0.15.1.dylib",
+            "libggml-rpc.0.15.1.dylib"
+          ]
+        },
+        "role": { "enum": ["license", "executable", "runtime_library"] },
+        "bytes": { "type": "integer", "minimum": 1 },
+        "sha256": { "$ref": "#/$defs/sha256" },
+        "mode": { "enum": ["0600", "0700"] }
+      }
+    },
+    "buildInfo": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["version_output", "compiler", "platform", "architecture", "codesign"],
+      "properties": {
+        "version_output": { "const": "9637 (aedb2a5e9)" },
+        "compiler": { "const": "AppleClang 21.0.0.21000101" },
+        "platform": { "const": "Darwin" },
+        "architecture": { "const": "arm64" },
+        "codesign": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["identifier", "signature", "team_identifier"],
+          "properties": {
+            "identifier": { "const": "llama-cli" },
+            "signature": { "const": "adhoc" },
+            "team_identifier": { "const": "not set" }
+          }
+        }
+      }
+    },
+    "runtimeArtifact": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "project",
+        "release_tag",
+        "commit",
+        "license",
+        "archive_url",
+        "archive_filename",
+        "expected_archive",
+        "observed_archive",
+        "extracted"
+      ],
+      "properties": {
+        "project": { "const": "ggml-org/llama.cpp" },
+        "release_tag": { "const": "b9637" },
+        "commit": { "const": "aedb2a5e9ca3d4064148bbb919e0ddc0c1b70ab3" },
+        "license": { "const": "MIT" },
+        "archive_url": {
+          "const": "https://github.com/ggml-org/llama.cpp/releases/download/b9637/llama-b9637-bin-macos-arm64.zip"
+        },
+        "archive_filename": { "const": "llama-b9637-bin-macos-arm64.zip" },
+        "expected_archive": { "$ref": "#/$defs/expectedFile" },
+        "observed_archive": { "$ref": "#/$defs/downloadedObservedFile" },
+        "extracted": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "llama_cli_relative_path",
+            "llama_cli",
+            "file_manifest",
+            "dylib_manifest_hash_algorithm",
+            "dylib_manifest_sha256",
+            "license_sha256",
+            "build_info_hash_algorithm",
+            "build_info_sha256",
+            "build_info"
+          ],
+          "properties": {
+            "llama_cli_relative_path": { "const": "llama-cli" },
+            "llama_cli": { "$ref": "#/$defs/observedFile" },
+            "file_manifest": {
+              "type": "array",
+              "minItems": 0,
+              "maxItems": 11,
+              "items": { "$ref": "#/$defs/extractedFile" }
+            },
+            "dylib_manifest_hash_algorithm": {
+              "const": "sha256_utf8_json_stringify_runtime_library_entries_sorted_by_relative_path"
+            },
+            "dylib_manifest_sha256": {
+              "anyOf": [{ "$ref": "#/$defs/sha256" }, { "type": "null" }]
+            },
+            "license_sha256": {
+              "anyOf": [{ "$ref": "#/$defs/sha256" }, { "type": "null" }]
+            },
+            "build_info_hash_algorithm": { "const": "sha256_utf8_json_stringify" },
+            "build_info_sha256": {
+              "anyOf": [{ "$ref": "#/$defs/sha256" }, { "type": "null" }]
+            },
+            "build_info": {
+              "anyOf": [{ "$ref": "#/$defs/buildInfo" }, { "type": "null" }]
+            }
+          }
+        }
+      }
+    },
+    "modelArtifact": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "repository",
+        "revision",
+        "filename",
+        "download_url",
+        "license",
+        "license_url",
+        "expected_file",
+        "observed_file"
+      ],
+      "properties": {
+        "repository": { "const": "Qwen/Qwen3-8B-GGUF" },
+        "revision": { "const": "6a569868d07d3bd59e8b97fb001bf8c0b254bb20" },
+        "filename": { "const": "Qwen3-8B-Q4_K_M.gguf" },
+        "download_url": {
+          "const": "https://huggingface.co/Qwen/Qwen3-8B-GGUF/resolve/6a569868d07d3bd59e8b97fb001bf8c0b254bb20/Qwen3-8B-Q4_K_M.gguf"
+        },
+        "license": { "const": "Apache-2.0" },
+        "license_url": {
+          "const": "https://huggingface.co/Qwen/Qwen3-8B-GGUF/blob/6a569868d07d3bd59e8b97fb001bf8c0b254bb20/LICENSE"
+        },
+        "expected_file": { "$ref": "#/$defs/expectedFile" },
+        "observed_file": { "$ref": "#/$defs/downloadedObservedFile" }
+      }
+    }
+  }
+}

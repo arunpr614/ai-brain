@@ -1,0 +1,10 @@
+WEBVTT
+
+alpha-id
+00:01.000 --> 00:03.000 align:start
+Publication-safe alpha.
+
+beta-id
+00:02.500 --> 00:04.000
+Unicode café line one.
+Line two.

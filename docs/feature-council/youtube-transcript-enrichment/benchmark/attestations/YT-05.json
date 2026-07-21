@@ -1,0 +1,58 @@
+{
+  "schema_version": "1.2",
+  "item_id": "YT-05",
+  "youtube_video_id": "n-Z5XRD8j3I",
+  "attested_at": "2026-07-16T18:13:23Z",
+  "content_rights": {
+    "state": "provisionally_allowed_for_private_benchmark_review_required",
+    "evidence_url": "https://svs.gsfc.nasa.gov/14433/",
+    "rationale": "NASA/SVS publishes the broadcast under its baseline; expressly licensed performance/music is excluded from transcript-only processing.",
+    "review_required": true
+  },
+  "transcript_rights": {
+    "state": "provisionally_allowed_for_private_benchmark_review_required",
+    "evidence_url": "https://svs.gsfc.nasa.gov/14433/",
+    "rationale": "NASA/SVS publishes the exact YouTubeHD VTT as an official caption asset. Private preservation is provisional under the cited terms; music and legal/policy review remain unresolved.",
+    "review_required": true
+  },
+  "source": {
+    "owner": "NASA Goddard Space Flight Center",
+    "source_page_url": "https://svs.gsfc.nasa.gov/14433/",
+    "sidecar_url": "https://svs.gsfc.nasa.gov/vis/a010000/a014400/a014433/2023_INOMN_YouTubeHD_CAPTIONS.en_US.vtt",
+    "sidecar_sha256": "431edebc537261748bce67d1ae099da6160d88e8dc2d3450b58cafcef303ada8",
+    "private_relative_path": "inputs/nasa/YT_IOMN_n-Z5XRD8j3I.vtt"
+  },
+  "input_contract": {
+    "format": "vtt",
+    "language_tag": "en-US",
+    "declared_duration_ms": 3550037,
+    "expected_cue_count": 814,
+    "last_cue_end_ms": 3504466,
+    "content_completeness": {
+      "state": "partial",
+      "basis": "source_coverage_record",
+      "rationale": "The exact official sidecar is usable but ends 45.571 seconds before the source-media duration; the benchmark preserves that limitation and never upgrades it to complete."
+    },
+    "expected_class": "expected_safe_rejection"
+  },
+  "retention_and_derivation": {
+    "full_text_private": true,
+    "publication": "hashes_and_derived_metrics_only",
+    "embeddings": "not_created",
+    "model_upload": "prohibited_in_protocol_v2",
+    "delete_by": "2026-10-14",
+    "evidence_url": "https://svs.gsfc.nasa.gov/help/",
+    "rationale": "Only captions and metadata are retained privately; video/audio remain link-only because of extensive licensed music."
+  },
+  "attribution": {
+    "credit": "NASA's Goddard Space Flight Center",
+    "no_endorsement": true,
+    "third_party_caveats": ["P!NK/Ndlovu Youth Choir, Sony/UNICEF publishing, and Universal Production Music credits remain controlling."]
+  },
+  "version_equivalence": {
+    "state": "official_row_level_publication_association",
+    "evidence": "SVS 14433 co-locates the YouTubeHD media, same-stem caption files, and wrapped official NASA Goddard YouTube destination.",
+    "youtube_side_verified": false
+  },
+  "claims_boundary": ["input_preservation_only", "not_independent_wer_reference", "youtube_caption_state_unverified", "not_legal_approval", "not_production_readiness"]
+}

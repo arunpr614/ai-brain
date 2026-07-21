@@ -1,0 +1,48 @@
+{
+  "$schema": "https://brain.arunp.in/schemas/youtube-a1-execution-contract-v1.json",
+  "schema_version": "1.0",
+  "contract_id": "sealed-a1-write-once-attempt-v1",
+  "operator_version": "1.1.0",
+  "receipt_schema_version": "1.1",
+  "attempt_claim_schema_version": "1.0",
+  "attempt_terminal_schema_version": "1.0",
+  "child_timeout_ms": 120000,
+  "execution_boundary": "sealed_default_dependencies",
+  "runtime": {
+    "node_executable": "/opt/homebrew/opt/node@22/bin/node",
+    "path": "/Library/Developer/CommandLineTools/usr/bin:/usr/bin:/bin",
+    "git_executable_precedence": "/Library/Developer/CommandLineTools/usr/bin/git",
+    "tsx_cache_disabled": true,
+    "transcript_policy_environment": "lab",
+    "network": "deny_all",
+    "filesystem_default": "deny_read_and_write",
+    "repository_data_reads": "verified_lock_and_exact_frozen_file_literals_plus_git_metadata_and_exact_ignore_files",
+    "repository_directory_reads": "metadata_and_exact_directory_entries_only",
+    "unfrozen_repository_file_data": "denied",
+    "private_writes": "exact_current_cell_or_scorer_temporary_subtree_only",
+    "node_modules": "canonical_local_non_symlink_directory"
+  },
+  "attempt": {
+    "claim_before_private_cell_or_child": true,
+    "claim_write": "o_excl_o_nofollow_fsync_file_and_parent",
+    "failure_terminal": "canonical_hashes_and_counts_only_o_excl_o_nofollow_fsync_file_and_parent",
+    "hard_termination_without_terminal": "aborted_no_pass",
+    "rerun_policy": "reject_if_claim_or_fixed_cell_receipt_or_terminal_exists_before_any_attempt_write",
+    "uniqueness_scope": "authoritative_worktree_only",
+    "residual_limitation": "copied_repositories_malicious_claim_deletion_or_same_user_forgery_require_procedural_external_audit"
+  },
+  "oracle": {
+    "authority_validator_version": "1.0.0",
+    "database_validator_version": "1.0.0",
+    "database_max_bytes": 67108864,
+    "normalized_item_video_page_asset_and_input_hash_binding": true,
+    "positive_and_supported_report_preflight_counts_exact": true,
+    "repeat_normalized_file_bytes_exact": true,
+    "provider_network_llm_and_enrichment_attempts": 0
+  },
+  "publication": {
+    "sealed_default_dependencies_eligible": true,
+    "development_test_only_eligible": false,
+    "primary_private_content": "never_publish"
+  }
+}

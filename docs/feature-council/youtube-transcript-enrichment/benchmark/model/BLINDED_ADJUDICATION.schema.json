@@ -1,0 +1,73 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://brain.arunp.in/schemas/youtube-blinded-adjudication-result-v1.json",
+  "title": "Exact-five blinded Gate 4 adjudication result",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "packet_id", "packet_sha256", "execution_contract_sha256", "role", "execution_attestation", "started_at", "completed_at", "items", "claims_boundary"],
+  "properties": {
+    "schema_version": { "const": "1.0" },
+    "packet_id": { "type": "string", "pattern": "^G4-EVAL-J-[0-9a-f]{12}$" },
+    "packet_sha256": { "$ref": "#/$defs/sha256" },
+    "execution_contract_sha256": { "$ref": "#/$defs/sha256" },
+    "role": { "const": "adjudicator" },
+    "execution_attestation": { "$ref": "#/$defs/executionAttestation" },
+    "started_at": { "type": "string", "format": "date-time" },
+    "completed_at": { "type": "string", "format": "date-time" },
+    "items": {
+      "type": "array", "minItems": 5, "maxItems": 5, "uniqueItems": true,
+      "items": {
+        "type": "object", "additionalProperties": false,
+        "required": ["blinded_item_id", "decisions"],
+        "properties": {
+          "blinded_item_id": { "type": "string", "pattern": "^J00[1-5]$" },
+          "decisions": {
+            "type": "array", "maxItems": 100, "uniqueItems": true,
+            "items": {
+              "type": "object", "additionalProperties": false,
+              "required": ["dispute_id", "selected_option", "rationale"],
+              "properties": {
+                "dispute_id": { "type": "string", "pattern": "^D[0-9a-f]{12}$" },
+                "selected_option": { "enum": ["evaluator_a", "evaluator_b"] },
+                "rationale": { "type": "string", "minLength": 1, "maxLength": 1200 }
+              }
+            }
+          }
+        }
+      }
+    },
+    "claims_boundary": { "const": "ai_evaluated_provisional_pending_human_stakeholder_review" }
+  },
+  "$defs": {
+    "sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+    "executionAttestation": {
+      "type": "object", "additionalProperties": false,
+      "required": ["fresh_process", "packet_only_file_context", "candidate_identity_hidden", "candidate_runtime_hidden", "price_latency_hidden", "both_evaluator_results_seen_only_for_disputes", "pinned_runtime_verified", "pinned_model_verified", "role_prompt_hash_verified", "deny_network_sandbox_verified", "tools_available", "network_available", "external_content_transfer", "evaluator_initiated_provider_calls", "external_api_calls", "incremental_spend_usd", "local_model_identity", "same_model_evaluator_bias_acknowledged", "training_performed", "private_retention_delete_by", "contract_accepted", "consent_attestation_present", "additional_transcript_content_received"],
+      "properties": {
+        "fresh_process": { "const": true },
+        "packet_only_file_context": { "const": true },
+        "candidate_identity_hidden": { "const": true },
+        "candidate_runtime_hidden": { "const": true },
+        "price_latency_hidden": { "const": true },
+        "both_evaluator_results_seen_only_for_disputes": { "const": true },
+        "pinned_runtime_verified": { "const": true },
+        "pinned_model_verified": { "const": true },
+        "role_prompt_hash_verified": { "const": true },
+        "deny_network_sandbox_verified": { "const": true },
+        "tools_available": { "const": false },
+        "network_available": { "const": false },
+        "external_content_transfer": { "const": false },
+        "evaluator_initiated_provider_calls": { "const": 0 },
+        "external_api_calls": { "const": 0 },
+        "incremental_spend_usd": { "const": 0 },
+        "local_model_identity": { "const": "LOCAL-QWEN3-8B-Q4_K_M-LLAMA_CPP-B9637" },
+        "same_model_evaluator_bias_acknowledged": { "const": true },
+        "training_performed": { "const": false },
+        "private_retention_delete_by": { "const": "2026-10-14" },
+        "contract_accepted": { "const": true },
+        "consent_attestation_present": { "const": true },
+        "additional_transcript_content_received": { "const": false }
+      }
+    }
+  }
+}

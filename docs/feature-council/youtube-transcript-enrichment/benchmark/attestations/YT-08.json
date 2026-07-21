@@ -1,0 +1,58 @@
+{
+  "schema_version": "1.2",
+  "item_id": "YT-08",
+  "youtube_video_id": "UETFgQMLxZo",
+  "attested_at": "2026-07-16T18:13:23Z",
+  "content_rights": {
+    "state": "provisionally_allowed_for_private_benchmark_review_required",
+    "evidence_url": "https://svs.gsfc.nasa.gov/14893/",
+    "rationale": "NASA/SVS publishes the short trailer under its baseline; licensed music is excluded from transcript-only processing.",
+    "review_required": true
+  },
+  "transcript_rights": {
+    "state": "provisionally_allowed_for_private_benchmark_review_required",
+    "evidence_url": "https://svs.gsfc.nasa.gov/14893/",
+    "rationale": "NASA publishes the short-trailer VTT as an official same-group caption asset; retain privately with provenance and do not mix the extended variant.",
+    "review_required": true
+  },
+  "source": {
+    "owner": "NASA Goddard Space Flight Center",
+    "source_page_url": "https://svs.gsfc.nasa.gov/14893/",
+    "sidecar_url": "https://svs.gsfc.nasa.gov/vis/a010000/a014800/a014893/14893_IMAPTrailerShort.en_US.vtt",
+    "sidecar_sha256": "9bd59a52838db6b8030b3a5fb128f60fd2340f1226e96863d3366ee840fee06f",
+    "private_relative_path": "inputs/nasa/YT_IMAP_UETFgQMLxZo.vtt"
+  },
+  "input_contract": {
+    "format": "vtt",
+    "language_tag": "en-US",
+    "declared_duration_ms": 54997,
+    "expected_cue_count": 13,
+    "last_cue_end_ms": 53760,
+    "content_completeness": {
+      "state": "complete",
+      "basis": "explicit_source_assertion",
+      "rationale": "The official source publishes the complete short-trailer transcript; the separate extended-trailer artifacts are excluded and the 1.237-second tail remains recorded."
+    },
+    "expected_class": "eligible_supported"
+  },
+  "retention_and_derivation": {
+    "full_text_private": true,
+    "publication": "hashes_and_derived_metrics_only",
+    "embeddings": "not_created",
+    "model_upload": "prohibited_in_protocol_v2",
+    "delete_by": "2026-10-14",
+    "evidence_url": "https://svs.gsfc.nasa.gov/help/",
+    "rationale": "Caption-only private evaluation; soundtrack/media remain link-only."
+  },
+  "attribution": {
+    "credit": "NASA's Goddard Space Flight Center",
+    "no_endorsement": true,
+    "third_party_caveats": ["Universal Production Music track is not retained, extracted, or redistributed."]
+  },
+  "version_equivalence": {
+    "state": "official_row_level_publication_association",
+    "evidence": "The first/short-trailer group co-locates the Short MP4, Short VTT/SRT/transcript, and exact official YouTube link; the extended group is excluded.",
+    "youtube_side_verified": false
+  },
+  "claims_boundary": ["input_preservation_only", "not_independent_wer_reference", "youtube_caption_state_unverified", "not_legal_approval", "not_production_readiness"]
+}

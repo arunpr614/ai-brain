@@ -1,0 +1,238 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://brain.arunp.in/schemas/youtube-a1-attestation-v1.2.json",
+  "title": "Rights-attested sidecar benchmark input",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "item_id",
+    "youtube_video_id",
+    "attested_at",
+    "content_rights",
+    "transcript_rights",
+    "source",
+    "input_contract",
+    "retention_and_derivation",
+    "attribution",
+    "version_equivalence",
+    "claims_boundary"
+  ],
+  "properties": {
+    "schema_version": { "const": "1.2" },
+    "item_id": { "type": "string", "pattern": "^YT-[0-9]{2}$" },
+    "youtube_video_id": { "type": "string", "pattern": "^[A-Za-z0-9_-]{11}$" },
+    "attested_at": { "type": "string", "format": "date-time" },
+    "content_rights": { "$ref": "#/$defs/evidenceDecision" },
+    "transcript_rights": { "$ref": "#/$defs/evidenceDecision" },
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["owner", "source_page_url", "sidecar_url", "sidecar_sha256", "private_relative_path"],
+      "properties": {
+        "owner": { "type": "string", "minLength": 1 },
+        "source_page_url": { "type": "string", "format": "uri", "pattern": "^https://" },
+        "sidecar_url": { "type": "string", "format": "uri", "pattern": "^https://" },
+        "sidecar_sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+        "private_relative_path": {
+          "type": "string",
+          "allOf": [
+            { "pattern": "^inputs/[^/]+/.+\\.(vtt|srt)$" },
+            { "not": { "pattern": "(?:^|/)(?:\\.|\\.\\.)(?:/|$)" } },
+            { "not": { "pattern": "//|\\\\|\\u0000" } }
+          ]
+        }
+      }
+    },
+    "input_contract": {
+      "type": "object",
+      "$comment": "The companion parseLockedA1Attestation runtime validator additionally enforces last_cue_end_ms <= declared_duration_ms; standard JSON Schema cannot compare two sibling numeric values.",
+      "additionalProperties": false,
+      "required": [
+        "format",
+        "language_tag",
+        "declared_duration_ms",
+        "expected_cue_count",
+        "last_cue_end_ms",
+        "content_completeness",
+        "expected_class"
+      ],
+      "properties": {
+        "format": { "enum": ["srt", "vtt"] },
+        "language_tag": {
+          "type": "string",
+          "pattern": "^[A-Za-z]{2,3}(?:-[A-Za-z0-9]{2,8})*$"
+        },
+        "declared_duration_ms": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 21600000
+        },
+        "expected_cue_count": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 10000
+        },
+        "last_cue_end_ms": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 21600000
+        },
+        "content_completeness": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["state", "basis", "rationale"],
+          "properties": {
+            "state": { "enum": ["complete", "partial", "unknown"] },
+            "basis": {
+              "enum": [
+                "explicit_source_assertion",
+                "source_coverage_record",
+                "user_attestation",
+                "unknown"
+              ]
+            },
+            "rationale": { "type": "string", "minLength": 1, "maxLength": 1024 }
+          }
+        },
+        "expected_class": {
+          "enum": ["eligible_supported", "expected_safe_rejection"]
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "type": "object",
+            "properties": { "expected_class": { "const": "eligible_supported" } },
+            "required": ["expected_class"]
+          },
+          "then": {
+            "type": "object",
+            "properties": {
+              "content_completeness": {
+                "type": "object",
+                "properties": {
+                  "state": { "enum": ["complete", "partial"] },
+                  "basis": {
+                    "enum": [
+                      "explicit_source_assertion",
+                      "source_coverage_record",
+                      "user_attestation"
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "type": "object",
+            "properties": {
+              "content_completeness": {
+                "type": "object",
+                "properties": { "state": { "const": "partial" } },
+                "required": ["state"]
+              }
+            },
+            "required": ["content_completeness"]
+          },
+          "then": {
+            "type": "object",
+            "properties": {
+              "content_completeness": {
+                "type": "object",
+                "properties": { "basis": { "const": "source_coverage_record" } }
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "type": "object",
+            "properties": {
+              "content_completeness": {
+                "type": "object",
+                "properties": { "state": { "const": "unknown" } },
+                "required": ["state"]
+              }
+            },
+            "required": ["content_completeness"]
+          },
+          "then": {
+            "type": "object",
+            "properties": {
+              "expected_class": { "const": "expected_safe_rejection" }
+            }
+          }
+        }
+      ]
+    },
+    "retention_and_derivation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["full_text_private", "publication", "embeddings", "model_upload", "delete_by", "evidence_url", "rationale"],
+      "properties": {
+        "full_text_private": { "const": true },
+        "publication": { "const": "hashes_and_derived_metrics_only" },
+        "embeddings": { "const": "not_created" },
+        "model_upload": { "const": "prohibited_in_protocol_v2" },
+        "delete_by": { "type": "string", "format": "date" },
+        "evidence_url": { "type": "string", "format": "uri", "pattern": "^https://" },
+        "rationale": { "type": "string", "minLength": 1 }
+      }
+    },
+    "attribution": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["credit", "no_endorsement", "third_party_caveats"],
+      "properties": {
+        "credit": { "type": "string", "minLength": 1 },
+        "no_endorsement": { "const": true },
+        "third_party_caveats": { "type": "array", "items": { "type": "string", "minLength": 1 } }
+      }
+    },
+    "version_equivalence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["state", "evidence", "youtube_side_verified"],
+      "properties": {
+        "state": { "const": "official_row_level_publication_association" },
+        "evidence": { "type": "string", "minLength": 1 },
+        "youtube_side_verified": { "const": false }
+      }
+    },
+    "claims_boundary": {
+      "type": "array",
+      "minItems": 3,
+      "uniqueItems": true,
+      "items": {
+        "enum": [
+          "input_preservation_only",
+          "not_independent_wer_reference",
+          "youtube_caption_state_unverified",
+          "not_legal_approval",
+          "not_production_readiness"
+        ]
+      },
+      "allOf": [
+        { "contains": { "const": "input_preservation_only" } },
+        { "contains": { "const": "not_independent_wer_reference" } },
+        { "contains": { "const": "youtube_caption_state_unverified" } }
+      ]
+    }
+  },
+  "$defs": {
+    "evidenceDecision": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["state", "evidence_url", "rationale", "review_required"],
+      "properties": {
+        "state": { "const": "provisionally_allowed_for_private_benchmark_review_required" },
+        "evidence_url": { "type": "string", "format": "uri", "pattern": "^https://" },
+        "rationale": { "type": "string", "minLength": 1 },
+        "review_required": { "const": true }
+      }
+    }
+  }
+}

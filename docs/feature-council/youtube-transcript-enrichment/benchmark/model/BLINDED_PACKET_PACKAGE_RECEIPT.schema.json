@@ -1,0 +1,60 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://brain.arunp.in/schemas/youtube-blinded-packet-package-receipt-v1.json",
+  "title": "Canonical write-once blinded packet package receipt",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "operator_version", "state", "content_commit", "seal_commit", "benchmark_lock_sha256", "public_package_attempt_claim_sha256", "packet_generated_at", "consent_attestation_sha256", "execution_readiness_sha256", "bundle_sha256", "packet_sha256", "evidence", "source_selection", "package_location_policy", "external_provider_calls", "external_content_transfer", "claims_boundary"],
+  "properties": {
+    "schema_version": { "const": "1.0" },
+    "operator_version": { "const": "1.0.0" },
+    "state": { "const": "written_exclusively" },
+    "content_commit": { "$ref": "#/$defs/gitSha" },
+    "seal_commit": { "$ref": "#/$defs/gitSha" },
+    "benchmark_lock_sha256": { "$ref": "#/$defs/sha256" },
+    "public_package_attempt_claim_sha256": { "$ref": "#/$defs/sha256" },
+    "packet_generated_at": { "$ref": "#/$defs/dateTime" },
+    "consent_attestation_sha256": { "$ref": "#/$defs/sha256" },
+    "execution_readiness_sha256": { "$ref": "#/$defs/sha256" },
+    "bundle_sha256": { "$ref": "#/$defs/sha256" },
+    "packet_sha256": {
+      "type": "object", "additionalProperties": false,
+      "required": ["evaluator_a", "evaluator_b"],
+      "properties": { "evaluator_a": { "$ref": "#/$defs/sha256" }, "evaluator_b": { "$ref": "#/$defs/sha256" } }
+    },
+    "evidence": {
+      "type": "array", "minItems": 5, "maxItems": 5,
+      "prefixItems": [
+        { "allOf": [{ "$ref": "#/$defs/item" }, { "type": "object", "properties": { "item_id": { "const": "YT-01" } } }] },
+        { "allOf": [{ "$ref": "#/$defs/item" }, { "type": "object", "properties": { "item_id": { "const": "YT-02" } } }] },
+        { "allOf": [{ "$ref": "#/$defs/item" }, { "type": "object", "properties": { "item_id": { "const": "YT-07" } } }] },
+        { "allOf": [{ "$ref": "#/$defs/item" }, { "type": "object", "properties": { "item_id": { "const": "YT-08" } } }] },
+        { "allOf": [{ "$ref": "#/$defs/item" }, { "type": "object", "properties": { "item_id": { "const": "YT-09" } } }] }
+      ],
+      "items": false
+    },
+    "source_selection": { "const": "canonical_gate3_handoff_and_fixed_first_write_gate4_paths_only" },
+    "package_location_policy": { "const": "private_evidence_root_outputs_seal_gate4_evaluation_package" },
+    "external_provider_calls": { "const": 0 },
+    "external_content_transfer": { "const": false },
+    "claims_boundary": { "const": "ai_evaluated_provisional_pending_human_stakeholder_review" }
+  },
+  "$defs": {
+    "sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+    "gitSha": { "type": "string", "pattern": "^[0-9a-f]{40}$" },
+    "dateTime": { "type": "string", "pattern": "^20[0-9]{2}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(?:\\.[0-9]+)?(?:Z|[+-][0-9]{2}:[0-9]{2})$" },
+    "item": {
+      "type": "object", "additionalProperties": false,
+      "required": ["item_id", "gate_3_result_sha256", "gate_4_attempt_claim_sha256", "gate_4_run_id", "gate_4_public_report_sha256", "normalized_input_sha256", "enrichment_output_sha256"],
+      "properties": {
+        "item_id": { "type": "string" },
+        "gate_3_result_sha256": { "$ref": "#/$defs/sha256" },
+        "gate_4_attempt_claim_sha256": { "$ref": "#/$defs/sha256" },
+        "gate_4_run_id": { "type": "string", "pattern": "^YT-[0-9]{2}-[0-9]{8}T[0-9]{6}Z-[0-9a-f]{12}$" },
+        "gate_4_public_report_sha256": { "$ref": "#/$defs/sha256" },
+        "normalized_input_sha256": { "$ref": "#/$defs/sha256" },
+        "enrichment_output_sha256": { "$ref": "#/$defs/sha256" }
+      }
+    }
+  }
+}
