@@ -9,6 +9,8 @@
 
 **Limited-go to account-gated synthetic feasibility testing; no-go for production implementation.** The researched paths are materially different products and must never share one misleading “synchronized” promise.
 
+This Limited-go is a **research disposition only**. The subsequent controlling [council v2](../council/2026-07-21_council-recommendation_v2.md) product decision is **Defer**; it permits no build or downstream product package.
+
 | Account/path | Supported automation boundary | Truthful terminal state | Current decision |
 |---|---|---|---|
 | Gemini Notebook Enterprise | Documented Preview/`v1alpha` notebook/source operations | `Synced` only after exact source mapping and documented `COMPLETE` state | Limited-go to synthetic spike if already entitled and Preview approved |
@@ -16,7 +18,7 @@
 | Unofficial consumer connector | Internal RPC or browser/DOM automation with Google session state | Unsupported and unsafe to promise | No-go; do not execute without separate approval |
 | Manual Markdown | User export/import | User-confirmed only | Safe fallback |
 
-No strategy has been executed. No account, notebook, project, source, OAuth flow, subscription, or real item has been used. All hard-limit counters remain zero.
+No live strategy has been executed. Two credential-free strategy simulations used the fixed 10/10 synthetic identities and exercised two simulated retries for one definite failure; the final local suites passed 46/46. No account, notebook, project, real source, OAuth flow, subscription, or real item has been used, and all live/authentication/resource/spend counters remain zero.
 
 ## Evidence-backed findings
 
@@ -27,7 +29,7 @@ No strategy has been executed. No account, notebook, project, source, OAuth flow
 - A licensed user, Cloud project/API, region, IAM role, and notebook Owner/Editor access are required. Service-account compatibility with licensed notebook ownership is not documented.
 - Source creation/upload/get/delete is documented. Source update/refresh, webhook, caller source ID, idempotency key, source-list endpoint, batch maximum, and method-specific quotas are not.
 - The absence of documented create idempotency makes a lost provider response the decisive risk. A synthetic spike must prove unique marker reconciliation through supported notebook/source inventory. If it cannot, unattended creation is no-go.
-- Enterprise sources are static. Daily aggregate sources plus explicit retention are more viable than per-item sources.
+- Enterprise sources are static. Size-bounded daily or weekly aggregate sources plus explicit retention are more viable than per-item sources; council did not select a cadence without live latency, capacity, and workflow evidence.
 
 ### Consumer and ordinary Workspace
 

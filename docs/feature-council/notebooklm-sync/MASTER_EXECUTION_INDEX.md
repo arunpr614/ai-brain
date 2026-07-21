@@ -1,6 +1,6 @@
 # AI Brain → NotebookLM Synchronization — Master Execution Index
 
-**Status:** Final product decision **Defer**; public/credential-free research complete; Gate 0/live validation pending — not implemented
+**Status:** Final product decision **Defer**; research and review-only delivery complete; Gate 0/live validation remains a re-entry condition — not implemented
 **Verified:** 2026-07-21
 **Worktree:** `Phase21-NotebookLM-sync`
 **Branch:** `research/notebooklm-sync`
@@ -45,6 +45,7 @@ This package evaluates a one-way, idempotent synchronization path from AI Brain 
 - [Council recommendation v1](council/2026-07-21_council-recommendation_v1.md)
 - [Council adversarial review](council/2026-07-21_council-recommendation_adversarial-review.md)
 - [Council recommendation v2](council/2026-07-21_council-recommendation_v2.md)
+- [Final delivery report](FINAL_DELIVERY_REPORT_2026-07-21.md)
 
 ## Evidence packages
 
@@ -55,12 +56,12 @@ This package evaluates a one-way, idempotent synchronization path from AI Brain 
 | Open-source research | Connectors, CLIs, browser automation, alternatives | Complete |
 | Security/QA review | Threat model, scopes, credentials, cleanup, failure matrix, spike protocol review | Complete |
 | Research synthesis | Dated v1, independent adversarial review, revised v2 | Complete |
-| Eligibility gate | Edition/account decision and permitted live spike lane | Awaiting one minimum non-secret response |
+| Eligibility gate | Edition/account decision and permitted live spike lane | Unresolved; retained as a re-entry condition under Defer |
 | Feasibility spikes | Reproducible synthetic evidence; official live evidence subject to Gate 0 | Credential-free complete: 46/46 local checks; authenticated live cases gated |
 | Product council | Three independent PM recommendations and integrated v1/review/v2 | Complete — Defer, High confidence |
 | Conditional package | PRD v2, UX v2/prototype v2, technical plan v2 after Go/Limited-go only | Not applicable under Defer; intentionally not created |
-| Publication | Repository Wiki sources and GitHub Wiki | Repository pages drafted and locally validated; live publication pending |
-| Delivery | Validated diff, commits, push, review-only PR | Pending |
+| Publication | Repository Wiki sources and GitHub Wiki | Complete — live Wiki commit `6b0e90a91d374dc88a746ab6b11a1dcf2c091d3c`, 90 pages, zero privacy/link findings |
+| Delivery | Validated diff, commits, push, review-only PR | Complete — draft PR [#36](https://github.com/arunpr614/ai-brain/pull/36), CI passed, open and unmerged |
 
 ## Status vocabulary
 

@@ -30513,3 +30513,58 @@ The one minimum non-secret Gate 0 response remains absent. It blocks authenticat
 - **Hard limits used:** strategies 2/3 credential-free simulations and 0 live; authentication 0/2; synthetic item identities 10/10; real sources 0/10; simulated retries 2/2 for one failure and 0 live; unofficial-tool time 0/60 minutes; spend USD 0.
 - **Production/Google state:** Unchanged.
 - **Next milestone:** Publication-safe Wiki reconciliation and review-only delivery.
+
+---
+
+## 2026-07-21 19:31 IST — Deferred NotebookLM research published and delivered for review
+
+**Entry author:** AI agent (Codex) · **Triggered by:** Completion of the live Wiki reconciliation, repository delivery, and final validation for the AI Brain → NotebookLM synchronization goal.
+
+### Planned since last entry
+
+The prior milestone left documentation validation, fresh-baseline Wiki publication, final privacy/diff review, branch delivery, and a review-only PR open. This period completed those items without an account response, credential, Google API call, real content, production change, or merge.
+
+### Done
+
+- Ran the final combined research suites: **46 passed, 0 failed, 0 skipped**. The capacity simulation remained deterministic across two runs at SHA-256 `bc959f91427ed04a16b59e28a871c24b9ab4dd04807d8264812ba7e1513e71be`.
+- Validated the repository documentation package: privacy, generated research pages, Wiki structure/reachability, command/feature coverage, project Wiki artifacts, and the research package's relative links all passed with zero findings.
+- Committed and pushed the research package on `research/notebooklm-sync`; opened draft review-only PR [#36](https://github.com/arunpr614/ai-brain/pull/36) against `main` and left it unmerged.
+- Diagnosed the first PR check failure as a synthetic smoke-fixture omission: the checker required the new NotebookLM page while the fixture still generated the old core set. Added the single missing fixture page; both `smoke:agent-docs` and `check:agent-docs` then passed, followed by the final PR checks.
+- Fresh-cloned the live Wiki at `317e40e8de08fc492e0e2662b5f45b8bb7e48fcd`, applied only the new NotebookLM page and six intended shared-page updates, and pushed Wiki commit `6b0e90a91d374dc88a746ab6b11a1dcf2c091d3c`.
+- Fresh-clone verification found 90 pages, the exact seven intended changed page names, byte identity for the new page, preservation of all three newer live-only pages, zero privacy findings, and zero broken internal links across 464 links. The live NotebookLM research page returned HTTP 200.
+- Added the final delivery report and closed the master index, tracker, compliance matrix, and decision log at **Defer**.
+
+### Corrections and clarifications to the prior entry
+
+- Live Wiki publication and review-only delivery are now complete; the prior `pending` statements remain historical snapshots.
+- The first PR CI failure did not mean the new Wiki page was absent from the commit. The missing page was in the synthetic structure-test fixture only.
+- Gate 0/live validation remains unresolved, but under the final Defer decision it is a re-entry condition, not authorization for current implementation or a reason to manufacture conditional product artifacts.
+
+### Learned
+
+- Documentation contract changes require updating both the production checker and the smoke fixture that constructs a synthetic valid corpus.
+- Fresh-clone Wiki reconciliation is necessary when the live Wiki contains newer pages that are intentionally absent from repository sources.
+- A fully delivered research decision can legitimately end at Defer while preserving a narrow, evidence-backed re-entry path.
+
+### Deployed / Released
+
+The publication-safe research decision was released to the GitHub Wiki and the repository research branch was delivered through a draft PR. Nothing was deployed to the AI Brain product or Google, and nothing was merged. No production code, dependency, migration, subscription, credential, notebook, Doc, source, or real item was created or changed.
+
+### Current remaining to-do
+
+1. Maintainers may review draft PR #36; merging is outside this goal.
+2. No product work is authorized while the council decision remains Defer.
+3. If a later non-secret Gate 0 response reopens research, select exactly one official synthetic lane and return its evidence to council before any product artifact or implementation.
+
+### Open blocker and smallest user action
+
+Authenticated/live evidence remains unavailable because the one Gate 0 response was not supplied. Re-entry requires the exact visible edition/entitlement, official local-auth ability, Drive manual-boundary acceptance if applicable, and permission for exactly one selected synthetic target. No URL, ID, screenshot, credential, authorization code, token, cookie, or secret file belongs in chat.
+
+### State snapshot
+
+- **Product decision:** Defer, High confidence.
+- **Delivery:** Live Wiki published; draft PR #36 open, checks passed, unmerged.
+- **Research disposition:** Credential-free evidence complete; one official live synthetic lane only after Gate 0 and council re-evaluation.
+- **Hard limits used:** strategies 2/3 credential-free simulations and 0 live; authentication 0/2; synthetic item identities 10/10; real sources 0/10; simulated retries 2/2 for one failure and 0 live; unofficial-tool time 0/60 minutes; spend USD 0.
+- **Production/Google state:** Unchanged.
+- **Next milestone:** None in the current goal; PR review or future Gate 0 re-entry only.

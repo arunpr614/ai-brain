@@ -19,7 +19,7 @@
 - **Date:** 2026-07-21
 - **Decision:** No API adapter or authenticated spike will be selected until consumer/Workspace NotebookLM is distinguished from Gemini Notebook Enterprise and the user's eligibility is known.
 - **Reason:** Documented Gemini Notebook Enterprise Preview APIs do not by themselves establish a supported consumer NotebookLM API.
-- **Evidence class:** User-supplied platform distinction; official evidence pending synthesis.
+- **Evidence class:** User-supplied platform distinction plus completed official Google research; target-account eligibility remains unresolved.
 
 ## D-004 — Unofficial paths remain research-only
 
@@ -45,6 +45,7 @@
 ## D-007 — Reject one-source-per-item as the default
 
 - **Date:** 2026-07-21
+- **Status:** Partially superseded by D-015 and council v2: aggregation remains preferred, but no Enterprise cadence is selected.
 - **Decision:** Model daily aggregation for Enterprise and a bounded rolling Google Doc for consumer/Workspace as the leading strategies. Per-item sources remain a traceability comparator, not the default recommendation.
 - **Reason:** The Enterprise 300-source limit is exhausted in 30, 6, or 3 days at 10, 50, or 100 items/day; lower consumer tiers are tighter. The API also has no documented idempotency key or source-update operation.
 - **Evidence class:** Official limits plus capacity arithmetic.
@@ -118,3 +119,17 @@
 - **Decision:** Interpret the already-issued Gate 0 request conditionally. After edition selection, authorize either one private Enterprise test notebook or one consumer/Workspace test notebook plus one app-created Doc—never both lanes by default. Do not repeat the request.
 - **Reason:** The original combined resource question was broader than needed to select one official lane.
 - **Evidence class:** Council v1 adversarial finding P2-3 and v2 correction.
+
+## D-018 — Publish only the deferred, publication-safe decision
+
+- **Date:** 2026-07-21
+- **Decision:** Publish the sanitized NotebookLM research page and six navigation/catalog updates to the live GitHub Wiki, preserving all newer live-only pages and making no product-availability claim.
+- **Reason:** The research decision is useful documentation, but repository sources were behind the live Wiki. A fresh-baseline reconciliation avoids replacing unrelated remote work.
+- **Evidence class:** Fresh Wiki clones at baseline `317e40e8de08fc492e0e2662b5f45b8bb7e48fcd` and published commit `6b0e90a91d374dc88a746ab6b11a1dcf2c091d3c`; 90-page privacy/link verification and live HTTP 200.
+
+## D-019 — Deliver for review without merge
+
+- **Date:** 2026-07-21
+- **Decision:** Deliver the research package on `research/notebooklm-sync` through draft PR [#36](https://github.com/arunpr614/ai-brain/pull/36), leave it open and unmerged, and close the current goal at Defer without treating the absent Gate 0 response as authorization to broaden scope.
+- **Reason:** The brief permits review-only delivery and makes downstream product artifacts conditional on Go/Limited-go. Defer completes the current product decision while retaining authenticated evidence as an explicit re-entry gate.
+- **Evidence class:** Final delivery validation, live Wiki verification, and pull-request state.
