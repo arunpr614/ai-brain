@@ -4,8 +4,20 @@ Purpose: Record material wiki revisions, baselines, and publication state withou
 Audience: Maintainers and future AI agents.
 Verified against: deployed application `8c1341100b174fe4ca518e6a745c30b9078df21c` plus retained historical baselines.
 Runtime evidence through: 2026-07-12 for Card Processing; older entries retain their dated scope.
-Last reviewed: 2026-07-12.
+Last reviewed: 2026-07-21.
 Owner: AI Brain maintainer.
+
+## 2026-07-21 — NotebookLM synchronization research decision
+
+| Change | Implementation baseline | Runtime baseline | State |
+|---|---|---|---|
+| Added edition-specific platform research, source mapping, capacity/security analysis, 46/46 credential-free local checks, three independent PM recommendations, adversarial review, and final council decision | Current-code audit at `ad78d77495dcaa90f62aab038fe63ae95cf36862`; research-only branch | None; no Google account, credential, file, notebook, source, production content, migration, dependency, or deployment used | **Deferred pending account eligibility and official live synthetic evidence — not implemented** |
+
+- Added [NotebookLM Synchronization Research](NotebookLM-Synchronization-Research) and cross-linked the feature catalog, ideas catalog, Home, source baselines, and sidebar.
+- Distinguished consumer, paid-consumer, ordinary Workspace, and separately licensed Gemini Notebook Enterprise surfaces. A Drive write is not represented as verified NotebookLM refresh.
+- Recorded one-source-per-item as capacity-infeasible by default, retained aggregation only as a future bounded hypothesis, and rejected unofficial consumer RPC/browser automation.
+- Because the council decision is Defer, no PRD, UX/UI package, product prototype, or production technical plan was created.
+- Revalidation is due by 2026-08-21 or earlier after Gate 0, an authorized official synthetic spike, or a relevant platform change.
 
 ## 2026-07-12 — Card Processing production release
 

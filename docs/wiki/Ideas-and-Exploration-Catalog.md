@@ -4,7 +4,7 @@ Purpose: Separate future, deferred, rejected, and superseded ideas from current 
 Audience: AI agents, product/design collaborators, and maintainers.
 Verified against: `8c1341100b174fe4ca518e6a745c30b9078df21c`.
 Runtime evidence through: 2026-07-10; ideas have no runtime claim unless a current subset is linked.
-Last reviewed: 2026-07-11.
+Last reviewed: 2026-07-21 for the NotebookLM research row; other ideas retain their prior evidence dates.
 Owner: AI Brain maintainer.
 
 ## How to read this page
@@ -24,6 +24,7 @@ An idea can overlap an implemented substrate without being implemented as propos
 | Fully offline Android library | Planned | Cached fallback and note-draft journal | Complete local library, offline capture queue, and synchronization |
 | Podcast, EPUB, DOCX/RTF/ODT ingestion | Planned | Schema/type substrate for some formats | Complete extractors, routes, policy, UI and tests |
 | Obsidian synchronization | Planned | One-way exports | Import, identity, conflict, and round-trip sync |
+| AI Brain → NotebookLM synchronization | Deferred | Item exports, Recall orchestration patterns, and local credential-free research harness | Applicable account lane, official live behavior, secure token custody, outbound ledger, truthful freshness, capacity/retention, and exact cleanup |
 | Structured Calm Green design | Planned | Alternative design artifact | Current product continues to use Prism Memory styles |
 | Rich note history/diff and editor tools | Explored | Revisions and Markdown editor | Diff/labels/find/outline/slash-tool product contracts |
 | Note-aware search explanations and source policies | Explored | Exact/semantic search and note consent | Provenance filters/explanations and original-only/note-only Ask controls |
