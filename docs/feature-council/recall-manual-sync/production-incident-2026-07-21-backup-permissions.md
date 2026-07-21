@@ -1,9 +1,10 @@
 # Recall sync production incident: backup directory permissions
 
 Date: 2026-07-21
-Status: Root cause confirmed; code fix verified locally; production repair and live recovery run not yet authorized
+Status: Production permission repair verified without sync; controlled live recovery still requires separate authorization
 Affected release: `8c1341100b174fe4ca518e6a745c30b9078df21c`
-Fix branch: `codex/fix-recall-sync-backup-permissions`
+Root-cause fix: PR `#37`, merged to `main` as `077cf7382a706218864554a149b12b4e1cfa6081`
+Cleanup follow-up branch: `codex/fix-recall-backup-proof-cleanup`
 
 ## Impact
 
@@ -54,28 +55,43 @@ The mutable and immutable deployment paths now:
 
 The Recall tmpfiles definition also restores the contract on supported host preparation and boot paths. The directory remains restricted to the trusted `brain-data` group; it is not world-readable or world-writable.
 
+## Production remediation
+
+Arun explicitly authorized only the backup-directory permission repair, corrected tmpfiles rule, and no-sync verification. At 2026-07-21 20:27 IST, the operator held the existing Recall sync lock and:
+
+1. confirmed the automatic and manual workers were inactive and no manual request was queued, claimed, or running;
+2. installed the release-verified tmpfiles rule at `/etc/tmpfiles.d/brain-recall-manual-sync.conf`;
+3. normalized `/opt/brain/data/backups` to `brain:brain-data` mode `2770`;
+4. created and removed a probe as `brain-recall:brain-data`;
+5. ran the same `better-sqlite3` backup and restore-integrity routine that had failed, then removed its proof database and sidecars.
+
+The database quick check remained `ok`. Execution, request, run, and apply-run counts were unchanged at `13`, `3`, `46`, and `13`. The latest execution remained the failed manual occurrence, and the checkpoint remained `2026-07-11T20:02:47.350Z`. The app, daily timer, manual path, and fallback timer remained active and enabled; the next daily occurrence remained scheduled for 2026-07-22 01:34 IST. No Recall API call, sync trigger, application deployment, scheduler change, or checkpoint write occurred.
+
 ## Verification
 
 - Sanitized production journal: every failed automatic run reached a passing dry-run review and then failed backup creation with `SQLITE_CANTOPEN`.
 - Sanitized production database projection: nine automatic errors and one manual error at `terminal`, zero writes; prior validated success preserved.
-- Production identity check: `brain-recall` can access the data and private-report directories but cannot access the current backup directory.
+- Pre-repair production identity check: `brain-recall` could access the data and private-report directories but could not access the backup directory.
+- Post-repair production identity check: `brain-recall` has read, write, and traversal access to the backup directory.
+- Production backup capability proof: the exact `better-sqlite3` backup routine completed, both backup and restore integrity checks returned `ok`, and all proof files were removed.
 - Isolated backup rehearsal: owner-only mode failed; the corrected shared-group mode completed backup and integrity verification.
 - Recall-focused tests: 69 passed.
 - Manual process fixtures: six groups passed.
-- Full repository suite: 894 tests across 95 suites passed.
+- Full repository suite after the cleanup regression: 895 tests across 95 suites passed.
 - TypeScript, ESLint, shell syntax, Recall artifact checks, scheduler checks, release artifact smoke, and production build passed.
 - Release artifact smoke now contains 53 checks and verifies the packaged tmpfiles contract.
 
+The no-sync production proof exposed a separate cleanup defect: integrity checks could leave SQLite `-wal` and `-shm` files beside the retained backup and removed temporary restore database. The proof-specific files were removed. Twelve older restore-proof sidecars in `/tmp` predated this incident repair and were intentionally left untouched. The follow-up change removes future backup and restore sidecars and has a dedicated WAL-mode regression test.
+
 ## Recovery boundary
 
-No production file permission, unit, timer, database, checkpoint, Recall API, or application release was changed during diagnosis. Recovery requires a separately authorized production change.
+The permission repair is complete, but it proves only that the previous backup blocker is removed. Recovery still requires separately authorized live synchronization.
 
-After authorization, the operator must:
+After that authorization, the operator must:
 
-1. apply the `brain:brain-data` / `2770` directory contract and install the updated tmpfiles rule;
-2. verify the effective `brain-recall` identity can create and remove a probe in the backup directory;
-3. confirm the app, daily timer, manual path, fallback timer, database integrity, and prior validated success remain unchanged;
-4. obtain the separately required live-sync authorization before triggering a manual apply;
-5. validate the new execution, apply report, imported counts, checkpoint behavior, and next automatic occurrence without exposing private data.
+1. run one controlled manual sync through the public Settings workflow or its guarded worker path;
+2. validate the new execution, linked dry-run and apply runs, imported counts, and checkpoint behavior without exposing private data;
+3. confirm Settings reports the validated success timestamp in IST;
+4. verify the next automatic occurrence completes with a new `done` execution and linked validated apply run.
 
 Do not infer recovery from an active timer or a successful latest unit result. Require a new `done` execution with `wrapper_validated_at` and its linked apply run.
