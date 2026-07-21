@@ -8,6 +8,7 @@ const files = {
   wrapper: read("scripts/recall-scheduled-apply.sh"),
   lifecycle: read("scripts/recall-sync-lifecycle.ts"),
   deploy: read("scripts/deploy.sh"),
+  immutableDeploy: read("scripts/deploy-immutable-release.sh"),
   prelive: read("scripts/check-recall-prelive-readiness.mjs"),
   packageJson: read("package.json"),
   cliBundleSmoke: read("scripts/smoke-recall-cli-bundle.mjs"),
@@ -378,6 +379,26 @@ assertIncludes(
   "f /run/brain-recall/recall-sync.lock 0600 brain-recall brain-recall - -",
   "tmpfiles must normalize the shared lock to worker-only ownership",
 );
+assertIncludes(
+  files.manualTmpfiles,
+  "d /opt/brain/data/backups 2770 brain brain-data - -",
+  "tmpfiles must preserve Recall worker access to the shared backup directory",
+);
+for (const releaseDeploy of [files.deploy, files.immutableDeploy]) {
+  assertIncludes(
+    releaseDeploy,
+    'install -d -o brain -g brain-data -m 2770 "$backup_dir"',
+    "release deploys must preserve the shared backup directory owner, group and mode",
+  );
+  assertIncludes(
+    releaseDeploy,
+    ".recall-backup-write-proof.XXXXXXXX",
+    "release deploys must prove the Recall worker can create a backup file",
+  );
+  if (/install -d[^\n]*-m\s+0?700[^\n]*"\$backup_dir"/.test(releaseDeploy)) {
+    throw new Error("release deploys must not make the shared backup directory owner-only");
+  }
+}
 assertIncludes(
   files.lifecycle,
   'execFileSync("date", ["--date", raw, "--iso-8601=seconds"]',

@@ -87,6 +87,21 @@ try {
     /node scripts\/dist\/processing-readiness-prod\.mjs audit --require-ready --require-production-config/,
     "deep readiness must execute the packaged generated tool path",
   );
+  assert.match(
+    deployScript,
+    /install -d -o brain -g brain-data -m 2770 "\$backup_dir"/,
+    "immutable deploy must preserve Recall worker access to the shared backup directory",
+  );
+  assert.doesNotMatch(
+    deployScript,
+    /install -d[^\n]*-m\s+0?700[^\n]*"\$backup_dir"/,
+    "immutable deploy must not make the shared backup directory owner-only",
+  );
+  assert.match(
+    deployScript,
+    /\.recall-backup-write-proof\.XXXXXXXX/,
+    "immutable deploy must prove backup creation as the Recall worker identity",
+  );
   assert.ok(
     deployScript.indexOf('remote_stage_artifact "$CANDIDATE_ARTIFACT" "$CANDIDATE_MANIFEST"') <
       deployScript.indexOf('PREVIOUS_STATE="$(remote_release_state)"'),
@@ -121,6 +136,10 @@ try {
     "scripts/deploy/brain-processing-audit.timer", "scripts/dist/audit-vector-index-prod.mjs",
     "scripts/dist/repair-vector-index-prod.mjs", "scripts/dist/processing-readiness-prod.mjs",
   ]) put(path);
+  put(
+    "scripts/deploy/brain-recall-manual-sync.tmpfiles.conf",
+    readFileSync(resolve(root, "scripts/deploy/brain-recall-manual-sync.tmpfiles.conf"), "utf8"),
+  );
   put(".env", "SECRET=must-not-ship\n");
   put("data/brain.sqlite", "must-not-ship\n");
 
@@ -211,11 +230,19 @@ try {
     resolve(extract, "runtime/scripts/deploy/brain-processing-audit.service"),
     "utf8",
   );
+  const packagedRecallTmpfiles = readFileSync(
+    resolve(extract, "runtime/scripts/deploy/brain-recall-manual-sync.tmpfiles.conf"),
+    "utf8",
+  );
   assert.match(packagedService, /^WorkingDirectory=\/opt\/brain$/m);
   assert.doesNotMatch(packagedService, /^WorkingDirectory=\/opt\/brain\/current$/m);
   assert.match(
     packagedProcessingAuditService,
     /^ExecStart=\/usr\/bin\/node \/opt\/brain\/current\/scripts\/dist\/processing-readiness-prod\.mjs audit --require-ready --require-production-config$/m,
+  );
+  assert.match(
+    packagedRecallTmpfiles,
+    /^d \/opt\/brain\/data\/backups 2770 brain brain-data - -$/m,
   );
   const packagedActivate = readFileSync(resolve(extract, "runtime/scripts/activate-release.sh"), "utf8");
   const packagedSwitch = readFileSync(resolve(extract, "runtime/scripts/switch-release.sh"), "utf8");
@@ -242,7 +269,7 @@ try {
   cpSync(first.artifact, resolve(fixture, "tampered.tar.gz"));
   writeFileSync(resolve(fixture, "tampered.tar.gz"), "tampered", { flag: "a" });
   assert.notEqual(sha256(resolve(fixture, "tampered.tar.gz")), first.artifactSha256);
-  console.log(JSON.stringify({ ok: true, checks: 49, artifactSha256: first.artifactSha256 }));
+  console.log(JSON.stringify({ ok: true, checks: 53, artifactSha256: first.artifactSha256 }));
 } finally {
   rmSync(fixture, { recursive: true, force: true });
 }

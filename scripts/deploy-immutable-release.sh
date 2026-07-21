@@ -402,7 +402,13 @@ backup_dir="$(dirname -- "$source_db")/backups"
 backup="$backup_dir/pre-processing-${BACKUP_TIMESTAMP}.sqlite"
 scratch="$(mktemp "$(dirname -- "$source_db")/.restore-proof.XXXXXXXX.sqlite")"
 trap 'rm -f -- "$scratch"' EXIT
-install -d -m 0700 "$backup_dir"
+# The app and trusted Recall worker share this WAL-safe backup target.
+install -d -o brain -g brain-data -m 2770 "$backup_dir"
+if id brain-recall >/dev/null 2>&1; then
+  runuser -u brain-recall -g brain-data -- bash -c \
+    'probe="$(mktemp "$1/.recall-backup-write-proof.XXXXXXXX")"; rm -f -- "$probe"' \
+    _ "$backup_dir"
+fi
 sqlite3 "$source_db" ".backup '$backup'"
 chmod 0600 "$backup"
 [[ "$(sqlite3 "$backup" 'PRAGMA quick_check;')" == "ok" ]]
