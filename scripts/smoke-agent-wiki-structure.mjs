@@ -16,6 +16,7 @@ const pages = [
   "Search-RAG-and-Ask.md", "Enrichment-and-AI-Providers.md",
   "Authentication-Sessions-and-Device-Pairing.md", "Mobile-Extension-and-Pairing.md",
   "Browser-Extension.md", "Telegram-Capture.md", "Recall-Synchronization.md",
+  "NotebookLM-Synchronization-Research.md",
   "Backups-and-Restore.md", "Security-Privacy-and-Redaction.md",
   "Local-Development-and-Testing.md", "Configuration-Reference.md", "Command-Safety.md",
   "Deployment-and-Operations.md", "Agent-Workflows.md", "Troubleshooting.md",

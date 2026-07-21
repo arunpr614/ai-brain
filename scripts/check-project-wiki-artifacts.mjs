@@ -41,7 +41,7 @@ const features = readCsv(join(root, "MASTER_FEATURE_AND_IDEA_EVIDENCE_DETAILS.cs
 ]);
 
 expectCount(local, 17_989, "local_inventory_count");
-expectCount(pageAudit, 86, "page_audit_count");
+expectCount(pageAudit, 87, "page_audit_count");
 
 const ledgerFeatureCount = tableRowCount(featureLedger, "| Feature | Product status |");
 const masterIdeaCount = tableRowCount(masterInventoryPath, "| Idea or capability | Status |");

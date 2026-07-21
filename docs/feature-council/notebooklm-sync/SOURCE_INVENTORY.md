@@ -1,0 +1,22 @@
+# AI Brain → NotebookLM Synchronization — Source Inventory
+
+**Access date:** 2026-07-21 unless otherwise noted.
+
+| ID | Source | Authority | Intended use | Status |
+|---|---|---|---|---|
+| SRC-001 | AI Brain `origin/main` at `ad78d77495dcaa90f62aab038fe63ae95cf36862` | Current code | Product behavior, schemas, tests, configuration, deployment | Read-only audit complete |
+| SRC-002 | AI Brain canonical `docs/wiki/` at the same commit | Maintained repository documentation | Wiki baseline and code discrepancy check | Audit complete; behind live Wiki on 13 shared pages |
+| SRC-003 | AI Brain GitHub Wiki `master` at `317e40e8de08fc492e0e2662b5f45b8bb7e48fcd` | Published project documentation | Published-vs-repository comparison | Fresh-clone baseline verified; 89 pages |
+| SRC-004 | [Gemini Notebook Enterprise overview](https://docs.cloud.google.com/gemini/enterprise/notebooklm-enterprise/docs/overview), notebook/source API guides and `v1alpha` reference | Official Google documentation | Editions, API, auth, sources, limits, lifecycle | Public research complete; observed behavior pending Gate 0 |
+| SRC-005 | [NotebookLM plans/limits](https://support.google.com/notebooklm/answer/16213268?hl=en), [source/Drive behavior](https://support.google.com/notebooklm/answer/16215270?co=GENIE.Platform%3DDesktop&hl=en), Workspace matrix | Official Google help | Consumer/Workspace features, limits, Drive fallback | Public research complete |
+| SRC-006 | Google authentication, IAM, Drive/Docs, quota, pricing, security, audit, locations, and release documentation listed in the platform memo | Official Google documentation | Operational and security constraints | Public research complete; listed uncertainties remain |
+| SRC-007 | Ten open-source integration/alternative repositories at the revisions recorded in `research/2026-07-21_open-source-integration-research.md` | Primary project source | Official client reference, unofficial integration assessment, alternative benchmarks | Research complete; none executed |
+| SRC-008 | [Google Drive file-size limits](https://support.google.com/drive/answer/37603?hl=en) | Official Google help | Native Google Docs 1.02-million-character constraint | Added after adversarial review; no behavior executed |
+| SRC-009 | [Gemini Notebook privacy and terms](https://support.google.com/gemininotebook/answer/17004255?hl=en) | Official Google help | Consumer feedback, human-review, and retention boundary | Added after adversarial review; edition must be confirmed |
+| SRC-010 | Local credential-free mapper, durable harness, fake providers, and ten fixed synthetic fixtures under `spikes/prototype/` | Reproducible first-party research evidence | Mapping, outbox/cursor semantics, retry/reconciliation, concurrency, truthful state, and capacity | 46/46 local checks pass; no Google behavior established |
+| SRC-011 | `reviews/CREDENTIAL_FREE_HARNESS_ADVERSARIAL_REVIEW_2026-07-21.md` | Independent internal review | Failure-oriented validation of the credential-free harness | Complete; all in-scope findings resolved, live-provider gaps retained |
+| SRC-012 | Seven consumer NotebookLM adapter repositories at exact revisions recorded in `research/2026-07-21_one-click-export-repository-fit-analysis.md` | Primary project source | One-click copied-text lifecycle, retry semantics, credential handling, maintenance, and packaging comparison | Static source audit complete; none installed, imported, authenticated, or executed |
+| SRC-013 | [Chrome cross-origin requests](https://developer.chrome.com/docs/extensions/develop/concepts/network-requests), [storage/cookies](https://developer.chrome.com/docs/extensions/develop/concepts/storage-and-cookies), and [messaging security](https://developer.chrome.com/docs/extensions/develop/concepts/messaging) | Official Chrome documentation | Existing Brain extension as the local credential boundary | Public research complete; live NotebookLM compatibility untested |
+| SRC-014 | S11 one-click mapper/coordinator/fake adapter under `spikes/prototype/` and its dated report | Reproducible first-party research evidence | Target binding, minimized snapshot, click/content coalescing, readiness, ambiguous-write reconciliation, auth attention, and redaction | 13/13 local checks pass; combined credential-free suites 59/59; no Google behavior established |
+
+Every external research artifact must add exact URLs, release/tag or commit where applicable, access date, and evidence classification. Search-result pages and unsourced summaries are not evidence.

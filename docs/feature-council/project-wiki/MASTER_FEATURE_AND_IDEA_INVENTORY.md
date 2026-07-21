@@ -6,7 +6,7 @@
 
 Availability and runtime evidence are separate from status. `Feature-flagged` is used when a capability is materially controlled by rollout configuration. An enabled production flag does not make a feature unflagged.
 
-The normalized `MASTER_FEATURE_AND_IDEA_EVIDENCE_DETAILS.csv` record contains 46 current-feature rows and 37 non-current idea/capability rows. Every row includes user problem/opportunity, target users, behavior, coverage/boundary, code/test/documentation evidence, routes/components/services, data/schema, flags/configuration, dependencies/integrations, limitations, related features/ideas, aliases, runtime evidence, and last-verified commit/date. Explicit `No current…` values distinguish absence from missing analysis.
+The normalized `MASTER_FEATURE_AND_IDEA_EVIDENCE_DETAILS.csv` record contains 46 current-feature rows and 38 non-current idea/capability rows. Every row includes user problem/opportunity, target users, behavior, coverage/boundary, code/test/documentation evidence, routes/components/services, data/schema, flags/configuration, dependencies/integrations, limitations, related features/ideas, aliases, runtime evidence, and last-verified commit/date. Explicit `No current…` values distinguish absence from missing analysis.
 
 ## Current capabilities
 
@@ -75,6 +75,7 @@ All rows were last verified at current main on 2026-07-11. Runtime evidence is f
 | Fully offline Android library | Planned | High | Fallback shell and visited-content cache | No complete local library, offline capture queue, or sync | offline docs/current code |
 | Podcast, EPUB, DOCX/RTF/ODT ingestion | Planned | Medium | Some enum/type substrate | No complete routes/services/UI | roadmap and current source scan |
 | Obsidian synchronization | Planned | Medium | Markdown export only | No import, identity, conflict, or sync path | roadmap |
+| AI Brain → NotebookLM synchronization | Deferred | High | Markdown exports, Recall orchestration patterns, and 46/46 credential-free research checks | Account lane, live provider behavior, aggregate/finality/citation proof, secure credentials, truthful freshness, and cleanup remain unverified | 2026-07-21 NotebookLM research package and council v2 |
 | Structured Calm Green design | Planned | High | Alternative design document | Current UI remains Prism Memory | design docs/current styles |
 | Rich note history/diff and editor tools | Explored | Medium | Revisions and Markdown editor exist | Diff/labels/find/outline/slash tools remain brainstorm concepts | F08 brainstorm |
 | Note-aware search explanations and source policies | Explored | Medium | Exact/semantic search and note consent exist | No provenance filter/explanation or original-only/note-only Ask control | F08 brainstorm |

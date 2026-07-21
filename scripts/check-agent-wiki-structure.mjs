@@ -31,6 +31,7 @@ const CORE_REQUIRED_PAGES = [
   "Browser-Extension.md",
   "Telegram-Capture.md",
   "Recall-Synchronization.md",
+  "NotebookLM-Synchronization-Research.md",
   "Backups-and-Restore.md",
   "Security-Privacy-and-Redaction.md",
   "Local-Development-and-Testing.md",

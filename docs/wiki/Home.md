@@ -4,7 +4,7 @@ Purpose: Orient readers to the current product, evidence model, architecture, an
 Audience: AI agents, engineers, product/design collaborators, and maintainers.
 Verified against: deployed application `8c1341100b174fe4ca518e6a745c30b9078df21c`.
 Runtime evidence through: 2026-07-12; runtime evidence remains feature-specific.
-Last reviewed: 2026-07-12.
+Last reviewed: 2026-07-21 for the NotebookLM status addition; current-product runtime scope remains dated 2026-07-12.
 Owner: AI Brain maintainer.
 
 AI Brain is a private, single-owner knowledge system for capturing material, preserving source provenance, enriching it with AI, organizing it, finding it through lexical and semantic retrieval, and asking cited questions across the saved library. Parts of the UI use the alias **AI Memory**.
@@ -21,7 +21,7 @@ AI Brain is a private, single-owner knowledge system for capturing material, pre
 
 Current main contains web, Android, browser-extension, Telegram, and guarded Recall entry paths; SQLite persistence; capture provenance and repair; the dedicated Inbox/Board/List/Archived [Card Processing Workflow](Card-Processing-Workflow); AI enrichment; full-text, semantic, and hybrid retrieval; cited Ask conversations; organization; attached My notes; exports; backups; and owner-oriented operations.
 
-Several capabilities are deliberately not current product behavior. Official caption recovery and owned-media speech-to-text are Inactive. The full Evidence Scan, graph UI, Reading Studio, Trust Center, spaced repetition, Obsidian sync, and fully offline mobile library are Planned; other ideas are separately Explored, Deferred, Rejected or Superseded. See [Ideas and Exploration](Ideas-and-Exploration-Catalog).
+Several capabilities are deliberately not current product behavior. Official caption recovery and owned-media speech-to-text are Inactive. The full Evidence Scan, graph UI, Reading Studio, Trust Center, spaced repetition, Obsidian sync, and fully offline mobile library are Planned. [NotebookLM synchronization research](NotebookLM-Synchronization-Research) is Deferred pending account eligibility and official live synthetic evidence; no integration exists. Other ideas are separately Explored, Deferred, Rejected or Superseded. See [Ideas and Exploration](Ideas-and-Exploration-Catalog).
 
 ## Architecture at a glance
 
