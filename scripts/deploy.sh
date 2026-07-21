@@ -280,7 +280,13 @@ set -euo pipefail
 source_db="/opt/brain/data/brain.sqlite"
 backup_dir="/opt/brain/data/backups"
 backup_file="${backup_dir}/pre-manual-notes-${BRAIN_PREDEPLOY_TIMESTAMP}.sqlite"
-install -d -m 0700 "$backup_dir"
+# The app and trusted Recall worker share this WAL-safe backup target.
+install -d -o brain -g brain-data -m 2770 "$backup_dir"
+if id brain-recall >/dev/null 2>&1; then
+  runuser -u brain-recall -g brain-data -- bash -c \
+    'probe="$(mktemp "$1/.recall-backup-write-proof.XXXXXXXX")"; rm -f -- "$probe"' \
+    _ "$backup_dir"
+fi
 sqlite3 "$source_db" ".backup '$backup_file'"
 chmod 0600 "$backup_file"
 sqlite3 "$backup_file" "PRAGMA quick_check;" | grep -qx ok
@@ -527,6 +533,9 @@ test "$(stat -c '%U %a' /etc/brain/recall-api-key)" = 'root 400' || {
 chgrp -R brain-data /opt/brain/data
 find /opt/brain/data -type d -exec chmod 2770 {} +
 find /opt/brain/data -type f -exec chmod 0660 {} +
+runuser -u brain-recall -g brain-data -- bash -c \
+  'probe="$(mktemp "$1/.recall-backup-write-proof.XXXXXXXX")"; rm -f -- "$probe"' \
+  _ /opt/brain/data/backups
 install -m 0644 "${BRAIN_REMOTE_DIR}/scripts/deploy/brain.service" /etc/systemd/system/brain.service
 install -m 0644 "${BRAIN_REMOTE_DIR}/scripts/deploy/brain-recall-sync.service" /etc/systemd/system/brain-recall-sync.service
 install -m 0644 "${BRAIN_REMOTE_DIR}/scripts/deploy/brain-recall-sync.timer" /etc/systemd/system/brain-recall-sync.timer

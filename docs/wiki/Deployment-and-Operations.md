@@ -3,25 +3,27 @@
 Purpose: Describe public-safe runtime, build/deploy, scheduling, health, monitoring and rollback concepts.
 Audience: AI agents, contributors, and operators.
 Verified against: deployed application `8c1341100b174fe4ca518e6a745c30b9078df21c`.
-Runtime evidence through: 2026-07-12 staged Card Processing release.
-Last reviewed: 2026-07-12.
+Runtime evidence through: 2026-07-21 Recall backup-permission incident diagnosis.
+Last reviewed: 2026-07-21.
 Owner: AI Brain maintainer.
 
-The hosted Next.js standalone service runs unprivileged on loopback behind a managed edge. Instrumentation applies migrations and starts database backup, enrichment, transcript and conditional note-index workers plus batch cron. A separate persistent timer runs Recall import. The review candidate adds default-off manual Recall path/timer/service units under a distinct trusted identity. Off-site database backup is separately scheduled.
+The hosted Next.js standalone service runs unprivileged on loopback behind a managed edge. Instrumentation applies migrations and starts database backup, enrichment, transcript and conditional note-index workers plus batch cron. A separate persistent timer runs Recall import, and the deployed manual Recall path/timer/service units use a distinct trusted identity. Off-site database backup is separately scheduled.
 
 ## Release model
 
 The current immutable release workflow accepts only protected-main GitHub-hosted artifacts with verified build provenance. It binds the candidate to the canonical production database, creates and restores-checks a SQLite backup, verifies every runtime/native/migration/file hash, stages builder-pinned tools, installs immutable runtime directories, switches the current link atomically, and restores the complete prior release/timer state on failure. The candidate holds one release lock across application and Recall artifact switches. Exact commands, hosts, and credentials remain private.
 
+`/opt/brain/data/backups` is shared by application/release backups and the guarded Recall pre-apply backup. Its required contract is owner `brain`, group `brain-data`, mode `2770`. Release paths must preserve that contract and prove file creation as `brain-recall`; owner-only mode breaks both automatic and manual Recall apply after a successful dry run.
+
 Card Processing adds a deep readiness audit at deploy, startup, and every six hours. Its production rollout enables reads, then writes, then navigation, with health/readiness/integrity/journal observation windows after each stage. The verified release applied migration 025, retained all 129 historical items dormant, enrolled one selected legacy item as a bounded proof, exercised the synthetic lifecycle, and kept the audit timer active.
 
 ### Recall manual-sync enablement gate
 
-Repository review proves unit wiring, private-path intent, full-wrapper reuse, process races/crashes, and timer-state invariants with isolated fixtures. It does not prove the installed host boundary. Before any future enablement, an authorized operator must verify the `brain-recall` identity, root-owned credential readability, shared data-directory permissions, private lock denial for the web identity, installed unit content, lost-wake fallback, daily timer continuity, and rollback. This review candidate performs no deployment, timer mutation, or enablement.
+The manual control and daily timer are deployed. Repository review proves unit wiring, private-path intent, full-wrapper reuse, process races/crashes, and timer-state invariants with isolated fixtures, but actual host permissions remain a release invariant. The 2026-07-21 incident confirmed that an unrelated immutable deployment changed the shared backup directory to owner-only access and blocked every later apply. The hotfix restores the shared-group contract and adds release-time worker probes; production repair and a controlled recovery run remain separately authorized operations.
 
 ## Health and monitoring
 
-Use service state/restarts, authenticated health, provider status, queue/backlog/lease state, error JSONL/system journal, Recall lock/checkpoint/redacted reports, backup evidence and client/webhook boundaries. These are owner-oriented operational signals, not centralized product analytics.
+Use service state/restarts, authenticated health, provider status, queue/backlog/lease state, error JSONL/system journal, Recall request/execution/core-run state, lock/checkpoint/redacted reports, backup evidence and client/webhook boundaries. These are owner-oriented operational signals, not centralized product analytics. An active timer or latest unit result of `success` does not prove Recall success: require a terminal `done` execution with final wrapper validation and a linked apply run.
 
 ## Rollback and recovery
 
