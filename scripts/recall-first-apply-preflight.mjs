@@ -25,9 +25,13 @@ try {
 
 const backupIntegrity = verifySqliteIntegrity(backupPath);
 const tempRestorePath = join(tmpdir(), `brain-recall-restore-proof-${process.pid}-${Date.now()}.sqlite`);
-copyFileSync(backupPath, tempRestorePath);
-const restoreIntegrity = verifySqliteIntegrity(tempRestorePath);
-rmSync(tempRestorePath, { force: true });
+let restoreIntegrity;
+try {
+  copyFileSync(backupPath, tempRestorePath);
+  restoreIntegrity = verifySqliteIntegrity(tempRestorePath);
+} finally {
+  removeSqliteFileSet(tempRestorePath);
+}
 
 const stats = statSync(backupPath);
 const report = {
@@ -91,6 +95,18 @@ function verifySqliteIntegrity(path) {
     return db.pragma("integrity_check", { simple: true });
   } finally {
     db.close();
+    removeSqliteSidecars(path);
+  }
+}
+
+function removeSqliteFileSet(path) {
+  rmSync(path, { force: true });
+  removeSqliteSidecars(path);
+}
+
+function removeSqliteSidecars(path) {
+  for (const suffix of ["-journal", "-shm", "-wal"]) {
+    rmSync(`${path}${suffix}`, { force: true });
   }
 }
 
