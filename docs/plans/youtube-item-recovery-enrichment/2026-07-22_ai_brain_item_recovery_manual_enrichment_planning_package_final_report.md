@@ -95,6 +95,14 @@ Eight final V2 screenshots cover held, review, response-loss, partial-success, c
 - Stacked base: `origin/codex/youtube-item-recovery-prototype` at `c22b5aa`.
 - Scope: planning documents, review evidence, inert HTML/assets/screenshots, one generated-asset lint exclusion, and the append-only project running-log entry.
 
+Publication evidence:
+
+- Package commit: `9a08f3ea88cd12df649d7e60f386c12db0aacb14`.
+- Stacked pull request: [#48 - docs: plan held YouTube transcript enrichment](https://github.com/arunpr614/ai-brain/pull/48).
+- Parent pull request: [#42 - item-bound YouTube recovery flow](https://github.com/arunpr614/ai-brain/pull/42), open with green checks at publication time.
+- GitHub Product CI `verify`: passed in 3m06s, including locked installs, static verification, extension verification, all product tests, documentation checks, operator-tool builds, and production build.
+- `package-known-good` and `package-main-release`: skipped as designed for a non-main documentation branch.
+
 No application route, extension source, database, provider configuration, AI Brain data, YouTube account, server, or production runtime was changed.
 
 ## Final Verdict
