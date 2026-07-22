@@ -2,12 +2,12 @@
 
 **Created:** 2026-07-22 13:32:09 IST
 **Reviewer stance:** Brutally honest adversarial review
-**Reviewed target:** Uncommitted `codex/notebooklm-one-click-export` worktree at base `4736ba343e138e276ada1146fc44c9a40162593c`, pending rebase onto `origin/main` `c8c3c215d1a5125c95ce0750895c956cca84da3f`
+**Reviewed target:** `codex/notebooklm-one-click-export` implementation commit `4fd2bd637c76d39b835416067027bdb719f71171`, rebased onto `origin/main` `ea801efa024914d601b495f968153aa5680e2e1e`; the final protected-main release SHA remains pending
 **Report path:** `/Users/arun.prakash/Documents/ArunVault2026-2/Initiatives/Arun_AI_Projects/Arun_AI_Open_Brain/Phase21/Phase21-NotebookLM-sync/ReviewReport/NOTEBOOKLM_ONE_CLICK_EXPORT_RELEASE_CANDIDATE_ADVERSARIAL_REVIEW_2026-07-22_13-32-09_IST.md`
 
 ## Executive Verdict
 
-**Conditional GO for commit, review, merge, and an immutable Stage 0 production deployment with all NotebookLM flags off. NO-GO for provider writes or real AI Memory content.**
+**Conditional GO for push, review, merge, and an immutable Stage 0 production deployment with all NotebookLM flags off. NO-GO for provider writes or real AI Memory content.**
 
 The static implementation, extension, backup/restore controls, retention worker, release packaging, and publication-candidate documentation have no remaining known P0/P1/P2 code or architecture defect. That does not establish that the undocumented consumer NotebookLM protocol works in the owner's current signed-in Chrome session, that the selected notebook remains private, that Google permits the intended use, or that the production deployment is healthy. Provider writes must stay off until an owner-only private synthetic canary proves the exact account, target, privacy posture, one-create behavior, readiness transition, and lost-response reconciliation without a second create.
 
@@ -20,7 +20,7 @@ The static implementation, extension, backup/restore controls, retention worker,
 - Local Chrome connector: manifest permissions, pairing/binding, browser-local identifiers, provider adapter, content-free journal, one-create authorization, reconciliation, source polling, and extension tests/build.
 - Retention and physical deletion: in-app cleanup, immutable app-independent retention service/timer, `secure_delete`, WAL truncate fencing, durable purge generation, and cross-process CLI tests.
 - Backup/restore and deployment: identity-specific tmpfs staging, process-group/deadline/FD fences, scrub normalization, pre-026 restore rejection, durable restore write latch, immutable activation/switch/rollback, timer restoration, and release artifact execution harness.
-- Verification observed on the frozen integrated tree:
+- Verification repeated after rebase on implementation commit `4fd2bd637c76d39b835416067027bdb719f71171` (the follow-up edits are documentation/design-only):
   - repository tests: 1,034 passed, 0 failed;
   - extension tests: 25 passed, 0 failed, plus production extension build;
   - root typecheck and full lint: passed;
@@ -28,7 +28,7 @@ The static implementation, extension, backup/restore controls, retention worker,
   - vector and processing/retention production bundles: built successfully;
   - processing readiness smoke: 17 checks passed;
   - release artifact smoke: 325 checks passed, including executable `pre026_rejected_026_latched` restore proof and `immutable_bundle_executed` retention proof;
-  - documentation privacy/structure/coverage/project-Wiki checks: passed for all 88 reachable pages after refreshing the two changed page hashes;
+  - documentation privacy/structure/coverage/project-Wiki checks: passed for all 88 reachable pages after refreshing the four changed page hashes;
   - environment guard, build-artifact guard, shell/Node syntax, and `git diff --check`: passed.
 
 ## Findings
@@ -100,7 +100,7 @@ The initial candidate underestimated several cross-boundary failure modes. Those
 
 ## Revised Recommendations
 
-1. Commit the frozen implementation, rebase only the implementation commits onto current `origin/main`, restore the intentional Wiki manifest exclusion, and rerun the full verification matrix.
+1. The full post-rebase verification matrix passed on implementation commit `4fd2bd637c76d39b835416067027bdb719f71171`; preserve that code-bearing commit and push only after the final documentation and design checks pass.
 2. Push a draft PR, require CI and review, then merge without enabling any NotebookLM flag.
 3. Download and verify the main-built server and extension artifacts and their attestations.
 4. Deploy Stage 0 dark. Verify migration 026, authenticated health, immutable release identity, retention/operations timers, retention oneshot execution, tmpfs/janitors, backup privacy tools, flags `0:0:0`, and rollback readiness.
@@ -111,7 +111,7 @@ The initial candidate underestimated several cross-boundary failure modes. Those
 
 ## Go / No-Go Recommendation
 
-- **GO:** commit/rebase/PR/merge and Stage 0 immutable production deployment with NotebookLM UI, queue, and provider writes all off.
+- **GO:** push/PR/merge and Stage 0 immutable production deployment with NotebookLM UI, queue, and provider writes all off.
 - **GO with controls:** owner-only setup and read-only target validation after attested extension installation.
 - **NO-GO:** any provider create, real AI Memory content, broader visibility, or deployed/verified documentation claim until current policy approval and the private synthetic canary evidence are recorded.
 
@@ -143,7 +143,7 @@ The initial candidate underestimated several cross-boundary failure modes. Those
 ### Required Validation Changes
 
 - Retain the 1,034-test root suite, 25-test extension suite/build, 325-check release harness, production build, documentation checks, and diff/syntax checks as merge gates.
-- Repeat all gates after rebase because current main has advanced beyond the branch base.
+- Require the full gate matrix to pass on the exact rebased candidate; pre-rebase results are supporting evidence, not a substitute.
 - Add production-host and live-browser evidence rather than treating local smoke output as a substitute.
 - Verify controlled lost-response reconciliation and source count before/after to prove no duplicate create.
 

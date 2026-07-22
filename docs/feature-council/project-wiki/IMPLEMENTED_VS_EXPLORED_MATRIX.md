@@ -1,6 +1,6 @@
 # Implemented Versus Explored Matrix
 
-**Verified:** established current-main areas on 2026-07-11 against `23868faf13c8e3d0821715e6f5d0e3d2af1e1a34`; the separate NotebookLM candidate on 2026-07-22 against the uncommitted feature worktree based on `4736ba343e138e276ada1146fc44c9a40162593c`, with no deployment or live-provider claim.
+**Verified:** established current-main areas on 2026-07-11 against `23868faf13c8e3d0821715e6f5d0e3d2af1e1a34`; the separate NotebookLM candidate on 2026-07-22 against committed implementation `4fd2bd637c76d39b835416067027bdb719f71171`, rebased onto `ea801efa024914d601b495f968153aa5680e2e1e`, with no deployment or live-provider claim.
 
 This matrix resolves the most likely sources of overclaim. Detailed rows are in `MASTER_FEATURE_AND_IDEA_INVENTORY.md`.
 

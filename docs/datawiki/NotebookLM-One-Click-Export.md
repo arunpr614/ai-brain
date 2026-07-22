@@ -4,7 +4,7 @@ Purpose: Define the authoritative data, API, state, privacy, retention, and oper
 
 Audience: Engineers, data stewards, security reviewers, release operators, support responders, and AI agents changing this feature.
 
-Verified against: Deployed pre-feature baseline `8c1341100b174fe4ca518e6a745c30b9078df21c`, plus the current implementation candidate containing `026_notebooklm_export.sql`, connector protocol v1, mapper v1, and Chrome extension 0.7.0, based on `4736ba3`. Insert the final release commit after merge.
+Verified against: Deployed pre-feature baseline `8c1341100b174fe4ca518e6a745c30b9078df21c`, plus committed implementation candidate `4fd2bd637c76d39b835416067027bdb719f71171` containing `026_notebooklm_export.sql`, connector protocol v1, mapper v1, and Chrome extension 0.7.0, rebased onto `ea801efa024914d601b495f968153aa5680e2e1e`. Insert the final release commit after merge.
 
 Runtime evidence through: None. As of 2026-07-22, this document does not claim a production deployment, a live consumer NotebookLM source, or a passing signed-in synthetic canary.
 

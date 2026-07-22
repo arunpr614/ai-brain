@@ -17,13 +17,6 @@ import {
   TriangleAlert,
 } from "lucide-react";
 
-const repositories = [
-  { name: "teng-lin/notebooklm-py", score: 93, note: "Winner · complete lifecycle + operation-aware no-retry" },
-  { name: "jacob-bd/notebooklm-mcp-cli", score: 74, note: "Broad surface; mutation retry needs a maintained patch" },
-  { name: "agmmnn/notebooklm-sdk", score: 68, note: "Best TypeScript fit; weaker auth-replay and session controls" },
-  { name: "vankcdhv/notebook-mcp", score: 60, note: "Good packaging; generic mutation retry and weaker readiness" },
-];
-
 export function SystemDesign() {
   return (
     <section className="system-section">
@@ -33,10 +26,10 @@ export function SystemDesign() {
           <h1>A remote queue with a deliberately local trust boundary</h1>
           <p>
             AI Memory owns the user contract, frozen snapshot, deduplication, and truthful states. A local connector
-            owns the Google session and exposes only four provider operations.
+            owns the Google session and exposes only the implemented inspect/create adapter boundary.
           </p>
         </div>
-        <div className="decision-pill"><Check aria-hidden="true" /> Repository recommendation · 93/100</div>
+        <div className="decision-pill"><Check aria-hidden="true" /> Implemented candidate · Chrome MV3</div>
       </div>
 
       <div className="architecture-card">
@@ -67,7 +60,7 @@ export function SystemDesign() {
               icon={Laptop}
               index="03"
               title="Local connector"
-              body="Preferred product lane: narrow Chrome extension. Synthetic spike lane: controlled notebooklm-py worker. Both revalidate and send once."
+              body="Narrow Chrome MV3 extension: exact target data stays local, every claim is revalidated, and create is dispatched at most once."
               footer="Google authority contained on device"
               local
             />
@@ -84,22 +77,20 @@ export function SystemDesign() {
         </div>
         <div className="architecture-return">
           <RefreshCw aria-hidden="true" />
-          <span><strong>Status returns by request ID.</strong> The item-page DTO never receives notebook IDs, source IDs, markers, Google errors, or connector credentials.</span>
+          <span><strong>Status returns by request ID.</strong> The item-page DTO never receives notebook IDs, source IDs, markers, raw Google/provider errors, or connector credentials.</span>
         </div>
       </div>
 
       <div className="design-grid two-up">
         <article className="design-card">
-          <div className="design-card__heading"><Code2 aria-hidden="true" /><div><span className="section-kicker">Owned adapter</span><h2>Four provider operations</h2></div></div>
+          <div className="design-card__heading"><Code2 aria-hidden="true" /><div><span className="section-kicker">Owned adapter</span><h2>Two provider methods, three claim actions</h2></div></div>
           <div className="code-contract" aria-label="Provider adapter contract">
-            <code><b>getTargetHealth</b>(binding)</code>
-            <span>exact target · expected subject · sharing · headroom</span>
-            <code><b>addCopiedText</b>(notebook, title, frozenText)</code>
+            <code><b>inspectTarget</b>(notebookId, authUser)</code>
+            <span>subject · owner-private sharing · occupancy · sources/status</span>
+            <code><b>addCopiedText</b>(session, notebookId, title, text)</code>
             <span>one non-retried create → source identity</span>
-            <code><b>listSourceTitles</b>(notebook)</code>
-            <span>read-only marker reconciliation</span>
-            <code><b>getSourceStatus</b>(notebook, source)</code>
-            <span>processing · ready · failed</span>
+            <code><b>claim.action</b> = create | reconcile | poll</code>
+            <span>reconcile and poll invoke inspection only; no create fallback</span>
           </div>
           <p className="card-footnote">Chat, sharing, notebook creation, research, audio, generic commands, and broad deletion remain unreachable.</p>
         </article>
@@ -121,17 +112,17 @@ export function SystemDesign() {
         <div className="state-machine">
           <StateNode label="queued" tone="neutral" />
           <FlowArrow />
-          <StateNode label="running" tone="info" />
+          <StateNode label="leased:create → sending" tone="info" />
           <FlowArrow />
           <StateNode label="processing" tone="info" />
           <FlowArrow />
-          <StateNode label="succeeded" tone="success" />
+          <StateNode label="succeeded → ready DTO" tone="success" />
           <div className="state-branch branch-one"><ArrowDown aria-hidden="true" /><span>possible write</span></div>
           <StateNode label="reconciling" tone="warning" className="state-reconciling" />
           <div className="branch-paths">
             <span><ArrowRight aria-hidden="true" /> one match → processing</span>
-            <span><ArrowRight aria-hidden="true" /> zero → remain unresolved</span>
-            <span><ArrowRight aria-hidden="true" /> multiple → conflict</span>
+            <span><ArrowRight aria-hidden="true" /> zero → reconciliation_required</span>
+            <span><ArrowRight aria-hidden="true" /> multiple → duplicate_conflict</span>
           </div>
         </div>
         <div className="auth-resume-row">
@@ -154,11 +145,12 @@ export function SystemDesign() {
           </ul>
         </article>
         <article className="design-card compact-card">
-          <div className="design-card__heading"><Cloud aria-hidden="true" /><div><span className="section-kicker">Browser endpoints</span><h3>Narrow and same-origin</h3></div></div>
+          <div className="design-card__heading"><Cloud aria-hidden="true" /><div><span className="section-kicker">Item + settings API</span><h3>Actual same-origin routes</h3></div></div>
           <div className="endpoint-list">
-            <code>POST /items/:id/notebooklm-export</code>
-            <code>GET /items/:id/notebooklm-export/:requestId</code>
-            <code>GET /settings/notebooklm-export</code>
+            <code>GET · POST · PATCH · DELETE</code>
+            <code>/api/items/:id/notebooklm-export</code>
+            <code>GET · POST · PATCH · DELETE</code>
+            <code>/api/settings/notebooklm-export</code>
           </div>
           <p className="card-footnote">Bounded JSON · session auth · rate limited · no-store · unexpected fields rejected.</p>
         </article>
@@ -176,33 +168,29 @@ export function SystemDesign() {
 
       <div className="repository-card">
         <div className="repository-copy">
-          <span className="section-kicker">Repository decision</span>
-          <h2>Pin notebooklm-py v0.7.3 for one local feasibility spike—not the product connector</h2>
+          <span className="section-kicker">Connector API</span>
+          <h2>The implemented Chrome connector has four narrow server routes</h2>
           <p>
-            It is the only reviewed candidate combining the complete source lifecycle with an explicit
-            non-idempotent/no-retry policy for copied-text creation. The integration remains unofficial and
-            inherently breakable until Google publishes a supported consumer source-management API.
+            A scoped device token can exchange a short pairing code, bind one verified target fingerprint, claim
+            eligible work, and append normalized fenced events. It cannot fetch arbitrary AI Memory items.
           </p>
           <div className="implementation-split">
-            <span><strong>Product concept</strong>Narrow existing Chrome extension; browser-managed session; protocol port required.</span>
-            <span><strong>Synthetic spike</strong>Pinned Python desktop worker; owner-only session vault; explicit revoke and purge.</span>
+            <span><strong>Exchange + bind</strong><code>/api/notebooklm/connectors/exchange</code><br /><code>/api/notebooklm/connector/bind</code></span>
+            <span><strong>Claim + events</strong><code>/api/notebooklm/connector/claim</code><br /><code>/api/notebooklm/connector/requests/:id/events</code></span>
           </div>
-          <div className="version-row"><code>notebooklm-py==0.7.3</code><span>commit a6c54417058b…</span></div>
+          <div className="version-row"><code>x-notebooklm-connector-protocol: 1</code><span>bounded JSON · leases · epoch fencing</span></div>
         </div>
         <div className="score-table">
-          {repositories.map((repository) => (
-            <div key={repository.name} className={repository.score === 93 ? "is-winner" : ""}>
-              <span><strong>{repository.name}</strong><small>{repository.note}</small></span>
-              <div className="score-bar"><span style={{ width: `${repository.score}%` }} /></div>
-              <b>{repository.score}</b>
-            </div>
-          ))}
+          <div className="is-winner"><span><strong>Local-only target</strong><small>Exact URL, authuser route, notebook title, and raw provider IDs stay in Chrome.</small></span><b>01</b></div>
+          <div><span><strong>Generic server view</strong><small>Private NotebookLM target, fingerprints, safe capacity, and sealed aliases.</small></span><b>02</b></div>
+          <div><span><strong>Content-free journal</strong><small>Crash recovery records markers and aliases, never the title or body.</small></span><b>03</b></div>
+          <div><span><strong>No remote-delete lane</strong><small>Stop checking purges temporary content and makes no deletion claim.</small></span><b>04</b></div>
         </div>
       </div>
 
       <div className="evidence-boundary">
         <TriangleAlert aria-hidden="true" />
-        <div><strong>Evidence boundary</strong><p>This design is based on source review and a 13-case credential-free state-model spike. It does not prove live consumer NotebookLM compatibility, session longevity, sharing inspection, capacity behavior, cancellation, cleanup, or production concurrency.</p></div>
+        <div><strong>Evidence boundary</strong><p>This handoff is aligned to the implemented candidate, migration 026, and current API contracts. It does not prove production deployment, a signed-in private canary, or future compatibility with NotebookLM’s undocumented consumer RPC surface.</p></div>
       </div>
     </section>
   );

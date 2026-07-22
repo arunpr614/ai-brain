@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import {
   AlertTriangle,
   ArrowLeft,
@@ -17,58 +17,33 @@ import {
   UserRoundCheck,
 } from "lucide-react";
 
-interface NotebookOption {
-  id: string;
-  label: string;
-  detail: string;
-  posture: "Private" | "Shared";
-  headroom: string;
-  blocked?: boolean;
-}
+type VerificationScenario = "private" | "shared" | "public" | "unknown" | "capacity";
 
-const notebooks: NotebookOption[] = [
-  {
-    id: "product-strategy",
-    label: "Product Strategy",
-    detail: "Planning notes and market research",
-    posture: "Private",
-    headroom: "12 safe slots",
-  },
-  {
-    id: "team-research",
-    label: "Team Research",
-    detail: "Shared with 6 collaborators",
-    posture: "Shared",
-    headroom: "8 safe slots",
-  },
-  {
-    id: "reading-inbox",
-    label: "Reading Inbox",
-    detail: "Source reserve reached",
-    posture: "Private",
-    headroom: "0 safe slots",
-    blocked: true,
-  },
+const verificationScenarios: Array<{ id: VerificationScenario; label: string }> = [
+  { id: "private", label: "Owner-private" },
+  { id: "shared", label: "Shared" },
+  { id: "public", label: "Public" },
+  { id: "unknown", label: "Unknown" },
+  { id: "capacity", label: "No safe slots" },
 ];
 
-const steps = ["Permission", "Sign in", "Destination", "Verify", "Ready"];
+const steps = ["Permission", "Sign in", "Pair", "Destination", "Verify", "Ready"];
 
 export function ConnectorSetup() {
   const [step, setStep] = useState(0);
-  const [selectedId, setSelectedId] = useState("product-strategy");
-  const [sharedAcknowledged, setSharedAcknowledged] = useState(false);
+  const [pairingCode, setPairingCode] = useState("ABCD-EFGH");
+  const [notebookUrl, setNotebookUrl] = useState("https://notebooklm.google.com/notebook/123e4567-e89b-12d3-a456-426614174000");
+  const [verificationScenario, setVerificationScenario] = useState<VerificationScenario>("private");
   const [managementAction, setManagementAction] = useState<"disable" | "rebind" | null>(null);
-  const selected = useMemo(
-    () => notebooks.find((notebook) => notebook.id === selectedId) ?? notebooks[0],
-    [selectedId],
-  );
-
-  const canFinish = !selected.blocked && (selected.posture !== "Shared" || sharedAcknowledged);
-
-  function chooseNotebook(id: string) {
-    setSelectedId(id);
-    setSharedAcknowledged(false);
-  }
+  const posture = verificationScenario === "private"
+    ? "Private · owner-only"
+    : verificationScenario === "capacity"
+      ? "Private · owner-only"
+      : verificationScenario === "unknown"
+        ? "Not verified"
+        : verificationScenario[0].toUpperCase() + verificationScenario.slice(1);
+  const safeSlots = verificationScenario === "capacity" ? "0" : verificationScenario === "private" ? "12" : "Blocked";
+  const canFinish = verificationScenario === "private";
 
   return (
     <section className="connector-section">
@@ -77,8 +52,8 @@ export function ConnectorSetup() {
           <span className="section-kicker">Local-only setup journey</span>
           <h1>Bind one NotebookLM destination on this device</h1>
           <p>
-            Notebook selection never appears on the AI Memory item page. The connector resolves one notebook,
-            verifies its safety posture, and creates an immutable binding version.
+            Notebook selection never appears on the AI Memory item page. The owner pastes one exact notebook URL
+            locally; the connector verifies it and creates an immutable binding version.
           </p>
         </div>
         <div className="concept-badge"><Laptop aria-hidden="true" /> Preferred Chrome boundary</div>
@@ -87,12 +62,11 @@ export function ConnectorSetup() {
       <div className="connector-branch-note">
         <ShieldCheck aria-hidden="true" />
         <div>
-          <strong>This walkthrough shows the preferred product credential boundary.</strong>
+          <strong>This walkthrough mirrors the implemented Chrome-connector candidate.</strong>
           <p>
-            It uses AI Memory’s existing Chrome extension and Chrome’s signed-in session without copying cookies.
-            A separately authorized synthetic feasibility spike may instead run pinned <code>notebooklm-py</code>
-            in a desktop worker; that branch requires its own private local session vault, explicit purge, and a
-            separate security review.
+            The public sign-in entrance is <code>https://notebooklm.google/</code>. The authenticated app and optional
+            host permission use <code>https://notebooklm.google.com/</code>. Google session data, the exact notebook URL,
+            and its locally observed title stay in Chrome.
           </p>
         </div>
       </div>
@@ -130,10 +104,10 @@ export function ConnectorSetup() {
                 icon={Globe}
                 kicker="Narrow browser permission"
                 title="Allow access to NotebookLM"
-                body="The public product entrance is notebooklm.google; the signed-in app runs at notebooklm.google.com. The connector needs access only to that authenticated app host to inspect the notebook you specify, list its sources, add copied text, and check status. It never requests access to all websites or copies your Google cookies."
+                body="The public product entrance is https://notebooklm.google/; the signed-in app runs at https://notebooklm.google.com/. The connector optionally requests only https://notebooklm.google.com/* to inspect the notebook you specify, list its sources, add copied text, and check status. It never requests access to all websites or copies your Google cookies."
               >
                 <div className="permission-card">
-                  <div><Globe aria-hidden="true" /><span><strong>notebooklm.google.com</strong><small>Read and change data only on this host</small></span></div>
+                  <div><Globe aria-hidden="true" /><span><strong>https://notebooklm.google.com/*</strong><small>Read and change data only on this host</small></span></div>
                   <span className="permission-state"><Check aria-hidden="true" /> Requested when used</span>
                 </div>
                 <button className="primary-button setup-primary" onClick={() => setStep(1)}>Allow in Chrome <ArrowRight aria-hidden="true" /></button>
@@ -155,6 +129,7 @@ export function ConnectorSetup() {
                 </div>
                 <div className="setup-action-row">
                   <button className="quiet-button" onClick={() => setStep(0)}><ArrowLeft aria-hidden="true" /> Back</button>
+                  <a className="quiet-button" href="https://notebooklm.google/" target="_blank" rel="noreferrer">Open public sign-in <ExternalLink aria-hidden="true" /></a>
                   <button className="primary-button" onClick={() => setStep(2)}>I’m signed in <ArrowRight aria-hidden="true" /></button>
                 </div>
               </SetupPanel>
@@ -162,70 +137,104 @@ export function ConnectorSetup() {
 
             {step === 2 && (
               <SetupPanel
-                icon={BookOpen}
-                kicker="Immutable destination"
-                title="Choose one destination"
-                body="AI Memory exports only to this notebook until you deliberately change the binding. Existing sources never move when you rebind."
+                icon={KeyRound}
+                kicker="One-time Brain pairing"
+                title="Pair this browser connector"
+                body="Create a one-time code in AI Memory → Settings → Export to NotebookLM, then enter it here. The code is exchanged for a narrowly scoped connector credential stored only in Chrome and is discarded after use."
               >
-                <div className="notebook-list" role="radiogroup" aria-label="Available notebooks">
-                  {notebooks.map((notebook) => (
-                    <button
-                      key={notebook.id}
-                      role="radio"
-                      aria-checked={selectedId === notebook.id}
-                      className={`notebook-option${selectedId === notebook.id ? " is-selected" : ""}${notebook.blocked ? " is-blocked" : ""}`}
-                      onClick={() => chooseNotebook(notebook.id)}
-                    >
-                      <span className="radio-circle">{selectedId === notebook.id && <span />}</span>
-                      <BookOpen aria-hidden="true" />
-                      <span className="notebook-copy"><strong>{notebook.label}</strong><small>{notebook.detail}</small></span>
-                      <span className={`posture posture-${notebook.posture.toLowerCase()}`}>{notebook.posture}</span>
-                      <span className="headroom">{notebook.headroom}</span>
-                    </button>
-                  ))}
+                <div className="notebook-url-card">
+                  <label htmlFor="pairing-code">One-time connector pairing code</label>
+                  <div>
+                    <KeyRound aria-hidden="true" />
+                    <input
+                      id="pairing-code"
+                      type="text"
+                      value={pairingCode}
+                      onChange={(event) => setPairingCode(event.target.value)}
+                      maxLength={9}
+                      spellCheck={false}
+                      autoComplete="off"
+                    />
+                  </div>
+                  <p>Prototype format: eight letters or digits, displayed as <code>ABCD-EFGH</code>. The hosted server never receives the Google session.</p>
                 </div>
-                <p className="illustrative-note">Capacity values are illustrative. Production thresholds and reserve policy remain to be defined.</p>
                 <div className="setup-action-row">
                   <button className="quiet-button" onClick={() => setStep(1)}><ArrowLeft aria-hidden="true" /> Back</button>
-                  <button className="primary-button" onClick={() => setStep(3)}>Use this notebook <ArrowRight aria-hidden="true" /></button>
+                  <button className="primary-button" disabled={!pairingCode.trim()} onClick={() => setStep(3)}>Pair connector <ArrowRight aria-hidden="true" /></button>
                 </div>
               </SetupPanel>
             )}
 
             {step === 3 && (
               <SetupPanel
-                icon={ShieldCheck}
-                kicker="Fail-closed health check"
-                title={`Verify ${selected.label}`}
-                body="The connector rechecks the account, exact notebook, sharing posture, and source headroom before a binding can become active."
+                icon={BookOpen}
+                kicker="Immutable destination"
+                title="Paste one exact notebook URL"
+                body="Open the intended private notebook in the authenticated app, then paste its exact URL here. The connector does not list or enumerate any other notebooks."
               >
-                <div className="verification-grid">
-                  <VerificationItem label="Expected account" value="Matches" tone="success" />
-                  <VerificationItem label="Notebook access" value="Available" tone="success" />
-                  <VerificationItem label="Sharing posture" value={selected.posture} tone={selected.posture === "Shared" ? "warning" : "success"} />
-                  <VerificationItem label="Safe headroom" value={selected.headroom} tone={selected.blocked ? "danger" : "success"} />
-                </div>
-                {selected.posture === "Shared" && !selected.blocked && (
-                  <label className="confirmation-check shared-check">
-                    <input type="checkbox" checked={sharedAcknowledged} onChange={(event) => setSharedAcknowledged(event.target.checked)} />
-                    <span><strong>I understand who may read exports.</strong> People with access to {selected.label} may read the copied item text.</span>
-                  </label>
-                )}
-                {selected.blocked && (
-                  <div className="modal-notice tone-danger"><AlertTriangle aria-hidden="true" /><p>This notebook has reached AI Memory’s safety reserve. No real item can be exported here.</p></div>
-                )}
-                <div className="binding-preview">
-                  <KeyRound aria-hidden="true" />
-                  <div><strong>New immutable binding</strong><span>Friendly labels may be reused, but every rebind creates a new version and dedupe namespace.</span></div>
+                <div className="notebook-url-card">
+                  <label htmlFor="notebook-url">Exact authenticated notebook URL</label>
+                  <div>
+                    <BookOpen aria-hidden="true" />
+                    <input
+                      id="notebook-url"
+                      type="url"
+                      value={notebookUrl}
+                      onChange={(event) => setNotebookUrl(event.target.value)}
+                      spellCheck={false}
+                      autoComplete="off"
+                    />
+                  </div>
+                  <p>Accepted shape: <code>https://notebooklm.google.com/notebook/&lt;uuid&gt;</code>, with only optional numeric <code>?authuser=0…10</code>.</p>
                 </div>
                 <div className="setup-action-row">
-                  <button className="quiet-button" onClick={() => setStep(2)}><ArrowLeft aria-hidden="true" /> Choose another</button>
-                  <button className="primary-button" disabled={!canFinish} onClick={() => setStep(4)}>Finish setup <Check aria-hidden="true" /></button>
+                  <button className="quiet-button" onClick={() => setStep(2)}><ArrowLeft aria-hidden="true" /> Back</button>
+                  <button className="primary-button" disabled={!notebookUrl.trim()} onClick={() => setStep(4)}>Verify this URL <ArrowRight aria-hidden="true" /></button>
                 </div>
               </SetupPanel>
             )}
 
             {step === 4 && (
+              <SetupPanel
+                icon={ShieldCheck}
+                kicker="Fail-closed health check"
+                title="Verify the pasted notebook"
+                body="The connector rechecks the expected Google subject, exact notebook, owner-only privacy, source occupancy, and protected headroom before activating a binding."
+              >
+                <div className="verification-preview" role="group" aria-label="Preview a connector verification result">
+                  <span>Prototype result</span>
+                  {verificationScenarios.map((scenario) => (
+                    <button
+                      key={scenario.id}
+                      className={verificationScenario === scenario.id ? "is-selected" : ""}
+                      onClick={() => setVerificationScenario(scenario.id)}
+                      aria-pressed={verificationScenario === scenario.id}
+                    >
+                      {scenario.label}
+                    </button>
+                  ))}
+                </div>
+                <div className="verification-grid">
+                  <VerificationItem label="Expected account" value="Matches" tone="success" />
+                  <VerificationItem label="Exact target" value="Matches pasted URL" tone="success" />
+                  <VerificationItem label="Sharing posture" value={posture} tone={verificationScenario === "private" || verificationScenario === "capacity" ? "success" : "danger"} />
+                  <VerificationItem label="Safe slots" value={safeSlots} tone={verificationScenario === "private" ? "success" : "danger"} />
+                </div>
+                {!canFinish && (
+                  <div className="modal-notice tone-danger"><AlertTriangle aria-hidden="true" /><p>{verificationBlockMessage(verificationScenario)} There is no acknowledgement bypass.</p></div>
+                )}
+                <div className="binding-preview">
+                  <KeyRound aria-hidden="true" />
+                  <div><strong>Local detail, generic server label</strong><span>Chrome retains the exact URL and “Product Strategy” title. AI Memory receives only “Private NotebookLM target,” fingerprints, private health, and capacity.</span></div>
+                </div>
+                <div className="setup-action-row">
+                  <button className="quiet-button" onClick={() => setStep(3)}><ArrowLeft aria-hidden="true" /> Edit URL</button>
+                  <button className="primary-button" disabled={!canFinish} onClick={() => setStep(5)}>Finish setup <Check aria-hidden="true" /></button>
+                </div>
+              </SetupPanel>
+            )}
+
+            {step === 5 && (
               <SetupPanel
                 icon={CheckCircle2}
                 kicker="Binding active"
@@ -234,11 +243,11 @@ export function ConnectorSetup() {
               >
                 <div className="ready-destination">
                   <div className="ready-orbit"><BookOpen aria-hidden="true" /><CheckCircle2 aria-hidden="true" /></div>
-                  <div><span className="mini-label">Active destination</span><h3>{selected.label}</h3><p>{selected.posture} · Connector online · {selected.headroom}</p></div>
+                  <div><span className="mini-label">Local connector detail</span><h3>Product Strategy</h3><p>Private · owner-only · Connector online · 12 safe slots</p></div>
                 </div>
                 <div className="ready-rules">
                   <span><Check aria-hidden="true" /> Local Google session</span>
-                  <span><Check aria-hidden="true" /> Server cannot change target</span>
+                  <span><Check aria-hidden="true" /> Server label stays generic</span>
                   <span><Check aria-hidden="true" /> One non-retried create</span>
                 </div>
                 <div className="management-safety-row">
@@ -258,8 +267,8 @@ export function ConnectorSetup() {
                       </h3>
                       <p>
                         {managementAction === "disable"
-                          ? "New claims pause first. Known in-flight work must reach a truthful terminal or unresolved state before the device token is revoked and the local session is purged. Existing NotebookLM sources remain in place."
-                          : "Rebinding is blocked whenever queued, running, reconciling, or unresolved work exists. The new target receives a new binding version and dedupe namespace; existing NotebookLM sources never move or disappear."}
+                          ? "New claims pause first. Safe disconnect is blocked by nonterminal work or a duplicate conflict; a stopped terminal ambiguity may remain recorded. It revokes the scoped server credential and deactivates the target, but neither deletes remote sources nor clears separate Chrome-local connector state."
+                          : "Rebinding is blocked whenever queued, sending, processing, reconciling, conflict, or other unresolved work exists. The new pasted URL receives a new binding version and dedupe namespace; existing sources never move or disappear."}
                       </p>
                       <div className="management-confirmation__actions">
                         <button className="quiet-button" onClick={() => setManagementAction(null)}>Keep current setup</button>
@@ -268,10 +277,10 @@ export function ConnectorSetup() {
                           onClick={() => {
                             const action = managementAction;
                             setManagementAction(null);
-                            setStep(action === "disable" ? 0 : 2);
+                            setStep(action === "disable" ? 0 : 3);
                           }}
                         >
-                          {managementAction === "disable" ? "Disable + purge local session" : "Create new binding"}
+                          {managementAction === "disable" ? "Disconnect connector" : "Paste a new URL"}
                         </button>
                       </div>
                     </div>
@@ -286,7 +295,7 @@ export function ConnectorSetup() {
       <div className="connector-notes">
         <article>
           <span className="note-number">01</span>
-          <div><h3>Setup and export are separate</h3><p>The local connector discovers notebooks. The item page receives only a safe label, posture, availability, and headroom state.</p></div>
+          <div><h3>No notebook enumeration</h3><p>The owner pastes one exact URL locally. The item page receives only the generic label, posture, availability, and headroom state.</p></div>
         </article>
         <article>
           <span className="note-number">02</span>
@@ -302,8 +311,8 @@ export function ConnectorSetup() {
         <div className="section-heading compact"><div><span className="section-kicker">Failure examples</span><h2>Conditions that stop setup or export</h2></div></div>
         <div className="blocking-grid">
           <BlockingCard icon={UserRoundCheck} title="Wrong Google account" body="Switch account and recheck. No item was sent." />
-          <BlockingCard icon={ShieldCheck} title="Sharing unknown" body="Real AI Memory content remains blocked until posture can be verified." />
-          <BlockingCard icon={AlertTriangle} title="Capacity reserve reached" body="Remove sources or deliberately choose another notebook." />
+          <BlockingCard icon={ShieldCheck} title="Shared, public, or unknown" body="Owner-only private verification is mandatory; consent cannot bypass the block." />
+          <BlockingCard icon={AlertTriangle} title="Capacity reserve reached" body="Restore headroom or deliberately paste another private notebook URL." />
         </div>
       </div>
     </section>
@@ -351,8 +360,16 @@ function stepDescription(index: number) {
   return [
     "Narrow host access",
     "Keep session local",
-    "Choose once",
+    "Exchange one-time code",
+    "Paste exact URL",
     "Account + safety",
     "Binding active",
   ][index];
+}
+
+function verificationBlockMessage(scenario: VerificationScenario) {
+  if (scenario === "shared") return "Shared notebooks are blocked in V1.";
+  if (scenario === "public") return "Public notebooks are blocked in V1.";
+  if (scenario === "unknown") return "An unknown sharing posture is blocked in V1.";
+  return "The five-source safety reserve has been reached.";
 }

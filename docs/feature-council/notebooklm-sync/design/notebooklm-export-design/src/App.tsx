@@ -39,28 +39,28 @@ function App() {
           <div className="artifact-mark" aria-hidden="true"><BookOpen /><span /></div>
           <div>
             <span className="section-kicker">AI Memory · Consumer NotebookLM</span>
-            <strong>One-click export design</strong>
+            <strong>One-click export · implemented-candidate handoff</strong>
           </div>
         </div>
         <div className="artifact-summary">
-          <span><FlaskConical aria-hidden="true" /> Concept prototype</span>
+          <span><FlaskConical aria-hidden="true" /> Implemented candidate</span>
           <span><ShieldCheck aria-hidden="true" /> No live connection</span>
-          <span><CheckCircle2 aria-hidden="true" /> S11 · 13/13 cases</span>
+          <span><CheckCircle2 aria-hidden="true" /> Contract + code aligned</span>
         </div>
       </header>
 
       <div className="hero-band">
         <div className="hero-copy">
-          <span className="hero-index">DESIGN DOCUMENT · 2026-07-21</span>
+          <span className="hero-index">IMPLEMENTED-CANDIDATE HANDOFF · 2026-07-22</span>
           <h1>Send one saved AI Memory item to one specified NotebookLM notebook.</h1>
           <p>
-            A source-grounded, interactive design for a deliberate one-item export—built around a durable queue,
-            a local Google-session boundary, and honest recovery when a provider write is uncertain.
+            A code-aligned interactive handoff for a deliberate one-item export—built around a durable queue,
+            a local Chrome session boundary, and honest recovery when a provider write is uncertain.
           </p>
         </div>
         <div className="hero-decision">
-          <span className="hero-score">93<small>/100</small></span>
-          <div><span className="section-kicker">Repository fit</span><strong>notebooklm-py</strong><p>Stable v0.7.3 · local feasibility spike only</p></div>
+          <span className="hero-score">V1</span>
+          <div><span className="section-kicker">Implemented boundary</span><strong>Chrome MV3 connector</strong><p>Owner-only · exact local URL · private target</p></div>
         </div>
       </div>
 
@@ -93,12 +93,12 @@ function App() {
       </main>
 
       <footer className="document-footer">
-        <div><BookOpen aria-hidden="true" /><span><strong>AI Memory × NotebookLM</strong><small>Source-grounded concept design</small></span></div>
+        <div><BookOpen aria-hidden="true" /><span><strong>AI Memory × NotebookLM</strong><small>Implemented-candidate handoff</small></span></div>
         <p>
-          This artifact visualizes a proposed feature. It makes no live Google request and does not authorize
-          production implementation or claim official consumer NotebookLM API support.
+          This artifact mirrors the implemented candidate. It makes no live Google request and is not evidence of
+          production deployment, a successful signed-in canary, or official consumer NotebookLM API support.
         </p>
-        <span>Repository analysis · S11 contract spike · UI source audit</span>
+        <span>PM contract · migration 026 · current API and UI contracts</span>
       </footer>
     </div>
   );

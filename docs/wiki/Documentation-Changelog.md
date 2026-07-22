@@ -11,7 +11,7 @@ Owner: AI Brain maintainer.
 
 | Change | Implementation baseline | Runtime baseline | State |
 |---|---|---|---|
-| Added a deliberately narrow one-item export to one locally bound owner-only private consumer NotebookLM notebook, with a local Chrome trust boundary, durable no-blind-retry state machine, retention/backup controls, and staged write gate | Current feature worktree based on `4736ba3`; replace with the final protected-main release SHA before publication | None yet; production deployment and signed-in private synthetic canary are still required | **Experimental, default off, and not yet claimed as deployed** |
+| Added a deliberately narrow one-item export to one locally bound owner-only private consumer NotebookLM notebook, with a local Chrome trust boundary, durable no-blind-retry state machine, retention/backup controls, and staged write gate | Implementation `4fd2bd637c76d39b835416067027bdb719f71171`, rebased onto `ea801efa024914d601b495f968153aa5680e2e1e`; replace with the final protected-main release SHA before publication | None yet; production deployment and signed-in private synthetic canary are still required | **Experimental, default off, and not yet claimed as deployed** |
 
 - Added [NotebookLM One-Click Export](NotebookLM-One-Click-Export) while preserving the broader synchronization decision as Deferred research.
 - Distinguished the public entrance at `https://notebooklm.google/` from the authenticated application/connector host at `https://notebooklm.google.com/`.

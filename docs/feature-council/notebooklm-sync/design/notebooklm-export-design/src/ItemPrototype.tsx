@@ -108,7 +108,7 @@ const statusMeta: Record<ExportStage, {
     icon: RefreshCw,
   },
   succeeded: {
-    title: "Ready in Product Strategy",
+    title: "Ready in Private NotebookLM target",
     body: "NotebookLM finished processing this exact saved version.",
     tone: "success",
     icon: CheckCircle2,
@@ -151,7 +151,7 @@ const statusMeta: Record<ExportStage, {
   },
   already: {
     title: "Already exported",
-    body: "This exact saved version is already ready in Product Strategy. No new source was created.",
+    body: "This exact saved version is already ready in the configured private notebook. No new source was created.",
     tone: "success",
     icon: CheckCircle2,
   },
@@ -163,7 +163,7 @@ const statusMeta: Record<ExportStage, {
   },
   blocked: {
     title: "Destination safety reserve reached",
-    body: "Remove sources in NotebookLM or deliberately configure another destination. No item was sent.",
+    body: "Restore source headroom or deliberately configure another private destination. No item was sent.",
     tone: "danger",
     icon: XCircle,
   },
@@ -377,7 +377,7 @@ export function ItemPrototype({
             <main className="item-page">
               <div className="item-page__topline">
                 <button className="text-button"><ArrowLeft aria-hidden="true" /> Back to Library</button>
-                <span>Concept prototype · no live NotebookLM connection</span>
+                <span>Implemented-candidate preview · no live NotebookLM connection</span>
               </div>
 
               <div className="item-grid">
@@ -571,14 +571,14 @@ function TargetStrip({
       <div className="target-icon"><BookOpen aria-hidden="true" /></div>
       <div className="target-copy">
         <span className="mini-label">NotebookLM destination</span>
-        <strong>Product Strategy <span>· Private</span></strong>
+        <strong>Private NotebookLM target <span>· Private</span></strong>
         <p>Sends a static copy of the saved text. Changes do not sync automatically.</p>
         <button className="target-review" onClick={onReviewPayload}>What will be sent?</button>
       </div>
       <div className="target-health">
         <span className={`health-dot connector-${scenario.connector}`} aria-hidden="true" />
         <span>{connectorLabel}</span>
-        <small>{capacityBlocked ? "Reserve protected" : "Illustrative: 12 safe slots"}</small>
+        <small>{capacityBlocked ? "Reserve protected" : "12 safe slots · limit 50 · reserve 5"}</small>
       </div>
     </section>
   );
@@ -656,6 +656,7 @@ function ExportStatus({
           <>
             <button className="primary-button" onClick={onSourceFound}>Simulate source found</button>
             <button className="quiet-button" onClick={onStayUnresolved}>Keep unresolved</button>
+            <button className="quiet-button danger-text" onClick={onExplainRecovery}>Stop checking + purge temporary copy</button>
           </>
         )}
         {(stage === "succeeded" || stage === "already" || stage === "cancelled") && <button className="quiet-button" onClick={onReset}>Replay scenario</button>}
@@ -830,8 +831,8 @@ function ExportModal({
 
         <div className="modal-target-row">
           <span>Fixed destination</span>
-          <strong><BookOpen aria-hidden="true" /> Product Strategy · Private</strong>
-          <small>Configured and verified by the local connector</small>
+          <strong><BookOpen aria-hidden="true" /> Private NotebookLM target · Private</strong>
+          <small>Exact URL and notebook title remain in the local connector</small>
         </div>
 
         <div className="payload-grid">
@@ -841,7 +842,7 @@ function ExportModal({
               <li>Title</li>
               <li>Saved content body</li>
               <li>Author and publication date, when present</li>
-              <li>Allowlisted public canonical URL only when it contains no query data</li>
+              <li>Full title remains in copied text; display title alone may shorten to 180 characters</li>
             </ul>
           </div>
           <div className="payload-column is-excluded">
@@ -849,7 +850,7 @@ function ExportModal({
             <ul>
               <li>AI summaries, quotes, chats, and private notes</li>
               <li>AI Memory, user, or database identifiers</li>
-              <li>Thumbnails, private, signed, and query-bearing URLs</li>
+              <li>Every source URL, plus thumbnails and temporary media paths</li>
               <li>Google cookies, notebook IDs, and source IDs</li>
             </ul>
           </div>
@@ -857,7 +858,7 @@ function ExportModal({
 
         <div className="privacy-disclosure">
           <ShieldCheck aria-hidden="true" />
-          <p>Your Google session stays on this device. A short opaque recovery code is added to the source title so an interrupted export can be found without sending another copy.</p>
+          <p>Your Google session stays on this device. The complete payload must fit 200,000 UTF-8 bytes and 50,000 normalized words; nothing is truncated. A short opaque recovery code supports read-only recovery.</p>
         </div>
 
         {kind === "limited" && (
@@ -955,7 +956,10 @@ function recoveryDisclosureFor(stage: ExportStage) {
     return "Prototype connector settings: restore the destination’s protected headroom or deliberately bind a different notebook. This request remains blocked; nothing was sent.";
   }
   if (stage === "processing-failed") {
-    return "Prototype recovery: inspect or remove the recorded failed source in NotebookLM. AI Memory will not create a replacement automatically.";
+    return "Prototype recovery: inspect the recorded failed source in NotebookLM. AI Memory will not create a replacement or remove the remote source in V1.";
+  }
+  if (stage === "reconciling") {
+    return "V1 stop-checking confirmation: server recovery stops and temporary AI Memory content is purged. Any matching unresolved Chrome journal remains until the owner performs the separately warned emergency local clear. A source may still exist in NotebookLM; no remote deletion is claimed.";
   }
   return "This request remains paused. The prototype does not perform another create while delivery is unresolved.";
 }

@@ -2,7 +2,7 @@
 
 **Verified current-main baseline:** `23868faf13c8e3d0821715e6f5d0e3d2af1e1a34` on 2026-07-11
 **Latest verified deployed application baseline:** `6858529ef179a51442d319c6c58e5ace79757619` on 2026-07-10
-**Additional candidate baseline:** current uncommitted NotebookLM feature worktree based on `4736ba343e138e276ada1146fc44c9a40162593c` on 2026-07-22; no deployment or live-provider result is inferred.
+**Additional candidate baseline:** committed NotebookLM implementation `4fd2bd637c76d39b835416067027bdb719f71171`, rebased onto `ea801efa024914d601b495f968153aa5680e2e1e` on 2026-07-22; no deployment or live-provider result is inferred.
 **Confidence:** High means code plus tests or dated runtime evidence; Medium means implementation exists but reachability/runtime is not fully proven; Low means planning/research evidence only.
 
 Availability and runtime evidence are separate from status. `Feature-flagged` is used when a capability is materially controlled by rollout configuration. An enabled production flag does not make a feature unflagged.
@@ -60,7 +60,7 @@ The normalized `MASTER_FEATURE_AND_IDEA_EVIDENCE_DETAILS.csv` record contains 47
 | Health, errors, and quota diagnostics | Implemented | High | Health API, provider probes, client-error sink, quota page, deploy gates | Owner/operator diagnostics, not general analytics | health/errors/quota/deploy code and tests |
 | Local status tooling | Implemented | High code; runtime Unknown | Read-only menu/status helpers for owner operations | Availability varies by machine; not a product dashboard | local status scripts and static/unit checks |
 
-The established current-main rows were last verified on 2026-07-11. The separate NotebookLM candidate row was verified against the uncommitted feature worktree on 2026-07-22 and remains `Not deployed`. Runtime evidence is feature-specific; the deployed application SHA does not imply that every row received an end-to-end production test.
+The established current-main rows were last verified on 2026-07-11. The separate NotebookLM candidate row was verified against committed implementation `4fd2bd637c76d39b835416067027bdb719f71171` on 2026-07-22 and remains `Not deployed`. Runtime evidence is feature-specific; the deployed application SHA does not imply that every row received an end-to-end production test.
 
 ## Ideas and non-current capabilities
 

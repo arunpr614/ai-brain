@@ -148,19 +148,19 @@ export const stateCatalog: StateCatalogGroup[] = [
     description: "What the user sees before a connector has begun a provider write.",
     states: [
       {
-        state: "ready_private",
-        headline: "Destination: Product Strategy · Private",
+        state: "UI · ready_private",
+        headline: "Destination: Private NotebookLM target · Private",
         body: "Sends a static copy of the saved text. Changes do not sync automatically.",
         action: "Export to NotebookLM",
       },
       {
-        state: "limited_capture",
+        state: "UI · limited_capture",
         headline: "Export the limited text AI Memory saved?",
         body: "NotebookLM receives only the visible preview—not the presumed full source.",
         action: "Export limited text / Cancel",
       },
       {
-        state: "browser_unknown",
+        state: "UI · browser_unknown",
         headline: "We couldn’t confirm the request",
         body: "Resume the same request with the retained idempotency key.",
         action: "Try again safely",
@@ -172,7 +172,7 @@ export const stateCatalog: StateCatalogGroup[] = [
         action: "Cancel export",
       },
       {
-        state: "queued_offline",
+        state: "queued (UI: connector offline)",
         headline: "Queued — waiting for desktop connector",
         body: "The page may be closed; delivery continues when the connected computer is online.",
         action: "Cancel export",
@@ -184,7 +184,7 @@ export const stateCatalog: StateCatalogGroup[] = [
     description: "Success is reserved for a source that NotebookLM reports ready.",
     states: [
       {
-        state: "running",
+        state: "sending",
         headline: "Sending the saved copy to NotebookLM…",
         body: "The connector is performing the one allowed copied-text create.",
         action: "No ordinary Retry",
@@ -196,25 +196,25 @@ export const stateCatalog: StateCatalogGroup[] = [
         action: "Automatic status check",
       },
       {
-        state: "processing_failed",
+        state: "provider_failed → processing_failed DTO",
         headline: "NotebookLM could not process this source",
         body: "The recorded source failed after creation. AI Memory will not create a replacement automatically.",
         action: "Review the recorded source; no automatic re-create",
       },
       {
-        state: "succeeded",
-        headline: "Ready in Product Strategy",
+        state: "succeeded → ready DTO",
+        headline: "Ready in Private NotebookLM target",
         body: "NotebookLM finished processing this exact saved version.",
         action: "Done",
       },
       {
-        state: "already_exported",
+        state: "UI · already_exported",
         headline: "Already exported",
         body: "This exact target, binding version, mapper, and content hash already succeeded.",
         action: "No new write",
       },
       {
-        state: "changed_content",
+        state: "UI · changed_content",
         headline: "This item changed since its last export",
         body: "A deliberate new export creates a new source; the old source remains.",
         action: "Export updated version",
@@ -226,19 +226,19 @@ export const stateCatalog: StateCatalogGroup[] = [
     description: "Reconnect behavior depends on what may already have happened.",
     states: [
       {
-        state: "authentication_attention:create",
+        state: "authentication_attention · pre_create",
         headline: "Reconnect NotebookLM",
         body: "Nothing was sent. Reconnect before export can start.",
         action: "Reconnect → queued",
       },
       {
-        state: "authentication_attention:reconcile",
+        state: "authentication_attention · reconcile",
         headline: "Reconnect to check the result",
         body: "NotebookLM may already have received the item. It will not be sent again.",
         action: "Reconnect → reconciling",
       },
       {
-        state: "authentication_attention:poll",
+        state: "authentication_attention · poll",
         headline: "Reconnect to finish checking",
         body: "The source was added; reconnect only to inspect processing status.",
         action: "Reconnect → processing",
@@ -250,7 +250,7 @@ export const stateCatalog: StateCatalogGroup[] = [
         action: "Check later; Retry is absent",
       },
       {
-        state: "conflict",
+        state: "duplicate_conflict → conflict DTO",
         headline: "Export paused to prevent another copy",
         body: "More than one source has the exact marker. Nothing else will be sent or deleted.",
         action: "Review in NotebookLM",
@@ -262,16 +262,16 @@ export const stateCatalog: StateCatalogGroup[] = [
     description: "The interface stays truthful when it cannot safely complete the request.",
     states: [
       {
-        state: "target_capacity_blocked",
+        state: "capacity_blocked",
         headline: "Destination safety reserve reached",
-        body: "Remove sources in NotebookLM or deliberately configure another destination.",
+        body: "Restore headroom or deliberately configure another private destination.",
         action: "Open connector settings",
       },
       {
-        state: "payload_too_large",
+        state: "UI · payload_too_large",
         headline: "This item is too large for a safe one-source export",
         body: "Nothing is silently truncated or sent.",
-        action: "No export until chunking is designed",
+        action: "No export; no truncation",
       },
       {
         state: "cancelled",
@@ -280,13 +280,13 @@ export const stateCatalog: StateCatalogGroup[] = [
         action: "Start a fresh deliberate export",
       },
       {
-        state: "cleanup_required",
-        headline: "A source exists in NotebookLM",
-        body: "Keep it or remove only that recorded identity after target and account revalidation.",
-        action: "Keep source / Remove source",
+        state: "target_attention",
+        headline: "Export paused — destination needs review",
+        body: "Wrong account, target, sharing, public access, or unreadable health blocks every new create.",
+        action: "Review connector",
       },
       {
-        state: "abandon_and_purge",
+        state: "reconciliation_required · terminal",
         headline: "Stop checking and purge AI Memory’s temporary copy?",
         body: "Recovery stops; a source may still exist remotely. The UI never implies remote deletion.",
         action: "Stop and purge",
@@ -297,15 +297,15 @@ export const stateCatalog: StateCatalogGroup[] = [
 
 export const securityInvariants = [
   "The item page never supplies a notebook ID, URL, alias, connector, or target override.",
-  "Notebook discovery and immutable binding happen only in the local connector.",
+  "One exact notebook URL is pasted only in the local connector; notebook enumeration is not available.",
   "The click freezes a minimized payload; later item edits cannot change an in-flight request.",
-  "Only title, saved body, and strictly safe provenance may leave AI Memory.",
+  "Only title, saved body, and optional saved author/date may leave AI Memory; mapper V1 sends no URL.",
   "Google session material stays on the connected device and never reaches the hosted server.",
   "After a possibly delivered write, every automated recovery operation is read-only.",
   "Accepted and processing are never presented as success; success means source ready.",
-  "Wrong account, changed binding, unknown sharing, or exhausted headroom blocks real content.",
+  "Wrong account, changed binding, shared/public/unknown posture, or exhausted headroom blocks real content with no acknowledgement bypass.",
   "Multiple marker matches stop writes and never trigger automatic deletion.",
   "Changed content requires an explicit new-version action; old sources remain.",
-  "Browser DTOs and public logs contain no content, provider identifiers, tokens, or raw errors.",
+  "Item-page DTOs and public logs contain no payload content, provider identifiers, tokens, or raw errors; the private connector claim carries frozen title/text only for the create attempt.",
   "The connector cannot chat, share, create notebooks, bulk-delete, or fetch arbitrary items.",
 ];

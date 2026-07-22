@@ -1,6 +1,6 @@
 # AI Memory → NotebookLM one-click export design
 
-Interactive design document for a proposed one-item export from AI Memory to one prebound consumer NotebookLM notebook.
+Interactive, code-aligned handoff for the implemented-candidate one-item export from AI Memory to one prebound consumer NotebookLM notebook.
 
 ## Open the artifact
 
@@ -9,11 +9,13 @@ Open `bundle.html` directly in a browser. It is a self-contained HTML file with 
 The four document views cover:
 
 - the desktop and mobile item-page experience, including happy, blocked, authentication, ambiguous-write, and changed-content states;
-- the preferred Chrome-extension connector setup and its immutable notebook binding;
-- the remote-queue/local-credential architecture and the separate pinned-Python synthetic spike lane; and
-- the payload contract, full state catalog, security invariants, accessibility requirements, open decisions, and release gates.
+- the Chrome-extension connector setup using one exact pasted notebook URL and an immutable private binding;
+- the remote-queue/local-session architecture and actual browser/connector API routes; and
+- the resolved V1 payload, capacity, retention, state, accessibility, and release-gate contracts.
 
-This is a source-grounded concept prototype. It makes no live Google request and does not claim official consumer NotebookLM API support or authorize production implementation.
+The artifact distinguishes `https://notebooklm.google/` (public sign-in) from `https://notebooklm.google.com/` (authenticated app and optional host permission). It makes no live Google request. It is an implemented-candidate handoff, not proof of production deployment, a successful signed-in canary, or official consumer NotebookLM API support.
+
+The authoritative product policy remains `../../product/ONE_CLICK_EXPORT_DELIVERY_CONTRACT_2026-07-21.md`; implementation contracts live in the repository source and migration 026. This artifact is a visual companion and must be regenerated whenever its source changes.
 
 ## Develop
 

@@ -4,7 +4,7 @@ Purpose: Explain the narrow AI Memory → consumer NotebookLM export, its setup,
 
 Audience: AI Memory users, maintainers, support responders, security reviewers, and AI agents.
 
-Verified against: Deployed pre-feature baseline `8c1341100b174fe4ca518e6a745c30b9078df21c`, plus the current implementation candidate with migration `026_notebooklm_export.sql`, connector protocol v1, mapper v1, and Chrome extension 0.7.0, based on `4736ba3`. Replace the candidate baseline with the final release commit after merge.
+Verified against: Deployed pre-feature baseline `8c1341100b174fe4ca518e6a745c30b9078df21c`, plus committed implementation candidate `4fd2bd637c76d39b835416067027bdb719f71171` with migration `026_notebooklm_export.sql`, connector protocol v1, mapper v1, and Chrome extension 0.7.0, rebased onto `ea801efa024914d601b495f968153aa5680e2e1e`. Replace the candidate baseline with the final release commit after merge.
 
 Runtime evidence through: None. As of 2026-07-22, no production deployment or signed-in consumer NotebookLM synthetic canary is claimed.
 
