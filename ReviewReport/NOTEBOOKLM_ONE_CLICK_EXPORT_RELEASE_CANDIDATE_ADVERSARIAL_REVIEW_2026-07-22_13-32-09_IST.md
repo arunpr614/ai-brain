@@ -3,7 +3,7 @@
 **Created:** 2026-07-22 13:32:09 IST
 **Reviewer stance:** Brutally honest adversarial review
 **Reviewed target:** implementation commit `4fd2bd637c76d39b835416067027bdb719f71171`, merged to `main` as `ca1886a2c24fdd8117d922efd399460b9f12d833`; portability fix `8fb88f324638ca5d912f1a29566b84622ccbeefa` merged as `9c4082907480a1a4243367b5adedb1188d6985c7`; the final branch-policy enforcement follow-up and replacement protected-main artifact remain pending
-**Report path:** `/Users/arun.prakash/Documents/ArunVault2026-2/Initiatives/Arun_AI_Projects/Arun_AI_Open_Brain/Phase21/Phase21-NotebookLM-sync/ReviewReport/NOTEBOOKLM_ONE_CLICK_EXPORT_RELEASE_CANDIDATE_ADVERSARIAL_REVIEW_2026-07-22_13-32-09_IST.md`
+**Report path:** `ReviewReport/NOTEBOOKLM_ONE_CLICK_EXPORT_RELEASE_CANDIDATE_ADVERSARIAL_REVIEW_2026-07-22_13-32-09_IST.md` (relative to the project root)
 
 ## Executive Verdict
 
