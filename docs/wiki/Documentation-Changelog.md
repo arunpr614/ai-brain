@@ -16,7 +16,7 @@ Owner: AI Brain maintainer.
 - Added [NotebookLM One-Click Export](NotebookLM-One-Click-Export) while preserving the broader synchronization decision as Deferred research.
 - Distinguished the public entrance at `https://notebooklm.google/` from the authenticated application/connector host at `https://notebooklm.google.com/`.
 - The extension 0.7.0 artifact is attested and installed to a stable local directory, but it is not loaded or paired; no target or source exists.
-- The production release evidence at `docs/feature-council/notebooklm-sync/release/production-release-evidence-2026-07-22.md` records the current boundary. Its Wiki link will be pinned to the immutable documentation commit after merge. Owner-only enablement and final enabled-state publication still require the private synthetic canary and redacted verification.
+- The [production release evidence](https://github.com/arunpr614/ai-brain/blob/0b297c214715261194c0c90e11ebc37d2ac5bc5b/docs/feature-council/notebooklm-sync/release/production-release-evidence-2026-07-22.md) records the current boundary at an immutable documentation commit. Owner-only enablement and final enabled-state publication still require the private synthetic canary and redacted verification.
 
 ## 2026-07-21 — NotebookLM synchronization research decision
 

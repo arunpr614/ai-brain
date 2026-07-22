@@ -1,12 +1,12 @@
 {
-  "generatedAt": "2026-07-22T10:59:27Z",
+  "generatedAt": "2026-07-22T11:34:03Z",
   "defaultBranch": "main",
   "defaultBranchSha": "167a15d57b8f70574a017ea4cda507870f3600d4",
   "worktreeBranch": "codex/notebooklm-production-evidence",
-  "worktreeSha": "167a15d57b8f70574a017ea4cda507870f3600d4",
+  "worktreeSha": "0b297c214715261194c0c90e11ebc37d2ac5bc5b",
   "worktreeDivergence": {
     "mainOnlyCommits": 0,
-    "worktreeOnlyCommits": 0
+    "worktreeOnlyCommits": 1
   },
   "productionSha": "167a15d57b8f70574a017ea4cda507870f3600d4",
   "productionEvidence": "docs/feature-council/notebooklm-sync/release/production-release-evidence-2026-07-22.md",

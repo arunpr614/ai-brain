@@ -14,7 +14,7 @@ Owner: AI Brain maintainer.
 
 **Status:** Experimental · **Availability:** Deployed UI-only; queue and provider writes off · **Confidence:** High for code and dark/UI-only runtime controls; live-provider confidence pending
 
-The repository evidence record at `docs/feature-council/notebooklm-sync/release/production-release-evidence-2026-07-22.md` records the current verified boundary. Its public link must be pinned to the immutable documentation commit after that record merges.
+The [repository evidence record](https://github.com/arunpr614/ai-brain/blob/0b297c214715261194c0c90e11ebc37d2ac5bc5b/docs/feature-council/notebooklm-sync/release/production-release-evidence-2026-07-22.md) records the current verified boundary at an immutable documentation commit.
 
 ## Summary
 
@@ -303,7 +303,7 @@ Before a signed-in provider canary or real-content enablement, release evidence 
 
 If any live read needed for target, owner, privacy, occupancy, source identity, readiness, or reconciliation cannot be interpreted safely, provider writes remain off and **Export as .md** remains the fallback.
 
-The production release-evidence record at `docs/feature-council/notebooklm-sync/release/production-release-evidence-2026-07-22.md` covers the protected-main artifact and UI-only deployment. It remains incomplete for the signed-in canary, owner-only real-content enablement, and GitHub Wiki publication verification. Tests, controls, and a visible production UI do not by themselves prove the consumer NotebookLM workflow. The Wiki will link the record at its immutable documentation commit after merge.
+The [production release-evidence record](https://github.com/arunpr614/ai-brain/blob/0b297c214715261194c0c90e11ebc37d2ac5bc5b/docs/feature-council/notebooklm-sync/release/production-release-evidence-2026-07-22.md) covers the protected-main artifact and UI-only deployment at an immutable documentation commit. It remains incomplete for the signed-in canary, owner-only real-content enablement, and GitHub Wiki publication verification. Tests, controls, and a visible production UI do not by themselves prove the consumer NotebookLM workflow.
 
 The detailed data and canary contract is maintained in `docs/datawiki/NotebookLM-One-Click-Export.md` in the repository.
 
