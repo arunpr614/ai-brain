@@ -20,6 +20,8 @@ The [repository evidence record](https://github.com/arunpr614/ai-brain/blob/0b29
 
 NotebookLM one-click export sends one deliberately selected saved AI Memory item as one static copied-text source to one fixed, preconfigured, owner-only private consumer NotebookLM notebook.
 
+Google [renamed NotebookLM to Gemini Notebook](https://blog.google/innovation-and-ai/products/gemini-notebook/notebooklm-gemini-notebook/) on 2026-07-16. This feature retains `NotebookLM` in its internal identifiers and documentation title for code and evidence continuity; [https://notebooklm.google/](https://notebooklm.google/) remains the public product entrance.
+
 It is an **export**, not synchronization:
 
 - changes in AI Memory do not update an existing NotebookLM source;
@@ -303,7 +305,7 @@ Before a signed-in provider canary or real-content enablement, release evidence 
 
 If any live read needed for target, owner, privacy, occupancy, source identity, readiness, or reconciliation cannot be interpreted safely, provider writes remain off and **Export as .md** remains the fallback.
 
-The [production release-evidence record](https://github.com/arunpr614/ai-brain/blob/0b297c214715261194c0c90e11ebc37d2ac5bc5b/docs/feature-council/notebooklm-sync/release/production-release-evidence-2026-07-22.md) covers the protected-main artifact and UI-only deployment at an immutable documentation commit. It remains incomplete for the signed-in canary, owner-only real-content enablement, and GitHub Wiki publication verification. Tests, controls, and a visible production UI do not by themselves prove the consumer NotebookLM workflow.
+The [production release-evidence record](https://github.com/arunpr614/ai-brain/blob/0b297c214715261194c0c90e11ebc37d2ac5bc5b/docs/feature-council/notebooklm-sync/release/production-release-evidence-2026-07-22.md) covers the protected-main artifact and UI-only deployment at an immutable documentation commit. Repository documentation merged in [PR #46](https://github.com/arunpr614/ai-brain/pull/46), and the no-delete Wiki publication was fresh-clone verified at content commit `b04c5940977a09ecc9e5b34c6c7ad7767092920f`: all 91 published pages were reachable and privacy-clean, including all 88 repository pages plus three preserved live-only research pages. The release remains incomplete for the signed-in canary and owner-only real-content enablement. Tests, controls, documentation publication, and a visible production UI do not by themselves prove the consumer NotebookLM workflow.
 
 The detailed data and canary contract is maintained in `docs/datawiki/NotebookLM-One-Click-Export.md` in the repository.
 

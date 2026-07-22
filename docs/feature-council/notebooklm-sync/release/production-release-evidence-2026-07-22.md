@@ -5,9 +5,13 @@
 **Current production stage:** UI-only (`1:0:0`)  
 **Verdict:** **PARTIAL — deployed UI-only; provider canary and owner-only enablement are pending**
 
+**Repository documentation:** [PR #46](https://github.com/arunpr614/ai-brain/pull/46), merge `dd3b88a2bab637ddccf717945f1b6cd39aa3705c`
+
+**Wiki publication:** content `b04c5940977a09ecc9e5b34c6c7ad7767092920f`; final verified head `5ccdeebea11190c10e8b06ed153d0df7d36d5aed`
+
 This record separates facts proved in production from code-level expectations and pending live-provider work. “Deployed” below does not mean that NotebookLM provider writes are enabled or that the end-to-end path has passed a signed-in canary.
 
-The public NotebookLM entry point is `https://notebooklm.google/`. The authenticated web application and the connector's optional Chrome host permission use `https://notebooklm.google.com/` and `https://notebooklm.google.com/*`, respectively.
+The public entry point remains `https://notebooklm.google/`. Google renamed the public product from NotebookLM to Gemini Notebook on 2026-07-16; internal feature identifiers retain `NotebookLM` for code and evidence continuity. The authenticated web application and the connector's optional Chrome host permission use `https://notebooklm.google.com/` and `https://notebooklm.google.com/*`, respectively.
 
 ## 1. Truth boundary and disposition
 
@@ -41,7 +45,7 @@ Production was deployed from the exact protected-main release SHA, not from a mu
 | Final adversarial review | No open P0, P1, or P2 findings |
 | Independent protected-main review | Clean |
 
-The 88-page result validates the repository corpus only. It is not evidence that the post-release Wiki publication has occurred.
+The 88-page result validated the repository corpus before publication. After PR #46 merged, the current corpus was reconciled through an exact three-way base with later live-only Wiki work and published without deletion. Content commit `b04c5940977a09ecc9e5b34c6c7ad7767092920f` and final metadata head `5ccdeebea11190c10e8b06ed153d0df7d36d5aed` were verified from fresh clones. The published result is a qualified 91-page preservation union—not a byte-identical 88-page mirror—with all 88 repository pages plus three unchanged live-only research pages, all 91 reachable, a clean 91-file privacy scan, and 89/89 user-facing URLs returning HTTP 200.
 
 ## 4. Artifact identities and attestations
 
@@ -190,17 +194,18 @@ The canary may proceed only as an owner-observed, low-rate, serialized, one-synt
 
 ## 13. Final disposition and linked evidence
 
-**Current disposition: PARTIAL.** The protected-main server release and UI-only stage are accepted. Signed-in provider behavior, private target binding, owner-only enablement, Wiki publication, and the final running-log append remain open gates.
+**Current disposition: PARTIAL.** The protected-main server release, UI-only stage, repository evidence merge, and qualified Wiki publication are accepted. Signed-in provider behavior, private target binding, owner-only enablement, and the final running-log append remain open gates.
 
 Related evidence:
 
 - [Delivery contract](../product/ONE_CLICK_EXPORT_DELIVERY_CONTRACT_2026-07-21.md)
 - [Canonical DataWiki page](../../../datawiki/NotebookLM-One-Click-Export.md)
 - [Canonical GitHub Wiki source page](../../../wiki/NotebookLM-One-Click-Export.md)
+- [Wiki publication verification](wiki-publication-verification.md)
 - [Dated release-candidate adversarial review](../../../../ReviewReport/NOTEBOOKLM_ONE_CLICK_EXPORT_RELEASE_CANDIDATE_ADVERSARIAL_REVIEW_2026-07-22_13-32-09_IST.md)
 - [Current Google Terms](https://policies.google.com/terms?hl=en-US)
 - [Announced Google Terms update](https://policies.google.com/terms/update?hl=en-US)
 - [Google Generative AI prohibited-use policy](https://policies.google.com/terms/generative-ai/use-policy?hl=en-US)
 - [NotebookLM privacy and terms](https://support.google.com/notebooklm/answer/17004255?hl=en)
 
-This document must be revised gate-by-gate after the signed-in synthetic canary and again after owner-only enablement and Wiki publication. It must not be changed from PARTIAL to COMPLETE based on repository tests alone.
+This document must be revised gate-by-gate after the signed-in synthetic canary and again after owner-only enablement. It must not be changed from PARTIAL to COMPLETE based on repository tests or documentation publication alone.
