@@ -30160,3 +30160,70 @@ Nothing deployed yet. The verified change is local on `codex/library-add-selecte
 - **Repository documentation:** merged through PR #32 at `8028fcbe23e58dc9889895278126447472b972e2`.
 - **GitHub Wiki:** published and verified at `5a9e100134141770ed87d959b7cd67aa4460f3ca`, 86/86 pages.
 - **Release objective:** direct Library selected-item enrollment, live production behavior, protected delivery, current repository documentation, canonical Wiki publication, and append-only project logging are complete.
+
+---
+
+## 2026-07-22 11:29 IST - YouTube transcript GitHub landscapes and Chrome companion research published
+
+**Entry author:** AI agent (Codex) · **Triggered by:** User requested that all artifacts from the completed YouTube transcript repository and Chrome companion research goals be moved into the GitHub repository.
+
+### Done
+
+- Published a dated, source-linked landscape of open-source repositories that retrieve, normalize, serve, or generate YouTube transcripts. The broad discovery universe was reduced to 105 materially distinct projects across libraries, extractors, MCP/services, products, browser tools, vendor examples, and representative ASR fallbacks.
+- Published a 24-row live adapter bakeoff across six Node/Python adapters and four fixture classes. No transcript text was retained; evidence contains outcomes, segment counts, duration, language/track identity where available, truncated normalized hashes, and typed failures.
+- Published a separate 50-project Chrome extension/userscript/companion inventory and ranked architecture report for using the user's active local Chrome/YouTube page without exporting browser credentials.
+- Deep-inspected 18 leading Chrome companion repositories and recorded eight representative validation snapshots. Evidence included 4/4 ANcpLua MV3/local-fixture E2E tests, 6 Tube2MD parser tests, 15 BitYoungjae core tests, 593 dpolivaev tests, builds, lint/typecheck, manifests, permissions, licensing, and dependency-audit caveats.
+- Selected a visible-DOM, explicit-click architecture for research: extend the existing Brain MV3 extension; add only `scripting` to the existing `activeTab` flow; run a bounded isolated-world extractor; require explicit confirmation; send normalized segments to a fixed Brain endpoint; never export cookies, profiles, session storage, auth headers, signed caption URLs, or page-selected destination URLs.
+- Ranked `searchpcc/tube2md` as the preferred MIT code/reference seed, with `yniijia/subtidex` for virtualized modern/legacy DOM handling, BitYoungjae for types/provenance only, ANcpLua for local MV3 fixtures, Briefly for failure/health concepts, and uoink for companion-to-service handoff patterns.
+- Preserved a production no-go for browser-mediated public transcript extraction. The research approval assertion supports controlled research planning but is not treated as automatic platform or production permission.
+- Recorded two critical implementation constraints: pure DOM capture cannot independently prove S02's required `en:asr` identity, and the existing `lab_public_caption` policy can mark an approved lab source as production-allowed despite the current research-only tracker posture.
+- Published the artifacts in the repository's canonical `docs/research/youtube-transcripts/` location and repaired application links from the local nested `phase2` layout to this repository's root layout.
+- Added a folder-level README linking both reports and all four machine-readable evidence files.
+
+### Verification
+
+- Both inventories parse as valid CSV: 105 rows/11 columns and 50 rows/14 columns, with no duplicate repository keys.
+- Bakeoff parses as 24 rows/15 columns; Chrome validation matrix parses as 8 rows/9 columns.
+- Every repository-relative Markdown link in the publication resolves in this GitHub checkout.
+- Privacy scan found no raw secrets, authentication values, personal browser profile data, or private keys in the published artifacts.
+- The GitHub destination is the public `arunpr614/ai-brain` repository; publication was prepared in a clean clone so unrelated local `arun-cursor` changes were not included.
+
+### Deployed / Released
+
+No application code, extension manifest, database, runtime, or production service changed. This is research documentation and evidence only.
+
+### Documents created or updated this period
+
+**Created:**
+- `docs/research/youtube-transcripts/README.md`
+- `docs/research/youtube-transcripts/2026-07-22_10-32-45_IST_github_youtube_transcript_repository_landscape_v1.md`
+- `docs/research/youtube-transcripts/2026-07-22_10-32-45_IST_github_youtube_transcript_repository_inventory.csv`
+- `docs/research/youtube-transcripts/2026-07-22_10-32-45_IST_youtube_transcript_live_adapter_bakeoff.csv`
+- `docs/research/youtube-transcripts/2026-07-22_11-05-48_IST_ai_brain_chrome_companion_github_landscape_v1.md`
+- `docs/research/youtube-transcripts/2026-07-22_11-05-48_IST_github_youtube_transcript_chrome_companion_inventory.csv`
+- `docs/research/youtube-transcripts/2026-07-22_11-05-48_IST_github_youtube_transcript_chrome_companion_validation_matrix.csv`
+
+**Updated:**
+- `RUNNING_LOG.md` - append-only publication and handoff record.
+
+### Current remaining to-do
+
+1. Merge the documentation branch through the repository's protected pull-request flow after CI passes.
+2. If implementation is commissioned, begin with a separate fixture-only, disabled-by-default plan; correct the `lab_public_caption` production-policy contradiction before adding an endpoint.
+3. Keep S02 blocked until `en:asr` track identity is independently proven. Do not infer ASR from transcript text or label a DOM-only result as ASR without evidence.
+4. Keep production public-video browser extraction disabled until a new legal/platform/security decision and adversarial review explicitly supersede the current posture.
+
+### Session self-critique
+
+- GitHub search cannot mathematically prove completeness; the inventories define "all" as materially distinct reusable approaches after deduplication, not every tutorial or summarizer clone.
+- Only 18 Chrome repositories were deep-cloned and eight were exercised. Lower-ranked entries explicitly retain metadata/README-level verification labels.
+- No live signed-in YouTube browser test was run. DOM compatibility is supported by repository and local synthetic fixtures, not a current production canary.
+- Directional scores, stars, activity, licenses, and dependency audits are dated snapshot signals rather than permanent quality guarantees.
+
+### State snapshot
+
+- **Current phase:** YouTube transcript repository and Chrome companion research complete; GitHub publication prepared.
+- **Active branch:** `codex/youtube-transcript-research-artifacts`.
+- **Working tree:** Seven new research files plus this append-only running-log entry; no application changes.
+- **Production:** Unchanged.
+- **Next milestone:** Protected PR, CI, review, and merge of the documentation-only publication.
