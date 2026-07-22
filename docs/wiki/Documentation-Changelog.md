@@ -15,8 +15,10 @@ Owner: AI Brain maintainer.
 
 - Added [NotebookLM One-Click Export](NotebookLM-One-Click-Export) while preserving the broader synchronization decision as Deferred research.
 - Distinguished the public entrance at `https://notebooklm.google/` from the authenticated application/connector host at `https://notebooklm.google.com/`.
+- Recorded Google's 2026-07-16 rename of the public product to Gemini Notebook while retaining `NotebookLM` for internal code and evidence continuity.
 - The extension 0.7.0 artifact is attested and installed to a stable local directory, but it is not loaded or paired; no target or source exists.
 - The [production release evidence](https://github.com/arunpr614/ai-brain/blob/0b297c214715261194c0c90e11ebc37d2ac5bc5b/docs/feature-council/notebooklm-sync/release/production-release-evidence-2026-07-22.md) records the current boundary at an immutable documentation commit. Owner-only enablement and final enabled-state publication still require the private synthetic canary and redacted verification.
+- Repository documentation merged in [PR #46](https://github.com/arunpr614/ai-brain/pull/46). Wiki content commit `b04c5940977a09ecc9e5b34c6c7ad7767092920f` was fresh-clone verified as a no-delete 91-page preservation union: all 88 repository pages plus three unchanged live-only research pages, with all 91 reachable and privacy-clean.
 
 ## 2026-07-21 — NotebookLM synchronization research decision
 

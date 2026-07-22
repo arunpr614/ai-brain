@@ -113,6 +113,22 @@ if (existsSync(baselinePath)) {
   }
 }
 
+const hasWikiPageVerificationSha = baseline !== null
+  && Object.prototype.hasOwnProperty.call(baseline, "wikiPageVerificationSha");
+const hasValidWikiPageVerificationSha = typeof baseline?.wikiPageVerificationSha === "string"
+  && /^[0-9a-f]{40}$/i.test(baseline.wikiPageVerificationSha);
+if (hasWikiPageVerificationSha && !hasValidWikiPageVerificationSha) {
+  findings.push(finding(
+    baselinePath,
+    null,
+    "invalid_wiki_page_verification_sha",
+    "wikiPageVerificationSha must be a 40-character hexadecimal commit SHA when present.",
+  ));
+}
+const expectedWikiPageVerificationSha = hasValidWikiPageVerificationSha
+  ? baseline.wikiPageVerificationSha
+  : baseline?.defaultBranchSha;
+
 let researchManifest = null;
 if (existsSync(manifestPath)) {
   try {
@@ -135,6 +151,7 @@ const approvedShas = new Set(
     baseline?.worktreeSha,
     baseline?.productionSha,
     baseline?.livingWikiDocumentationSha,
+    baseline?.notebookLmRepositoryEvidenceSha,
     baseline?.cardProcessingExplorationSha,
     baseline?.featureCouncilArtifactSha,
   ].filter(
@@ -202,8 +219,8 @@ function checkMetadata(page, lines) {
   for (const label of REQUIRED_METADATA) {
     if (!header.includes(label)) findings.push(finding(page, null, "missing_metadata", label));
   }
-  if (baseline?.defaultBranchSha && !header.includes(baseline.defaultBranchSha)) {
-    findings.push(finding(page, null, "stale_current_main_baseline", baseline.defaultBranchSha));
+  if (expectedWikiPageVerificationSha && !header.includes(expectedWikiPageVerificationSha)) {
+    findings.push(finding(page, null, "stale_current_main_baseline", expectedWikiPageVerificationSha));
   }
 }
 

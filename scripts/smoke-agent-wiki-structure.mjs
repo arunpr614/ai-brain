@@ -30,21 +30,24 @@ const baseline = join(root, "baseline.json");
 const manifestPath = join(root, "feature-council-wiki-manifest.json");
 const checker = resolve("scripts/check-agent-wiki-structure.mjs");
 const sha = "a".repeat(40);
+const verificationSha = "c".repeat(40);
 const sourceManifest = JSON.parse(readFileSync(resolve("docs/agent-docs/feature-council-wiki-manifest.json"), "utf8"));
 
 try {
   mkdirSync(wiki, { recursive: true });
-  writeFileSync(baseline, JSON.stringify({
+  const baselineData = {
     defaultBranchSha: sha,
     worktreeSha: "b".repeat(40),
     productionSha: null,
+    wikiPageVerificationSha: verificationSha,
     featureCouncilArtifactSha: sourceManifest.artifactSourceCommit,
-  }));
+  };
+  writeFileSync(baseline, JSON.stringify(baselineData));
   writeFileSync(manifestPath, JSON.stringify(sourceManifest));
   const metadata = [
     "Purpose: Synthetic page",
     "Audience: Tests",
-    `Verified against: ${sha}`,
+    `Verified against: ${verificationSha}`,
     "Runtime evidence through: Unknown",
     "Last reviewed: 2026-07-10",
     "Owner: Documentation maintainer",
@@ -97,6 +100,12 @@ try {
 
   const valid = run(wiki, baseline, manifestPath);
   assert.equal(valid.status, 0, valid.stderr);
+
+  writeFileSync(baseline, JSON.stringify({ ...baselineData, wikiPageVerificationSha: "" }));
+  const emptyOverride = run(wiki, baseline, manifestPath);
+  assert.equal(emptyOverride.status, 1, "an empty verification SHA override must fail");
+  assert.match(emptyOverride.stderr, /invalid_wiki_page_verification_sha/);
+  writeFileSync(baseline, JSON.stringify(baselineData));
 
   writeFileSync(join(wiki, "Home.md"), `${metadata}\n\n# Home\n\n[Broken](Missing-Page)\n`);
   const broken = run(wiki, baseline, manifestPath);

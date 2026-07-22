@@ -18,6 +18,8 @@ Owner: AI Brain maintainer.
 
 This feature exports one explicitly selected saved item as one static copied-text source to one prebound, owner-only private consumer NotebookLM notebook. It is deliberately named **Export to NotebookLM**, not synchronization.
 
+Google [renamed NotebookLM to Gemini Notebook](https://blog.google/innovation-and-ai/products/gemini-notebook/notebooklm-gemini-notebook/) on 2026-07-16. The implementation and this DataWiki retain `NotebookLM` identifiers for code and evidence continuity; `https://notebooklm.google/` remains the public product entrance.
+
 The public product entrance and authenticated application host are different:
 
 - `https://notebooklm.google/` is the public entrance used to open NotebookLM and sign in.
@@ -493,7 +495,7 @@ Real-content enablement remains blocked until every release gate and this live s
 
 ## 16. Verification matrix and current gaps
 
-A [production release-evidence record](../feature-council/notebooklm-sync/release/production-release-evidence-2026-07-22.md) records the protected-main artifact and UI-only deployment. It remains incomplete for signed-in provider behavior, owner-only enablement, and GitHub Wiki publication verification. The presence of tests, release controls, or a deployed UI does not itself prove the consumer NotebookLM workflow.
+A [production release-evidence record](../feature-council/notebooklm-sync/release/production-release-evidence-2026-07-22.md) records the protected-main artifact and UI-only deployment. The [Wiki publication verification](../feature-council/notebooklm-sync/release/wiki-publication-verification.md) records the qualified no-delete publication and fresh-clone checks. The release remains incomplete for signed-in provider behavior and owner-only enablement. The presence of tests, release controls, documentation publication, or a deployed UI does not itself prove the consumer NotebookLM workflow.
 
 | Area | Release/code evidence | Live/production evidence |
 |---|---|---|
