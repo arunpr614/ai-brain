@@ -20,7 +20,7 @@ The static implementation, extension, backup/restore controls, retention worker,
 - Local Chrome connector: manifest permissions, pairing/binding, browser-local identifiers, provider adapter, content-free journal, one-create authorization, reconciliation, source polling, and extension tests/build.
 - Retention and physical deletion: in-app cleanup, immutable app-independent retention service/timer, `secure_delete`, WAL truncate fencing, durable purge generation, and cross-process CLI tests.
 - Backup/restore and deployment: identity-specific tmpfs staging, process-group/deadline/FD fences, scrub normalization, pre-026 restore rejection, durable restore write latch, immutable activation/switch/rollback, timer restoration, and release artifact execution harness.
-- Verification repeated after rebase on implementation commit `4fd2bd637c76d39b835416067027bdb719f71171` (the follow-up edits are documentation/design-only):
+- Verification repeated after rebase on implementation commit `4fd2bd637c76d39b835416067027bdb719f71171`; follow-up changes are limited to documentation/design evidence and clean-install CI isolation for that standalone design project:
   - repository tests: 1,034 passed, 0 failed;
   - extension tests: 25 passed, 0 failed, plus production extension build;
   - root typecheck and full lint: passed;
