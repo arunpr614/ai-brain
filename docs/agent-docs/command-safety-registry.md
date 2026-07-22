@@ -159,5 +159,5 @@ This registry classifies every package script at the documentation baseline. Com
 | `test` | W1 local ephemeral write | No | Temporary/fixture state | No | No | Test or rehearsal source inspected; keep isolated |
 | `test:coverage` | W1 local ephemeral write | No | Temporary/fixture state | No | No | Test or rehearsal source inspected; keep isolated |
 | `test:recall-manual-sync-process` | W1 local ephemeral write | No | Temporary fixture databases, files, processes, and bundles | No | No | Isolated multi-process SQLite, real flock, crash, worker/lifecycle, and fake-systemd path/fallback evidence; no real Recall access |
-| `typecheck` | R0 read-only local | No | No | No | No | Local source/config inspection |
+| `typecheck` | W1 local ephemeral write | No | Ignored incremental cache `tsconfig.tsbuildinfo` | No | No | Reads source/config and writes or updates the local TypeScript build-info cache |
 | `verify:release-runtime` | R0 read-only local | No | No | No | No | Verifies an installed release manifest, file inventory, runtime ABI, native dependencies, and migration compatibility |

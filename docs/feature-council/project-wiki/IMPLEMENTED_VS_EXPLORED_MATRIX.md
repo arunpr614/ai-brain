@@ -1,6 +1,6 @@
 # Implemented Versus Explored Matrix
 
-**Verified:** established current-main areas on 2026-07-11 against `23868faf13c8e3d0821715e6f5d0e3d2af1e1a34`; the separate NotebookLM candidate on 2026-07-22 against committed implementation `4fd2bd637c76d39b835416067027bdb719f71171`, rebased onto `ea801efa024914d601b495f968153aa5680e2e1e`, with no deployment or live-provider claim.
+**Verified:** protected-main release `167a15d57b8f70574a017ea4cda507870f3600d4` on 2026-07-22, including the narrow NotebookLM export's production UI-only state. Flags are `1:0:0` (UI on, queue off, provider writes off); no NotebookLM target/source, signed-in provider canary, or owner-only real-content enablement is claimed.
 
 This matrix resolves the most likely sources of overclaim. Detailed rows are in `MASTER_FEATURE_AND_IDEA_INVENTORY.md`.
 
@@ -15,7 +15,7 @@ This matrix resolves the most likely sources of overclaim. Detailed rows are in 
 | Notes | Standalone note items and one attached My notes document per item | Multiple notes, backlinks, templates, tasks, synthesis, rich editor tools | Current model is intentionally one attached Markdown note |
 | Mobile offline | Cached shell/visited pages and note draft journal | Complete offline library, offline capture queue, sync | Fallback is not offline parity |
 | Export | Item Markdown, library ZIP, explicit note export | Markdown folder adoption, round-trip import, Obsidian sync | Export is one-way |
-| NotebookLM | Experimental, default-off one-click candidate for one explicit item and one fixed owner-only private consumer notebook | Broad/daily/batch synchronization, multiple targets, updates/deletes, round trip, and supported provider API | The narrow branch-only candidate is not deployed or live-provider verified and does not reverse the broad-sync deferral |
+| NotebookLM | Experimental one-click export for one explicit item and one fixed owner-only private consumer notebook; protected-main code is deployed UI-only, while queue and provider writes remain off | Broad/daily/batch synchronization, multiple targets, updates/deletes, round trip, and supported provider API | Authenticated Brain UI proof and an attested, stable-installed extension do not establish a loaded/paired connector, target/source, signed-in provider canary, or real-content export; broad synchronization remains Deferred |
 | YouTube recovery | User-provided transcript and recovery worker | Official-caption OAuth and owned-media STT | Both adapters remain inactive/not wired |
 | Android sharing | URL, note, and one PDF | Multiple PDFs and public-store distribution | Multi-PDF is intentionally rejected |
 | Runtime model | Hosted private service with managed edge and configurable providers | Original local-only Mac/Ollama plan | The local-only promise is superseded |

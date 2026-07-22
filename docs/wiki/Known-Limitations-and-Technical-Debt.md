@@ -2,9 +2,9 @@
 
 Purpose: Separate verified implementation limitations from proposals and speculative concerns.
 Audience: AI agents, maintainers, and reviewers.
-Verified against: main documentation baseline `8c1341100b174fe4ca518e6a745c30b9078df21c` plus review candidate `fdd740617685c1ce730a6150c306152a04070f86` on `feat/recall-manual-sync`.
-Runtime evidence through: 2026-07-12 where cited; most findings are static-code evidence.
-Last reviewed: 2026-07-12.
+Verified against: main documentation baseline `167a15d57b8f70574a017ea4cda507870f3600d4` plus review candidate `fdd740617685c1ce730a6150c306152a04070f86` on `feat/recall-manual-sync`.
+Runtime evidence through: 2026-07-22 where cited; most findings are static-code evidence.
+Last reviewed: 2026-07-22.
 Owner: AI Brain maintainer.
 
 ## Verified limitations
@@ -19,6 +19,8 @@ Owner: AI Brain maintainer.
 - Attached notes are not end-to-end encrypted and are excluded from default bulk export.
 - One shared bearer token prevents per-device identity/revocation.
 - Database backup workflows do not include filesystem capture-artifact files.
+- NotebookLM is a one-item static copied-text export to one fixed owner-only private consumer notebook, not synchronization. It has no batch/schedule/backfill, multi-target choice, remote update/delete, or return path.
+- NotebookLM remains Experimental and default-off beyond its UI: production is `1:0:0`, queue/provider writes are off, the attested 0.7.0 extension is locally installed but not loaded/paired, and no target/source/signed-in canary/real-content enablement is proven.
 
 ## Technical risks
 
@@ -32,6 +34,8 @@ Owner: AI Brain maintainer.
 - Workers, schedules, backups, HTTP, and one SQLite database share operational fate.
 - Duplicate numeric migration prefix `017` is resolved in current main but remains a tooling/human hazard.
 - Protected Product CI validates typecheck, lint, the complete product suite, production build, Processing readiness/release smoke, and documentation gates for the shipped workflow.
+- The NotebookLM connector depends on undocumented consumer web behavior, so protocol drift, account/profile ambiguity, authentication challenges, private-posture detection, and capacity interpretation must fail closed. Official help documents copied text and sharing controls but does not provide a supported public source-management API.
+- Migration 026 is additive and duplicate-safety state must be preserved. Two content-free `notebooklm.export_viewed` events now make a pre-026 binary rollback ineligible; safe feature rollback keeps a schema-026-aware runtime and turns the feature tuple off.
 
 ## Documentation debt
 

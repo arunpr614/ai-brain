@@ -2,9 +2,9 @@
 
 Purpose: Establish a safe, evidence-first workflow for understanding and changing AI Brain.
 Audience: AI agents and engineers entering the repository.
-Verified against: `8c1341100b174fe4ca518e6a745c30b9078df21c`.
-Runtime evidence through: 2026-07-10 at `6858529ef179a51442d319c6c58e5ace79757619`; current runtime must be verified separately.
-Last reviewed: 2026-07-11.
+Verified against: `167a15d57b8f70574a017ea4cda507870f3600d4`.
+Runtime evidence through: 2026-07-22 at deployed protected-main application `167a15d57b8f70574a017ea4cda507870f3600d4`; feature-specific live evidence still varies.
+Last reviewed: 2026-07-22.
 Owner: AI Brain maintainer.
 
 ## Recommended reading order
@@ -24,6 +24,8 @@ Owner: AI Brain maintainer.
 - Save, enrichment, embedding, transcript, and note-index state can fail independently.
 - Migrations are append-only historical records; order is by full filename, not numeric prefix alone.
 - Production writes require current private context and explicit authority.
+- NotebookLM is one deliberate static export to one fixed owner-only private consumer notebook, not synchronization; its queue, provider write, and signed-in canary are separate gates.
+- A deployed UI or locally installed extension artifact is not proof of extension load/pairing, target privacy, provider delivery, or owner-only real-content enablement.
 - Historical Feature Council pages are planning evidence, not implementation proof.
 
 ## Repository orientation
@@ -32,7 +34,7 @@ Owner: AI Brain maintainer.
 - `src/components/`: interactive UI and attached-note editor.
 - `src/lib/`: domain behavior, providers, integrations, and policy.
 - `src/db/`: persistence and migrations.
-- `android/` and `extension/`: non-web clients.
+- `android/` and `extension/`: non-web clients. The extension contains separate capture and experimental NotebookLM connector trust lanes.
 - `scripts/`: build, validation, and guarded operational tooling.
 - `docs/wiki/`: canonical wiki source.
 
@@ -40,4 +42,4 @@ Owner: AI Brain maintainer.
 
 Confirm the worktree/branch and baseline, preserve existing changes, locate the feature catalog row, trace UI/client → action/API → domain → database → jobs/integrations, and select the smallest relevant tests. Check [Command Safety](Command-Safety) before any script outside the public local-development list.
 
-The wiki is stale if its current-main SHA differs from the source being changed, cited files no longer exist, or a behavior/configuration/schema change is absent from the catalog and feature page. Update canonical documentation in the same change.
+The wiki is stale if its current-main SHA differs from the source being changed, cited files no longer exist, or a behavior/configuration/schema change is absent from the catalog and feature page. Update canonical documentation in the same change. For NotebookLM, preserve the evidence boundary explicitly: current production is UI-only `1:0:0`, the extension 0.7.0 artifact is installed but not loaded/paired, and target/source/canary/real-content claims remain pending until independently verified.

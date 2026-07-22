@@ -4,15 +4,17 @@ Purpose: Explain the narrow AI Memory → consumer NotebookLM export, its setup,
 
 Audience: AI Memory users, maintainers, support responders, security reviewers, and AI agents.
 
-Verified against: Deployed pre-feature baseline `8c1341100b174fe4ca518e6a745c30b9078df21c`, plus committed implementation candidate `4fd2bd637c76d39b835416067027bdb719f71171` with migration `026_notebooklm_export.sql`, connector protocol v1, mapper v1, and Chrome extension 0.7.0, rebased onto `ea801efa024914d601b495f968153aa5680e2e1e`. Replace the candidate baseline with the final release commit after merge.
+Verified against: Protected-main release `167a15d57b8f70574a017ea4cda507870f3600d4`, deployed to production on 2026-07-22 with migration `026_notebooklm_export.sql`, connector protocol v1, mapper v1, and the attested Chrome extension 0.7.0 artifact.
 
-Runtime evidence through: None. As of 2026-07-22, no production deployment or signed-in consumer NotebookLM synthetic canary is claimed.
+Runtime evidence through: 2026-07-22 for protected-main deployment, migration/integrity/health checks, retention and operations timers, and authenticated AI Memory Settings/item UI. Production is UI-only (`1:0:0`): queueing and provider writes are off. The extension artifact is installed locally but is not loaded or paired. No target bind, consumer NotebookLM source, signed-in synthetic canary, or real-content enablement is claimed.
 
 Last reviewed: 2026-07-22.
 
 Owner: AI Brain maintainer.
 
-**Status:** Implementation candidate · **Availability:** Default-off; not yet claimed in production · **Confidence:** Medium until final candidate tests, release evidence, and live provider validation pass
+**Status:** Experimental · **Availability:** Deployed UI-only; queue and provider writes off · **Confidence:** High for code and dark/UI-only runtime controls; live-provider confidence pending
+
+The [repository evidence record](https://github.com/arunpr614/ai-brain/blob/0b297c214715261194c0c90e11ebc37d2ac5bc5b/docs/feature-council/notebooklm-sync/release/production-release-evidence-2026-07-22.md) records the current verified boundary at an immutable documentation commit.
 
 ## Summary
 
@@ -43,7 +45,7 @@ The public entrance is intentionally shown to the user. The authenticated `.goog
 This review covers the narrow owner-operated consumer-account workflow. It is not legal advice or a permanent approval; re-review is required if the account type, Google terms, sharing model, machine-readable instructions, or provider behavior changes.
 
 - Google's [privacy and terms help](https://support.google.com/notebooklm/answer/17004255?hl=en) says ordinary consumer use is governed by the Google Terms of Service. It says notebook content is not used to directly train foundational models unless the user submits feedback; feedback can include sources/uploads and may be reviewed. Qualifying work and school accounts have different terms and handling. Confirm the account type, and do not submit feedback containing sensitive exported content.
-- Google's [source help](https://support.google.com/notebooklm/answer/16215270?hl=en-5) documents copied-and-pasted text, up to 50 sources for free users, and per-source limits above this feature's intentionally stricter limits.
+- Google's [source help](https://support.google.com/notebooklm/answer/16215270?hl=en) documents copied-and-pasted text, up to 50 sources for free users, and per-source limits above this feature's intentionally stricter limits.
 - Google's [public-notebook help](https://support.google.com/notebooklm/answer/16322204?hl=en) confirms that a notebook can be made public and later restricted. AI Memory therefore requires a positive owner-only private check rather than assuming that a notebook is private.
 - The [Google Terms of Service](https://policies.google.com/terms?hl=en-US) prohibit bypassing protective measures and automated access that violates machine-readable instructions. The public entrance's [robots.txt](https://notebooklm.google/robots.txt) currently allows `/`, but that is not an API contract or permission to bypass application controls.
 
@@ -51,15 +53,15 @@ This review covers the narrow owner-operated consumer-account workflow. It is no
 
 ## Current availability
 
-The code, schema, UI, extension, tests, and release controls exist as a candidate in the current feature worktree. All three feature flags default off. This page does **not** claim that:
+The protected-main server release and migration 026 are deployed. The production tuple is UI-only `1:0:0`, and authenticated AI Memory Settings/item checks showed queueing paused, provider writes off, and item export unavailable. The attested extension 0.7.0 artifact is installed in a stable local directory but is not loaded in Chrome. This page does **not** claim that:
 
-- migration 026 is deployed;
-- the extension candidate is installed in the production Chrome profile;
+- the extension is loaded or paired in the signed-in Chrome profile;
+- a target has been bound or positively verified owner-only/private;
 - a real NotebookLM source has been created;
 - the signed-in private synthetic canary has passed; or
 - real AI Memory content is enabled for export.
 
-Those statements may be updated only after the exact release, redacted synthetic-canary, and production verification evidence exists.
+Those statements may be updated only after the redacted signed-in synthetic-canary and owner-only enablement evidence exists. A visible setup surface is not evidence that the provider workflow is available.
 
 ## Target user and user journey
 
@@ -252,23 +254,23 @@ Every supported application/off-site, Recall, and root-run deployment/restore pa
 
 AI Memory persists only content-free NotebookLM analytics and transition facts. The item surface records `notebooklm.export_viewed` on a one-shot best-effort authenticated PATCH. Accepted export actions record `notebooklm.export_clicked`; limited-text confirmation and unchanged/idempotent replay record `notebooklm.limited_confirmed` and `notebooklm.request_deduped` in the request journal.
 
-The journals also record setup/permission, target bind/rebind/health, connector disable/safe/emergency revocation, protocol and write-stop changes, claim/transitions, cancellation/stop-checking, item deletion, snapshot purge, expiry, and retention-sweep success/failure. They never include title/body, raw provider responses/errors, Google session material, or raw account/notebook/source identifiers. There is no third-party NotebookLM analytics feed in this candidate.
+The journals also record setup/permission, target bind/rebind/health, connector disable/safe/emergency revocation, protocol and write-stop changes, claim/transitions, cancellation/stop-checking, item deletion, snapshot purge, expiry, and retention-sweep success/failure. They never include title/body, raw provider responses/errors, Google session material, or raw account/notebook/source identifiers. There is no third-party NotebookLM analytics feed in this release.
 
 ## Operator controls
 
-The feature defaults off and rolls out in three stages:
+The feature uses three dependency-ordered rollout stages:
 
 1. UI/setup;
 2. durable queue; and
 3. a tightly controlled provider-write window for synthetic canary content after all pre-canary gates pass.
 
-Ongoing or real-content provider writes remain off until that private synthetic canary passes. Enabling writes temporarily for the canary is not real-content enablement.
+Production is currently at Stage 1 only: UI/setup surfaces are visible, queueing is paused, provider writes are off, and item export is unavailable. Ongoing or real-content provider writes remain off until the private synthetic canary passes. Enabling writes temporarily for the canary is not real-content enablement.
 
-The immutable deployment policy defaults the NotebookLM feature-flag tuple to dark (`0:0:0`). An explicit preserve policy is available only for a dependency-ordered tuple and verifies that deployment did not change it.
+The immutable deployment policy defaults the NotebookLM feature-flag tuple to dark (`0:0:0`). An explicit preserve policy is available only for a dependency-ordered tuple and verifies that deployment did not change it. The currently verified production tuple is UI-only `1:0:0`.
 
 `BRAIN_NOTEBOOKLM_REMEDIATION_POLICY` defaults to `strict`, so a host already stopped by `provider_write_blocked` cannot be mutated by a normal deployment. The only remediation lane is the explicit value `preserve_existing_provider_block`: deployment proves the block remains `1` before and after, leaves it set, records the exception in release evidence, and permits the checker to ignore only that existing block. Failed or stale retention, a pending physical purge, overdue snapshots, and work unresolved beyond 24 hours remain blocking in either mode.
 
-Provider-write disablement stops new creates while preserving known-source polling and read-only marker reconciliation. Provider source-list, create-response, and status protocol/schema drift latches that stop immediately; other normalized protocol failures trip it after three consecutive failures. The database-backed safety gate also blocks new intake/create after a retention failure, when no successful retention sweep is recent enough, or when any frozen snapshot is overdue. An ordinary protocol-drift stop may be cleared only after the operator attests that the connector was updated and the target was revalidated and the server verifies a fresh healthy private target. `multiple_marker_matches`, `provider_source_identity_reused`, and `restore_reconciliation_required` are deliberately not clearable by that generic reset: V1 has no approved exact-evidence clear path for those duplicate-risk conditions.
+Provider-write disablement stops new creates while preserving known-source polling and read-only marker reconciliation. Provider source-list, create-response, and status protocol/schema drift latches that stop immediately; other normalized connector/transport failures—including retryable network/server outcomes and uncertain create outcomes—trip it after three consecutive failures. The database-backed safety gate also blocks new intake/create after a retention failure, when no successful retention sweep is recent enough, or when any frozen snapshot is overdue. An ordinary protocol-drift stop may be cleared only after the operator attests that the connector was updated and the target was revalidated and the server verifies a fresh healthy private target. `multiple_marker_matches`, `provider_source_identity_reused`, and `restore_reconciliation_required` are deliberately not clearable by that generic reset: V1 has no approved exact-evidence clear path for those duplicate-risk conditions.
 
 Settings exposes retention health, last successful/failed sweep, normalized failure reason/streak, durable physical-purge-pending state, overdue snapshots, and post-dispatch work unresolved beyond 24 hours. The hardened read-only `brain-notebooklm-operations.timer` runs `check:notebooklm-operations:ready` approximately every minute and reports failure for a provider block, failed/stale sweep, pending physical purge, overdue snapshot, or unresolved-over-24-hour request. It is intentionally distinct from the mutating `brain-notebooklm-retention.timer` fallback.
 
@@ -282,7 +284,7 @@ Database restore is stricter because the remote notebook may contain sources cre
 
 ## Release and synthetic-canary gate
 
-Before production or real-content enablement, release evidence must include:
+Before a signed-in provider canary or real-content enablement, release evidence must include:
 
 - migration apply/reapply, hash, integrity, foreign-key, backup, restore, and audited rollback compatibility;
 - server unit/route/state/race/retention/privacy tests and a production build;
@@ -301,7 +303,7 @@ Before production or real-content enablement, release evidence must include:
 
 If any live read needed for target, owner, privacy, occupancy, source identity, readiness, or reconciliation cannot be interpreted safely, provider writes remain off and **Export as .md** remains the fallback.
 
-No final release-evidence record is linked yet. Before changing this page to deployed/enabled, add the exact final test and adversarial-review reports, artifact manifests, production deployment proof, redacted signed-in canary result, and GitHub Wiki publication verification. The existence of candidate tests and controls is not a passing result by itself.
+The [production release-evidence record](https://github.com/arunpr614/ai-brain/blob/0b297c214715261194c0c90e11ebc37d2ac5bc5b/docs/feature-council/notebooklm-sync/release/production-release-evidence-2026-07-22.md) covers the protected-main artifact and UI-only deployment at an immutable documentation commit. It remains incomplete for the signed-in canary, owner-only real-content enablement, and GitHub Wiki publication verification. Tests, controls, and a visible production UI do not by themselves prove the consumer NotebookLM workflow.
 
 The detailed data and canary contract is maintained in `docs/datawiki/NotebookLM-One-Click-Export.md` in the repository.
 

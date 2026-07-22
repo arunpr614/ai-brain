@@ -2,14 +2,16 @@
 
 Purpose: Document the guarded Recall import architecture, the manual Settings control, and their operational limits.
 Audience: AI Brain owners, agents, and operators changing the integration.
-Verified against: deployed application `8c1341100b174fe4ca518e6a745c30b9078df21c` and the 2026-07-21 backup-permission hotfix.
-Runtime evidence through: 2026-07-21 production incident diagnosis.
-Last reviewed: 2026-07-21.
+Verified against: deployed application `167a15d57b8f70574a017ea4cda507870f3600d4` and the 2026-07-21 backup-permission hotfix.
+Runtime evidence through: 2026-07-21 production incident diagnosis; 2026-07-22 review for protected-main integration boundaries.
+Last reviewed: 2026-07-22.
 Owner: AI Brain maintainer.
 
 **Status:** Deployed; production recovery pending · **Confidence:** High for root cause and local hotfix verification · **Availability:** Temporarily blocked by the documented host permission incident
 
 Recall is a one-way guarded import, not two-way synchronization. The existing scheduled wrapper acquires a private outer lock, performs dry-run validation, backup, proof-backed apply, final validation, and checkpoint handling. The manual Settings control creates a durable request for that same wrapper; it does not call Recall or run the importer inside the web process.
+
+Recall and NotebookLM are independent integrations. Recall imports external data through a trusted host identity and scheduled/manual wrapper; NotebookLM exports one frozen AI Memory item through a separately scoped local Chrome connector. Neither credential crosses into the other lane, and the NotebookLM UI-only `1:0:0` state does not change Recall availability or authorize a provider write.
 
 ## User journey and truthful states
 
@@ -63,4 +65,4 @@ Operational diagnosis should compare request, execution, core run, final-validat
 
 Primary implementation areas: `src/components/recall-manual-sync.tsx`, `src/app/api/settings/recall-sync/`, `src/db/recall-manual-sync.ts`, `src/lib/recall/`, `scripts/recall-manual-sync-worker.ts`, `scripts/recall-sync-lifecycle.ts`, the guarded wrapper, and Recall deployment units.
 
-Related current features are capture provenance, quality/repair, enrichment, search, deployment, and backups. Related ideas such as general two-way synchronization remain outside this contract.
+Related current features are capture provenance, quality/repair, enrichment, search, deployment, backups, and the separately bounded [NotebookLM One-Click Export](NotebookLM-One-Click-Export). Related ideas such as general two-way synchronization remain outside this contract.

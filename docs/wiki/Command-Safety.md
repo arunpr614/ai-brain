@@ -2,9 +2,9 @@
 
 Purpose: Classify command side effects and define the public safe-command allowlist.
 Audience: AI agents and engineers running repository commands.
-Verified against: `8c1341100b174fe4ca518e6a745c30b9078df21c` package scripts.
+Verified against: `167a15d57b8f70574a017ea4cda507870f3600d4` package scripts.
 Runtime evidence through: Not applicable; command classification is source-based.
-Last reviewed: 2026-07-11.
+Last reviewed: 2026-07-22.
 Owner: AI Brain maintainer.
 
 ## Classes
@@ -28,7 +28,7 @@ npm run lint
 npm test
 ```
 
-The first three application-repository commands are R0. Tests are W1 because they create isolated fixture state. Inspect failures before broadening the test scope.
+`git status` and lint are R0. `npm run typecheck` is W1 because the incremental TypeScript configuration writes the ignored local `tsconfig.tsbuildinfo` cache; tests are W1 because they create isolated fixture state. Inspect failures before broadening the test scope.
 
 ## Documentation Validation
 
@@ -38,6 +38,8 @@ npm run smoke:agent-docs
 ```
 
 Documentation checks are R0; documentation smokes are W1 synthetic fixtures.
+
+NotebookLM operational probes are R0 only after explicitly verifying the target database: they open the configured existing SQLite database read-only and report content-free health. Extension installation/building is W2; pairing, target binding, flag changes, provider canaries, timer changes, deploys, retention writes and production rollback are W4 and require exact current authorization.
 
 ## Restricted Categories
 

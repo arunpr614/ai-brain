@@ -2,7 +2,7 @@
 
 Purpose: Preserve the historical broad-synchronization research, credential-free validation, and product decision that preceded the narrower one-click export.
 Audience: AI Brain users, maintainers, product/design collaborators, security reviewers, and AI agents.
-Verified against: living documentation baseline `8c1341100b174fe4ca518e6a745c30b9078df21c`; focused current-code audit `ad78d77495dcaa90f62aab038fe63ae95cf36862`.
+Verified against: living documentation baseline `167a15d57b8f70574a017ea4cda507870f3600d4`; focused current-code audit `ad78d77495dcaa90f62aab038fe63ae95cf36862`.
 Runtime evidence through: None; no Google or production runtime was exercised.
 Last reviewed: 2026-07-22 for the separately authorized narrow successor; the broad-sync decision itself remains dated 2026-07-21.
 Decision: **Broad, automatic, or daily synchronization remains deferred.**
