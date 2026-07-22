@@ -1,3 +1,5 @@
+import "./route.test.setup";
+
 /**
  * Tests for GET /api/settings/device-pairing (v0.5.0 T-8; pivoted T-CF-9; renamed v0.6.1 T-12).
  *
@@ -6,13 +8,17 @@
  * headers (REVIEW TM-1). Post-pivot there is no LAN IP dependency, so the
  * "no_lan_interface" branch is gone.
  */
-import { describe, it } from "node:test";
+import { rmSync } from "node:fs";
+import { after, describe, it } from "node:test";
 import assert from "node:assert/strict";
 import { NextRequest } from "next/server";
 import {
   handleDevicePairingGet,
   handleDevicePairingPost,
 } from "@/lib/device-pairing/create-route-handler";
+import { TEST_DB_DIR } from "./route.test.setup";
+
+after(() => rmSync(TEST_DB_DIR, { recursive: true, force: true }));
 
 function mkReq(opts: { cookie?: string } = {}): NextRequest {
   const headers = new Headers();

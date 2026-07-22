@@ -50,6 +50,14 @@ CF_API="https://api.cloudflare.com/client/v4"
 log() { printf '[cutover %s] %s\n' "$(date +%H:%M:%S)" "$*"; }
 die() { log "FATAL: $*"; exit 1; }
 
+# D-12 completed with the original v0.6.0 migration and is no longer a valid
+# production entry point. Its Mac `/tmp` and remote `.pre-cutover` copies cannot
+# satisfy current short-lived NotebookLM snapshot retention. Refuse before any
+# snapshot, network, DNS, service, or database mutation.
+if [[ "${1:-cutover}" == "cutover" ]]; then
+  die "historical cutover is decommissioned; use the attested immutable deployment workflow"
+fi
+
 require_token() {
   [[ -n "$CF_TOKEN" ]] || die "CF_API_TOKEN env var required"
 }
@@ -73,41 +81,7 @@ verify_pre_cutover() {
 #############################
 
 d12_db_migrate() {
-  local snapshot="/tmp/brain-cutover-$(date +%Y%m%d-%H%M).sqlite"
-  log "D-12: sqlite3 .backup snapshot to $snapshot"
-  sqlite3 data/brain.sqlite ".backup $snapshot"
-  local mac_count
-  mac_count=$(sqlite3 "$snapshot" "SELECT COUNT(*) FROM items;")
-  log "D-12: snapshot has $mac_count items"
-
-  log "D-12: scp snapshot to Hetzner"
-  scp -i "$SSH_KEY" -o BatchMode=yes "$snapshot" "$HOST:/tmp/brain-cutover.sqlite"
-
-  log "D-12: stopping Hetzner brain.service to swap DB"
-  ssh -i "$SSH_KEY" -o BatchMode=yes "$HOST" 'sudo -n systemctl stop brain'
-
-  log "D-12: backing up Hetzner's existing DB and clearing stale WAL"
-  # SQLite mounts a DB file together with its sibling -wal and -shm files.
-  # Swapping just .sqlite while the old -wal/-shm linger causes the new file
-  # to be opened with stale WAL pages (corrupted view, e.g. 1 of 8 items).
-  ssh -i "$SSH_KEY" -o BatchMode=yes "$HOST" \
-    'mv /opt/brain/data/brain.sqlite /opt/brain/data/brain.sqlite.pre-cutover 2>/dev/null || true; \
-     rm -f /opt/brain/data/brain.sqlite-wal /opt/brain/data/brain.sqlite-shm; \
-     mv /tmp/brain-cutover.sqlite /opt/brain/data/brain.sqlite; \
-     chmod 600 /opt/brain/data/brain.sqlite'
-
-  log "D-12: restarting Hetzner brain.service"
-  ssh -i "$SSH_KEY" -o BatchMode=yes "$HOST" 'sudo -n systemctl start brain'
-  sleep 3
-
-  local hetzner_count
-  hetzner_count=$(ssh -i "$SSH_KEY" -o BatchMode=yes "$HOST" \
-    'sqlite3 /opt/brain/data/brain.sqlite "SELECT COUNT(*) FROM items;"')
-  [[ "$mac_count" == "$hetzner_count" ]] \
-    || die "D-12: row count mismatch — Mac=$mac_count Hetzner=$hetzner_count"
-  log "D-12: row counts match ($mac_count items). DB cutover OK."
-
-  rm "$snapshot"
+  die "D-12 database migration is permanently decommissioned"
 }
 
 #############################

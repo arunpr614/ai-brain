@@ -4,8 +4,30 @@ Purpose: Record material wiki revisions, baselines, and publication state withou
 Audience: Maintainers and future AI agents.
 Verified against: deployed application `8c1341100b174fe4ca518e6a745c30b9078df21c` plus retained historical baselines.
 Runtime evidence through: 2026-07-12 for Card Processing; older entries retain their dated scope.
-Last reviewed: 2026-07-12.
+Last reviewed: 2026-07-22.
 Owner: AI Brain maintainer.
+
+## 2026-07-22 — NotebookLM one-click export release candidate
+
+| Change | Implementation baseline | Runtime baseline | State |
+|---|---|---|---|
+| Added a deliberately narrow one-item export to one locally bound owner-only private consumer NotebookLM notebook, with a local Chrome trust boundary, durable no-blind-retry state machine, retention/backup controls, and staged write gate | Current feature worktree based on `4736ba3`; replace with the final protected-main release SHA before publication | None yet; production deployment and signed-in private synthetic canary are still required | **Experimental, default off, and not yet claimed as deployed** |
+
+- Added [NotebookLM One-Click Export](NotebookLM-One-Click-Export) while preserving the broader synchronization decision as Deferred research.
+- Distinguished the public entrance at `https://notebooklm.google/` from the authenticated application/connector host at `https://notebooklm.google.com/`.
+- Publication must wait for the exact merged release, immutable artifact verification, dark production migration, private synthetic canary, final redacted evidence, and fresh-clone Wiki checks.
+
+## 2026-07-21 — NotebookLM synchronization research decision
+
+| Change | Implementation baseline | Runtime baseline | State |
+|---|---|---|---|
+| Added edition-specific platform research, source mapping, capacity/security analysis, 46/46 credential-free local checks, three independent PM recommendations, adversarial review, and final council decision | Current-code audit at `ad78d77495dcaa90f62aab038fe63ae95cf36862`; research-only branch | None; no Google account, credential, file, notebook, source, production content, migration, dependency, or deployment used | **Deferred pending account eligibility and official live synthetic evidence — not implemented** |
+
+- Added [NotebookLM Synchronization Research](NotebookLM-Synchronization-Research) and cross-linked the feature catalog, ideas catalog, Home, source baselines, and sidebar.
+- Distinguished consumer, paid-consumer, ordinary Workspace, and separately licensed Gemini Notebook Enterprise surfaces. A Drive write is not represented as verified NotebookLM refresh.
+- Recorded one-source-per-item as capacity-infeasible by default, retained aggregation only as a future bounded hypothesis, and rejected unofficial consumer RPC/browser automation.
+- Because the council decision is Defer, no PRD, UX/UI package, product prototype, or production technical plan was created.
+- Revalidation is due by 2026-08-21 or earlier after Gate 0, an authorized official synthetic spike, or a relevant platform change.
 
 ## 2026-07-12 — Card Processing production release
 

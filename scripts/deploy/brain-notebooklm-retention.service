@@ -1,0 +1,25 @@
+[Unit]
+Description=AI Brain NotebookLM durable frozen-content retention sweep
+After=local-fs.target
+
+[Service]
+Type=oneshot
+User=brain
+Group=brain-data
+WorkingDirectory=/opt/brain
+EnvironmentFile=/etc/brain/.env
+EnvironmentFile=-/etc/brain/release.env
+ExecStart=:/usr/bin/bash -ceu 'release_id="${BRAIN_RELEASE_ID:-}"; [[ "$release_id" =~ ^[a-fA-F0-9]{40}(-[a-fA-F0-9]{40})?$ ]] || { echo "[notebooklm-retention] invalid release identity" >&2; exit 64; }; runtime="/opt/brain/releases/$release_id/runtime"; [[ -d "$runtime" && ! -L "$runtime" && "$(readlink -e -- "$runtime")" == "$runtime" ]] || { echo "[notebooklm-retention] immutable runtime unavailable" >&2; exit 65; }; tool="$runtime/scripts/dist/notebooklm-retention-prod.mjs"; [[ -f "$tool" && ! -L "$tool" ]] || { echo "[notebooklm-retention] attested tool unavailable" >&2; exit 66; }; [[ -f "$runtime/node_modules/better-sqlite3/package.json" && -f "$runtime/node_modules/sqlite-vec/package.json" ]] || { echo "[notebooklm-retention] native runtime unavailable" >&2; exit 67; }; exec /usr/bin/node "$tool"'
+Nice=10
+IOSchedulingClass=idle
+TimeoutStartSec=45s
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=brain-notebooklm-retention
+
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/opt/brain/data
+UMask=0007

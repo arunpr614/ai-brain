@@ -70,6 +70,7 @@ const PUBLIC_PATHS = new Set([
 const PUBLIC_API_ROUTES = new Set([
   "/api/telegram/webhook",
   "/api/settings/device-pairing/exchange",
+  "/api/notebooklm/connectors/exchange",
   // Add future public API routes here (e.g. "/api/some-webhook")
 ]);
 
@@ -79,6 +80,10 @@ export function proxy(req: NextRequest) {
   // 1. Public paths.
   if (pathname.startsWith("/api/auth")) return NextResponse.next();
   if (PUBLIC_API_ROUTES.has(pathname)) return NextResponse.next();
+  // NotebookLM connector routes use a dedicated scoped token bound to one
+  // exact chrome-extension:// origin. Their handlers also own CORS preflight;
+  // never route these credentials through the global BRAIN_API_TOKEN gate.
+  if (isNotebookLmConnectorRoute(pathname)) return NextResponse.next();
   if (PUBLIC_PATHS.has(pathname)) return NextResponse.next();
 
   // 2. Valid session cookie → web UI flow (browser, APK WebView nav).
@@ -139,6 +144,14 @@ export function proxy(req: NextRequest) {
 
   // 4 / 5. No valid credential — 401 for API, redirect for HTML.
   return unauth(req, pathname);
+}
+
+function isNotebookLmConnectorRoute(pathname: string): boolean {
+  return (
+    pathname === "/api/notebooklm/connector/bind" ||
+    pathname === "/api/notebooklm/connector/claim" ||
+    /^\/api\/notebooklm\/connector\/requests\/[a-f0-9]{24}\/events$/.test(pathname)
+  );
 }
 
 function unauth(req: NextRequest, pathname: string) {

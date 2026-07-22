@@ -6,10 +6,24 @@
  * that must survive comes from chrome.storage.* (never module-global).
  */
 import { captureUrl, type CaptureResult } from "./capture";
+import { BrainConnectorClient } from "./notebooklm/brain-client";
+import { NotebookLmProviderAdapter } from "./notebooklm/provider-adapter";
+import { ConnectorStore } from "./notebooklm/storage";
+import { NOTEBOOKLM_PERMISSION } from "./notebooklm/types";
+import { NotebookLmConnectorWorker } from "./notebooklm/worker";
 
 const MENU_LINK = "brain-save-link";
 const MENU_PAGE = "brain-save-page";
 const MENU_SELECTION = "brain-save-selection";
+const NOTEBOOKLM_ALARM = "brain-notebooklm-connector-poll";
+
+const connectorStore = new ConnectorStore(chrome.storage.local);
+const connectorWorker = new NotebookLmConnectorWorker(
+  connectorStore,
+  new BrainConnectorClient(),
+  new NotebookLmProviderAdapter(),
+  () => chrome.permissions.contains({ origins: [NOTEBOOKLM_PERMISSION] }),
+);
 
 chrome.runtime.onInstalled.addListener(() => {
   // Two separate menu entries so the label always matches what will
@@ -33,6 +47,26 @@ chrome.runtime.onInstalled.addListener(() => {
     title: "Save selected text to Brain",
     contexts: ["selection"],
   });
+  void protectLocalStorage();
+  void ensureNotebookLmAlarm();
+});
+
+chrome.runtime.onStartup.addListener(() => {
+  void protectLocalStorage();
+  void ensureNotebookLmAlarm();
+});
+
+chrome.alarms.onAlarm.addListener((alarm) => {
+  if (alarm.name === NOTEBOOKLM_ALARM) void connectorWorker.runOnce();
+});
+
+chrome.runtime.onMessage.addListener((message: unknown, _sender, sendResponse) => {
+  if (!isRunConnectorMessage(message)) return false;
+  void connectorWorker.runOnce().then(
+    (result) => sendResponse({ ok: true, result }),
+    () => sendResponse({ ok: false }),
+  );
+  return true;
 });
 
 chrome.contextMenus.onClicked.addListener(async (info, tab) => {
@@ -98,4 +132,29 @@ async function notify(title: string, message: string) {
     title,
     message,
   });
+}
+
+async function ensureNotebookLmAlarm(): Promise<void> {
+  const existing = await chrome.alarms.get(NOTEBOOKLM_ALARM);
+  if (!existing) {
+    await chrome.alarms.create(NOTEBOOKLM_ALARM, {
+      delayInMinutes: 1,
+      periodInMinutes: 1,
+    });
+  }
+}
+
+async function protectLocalStorage(): Promise<void> {
+  if (typeof chrome.storage.local.setAccessLevel === "function") {
+    await chrome.storage.local.setAccessLevel({ accessLevel: "TRUSTED_CONTEXTS" });
+  }
+}
+
+function isRunConnectorMessage(value: unknown): value is { type: "notebooklm-run-once" } {
+  return (
+    typeof value === "object" &&
+    value !== null &&
+    "type" in value &&
+    value.type === "notebooklm-run-once"
+  );
 }

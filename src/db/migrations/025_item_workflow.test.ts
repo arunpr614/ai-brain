@@ -8,6 +8,7 @@ import { getDb, runMigrations } from "../client";
 import {
   ALL_MIGRATIONS_DIR,
   TEST_DB_DIR,
+  THROUGH_025_DIR,
 } from "./025_item_workflow.test.setup";
 import {
   confirmEnrollmentJob,
@@ -33,7 +34,7 @@ test("024 to 025 keeps historical rows dormant and exact manifest/integrity clea
   db.prepare("INSERT INTO items(id,source_type,title,body,captured_at) VALUES(?,?,?,?,?)")
     .run("legacy-three", "note", "Legacy three", "Body", 3000);
 
-  process.env.BRAIN_MIGRATIONS_DIR = ALL_MIGRATIONS_DIR;
+  process.env.BRAIN_MIGRATIONS_DIR = THROUGH_025_DIR;
   runMigrations(db);
   const legacy = db.prepare("SELECT * FROM items WHERE id='legacy-one'").get() as Record<string, unknown>;
   assert.equal(legacy.workflow_legacy_baseline, 1);

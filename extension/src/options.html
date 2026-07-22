@@ -1,7 +1,8 @@
 <!doctype html>
-<html>
+<html lang="en">
   <head>
     <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Brain — Options</title>
     <style>
       :root {
@@ -15,6 +16,7 @@
         --accent-text: #fff;
         --danger: #b91c1c;
         --success: #15803d;
+        --attention: #a16207;
       }
       @media (prefers-color-scheme: dark) {
         :root {
@@ -27,33 +29,43 @@
           --accent-text: #0c0a09;
           --danger: #f87171;
           --success: #4ade80;
+          --attention: #fbbf24;
         }
       }
+      * { box-sizing: border-box; }
       body {
         font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
         background: var(--bg);
         color: var(--text);
-        margin: 0;
+        margin: 0 auto;
         padding: 32px;
-        max-width: 560px;
+        max-width: 720px;
         font-size: 14px;
         line-height: 1.5;
       }
-      h1 { font-size: 18px; margin: 0 0 4px; }
-      p.muted { color: var(--muted); font-size: 13px; margin: 0 0 24px; }
+      h1 { font-size: 22px; margin: 0 0 4px; }
+      h2 { font-size: 16px; margin: 0 0 4px; }
+      p { margin: 6px 0; }
+      p.muted, .muted { color: var(--muted); font-size: 13px; }
+      section {
+        margin-top: 24px;
+        padding: 20px;
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 10px;
+      }
       label {
         display: block;
         font-size: 11px;
-        font-weight: 500;
+        font-weight: 600;
         color: var(--muted);
         text-transform: uppercase;
         letter-spacing: 0.05em;
         margin: 18px 0 6px;
       }
-      input, code {
+      input, .readonly {
         width: 100%;
-        box-sizing: border-box;
-        background: var(--surface);
+        background: var(--bg);
         color: var(--text);
         border: 1px solid var(--border);
         border-radius: 6px;
@@ -61,50 +73,100 @@
         font-family: ui-monospace, "SF Mono", Menlo, monospace;
         font-size: 13px;
       }
-      code { display: block; font-family: ui-monospace, monospace; color: var(--muted); }
-      .row { display: flex; gap: 8px; margin-top: 14px; }
-      button {
+      .row { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
+      button, a.button {
+        display: inline-block;
         background: var(--accent);
         color: var(--accent-text);
         border: 0;
         border-radius: 6px;
         padding: 10px 16px;
         font-size: 13px;
-        font-weight: 500;
+        font-weight: 600;
         cursor: pointer;
+        text-decoration: none;
       }
-      button.secondary { background: transparent; color: var(--text); border: 1px solid var(--border); }
+      button.secondary, a.button.secondary {
+        background: transparent;
+        color: var(--text);
+        border: 1px solid var(--border);
+      }
       button.danger { color: var(--danger); border-color: color-mix(in srgb, var(--danger) 40%, var(--border)); }
-      button:disabled { opacity: 0.4; cursor: not-allowed; }
+      button:disabled { opacity: 0.45; cursor: not-allowed; }
       .status { margin-top: 12px; padding: 10px 12px; border-radius: 6px; font-size: 13px; }
       .status--success { background: color-mix(in srgb, var(--success) 12%, transparent); color: var(--success); }
       .status--error { background: color-mix(in srgb, var(--danger) 12%, transparent); color: var(--danger); }
-      .help { margin-top: 28px; padding: 14px 16px; background: var(--surface); border: 1px solid var(--border); border-radius: 6px; color: var(--muted); font-size: 12px; line-height: 1.6; }
+      .status--attention { background: color-mix(in srgb, var(--attention) 12%, transparent); color: var(--attention); }
+      .summary { margin-top: 14px; padding: 12px; border: 1px solid var(--border); border-radius: 6px; }
+      .help { margin-top: 14px; color: var(--muted); font-size: 12px; line-height: 1.6; }
       .help strong { color: var(--text); }
+      .compact { max-width: 140px; }
     </style>
   </head>
   <body>
     <h1>Brain — Options</h1>
-    <p class="muted">Configure the extension to connect to your Brain server.</p>
+    <p class="muted">Configure page capture and the private NotebookLM delivery connector.</p>
 
-    <label>Brain URL</label>
-    <code>https://brain.arunp.in</code>
+    <section aria-labelledby="capture-heading">
+      <h2 id="capture-heading">Save pages to Brain</h2>
+      <p class="muted">This existing token is used only for page and selected-text capture.</p>
 
-    <label for="token">Bearer token</label>
-    <input id="token" type="password" placeholder="64-character hex string" autocomplete="off" spellcheck="false" />
+      <label>Brain URL</label>
+      <div class="readonly">https://brain.arunp.in</div>
 
-    <div class="row">
-      <button id="test" class="secondary">Test connection</button>
-      <button id="save">Save</button>
-      <button id="clear" class="secondary danger">Clear token</button>
-    </div>
+      <label for="token">Capture bearer token</label>
+      <input id="token" type="password" placeholder="64-character hex string" autocomplete="off" spellcheck="false" />
 
-    <div id="status" class="status" hidden></div>
+      <div class="row">
+        <button id="test" class="secondary">Test capture connection</button>
+        <button id="save">Save capture token</button>
+        <button id="clear" class="secondary danger">Clear capture token</button>
+      </div>
+      <div id="capture-status" class="status" hidden></div>
+      <p class="help">Get this token from <strong>Brain → Settings → Device pairing</strong>.</p>
+    </section>
 
-    <div class="help">
-      <p><strong>How to get a token</strong></p>
-      <p>Open <code>https://brain.arunp.in/settings/device-pairing</code> in a browser and copy the 64-character hex token. Paste it above and click Save.</p>
-    </div>
+    <section aria-labelledby="notebooklm-heading">
+      <h2 id="notebooklm-heading">Deliver approved items to NotebookLM</h2>
+      <p class="muted">The connector uses a separate, narrowly scoped credential. Google sign-in stays in this browser and is never sent to Brain.</p>
+      <p class="help"><strong>Experimental and unofficial:</strong> this connector uses undocumented NotebookLM web behavior that Google can change without notice. It is not a Google-supported integration.</p>
+
+      <div id="connector-summary" class="summary">Checking connector setup…</div>
+
+      <label>1. Sign in and grant site access</label>
+      <div class="row">
+        <a class="button secondary" href="https://notebooklm.google/" target="_blank" rel="noreferrer">Open NotebookLM sign-in</a>
+        <button id="grant-notebooklm" class="secondary">Grant NotebookLM access</button>
+      </div>
+
+      <label for="pairing-code">2. One-time connector pairing code</label>
+      <input id="pairing-code" type="text" inputmode="text" maxlength="9" placeholder="ABCD-EFGH" autocomplete="off" spellcheck="false" />
+      <div class="row">
+        <button id="pair-connector">Pair connector</button>
+      </div>
+
+      <label for="target-url">3. Private target notebook URL</label>
+      <input id="target-url" type="url" placeholder="https://notebooklm.google.com/notebook/…" autocomplete="off" spellcheck="false" />
+      <p class="help">A numeric <code>?authuser=N</code> selector is preserved locally for secondary signed-in Google accounts. Account emails are not accepted or sent to Brain.</p>
+
+      <label>V1 capacity policy</label>
+      <div class="readonly">50 sources · 5 slots reserved</div>
+      <p class="help">V1 uses the lowest documented consumer limit even on paid plans. Setup is blocked unless the notebook is owner-only, private, and below the safe threshold.</p>
+
+      <div class="row">
+        <button id="bind-target">Check and bind notebook</button>
+        <button id="run-connector" class="secondary">Check for approved exports now</button>
+        <button id="forget-connector" class="secondary danger">Emergency: clear local connector data</button>
+      </div>
+      <div id="connector-status" class="status" hidden></div>
+
+      <div class="help">
+        <strong>Privacy boundary:</strong> the extension requests access only to <code>notebooklm.google.com</code> after you approve it. It does not request cookie, debugger, page-scripting, traffic-inspection, or all-sites permissions. It never stores Google session material or sends notebook/source IDs to Brain.
+      </div>
+      <div class="help">
+        <strong>Disconnect safely:</strong> cancel or stop unresolved exports, then disconnect the connector in Brain first. The emergency local-clear control cannot revoke the server connector and can strand queued, uncertain, or processing work if used early.
+      </div>
+    </section>
 
     <script type="module" src="./options.ts"></script>
   </body>

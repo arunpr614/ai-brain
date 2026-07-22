@@ -25,6 +25,7 @@ import { CollectionEditor } from "@/components/collection-editor";
 import { ItemEnrichmentWatch } from "@/components/item-enrichment-watch";
 import { ItemCompanionTabs } from "@/components/item-companion-tabs";
 import { ManualNoteEditor } from "@/components/manual-note-editor";
+import { NotebookLmExport } from "@/components/notebooklm-export";
 import { ItemWorkflowSection } from "@/components/processing/workflow-controls";
 import { RelatedItems } from "@/components/related-items";
 import { ScrollToHash } from "@/components/scroll-to-hash";
@@ -67,6 +68,8 @@ import {
 } from "@/lib/capture/result";
 import { verifySessionCookie } from "@/lib/auth";
 import { manualNotesUiEnabled, noteFocusModeEnabled } from "@/lib/notes/flags";
+import { notebookLmExportUiEnabled } from "@/lib/notebooklm/flags";
+import { mapItemToNotebookLm } from "@/lib/notebooklm/formatter";
 import { canUpgradeWithPastedText } from "@/lib/capture/upgrade-policy";
 import { findRelatedItems } from "@/lib/related";
 import {
@@ -84,6 +87,11 @@ function parseQuotes(raw: string | null): string[] {
   } catch {
     return [];
   }
+}
+
+function notebookLmPayloadPreview(item: ItemRow): string {
+  const mapped = mapItemToNotebookLm(item, { confirmLimitedCapture: true });
+  return mapped.ok ? mapped.text : "";
 }
 
 function extractionWarningMessage(code: string): string {
@@ -270,6 +278,7 @@ export default async function ItemDetailPage({
   const processingRead = processingReadEnabled();
   const processingWrite = processingWriteEnabled();
   const processingNavigation = processingNavigationEnabled();
+  const notebookLmExportEnabled = notebookLmExportUiEnabled();
 
   // T-12: when arriving via an Ask citation chip, resolve the chunk body so
   // we can render a highlight panel with an anchor the scroll-to-hash hook
@@ -374,6 +383,7 @@ export default async function ItemDetailPage({
           focusEnabled={focusEnabled}
           processingRead={processingRead}
           processingWrite={processingWrite}
+          notebookLmExportEnabled={notebookLmExportEnabled}
           preserveQuery={{ capture_state, repair, highlight, processingReturn, anchor }}
         />
       </div>
@@ -446,6 +456,12 @@ export default async function ItemDetailPage({
               <MessageSquare className="h-3.5 w-3.5" strokeWidth={2} />
               Ask this item
             </Link>
+            {notebookLmExportEnabled && (
+              <NotebookLmExport
+                itemId={item.id}
+                payloadPreview={notebookLmPayloadPreview(item)}
+              />
+            )}
             <a
               href={`/api/items/${item.id}/export.md`}
               className="inline-flex h-8 items-center gap-2 rounded-md border border-[var(--border)] bg-transparent px-3 font-sans text-sm font-medium text-[var(--text-secondary)] transition-colors hover:border-[var(--border-strong)] hover:text-[var(--text-primary)]"
@@ -753,6 +769,7 @@ function MobileItemDetailTabs({
   focusEnabled,
   processingRead,
   processingWrite,
+  notebookLmExportEnabled,
   preserveQuery,
 }: {
   item: ItemRow;
@@ -780,6 +797,7 @@ function MobileItemDetailTabs({
   focusEnabled: boolean;
   processingRead: boolean;
   processingWrite: boolean;
+  notebookLmExportEnabled: boolean;
   preserveQuery: {
     capture_state?: string;
     repair?: string;
@@ -831,6 +849,7 @@ function MobileItemDetailTabs({
           transcriptPreview={transcriptPreview}
           processingRead={processingRead}
           processingWrite={processingWrite}
+          notebookLmExportEnabled={notebookLmExportEnabled}
         />
       )}
       {activeTab === "digest" && (
@@ -892,6 +911,7 @@ function MobileOriginalTab({
   transcriptPreview,
   processingRead,
   processingWrite,
+  notebookLmExportEnabled,
 }: {
   item: ItemRow;
   captured: string;
@@ -903,6 +923,7 @@ function MobileOriginalTab({
   transcriptPreview: TranscriptPreview | null;
   processingRead: boolean;
   processingWrite: boolean;
+  notebookLmExportEnabled: boolean;
 }) {
   return (
     <article className="article">
@@ -977,6 +998,13 @@ function MobileOriginalTab({
           <MessageSquare className="h-3.5 w-3.5" strokeWidth={2} />
           Ask this item
         </Link>
+        {notebookLmExportEnabled && (
+          <NotebookLmExport
+            itemId={item.id}
+            payloadPreview={notebookLmPayloadPreview(item)}
+            mobile
+          />
+        )}
         <a
           href={`/api/items/${item.id}/export.md`}
           className="inline-flex h-11 items-center justify-center gap-2 rounded-md border border-[var(--border)] bg-transparent px-3 text-sm font-medium text-[var(--text-secondary)] transition-colors hover:border-[var(--border-strong)] hover:text-[var(--text-primary)]"

@@ -1,17 +1,21 @@
 {
   "name": "brain-extension",
-  "version": "0.6.2",
+  "version": "0.7.0",
   "private": true,
-  "description": "Chrome MV3 extension for AI Brain — capture URLs to your local library over the named Cloudflare tunnel.",
+  "description": "Chrome MV3 extension for Brain capture and local, approved NotebookLM deliveries.",
   "type": "module",
   "scripts": {
     "build": "vite build",
-    "dev": "vite"
+    "dev": "vite",
+    "typecheck": "tsc --noEmit",
+    "test": "node --import tsx --test test/*.test.ts",
+    "check": "npm run typecheck && npm test && npm run build"
   },
   "devDependencies": {
     "@crxjs/vite-plugin": "^2.4.0",
     "@types/chrome": "^0.0.270",
+    "tsx": "^4.20.0",
     "typescript": "^5.4.0",
-    "vite": "^6.0.0"
+    "vite": "^6.4.3"
   }
 }

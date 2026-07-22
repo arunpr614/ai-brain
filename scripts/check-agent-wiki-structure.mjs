@@ -31,6 +31,8 @@ const CORE_REQUIRED_PAGES = [
   "Browser-Extension.md",
   "Telegram-Capture.md",
   "Recall-Synchronization.md",
+  "NotebookLM-One-Click-Export.md",
+  "NotebookLM-Synchronization-Research.md",
   "Backups-and-Restore.md",
   "Security-Privacy-and-Redaction.md",
   "Local-Development-and-Testing.md",
@@ -83,6 +85,7 @@ const DETAILED_FEATURE_PAGES = new Set([
   "Browser-Extension.md",
   "Telegram-Capture.md",
   "Recall-Synchronization.md",
+  "NotebookLM-One-Click-Export.md",
   "Backups-and-Restore.md",
 ]);
 

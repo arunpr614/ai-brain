@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import type { ReactNode } from "react";
 import {
   Activity,
+  BookOpen,
   FolderTree,
   SearchCheck,
   Shield,
@@ -19,6 +20,7 @@ import { getJsonSetting } from "@/db/settings";
 import { verifySessionCookie } from "@/lib/auth";
 import { getNoteAiDefaultPreference } from "@/lib/notes/default-ai-policy";
 import { manualNotesUiEnabled } from "@/lib/notes/flags";
+import { notebookLmExportUiEnabled } from "@/lib/notebooklm/flags";
 import { noteAiProviderPolicy } from "@/lib/notes/provider-policy";
 import { getProviderStatusReport, type ProviderStatus } from "@/lib/providers/status";
 import { recallManualSyncStatus, recallManualUiEnabled } from "@/lib/recall/manual-sync-service";
@@ -56,6 +58,7 @@ export default async function SettingsPage() {
   const noteAiDefault = getNoteAiDefaultPreference();
   const noteAiPolicy = noteAiProviderPolicy();
   const recallStatus = recallManualUiEnabled() ? recallManualSyncStatus() : null;
+  const notebookLmEnabled = notebookLmExportUiEnabled();
 
   return (
     <div className="mx-auto max-w-[680px] px-4 py-10 sm:px-8">
@@ -89,6 +92,15 @@ export default async function SettingsPage() {
             <Wifi className="h-4 w-4 text-[var(--text-muted)]" strokeWidth={2} />
             <span className="font-medium">Device pairing</span>
           </Link>
+          {notebookLmEnabled && (
+            <Link
+              href="/settings/notebooklm-export"
+              className="flex items-center gap-3 rounded-lg border border-[var(--border)] bg-[var(--surface)] px-4 py-3 text-sm text-[var(--text-primary)] transition-colors hover:border-[var(--border-strong)]"
+            >
+              <BookOpen className="h-4 w-4 text-[var(--text-muted)]" strokeWidth={2} />
+              <span className="font-medium">NotebookLM export</span>
+            </Link>
+          )}
         </div>
       </section>
 

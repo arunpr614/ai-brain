@@ -17,6 +17,12 @@ die() {
   exit 1
 }
 
+# Decommissioned 2026-07-22. This mutable rsync deployment path cannot provide
+# the attested volatile-staging, atomic publication, rollback-compatibility, and
+# runtime proofs enforced by deploy-immutable-release.sh. Refuse before any
+# network, backup, build, or production mutation occurs.
+die "legacy mutable deploy is retired; build an attested artifact and run npm run deploy:immutable"
+
 RECALL_DEPLOY_GUARD_TOKEN=""
 
 acquire_recall_deploy_guard() {
@@ -272,26 +278,7 @@ REMOTE_NOTE_FOCUS_ENV_PREFLIGHT
 }
 
 remote_database_backup() {
-  local timestamp
-  timestamp="$(date -u +%Y-%m-%d_%H-%M-%S)"
-  ssh "${SSH_HOST}" "sudo env BRAIN_PREDEPLOY_TIMESTAMP='${timestamp}' bash -s" <<'REMOTE_DATABASE_BACKUP' \
-    || die "pre-deploy database backup failed"
-set -euo pipefail
-source_db="/opt/brain/data/brain.sqlite"
-backup_dir="/opt/brain/data/backups"
-backup_file="${backup_dir}/pre-manual-notes-${BRAIN_PREDEPLOY_TIMESTAMP}.sqlite"
-# The app and trusted Recall worker share this WAL-safe backup target.
-install -d -o brain -g brain-data -m 2770 "$backup_dir"
-if id brain-recall >/dev/null 2>&1; then
-  runuser -u brain-recall -g brain-data -- bash -c \
-    'probe="$(mktemp "$1/.recall-backup-write-proof.XXXXXXXX")"; rm -f -- "$probe"' \
-    _ "$backup_dir"
-fi
-sqlite3 "$source_db" ".backup '$backup_file'"
-chmod 0600 "$backup_file"
-sqlite3 "$backup_file" "PRAGMA quick_check;" | grep -qx ok
-printf '[deploy] database backup verified: %s\n' "$backup_file"
-REMOTE_DATABASE_BACKUP
+  die "legacy mutable deploy is retired; use deploy-immutable-release.sh"
 }
 
 remote_recall_key_rotation_evidence_preflight() {
@@ -507,7 +494,7 @@ rsync -az --delete --exclude '/data/' .next/standalone/ "${SSH_HOST}:${REMOTE_DI
 rsync -az --delete .next/static/ "${SSH_HOST}:${REMOTE_DIR}/.next/static/"
 rsync -az --delete public/ "${SSH_HOST}:${REMOTE_DIR}/public/"
 ssh "${SSH_HOST}" "mkdir -p '${REMOTE_DIR}/scripts' '${REMOTE_DIR}/scripts/deploy' '${REMOTE_DIR}/scripts/lib' '${REMOTE_DIR}/docs/plans/spikes'"
-rsync -az scripts/check-ai-providers.mjs scripts/check-recall-key-rotation-evidence.mjs scripts/check-recall-dry-run-report.mjs scripts/check-recall-apply-report.mjs scripts/check-recall-live-spike-reports.mjs scripts/check-recall-public-privacy.mjs scripts/check-recall-public-manifest-privacy.mjs scripts/check-recall-second-manual-runtime-preflight.mjs scripts/backfill-embeddings-prod.mjs scripts/backfill-youtube-transcripts-prod.mjs scripts/restore-from-backup.sh scripts/recall-first-apply-preflight.mjs scripts/recall-second-manual-verification-apply.sh scripts/dist/audit-vector-index-prod.mjs scripts/dist/repair-vector-index-prod.mjs "${SSH_HOST}:${REMOTE_DIR}/scripts/"
+rsync -az scripts/check-ai-providers.mjs scripts/check-recall-key-rotation-evidence.mjs scripts/check-recall-dry-run-report.mjs scripts/check-recall-apply-report.mjs scripts/check-recall-live-spike-reports.mjs scripts/check-recall-public-privacy.mjs scripts/check-recall-public-manifest-privacy.mjs scripts/check-recall-second-manual-runtime-preflight.mjs scripts/backfill-embeddings-prod.mjs scripts/backfill-youtube-transcripts-prod.mjs scripts/restore-from-backup.sh scripts/scrub-notebooklm-backup.mjs scripts/recall-first-apply-preflight.mjs scripts/recall-second-manual-verification-apply.sh scripts/dist/audit-vector-index-prod.mjs scripts/dist/repair-vector-index-prod.mjs "${SSH_HOST}:${REMOTE_DIR}/scripts/"
 rsync -az scripts/lib/recall-controlled-samples.mjs "${SSH_HOST}:${REMOTE_DIR}/scripts/lib/"
 rsync -az docs/plans/spikes/SPIKE-013-recall-rest-enumeration-*.md docs/plans/spikes/SPIKE-014-recall-content-fidelity-*.md "${SSH_HOST}:${REMOTE_DIR}/docs/plans/spikes/"
 rsync -az scripts/deploy/brain.service "${SSH_HOST}:${REMOTE_DIR}/scripts/deploy/"

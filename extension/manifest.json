@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
   "name": "Brain",
-  "version": "0.6.2",
-  "description": "Save pages to your AI Brain library via Cloudflare.",
+  "version": "0.7.0",
+  "description": "Save pages to Brain and securely deliver approved text sources to NotebookLM.",
   "action": {
     "default_popup": "src/popup.html",
     "default_title": "Save to Brain"
@@ -17,9 +17,13 @@
     "tabs",
     "contextMenus",
     "storage",
-    "notifications"
+    "notifications",
+    "alarms"
   ],
   "host_permissions": [
     "https://brain.arunp.in/*"
+  ],
+  "optional_host_permissions": [
+    "https://notebooklm.google.com/*"
   ]
 }

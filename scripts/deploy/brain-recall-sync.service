@@ -11,6 +11,8 @@ WorkingDirectory=/opt/brain
 EnvironmentFile=/etc/brain/.env
 Environment=BRAIN_RECALL_TRIGGER=automatic
 Environment=BRAIN_RECALL_MANUAL_SYNC_MODE=0
+Environment=BRAIN_RECALL_BACKUP_STAGING_DIR=/run/brain-recall-backup-staging
+Environment=BRAIN_SCRUB_RUNTIME_ROOT=/opt/brain/current
 LoadCredential=recall-api-key:/etc/brain/recall-api-key
 ExecStart=/usr/bin/bash /opt/brain/scripts/recall-scheduled-apply.sh
 ExecStartPost=/usr/bin/node /opt/brain/scripts/recall-sync-lifecycle-prod.mjs schedule --timer-name brain-recall-sync.timer --db-path /opt/brain/data/brain.sqlite --migrations-dir /opt/brain/scripts/db/migrations
@@ -25,6 +27,10 @@ NoNewPrivileges=true
 PrivateTmp=true
 ProtectSystem=strict
 ProtectHome=true
+RuntimeDirectory=brain-recall-backup-staging
+RuntimeDirectoryMode=0700
+RuntimeDirectoryPreserve=yes
 ReadWritePaths=/opt/brain/data
 ReadWritePaths=/run/brain-recall
+ReadWritePaths=/run/brain-recall-backup-staging
 UMask=0007
