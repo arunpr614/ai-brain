@@ -2,7 +2,7 @@
 
 Purpose: Document the shipped owner-only workflow for triaging captured cards through Inbox, To Do, In Progress, Done, and archive.
 Audience: AI Brain users, agents, engineers, designers, and operators.
-Verified against: deployed application `8c1341100b174fe4ca518e6a745c30b9078df21c`.
+Verified against: deployed application `167a15d57b8f70574a017ea4cda507870f3600d4`.
 Runtime evidence through: 2026-07-12 staged production rollout and live workflow verification.
 Last reviewed: 2026-07-12.
 Owner: AI Brain maintainer.

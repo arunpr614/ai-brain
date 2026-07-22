@@ -2,20 +2,23 @@
 
 Purpose: Record material wiki revisions, baselines, and publication state without replacing Git history.
 Audience: Maintainers and future AI agents.
-Verified against: deployed application `8c1341100b174fe4ca518e6a745c30b9078df21c` plus retained historical baselines.
-Runtime evidence through: 2026-07-12 for Card Processing; older entries retain their dated scope.
+Verified against: deployed application `167a15d57b8f70574a017ea4cda507870f3600d4` plus retained historical baselines.
+Runtime evidence through: 2026-07-22 for the NotebookLM UI-only production stage; older entries retain their dated scope.
 Last reviewed: 2026-07-22.
 Owner: AI Brain maintainer.
 
-## 2026-07-22 — NotebookLM one-click export release candidate
+## 2026-07-22 — NotebookLM one-click export protected-main UI-only release
 
 | Change | Implementation baseline | Runtime baseline | State |
 |---|---|---|---|
-| Added a deliberately narrow one-item export to one locally bound owner-only private consumer NotebookLM notebook, with a local Chrome trust boundary, durable no-blind-retry state machine, retention/backup controls, and staged write gate | Implementation `4fd2bd637c76d39b835416067027bdb719f71171`, rebased onto `ea801efa024914d601b495f968153aa5680e2e1e`; replace with the final protected-main release SHA before publication | None yet; production deployment and signed-in private synthetic canary are still required | **Experimental, default off, and not yet claimed as deployed** |
+| Added the UI and guarded implementation for a deliberately narrow one-item export designed for one owner-selected fixed private consumer NotebookLM notebook, with a local Chrome trust boundary, durable no-blind-retry state machine, retention/backup controls, and staged write gate | Protected-main release `167a15d57b8f70574a017ea4cda507870f3600d4` | Production migration, health, retention/operations timers, and authenticated paused UI verified on 2026-07-22; no target bind or signed-in provider canary | **Experimental and deployed UI-only (`1:0:0`); queue/provider writes off** |
 
 - Added [NotebookLM One-Click Export](NotebookLM-One-Click-Export) while preserving the broader synchronization decision as Deferred research.
 - Distinguished the public entrance at `https://notebooklm.google/` from the authenticated application/connector host at `https://notebooklm.google.com/`.
-- Publication must wait for the exact merged release, immutable artifact verification, dark production migration, private synthetic canary, final redacted evidence, and fresh-clone Wiki checks.
+- Recorded Google's 2026-07-16 rename of the public product to Gemini Notebook while retaining `NotebookLM` for internal code and evidence continuity.
+- The extension 0.7.0 artifact is attested and installed to a stable local directory, but it is not loaded or paired; no target or source exists.
+- The [production release evidence](https://github.com/arunpr614/ai-brain/blob/0b297c214715261194c0c90e11ebc37d2ac5bc5b/docs/feature-council/notebooklm-sync/release/production-release-evidence-2026-07-22.md) records the current boundary at an immutable documentation commit. Owner-only enablement and final enabled-state publication still require the private synthetic canary and redacted verification.
+- Repository documentation merged in [PR #46](https://github.com/arunpr614/ai-brain/pull/46). Wiki content commit `b04c5940977a09ecc9e5b34c6c7ad7767092920f` was fresh-clone verified as a no-delete 91-page preservation union: all 88 repository pages plus three unchanged live-only research pages, with all 91 reachable and privacy-clean.
 
 ## 2026-07-21 — NotebookLM synchronization research decision
 

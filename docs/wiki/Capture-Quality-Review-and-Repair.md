@@ -2,7 +2,7 @@
 
 Purpose: Document fidelity signals, attention queues, repair paths, transcript recovery, and proposal boundaries.
 Audience: AI agents changing capture quality or repair behavior.
-Verified against: `8c1341100b174fe4ca518e6a745c30b9078df21c`.
+Verified against: `167a15d57b8f70574a017ea4cda507870f3600d4`.
 Runtime evidence through: 2026-07-10; individual recovery paths vary.
 Last reviewed: 2026-07-11.
 Owner: AI Brain maintainer.
