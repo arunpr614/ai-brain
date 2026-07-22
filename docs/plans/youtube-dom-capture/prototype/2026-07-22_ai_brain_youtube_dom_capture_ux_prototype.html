@@ -1,0 +1,2002 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Brain YouTube Capture - UX Prototype</title>
+    <style>
+      :root {
+        color-scheme: light;
+        --ink-950: #14213d;
+        --ink-800: #24344f;
+        --surface-base: #fbfcfe;
+        --panel: #ffffff;
+        --panel-soft: #f5f7fa;
+        --line: #d7dfea;
+        --line-strong: #a9b8cd;
+        --muted: #667085;
+        --ruby: #e63b6f;
+        --coral: #f26a4f;
+        --amber: #f6b73c;
+        --teal: #158c80;
+        --cyan: #42c7e8;
+        --azure: #2f80ed;
+        --youtube: #ff0033;
+        --shadow-md: 0 8px 24px rgb(20 33 61 / 0.12);
+        --shadow-lg: 0 18px 48px rgb(20 33 61 / 0.18);
+        --radius-xs: 4px;
+        --radius-sm: 6px;
+        --radius-md: 8px;
+        --font-ui: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        min-height: 100%;
+      }
+
+      body {
+        margin: 0;
+        background: #edf1f6;
+        color: var(--ink-950);
+        font-family: var(--font-ui);
+        font-size: 14px;
+        line-height: 1.45;
+        letter-spacing: 0;
+        -webkit-font-smoothing: antialiased;
+      }
+
+      button,
+      input,
+      textarea {
+        font: inherit;
+        letter-spacing: 0;
+      }
+
+      button {
+        cursor: pointer;
+      }
+
+      button:focus-visible,
+      input:focus-visible,
+      textarea:focus-visible {
+        outline: 2px solid #7ccffd;
+        outline-offset: 2px;
+      }
+
+      button:disabled {
+        cursor: not-allowed;
+        opacity: 0.48;
+      }
+
+      .prototype {
+        min-height: 100vh;
+        padding: 20px;
+      }
+
+      .prototype-toolbar {
+        width: min(1280px, 100%);
+        min-height: 52px;
+        margin: 0 auto 14px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+      }
+
+      .prototype-title {
+        min-width: 220px;
+      }
+
+      .prototype-title strong {
+        display: block;
+        font-size: 14px;
+        font-weight: 700;
+      }
+
+      .prototype-title span {
+        display: block;
+        margin-top: 2px;
+        color: var(--muted);
+        font-size: 12px;
+      }
+
+      .scenario-tools {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .scenario-tabs {
+        display: flex;
+        align-items: center;
+        min-height: 36px;
+        padding: 3px;
+        background: var(--panel);
+        border: 1px solid var(--line);
+        border-radius: var(--radius-md);
+        box-shadow: 0 1px 2px rgb(20 33 61 / 0.04);
+      }
+
+      .scenario-tab {
+        min-height: 28px;
+        padding: 0 11px;
+        border: 0;
+        border-radius: var(--radius-sm);
+        background: transparent;
+        color: var(--muted);
+        font-size: 12px;
+        font-weight: 600;
+        white-space: nowrap;
+      }
+
+      .scenario-tab:hover {
+        color: var(--ink-950);
+        background: var(--panel-soft);
+      }
+
+      .scenario-tab[aria-selected="true"] {
+        color: var(--ink-950);
+        background: #eef4ff;
+        box-shadow: inset 0 0 0 1px var(--line-strong);
+      }
+
+      .icon-button {
+        position: relative;
+        width: 36px;
+        height: 36px;
+        display: inline-grid;
+        place-items: center;
+        flex: 0 0 auto;
+        padding: 0;
+        border: 1px solid var(--line);
+        border-radius: var(--radius-sm);
+        background: var(--panel);
+        color: var(--ink-800);
+      }
+
+      .icon-button:hover {
+        border-color: var(--line-strong);
+        color: var(--ink-950);
+      }
+
+      .icon-button--quiet {
+        border-color: transparent;
+        background: transparent;
+      }
+
+      [data-tooltip]::after {
+        content: attr(data-tooltip);
+        position: absolute;
+        z-index: 100;
+        right: 0;
+        top: calc(100% + 7px);
+        width: max-content;
+        max-width: 220px;
+        padding: 5px 7px;
+        border-radius: var(--radius-xs);
+        background: var(--ink-950);
+        color: #fff;
+        font-size: 11px;
+        font-weight: 500;
+        line-height: 1.3;
+        pointer-events: none;
+        opacity: 0;
+        transform: translateY(-2px);
+        transition: opacity 120ms ease, transform 120ms ease;
+      }
+
+      [data-tooltip]:hover::after,
+      [data-tooltip]:focus-visible::after {
+        opacity: 1;
+        transform: translateY(0);
+      }
+
+      .browser {
+        position: relative;
+        width: min(1280px, 100%);
+        height: min(820px, calc(100vh - 112px));
+        min-height: 680px;
+        margin: 0 auto;
+        overflow: hidden;
+        border: 1px solid #bfc9d7;
+        border-radius: 10px;
+        background: var(--panel);
+        box-shadow: var(--shadow-lg);
+      }
+
+      .browser-top {
+        height: 74px;
+        border-bottom: 1px solid #cfd7e2;
+        background: #e8edf3;
+      }
+
+      .tab-strip {
+        height: 34px;
+        display: flex;
+        align-items: end;
+        padding: 0 12px;
+        gap: 10px;
+      }
+
+      .window-controls {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        align-self: center;
+        margin-right: 4px;
+      }
+
+      .window-dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background: #aab4c0;
+      }
+
+      .window-dot:first-child {
+        background: #f06a66;
+      }
+
+      .window-dot:nth-child(2) {
+        background: #e8b23f;
+      }
+
+      .window-dot:nth-child(3) {
+        background: #55b96d;
+      }
+
+      .browser-tab {
+        width: 248px;
+        height: 30px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 0 12px;
+        border-radius: 7px 7px 0 0;
+        background: #f8fafc;
+        color: #3d4754;
+        font-size: 12px;
+      }
+
+      .tab-title {
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .browser-tab svg {
+        color: var(--youtube);
+        flex: 0 0 auto;
+      }
+
+      .browser-toolbar {
+        height: 40px;
+        display: grid;
+        grid-template-columns: auto minmax(280px, 1fr) auto;
+        align-items: center;
+        gap: 10px;
+        padding: 4px 12px 6px;
+        background: #f8fafc;
+      }
+
+      .browser-nav {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+      }
+
+      .browser-nav button {
+        width: 28px;
+        height: 28px;
+        display: grid;
+        place-items: center;
+        padding: 0;
+        border: 0;
+        border-radius: 50%;
+        background: transparent;
+        color: #637083;
+      }
+
+      .address-bar {
+        height: 30px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        min-width: 0;
+        padding: 0 12px;
+        border-radius: 15px;
+        background: #e9eef4;
+        color: #4b5665;
+        font-size: 12px;
+      }
+
+      .address-bar span {
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .browser-actions {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+
+      .toolbar-action {
+        position: relative;
+        width: 30px;
+        height: 30px;
+        display: grid;
+        place-items: center;
+        padding: 0;
+        border: 0;
+        border-radius: 50%;
+        background: transparent;
+        color: #4c5868;
+      }
+
+      .toolbar-action:hover,
+      .toolbar-action[aria-pressed="true"] {
+        background: #e5ebf2;
+        color: var(--ink-950);
+      }
+
+      .toolbar-action.brain-action {
+        color: var(--ink-950);
+      }
+
+      .toolbar-action.brain-action::before {
+        content: "";
+        position: absolute;
+        inset: 3px;
+        border-radius: 50%;
+        border: 1px solid var(--line-strong);
+      }
+
+      .avatar {
+        width: 26px;
+        height: 26px;
+        display: grid;
+        place-items: center;
+        border-radius: 50%;
+        background: #1d6e65;
+        color: white;
+        font-size: 11px;
+        font-weight: 700;
+      }
+
+      .youtube-page {
+        height: calc(100% - 74px);
+        overflow: auto;
+        background: #fff;
+        color: #0f0f0f;
+      }
+
+      .youtube-header {
+        position: sticky;
+        top: 0;
+        z-index: 2;
+        height: 54px;
+        display: grid;
+        grid-template-columns: 220px minmax(260px, 560px) 1fr;
+        align-items: center;
+        gap: 20px;
+        padding: 0 22px;
+        border-bottom: 1px solid #f0f0f0;
+        background: rgb(255 255 255 / 0.96);
+      }
+
+      .youtube-brand {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 17px;
+        font-weight: 800;
+      }
+
+      .youtube-brand svg {
+        color: var(--youtube);
+        fill: var(--youtube);
+      }
+
+      .youtube-search {
+        height: 34px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 12px 0 16px;
+        border: 1px solid #d7d7d7;
+        border-radius: 17px;
+        color: #777;
+        font-size: 12px;
+      }
+
+      .youtube-actions {
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        gap: 14px;
+        color: #3f3f3f;
+      }
+
+      .youtube-layout {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) 380px;
+        gap: 20px;
+        padding: 22px;
+      }
+
+      .watch-column {
+        min-width: 0;
+      }
+
+      .video-player {
+        position: relative;
+        width: 100%;
+        aspect-ratio: 16 / 9;
+        overflow: hidden;
+        background: #101010;
+        border-radius: var(--radius-md);
+      }
+
+      .video-player img {
+        width: 100%;
+        height: 100%;
+        display: block;
+        object-fit: cover;
+        opacity: 0.78;
+      }
+
+      .video-player::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: rgb(0 0 0 / 0.1);
+        pointer-events: none;
+      }
+
+      .play-button {
+        position: absolute;
+        z-index: 1;
+        left: 50%;
+        top: 50%;
+        width: 58px;
+        height: 42px;
+        display: grid;
+        place-items: center;
+        padding: 0;
+        border: 0;
+        border-radius: 7px;
+        transform: translate(-50%, -50%);
+        background: rgb(255 0 51 / 0.94);
+        color: white;
+      }
+
+      .player-footer {
+        position: absolute;
+        z-index: 1;
+        left: 14px;
+        right: 14px;
+        bottom: 10px;
+        color: white;
+      }
+
+      .player-progress {
+        height: 3px;
+        margin-bottom: 8px;
+        background: rgb(255 255 255 / 0.42);
+      }
+
+      .player-progress span {
+        display: block;
+        width: 38%;
+        height: 100%;
+        background: var(--youtube);
+      }
+
+      .player-time {
+        font-size: 11px;
+      }
+
+      .video-title {
+        margin: 14px 0 10px;
+        font-size: 19px;
+        font-weight: 650;
+        line-height: 1.32;
+      }
+
+      .video-meta-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        padding-bottom: 14px;
+        border-bottom: 1px solid #ececec;
+      }
+
+      .channel {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .channel-avatar {
+        width: 36px;
+        height: 36px;
+        display: grid;
+        place-items: center;
+        border-radius: 50%;
+        background: #d9f2ef;
+        color: #156b62;
+        font-size: 12px;
+        font-weight: 800;
+      }
+
+      .channel strong,
+      .channel span {
+        display: block;
+      }
+
+      .channel strong {
+        font-size: 13px;
+      }
+
+      .channel span {
+        margin-top: 1px;
+        color: #707070;
+        font-size: 11px;
+      }
+
+      .video-actions {
+        display: flex;
+        gap: 8px;
+      }
+
+      .youtube-pill {
+        min-height: 32px;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 0 12px;
+        border: 0;
+        border-radius: 16px;
+        background: #f2f2f2;
+        color: #262626;
+        font-size: 12px;
+        font-weight: 600;
+      }
+
+      .description {
+        margin-top: 14px;
+        padding: 12px;
+        border-radius: var(--radius-md);
+        background: #f2f2f2;
+        font-size: 12px;
+      }
+
+      .description strong {
+        display: block;
+        margin-bottom: 5px;
+      }
+
+      .transcript-panel {
+        height: 592px;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        border: 1px solid #dedede;
+        border-radius: var(--radius-md);
+        background: #fff;
+      }
+
+      .transcript-header {
+        min-height: 58px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 14px;
+        border-bottom: 1px solid #ececec;
+      }
+
+      .transcript-header h2 {
+        margin: 0;
+        font-size: 15px;
+        font-weight: 650;
+      }
+
+      .transcript-tools {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+
+      .language-select {
+        height: 28px;
+        padding: 0 9px;
+        border: 1px solid #d7d7d7;
+        border-radius: var(--radius-sm);
+        background: white;
+        color: #363636;
+        font-size: 11px;
+      }
+
+      .transcript-scroll {
+        flex: 1;
+        overflow: hidden;
+        padding: 6px 0 20px;
+      }
+
+      .transcript-row {
+        display: grid;
+        grid-template-columns: 48px minmax(0, 1fr);
+        gap: 10px;
+        padding: 8px 14px;
+        font-size: 12px;
+        line-height: 1.38;
+      }
+
+      .transcript-row:hover {
+        background: #f5f5f5;
+      }
+
+      .transcript-time {
+        color: #1468d4;
+        font-size: 11px;
+      }
+
+      .transcript-empty {
+        min-height: 100%;
+        display: grid;
+        place-items: center;
+        padding: 28px;
+        text-align: center;
+      }
+
+      .transcript-empty > div {
+        max-width: 240px;
+      }
+
+      .transcript-empty svg {
+        color: #777;
+      }
+
+      .transcript-empty h3 {
+        margin: 12px 0 5px;
+        font-size: 14px;
+      }
+
+      .transcript-empty p {
+        margin: 0 0 14px;
+        color: #696969;
+        font-size: 12px;
+      }
+
+      .extension-popup {
+        position: absolute;
+        z-index: 20;
+        top: 62px;
+        right: 16px;
+        width: 368px;
+        max-height: calc(100% - 78px);
+        overflow: auto;
+        border: 1px solid var(--line);
+        border-radius: var(--radius-md);
+        background: var(--surface-base);
+        color: var(--ink-950);
+        box-shadow: var(--shadow-lg);
+        transform-origin: top right;
+        animation: popup-in 150ms ease-out;
+      }
+
+      @keyframes popup-in {
+        from {
+          opacity: 0;
+          transform: translateY(-5px) scale(0.99);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0) scale(1);
+        }
+      }
+
+      .popup-header {
+        min-height: 60px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        padding: 11px 13px 10px 15px;
+        border-bottom: 1px solid var(--line);
+        background: var(--panel);
+      }
+
+      .brain-brand {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .brain-mark {
+        width: 34px;
+        height: 34px;
+        display: grid;
+        place-items: center;
+        border: 1px solid var(--ink-950);
+        border-radius: var(--radius-sm);
+        background: var(--ink-950);
+        color: white;
+      }
+
+      .brain-brand strong,
+      .brain-brand span {
+        display: block;
+      }
+
+      .brain-brand strong {
+        font-size: 14px;
+        font-weight: 700;
+      }
+
+      .brain-brand span {
+        margin-top: 1px;
+        color: var(--muted);
+        font-size: 11px;
+      }
+
+      .step-track {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 5px;
+        padding: 10px 15px 0;
+        background: var(--panel);
+      }
+
+      .step-bar {
+        height: 3px;
+        border-radius: 2px;
+        background: #e4e9f0;
+      }
+
+      .step-bar.is-active {
+        background: var(--azure);
+      }
+
+      .step-bar.is-complete {
+        background: var(--teal);
+      }
+
+      .popup-body {
+        padding: 14px 15px 15px;
+        background: var(--panel);
+      }
+
+      .page-identity {
+        display: grid;
+        grid-template-columns: 72px minmax(0, 1fr);
+        gap: 10px;
+        align-items: center;
+        padding-bottom: 13px;
+        border-bottom: 1px solid var(--line);
+      }
+
+      .page-thumb {
+        position: relative;
+        width: 72px;
+        aspect-ratio: 16 / 9;
+        overflow: hidden;
+        border-radius: var(--radius-xs);
+        background: #171717;
+      }
+
+      .page-thumb img {
+        width: 100%;
+        height: 100%;
+        display: block;
+        object-fit: cover;
+      }
+
+      .page-copy {
+        min-width: 0;
+      }
+
+      .page-copy strong {
+        display: block;
+        overflow: hidden;
+        color: var(--ink-950);
+        font-size: 12px;
+        font-weight: 650;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .page-copy span {
+        display: block;
+        margin-top: 3px;
+        overflow: hidden;
+        color: var(--muted);
+        font-size: 11px;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .field {
+        margin-top: 12px;
+      }
+
+      .field label {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+        margin-bottom: 5px;
+        color: var(--muted);
+        font-size: 11px;
+        font-weight: 650;
+      }
+
+      .field input,
+      .field textarea {
+        width: 100%;
+        border: 1px solid var(--line);
+        border-radius: var(--radius-sm);
+        background: var(--panel);
+        color: var(--ink-950);
+        font-size: 12px;
+      }
+
+      .field input {
+        height: 34px;
+        padding: 0 9px;
+      }
+
+      .field textarea {
+        min-height: 52px;
+        padding: 8px 9px;
+        resize: vertical;
+      }
+
+      .capture-section {
+        margin-top: 14px;
+        padding-top: 14px;
+        border-top: 1px solid var(--line);
+      }
+
+      .section-label {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        margin-bottom: 5px;
+        color: var(--azure);
+        font-size: 10px;
+        font-weight: 750;
+        text-transform: uppercase;
+      }
+
+      .capture-section h2 {
+        margin: 0;
+        font-size: 16px;
+        font-weight: 700;
+        line-height: 1.3;
+      }
+
+      .capture-section > p {
+        margin: 6px 0 0;
+        color: var(--muted);
+        font-size: 12px;
+        line-height: 1.45;
+      }
+
+      .notice {
+        display: grid;
+        grid-template-columns: 20px minmax(0, 1fr);
+        gap: 8px;
+        margin-top: 12px;
+        padding: 9px 10px;
+        border-left: 3px solid var(--azure);
+        background: #f1f6ff;
+        color: var(--ink-800);
+        font-size: 11px;
+        line-height: 1.4;
+      }
+
+      .notice svg {
+        margin-top: 1px;
+        color: var(--azure);
+      }
+
+      .notice--success {
+        border-left-color: var(--teal);
+        background: #edf9f7;
+      }
+
+      .notice--success svg {
+        color: var(--teal);
+      }
+
+      .notice--warning {
+        border-left-color: var(--amber);
+        background: #fff8e8;
+      }
+
+      .notice--warning svg {
+        color: #9a6500;
+      }
+
+      .notice--danger {
+        border-left-color: var(--ruby);
+        background: #fff0f5;
+      }
+
+      .notice--danger svg {
+        color: var(--ruby);
+      }
+
+      .notice strong {
+        display: block;
+        margin-bottom: 2px;
+        color: var(--ink-950);
+        font-size: 11px;
+      }
+
+      .popup-actions {
+        display: grid;
+        gap: 8px;
+        margin-top: 14px;
+      }
+
+      .button {
+        width: 100%;
+        min-height: 38px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        padding: 8px 12px;
+        border: 1px solid transparent;
+        border-radius: var(--radius-sm);
+        font-size: 12px;
+        font-weight: 700;
+      }
+
+      .button--primary {
+        border-color: var(--ink-950);
+        background: var(--ink-950);
+        color: white;
+      }
+
+      .button--primary:hover {
+        background: var(--ink-800);
+      }
+
+      .button--secondary {
+        border-color: var(--line);
+        background: var(--panel);
+        color: var(--ink-950);
+      }
+
+      .button--secondary:hover {
+        border-color: var(--line-strong);
+        background: var(--panel-soft);
+      }
+
+      .button--text {
+        min-height: 30px;
+        border: 0;
+        background: transparent;
+        color: var(--muted);
+      }
+
+      .button--text:hover {
+        color: var(--ink-950);
+      }
+
+      .popup-footer {
+        min-height: 38px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        padding: 9px 15px;
+        border-top: 1px solid var(--line);
+        background: var(--panel-soft);
+        color: var(--muted);
+        font-size: 10px;
+      }
+
+      .connection {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+      }
+
+      .connection-dot {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: var(--teal);
+        box-shadow: 0 0 0 2px rgb(21 140 128 / 0.12);
+      }
+
+      .scan-state {
+        min-height: 260px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 16px 4px 10px;
+        text-align: center;
+      }
+
+      .scan-icon {
+        width: 48px;
+        height: 48px;
+        display: grid;
+        place-items: center;
+        border: 1px solid #b9d8ef;
+        border-radius: 50%;
+        background: #eef7fd;
+        color: var(--azure);
+      }
+
+      .scan-icon svg {
+        animation: scan-pulse 1.2s ease-in-out infinite;
+      }
+
+      @keyframes scan-pulse {
+        0%,
+        100% {
+          transform: scale(0.92);
+          opacity: 0.65;
+        }
+        50% {
+          transform: scale(1);
+          opacity: 1;
+        }
+      }
+
+      .scan-state h2 {
+        margin: 14px 0 5px;
+        font-size: 16px;
+      }
+
+      .scan-state p {
+        min-height: 36px;
+        margin: 0;
+        color: var(--muted);
+        font-size: 12px;
+      }
+
+      .progress-track {
+        width: 100%;
+        height: 5px;
+        margin-top: 18px;
+        overflow: hidden;
+        border-radius: 3px;
+        background: #e6ebf1;
+      }
+
+      .progress-fill {
+        width: 32%;
+        height: 100%;
+        background: var(--azure);
+        animation: scan-progress 1.8s ease-in-out forwards;
+      }
+
+      @keyframes scan-progress {
+        from {
+          width: 8%;
+        }
+        to {
+          width: 100%;
+        }
+      }
+
+      .evidence-summary {
+        margin-top: 12px;
+        border-top: 1px solid var(--line);
+        border-bottom: 1px solid var(--line);
+      }
+
+      .evidence-row {
+        min-height: 37px;
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        align-items: center;
+        gap: 12px;
+        padding: 8px 0;
+        border-bottom: 1px solid #edf0f4;
+        font-size: 11px;
+      }
+
+      .evidence-row:last-child {
+        border-bottom: 0;
+      }
+
+      .evidence-row span:first-child {
+        color: var(--muted);
+      }
+
+      .evidence-value {
+        display: inline-flex;
+        align-items: center;
+        justify-content: flex-end;
+        gap: 5px;
+        color: var(--ink-950);
+        font-weight: 650;
+        text-align: right;
+      }
+
+      .evidence-value--success {
+        color: var(--teal);
+      }
+
+      .evidence-value--warning {
+        color: #8a5c00;
+      }
+
+      .success-state {
+        min-height: 298px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 18px 4px 8px;
+        text-align: center;
+      }
+
+      .success-mark {
+        width: 54px;
+        height: 54px;
+        display: grid;
+        place-items: center;
+        border: 1px solid #9bd8cf;
+        border-radius: 50%;
+        background: #edf9f7;
+        color: var(--teal);
+      }
+
+      .success-state h2 {
+        margin: 14px 0 5px;
+        font-size: 17px;
+      }
+
+      .success-state > p {
+        margin: 0;
+        color: var(--muted);
+        font-size: 12px;
+      }
+
+      .receipt {
+        width: 100%;
+        margin-top: 16px;
+        padding: 10px 0;
+        border-top: 1px solid var(--line);
+        border-bottom: 1px solid var(--line);
+        text-align: left;
+      }
+
+      .receipt-row {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        min-height: 27px;
+        color: var(--ink-800);
+        font-size: 11px;
+      }
+
+      .receipt-row svg {
+        color: var(--teal);
+      }
+
+      .error-state {
+        min-height: 280px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 16px 2px 5px;
+        text-align: center;
+      }
+
+      .error-mark {
+        width: 48px;
+        height: 48px;
+        display: grid;
+        place-items: center;
+        border: 1px solid #efb7ca;
+        border-radius: 50%;
+        background: #fff0f5;
+        color: var(--ruby);
+      }
+
+      .error-mark--warning {
+        border-color: #ecd28f;
+        background: #fff8e8;
+        color: #9a6500;
+      }
+
+      .error-state h2 {
+        margin: 13px 0 5px;
+        font-size: 16px;
+      }
+
+      .error-state > p {
+        max-width: 300px;
+        margin: 0;
+        color: var(--muted);
+        font-size: 12px;
+      }
+
+      .prototype-note {
+        width: min(1280px, 100%);
+        min-height: 28px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        margin: 9px auto 0;
+        color: #687588;
+        font-size: 11px;
+      }
+
+      .prototype-note span {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+      }
+
+      .toast {
+        position: fixed;
+        z-index: 200;
+        left: 50%;
+        bottom: 24px;
+        max-width: calc(100vw - 32px);
+        padding: 9px 12px;
+        border-radius: var(--radius-sm);
+        background: var(--ink-950);
+        color: white;
+        box-shadow: var(--shadow-md);
+        font-size: 12px;
+        opacity: 0;
+        pointer-events: none;
+        transform: translate(-50%, 6px);
+        transition: opacity 150ms ease, transform 150ms ease;
+      }
+
+      .toast.is-visible {
+        opacity: 1;
+        transform: translate(-50%, 0);
+      }
+
+      .sr-only {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        padding: 0;
+        margin: -1px;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+        white-space: nowrap;
+        border: 0;
+      }
+
+      @media (max-width: 980px) {
+        .prototype {
+          padding: 14px;
+        }
+
+        .prototype-toolbar {
+          align-items: flex-start;
+          flex-direction: column;
+          gap: 10px;
+        }
+
+        .scenario-tools {
+          width: 100%;
+        }
+
+        .scenario-tabs {
+          flex: 1;
+          overflow-x: auto;
+        }
+
+        .browser {
+          height: auto;
+          min-height: 860px;
+        }
+
+        .youtube-page {
+          height: 786px;
+        }
+
+        .youtube-layout {
+          grid-template-columns: 1fr;
+        }
+
+        .transcript-panel {
+          height: 360px;
+        }
+
+        .extension-popup {
+          top: 86px;
+          right: 14px;
+        }
+
+        .prototype-note {
+          align-items: flex-start;
+          flex-direction: column;
+          gap: 3px;
+        }
+      }
+
+      @media (max-width: 620px) {
+        .prototype {
+          padding: 10px;
+        }
+
+        .prototype-title {
+          min-width: 0;
+        }
+
+        .scenario-tab {
+          padding: 0 9px;
+        }
+
+        .browser {
+          min-height: 760px;
+          overflow: visible;
+          border-radius: var(--radius-md);
+        }
+
+        .browser-top {
+          height: 68px;
+        }
+
+        .browser-toolbar {
+          grid-template-columns: auto minmax(0, 1fr) auto;
+          padding-inline: 7px;
+        }
+
+        .tab-strip {
+          height: 30px;
+          padding-inline: 8px;
+        }
+
+        .browser-tab {
+          width: min(228px, calc(100vw - 110px));
+          height: 27px;
+        }
+
+        .browser-nav button:nth-child(n + 2) {
+          display: none;
+        }
+
+        .browser-actions .toolbar-action:not(.brain-action),
+        .browser-actions .avatar {
+          display: none;
+        }
+
+        .youtube-page {
+          height: 692px;
+          overflow: hidden;
+        }
+
+        .youtube-header {
+          grid-template-columns: 1fr auto;
+          height: 50px;
+          padding-inline: 14px;
+        }
+
+        .youtube-search {
+          display: none;
+        }
+
+        .youtube-layout {
+          padding: 12px;
+        }
+
+        .video-title {
+          font-size: 16px;
+        }
+
+        .video-actions,
+        .description,
+        .transcript-panel {
+          display: none;
+        }
+
+        .extension-popup {
+          top: 58px;
+          right: 7px;
+          left: 7px;
+          width: auto;
+          max-height: min(680px, calc(100vh - 180px));
+        }
+
+        .prototype-note {
+          margin-top: 14px;
+        }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        *,
+        *::before,
+        *::after {
+          scroll-behavior: auto !important;
+          animation-duration: 0.01ms !important;
+          animation-iteration-count: 1 !important;
+          transition-duration: 0.01ms !important;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="prototype" id="prototype">
+      <header class="prototype-toolbar">
+        <div class="prototype-title">
+          <strong>Brain extension / YouTube capture</strong>
+          <span>Explicit click, visible transcript, confirm before save</span>
+        </div>
+        <div class="scenario-tools">
+          <div class="scenario-tabs" role="tablist" aria-label="Prototype scenario">
+            <button class="scenario-tab" type="button" role="tab" aria-selected="true" data-scenario="ready">Ready</button>
+            <button class="scenario-tab" type="button" role="tab" aria-selected="false" data-scenario="panel-closed">Panel closed</button>
+            <button class="scenario-tab" type="button" role="tab" aria-selected="false" data-scenario="no-captions">No captions</button>
+            <button class="scenario-tab" type="button" role="tab" aria-selected="false" data-scenario="incomplete">Incomplete</button>
+            <button class="scenario-tab" type="button" role="tab" aria-selected="false" data-scenario="navigation">Video changed</button>
+          </div>
+          <button class="icon-button" type="button" data-action="reset" data-tooltip="Reset current scenario" aria-label="Reset current scenario">
+            <i data-lucide="rotate-ccw" width="16" height="16" aria-hidden="true"></i>
+          </button>
+        </div>
+      </header>
+
+      <section class="browser" aria-label="Simulated Chrome window on a YouTube video">
+        <div class="browser-top">
+          <div class="tab-strip">
+            <div class="window-controls" aria-hidden="true">
+              <span class="window-dot"></span>
+              <span class="window-dot"></span>
+              <span class="window-dot"></span>
+            </div>
+            <div class="browser-tab">
+              <i data-lucide="youtube" width="15" height="15" aria-hidden="true"></i>
+              <span class="tab-title" id="browser-tab-title">Building a second brain that lasts - YouTube</span>
+            </div>
+          </div>
+          <div class="browser-toolbar">
+            <div class="browser-nav" aria-hidden="true">
+              <button type="button" tabindex="-1"><i data-lucide="arrow-left" width="16" height="16"></i></button>
+              <button type="button" tabindex="-1"><i data-lucide="arrow-right" width="16" height="16"></i></button>
+              <button type="button" tabindex="-1"><i data-lucide="rotate-cw" width="15" height="15"></i></button>
+            </div>
+            <div class="address-bar">
+              <i data-lucide="sliders-horizontal" width="13" height="13" aria-hidden="true"></i>
+              <span id="address-text">youtube.com/watch?v=aircAruvnKk</span>
+            </div>
+            <div class="browser-actions">
+              <button class="toolbar-action" type="button" aria-label="Extensions"><i data-lucide="puzzle" width="16" height="16" aria-hidden="true"></i></button>
+              <button class="toolbar-action brain-action" type="button" data-action="toggle-popup" data-tooltip="Brain" aria-label="Open Brain extension" aria-pressed="true">
+                <i data-lucide="brain" width="16" height="16" aria-hidden="true"></i>
+              </button>
+              <span class="avatar" aria-label="Signed in account">A</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="youtube-page" id="youtube-page"></div>
+        <aside class="extension-popup" id="extension-popup" aria-label="Brain extension popup" aria-live="polite"></aside>
+      </section>
+
+      <footer class="prototype-note">
+        <span><i data-lucide="flask-conical" width="13" height="13" aria-hidden="true"></i>Interactive research prototype; no capture request is sent.</span>
+        <span><i data-lucide="shield-check" width="13" height="13" aria-hidden="true"></i>Synthetic transcript cues; browser credentials stay outside the flow.</span>
+      </footer>
+    </main>
+
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+    <script src="https://unpkg.com/lucide@0.468.0/dist/umd/lucide.js"></script>
+    <script>
+      const THUMBNAIL = "https://i.ytimg.com/vi/aircAruvnKk/maxresdefault.jpg";
+      const VIDEO_TITLE = "But what is a neural network? | Deep learning chapter 1";
+
+      const transcriptCues = [
+        ["0:00", "A useful memory system begins with a moment worth keeping."],
+        ["0:08", "The first design problem is reducing friction at capture time."],
+        ["0:15", "The second is preserving enough context to make the memory useful later."],
+        ["0:23", "Links alone are fragile because the meaning often lives inside the page."],
+        ["0:31", "For video, a transcript gives search and analysis something concrete to work with."],
+        ["0:40", "The user should remain in control of what is inspected and what is retained."],
+        ["0:49", "That means a clear action before reading and another before saving."],
+        ["0:57", "A preview can show language, size, timing, and completeness without exposing every cue."],
+        ["1:06", "When completeness cannot be proven, the safest result is no transcript at all."],
+        ["1:15", "Typed failures make that boundary understandable instead of mysterious."],
+        ["1:24", "The browser session stays local while Brain receives only the confirmed content."],
+        ["1:33", "That narrow handoff is the core of this capture experience."],
+      ];
+
+      const state = {
+        scenario: "ready",
+        view: "initial",
+        popupOpen: true,
+        scanMessage: "Reading the visible transcript panel...",
+        navChanged: false,
+        timers: [],
+      };
+
+      const scenarioCopy = {
+        ready: {
+          panelOpen: true,
+          heading: "YouTube video ready",
+          detail: "Open the transcript panel and choose a language, then inspect. Nothing has been read.",
+        },
+        "panel-closed": {
+          panelOpen: false,
+          heading: "YouTube video ready",
+          detail: "Open the transcript panel and choose a language, then inspect. Nothing has been read.",
+        },
+        "no-captions": {
+          panelOpen: false,
+          noCaptions: true,
+          heading: "YouTube video ready",
+          detail: "Open the transcript panel and choose a language, then inspect. Nothing has been read.",
+        },
+        incomplete: {
+          panelOpen: true,
+          heading: "YouTube video ready",
+          detail: "Open the transcript panel and choose a language, then inspect. Nothing has been read.",
+        },
+        navigation: {
+          panelOpen: true,
+          heading: "YouTube video ready",
+          detail: "Open the transcript panel and choose a language, then inspect. Nothing has been read.",
+        },
+      };
+
+      const popup = document.getElementById("extension-popup");
+      const youtubePage = document.getElementById("youtube-page");
+      const toast = document.getElementById("toast");
+
+      function clearTimers() {
+        state.timers.forEach((timer) => clearTimeout(timer));
+        state.timers = [];
+      }
+
+      function icon(name, size = 16) {
+        return `<i data-lucide="${name}" width="${size}" height="${size}" aria-hidden="true"></i>`;
+      }
+
+      function refreshIcons() {
+        if (window.lucide) {
+          window.lucide.createIcons({ attrs: { "stroke-width": 1.8 } });
+        }
+      }
+
+      function popupFrame(content, step = 1) {
+        return `
+          <div class="popup-header">
+            <div class="brain-brand">
+              <span class="brain-mark">${icon("brain", 18)}</span>
+              <span><strong>Save to Brain</strong><span>Connected to brain.arunp.in</span></span>
+            </div>
+            <button class="icon-button icon-button--quiet" type="button" data-action="close-popup" data-tooltip="Close" aria-label="Close Brain popup">${icon("x", 17)}</button>
+          </div>
+          <div class="step-track" aria-label="Capture progress: step ${step} of 3">
+            <span class="step-bar ${step > 1 ? "is-complete" : "is-active"}"></span>
+            <span class="step-bar ${step > 2 ? "is-complete" : step === 2 ? "is-active" : ""}"></span>
+            <span class="step-bar ${step === 3 ? "is-active" : ""}"></span>
+          </div>
+          ${content}
+          <div class="popup-footer">
+            <span class="connection"><span class="connection-dot"></span>Brain connected</span>
+            <span>Active tab only</span>
+          </div>
+        `;
+      }
+
+      function pageIdentity() {
+        return `
+          <div class="page-identity">
+            <div class="page-thumb"><img src="${THUMBNAIL}" alt="Demo YouTube video thumbnail" /></div>
+            <div class="page-copy">
+              <strong>${state.navChanged ? "A different video is now playing" : VIDEO_TITLE}</strong>
+              <span>${state.navChanged ? "youtube.com/watch?v=nextVideo" : "youtube.com/watch?v=aircAruvnKk"}</span>
+            </div>
+          </div>
+        `;
+      }
+
+      function renderInitial() {
+        const current = scenarioCopy[state.scenario];
+
+        return popupFrame(`
+          <div class="popup-body">
+            ${pageIdentity()}
+            <div class="field">
+              <label for="capture-title">Title</label>
+              <input id="capture-title" type="text" value="${VIDEO_TITLE}" />
+            </div>
+            <div class="field">
+              <label for="capture-note"><span>Note</span><span>Optional</span></label>
+              <textarea id="capture-note" rows="2" placeholder="Why do you want to remember this?"></textarea>
+            </div>
+            <section class="capture-section">
+              <div class="section-label">${icon("captions", 13)}YouTube transcript</div>
+              <h2>${current.heading}</h2>
+              <p>${current.detail}</p>
+              <div class="notice">
+                ${icon("mouse-pointer-click", 16)}
+                <div><strong>Nothing has been read yet</strong>Brain will read the transcript currently visible in this YouTube tab. It stays in this popup until you save it or close the popup.</div>
+              </div>
+              <div class="popup-actions">
+                <button class="button button--primary" type="button" data-action="inspect">${icon("scan-text", 16)}Inspect visible transcript</button>
+                <button class="button button--secondary" type="button" data-action="save-link">${icon("bookmark", 16)}Save link only</button>
+              </div>
+            </section>
+          </div>
+        `, 1);
+      }
+
+      function renderScanning() {
+        return popupFrame(`
+          <div class="popup-body">
+            ${pageIdentity()}
+            <section class="scan-state">
+              <span class="scan-icon">${icon("scan-text", 23)}</span>
+              <h2>Inspecting visible transcript</h2>
+              <p id="scan-message">${state.scanMessage}</p>
+              <div class="progress-track" aria-hidden="true"><div class="progress-fill"></div></div>
+              <div class="notice">
+                ${icon("shield", 16)}
+                <div><strong>Still local to this tab</strong>Nothing is sent to Brain until you review and confirm.</div>
+              </div>
+            </section>
+          </div>
+        `, 1);
+      }
+
+      function renderReview() {
+        return popupFrame(`
+          <div class="popup-body">
+            ${pageIdentity()}
+            <section class="capture-section" style="margin-top: 0; padding-top: 13px; border-top: 0;">
+              <div class="section-label">${icon("list-checks", 13)}Review capture</div>
+              <h2>Transcript ready to save</h2>
+              <p>Brain inspected the currently visible English track and proved that it reached the final cue.</p>
+              <div class="evidence-summary">
+                <div class="evidence-row"><span>Language</span><span class="evidence-value">English</span></div>
+                <div class="evidence-row"><span>Transcript</span><span class="evidence-value">286 timed segments</span></div>
+                <div class="evidence-row"><span>Size</span><span class="evidence-value">32,840 characters</span></div>
+                <div class="evidence-row"><span>Completeness</span><span class="evidence-value evidence-value--success">${icon("circle-check", 14)}Reached final cue</span></div>
+                <div class="evidence-row"><span>Caption type</span><span class="evidence-value evidence-value--warning" title="The visible page does not reliably prove manual versus automatic captions.">${icon("circle-help", 14)}Unknown</span></div>
+              </div>
+              <div class="field">
+                <label for="review-note"><span>Note</span><span>Optional</span></label>
+                <textarea id="review-note" rows="2" placeholder="Why do you want to remember this?"></textarea>
+              </div>
+              <div class="notice notice--success">
+                ${icon("shield-check", 16)}
+                <div><strong>What Brain will receive</strong>Transcript text, cue times, title, URL, visible language, and your note. YouTube cookies, Google account identifiers, browsing history, player data, and signed caption URLs are not sent. Your note is excluded from AI.</div>
+              </div>
+              <div class="notice">
+                ${icon("lock-keyhole", 16)}
+                <div><strong>Research lab retention</strong>Retained until the approved delete-by date. No external AI provider receives this capture while it is held.</div>
+              </div>
+              <div class="popup-actions">
+                <button class="button button--primary" type="button" data-action="confirm-save">${icon("brain", 16)}Save transcript to Brain</button>
+                <button class="button button--secondary" type="button" data-action="back">${icon("arrow-left", 16)}Back</button>
+              </div>
+            </section>
+          </div>
+        `, 2);
+      }
+
+      function renderSaving() {
+        return popupFrame(`
+          <div class="popup-body">
+            ${pageIdentity()}
+            <section class="scan-state">
+              <span class="scan-icon">${icon("cloud-upload", 23)}</span>
+              <h2>Saving to Brain</h2>
+              <p>Validating and storing the confirmed transcript...</p>
+              <div class="progress-track" aria-hidden="true"><div class="progress-fill"></div></div>
+            </section>
+          </div>
+        `, 2);
+      }
+
+      function renderSuccess(linkOnly = false) {
+        return popupFrame(`
+          <div class="popup-body">
+            ${pageIdentity()}
+            <section class="success-state">
+              <span class="success-mark">${icon("check", 26)}</span>
+              <h2>${linkOnly ? "Link saved to Brain" : "Transcript saved"}</h2>
+              <p>${linkOnly ? "The title, link, and your AI-excluded note are in your library. No transcript recovery was queued." : "Transcript saved from the visible YouTube panel. Caption type was not verified and external AI processing remains held."}</p>
+              <div class="receipt">
+                <div class="receipt-row">${icon("check", 14)}Video title and canonical link</div>
+                ${linkOnly ? "" : `<div class="receipt-row">${icon("check", 14)}286 timed transcript segments</div><div class="receipt-row">${icon("check", 14)}Visible track provenance and completeness</div>`}
+                <div class="receipt-row">${icon("shield-check", 14)}No browser session data shared</div>
+                <div class="receipt-row">${icon("archive", 14)}Live deletion follows the approved deadline; backups expire normally</div>
+              </div>
+              <div class="popup-actions">
+                <button class="button button--primary" type="button" data-action="open-brain">${icon("external-link", 16)}Open in Brain</button>
+                <button class="button button--text" type="button" data-action="close-popup">Done</button>
+              </div>
+            </section>
+          </div>
+        `, 3);
+      }
+
+      function renderError(kind) {
+        const errors = {
+          incomplete: {
+            icon: "list-x",
+            title: "Transcript may be incomplete",
+            detail: "Brain reached its safety limit before it could prove the final cue. Nothing was sent or saved.",
+            notice: "Partial transcript rejected",
+          },
+          navigation: {
+            icon: "shuffle",
+            title: "Video changed during capture",
+            detail: "The tab moved to another video while Brain was inspecting. Nothing was sent or saved.",
+            notice: "Page identity no longer matches",
+          },
+          panel: {
+            icon: "panel-right-close",
+            title: "Open the transcript on YouTube",
+            detail: "Brain did not find a visible transcript panel after you clicked Inspect. Nothing was sent.",
+            notice: "Open the panel, choose a language, then inspect again",
+          },
+          unavailable: {
+            icon: "captions-off",
+            title: "This video has no visible transcript",
+            detail: "YouTube exposed a supported empty-transcript state. Nothing was sent. You can still save the link.",
+            notice: "No transcript content was read or queued",
+          },
+        };
+        const error = errors[kind];
+        return popupFrame(`
+          <div class="popup-body">
+            ${pageIdentity()}
+            <section class="error-state">
+              <span class="error-mark">${icon(error.icon, 22)}</span>
+              <h2>${error.title}</h2>
+              <p>${error.detail}</p>
+              <div class="notice notice--danger" style="width: 100%; text-align: left;">
+                ${icon("circle-x", 16)}
+                <div><strong>${error.notice}</strong>Brain fails closed rather than presenting partial or mismatched text as success.</div>
+              </div>
+              <div class="popup-actions">
+                <button class="button button--primary" type="button" data-action="retry">${icon("rotate-cw", 16)}Try again</button>
+                <button class="button button--secondary" type="button" data-action="save-link">${icon("bookmark", 16)}Save link only</button>
+              </div>
+            </section>
+          </div>
+        `, 1);
+      }
+
+      function renderPopup() {
+        popup.hidden = !state.popupOpen;
+        document.querySelector(".brain-action")?.setAttribute("aria-pressed", String(state.popupOpen));
+        if (!state.popupOpen) return;
+
+        if (state.view === "initial") popup.innerHTML = renderInitial();
+        if (state.view === "scanning") popup.innerHTML = renderScanning();
+        if (state.view === "review") popup.innerHTML = renderReview();
+        if (state.view === "saving") popup.innerHTML = renderSaving();
+        if (state.view === "success") popup.innerHTML = renderSuccess(false);
+        if (state.view === "link-success") popup.innerHTML = renderSuccess(true);
+        if (state.view === "incomplete-error") popup.innerHTML = renderError("incomplete");
+        if (state.view === "navigation-error") popup.innerHTML = renderError("navigation");
+        if (state.view === "panel-error") popup.innerHTML = renderError("panel");
+        if (state.view === "unavailable-error") popup.innerHTML = renderError("unavailable");
+        refreshIcons();
+      }
+
+      function transcriptPanel() {
+        const current = scenarioCopy[state.scenario];
+        const panelOpen = current.panelOpen || state.scenario === "ready";
+
+        if (state.scenario === "no-captions") {
+          return `
+            <aside class="transcript-panel" aria-label="YouTube transcript panel">
+              <div class="transcript-header"><h2>Transcript</h2>${icon("x", 16)}</div>
+              <div class="transcript-empty"><div>${icon("captions-off", 27)}<h3>Transcript unavailable</h3><p>This video does not have captions.</p></div></div>
+            </aside>
+          `;
+        }
+
+        if (!panelOpen) {
+          return `
+            <aside class="transcript-panel" aria-label="Closed YouTube transcript panel">
+              <div class="transcript-empty">
+                <div>${icon("panel-right-open", 27)}<h3>Transcript panel is closed</h3><p>Choose “Show transcript” on the video page before using Brain.</p><button class="youtube-pill" type="button" data-action="open-panel">${icon("captions", 15)}Show transcript</button></div>
+              </div>
+            </aside>
+          `;
+        }
+
+        return `
+          <aside class="transcript-panel" aria-label="Visible YouTube transcript panel">
+            <div class="transcript-header">
+              <h2>Transcript</h2>
+              <div class="transcript-tools"><button class="language-select" type="button">English ${icon("chevron-down", 12)}</button>${icon("x", 16)}</div>
+            </div>
+            <div class="transcript-scroll">
+              ${transcriptCues.map(([time, cue]) => `<div class="transcript-row"><span class="transcript-time">${time}</span><span>${cue}</span></div>`).join("")}
+            </div>
+          </aside>
+        `;
+      }
+
+      function renderYoutubePage() {
+        const changed = state.navChanged;
+        const title = changed ? "A different video is now playing" : VIDEO_TITLE;
+        document.getElementById("browser-tab-title").textContent = `${title} - YouTube`;
+        document.getElementById("address-text").textContent = changed ? "youtube.com/watch?v=nextVideo" : "youtube.com/watch?v=aircAruvnKk";
+
+        youtubePage.innerHTML = `
+          <header class="youtube-header">
+            <div class="youtube-brand">${icon("youtube", 25)}<span>YouTube</span></div>
+            <div class="youtube-search"><span>Search</span>${icon("search", 15)}</div>
+            <div class="youtube-actions">${icon("video", 18)}${icon("bell", 18)}<span class="avatar">A</span></div>
+          </header>
+          <div class="youtube-layout">
+            <section class="watch-column">
+              <div class="video-player">
+                <img src="${THUMBNAIL}" alt="Demo video frame" />
+                <button class="play-button" type="button" aria-label="Play video">${icon("play", 22)}</button>
+                <div class="player-footer"><div class="player-progress"><span></span></div><div class="player-time">7:11 / 18:42</div></div>
+              </div>
+              <h1 class="video-title">${title}</h1>
+              <div class="video-meta-row">
+                <div class="channel"><span class="channel-avatar">3B</span><span><strong>3Blue1Brown</strong><span>7.4M subscribers</span></span></div>
+                <div class="video-actions"><button class="youtube-pill" type="button">${icon("thumbs-up", 14)}2.4K</button><button class="youtube-pill" type="button">${icon("share-2", 14)}Share</button></div>
+              </div>
+              <div class="description"><strong>16M views · 8 years ago</strong>An introduction to the structure and intuition behind neural networks.</div>
+            </section>
+            ${transcriptPanel()}
+          </div>
+        `;
+        refreshIcons();
+      }
+
+      function updateScenarioTabs() {
+        document.querySelectorAll("[data-scenario]").forEach((button) => {
+          button.setAttribute("aria-selected", String(button.dataset.scenario === state.scenario));
+        });
+      }
+
+      function resetScenario(scenario = state.scenario) {
+        clearTimers();
+        state.scenario = scenario;
+        state.view = "initial";
+        state.popupOpen = true;
+        state.scanMessage = "Reading the visible transcript panel...";
+        state.navChanged = false;
+        updateScenarioTabs();
+        renderYoutubePage();
+        renderPopup();
+      }
+
+      function startInspection() {
+        clearTimers();
+        state.view = "scanning";
+        state.scanMessage = "Reading the visible transcript panel...";
+        renderPopup();
+
+        state.timers.push(setTimeout(() => {
+          state.scanMessage = "Checking timing and transcript completeness...";
+          if (state.scenario === "navigation") {
+            state.navChanged = true;
+            renderYoutubePage();
+          }
+          renderPopup();
+        }, 760));
+
+        state.timers.push(setTimeout(() => {
+          if (state.scenario === "panel-closed") state.view = "panel-error";
+          else if (state.scenario === "no-captions") state.view = "unavailable-error";
+          else if (state.scenario === "incomplete") state.view = "incomplete-error";
+          else if (state.scenario === "navigation") state.view = "navigation-error";
+          else state.view = "review";
+          renderPopup();
+        }, 1850));
+      }
+
+      function confirmSave() {
+        clearTimers();
+        state.view = "saving";
+        renderPopup();
+        state.timers.push(setTimeout(() => {
+          state.view = "success";
+          renderPopup();
+        }, 1250));
+      }
+
+      function saveLinkOnly() {
+        clearTimers();
+        state.view = "saving";
+        renderPopup();
+        state.timers.push(setTimeout(() => {
+          state.view = "link-success";
+          renderPopup();
+        }, 850));
+      }
+
+      let toastTimer;
+      function showToast(message) {
+        clearTimeout(toastTimer);
+        toast.textContent = message;
+        toast.classList.add("is-visible");
+        toastTimer = setTimeout(() => toast.classList.remove("is-visible"), 2200);
+      }
+
+      document.addEventListener("click", (event) => {
+        const scenarioButton = event.target.closest("[data-scenario]");
+        if (scenarioButton) {
+          resetScenario(scenarioButton.dataset.scenario);
+          return;
+        }
+
+        const actionButton = event.target.closest("[data-action]");
+        if (!actionButton) return;
+        const action = actionButton.dataset.action;
+
+        if (action === "reset") resetScenario();
+        if (action === "toggle-popup") {
+          state.popupOpen = !state.popupOpen;
+          renderPopup();
+        }
+        if (action === "close-popup") {
+          state.popupOpen = false;
+          renderPopup();
+        }
+        if (action === "inspect") startInspection();
+        if (action === "confirm-save") confirmSave();
+        if (action === "save-link") saveLinkOnly();
+        if (action === "back") {
+          state.view = "initial";
+          renderPopup();
+        }
+        if (action === "retry") {
+          state.navChanged = false;
+          renderYoutubePage();
+          startInspection();
+        }
+        if (action === "open-panel") {
+          clearTimers();
+          state.scenario = "ready";
+          state.view = "initial";
+          state.popupOpen = false;
+          state.navChanged = false;
+          updateScenarioTabs();
+          renderYoutubePage();
+          renderPopup();
+          showToast("Transcript opened. Click Brain to inspect the visible English track.");
+        }
+        if (action === "open-brain") showToast("The saved Brain item would open in a new tab.");
+      });
+
+      const previewParams = new URLSearchParams(window.location.search);
+      const previewScenario = ["ready", "panel-closed", "no-captions", "incomplete", "navigation"].includes(previewParams.get("scenario"))
+        ? previewParams.get("scenario")
+        : "ready";
+      const previewView = ["initial", "review", "success", "link-success", "incomplete-error", "navigation-error", "panel-error", "unavailable-error"].includes(previewParams.get("view"))
+        ? previewParams.get("view")
+        : "initial";
+      resetScenario(previewScenario);
+      state.view = previewView;
+      renderPopup();
+    </script>
+  </body>
+</html>
