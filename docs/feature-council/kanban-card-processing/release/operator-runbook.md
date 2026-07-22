@@ -8,11 +8,11 @@
 
 - Candidate artifact directory downloaded from the successful protected-main `Product CI` run.
 - For the first immutable cutover, a known-good artifact directory produced by `workflow_dispatch` from the approved pre-feature main ancestor.
-- Authenticated GitHub CLI access capable of reading private artifact attestations.
+- Authenticated GitHub CLI access capable of reading artifact attestations and the repository Administration metadata used to verify branch protection and rulesets.
 - SSH access through the configured `brain` host.
 - Exact candidate/known-good application SHAs, builder SHAs, and installed release IDs recorded in the private release record. A same-build candidate uses `<app-sha>`; a known-good runtime overlaid with current release tooling uses `<app-sha>-<builder-sha>` so failed evidence is never overwritten or ambiguously reused.
 
-The deployment refuses PR artifacts, self-consistent but unattested archives, self-hosted provenance, the wrong repository/workflow/ref/source SHA, multiple archives in one directory, renamed files, non-Linux Node ABI 127 artifacts, or bootstrap tools whose bytes differ from the attested manifest.
+The deployment refuses PR artifacts, self-consistent but unattested archives, self-hosted provenance, the wrong repository/workflow/ref/source SHA, a candidate that is not the current `main` head, a missing or weakened required branch-protection policy, an incompatible candidate release-gate generation, multiple archives in one directory, renamed files, non-Linux Node ABI 127 artifacts, or bootstrap tools whose bytes differ from the attested manifest. The protected-main gate changes an already byte-verified runtime verifier and increments the candidate manifest gate generation, so a pre-gate deployment driver rejects the artifact before any remote action rather than silently ignoring the new policy check. The verifier still accepts pre-gate installed manifests when proving or restoring an existing rollback release.
 
 ## 2. Production configuration gate
 
@@ -58,7 +58,7 @@ For later deployments after the immutable current link already exists, the known
 
 The command performs, in order:
 
-1. local checksum, filename, ABI, attestation, source/ref/workflow, and bootstrap-tool verification;
+1. local checksum, filename, ABI, attestation, source/ref/workflow, current protected-main head/policy/ruleset, and bootstrap-tool verification;
 2. remote architecture, runtime, environment, canonical database path, device/inode, stable HMAC, origin, timezone, and dark-flag checks;
 3. free-space check;
 4. private transfer through a random owner-only directory, staging of the exact candidate builder tool set without advancing the global tool pointer, durable backup-tool installation/verification, and a second flag-state check;
@@ -66,7 +66,7 @@ The command performs, in order:
 6. known-good installation/health proof for the first immutable cutover;
 7. bounded regular-file-only candidate archive validation and extraction as the unprivileged `brain` user;
 8. exact runtime file, migration, native dependency, Node ABI, and applied migration compatibility verification;
-9. immutable installation, full system-state snapshot, atomic current-link switch, unit reload, service restart, timer state, and bounded authenticated health with permanent auth failures rejected immediately;
+9. a second current protected-main head/policy/ruleset check immediately before cutover, followed by immutable installation, full system-state snapshot, atomic current-link switch, unit reload, service restart, timer state, and bounded authenticated health with permanent auth failures rejected immediately;
 10. migration 025 and, when present, migration 026 application; exact applied hash recording; durable-root writability and startup-backup proof; absence of runtime-local data; deep readiness/config audit; Processing plus NotebookLM operations/retention timer verification; immutable retention-oneshot execution proof; external health; Telegram 401 boundary check; and only then atomic promotion of the verified builder tool set.
 
 Any failure after cutover automatically restores the previous symlink, release environment, service/audit unit files, timer enable/active state, and application service; rollback is authenticated-health verified before the deploy returns failure. Failed candidate directories remain immutable evidence and can be retried only through the verified switch path.

@@ -19,6 +19,8 @@ import { execFileSync } from "node:child_process";
 import JSZip from "jszip";
 import * as tar from "tar";
 
+const RELEASE_GATE_VERSION = 1;
+
 const SCRIPT_ALLOWLIST = [
   "scripts/check-ai-providers.mjs",
   "scripts/backup-offsite.sh",
@@ -33,6 +35,7 @@ const SCRIPT_ALLOWLIST = [
   "scripts/activate-release.sh",
   "scripts/switch-release.sh",
   "scripts/check-release-migration-compatibility.mjs",
+  "scripts/verify-protected-main.mjs",
   "scripts/verify-release-runtime.mjs",
   "scripts/wait-for-release-health.mjs",
   "scripts/recall-first-apply-preflight.mjs",
@@ -71,6 +74,7 @@ const TOOL_OVERLAYS = new Set([
   "scripts/recall-first-apply-preflight.mjs",
   "scripts/restore-from-backup.sh",
   "scripts/check-release-migration-compatibility.mjs",
+  "scripts/verify-protected-main.mjs",
   "scripts/check-notebooklm-operations.mjs",
   "scripts/scrub-notebooklm-backup.mjs",
   "scripts/verify-release-runtime.mjs",
@@ -290,6 +294,7 @@ try {
   const migrations = runtimeMigrations;
   const innerManifest = {
     schemaVersion: 1,
+    releaseGateVersion: RELEASE_GATE_VERSION,
     appSha: options.sha,
     builderSha: options.builderSha,
     createdAt: options.createdAt.toISOString(),
