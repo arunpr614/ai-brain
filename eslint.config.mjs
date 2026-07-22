@@ -19,6 +19,7 @@ const eslintConfig = defineConfig([
     "UX_UI_DESIGN_PACKAGE/**",
     "UX_v2/**",
     "docs/feature-council/**/prototype/**",
+    "docs/feature-council/**/design/**/dist/**",
     // Capacitor Android project — v0.5.0 T-9. Gradle-generated JS
     // (native-bridge.js, etc) ends up under android/app/build/intermediates/
     // and produces spurious warnings; android/ is already .gitignored for

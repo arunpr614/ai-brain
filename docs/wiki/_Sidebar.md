@@ -23,6 +23,8 @@
 - [Browser Extension](Browser-Extension)
 - [Telegram Capture](Telegram-Capture)
 - [Recall Synchronization](Recall-Synchronization)
+- [NotebookLM One-Click Export](NotebookLM-One-Click-Export)
+- [Broader NotebookLM Sync Research](NotebookLM-Synchronization-Research)
 - [Backups and Restore](Backups-and-Restore)
 
 ## Architecture and Data

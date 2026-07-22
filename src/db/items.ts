@@ -9,6 +9,10 @@ import { deleteArtifactsForItem } from "@/lib/capture/artifacts";
 import { deleteChunksAndVectors } from "./chunks";
 import { deleteMessagesCitingManualNote } from "./chat";
 import { fingerprint, newUuid, scopeHash } from "@/lib/processing/crypto";
+import {
+  finalizeNotebookLmSensitivePurge,
+  terminalizeNotebookLmExportsForDeletedItem,
+} from "./notebooklm-export";
 
 export type SourceType = ItemRow["source_type"];
 export type CaptureSource = ItemRow["capture_source"];
@@ -337,16 +341,30 @@ export function countNeedsUpgradeItems(): number {
   return row.n;
 }
 
-export function deleteItem(id: string): void {
+export function deleteItems(ids: readonly string[]): void {
   const db = getDb();
-  deleteArtifactsForItem(id);
+  let notebookLmSnapshotsPurged = 0;
+  const now = Date.now();
   db.transaction(() => {
-    // vec0 is not a foreign-key child. Delete vector rows before cascades erase
-    // the bridge that identifies them.
-    deleteChunksAndVectors(id);
-    deleteMessagesCitingManualNote(id);
-    db.prepare("DELETE FROM items WHERE id = ?").run(id);
-  })();
+    for (const id of ids) {
+      deleteArtifactsForItem(id);
+      notebookLmSnapshotsPurged += terminalizeNotebookLmExportsForDeletedItem(
+        id,
+        now,
+        db,
+      );
+      // vec0 is not a foreign-key child. Delete vector rows before cascades erase
+      // the bridge that identifies them.
+      deleteChunksAndVectors(id);
+      deleteMessagesCitingManualNote(id);
+      db.prepare("DELETE FROM items WHERE id = ?").run(id);
+    }
+  }).immediate();
+  if (notebookLmSnapshotsPurged > 0) finalizeNotebookLmSensitivePurge(now);
+}
+
+export function deleteItem(id: string): void {
+  deleteItems([id]);
 }
 
 export interface UpdateItemCaptureContentInput {

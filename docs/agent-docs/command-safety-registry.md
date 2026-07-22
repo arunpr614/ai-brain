@@ -24,6 +24,8 @@ This registry classifies every package script at the documentation baseline. Com
 | `check:build-artifacts` | R0 read-only local | No | No | No | No | Local source/config inspection |
 | `check:env` | R0 read-only local | No | No | No | No | Local source/config inspection |
 | `check:feature-council-wiki` | R0 read-only local | No | No | No | No | Deterministic source/manifest/generated-page comparison |
+| `check:notebooklm-operations` | R0 read-only local | No | No | Possible read target | Explicit target-database review | Opens the configured existing SQLite database read-only and reports content-free NotebookLM operational health |
+| `check:notebooklm-operations:ready` | R0 read-only local | No | No | Possible read target | Explicit target-database review | Same read-only probe, but exits nonzero unless every fail-closed operational gate is ready |
 | `check:project-wiki-artifacts` | R0 read-only local | No | No | No | No | Local CSV schema, count, page-hash, and ledger-drift validation |
 | `check:recall-apply-report` | R0 read-only local | No | No | No | No | Static or local-evidence checker; live variants remain prohibited by project gate |
 | `check:recall-approval-packet` | R0 read-only local | No | No | No | No | Static or local-evidence checker; live variants remain prohibited by project gate |

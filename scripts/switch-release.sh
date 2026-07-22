@@ -2,10 +2,12 @@
 set -Eeuo pipefail
 
 RELEASE_ID="${1:-}"
+SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd -P)"
 RELEASE_ROOT="${BRAIN_RELEASE_ROOT:-/opt/brain/releases}"
 CURRENT_LINK="${BRAIN_CURRENT_LINK:-/opt/brain/current}"
 VERIFY_TOOL="${BRAIN_RELEASE_VERIFY_TOOL:-/opt/brain/release-tools/current/verify-release-runtime.mjs}"
 HEALTH_TOOL="${BRAIN_RELEASE_HEALTH_TOOL:-/opt/brain/release-tools/current/wait-for-release-health.mjs}"
+MIGRATION_COMPAT_TOOL="${BRAIN_RELEASE_MIGRATION_COMPAT_TOOL:-$SCRIPT_DIR/check-release-migration-compatibility.mjs}"
 ENV_FILE="${BRAIN_ENV_FILE:-/etc/brain/.env}"
 STATE_DIR=""
 MUTATED=0
@@ -57,6 +59,36 @@ restore_file() {
 
 timer_enabled() { systemctl is-enabled --quiet brain-processing-audit.timer 2>/dev/null && printf '1' || printf '0'; }
 timer_active() { systemctl is-active --quiet brain-processing-audit.timer 2>/dev/null && printf '1' || printf '0'; }
+notebooklm_timer_enabled() { systemctl is-enabled --quiet brain-notebooklm-operations.timer 2>/dev/null && printf '1' || printf '0'; }
+notebooklm_timer_active() { systemctl is-active --quiet brain-notebooklm-operations.timer 2>/dev/null && printf '1' || printf '0'; }
+notebooklm_retention_timer_enabled() { systemctl is-enabled --quiet brain-notebooklm-retention.timer 2>/dev/null && printf '1' || printf '0'; }
+notebooklm_retention_timer_active() { systemctl is-active --quiet brain-notebooklm-retention.timer 2>/dev/null && printf '1' || printf '0'; }
+
+stop_notebooklm_retention_writer() {
+  local unit state
+  systemctl stop brain-notebooklm-retention.timer >/dev/null 2>&1 || true
+  systemctl stop brain-notebooklm-retention.service >/dev/null 2>&1 || true
+  for unit in brain-notebooklm-retention.timer brain-notebooklm-retention.service; do
+    state="$(systemctl is-active "$unit" 2>/dev/null || true)"
+    case "$state" in
+      active|activating|reloading|deactivating)
+        echo "[switch-release] $unit remained $state after stop" >&2
+        return 1
+        ;;
+    esac
+  done
+}
+
+install_backup_tools() {
+  bash "$SCRIPT_DIR/install-durable-backup-tools.sh"
+}
+
+verify_migration_compatibility() {
+  local runtime="$1" manifest="$2" allow_audited="$3"
+  node "$MIGRATION_COMPAT_TOOL" "$runtime" "$manifest" "$BRAIN_DB_PATH" \
+    "$allow_audited" \
+    "${BRAIN_AUDITED_SCHEMA_025_SHA256:-}" "${BRAIN_AUDITED_SCHEMA_026_SHA256:-}"
+}
 
 snapshot_system_state() {
   STATE_DIR="$(mktemp -d /run/brain-release-state.XXXXXXXX)"
@@ -67,17 +99,43 @@ snapshot_system_state() {
   if [[ -L "$CURRENT_LINK" ]]; then readlink -- "$CURRENT_LINK" > "$STATE_DIR/current-link"; fi
   snapshot_file /etc/brain/release.env release.env
   snapshot_file /etc/systemd/system/brain.service brain.service
+  snapshot_file /etc/systemd/system/brain-recall-sync.service brain-recall-sync.service
+  snapshot_file /etc/systemd/system/brain-recall-manual-sync.service brain-recall-manual-sync.service
+  snapshot_file /etc/systemd/system/brain-notebooklm-operations.service brain-notebooklm-operations.service
+  snapshot_file /etc/systemd/system/brain-notebooklm-operations.timer brain-notebooklm-operations.timer
+  snapshot_file /etc/systemd/system/brain-notebooklm-retention.service brain-notebooklm-retention.service
+  snapshot_file /etc/systemd/system/brain-notebooklm-retention.timer brain-notebooklm-retention.timer
   snapshot_file /etc/systemd/system/brain-processing-audit.service brain-processing-audit.service
   snapshot_file /etc/systemd/system/brain-processing-audit.timer brain-processing-audit.timer
   timer_enabled > "$STATE_DIR/timer-enabled"
   timer_active > "$STATE_DIR/timer-active"
+  notebooklm_timer_enabled > "$STATE_DIR/notebooklm-timer-enabled"
+  notebooklm_timer_active > "$STATE_DIR/notebooklm-timer-active"
+  notebooklm_retention_timer_enabled > "$STATE_DIR/notebooklm-retention-timer-enabled"
+  notebooklm_retention_timer_active > "$STATE_DIR/notebooklm-retention-timer-active"
 }
 
 restore_previous_state() {
-  local failed=0 prior_target
+  local failed=0 prior_target prior_manifest prior_app_sha allow_audited=0
+  # Stop application writers before the final compatibility proof. Otherwise
+  # a pre-026 rollback could race a new NotebookLM request after a clean check.
+  stop_notebooklm_retention_writer || return 1
+  systemctl stop brain || return 1
   systemctl stop brain-processing-audit.timer >/dev/null 2>&1 || true
+  systemctl stop brain-notebooklm-operations.timer >/dev/null 2>&1 || true
   if [[ -s "$STATE_DIR/current-link" ]]; then
     prior_target="$(<"$STATE_DIR/current-link")"
+    [[ -d "$prior_target" && -f "$prior_target/release-manifest.json" ]] || return 1
+    prior_app_sha="$(node -e 'const m=require(process.argv[1]); if(!/^[a-f0-9]{40}$/i.test(m.appSha||""))process.exit(1); process.stdout.write(m.appSha.toLowerCase())' "$prior_target/release-manifest.json")" \
+      || return 1
+    prior_manifest="$(dirname -- "$prior_target")/evidence/brain-release-${prior_app_sha:0:12}.tar.gz.manifest.json"
+    [[ -f "$prior_manifest" ]] || return 1
+    if [[ "${BRAIN_AUDITED_SCHEMA_025_SHA256:-}" =~ ^[a-f0-9]{64}$ &&
+          "${BRAIN_AUDITED_SCHEMA_026_SHA256:-}" =~ ^[a-f0-9]{64}$ ]]; then
+      allow_audited=1
+    fi
+    verify_migration_compatibility "$prior_target" "$prior_manifest" "$allow_audited" \
+      || { echo "[switch-release] prior runtime is incompatible with the live migration ledger; automatic restoration stopped" >&2; return 1; }
     ln -s -- "$prior_target" "${CURRENT_LINK}.rollback" || failed=1
     mv -Tf -- "${CURRENT_LINK}.rollback" "$CURRENT_LINK" || failed=1
   else
@@ -85,6 +143,12 @@ restore_previous_state() {
   fi
   restore_file /etc/brain/release.env release.env || failed=1
   restore_file /etc/systemd/system/brain.service brain.service || failed=1
+  restore_file /etc/systemd/system/brain-recall-sync.service brain-recall-sync.service || failed=1
+  restore_file /etc/systemd/system/brain-recall-manual-sync.service brain-recall-manual-sync.service || failed=1
+  restore_file /etc/systemd/system/brain-notebooklm-operations.service brain-notebooklm-operations.service || failed=1
+  restore_file /etc/systemd/system/brain-notebooklm-operations.timer brain-notebooklm-operations.timer || failed=1
+  restore_file /etc/systemd/system/brain-notebooklm-retention.service brain-notebooklm-retention.service || failed=1
+  restore_file /etc/systemd/system/brain-notebooklm-retention.timer brain-notebooklm-retention.timer || failed=1
   restore_file /etc/systemd/system/brain-processing-audit.service brain-processing-audit.service || failed=1
   restore_file /etc/systemd/system/brain-processing-audit.timer brain-processing-audit.timer || failed=1
   systemctl daemon-reload || failed=1
@@ -93,11 +157,33 @@ restore_previous_state() {
   else
     systemctl disable brain-processing-audit.timer >/dev/null 2>&1 || true
   fi
+  if [[ "$(<"$STATE_DIR/notebooklm-timer-enabled")" == "1" ]]; then
+    systemctl enable brain-notebooklm-operations.timer >/dev/null 2>&1 || failed=1
+  else
+    systemctl disable brain-notebooklm-operations.timer >/dev/null 2>&1 || true
+  fi
+  if [[ "$(<"$STATE_DIR/notebooklm-retention-timer-enabled")" == "1" ]]; then
+    systemctl enable brain-notebooklm-retention.timer >/dev/null 2>&1 || failed=1
+  else
+    systemctl disable brain-notebooklm-retention.timer >/dev/null 2>&1 || true
+  fi
   systemctl restart brain || failed=1
   if [[ "$(<"$STATE_DIR/timer-active")" == "1" ]]; then
     systemctl start brain-processing-audit.timer || failed=1
   else
     systemctl stop brain-processing-audit.timer >/dev/null 2>&1 || true
+  fi
+  if [[ "$(<"$STATE_DIR/notebooklm-timer-active")" == "1" ]]; then
+    systemctl start brain-notebooklm-operations.timer || failed=1
+  else
+    systemctl stop brain-notebooklm-operations.timer >/dev/null 2>&1 || true
+  fi
+  # release.env and the prior immutable runtime were restored before this
+  # external writer is allowed to resolve BRAIN_RELEASE_ID again.
+  if [[ "$(<"$STATE_DIR/notebooklm-retention-timer-active")" == "1" ]]; then
+    systemctl start brain-notebooklm-retention.timer || failed=1
+  else
+    systemctl stop brain-notebooklm-retention.timer >/dev/null 2>&1 || true
   fi
   return "$failed"
 }
@@ -134,6 +220,7 @@ APP_SHA="${RELEASE_ID:0:40}"
 [[ "$(id -u)" == "0" ]] || die "must run as root"
 for command in node flock readlink stat sha256sum; do command -v "$command" >/dev/null || die "$command is required"; done
 [[ -f "$VERIFY_TOOL" ]] || die "release verifier not installed: $VERIFY_TOOL"
+[[ -f "$MIGRATION_COMPAT_TOOL" ]] || die "release migration verifier not installed: $MIGRATION_COMPAT_TOOL"
 exec 9>/run/brain-release.lock
 flock -n 9 || die "another release activation is running"
 load_db_identity
@@ -172,52 +259,100 @@ NODE
 )" || die "installed release ID does not match manifest application/builder identity"
 node "$VERIFY_TOOL" "$RUNTIME" "$MANIFEST" "$ARTIFACT"
 
-node - "$RUNTIME" "$MANIFEST" "$BRAIN_DB_PATH" "${BRAIN_ALLOW_SCHEMA_025_ROLLBACK:-0}" <<'NODE' \
-  || die "runtime/native/migration compatibility check failed"
+node - "$RUNTIME" <<'NODE' || die "runtime native dependency load check failed"
 const runtime = process.argv[2];
-const manifest = require(process.argv[3]);
-const dbPath = process.argv[4];
-const allowSchema025Rollback = process.argv[5] === "1";
 const Database = require(`${runtime}/node_modules/better-sqlite3`);
 const sqliteVec = require(`${runtime}/node_modules/sqlite-vec`);
 const memory = new Database(":memory:");
 sqliteVec.load(memory);
 memory.close();
-const db = new Database(dbPath, { readonly: true, fileMustExist: true });
-const applied = db.prepare("SELECT * FROM _migrations ORDER BY name").all();
-const columns = new Set(db.prepare("PRAGMA table_info(_migrations)").all().map((row) => row.name));
-db.close();
-const packaged = new Map(manifest.migrations.files.map((entry) => [entry.name, entry.sha256]));
-const unknown = applied.map((row) => row.name).filter((name) => !packaged.has(name));
-const hashColumn = ["sha256", "migration_sha256", "content_sha256"].find((name) => columns.has(name));
-const mismatched = hashColumn ? applied.filter((row) =>
-  packaged.has(row.name) && row[hashColumn] !== packaged.get(row.name))
-  .map((row) => row.name) : [];
-if (mismatched.length > 0) {
-  console.error(JSON.stringify({ ok: false, code: "migration_hash_mismatch", mismatched }));
-  process.exit(1);
-}
-if (unknown.length === 0) process.exit(0);
-if (allowSchema025Rollback && unknown.length === 1 && unknown[0] === "025_item_workflow.sql") process.exit(0);
-console.error(JSON.stringify({ ok: false, code: "migration_incompatible", unknown }));
-process.exit(1);
 NODE
+verify_migration_compatibility "$RUNTIME" "$MANIFEST" \
+  "${BRAIN_ALLOW_AUDITED_ADDITIVE_ROLLBACK:-0}" \
+  || die "runtime migration compatibility check failed"
+
+# Keep the durable six-hour cron privacy-safe even when switching the app to
+# an older audited runtime that predates NotebookLM export.
+install_backup_tools
 
 snapshot_system_state
 TARGET_TIMER_ENABLED="${BRAIN_TARGET_TIMER_ENABLED:-$(<"$STATE_DIR/timer-enabled")}"
 TARGET_TIMER_ACTIVE="${BRAIN_TARGET_TIMER_ACTIVE:-$(<"$STATE_DIR/timer-active")}"
 [[ "$TARGET_TIMER_ENABLED" =~ ^[01]$ && "$TARGET_TIMER_ACTIVE" =~ ^[01]$ ]] || die "target timer state must be 0 or 1"
+TARGET_NOTEBOOKLM_TIMER_ENABLED="${BRAIN_TARGET_NOTEBOOKLM_TIMER_ENABLED:-1}"
+TARGET_NOTEBOOKLM_TIMER_ACTIVE="${BRAIN_TARGET_NOTEBOOKLM_TIMER_ACTIVE:-1}"
+[[ "$TARGET_NOTEBOOKLM_TIMER_ENABLED" =~ ^[01]$ && "$TARGET_NOTEBOOKLM_TIMER_ACTIVE" =~ ^[01]$ ]] \
+  || die "target NotebookLM operational timer state must be 0 or 1"
+if [[ "$TARGET_NOTEBOOKLM_TIMER_ENABLED" == "1" || "$TARGET_NOTEBOOKLM_TIMER_ACTIVE" == "1" ]]; then
+  [[ -f "$RUNTIME/scripts/check-notebooklm-operations.mjs" &&
+     -f "$RUNTIME/scripts/deploy/brain-notebooklm-operations.service" &&
+     -f "$RUNTIME/scripts/deploy/brain-notebooklm-operations.timer" ]] \
+    || die "target runtime lacks the required NotebookLM operational gate or timer"
+fi
+TARGET_NOTEBOOKLM_RETENTION_TIMER_ENABLED="${BRAIN_TARGET_NOTEBOOKLM_RETENTION_TIMER_ENABLED:-1}"
+TARGET_NOTEBOOKLM_RETENTION_TIMER_ACTIVE="${BRAIN_TARGET_NOTEBOOKLM_RETENTION_TIMER_ACTIVE:-1}"
+[[ "$TARGET_NOTEBOOKLM_RETENTION_TIMER_ENABLED" =~ ^[01]$ && "$TARGET_NOTEBOOKLM_RETENTION_TIMER_ACTIVE" =~ ^[01]$ ]] \
+  || die "target NotebookLM retention timer state must be 0 or 1"
+if [[ "$TARGET_NOTEBOOKLM_RETENTION_TIMER_ENABLED" == "1" || "$TARGET_NOTEBOOKLM_RETENTION_TIMER_ACTIVE" == "1" ]]; then
+  [[ -f "$RUNTIME/scripts/dist/notebooklm-retention-prod.mjs" &&
+     -f "$RUNTIME/scripts/deploy/brain-notebooklm-retention.service" &&
+     -f "$RUNTIME/scripts/deploy/brain-notebooklm-retention.timer" ]] \
+    || die "target runtime lacks the required immutable NotebookLM retention worker or timer"
+fi
 PREVIOUS="$(readlink -f -- "$CURRENT_LINK" 2>/dev/null || true)"
 trap on_error ERR
 MUTATED=1
+systemctl stop brain-notebooklm-operations.timer >/dev/null 2>&1 || true
+stop_notebooklm_retention_writer
+systemctl stop brain
+# Recheck with application writers stopped so the audited empty-026 proof and
+# the symlink switch are one fail-closed operational boundary.
+verify_migration_compatibility "$RUNTIME" "$MANIFEST" \
+  "${BRAIN_ALLOW_AUDITED_ADDITIVE_ROLLBACK:-0}"
 ln -s -- "$RUNTIME" "${CURRENT_LINK}.next"
 mv -Tf -- "${CURRENT_LINK}.next" "$CURRENT_LINK"
 write_release_env
 install -m 0644 "$CURRENT_LINK/scripts/deploy/brain.service" /etc/systemd/system/brain.service
+install -m 0644 "$CURRENT_LINK/scripts/deploy/brain-recall-sync.service" /etc/systemd/system/brain-recall-sync.service
+install -m 0644 "$CURRENT_LINK/scripts/deploy/brain-recall-manual-sync.service" /etc/systemd/system/brain-recall-manual-sync.service
+if [[ "$TARGET_NOTEBOOKLM_TIMER_ENABLED" == "1" || "$TARGET_NOTEBOOKLM_TIMER_ACTIVE" == "1" ]]; then
+  install -m 0644 "$CURRENT_LINK/scripts/deploy/brain-notebooklm-operations.service" /etc/systemd/system/brain-notebooklm-operations.service
+  install -m 0644 "$CURRENT_LINK/scripts/deploy/brain-notebooklm-operations.timer" /etc/systemd/system/brain-notebooklm-operations.timer
+else
+  rm -f -- /etc/systemd/system/brain-notebooklm-operations.service /etc/systemd/system/brain-notebooklm-operations.timer
+fi
+if [[ "$TARGET_NOTEBOOKLM_RETENTION_TIMER_ENABLED" == "1" || "$TARGET_NOTEBOOKLM_RETENTION_TIMER_ACTIVE" == "1" ]]; then
+  install -m 0644 "$CURRENT_LINK/scripts/deploy/brain-notebooklm-retention.service" /etc/systemd/system/brain-notebooklm-retention.service
+  install -m 0644 "$CURRENT_LINK/scripts/deploy/brain-notebooklm-retention.timer" /etc/systemd/system/brain-notebooklm-retention.timer
+else
+  rm -f -- /etc/systemd/system/brain-notebooklm-retention.service /etc/systemd/system/brain-notebooklm-retention.timer
+fi
 install -m 0644 "$CURRENT_LINK/scripts/deploy/brain-processing-audit.service" /etc/systemd/system/brain-processing-audit.service
 install -m 0644 "$CURRENT_LINK/scripts/deploy/brain-processing-audit.timer" /etc/systemd/system/brain-processing-audit.timer
 systemctl daemon-reload
 systemctl restart brain
+if [[ "$TARGET_NOTEBOOKLM_TIMER_ENABLED" == "1" ]]; then
+  systemctl enable brain-notebooklm-operations.timer
+else
+  systemctl disable brain-notebooklm-operations.timer >/dev/null 2>&1 || true
+fi
+if [[ "$TARGET_NOTEBOOKLM_TIMER_ACTIVE" == "1" ]]; then
+  systemctl start brain-notebooklm-operations.timer
+else
+  systemctl stop brain-notebooklm-operations.timer >/dev/null 2>&1 || true
+fi
+# release.env was written before daemon-reload and brain startup; the service
+# therefore resolves the exact immutable runtime rather than /opt/brain/current.
+if [[ "$TARGET_NOTEBOOKLM_RETENTION_TIMER_ENABLED" == "1" ]]; then
+  systemctl enable brain-notebooklm-retention.timer
+else
+  systemctl disable brain-notebooklm-retention.timer >/dev/null 2>&1 || true
+fi
+if [[ "$TARGET_NOTEBOOKLM_RETENTION_TIMER_ACTIVE" == "1" ]]; then
+  systemctl start brain-notebooklm-retention.timer
+else
+  systemctl stop brain-notebooklm-retention.timer >/dev/null 2>&1 || true
+fi
 if [[ "$TARGET_TIMER_ENABLED" == "1" ]]; then
   systemctl enable brain-processing-audit.timer
 else
@@ -234,6 +369,7 @@ fi
 MUTATED=0
 trap - ERR
 cleanup
-printf '{"ok":true,"appSha":"%s","builderSha":"%s","releaseId":"%s","previous":"%s","current":"%s","dbPathSha256":"%s","dbDeviceInode":"%s","timerEnabled":%s,"timerActive":%s}\n' \
+printf '{"ok":true,"appSha":"%s","builderSha":"%s","releaseId":"%s","previous":"%s","current":"%s","dbPathSha256":"%s","dbDeviceInode":"%s","timerEnabled":%s,"timerActive":%s,"notebookLmTimerEnabled":%s,"notebookLmTimerActive":%s,"notebookLmRetentionTimerEnabled":%s,"notebookLmRetentionTimerActive":%s}\n' \
   "$APP_SHA" "$BUILDER_SHA" "$RELEASE_ID" "$PREVIOUS" "$RUNTIME" "$BRAIN_DB_PATH_SHA256_ACTUAL" "$BRAIN_DB_DEVICE_INODE_ACTUAL" \
-  "$TARGET_TIMER_ENABLED" "$TARGET_TIMER_ACTIVE"
+  "$TARGET_TIMER_ENABLED" "$TARGET_TIMER_ACTIVE" "$TARGET_NOTEBOOKLM_TIMER_ENABLED" "$TARGET_NOTEBOOKLM_TIMER_ACTIVE" \
+  "$TARGET_NOTEBOOKLM_RETENTION_TIMER_ENABLED" "$TARGET_NOTEBOOKLM_RETENTION_TIMER_ACTIVE"

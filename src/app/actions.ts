@@ -5,7 +5,7 @@ import { redirect } from "next/navigation";
 import { z } from "zod";
 import { getDb } from "@/db/client";
 import { attachItemToCollection, getCollection } from "@/db/collections";
-import { createNote, deleteItem, getItemsByIds } from "@/db/items";
+import { createNote, deleteItem, deleteItems, getItemsByIds } from "@/db/items";
 import { attachTagToItem, upsertTag } from "@/db/tags";
 import { toCaptureResultPayload } from "@/lib/capture/result";
 
@@ -181,15 +181,7 @@ export async function bulkDeleteItemsAction(
       error: parsed.error.issues[0]?.message ?? "Invalid input",
     };
   }
-  const db = getDb();
-  const count = db.transaction(() => {
-    let n = 0;
-    for (const id of parsed.data) {
-      deleteItem(id);
-      n += 1;
-    }
-    return n;
-  })();
+  deleteItems(parsed.data);
   revalidateBulkPaths();
-  return { ok: true, count };
+  return { ok: true, count: parsed.data.length };
 }

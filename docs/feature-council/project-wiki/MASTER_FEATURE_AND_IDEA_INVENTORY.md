@@ -2,11 +2,12 @@
 
 **Verified current-main baseline:** `23868faf13c8e3d0821715e6f5d0e3d2af1e1a34` on 2026-07-11
 **Latest verified deployed application baseline:** `6858529ef179a51442d319c6c58e5ace79757619` on 2026-07-10
+**Additional candidate baseline:** committed NotebookLM implementation `4fd2bd637c76d39b835416067027bdb719f71171`, rebased onto `ea801efa024914d601b495f968153aa5680e2e1e` on 2026-07-22; no deployment or live-provider result is inferred.
 **Confidence:** High means code plus tests or dated runtime evidence; Medium means implementation exists but reachability/runtime is not fully proven; Low means planning/research evidence only.
 
 Availability and runtime evidence are separate from status. `Feature-flagged` is used when a capability is materially controlled by rollout configuration. An enabled production flag does not make a feature unflagged.
 
-The normalized `MASTER_FEATURE_AND_IDEA_EVIDENCE_DETAILS.csv` record contains 46 current-feature rows and 37 non-current idea/capability rows. Every row includes user problem/opportunity, target users, behavior, coverage/boundary, code/test/documentation evidence, routes/components/services, data/schema, flags/configuration, dependencies/integrations, limitations, related features/ideas, aliases, runtime evidence, and last-verified commit/date. Explicit `No current…` values distinguish absence from missing analysis.
+The normalized `MASTER_FEATURE_AND_IDEA_EVIDENCE_DETAILS.csv` record contains 47 current-feature rows and 38 non-current idea/capability rows. Every row includes user problem/opportunity, target users, behavior, coverage/boundary, code/test/documentation evidence, routes/components/services, data/schema, flags/configuration, dependencies/integrations, limitations, related features/ideas, aliases, runtime evidence, and last-verified commit/date. Explicit `No current…` values distinguish absence from missing analysis.
 
 ## Current capabilities
 
@@ -39,6 +40,7 @@ The normalized `MASTER_FEATURE_AND_IDEA_EVIDENCE_DETAILS.csv` record contains 46
 | Browser extension | Implemented | High | Popup plus page/link/selection context capture; endpoint is hard-coded/read-only and only the token is configurable | No store publication or augmented browsing | `extension/manifest.json`, extension source |
 | Telegram capture | Implemented | High | Private-owner webhook, dedup, URL/text/document dispatch, rate limiting | Not a general multi-user bot | Telegram route/lib/DB tests |
 | Recall daily import | Partially implemented | High | Guarded one-way fidelity-aware scheduled import with checkpoint/lock/report | No general two-way sync UI; runtime is time-specific | `src/lib/recall/`, migration `020`, final audit |
+| AI Memory → NotebookLM one-click export | Experimental | High code/local evidence; live-provider confidence pending | One deliberate saved item becomes one static copied-text source in one fixed, locally bound owner-only private consumer notebook; durable no-blind-retry state and all rollout flags default off | Branch-only candidate, not deployed or signed-in-canary verified; undocumented consumer web behavior; no bulk, scheduled, bidirectional, multi-notebook, update, or delete synchronization | migration `026`, `src/lib/notebooklm/`, NotebookLM API/UI/DB tests, extension connector tests, release and privacy checks |
 | AI enrichment and generated taxonomy | Implemented | High | Title, digest, quotes, category, tags/topics through realtime/batch paths | Provider failures can leave retryable/batched states | enrich pipeline/prompts/queue tests |
 | Provider abstraction and health | Implemented | High | Ollama/Anthropic/OpenRouter text; Ollama/Gemini embeddings; point-in-time status | Not a full trust/readiness center | `src/lib/llm/`, `src/lib/embed/`, provider status route/tests |
 | Tags, categories, topics, collections | Implemented | High | Manual/auto labels, category, generated topics, explicit collections | No hierarchical taxonomy or rule collections | DB repositories, taxonomy actions/pages/tests |
@@ -58,7 +60,7 @@ The normalized `MASTER_FEATURE_AND_IDEA_EVIDENCE_DETAILS.csv` record contains 46
 | Health, errors, and quota diagnostics | Implemented | High | Health API, provider probes, client-error sink, quota page, deploy gates | Owner/operator diagnostics, not general analytics | health/errors/quota/deploy code and tests |
 | Local status tooling | Implemented | High code; runtime Unknown | Read-only menu/status helpers for owner operations | Availability varies by machine; not a product dashboard | local status scripts and static/unit checks |
 
-All rows were last verified at current main on 2026-07-11. Runtime evidence is feature-specific; the deployed application SHA does not imply that every row received an end-to-end production test.
+The established current-main rows were last verified on 2026-07-11. The separate NotebookLM candidate row was verified against committed implementation `4fd2bd637c76d39b835416067027bdb719f71171` on 2026-07-22 and remains `Not deployed`. Runtime evidence is feature-specific; the deployed application SHA does not imply that every row received an end-to-end production test.
 
 ## Ideas and non-current capabilities
 
@@ -75,6 +77,7 @@ All rows were last verified at current main on 2026-07-11. Runtime evidence is f
 | Fully offline Android library | Planned | High | Fallback shell and visited-content cache | No complete local library, offline capture queue, or sync | offline docs/current code |
 | Podcast, EPUB, DOCX/RTF/ODT ingestion | Planned | Medium | Some enum/type substrate | No complete routes/services/UI | roadmap and current source scan |
 | Obsidian synchronization | Planned | Medium | Markdown export only | No import, identity, conflict, or sync path | roadmap |
+| AI Brain → NotebookLM synchronization | Deferred | High | A distinct one-item/one-fixed-private-notebook export candidate now exists alongside Markdown export, Recall patterns, and 46/46 research checks | Broad, daily, batch, bidirectional, multi-notebook, update/delete, aggregate/finality/citation, and supported-API contracts remain absent; the narrow candidate does not satisfy them | 2026-07-21 broad-sync research package plus 2026-07-22 narrow export candidate |
 | Structured Calm Green design | Planned | High | Alternative design document | Current UI remains Prism Memory | design docs/current styles |
 | Rich note history/diff and editor tools | Explored | Medium | Revisions and Markdown editor exist | Diff/labels/find/outline/slash tools remain brainstorm concepts | F08 brainstorm |
 | Note-aware search explanations and source policies | Explored | Medium | Exact/semantic search and note consent exist | No provenance filter/explanation or original-only/note-only Ask control | F08 brainstorm |

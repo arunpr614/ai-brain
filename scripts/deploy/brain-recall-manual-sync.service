@@ -11,6 +11,8 @@ WorkingDirectory=/opt/brain
 EnvironmentFile=/etc/brain/.env
 Environment=BRAIN_RECALL_MANUAL_WORKER_ENABLED=1
 Environment=BRAIN_RECALL_WAKE_MARKER=/opt/brain/data/recall-manual-sync/wake
+Environment=BRAIN_RECALL_BACKUP_STAGING_DIR=/run/brain-recall-backup-staging
+Environment=BRAIN_SCRUB_RUNTIME_ROOT=/opt/brain/current
 LoadCredential=recall-api-key:/etc/brain/recall-api-key
 ExecStart=/usr/bin/node /opt/brain/scripts/recall-manual-sync-worker-prod.mjs
 TimeoutStartSec=3h16m
@@ -22,6 +24,10 @@ NoNewPrivileges=true
 PrivateTmp=true
 ProtectSystem=strict
 ProtectHome=true
+RuntimeDirectory=brain-recall-backup-staging
+RuntimeDirectoryMode=0700
+RuntimeDirectoryPreserve=yes
 ReadWritePaths=/opt/brain/data
 ReadWritePaths=/run/brain-recall
+ReadWritePaths=/run/brain-recall-backup-staging
 UMask=0007
