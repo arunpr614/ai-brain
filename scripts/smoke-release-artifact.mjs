@@ -26,6 +26,12 @@ import {
   AUDITED_ADDITIVE_ROLLBACK_MIGRATIONS,
   evaluateMigrationCompatibility,
 } from "./check-release-migration-compatibility.mjs";
+import {
+  parseApiJson,
+  validateBranchResponse,
+  validateProtectionResponse,
+  validateRulesetsResponse,
+} from "./verify-protected-main.mjs";
 import { waitForReleaseHealth } from "./wait-for-release-health.mjs";
 
 const root = process.cwd();
@@ -281,6 +287,55 @@ try {
     /NOTEBOOKLM_FLAG_POLICY="\$\{BRAIN_NOTEBOOKLM_FLAG_POLICY:-dark\}"/,
     "NotebookLM rollout must remain dark unless an operator explicitly selects preserve",
   );
+  assert.match(deployScript, /PROVENANCE_APP_ID="15368"/);
+  assert.match(deployScript, /verify_protected_main\(\)/);
+  assert.match(deployScript, /node "\$SCRIPT_DIR\/verify-protected-main\.mjs"/);
+  assert.match(deployScript, /--hostname "\$PROVENANCE_HOST"/);
+  assert.match(deployScript, /verify_protected_main "\$CANDIDATE_BUILDER_SHA"/);
+  assert.equal(deployScript.match(/verify_protected_main "\$CANDIDATE_BUILDER_SHA"/g)?.length, 2);
+  const policySha = "a".repeat(40);
+  const policyAppId = 15368;
+  const validBranchPolicy = { protected: true, commit: { sha: policySha } };
+  const validProtectionPolicy = {
+    required_status_checks: { strict: true, checks: [{ context: "verify", app_id: policyAppId }] },
+    enforce_admins: { enabled: true },
+    required_pull_request_reviews: {
+      required_approving_review_count: 0,
+      dismiss_stale_reviews: true,
+    },
+    required_conversation_resolution: { enabled: true },
+    allow_force_pushes: { enabled: false },
+    allow_deletions: { enabled: false },
+  };
+  assert.doesNotThrow(() => validateBranchResponse(validBranchPolicy, policySha));
+  assert.doesNotThrow(() => validateProtectionResponse(validProtectionPolicy, policyAppId));
+  assert.doesNotThrow(() => validateRulesetsResponse([]));
+  assert.throws(() => parseApiJson("not-json", "fixture"), /not valid JSON/);
+  assert.throws(
+    () => validateBranchResponse({ ...validBranchPolicy, protected: false }, policySha),
+    /not protected/,
+  );
+  assert.throws(
+    () => validateBranchResponse(validBranchPolicy, "b".repeat(40)),
+    /not the current main head/,
+  );
+  for (const mutate of [
+    (policy) => { policy.required_status_checks.strict = false; },
+    (policy) => { policy.required_status_checks.checks[0].app_id = 1; },
+    (policy) => { policy.enforce_admins.enabled = false; },
+    (policy) => { policy.required_pull_request_reviews.required_approving_review_count = 1; },
+    (policy) => { policy.required_pull_request_reviews.dismiss_stale_reviews = false; },
+    (policy) => { policy.required_conversation_resolution.enabled = false; },
+    (policy) => { policy.allow_force_pushes.enabled = true; },
+    (policy) => { policy.allow_deletions.enabled = true; },
+    (policy) => { policy.required_pull_request_reviews.bypass_pull_request_allowances = { users: [{ login: "bypass" }] }; },
+    (policy) => { policy.required_pull_request_reviews.bypass_pull_request_allowances = { unknown: [] }; },
+  ]) {
+    const weakened = structuredClone(validProtectionPolicy);
+    mutate(weakened);
+    assert.throws(() => validateProtectionResponse(weakened, policyAppId));
+  }
+  assert.throws(() => validateRulesetsResponse([{ id: 1, bypass_actors: [] }]), /rulesets/);
   assert.match(deployScript, /remote_notebooklm_flags_match\(\)/);
   assert.match(
     deployScript,
@@ -434,7 +489,7 @@ try {
     "scripts/backfill-youtube-transcripts-prod.mjs", "scripts/restore-from-backup.sh",
     "scripts/activate-release.sh", "scripts/switch-release.sh", "scripts/verify-release-runtime.mjs",
     "scripts/check-notebooklm-operations.mjs", "scripts/scrub-notebooklm-backup.mjs",
-    "scripts/check-release-migration-compatibility.mjs",
+    "scripts/check-release-migration-compatibility.mjs", "scripts/verify-protected-main.mjs",
     "scripts/wait-for-release-health.mjs",
     "scripts/recall-first-apply-preflight.mjs", "scripts/recall-second-manual-verification-apply.sh",
     "scripts/recall-scheduled-apply.sh", "scripts/lib/recall-controlled-samples.mjs",
@@ -491,6 +546,7 @@ try {
   const manifest = JSON.parse(readFileSync(first.manifest, "utf8"));
   assert.equal(manifest.appSha, sha);
   assert.equal(manifest.builderSha, sha);
+  assert.equal(manifest.releaseGateVersion, 1);
   assert.equal(manifest.artifactSha256, first.artifactSha256);
   assert.equal(manifest.nodeMajor, Number(process.versions.node.split(".")[0]));
   assert.ok(manifest.files.some((entry) => entry.path === "server.js"));
@@ -1469,6 +1525,36 @@ process.stdout.write(String(fs.statSync(args.at(-1)).size) + "\\n");
   const verify = spawnSync(process.execPath, [resolve(root, "scripts/verify-release-runtime.mjs"),
     resolve(extract, "runtime"), first.manifest, first.artifact], { cwd: root, encoding: "utf8" });
   assert.equal(verify.status, 0, verify.stderr);
+  const legacyExtract = resolve(fixture, "legacy-release-extract");
+  mkdirSync(legacyExtract, { recursive: true });
+  await tar.x({ cwd: legacyExtract, file: first.artifact, strict: true });
+  const legacyInnerManifestPath = resolve(legacyExtract, "runtime/release-manifest.json");
+  const legacyInnerManifest = JSON.parse(readFileSync(legacyInnerManifestPath, "utf8"));
+  delete legacyInnerManifest.releaseGateVersion;
+  writeFileSync(legacyInnerManifestPath, `${JSON.stringify(legacyInnerManifest, null, 2)}\n`);
+  const legacyArtifact = resolve(fixture, "legacy-release.tar.gz");
+  await tar.c({
+    cwd: legacyExtract,
+    file: legacyArtifact,
+    gzip: { mtime: 0 },
+    portable: true,
+    noMtime: true,
+  }, ["runtime"]);
+  const legacyExternalManifest = structuredClone(manifest);
+  delete legacyExternalManifest.releaseGateVersion;
+  legacyExternalManifest.artifactSha256 = sha256(legacyArtifact);
+  const legacyExternalManifestPath = resolve(fixture, "legacy-release.manifest.json");
+  writeFileSync(legacyExternalManifestPath, `${JSON.stringify(legacyExternalManifest, null, 2)}\n`);
+  const verifyLegacyRelease = spawnSync(process.execPath, [resolve(root, "scripts/verify-release-runtime.mjs"),
+    resolve(legacyExtract, "runtime"), legacyExternalManifestPath, legacyArtifact], {
+    cwd: root,
+    encoding: "utf8",
+  });
+  assert.equal(
+    verifyLegacyRelease.status,
+    0,
+    `the current verifier must preserve pre-gate rollback compatibility: ${verifyLegacyRelease.stderr}`,
+  );
   symlinkSync("/etc/passwd", resolve(extract, "runtime/escaping-link"));
   const rejectSymlink = spawnSync(process.execPath, [resolve(root, "scripts/verify-release-runtime.mjs"),
     resolve(extract, "runtime"), first.manifest, first.artifact], { cwd: root, encoding: "utf8" });

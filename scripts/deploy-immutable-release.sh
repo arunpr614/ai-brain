@@ -11,6 +11,7 @@ NOTEBOOKLM_REMEDIATION_POLICY="${BRAIN_NOTEBOOKLM_REMEDIATION_POLICY:-strict}"
 PROVENANCE_REPO="arunpr614/ai-brain"
 PROVENANCE_HOST="github.com"
 PROVENANCE_WORKFLOW="${PROVENANCE_REPO}/.github/workflows/product-ci.yml"
+PROVENANCE_APP_ID="15368"
 SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd -P)"
 
 die() { echo "[deploy-immutable] $*" >&2; exit 1; }
@@ -74,6 +75,7 @@ const requireMatch = process.argv[4] === "1";
 const digest = crypto.createHash("sha256").update(fs.readFileSync(artifact)).digest("hex");
 if (!/^[a-f0-9]{40}$/i.test(manifest.appSha || "") ||
     !/^[a-f0-9]{40}$/i.test(manifest.builderSha || "") ||
+    manifest.releaseGateVersion !== 1 ||
     digest !== manifest.artifactSha256 || path.basename(artifact) !== manifest.artifactName ||
     path.basename(artifact) !== `brain-release-${manifest.appSha.slice(0, 12).toLowerCase()}.tar.gz` ||
     path.basename(process.argv[3]) !== `${manifest.artifactName}.manifest.json` ||
@@ -94,6 +96,15 @@ verify_provenance() {
   done
 }
 
+verify_protected_main() {
+  local expected_sha="$1"
+  node "$SCRIPT_DIR/verify-protected-main.mjs" \
+    --repository "$PROVENANCE_REPO" \
+    --hostname "$PROVENANCE_HOST" \
+    --expected-sha "$expected_sha" \
+    --app-id "$PROVENANCE_APP_ID"
+}
+
 verify_bootstrap_tools() {
   local manifest="$1"
   node - "$manifest" "$SCRIPT_DIR" <<'NODE'
@@ -103,7 +114,7 @@ const path = require("node:path");
 const manifest = require(process.argv[2]);
 const scripts = process.argv[3];
 const expected = new Map(manifest.files.map((entry) => [entry.path, entry]));
-for (const name of ["activate-release.sh", "switch-release.sh", "backup-offsite.sh", "install-durable-backup-tools.sh", "verified-volatile-backup-staging.sh", "cleanup-volatile-backup-staging.mjs", "recall-first-apply-preflight.mjs", "restore-from-backup.sh", "check-release-migration-compatibility.mjs", "scrub-notebooklm-backup.mjs", "verify-release-runtime.mjs", "wait-for-release-health.mjs", "dist/notebooklm-retention-prod.mjs"]) {
+for (const name of ["activate-release.sh", "switch-release.sh", "backup-offsite.sh", "install-durable-backup-tools.sh", "verified-volatile-backup-staging.sh", "cleanup-volatile-backup-staging.mjs", "recall-first-apply-preflight.mjs", "restore-from-backup.sh", "check-release-migration-compatibility.mjs", "scrub-notebooklm-backup.mjs", "verify-protected-main.mjs", "verify-release-runtime.mjs", "wait-for-release-health.mjs", "dist/notebooklm-retention-prod.mjs"]) {
   const releasePath = `scripts/${name}`;
   const entry = expected.get(releasePath);
   const localPath = path.resolve(scripts, name);
@@ -541,6 +552,8 @@ verify_local_artifact "$CANDIDATE_ARTIFACT" "$CANDIDATE_MANIFEST" 1 || die "cand
 verify_provenance "$CANDIDATE_ARTIFACT" "$CANDIDATE_MANIFEST" "$CANDIDATE_BUILDER_SHA" \
   || die "candidate GitHub main/workflow/source provenance verification failed"
 verify_bootstrap_tools "$CANDIDATE_MANIFEST" || die "local bootstrap tools do not match the attested candidate artifact"
+verify_protected_main "$CANDIDATE_BUILDER_SHA" \
+  || die "candidate is not the current head of policy-compliant protected main"
 AUDITED_MIGRATION_HASHES="$(node - "$CANDIDATE_MANIFEST" <<'NODE'
 const manifest = require(process.argv[2]);
 const byName = new Map((manifest.migrations?.files ?? []).map((entry) => [entry.name, entry.sha256]));
@@ -821,6 +834,8 @@ read -r PREVIOUS_SHA PREVIOUS_TIMER_ENABLED PREVIOUS_TIMER_ACTIVE PREVIOUS_NOTEB
   || die "current timer-state proof is malformed"
 remote_processing_flags_match || die "Processing feature flags changed before candidate activation"
 remote_notebooklm_flags_match || die "NotebookLM feature flags changed before candidate activation"
+verify_protected_main "$CANDIDATE_BUILDER_SHA" \
+  || die "candidate or protected-main policy changed before candidate activation"
 
 log "Activate immutable candidate"
 remote_activate "$CANDIDATE_ARTIFACT" "$CANDIDATE_MANIFEST" 0 0 \
