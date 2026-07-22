@@ -36,6 +36,11 @@ export function getDb(): Database.Database {
   const db = new Database(DB_PATH);
   db.pragma("journal_mode = WAL");
   db.pragma("foreign_keys = ON");
+  // NotebookLM export snapshots are deliberately short-lived. FULL secure
+  // deletion makes SQLite overwrite deleted/updated cell content rather than
+  // leaving prior plaintext in freelist pages. Retention cleanup separately
+  // truncates WAL frames after a purge.
+  db.pragma("secure_delete = ON");
   db.pragma("synchronous = NORMAL");
   db.pragma(`busy_timeout = ${DB_BUSY_TIMEOUT_MS}`);
 
@@ -48,6 +53,7 @@ export function getDb(): Database.Database {
   if (DB_PATH !== ":memory:") {
     const journalMode = db.pragma("journal_mode", { simple: true }) as string;
     const syncMode = db.pragma("synchronous", { simple: true }) as number;
+    const secureDelete = db.pragma("secure_delete", { simple: true }) as number;
     if (journalMode.toLowerCase() !== "wal") {
       throw new Error(
         `[db] journal_mode did not take effect (got "${journalMode}", expected "wal")`,
@@ -57,6 +63,11 @@ export function getDb(): Database.Database {
       // synchronous: 0 OFF, 1 NORMAL, 2 FULL, 3 EXTRA
       throw new Error(
         `[db] synchronous did not take effect (got ${syncMode}, expected 1 NORMAL)`,
+      );
+    }
+    if (secureDelete !== 1) {
+      throw new Error(
+        `[db] secure_delete did not take effect (got ${secureDelete}, expected 1 FULL)`,
       );
     }
   }
@@ -73,6 +84,26 @@ export function getDb(): Database.Database {
 
   instance = db;
   return db;
+}
+
+/**
+ * Flush and truncate WAL frames after short-lived sensitive fields are
+ * overwritten. The caller must run this outside a transaction. A busy
+ * checkpoint is an operational failure: silently leaving old WAL frames would
+ * make the retention promise unverifiable.
+ */
+export function checkpointSensitiveDeletion(
+  db: Database.Database = getDb(),
+): void {
+  const rows = db.pragma("wal_checkpoint(TRUNCATE)") as Array<{
+    busy: number;
+    log: number;
+    checkpointed: number;
+  }>;
+  const result = rows[0];
+  if (!result || result.busy !== 0 || result.log !== 0) {
+    throw new Error("sensitive_wal_checkpoint_incomplete");
+  }
 }
 
 /**

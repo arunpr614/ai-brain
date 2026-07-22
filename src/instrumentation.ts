@@ -30,6 +30,9 @@ export async function register(): Promise<void> {
   const { startEnrichmentWorker } = await import("@/lib/queue/enrichment-worker");
   const { startTranscriptRecoveryWorker } = await import("@/lib/queue/transcript-worker");
   const { startNoteIndexWorker } = await import("@/lib/queue/note-index-worker");
+  const { startNotebookLmRetentionWorker } = await import(
+    "@/db/notebooklm-export"
+  );
   const { startEnrichmentBatchCron } = await import(
     "@/lib/queue/enrichment-batch-cron"
   );
@@ -38,6 +41,11 @@ export async function register(): Promise<void> {
 
   // Touching getDb() warms the connection + runs migrations.
   getDb();
+
+  // Retention is the first post-migration worker. Backup preparation has a
+  // bounded watchdog, but it must never consume even part of the five-minute
+  // physical-purge margin before the startup sweep is armed.
+  startNotebookLmRetentionWorker();
 
   // Processing enrollment previews/runs are persisted jobs. Resume any
   // interrupted work after migrations have completed; the scheduler is

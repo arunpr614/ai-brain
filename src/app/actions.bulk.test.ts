@@ -2,10 +2,12 @@ import "./actions.bulk.test.setup";
 
 import { test } from "node:test";
 import assert from "node:assert/strict";
+import crypto from "node:crypto";
 import { rmSync } from "node:fs";
 import { TEST_DB_DIR } from "./actions.bulk.test.setup";
 import {
   bulkAttachCollectionAction,
+  bulkDeleteItemsAction,
   bulkTagItemsAction,
 } from "./actions";
 import {
@@ -13,8 +15,19 @@ import {
   createCollection,
   listItemsInCollection,
 } from "@/db/collections";
-import { insertCaptured } from "@/db/items";
+import { getDb } from "@/db/client";
+import { getItemsByIds, insertCaptured } from "@/db/items";
 import { listTagsForItem } from "@/db/tags";
+import {
+  bindNotebookLmTarget,
+  createNotebookLmExportRequest,
+  getNotebookLmExportRequest,
+} from "@/db/notebooklm-export";
+import { getNotebookLmRuntimeControl } from "@/db/notebooklm-export-control";
+import {
+  NOTEBOOKLM_SAFE_TARGET_LABEL,
+} from "@/lib/notebooklm/contracts";
+import type { NotebookLmConnectorRow } from "@/lib/notebooklm/connector-auth";
 
 test.after(() => {
   try {
@@ -125,4 +138,69 @@ test("bulkAttachCollectionAction rejects empty, missing item, and missing collec
     ok: false,
     error: "Collection not found",
   });
+});
+
+test("bulkDeleteItemsAction commits snapshot deletion before one physical purge checkpoint", async () => {
+  const { first, second } = createBulkItems();
+  const now = Date.now();
+  const db = getDb();
+  db.prepare(
+    `INSERT INTO notebooklm_connectors
+     (id,token_hash,token_hint,label,extension_origin,protocol_version,state,created_at,updated_at)
+     VALUES(?,?,?,?,?,1,'registered',?,?)`,
+  ).run(
+    "bulk-delete-connector",
+    "a".repeat(64),
+    "aaaaaaaa",
+    "Synthetic bulk-delete connector",
+    `chrome-extension://${"a".repeat(32)}`,
+    now,
+    now,
+  );
+  const connector = db
+    .prepare("SELECT * FROM notebooklm_connectors WHERE id = ?")
+    .get("bulk-delete-connector") as NotebookLmConnectorRow;
+  bindNotebookLmTarget({
+    connector,
+    safeLabel: NOTEBOOKLM_SAFE_TARGET_LABEL,
+    localBindingFingerprint: "b".repeat(64),
+    subjectFingerprint: "c".repeat(64),
+    sharingPosture: "private",
+    sourceCount: 1,
+    sourceLimit: 50,
+    reserveCount: 5,
+    observedBindingVersion: 0,
+    now,
+  });
+
+  const requests = [first, second].map((item, index) => {
+    const mappedText = `# ${item.title}\n\n${item.body}`;
+    return createNotebookLmExportRequest({
+      itemId: item.id,
+      idempotencyKey: `bulk_delete_snapshot_${index}`,
+      mappedTitle: item.title,
+      mappedText,
+      contentHash: crypto.createHash("sha256").update(mappedText).digest("hex"),
+      payloadBytes: Buffer.byteLength(mappedText),
+      payloadWords: mappedText.split(/\s+/u).length,
+      limitedCapture: false,
+      now: now + index + 1,
+    }).request;
+  });
+
+  const result = await bulkDeleteItemsAction([first.id, second.id]);
+
+  assert.deepEqual(result, { ok: true, count: 2 });
+  assert.deepEqual(getItemsByIds([first.id, second.id]), []);
+  for (const request of requests) {
+    const deleted = getNotebookLmExportRequest(request.id)!;
+    assert.equal(deleted.state, "cancelled");
+    assert.equal(deleted.phase, "terminal");
+    assert.equal(deleted.payload_title, null);
+    assert.equal(deleted.payload_text, null);
+  }
+  const runtime = getNotebookLmRuntimeControl();
+  assert.equal(runtime.retention_physical_purge_pending, 0);
+  assert.equal(runtime.retention_last_failure_at, null);
+  assert.equal(runtime.retention_last_error_code, null);
 });

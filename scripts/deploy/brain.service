@@ -12,6 +12,7 @@ EnvironmentFile=/etc/brain/.env
 EnvironmentFile=-/etc/brain/release.env
 Environment=HOSTNAME=127.0.0.1
 Environment=PORT=3000
+Environment=BRAIN_BACKUP_STAGING_DIR=/run/brain-backup-staging
 ExecStart=/usr/bin/node /opt/brain/current/server.js
 Restart=always
 RestartSec=5
@@ -23,7 +24,10 @@ NoNewPrivileges=true
 PrivateTmp=true
 ProtectSystem=strict
 ProtectHome=true
-ReadWritePaths=/opt/brain/data
+RuntimeDirectory=brain-backup-staging
+RuntimeDirectoryMode=0700
+RuntimeDirectoryPreserve=yes
+ReadWritePaths=/opt/brain/data /run/brain-backup-staging
 UMask=0007
 
 [Install]

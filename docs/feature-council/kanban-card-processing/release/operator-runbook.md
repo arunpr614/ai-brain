@@ -8,11 +8,11 @@
 
 - Candidate artifact directory downloaded from the successful protected-main `Product CI` run.
 - For the first immutable cutover, a known-good artifact directory produced by `workflow_dispatch` from the approved pre-feature main ancestor.
-- Authenticated GitHub CLI access capable of reading private artifact attestations.
+- Authenticated GitHub CLI access capable of reading artifact attestations and the repository Administration metadata used to verify branch protection and rulesets.
 - SSH access through the configured `brain` host.
 - Exact candidate/known-good application SHAs, builder SHAs, and installed release IDs recorded in the private release record. A same-build candidate uses `<app-sha>`; a known-good runtime overlaid with current release tooling uses `<app-sha>-<builder-sha>` so failed evidence is never overwritten or ambiguously reused.
 
-The deployment refuses PR artifacts, self-consistent but unattested archives, self-hosted provenance, the wrong repository/workflow/ref/source SHA, multiple archives in one directory, renamed files, non-Linux Node ABI 127 artifacts, or bootstrap tools whose bytes differ from the attested manifest.
+The deployment refuses PR artifacts, self-consistent but unattested archives, self-hosted provenance, the wrong repository/workflow/ref/source SHA, a candidate that is not the current `main` head, a missing or weakened required branch-protection policy, an incompatible candidate release-gate generation, multiple archives in one directory, renamed files, non-Linux Node ABI 127 artifacts, or bootstrap tools whose bytes differ from the attested manifest. The protected-main gate changes an already byte-verified runtime verifier and increments the candidate manifest gate generation, so a pre-gate deployment driver rejects the artifact before any remote action rather than silently ignoring the new policy check. The verifier still accepts pre-gate installed manifests when proving or restoring an existing rollback release.
 
 ## 2. Production configuration gate
 
@@ -23,10 +23,16 @@ Before candidate activation, `/etc/brain/.env` must contain:
 - `BRAIN_PUBLIC_ORIGIN=https://brain.arunp.in`;
 - a valid `BRAIN_OWNER_TIMEZONE` IANA name;
 - a dedicated `BRAIN_PROCESSING_HMAC_SECRET` containing exactly 64 hexadecimal characters and differing from `BRAIN_API_TOKEN`;
-- `PROCESSING_READ_ENABLED=0`;
-- `PROCESSING_WRITE_ENABLED=0`;
-- `PROCESSING_NAV_ENABLED=0`;
+- Processing flags that match the explicit deployment policy: leave the existing valid dependency-ordered state unchanged with `BRAIN_PROCESSING_FLAG_POLICY=preserve`, or set `PROCESSING_READ_ENABLED=0`, `PROCESSING_WRITE_ENABLED=0`, and `PROCESSING_NAV_ENABLED=0` only when intentionally selecting `BRAIN_PROCESSING_FLAG_POLICY=dark`;
 - optional `BRAIN_PROCESSING_WRITE_RATE_LIMIT=60` (accepted range 1–600).
+
+The NotebookLM rollout preserves the currently enabled production Processing state. Invoke its dark deployment with `BRAIN_PROCESSING_FLAG_POLICY=preserve`; do not disable Processing as a side effect of deploying NotebookLM.
+
+When the candidate contains migration 026, the first NotebookLM deployment must also start dark:
+
+- `BRAIN_NOTEBOOKLM_EXPORT_UI_ENABLED=0`;
+- `BRAIN_NOTEBOOKLM_EXPORT_QUEUE_ENABLED=0`;
+- `BRAIN_NOTEBOOKLM_EXPORT_PROVIDER_WRITE_ENABLED=0`.
 
 Edit the root-owned EnvironmentFile through the normal private operator path. Do not print it. The deploy preflight validates configuration without emitting secret values.
 
@@ -52,16 +58,16 @@ For later deployments after the immutable current link already exists, the known
 
 The command performs, in order:
 
-1. local checksum, filename, ABI, attestation, source/ref/workflow, and bootstrap-tool verification;
+1. local checksum, filename, ABI, attestation, source/ref/workflow, current protected-main head/policy/ruleset, and bootstrap-tool verification;
 2. remote architecture, runtime, environment, canonical database path, device/inode, stable HMAC, origin, timezone, and dark-flag checks;
 3. free-space check;
-4. a SQLite online backup of the exact bound database, checksum, quick/FK check, and isolated restore proof;
-5. known-good installation/health proof for the first immutable cutover;
-6. private transfer through a random owner-only directory and staging of the exact builder tool set without advancing the global tool pointer;
-7. bounded regular-file-only archive validation and extraction as the unprivileged `brain` user;
+4. private transfer through a random owner-only directory, staging of the exact candidate builder tool set without advancing the global tool pointer, durable backup-tool installation/verification, and a second flag-state check;
+5. a SQLite online backup of the exact bound database, checksum, quick/FK check, and isolated restore proof;
+6. known-good installation/health proof for the first immutable cutover;
+7. bounded regular-file-only candidate archive validation and extraction as the unprivileged `brain` user;
 8. exact runtime file, migration, native dependency, Node ABI, and applied migration compatibility verification;
-9. immutable installation, full system-state snapshot, atomic current-link switch, unit reload, service restart, timer state, and bounded authenticated health with permanent auth failures rejected immediately;
-10. migration 025 application, exact applied hash recording, durable-root writability and startup-backup proof, absence of runtime-local data, deep readiness/config audit, timer verification, external health, Telegram 401 boundary check, and only then atomic promotion of the verified builder tool set.
+9. a second current protected-main head/policy/ruleset check immediately before cutover, followed by immutable installation, full system-state snapshot, atomic current-link switch, unit reload, service restart, timer state, and bounded authenticated health with permanent auth failures rejected immediately;
+10. migration 025 and, when present, migration 026 application; exact applied hash recording; durable-root writability and startup-backup proof; absence of runtime-local data; deep readiness/config audit; Processing plus NotebookLM operations/retention timer verification; immutable retention-oneshot execution proof; external health; Telegram 401 boundary check; and only then atomic promotion of the verified builder tool set.
 
 Any failure after cutover automatically restores the previous symlink, release environment, service/audit unit files, timer enable/active state, and application service; rollback is authenticated-health verified before the deploy returns failure. Failed candidate directories remain immutable evidence and can be retried only through the verified switch path.
 
@@ -76,7 +82,9 @@ Do not enable reads unless all are true:
 - quick check is `ok` and foreign-key check is empty;
 - missing initialization and projection/history mismatch counts are zero;
 - the six-hour audit timer is enabled and active;
-- Processing flags are still all zero.
+- Processing flags match the requested preserve/dark policy;
+- NotebookLM flags are still `0:0:0` for its first dark deployment;
+- `brain-notebooklm-operations.timer` and `brain-notebooklm-retention.timer` are enabled and active, the read-only operations gate is ready, and the retention oneshot completed successfully from the exact immutable release.
 
 Save only content-free command results in the private release evidence record.
 

@@ -87,6 +87,41 @@ describe("proxy — public paths", () => {
     assert.notEqual(res.status, 401);
   });
 
+  it("only the exact NotebookLM pairing exchange API is public", () => {
+    for (const method of ["POST", "OPTIONS"]) {
+      const res = proxy(mkReq("/api/notebooklm/connectors/exchange", { method }));
+      assert.notEqual(res.status, 401, method);
+    }
+    for (const path of [
+      "/api/notebooklm/connectors/exchange/extra",
+      "/api/notebooklm/connectors",
+      "/api/notebooklm/connectors/exchange-evil",
+    ]) {
+      assert.equal(proxy(mkReq(path, { method: "POST" })).status, 401, path);
+    }
+  });
+
+  it("dedicated connector routes bypass session/global-bearer auth only at the scoped prefix", () => {
+    for (const path of [
+      "/api/notebooklm/connector/bind",
+      "/api/notebooklm/connector/claim",
+      `/api/notebooklm/connector/requests/${"a".repeat(24)}/events`,
+    ]) {
+      const res = proxy(mkReq(path, { method: "POST" }));
+      assert.notEqual(res.status, 401, path);
+    }
+    for (const path of [
+      "/api/notebooklm/connector",
+      "/api/notebooklm/connector/unknown",
+      "/api/notebooklm/connector/requests/not-a-request/events",
+      `/api/notebooklm/connector/requests/${"a".repeat(24)}/events/extra`,
+      "/api/notebooklm/connector-evil/claim",
+      "/api/notebooklm/connectors/claim",
+    ]) {
+      assert.equal(proxy(mkReq(path, { method: "POST" })).status, 401, path);
+    }
+  });
+
   it("/offline.html passes without auth (T-14 / F-020)", () => {
     const res = proxy(mkReq("/offline.html"));
     assert.notEqual(res.status, 401);
@@ -237,6 +272,15 @@ describe("proxy — unauthenticated fallthrough", () => {
     assert.equal(res.status, 401);
     if (ORIGINAL_TOKEN === undefined) delete process.env.BRAIN_API_TOKEN;
     else process.env.BRAIN_API_TOKEN = ORIGINAL_TOKEN;
+  });
+
+  it("NotebookLM browser settings and item export remain session-protected", () => {
+    for (const path of [
+      "/api/settings/notebooklm-export",
+      `/api/items/${"a".repeat(24)}/notebooklm-export`,
+    ]) {
+      assert.equal(proxy(mkReq(path, { method: "POST" })).status, 401, path);
+    }
   });
 
   it("HTML path without cookie redirects to /unlock with next=", () => {

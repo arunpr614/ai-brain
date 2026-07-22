@@ -16,15 +16,26 @@ import {
 import { tmpdir } from "node:os";
 import { dirname, join, relative, resolve } from "node:path";
 import { execFileSync } from "node:child_process";
+import JSZip from "jszip";
 import * as tar from "tar";
+
+const RELEASE_GATE_VERSION = 1;
 
 const SCRIPT_ALLOWLIST = [
   "scripts/check-ai-providers.mjs",
+  "scripts/backup-offsite.sh",
+  "scripts/install-durable-backup-tools.sh",
+  "scripts/verified-volatile-backup-staging.sh",
+  "scripts/cleanup-volatile-backup-staging.mjs",
+  "scripts/check-notebooklm-operations.mjs",
+  "scripts/scrub-notebooklm-backup.mjs",
   "scripts/backfill-embeddings-prod.mjs",
   "scripts/backfill-youtube-transcripts-prod.mjs",
   "scripts/restore-from-backup.sh",
   "scripts/activate-release.sh",
   "scripts/switch-release.sh",
+  "scripts/check-release-migration-compatibility.mjs",
+  "scripts/verify-protected-main.mjs",
   "scripts/verify-release-runtime.mjs",
   "scripts/wait-for-release-health.mjs",
   "scripts/recall-first-apply-preflight.mjs",
@@ -32,27 +43,57 @@ const SCRIPT_ALLOWLIST = [
   "scripts/recall-scheduled-apply.sh",
   "scripts/lib/recall-controlled-samples.mjs",
   "scripts/deploy/brain.service",
+  "scripts/deploy/brain-backup-staging.tmpfiles.conf",
+  "scripts/deploy/brain-backup-staging-cleanup.service",
+  "scripts/deploy/brain-backup-staging-cleanup.timer",
+  "scripts/deploy/brain-recall-backup-staging.drop-in.conf",
   "scripts/deploy/brain-recall-sync.service",
   "scripts/deploy/brain-recall-sync.timer",
   "scripts/deploy/brain-recall-manual-sync.service",
   "scripts/deploy/brain-recall-manual-sync.path",
   "scripts/deploy/brain-recall-manual-sync.timer",
   "scripts/deploy/brain-recall-manual-sync.tmpfiles.conf",
+  "scripts/deploy/brain-notebooklm-operations.service",
+  "scripts/deploy/brain-notebooklm-operations.timer",
+  "scripts/deploy/brain-notebooklm-retention.service",
+  "scripts/deploy/brain-notebooklm-retention.timer",
   "scripts/deploy/brain-processing-audit.service",
   "scripts/deploy/brain-processing-audit.timer",
   "scripts/dist/audit-vector-index-prod.mjs",
   "scripts/dist/repair-vector-index-prod.mjs",
   "scripts/dist/processing-readiness-prod.mjs",
+  "scripts/dist/notebooklm-retention-prod.mjs",
 ];
 const TOOL_OVERLAYS = new Set([
   "scripts/activate-release.sh",
   "scripts/switch-release.sh",
+  "scripts/backup-offsite.sh",
+  "scripts/install-durable-backup-tools.sh",
+  "scripts/verified-volatile-backup-staging.sh",
+  "scripts/cleanup-volatile-backup-staging.mjs",
+  "scripts/recall-first-apply-preflight.mjs",
+  "scripts/restore-from-backup.sh",
+  "scripts/check-release-migration-compatibility.mjs",
+  "scripts/verify-protected-main.mjs",
+  "scripts/check-notebooklm-operations.mjs",
+  "scripts/scrub-notebooklm-backup.mjs",
   "scripts/verify-release-runtime.mjs",
   "scripts/wait-for-release-health.mjs",
   "scripts/deploy/brain.service",
+  "scripts/deploy/brain-backup-staging.tmpfiles.conf",
+  "scripts/deploy/brain-backup-staging-cleanup.service",
+  "scripts/deploy/brain-backup-staging-cleanup.timer",
+  "scripts/deploy/brain-recall-backup-staging.drop-in.conf",
+  "scripts/deploy/brain-recall-sync.service",
+  "scripts/deploy/brain-recall-manual-sync.service",
+  "scripts/deploy/brain-notebooklm-operations.service",
+  "scripts/deploy/brain-notebooklm-operations.timer",
+  "scripts/deploy/brain-notebooklm-retention.service",
+  "scripts/deploy/brain-notebooklm-retention.timer",
   "scripts/deploy/brain-processing-audit.service",
   "scripts/deploy/brain-processing-audit.timer",
   "scripts/dist/processing-readiness-prod.mjs",
+  "scripts/dist/notebooklm-retention-prod.mjs",
 ]);
 
 function fail(message) {
@@ -68,17 +109,19 @@ function parseArgs(argv) {
     sha: null,
     builderSha: null,
     createdAt: null,
+    extensionDist: null,
   };
   for (let index = 0; index < argv.length; index += 1) {
     const value = argv[index];
     const next = argv[index + 1];
-    if (["--root", "--tools-root", "--output", "--sha", "--builder-sha", "--created-at"].includes(value) && !next) fail(`missing value for ${value}`);
+    if (["--root", "--tools-root", "--output", "--sha", "--builder-sha", "--created-at", "--extension-dist"].includes(value) && !next) fail(`missing value for ${value}`);
     if (value === "--root") { options.root = resolve(next); index += 1; }
     else if (value === "--tools-root") { options.toolsRoot = resolve(next); index += 1; }
     else if (value === "--output") { options.output = resolve(next); index += 1; }
     else if (value === "--sha") { options.sha = next; index += 1; }
     else if (value === "--builder-sha") { options.builderSha = next; index += 1; }
     else if (value === "--created-at") { options.createdAt = next; index += 1; }
+    else if (value === "--extension-dist") { options.extensionDist = resolve(next); index += 1; }
     else fail(`unknown argument: ${value}`);
   }
   options.output ??= resolve(options.root, "release-artifacts");
@@ -149,6 +192,71 @@ function migrationManifest(directory) {
   };
 }
 
+async function packageExtension(options, shortSha) {
+  if (!options.extensionDist) return null;
+  if (!existsSync(options.extensionDist) || !statSync(options.extensionDist).isDirectory()) {
+    fail(`extension dist directory missing: ${options.extensionDist}`);
+  }
+  const paths = walk(options.extensionDist);
+  if (paths.length === 0 || !paths.includes("manifest.json")) {
+    fail("extension dist must contain manifest.json and at least one regular file");
+  }
+  let extensionManifest;
+  try {
+    extensionManifest = JSON.parse(readFileSync(resolve(options.extensionDist, "manifest.json"), "utf8"));
+  } catch {
+    fail("extension dist manifest.json is invalid JSON");
+  }
+  if (extensionManifest?.manifest_version !== 3) fail("extension release must be Manifest V3");
+
+  const files = fileManifest(options.extensionDist, paths);
+  const fileListSha256 = crypto.createHash("sha256").update(JSON.stringify(files)).digest("hex");
+  const zip = new JSZip();
+  // JSZip encodes UTC date fields. Pin the minimum portable DOS timestamp so
+  // the extension archive remains byte-stable across runner timezones.
+  const fixedDate = new Date(Date.UTC(1980, 0, 1, 0, 0, 0, 0));
+  for (const path of paths) {
+    zip.file(path, readFileSync(resolve(options.extensionDist, path)), {
+      createFolders: false,
+      date: fixedDate,
+      unixPermissions: 0o100644,
+    });
+  }
+  const bytes = await zip.generateAsync({
+    type: "nodebuffer",
+    compression: "DEFLATE",
+    compressionOptions: { level: 9 },
+    platform: "UNIX",
+    streamFiles: true,
+  });
+  const artifactName = `brain-extension-${shortSha}.zip`;
+  const artifact = resolve(options.output, artifactName);
+  writeFileSync(artifact, bytes, { mode: 0o600 });
+  const artifactSha256 = sha256File(artifact);
+  const manifest = {
+    schemaVersion: 1,
+    appSha: options.sha,
+    builderSha: options.builderSha,
+    createdAt: options.createdAt.toISOString(),
+    artifactName,
+    artifactSha256,
+    fileListSha256,
+    files,
+  };
+  const manifestPath = resolve(options.output, `${artifactName}.manifest.json`);
+  const checksumPath = resolve(options.output, `${artifactName}.sha256`);
+  writeFileSync(manifestPath, `${JSON.stringify(manifest, null, 2)}\n`, { mode: 0o600 });
+  writeFileSync(checksumPath, `${artifactSha256}  ${artifactName}\n`, { mode: 0o600 });
+  return {
+    artifact,
+    manifest: manifestPath,
+    checksum: checksumPath,
+    artifactSha256,
+    size: statSync(artifact).size,
+    fileCount: files.length,
+  };
+}
+
 const options = parseArgs(process.argv.slice(2));
 const stagingParent = mkdtempSync(join(tmpdir(), "brain-release-artifact-"));
 const staging = resolve(stagingParent, "runtime");
@@ -186,6 +294,7 @@ try {
   const migrations = runtimeMigrations;
   const innerManifest = {
     schemaVersion: 1,
+    releaseGateVersion: RELEASE_GATE_VERSION,
     appSha: options.sha,
     builderSha: options.builderSha,
     createdAt: options.createdAt.toISOString(),
@@ -214,8 +323,9 @@ try {
   const checksumPath = resolve(options.output, `${artifactName}.sha256`);
   writeFileSync(manifestPath, `${JSON.stringify(externalManifest, null, 2)}\n`, { mode: 0o600 });
   writeFileSync(checksumPath, `${artifactSha256}  ${artifactName}\n`, { mode: 0o600 });
+  const extension = await packageExtension(options, shortSha);
   const size = statSync(artifact).size;
-  console.log(JSON.stringify({ ok: true, artifact, manifest: manifestPath, checksum: checksumPath, artifactSha256, size, fileCount: files.length }));
+  console.log(JSON.stringify({ ok: true, artifact, manifest: manifestPath, checksum: checksumPath, artifactSha256, size, fileCount: files.length, extension }));
 } finally {
   rmSync(stagingParent, { recursive: true, force: true });
 }

@@ -2,9 +2,9 @@
 
 Purpose: Document the public-safe backup model, recovery boundaries, and known coverage gap.
 Audience: AI agents, maintainers, and operators.
-Verified against: `8c1341100b174fe4ca518e6a745c30b9078df21c`.
-Runtime evidence through: Dated database backup and restore evidence exists; current operator state must be checked privately.
-Last reviewed: 2026-07-11.
+Verified against: Deployed baseline `8c1341100b174fe4ca518e6a745c30b9078df21c` plus the current NotebookLM backup/restore hardening candidate; replace this candidate reference with the final release SHA after merge.
+Runtime evidence through: Historical dated database backup/restore evidence plus the 2026-07-22 candidate release-smoke restore execution proof; current production operator state must still be checked privately.
+Last reviewed: 2026-07-22.
 Owner: AI Brain maintainer.
 
 **Status:** Implemented database backup; operator-oriented restore · **Confidence:** High
@@ -26,6 +26,10 @@ The operator journey is select authorized backup context → validate configurat
 ## Architecture, data, security, and configuration
 
 SQLite-aware snapshot logic in `src/lib/backup.ts` creates consistent database copies; scripts schedule encrypted off-site transfer and operator-controlled restore. Backups contain sensitive library/chat/note/settings data and require private destinations/keys/retention. They do not include filesystem capture artifacts. Restore is a production write with service/database/migration compatibility constraints and no public executable recipe.
+
+NotebookLM adds a second privacy and duplicate-safety boundary. Every supported backup path creates raw SQLite bytes only in an identity-specific owner-only `tmpfs` stage, clears frozen export title/body and leases, normalizes interrupted export work back to claimable recovery, securely vacuums, and publishes only the sanitized copy. The application worker and the independent mutating `brain-notebooklm-retention.timer` enforce cleanup; the similarly named `brain-notebooklm-operations.timer` is read-only and never purges.
+
+The hardened restore stops application writers, both NotebookLM timers, and any running retention oneshot before publication. It rejects snapshots predating migration 026 because they cannot carry the required durable duplicate-safety latch. A schema-026 restore is published with provider writes blocked as `restore_reconciliation_required`; ordinary restart, deployment, protocol recovery, and generic settings reset cannot clear it. Before any future clear, the owner must reconcile the exact bound owner-only private NotebookLM target against all sources/markers that may postdate the backup and preserve redacted evidence of backup time/hash, target-binding fingerprint, inspection time, and dispositions. No approved unblock command exists in this release; a separately reviewed feature-aware command is required. Direct SQLite edits are not an approved recovery interface. After restarting `brain`, explicitly enable/start and verify both NotebookLM timers, then execute the retention oneshot and require `Result=success`; these retention/audit steps do not clear the provider-write latch.
 
 ## Tests, runtime evidence, operations, and impact
 

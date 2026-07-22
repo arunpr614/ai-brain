@@ -1,5 +1,7 @@
 # Restore from B2 — disaster recovery runbook
 
+> **Safety update (2026-07-22):** the historical direct-copy production restore below is retired. Do not overwrite `/opt/brain/data/brain.sqlite` or start the service from a decrypted backup. Use the current private, attested `restore-from-backup.sh` workflow so application writers and both NotebookLM timers are stopped, frozen export content is scrubbed, migration compatibility is checked, and the post-restore provider-write latch is installed. Pre-migration-026 snapshots fail closed. A schema-026 restore remains blocked as `restore_reconciliation_required`; this release has no approved unblock command, so provider writes stay off until a separately reviewed exact-target reconciliation path exists.
+
 | Field | Value |
 |---|---|
 | **Runbook version** | 1.0 |
@@ -258,12 +260,13 @@ Same `2>file > out` rule as Runbook 1. Never `2>&1` for binary stdout.
 **Option A — restore to a new Hetzner box (full service recovery):**
 
 1. Provision a new Hetzner VM (CCX13 or similar, Ubuntu 24.04).
-2. Re-run the cutover provisioning (see `docs/plans/v0.6.0-cloud-migration.md` and `docs/plans/spikes/v0.6.0-cloud-migration/S-7-MIGRATION-RUNBOOK.md`). Skip the data migration step.
-3. `scp /tmp/restore.sqlite root@<new-hetzner>:/opt/brain/data/brain.sqlite`.
-4. `chown brain:brain /opt/brain/data/brain.sqlite`.
-5. `systemctl start brain`.
-6. Update Cloudflare DNS / tunnel config to point `brain.arunp.in` at the new tunnel UUID.
-7. Reinstall rclone + redo escrow + re-deploy `scripts/backup-offsite.sh` + `scripts/deploy/brain-backup.cron` (Hetzner state is gone; the GPG public key needs to be on the new box).
+2. Install an attested current immutable release and its durable backup/restore tools. Do not use the historical mutable cutover scripts.
+3. Transfer the decrypted candidate through the private operator channel without placing it at the live database path.
+4. Run the attested hardened restore workflow. It must stop writers, verify schema/integrity, scrub/vacuum in owner-only volatile staging, and atomically publish the candidate. A pre-026 candidate is rejected.
+5. Confirm the restored schema-026 database is durably blocked with `restore_reconciliation_required` before starting normal service recovery. Do not clear it with SQL or the generic settings reset.
+6. Restart `brain`, then follow the restore script's printed commands to enable/start and verify both the mutating retention and read-only operations timers. Execute the retention oneshot and require `Result=success`; confirm provider writes are still latched.
+7. Update Cloudflare DNS/tunnel configuration only after authenticated health and data-path checks pass.
+8. Reinstall and verify the current encrypted off-site backup schedule and durable volatile-stage janitors.
 
 **Option B — read-only access on Mac (data triage only):**
 

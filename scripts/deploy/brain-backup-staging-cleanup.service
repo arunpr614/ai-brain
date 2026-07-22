@@ -1,0 +1,20 @@
+[Unit]
+Description=Remove crashed AI Brain volatile backup stages
+After=local-fs.target
+
+[Service]
+Type=oneshot
+User=root
+Group=root
+ExecStart=:/bin/bash -c '/usr/bin/node /opt/brain/scripts/cleanup-volatile-backup-staging.mjs --root /run/brain-root-backup-staging & root_pid=$!; /usr/sbin/runuser -u brain -g brain-data -- /usr/bin/node /opt/brain/scripts/cleanup-volatile-backup-staging.mjs --root /run/brain-backup-staging & brain_pid=$!; /usr/sbin/runuser -u brain-recall -g brain-data -- /usr/bin/node /opt/brain/scripts/cleanup-volatile-backup-staging.mjs --root /run/brain-recall-backup-staging & recall_pid=$!; wait "$root_pid"; root_status=$?; wait "$brain_pid"; brain_status=$?; wait "$recall_pid"; recall_status=$?; test "$root_status" -eq 0 -a "$brain_status" -eq 0 -a "$recall_status" -eq 0'
+TimeoutStartSec=30s
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=brain-backup-staging-cleanup
+
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/run/brain-root-backup-staging /run/brain-backup-staging /run/brain-recall-backup-staging
+UMask=0077

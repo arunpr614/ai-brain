@@ -5,6 +5,8 @@ import crypto from "node:crypto";
 import { existsSync, lstatSync, readFileSync, readdirSync } from "node:fs";
 import { join, relative, resolve } from "node:path";
 
+const RELEASE_GATE_VERSION = 1;
+
 function fail(message) {
   console.error(JSON.stringify({ ok: false, error: message }));
   process.exit(1);
@@ -50,6 +52,10 @@ const migrationManifest = () => {
 try {
   const manifest = JSON.parse(readFileSync(manifestPath, "utf8"));
   assert.equal(manifest.schemaVersion, 1);
+  assert.ok(
+    manifest.releaseGateVersion === undefined || manifest.releaseGateVersion === RELEASE_GATE_VERSION,
+    "unsupported release gate version",
+  );
   assert.match(manifest.appSha, /^[a-f0-9]{40}$/i);
   assert.match(manifest.builderSha, /^[a-f0-9]{40}$/i);
   assert.match(manifest.artifactSha256, /^[a-f0-9]{64}$/);
@@ -68,7 +74,7 @@ try {
   assert.deepEqual(actualFiles, manifest.files, "release file checksum mismatch");
   assert.equal(crypto.createHash("sha256").update(JSON.stringify(actualFiles)).digest("hex"), manifest.fileListSha256);
   const inner = JSON.parse(readFileSync(resolve(runtime, "release-manifest.json"), "utf8"));
-  for (const key of ["appSha", "builderSha", "createdAt", "fileListSha256", "lockfileSha256", "nodeMajor", "nodeAbi"]) {
+  for (const key of ["releaseGateVersion", "appSha", "builderSha", "createdAt", "fileListSha256", "lockfileSha256", "nodeMajor", "nodeAbi"]) {
     assert.deepEqual(inner[key], manifest[key], `inner/external manifest mismatch: ${key}`);
   }
   assert.deepEqual(inner.nativeDependencies, manifest.nativeDependencies);
