@@ -100,6 +100,8 @@
       .summary { margin-top: 14px; padding: 12px; border: 1px solid var(--border); border-radius: 6px; }
       .help { margin-top: 14px; color: var(--muted); font-size: 12px; line-height: 1.6; }
       .help strong { color: var(--text); }
+      .pairing-link { margin: 0 0 8px; color: var(--muted); font-size: 12px; }
+      .pairing-link a { color: var(--text); text-underline-offset: 2px; }
       .compact { max-width: 140px; }
     </style>
   </head>
@@ -140,6 +142,9 @@
       </div>
 
       <label for="pairing-code">2. One-time connector pairing code</label>
+      <p class="pairing-link">
+        Get a code: <a href="https://brain.arunp.in/settings/notebooklm-export" target="_blank" rel="noopener noreferrer">https://brain.arunp.in/settings/notebooklm-export</a>
+      </p>
       <input id="pairing-code" type="text" inputmode="text" maxlength="9" placeholder="ABCD-EFGH" autocomplete="off" spellcheck="false" />
       <div class="row">
         <button id="pair-connector">Pair connector</button>
