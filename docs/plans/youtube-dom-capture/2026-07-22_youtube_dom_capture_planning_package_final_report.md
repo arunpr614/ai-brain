@@ -79,8 +79,9 @@ Dependency installation reported pre-existing audit debt: the root package repor
 - Repository: `arunpr614/ai-brain`
 - Base commit: `c8c3c215d1a5125c95ce0750895c956cca84da3f`
 - Branch: `codex/youtube-dom-capture-prd-v2`
-- Pull request: pending publication
-- Protected checks: pending publication
+- Initial package commit: `c000d7c`
+- Pull request: [#41 - docs(plans): finalize YouTube DOM capture product plan](https://github.com/arunpr614/ai-brain/pull/41)
+- Protected checks: see PR for the latest result; all local gates listed above passed before publication
 - Production/runtime changes: none
 
 ## Residual Risks And Next Decision

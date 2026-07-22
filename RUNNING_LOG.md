@@ -30227,3 +30227,102 @@ No application code, extension manifest, database, runtime, or production servic
 - **Working tree:** Seven new research files plus this append-only running-log entry; no application changes.
 - **Production:** Unchanged.
 - **Next milestone:** Protected PR, CI, review, and merge of the documentation-only publication.
+
+---
+
+## 2026-07-22 13:04 IST - Explicit-click YouTube DOM capture V2 package and UX prototype published
+
+**Entry author:** AI agent (Codex) - **Triggered by:** User requested a detailed PRD and implementation plan, product-manager and technical-architect agents, V1 review and adversarial review, resolved V2 finals, an isolated worktree, an HTML UX prototype, and GitHub publication with a report.
+
+### Planned since last entry
+
+The prior YouTube transcript and Chrome companion research selected an explicit-click, visible-DOM architecture but left implementation planning, product behavior, migration/concurrency controls, a visual workflow, and protected GitHub delivery open. This milestone had to preserve the research guardrails: no browser credential export, no production enablement, no inferred ASR identity, no partial transcript success, and a separate future decision for live or production use.
+
+### Done
+
+- Created isolated worktree `ai-brain-worktrees/youtube-dom-capture-prd-v2` on branch `codex/youtube-dom-capture-prd-v2` from `origin/main` commit `c8c3c215d1a5125c95ce0750895c956cca84da3f`.
+- Used product-manager specialist Gibbs for discovery and PRD V1 review, and technical-architect specialist Halley for repository/architecture review and implementation-plan V1 review.
+- Created PRD V1 and implementation-plan V1, then ran the `adversarial-review` skill independently on both core artifacts and saved timestamped reports.
+- Consolidated every actionable specialist and adversarial finding into a resolution matrix. No actionable P0 or P1 remains an open planning question.
+- Created final PRD V2 and implementation-plan V2. The final decision is fixture/local go after implementation gates, separate approved lab conditional go, and production browser-visible transcript no-go.
+- Corrected the main V1 risks: no pre-inspect DOM access or detection claim; ordered overlap traversal that preserves repeated cues; exact identity pinning and scroll restoration; mandatory bearer/origin/version checks; true metadata-only `Save link`; immutable request receipts; one-active-source database invariant; content-revision fences for all asynchronous writers; worker-disabled separate lab data; active processing holds; AI-off notes; content-free diagnostics; forward-release server disable rollback; and target-specific platform approval before live inspection.
+- Created a throwaway click-through HTML prototype with Ready, Panel closed, No captions, Incomplete, and Video changed scenarios, plus link-only and committed receipt outcomes.
+- Captured desktop ready/review screenshots at `1440 x 1024` and mobile evidence at `390 x 844`; added a QA ledger with interaction outcomes, responsive measurements, hashes, and limitations.
+- Published the package in commit `c000d7c` and opened GitHub PR [#41](https://github.com/arunpr614/ai-brain/pull/41).
+
+### Cross-lane notes
+
+- The source AI Brain worktree and unrelated dirty work were not reset, cleaned, or included.
+- All changes are documentation, review evidence, static images, and an inert HTML prototype under `docs/plans/youtube-dom-capture/`, plus this append-only entry.
+- No application route, extension manifest, database, service, YouTube account, Brain data, or production runtime was changed.
+
+### Learned
+
+- A DOM-visible transcript can honestly prove visible text/order/completeness evidence but cannot independently classify a track as manual or ASR; V0.1 must store `caption_source_class=unknown`.
+- The current shared capture/auth helpers are not strict enough for this route: missing origin and optional client-version behavior require route-local fail-closed checks.
+- A true link-only promise needs a dedicated route and a durable recovery-exclusion marker because current URL capture and database triggers can enqueue transcript work.
+- Existing transcript recovery, URL upgrades, enrichment, and embedding need a shared item content revision to prevent stale computation from overwriting newer confirmed content.
+- The in-app browser client failed to initialize in this environment with `Cannot redefine property: process`; direct Chrome DevTools Protocol control with a temporary profile successfully exercised the inert prototype instead.
+
+### Verification
+
+- TypeScript and ESLint passed.
+- Full product suite passed: 895/895 tests across 95 suites, zero failed/skipped/todo.
+- Production application build passed with the pre-existing `unpdf import.meta` warning.
+- Existing extension production build passed with Vite 6.4.2.
+- Environment ignore, agent-documentation privacy/structure/coverage, relative-link, secret-pattern, workstation-path, staged whitespace, and prototype responsive checks passed.
+- All 15 package Markdown files have resolving repository-relative links.
+- Root dependency install reported six existing advisories (one moderate, four high, one critical); extension install reported one high advisory. No forced dependency change was made for this documentation-only work.
+
+### Deployed / Released
+
+Nothing deployed or production-enabled. Branch `codex/youtube-dom-capture-prd-v2`, initial commit `c000d7c`, and PR #41 were published to `arunpr614/ai-brain`.
+
+### Documents created or updated this period
+
+**Created:**
+- `docs/plans/youtube-dom-capture/README.md` - package index and decision summary.
+- `docs/plans/youtube-dom-capture/2026-07-22_ai_brain_youtube_dom_capture_prd_v1.md` - reviewed product draft.
+- `docs/plans/youtube-dom-capture/2026-07-22_ai_brain_youtube_dom_capture_implementation_plan_v1.md` - reviewed technical draft.
+- `docs/plans/youtube-dom-capture/2026-07-22_ai_brain_youtube_dom_capture_prd_v2_final.md` - final product source of truth.
+- `docs/plans/youtube-dom-capture/2026-07-22_ai_brain_youtube_dom_capture_implementation_plan_v2_final.md` - final implementation source of truth.
+- `docs/plans/youtube-dom-capture/2026-07-22_youtube_dom_capture_review_resolution_matrix.md` - finding disposition ledger.
+- `docs/plans/youtube-dom-capture/2026-07-22_youtube_dom_capture_planning_package_final_report.md` - delivery and validation report.
+- `docs/plans/youtube-dom-capture/prototype/` - inert HTML prototype, three screenshots, QA ledger, and usage README.
+- Product-manager, technical-architect, and two timestamped adversarial-review Markdown artifacts in the package folder.
+
+**Updated:**
+- `RUNNING_LOG.md` - this append-only milestone and handoff entry.
+
+### Current remaining to-do
+
+1. Let PR #41 complete protected checks, review it, and merge through the normal protected flow.
+2. If implementation is commissioned, follow the PR sequence in implementation plan V2. Begin with governance/baseline evidence and the true link-only route; do not combine all phases into one release.
+3. Before any live inspect, record the target-specific YouTube/platform determination and build the separate worker-disabled lab, private manifest, processing hold, retention delete-by, and cleanup proof.
+4. Keep production browser capture blocked until a fresh platform/legal/privacy/security decision, scoped rotatable extension credential, rollout evidence, and reviewed code change explicitly authorize it.
+
+### Open questions / decisions needed
+
+1. Product owner and platform/privacy reviewers must decide whether a specific live lab canary is authorized after implementation gates exist.
+2. A future production decision must choose a scoped rotatable extension credential and distribution/disclosure model; the shared lab bearer is not production approval.
+
+### Session self-critique
+
+- The prototype is simulated and does not prove selectors against a current signed-in YouTube page, extension service-worker behavior, endpoint security, persistence, or concurrency.
+- Chrome interaction and responsive behavior were exercised, but physical screen-reader speech, switch hardware, and cross-browser extension behavior remain implementation-stage acceptance work.
+- The package is intentionally conservative and broadens the implementation blast radius beyond a small popup because the current recovery and asynchronous writers need correctness fencing. Estimates should be revisited after migration preflight and pure extractor fixtures exist.
+
+### Action items for the next agent
+
+1. Read `docs/plans/youtube-dom-capture/README.md`, then the V2 PRD, V2 implementation plan, resolution matrix, and final report in that order.
+2. Check PR #41 and protected CI before modifying or merging the branch.
+3. Preserve the final no-go boundaries. Do not infer caption class, inspect before consent, upload partial traversal, use production data for live canaries, or enable downstream processing from retention consent.
+4. Treat the HTML prototype as interaction guidance only, not implementation code.
+
+### State snapshot
+
+- **Current phase / version:** Final V2 planning package published; implementation not started.
+- **Active branch:** `codex/youtube-dom-capture-prd-v2`.
+- **Working tree:** Final report link and this append-only log entry pending the publication follow-up commit at entry time.
+- **Deployed/runtime state:** Production unchanged; no local server or temporary Chrome session remains running.
+- **Next milestone:** Protected PR #41 checks/review/merge, followed only by separately commissioned Phase 0/1 implementation.
