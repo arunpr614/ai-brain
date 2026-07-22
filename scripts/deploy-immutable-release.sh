@@ -552,7 +552,11 @@ NODE
 read -r AUDITED_SCHEMA_025_SHA256 AUDITED_SCHEMA_026_SHA256 <<< "$AUDITED_MIGRATION_HASHES"
 
 log "Remote preflight, canonical database identity, and feature-flag policies"
-REMOTE_DB_INFO="$(ssh "$SSH_HOST" "sudo env EXPECTED_PUBLIC_ORIGIN='$BASE_URL' EXPECTED_PROCESSING_FLAG_POLICY='$PROCESSING_FLAG_POLICY' EXPECTED_NOTEBOOKLM_FLAG_POLICY='$NOTEBOOKLM_FLAG_POLICY' EXPECTED_NOTEBOOKLM_REMEDIATION_POLICY='$NOTEBOOKLM_REMEDIATION_POLICY' bash -s" <<'REMOTE_DB'
+# Keep this here-document outside command substitution. The macOS Bash 3.2
+# parser can otherwise expand remote-only variables locally when a quoted
+# here-document containing another here-document is embedded directly in $().
+remote_database_preflight() {
+  ssh "$SSH_HOST" "sudo env EXPECTED_PUBLIC_ORIGIN='$BASE_URL' EXPECTED_PROCESSING_FLAG_POLICY='$PROCESSING_FLAG_POLICY' EXPECTED_NOTEBOOKLM_FLAG_POLICY='$NOTEBOOKLM_FLAG_POLICY' EXPECTED_NOTEBOOKLM_REMEDIATION_POLICY='$NOTEBOOKLM_REMEDIATION_POLICY' bash -s" <<'REMOTE_DB'
 set -euo pipefail
 for command in node sqlite3 readlink stat sha256sum dirname runuser; do command -v "$command" >/dev/null; done
 [[ "$(uname -m)" == "x86_64" ]]
@@ -650,7 +654,9 @@ else
 fi
 printf '%s %s %s %s %s %s\n' "$canonical" "$path_hash" "$device_inode" "$processing_snapshot" "$notebooklm_snapshot" "$provider_write_blocked"
 REMOTE_DB
-)" || die "remote runtime, environment, database identity, feature-flag, or remediation-policy preflight failed"
+}
+REMOTE_DB_INFO="$(remote_database_preflight)" \
+  || die "remote runtime, environment, database identity, feature-flag, or remediation-policy preflight failed"
 read -r TARGET_DB_PATH TARGET_DB_PATH_SHA256 TARGET_DB_DEVICE_INODE TARGET_PROCESSING_FLAG_SNAPSHOT TARGET_NOTEBOOKLM_FLAG_SNAPSHOT TARGET_PROVIDER_WRITE_BLOCKED <<< "$REMOTE_DB_INFO"
 [[ "$TARGET_DB_PATH" =~ ^/[A-Za-z0-9._/-]+$ && "$TARGET_DB_PATH_SHA256" =~ ^[a-f0-9]{64}$ && "$TARGET_DB_DEVICE_INODE" =~ ^[0-9]+:[0-9]+$ && "$TARGET_PROCESSING_FLAG_SNAPSHOT" =~ ^[01]:[01]:[01]$ ]] \
   || die "remote database identity proof is malformed"
