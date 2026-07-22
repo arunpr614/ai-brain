@@ -2,9 +2,9 @@
 
 Purpose: Define authoritative revisions, verification scope, status, availability, and confidence vocabulary.
 Audience: AI agents, reviewers, and documentation/release maintainers.
-Verified against: deployed application `8c1341100b174fe4ca518e6a745c30b9078df21c` plus retained historical baselines below.
-Runtime evidence through: 2026-07-12 for the Card Processing release; older rows retain their dated scope.
-Last reviewed: 2026-07-22 for the NotebookLM one-click export candidate; other baselines retain their prior evidence dates.
+Verified against: deployed application `167a15d57b8f70574a017ea4cda507870f3600d4` plus retained historical baselines below.
+Runtime evidence through: 2026-07-22 for the NotebookLM UI-only production stage; older rows retain their dated scope.
+Last reviewed: 2026-07-22 for the NotebookLM one-click export release; other baselines retain their prior evidence dates.
 Owner: AI Brain maintainer.
 
 ## Recorded baselines
@@ -14,11 +14,11 @@ Owner: AI Brain maintainer.
 | Card Processing production release | `ea7b159515fc37f76ffdb83dedf2d33d17f9a193` | Protected-main implementation and release-hardening SHA deployed with schema 025 and staged read/write/navigation enablement |
 | Recall manual-sync review candidate | `fdd740617685c1ce730a6150c306152a04070f86` on `feat/recall-manual-sync` | Implemented and locally verified; not merged, deployed, or enabled |
 | Repository main at candidate start | `1cb5d36f37611e60442b4f2c4433b45455273500` | Clean base for the Recall candidate; includes the definitive Wiki closeout |
-| Living Wiki documentation baseline | `23868faf13c8e3d0821715e6f5d0e3d2af1e1a34` | Application baseline used by unchanged core pages and the structure gate |
-| Latest verified deployed application code | `ea7b159515fc37f76ffdb83dedf2d33d17f9a193` | Dated Card Processing release tree; staged API/domain, authenticated browser, cleanup, readiness, integrity, and rollback evidence passed |
+| Last merged living-Wiki documentation baseline before this release record | `23868faf13c8e3d0821715e6f5d0e3d2af1e1a34` | Retained until the current documentation set merges and its canonical Wiki publication is independently verified |
+| Latest verified deployed application code | `167a15d57b8f70574a017ea4cda507870f3600d4` | Protected-main tree deployed with migration 026; NotebookLM schema, health, retention/operations timers, and authenticated UI-only state passed while queue/provider writes remained off |
 | Existing wiki before this revision | `3d578c3f66e61de3f124a855253e713758f6a49b` | Eight-commit wiki baseline audited before editing |
 | Feature Council artifact source | `9de8de87de915e874e8290aa556e2b6772d6fabf` | Dated planning/research corpus, not product runtime |
-| NotebookLM one-click export candidate | `4fd2bd637c76d39b835416067027bdb719f71171`, rebased onto `ea801efa024914d601b495f968153aa5680e2e1e` | Experimental default-off implementation candidate; final protected-main release SHA, production deployment evidence, and signed-in private synthetic canary remain required before publication claims |
+| NotebookLM one-click export release | `167a15d57b8f70574a017ea4cda507870f3600d4` | Experimental, production-deployed UI-only (`1:0:0`); extension artifact attested and installed but not loaded/paired; signed-in private synthetic canary and owner-only real-content enablement remain pending |
 | NotebookLM synchronization research audit | `ad78d77495dcaa90f62aab038fe63ae95cf36862` | Current-code audit baseline for the 2026-07-21 deferred research decision; no implementation or runtime claim |
 
 The former default-branch/worktree divergence is resolved in current main. Both historical `017` migrations now coexist with distinct full filenames; the runner tracks/applies full filenames lexicographically. Duplicate numeric prefixes remain technical debt, not an unmerged branch conflict.

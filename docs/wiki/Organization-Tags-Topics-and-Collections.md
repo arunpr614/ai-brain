@@ -2,7 +2,7 @@
 
 Purpose: Explain AI Brain's organization model and its terminology boundaries.
 Audience: AI agents and contributors changing taxonomy or navigation.
-Verified against: `8c1341100b174fe4ca518e6a745c30b9078df21c`.
+Verified against: `167a15d57b8f70574a017ea4cda507870f3600d4`.
 Runtime evidence through: 2026-07-10; organization behavior was not independently re-tested for this revision.
 Last reviewed: 2026-07-11.
 Owner: AI Brain maintainer.

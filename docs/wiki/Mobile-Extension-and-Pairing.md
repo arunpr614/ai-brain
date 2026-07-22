@@ -2,7 +2,7 @@
 
 Purpose: Document the Capacitor Android client, native share flow, reachability, pairing and offline boundary.
 Audience: AI agents changing Android or pairing behavior.
-Verified against: `8c1341100b174fe4ca518e6a745c30b9078df21c`.
+Verified against: `167a15d57b8f70574a017ea4cda507870f3600d4`.
 Runtime evidence through: 2026-07-10 for deployed web/client boundaries; physical-device scope remains feature-specific.
 Last reviewed: 2026-07-11.
 Owner: AI Brain maintainer.
