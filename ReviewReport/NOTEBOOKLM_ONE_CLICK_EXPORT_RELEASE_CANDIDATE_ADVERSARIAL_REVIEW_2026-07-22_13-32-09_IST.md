@@ -2,14 +2,20 @@
 
 **Created:** 2026-07-22 13:32:09 IST
 **Reviewer stance:** Brutally honest adversarial review
-**Reviewed target:** `codex/notebooklm-one-click-export` implementation commit `4fd2bd637c76d39b835416067027bdb719f71171`, rebased onto `origin/main` `ea801efa024914d601b495f968153aa5680e2e1e`; the final protected-main release SHA remains pending
+**Reviewed target:** implementation commit `4fd2bd637c76d39b835416067027bdb719f71171`, merged to protected `main` as `ca1886a2c24fdd8117d922efd399460b9f12d833`; the required deployment-portability follow-up and replacement protected-main artifact remain pending
 **Report path:** `/Users/arun.prakash/Documents/ArunVault2026-2/Initiatives/Arun_AI_Projects/Arun_AI_Open_Brain/Phase21/Phase21-NotebookLM-sync/ReviewReport/NOTEBOOKLM_ONE_CLICK_EXPORT_RELEASE_CANDIDATE_ADVERSARIAL_REVIEW_2026-07-22_13-32-09_IST.md`
 
 ## Executive Verdict
 
-**Conditional GO for push, review, merge, and an immutable Stage 0 production deployment with all NotebookLM flags off. NO-GO for provider writes or real AI Memory content.**
+**Current verdict: NO-GO for deployment of the superseded `ca1886a` artifact pending the portability-fix merge and a new protected-main attested artifact. Independently, provider writes and real AI Memory content remain NO-GO pending policy approval and a private synthetic canary.**
 
-The static implementation, extension, backup/restore controls, retention worker, release packaging, and publication-candidate documentation have no remaining known P0/P1/P2 code or architecture defect. That does not establish that the undocumented consumer NotebookLM protocol works in the owner's current signed-in Chrome session, that the selected notebook remains private, that Google permits the intended use, or that the production deployment is healthy. Provider writes must stay off until an owner-only private synthetic canary proves the exact account, target, privacy posture, one-create behavior, readiness transition, and lost-response reconciliation without a second create.
+The feature implementation, extension, backup/restore controls, retention worker, release packaging, and publication-candidate documentation have no remaining known P0/P1/P2 code or architecture defect. The first protected-main deployment invocation later exposed a separate release-script integration defect documented below; it stopped before mutation. Passing the static scope does not establish that the undocumented consumer NotebookLM protocol works in the owner's current signed-in Chrome session, that the selected notebook remains private, that Google permits the intended use, or that the production deployment is healthy. Provider writes must stay off until an owner-only private synthetic canary proves the exact account, target, privacy posture, one-create behavior, readiness transition, and lost-response reconciliation without a second create.
+
+## Post-Merge Deployment Preflight Update
+
+Protected-main merge `ca1886a2c24fdd8117d922efd399460b9f12d833` and Product CI run `29906746343` passed and produced fully verified server and extension artifacts. The first Stage 0 invocation stopped during the read-only remote preflight, before artifact staging, backup, migration, service restart, or any production mutation. macOS Bash 3.2 locally expanded a remote-only variable because the remote here-document was embedded directly inside command substitution and itself contained a nested here-document. Production was re-proved unchanged on immutable release `8c1341100b174fe4ca518e6a745c30b9078df21c`, with NotebookLM flags `0:0:0`, migration 026 absent, and `brain` active.
+
+The release is again **NO-GO for deployment** until the preflight is defined outside command substitution, the macOS invocation succeeds, the release-artifact regression gate passes, a follow-up PR merges, and a new protected-main artifact is attested. The `ca1886a` artifact remains valid evidence of the feature implementation but is superseded for deployment by that required follow-up release.
 
 ## Evidence Inspected
 

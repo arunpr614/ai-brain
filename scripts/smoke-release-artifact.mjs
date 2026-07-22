@@ -282,6 +282,17 @@ try {
     "NotebookLM rollout must remain dark unless an operator explicitly selects preserve",
   );
   assert.match(deployScript, /remote_notebooklm_flags_match\(\)/);
+  assert.match(
+    deployScript,
+    /remote_database_preflight\(\) \{[\s\S]*ssh "\$SSH_HOST"[\s\S]*<<'REMOTE_DB'[\s\S]*\nREMOTE_DB\n\}/,
+    "the remote preflight heredoc must be defined outside command substitution for macOS Bash 3.2",
+  );
+  assert.match(deployScript, /REMOTE_DB_INFO="\$\(remote_database_preflight\)"/);
+  assert.doesNotMatch(
+    deployScript,
+    /REMOTE_DB_INFO="\$\(ssh[\s\S]*<<'REMOTE_DB'/,
+    "the remote preflight heredoc must not be parsed directly inside command substitution",
+  );
   assert.match(deployScript, /0:0:0\|1:0:0\|1:1:0\|1:1:1/);
   assert.match(deployScript, /TARGET_NOTEBOOKLM_FLAG_SNAPSHOT/);
   assert.match(
