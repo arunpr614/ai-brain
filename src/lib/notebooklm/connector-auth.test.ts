@@ -105,6 +105,53 @@ test("creating a new enrollment code invalidates the previous active code", () =
   );
 });
 
+test("a fresh exchange retires an unbound connector whose first response was lost", () => {
+  const now = 1_700_000_250_000;
+  const firstCode = createConnectorPairingCode({ now });
+  const first = exchangeConnectorPairingCode({
+    code: firstCode.code,
+    origin: ORIGIN_A,
+    protocolVersion: 1,
+    now: now + 1,
+  });
+  assert.equal(first.ok, true);
+  if (!first.ok) return;
+
+  // Model the browser losing the success response: it creates a fresh code
+  // instead of retrying the consumed code or clearing unrelated local state.
+  const recoveryCode = createConnectorPairingCode({ now: now + 2 });
+  const recovery = exchangeConnectorPairingCode({
+    code: recoveryCode.code,
+    origin: ORIGIN_A,
+    protocolVersion: 1,
+    now: now + 3,
+  });
+  assert.equal(recovery.ok, true);
+  if (!recovery.ok) return;
+
+  const firstRow = getDb()
+    .prepare("SELECT state, revoked_at FROM notebooklm_connectors WHERE id = ?")
+    .get(first.connectorId) as { state: string; revoked_at: number | null };
+  const recoveryRow = getDb()
+    .prepare("SELECT state, revoked_at FROM notebooklm_connectors WHERE id = ?")
+    .get(recovery.connectorId) as { state: string; revoked_at: number | null };
+  assert.deepEqual(firstRow, { state: "revoked", revoked_at: now + 3 });
+  assert.deepEqual(recoveryRow, { state: "registered", revoked_at: null });
+  assert.equal(
+    (getDb().prepare("SELECT COUNT(*) count FROM notebooklm_connectors WHERE state != 'revoked'").get() as { count: number }).count,
+    1,
+  );
+  assert.deepEqual(
+    authenticateNotebookLmConnector({
+      authorization: `Bearer ${first.connectorToken}`,
+      origin: ORIGIN_A,
+      protocolVersion: "1",
+      now: now + 4,
+    }),
+    { ok: false, reason: "revoked" },
+  );
+});
+
 test("expired and repeatedly replayed codes fail closed", () => {
   const now = 1_700_000_300_000;
   const expired = createConnectorPairingCode({ now });

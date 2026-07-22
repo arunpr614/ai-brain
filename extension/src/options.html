@@ -73,6 +73,7 @@
         font-family: ui-monospace, "SF Mono", Menlo, monospace;
         font-size: 13px;
       }
+      input:disabled { color: var(--muted); opacity: 0.72; }
       .row { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
       button, a.button {
         display: inline-block;
@@ -93,6 +94,7 @@
       }
       button.danger { color: var(--danger); border-color: color-mix(in srgb, var(--danger) 40%, var(--border)); }
       button:disabled { opacity: 0.45; cursor: not-allowed; }
+      [hidden] { display: none !important; }
       .status { margin-top: 12px; padding: 10px 12px; border-radius: 6px; font-size: 13px; }
       .status--success { background: color-mix(in srgb, var(--success) 12%, transparent); color: var(--success); }
       .status--error { background: color-mix(in srgb, var(--danger) 12%, transparent); color: var(--danger); }
@@ -100,8 +102,9 @@
       .summary { margin-top: 14px; padding: 12px; border: 1px solid var(--border); border-radius: 6px; }
       .help { margin-top: 14px; color: var(--muted); font-size: 12px; line-height: 1.6; }
       .help strong { color: var(--text); }
-      .pairing-link { margin: 0 0 8px; color: var(--muted); font-size: 12px; }
-      .pairing-link a { color: var(--text); text-underline-offset: 2px; }
+      .pairing-link { margin: 0 0 8px; color: var(--muted); font-size: 12px; line-height: 1.6; }
+      .pairing-link a { color: var(--text); overflow-wrap: anywhere; text-underline-offset: 2px; }
+      .pairing-warning { color: var(--attention); font-weight: 600; }
       .compact { max-width: 140px; }
     </style>
   </head>
@@ -138,20 +141,25 @@
       <label>1. Sign in and grant site access</label>
       <div class="row">
         <a class="button secondary" href="https://notebooklm.google/" target="_blank" rel="noreferrer">Open NotebookLM sign-in</a>
-        <button id="grant-notebooklm" class="secondary">Grant NotebookLM access</button>
+        <button id="grant-notebooklm" class="secondary" disabled>Checking NotebookLM access…</button>
       </div>
+      <div id="notebooklm-access-status" class="status" aria-live="polite" hidden></div>
 
       <label for="pairing-code">2. One-time connector pairing code</label>
-      <p class="pairing-link">
-        Get a code: <a href="https://brain.arunp.in/settings/notebooklm-export" target="_blank" rel="noopener noreferrer">https://brain.arunp.in/settings/notebooklm-export</a>
+      <p id="pairing-code-help" class="pairing-link">
+        Create a fresh one-time code in Brain:<br />
+        <a href="https://brain.arunp.in/settings/notebooklm-export" target="_blank" rel="noopener noreferrer">https://brain.arunp.in/settings/notebooklm-export</a><br />
+        Codes expire after 5 minutes and can be used once. <span class="pairing-warning">Do not share or screenshot this code.</span>
       </p>
-      <input id="pairing-code" type="text" inputmode="text" maxlength="9" placeholder="ABCD-EFGH" autocomplete="off" spellcheck="false" />
+      <input id="pairing-code" type="password" inputmode="text" maxlength="9" placeholder="ABCD-EFGH" aria-describedby="pairing-code-help" autocomplete="off" spellcheck="false" disabled />
       <div class="row">
-        <button id="pair-connector">Pair connector</button>
+        <button id="toggle-pairing-code" class="secondary" type="button" aria-controls="pairing-code" aria-pressed="false" disabled>Show code</button>
+        <button id="pair-connector" disabled>Checking Brain pairing…</button>
       </div>
+      <div id="pairing-status" class="status" aria-live="polite" hidden></div>
 
       <label for="target-url">3. Private target notebook URL</label>
-      <input id="target-url" type="url" placeholder="https://notebooklm.google.com/notebook/…" autocomplete="off" spellcheck="false" />
+      <input id="target-url" type="url" placeholder="https://notebooklm.google.com/notebook/…" autocomplete="off" spellcheck="false" disabled />
       <p class="help">A numeric <code>?authuser=N</code> selector is preserved locally for secondary signed-in Google accounts. Account emails are not accepted or sent to Brain.</p>
 
       <label>V1 capacity policy</label>
@@ -159,11 +167,11 @@
       <p class="help">V1 uses the lowest documented consumer limit even on paid plans. Setup is blocked unless the notebook is owner-only, private, and below the safe threshold.</p>
 
       <div class="row">
-        <button id="bind-target">Check and bind notebook</button>
-        <button id="run-connector" class="secondary">Check for approved exports now</button>
-        <button id="forget-connector" class="secondary danger">Emergency: clear local connector data</button>
+        <button id="bind-target" disabled>Check and bind notebook</button>
+        <button id="run-connector" class="secondary" disabled>Check for approved exports now</button>
+        <button id="forget-connector" class="secondary danger" hidden>Emergency: clear local connector data</button>
       </div>
-      <div id="connector-status" class="status" hidden></div>
+      <div id="target-status" class="status" aria-live="polite" hidden></div>
 
       <div class="help">
         <strong>Privacy boundary:</strong> the extension requests access only to <code>notebooklm.google.com</code> after you approve it. It does not request cookie, debugger, page-scripting, traffic-inspection, or all-sites permissions. It never stores Google session material or sends notebook/source IDs to Brain.

@@ -1,4 +1,5 @@
 export const CONNECTOR_PROTOCOL_VERSION = 1 as const;
+export const BRAIN_PERMISSION = "https://brain.arunp.in/*" as const;
 export const NOTEBOOKLM_PERMISSION = "https://notebooklm.google.com/*" as const;
 export const NOTEBOOKLM_PUBLIC_LOGIN_URL = "https://notebooklm.google/" as const;
 export const DEFAULT_SOURCE_LIMIT = 50;

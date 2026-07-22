@@ -14,9 +14,16 @@ const PROTOCOL_HEADER = "x-notebooklm-connector-protocol";
 const REQUEST_ID_PATTERN = /^[a-f0-9]{24}$/;
 const SOURCE_ALIAS_PATTERN = /^[a-f0-9]{64}$/;
 const MAX_PROVIDER_TITLE_CHARS = 180;
+const DEFAULT_TIMEOUT_MS = 15_000;
 
 export type BrainFailureKind =
+  | "invalid_format"
+  | "invalid_code"
+  | "expired_code"
+  | "used_code"
+  | "invalid_origin"
   | "network"
+  | "timeout"
   | "unauthorized"
   | "rate_limited"
   | "server"
@@ -53,19 +60,21 @@ export class BrainConnectorClient {
   constructor(
     private readonly fetchImpl: typeof fetch = fetch,
     private readonly baseUrl = BRAIN_BASE_URL,
+    private readonly timeoutMs = DEFAULT_TIMEOUT_MS,
   ) {}
 
   async exchangePairingCode(code: string, label = "Brain Chrome connector"): Promise<ConnectorCredential> {
     const normalized = code.toUpperCase().replace(/[\s-]/g, "");
     if (!/^[A-Z2-9]{8}$/.test(normalized)) {
-      throw new BrainConnectorError("protocol", "Pairing codes contain eight letters or digits.");
+      throw new BrainConnectorError("invalid_format", "Pairing codes contain eight letters or digits.");
     }
-    const response = await this.request("/api/notebooklm/connectors/exchange", {
+    const { response, body } = await this.request("/api/notebooklm/connectors/exchange", {
       method: "POST",
       headers: this.headers(),
       body: JSON.stringify({ code: normalized, label, protocolVersion: CONNECTOR_PROTOCOL_VERSION }),
-    });
-    const body = await readJsonObject(response);
+    }, [400, 403, 410]);
+    if (!body) throw new BrainConnectorError("protocol", "Brain returned an empty pairing response.");
+    if (!response.ok) throw pairingExchangeError(response.status, body.error);
     const connectorId = body.connectorId;
     const token = body.connectorToken;
     const protocolVersion = body.protocolVersion;
@@ -88,12 +97,12 @@ export class BrainConnectorClient {
 
   async bind(credential: ConnectorCredential, input: BindInput): Promise<{ bindingVersion: number }> {
     validateBindInput(input);
-    const response = await this.request("/api/notebooklm/connector/bind", {
+    const { response, body } = await this.request("/api/notebooklm/connector/bind", {
       method: "POST",
       headers: this.headers(credential),
       body: JSON.stringify(input),
     }, [409]);
-    const body = await readJsonObject(response);
+    if (!body) throw new BrainConnectorError("protocol", "Brain returned an empty binding response.");
     if (response.status === 409) {
       const kind = bindConflictKind(body.error);
       throw new BrainConnectorError(kind, bindConflictMessage(kind), 409);
@@ -111,7 +120,7 @@ export class BrainConnectorClient {
   }
 
   async claim(credential: ConnectorCredential): Promise<NotebookLmClaim | null> {
-    const response = await this.request(
+    const { response, body } = await this.request(
       "/api/notebooklm/connector/claim",
       {
         method: "POST",
@@ -121,7 +130,7 @@ export class BrainConnectorClient {
       [204],
     );
     if (response.status === 204) return null;
-    const body = await readJsonObject(response);
+    if (!body) throw new BrainConnectorError("protocol", "Brain returned an empty claim response.");
     if (!isRecord(body.claim)) {
       throw new BrainConnectorError("protocol", "Brain returned a malformed connector claim envelope.");
     }
@@ -139,12 +148,12 @@ export class BrainConnectorClient {
     if (!validLeaseToken(claim.leaseToken) || !Number.isInteger(claim.leaseEpoch) || claim.leaseEpoch < 1) {
       throw new BrainConnectorError("protocol", "Brain supplied an invalid lease.");
     }
-    const response = await this.request(`/api/notebooklm/connector/requests/${encodeURIComponent(claim.requestId)}/events`, {
+    const { body } = await this.request(`/api/notebooklm/connector/requests/${encodeURIComponent(claim.requestId)}/events`, {
       method: "POST",
       headers: this.headers(credential),
       body: JSON.stringify({ leaseToken: claim.leaseToken, leaseEpoch: claim.leaseEpoch, event }),
     });
-    const body = await readJsonObject(response);
+    if (!body) throw new BrainConnectorError("protocol", "Brain returned an empty event response.");
     if (
       body.accepted !== true ||
       body.dispatchAuthorized !== (event.type === "dispatch_started")
@@ -162,44 +171,90 @@ export class BrainConnectorClient {
     return headers;
   }
 
-  private async request(path: string, init: RequestInit, additionalOkStatuses: number[] = []): Promise<Response> {
+  private async request(
+    path: string,
+    init: RequestInit,
+    additionalOkStatuses: number[] = [],
+  ): Promise<{ response: Response; body: Record<string, unknown> | null }> {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), this.timeoutMs);
     let response: Response;
     try {
-      response = await this.fetchImpl(`${this.baseUrl}${path}`, {
+      // Native Window.fetch requires an undefined/global receiver. Calling a
+      // stored function as this.fetchImpl(...) binds this client as its
+      // receiver and Chrome rejects it with "Illegal invocation" before a
+      // request leaves the extension.
+      const fetchImpl = this.fetchImpl;
+      response = await fetchImpl(`${this.baseUrl}${path}`, {
         ...init,
         cache: "no-store",
         credentials: "omit",
         redirect: "error",
+        signal: controller.signal,
       });
     } catch (error) {
+      clearTimeout(timeout);
+      if (controller.signal.aborted || (error instanceof DOMException && error.name === "AbortError")) {
+        throw new BrainConnectorError("timeout", "Brain did not respond before the request deadline.");
+      }
       throw new BrainConnectorError(
         "network",
         error instanceof Error ? error.message : "Brain could not be reached.",
       );
     }
-    const responseProtocol = response.headers.get(PROTOCOL_HEADER);
-    if (responseProtocol !== null && responseProtocol !== String(CONNECTOR_PROTOCOL_VERSION)) {
-      throw new BrainConnectorError("protocol", "Brain requires a different connector protocol.", response.status);
+    try {
+      const responseProtocol = response.headers.get(PROTOCOL_HEADER);
+      if (responseProtocol !== null && responseProtocol !== String(CONNECTOR_PROTOCOL_VERSION)) {
+        throw new BrainConnectorError("protocol", "Brain requires a different connector protocol.", response.status);
+      }
+      if (!(response.ok || additionalOkStatuses.includes(response.status))) {
+        if (response.status === 401 || response.status === 403) {
+          throw new BrainConnectorError("unauthorized", "The connector pairing is no longer authorized.", response.status);
+        }
+        if (response.status === 409 || response.status === 426) {
+          throw new BrainConnectorError("protocol", "The connector protocol or lease is no longer valid.", response.status);
+        }
+        if (response.status === 429) {
+          throw new BrainConnectorError("rate_limited", "Brain is temporarily rate limiting this connector.", 429);
+        }
+        if (response.status >= 500) {
+          throw new BrainConnectorError("server", "Brain returned a server error.", response.status);
+        }
+        throw new BrainConnectorError("protocol", "Brain rejected the connector request.", response.status);
+      }
+      const body = response.status === 204 ? null : await readJsonObject(response);
+      return { response, body };
+    } catch (error) {
+      if (controller.signal.aborted) {
+        throw new BrainConnectorError("timeout", "Brain did not respond before the request deadline.");
+      }
+      throw error;
+    } finally {
+      clearTimeout(timeout);
     }
-    if (response.ok || additionalOkStatuses.includes(response.status)) return response;
-    if (response.status === 401 || response.status === 403) {
-      throw new BrainConnectorError("unauthorized", "The connector pairing is no longer authorized.", response.status);
-    }
-    if (response.status === 409 || response.status === 426) {
-      throw new BrainConnectorError("protocol", "The connector protocol or lease is no longer valid.", response.status);
-    }
-    if (response.status === 429) {
-      throw new BrainConnectorError("rate_limited", "Brain is temporarily rate limiting this connector.", 429);
-    }
-    if (response.status >= 500) {
-      throw new BrainConnectorError("server", "Brain returned a server error.", response.status);
-    }
-    throw new BrainConnectorError("protocol", "Brain rejected the connector request.", response.status);
   }
 }
 
 export function brainConnectorSetupMessage(error: BrainConnectorError): string {
   switch (error.kind) {
+    case "invalid_format":
+      return "Enter the 8-character code from Brain. Hyphens are optional.";
+    case "invalid_code":
+      return "Brain did not recognize this code. Create a new code in Brain settings, then try again.";
+    case "expired_code":
+      return "This code expired. Create a new code in Brain settings, paste it here, and try again.";
+    case "used_code":
+      return "This code was already used. Create a new code in Brain settings.";
+    case "invalid_origin":
+      return "Brain could not verify this extension. Reload or update it in chrome://extensions before creating another code.";
+    case "network":
+      return "The extension did not receive confirmation from Brain, so no connector was saved in this extension. Check your internet connection and Chrome site access for brain.arunp.in, reload the Brain extension, then create a new code and try again.";
+    case "timeout":
+      return "Brain did not respond within 15 seconds, so no connector was saved in this extension. Check your connection and Chrome site access for brain.arunp.in, reload the Brain extension, then create a new code and try again.";
+    case "rate_limited":
+      return "Too many pairing attempts. Wait 60 seconds, then create a new code and try once.";
+    case "server":
+      return "Brain is temporarily unavailable. Wait a moment, create a new code, and try again.";
     case "unauthorized":
       return "This connector pairing no longer works. Pair it again from Brain.";
     case "active_work":
@@ -211,9 +266,24 @@ export function brainConnectorSetupMessage(error: BrainConnectorError): string {
     case "target_capacity":
       return "This notebook is too close to its source limit to bind safely.";
     case "protocol":
-      return "Brain and this extension use incompatible connector protocols.";
+      return "This Brain extension is out of date or incompatible. Reload or update it in chrome://extensions before creating another code.";
     default:
       return "Brain could not complete connector setup. Try again shortly.";
+  }
+}
+
+function pairingExchangeError(status: number, value: unknown): BrainConnectorError {
+  switch (value) {
+    case "invalid_code":
+      return new BrainConnectorError("invalid_code", "Brain did not recognize the pairing code.", status);
+    case "expired_code":
+      return new BrainConnectorError("expired_code", "The pairing code expired.", status);
+    case "used_code":
+      return new BrainConnectorError("used_code", "The pairing code was already used.", status);
+    case "invalid_origin":
+      return new BrainConnectorError("invalid_origin", "Brain rejected the extension origin.", status);
+    default:
+      return new BrainConnectorError("protocol", "Brain returned an unexpected pairing response.", status);
   }
 }
 
@@ -346,7 +416,10 @@ async function readJsonObject(response: Response): Promise<Record<string, unknow
   let value: unknown;
   try {
     value = await response.json();
-  } catch {
+  } catch (error) {
+    if (!(error instanceof SyntaxError)) {
+      throw new BrainConnectorError("network", "Brain response body was interrupted.", response.status);
+    }
     throw new BrainConnectorError("protocol", "Brain returned invalid JSON.", response.status);
   }
   if (!isRecord(value)) throw new BrainConnectorError("protocol", "Brain returned an invalid response.", response.status);
