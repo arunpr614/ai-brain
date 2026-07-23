@@ -59,7 +59,7 @@ This is an experimental, unofficial consumer integration over undocumented Noteb
 1. Open the extension **Options** page.
 2. Use **Open NotebookLM sign-in**, which intentionally opens `https://notebooklm.google/` as Google's public entry point. This public URL is not the authenticated RPC origin.
 3. Click **Grant NotebookLM access**. The optional permission is limited to `https://notebooklm.google.com/*`, the authenticated app/RPC host.
-4. Generate a one-time connector code in Brain and enter it under **Pair connector**. The resulting connector credential is distinct from the page-capture bearer token.
+4. Open `https://brain.arunp.in/settings/notebooklm-export`, create a fresh one-time connector code, and enter it under **Pair connector**. The code expires after five minutes, works once, and must not be shared or included in screenshots. The resulting connector credential is distinct from the page-capture bearer token.
 5. Paste a specific `https://notebooklm.google.com/notebook/<uuid>` target URL and click **Check and bind notebook**. A numeric `?authuser=N` selector is accepted for secondary signed-in accounts and remains local.
 
 Binding performs read-only notebook, source-count, ownership, and sharing checks. It accepts only an owner-only private notebook and keeps the raw notebook ID plus a sanitized, bounded local notebook label in Chrome. Brain receives a generic target label, private/capacity health, SHA-256 binding proofs, and opaque SHA-256 source aliases—not Google account, notebook, or source identifiers.
@@ -79,6 +79,8 @@ The service worker checks for approved work on a one-minute MV3 alarm. It uses t
 This is an unofficial consumer-NotebookLM connector built on undocumented Google web RPCs. Google can change the protocol without notice; a detected change requires an extension update.
 
 Disconnect or replace a connector from Brain first, after cancelling or explicitly stopping unresolved exports. The Options page's emergency local-clear control only removes browser state and permission; it cannot revoke server state and may strand active work if used prematurely.
+
+Pairing failures are intentionally not retried. An invalid, expired, or used code requires a fresh code from Brain. A network failure or timeout means the extension did not receive confirmation; reload the extension and use a fresh code, which safely retires any unbound orphan connector created by a lost response. If Chrome reports that Brain access is off, open the Brain extension's **Details**, restore site access for `brain.arunp.in`, and reload the extension. Do not use the emergency local-clear control as a pairing-recovery step.
 
 ## Use
 

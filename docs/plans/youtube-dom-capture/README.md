@@ -9,8 +9,10 @@
 2. [Implementation plan V2 final](2026-07-22_ai_brain_youtube_dom_capture_implementation_plan_v2_final.md)
 3. [Review resolution matrix](2026-07-22_youtube_dom_capture_review_resolution_matrix.md)
 4. [Interactive UX prototype](prototype/2026-07-22_ai_brain_youtube_dom_capture_ux_prototype.html)
-5. [Prototype QA record](prototype/2026-07-22_ai_brain_youtube_dom_capture_prototype_qa.md)
-6. [Final planning report](2026-07-22_youtube_dom_capture_planning_package_final_report.md)
+5. [Integrated item recovery prototype](prototype/item-initiated-recovery/2026-07-22_ai_brain_item_transcript_recovery_ux_prototype.html)
+6. [Item recovery Product Council decision](prototype/item-initiated-recovery/2026-07-22_ai_brain_item_transcript_recovery_product_council.md)
+7. [Prototype QA records](prototype/README.md)
+8. [Final planning report](2026-07-22_youtube_dom_capture_planning_package_final_report.md)
 
 ## What V2 Decides
 
@@ -23,6 +25,7 @@
 - Keep optional notes AI-off and conflict instead of overwriting different content.
 - Use a separate worker-disabled lab data root/DB for authorized live validation.
 - Keep browser-visible transcript capture blocked in production code.
+- Start transcript recovery from the exact Brain item, preserve the ordinary extension popup on other tabs, and use a per-tab side panel only after an explicit toolbar click.
 
 ## Artifact Inventory
 
@@ -55,6 +58,11 @@
 - `prototype/2026-07-22_ai_brain_youtube_dom_capture_mobile.png`
 - `prototype/2026-07-22_ai_brain_youtube_dom_capture_prototype_qa.md`
 - `prototype/README.md`
+- `prototype/item-initiated-recovery/README.md`
+- `prototype/item-initiated-recovery/2026-07-22_ai_brain_item_transcript_recovery_ux_prototype.html`
+- `prototype/item-initiated-recovery/2026-07-22_ai_brain_item_transcript_recovery_product_council.md`
+- `prototype/item-initiated-recovery/2026-07-22_ai_brain_item_transcript_recovery_prototype_qa.md`
+- `prototype/item-initiated-recovery/2026-07-22_ai_brain_item_transcript_recovery_{item,ordinary_popup,guide,review,complete,mobile}.png`
 
 ## Scope Boundary
 

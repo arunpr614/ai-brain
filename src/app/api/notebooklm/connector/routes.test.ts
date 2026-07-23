@@ -193,6 +193,29 @@ test("pairing exchange is origin-bound, one-time, CORS-safe, and does not reveal
   assert.deepEqual(await noOrigin.json(), { error: "invalid_origin" });
 });
 
+test("concurrent exchange of one code creates exactly one live connector", async () => {
+  const pairing = createConnectorPairingCode({ now: Date.now() });
+  const makeRequest = () => exchangePost(
+    req("/api/notebooklm/connectors/exchange", {
+      origin: ORIGIN,
+      body: { code: pairing.code, label: "Concurrent synthetic browser", protocolVersion: 1 },
+    }),
+  );
+  const responses = await Promise.all([makeRequest(), makeRequest()]);
+  assert.deepEqual(responses.map((response) => response.status).sort((a, b) => a - b), [201, 410]);
+  const bodies = await Promise.all(responses.map((response) => response.json()));
+  assert.equal(bodies.filter((body) => body.ok === true).length, 1);
+  assert.equal(bodies.filter((body) => body.error === "used_code").length, 1);
+  assert.equal(
+    (getDb().prepare("SELECT COUNT(*) count FROM notebooklm_connectors WHERE state != 'revoked'").get() as { count: number }).count,
+    1,
+  );
+  assert.equal(
+    (getDb().prepare("SELECT COUNT(*) count FROM notebooklm_connectors").get() as { count: number }).count,
+    1,
+  );
+});
+
 test("connector handlers reject missing credentials, origin swaps, and protocol drift", async () => {
   const { token } = pair();
   const missing = await claimPost(req("/api/notebooklm/connector/claim", { body: {} }));

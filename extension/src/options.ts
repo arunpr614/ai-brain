@@ -1,13 +1,17 @@
 import { clearToken, getToken, setToken, testConnection } from "./capture";
+import { BrainConnectorClient } from "./notebooklm/brain-client";
+import { connectorControlState } from "./notebooklm/options-state";
+import { executePairingAttempt, PairingAttemptGate } from "./notebooklm/pairing-attempt";
+import { NotebookLmProviderAdapter } from "./notebooklm/provider-adapter";
 import {
-  BrainConnectorClient,
-  BrainConnectorError,
-  brainConnectorSetupMessage,
-} from "./notebooklm/brain-client";
-import { NotebookLmProviderAdapter, NotebookLmProviderError } from "./notebooklm/provider-adapter";
+  connectorSetupErrorMessage,
+  pairingErrorMessage,
+  shouldClearPairingCode,
+} from "./notebooklm/setup-errors";
 import { ConnectorStore } from "./notebooklm/storage";
 import { parseNotebookTarget, targetFingerprint } from "./notebooklm/target";
 import {
+  BRAIN_PERMISSION,
   BRAIN_SAFE_TARGET_LABEL,
   DEFAULT_SOURCE_LIMIT,
   DEFAULT_SOURCE_RESERVE,
@@ -22,18 +26,22 @@ const clearBtn = element<HTMLButtonElement>("clear");
 const captureStatusEl = element<HTMLDivElement>("capture-status");
 
 const pairingCodeEl = element<HTMLInputElement>("pairing-code");
+const togglePairingCodeBtn = element<HTMLButtonElement>("toggle-pairing-code");
 const pairBtn = element<HTMLButtonElement>("pair-connector");
 const grantBtn = element<HTMLButtonElement>("grant-notebooklm");
 const targetUrlEl = element<HTMLInputElement>("target-url");
 const bindBtn = element<HTMLButtonElement>("bind-target");
 const runBtn = element<HTMLButtonElement>("run-connector");
 const forgetBtn = element<HTMLButtonElement>("forget-connector");
-const connectorStatusEl = element<HTMLDivElement>("connector-status");
+const notebookLmAccessStatusEl = element<HTMLDivElement>("notebooklm-access-status");
+const pairingStatusEl = element<HTMLDivElement>("pairing-status");
+const targetStatusEl = element<HTMLDivElement>("target-status");
 const connectorSummaryEl = element<HTMLDivElement>("connector-summary");
 
 const store = new ConnectorStore(chrome.storage.local);
 const brain = new BrainConnectorClient();
 const provider = new NotebookLmProviderAdapter();
+const pairingAttempt = new PairingAttemptGate();
 
 void initialize();
 
@@ -78,59 +86,129 @@ clearBtn.addEventListener("click", async () => {
 });
 
 grantBtn.addEventListener("click", async () => {
-  const granted = await chrome.permissions.request({ origins: [NOTEBOOKLM_PERMISSION] });
-  showConnectorStatus(
-    granted ? "success" : "attention",
-    granted ? "NotebookLM site access granted." : "NotebookLM site access was not granted.",
-  );
+  let permissionUpdateFailed = false;
+  await withDisabled(grantBtn, async () => {
+    try {
+      const granted = await chrome.permissions.request({ origins: [NOTEBOOKLM_PERMISSION] });
+      showNotebookLmAccessStatus(
+        granted ? "success" : "attention",
+        granted ? "NotebookLM site access granted." : "NotebookLM site access was not granted.",
+      );
+    } catch {
+      permissionUpdateFailed = true;
+    }
+  });
   await refreshConnectorSummary();
-});
-
-pairBtn.addEventListener("click", async () => {
-  const code = pairingCodeEl.value.trim();
-  if (!code) return showConnectorStatus("error", "Enter the one-time pairing code from Brain.");
-  if (await store.getCredential()) {
-    return showConnectorStatus(
-      "attention",
-      "This browser is already paired. Disconnect it in Brain first, then clear the old local data explicitly.",
+  if (permissionUpdateFailed) {
+    showNotebookLmAccessStatus(
+      "error",
+      "Chrome could not update NotebookLM site access. Reload the extension and try again.",
     );
   }
-  await withDisabled(pairBtn, async () => {
-    showConnectorStatus("success", "Pairing with Brain…");
-    try {
-      const credential = await brain.exchangePairingCode(code);
-      await store.setCredential(credential);
-      pairingCodeEl.value = "";
-      showConnectorStatus("success", "Connector paired. The one-time code has been discarded.");
-      await refreshConnectorSummary();
-    } catch (error) {
-      showConnectorStatus("error", connectorErrorMessage(error));
+});
+
+togglePairingCodeBtn.addEventListener("click", () => {
+  const reveal = pairingCodeEl.type === "password";
+  pairingCodeEl.type = reveal ? "text" : "password";
+  togglePairingCodeBtn.textContent = reveal ? "Hide code" : "Show code";
+  togglePairingCodeBtn.setAttribute("aria-pressed", String(reveal));
+});
+
+pairBtn.addEventListener("click", () => {
+  void pairingAttempt.run(async () => {
+    let paired = false;
+    const code = pairingCodeEl.value.trim();
+    showPairingStatus("success", "Pairing with Brain…");
+    const result = await withDisabled(pairBtn, () => executePairingAttempt({
+      code,
+      hasBrainAccess: () => chrome.permissions.contains({ origins: [BRAIN_PERMISSION] }),
+      getCredential: () => store.getCredential(),
+      exchange: (pairingCode) => brain.exchangePairingCode(pairingCode),
+      storeCredential: (credential) => store.setCredential(credential),
+    }));
+    switch (result.status) {
+      case "empty":
+        showPairingStatus("error", "Enter the 8-character code from Brain. Hyphens are optional.");
+        break;
+      case "brain_access_needed":
+        showPairingStatus(
+          "attention",
+          "Chrome site access for brain.arunp.in is off. Allow it in the Brain extension Details, reload the extension, then try again.",
+        );
+        break;
+      case "already_paired":
+        clearPairingCodeInput();
+        showPairingStatus(
+          "attention",
+          "This browser is already paired. Disconnect it in Brain first, then clear the old local data explicitly.",
+        );
+        break;
+      case "paired":
+        paired = true;
+        clearPairingCodeInput();
+        applyDurablePairedControls();
+        targetUrlEl.disabled = false;
+        showPairingStatus(
+          "success",
+          "Brain paired. The one-time code has been discarded. Next, paste your private NotebookLM URL.",
+        );
+        break;
+      case "failed":
+        if (shouldClearPairingCode(result.error)) clearPairingCodeInput();
+        showPairingStatus("error", pairingErrorMessage(result.error));
+        break;
     }
+    const refreshed = await refreshConnectorSummary();
+    if (!refreshed && paired) {
+      // The credential write is the durable local truth. A best-effort summary
+      // read must never make a completed pairing look available to repeat.
+      applyDurablePairedControls();
+    }
+  }).catch(() => {
+    clearPairingCodeInput();
+    pairBtn.disabled = true;
+    pairBtn.textContent = "Reload extension";
+    pairingCodeEl.disabled = true;
+    togglePairingCodeBtn.disabled = true;
+    showPairingStatus(
+      "error",
+      "Pairing failed safely. Reload the Brain extension, create a new code, and try again.",
+    );
   });
 });
 
 bindBtn.addEventListener("click", async () => {
-  const granted = await chrome.permissions.contains({ origins: [NOTEBOOKLM_PERMISSION] });
-  if (!granted) return showConnectorStatus("attention", "Grant NotebookLM site access before binding.");
+  const permissions = await currentConnectorPermissions();
+  if (!permissions) {
+    showTargetStatus("error", "Chrome could not verify site access. Reload the extension and try again.");
+    await refreshConnectorSummary();
+    return;
+  }
+  const { notebookLmAccess, brainAccess } = permissions;
+  if (!brainAccess) return showTargetStatus("attention", "Restore Brain site access and reload the extension before binding.");
+  if (!notebookLmAccess) return showTargetStatus("attention", "Grant NotebookLM site access before binding.");
 
   let target;
   try {
     target = parseNotebookTarget(targetUrlEl.value);
-  } catch (error) {
-    return showConnectorStatus("error", error instanceof Error ? error.message : "The notebook URL is invalid.");
+  } catch {
+    return showTargetStatus(
+      "error",
+      "Enter a NotebookLM URL in the form https://notebooklm.google.com/notebook/<id>.",
+    );
   }
   // V1 deliberately uses the lowest documented consumer capacity. A higher
   // paid-plan tier cannot be inferred safely from account branding or input.
   const sourceLimit = DEFAULT_SOURCE_LIMIT;
   const credential = await store.getCredential();
-  if (!credential) return showConnectorStatus("attention", "Pair the connector with Brain first.");
+  if (!credential) return showTargetStatus("attention", "Pair the connector with Brain first.");
   const storedBinding = await store.getBinding();
   const previous = storedBinding?.connectorId === credential.connectorId ? storedBinding : null;
   if (
     previous &&
     (previous.sourceLimit !== DEFAULT_SOURCE_LIMIT || previous.reserveCount !== DEFAULT_SOURCE_RESERVE)
   ) {
-    return showConnectorStatus(
+    return showTargetStatus(
       "attention",
       "This older binding uses an unsupported capacity policy. Retire it in Brain before binding again.",
     );
@@ -144,12 +222,12 @@ bindBtn.addEventListener("click", async () => {
     return;
   }
   await withDisabled(bindBtn, async () => {
-    showConnectorStatus("success", "Checking notebook ownership, sharing, and source capacity…");
+    showTargetStatus("success", "Checking notebook ownership, sharing, and source capacity…");
     try {
       const { inspection } = await provider.inspectTarget(target.notebookId, target.authUser);
       const reserveCount = DEFAULT_SOURCE_RESERVE;
       if (inspection.sourceCount >= sourceLimit - reserveCount) {
-        showConnectorStatus("attention", "This notebook is too close to its source limit to bind safely.");
+        showTargetStatus("attention", "This notebook is too close to its source limit to bind safely.");
         return;
       }
       const confirmation = await brain.bind(credential, {
@@ -177,24 +255,36 @@ bindBtn.addEventListener("click", async () => {
       };
       await store.setBinding(binding);
       targetUrlEl.value = target.canonicalUrl;
-      showConnectorStatus(
+      showTargetStatus(
         "success",
         `Bound to “${inspection.safeLabel}”. It is owner-only, private, and currently has ${inspection.sourceCount} sources.`,
       );
-      await refreshConnectorSummary();
     } catch (error) {
-      showConnectorStatus("error", connectorErrorMessage(error));
+      showTargetStatus("error", connectorSetupErrorMessage(error));
     }
   });
+  await refreshConnectorSummary();
 });
 
 runBtn.addEventListener("click", async () => {
+  const permissions = await currentConnectorPermissions();
+  if (!permissions) {
+    showTargetStatus("error", "Chrome could not verify site access. Reload the extension and try again.");
+    await refreshConnectorSummary();
+    return;
+  }
+  const { notebookLmAccess, brainAccess } = permissions;
+  if (!brainAccess || !notebookLmAccess) {
+    showTargetStatus("attention", "Restore both Brain and NotebookLM site access before checking for exports.");
+    await refreshConnectorSummary();
+    return;
+  }
   await withDisabled(runBtn, async () => {
-    showConnectorStatus("success", "Checking for approved exports…");
+    showTargetStatus("success", "Checking for approved exports…");
     try {
       const result = (await chrome.runtime.sendMessage({ type: "notebooklm-run-once" })) as unknown;
       if (!isRunResult(result) || !result.ok) throw new Error("worker_unavailable");
-      showConnectorStatus(
+      showTargetStatus(
         result.result === "handled" ? "success" : result.result === "idle" ? "success" : "attention",
         result.result === "handled"
           ? "The connector handled one approved export step."
@@ -202,11 +292,11 @@ runBtn.addEventListener("click", async () => {
             ? "Connector is ready; no export is waiting."
             : "The connector needs attention. Review the status below.",
       );
-      await refreshConnectorSummary();
     } catch {
-      showConnectorStatus("error", "The background connector could not be started. Reload the extension and try again.");
+      showTargetStatus("error", "The background connector could not be started. Reload the extension and try again.");
     }
   });
+  await refreshConnectorSummary();
 });
 
 forgetBtn.addEventListener("click", async () => {
@@ -218,60 +308,96 @@ forgetBtn.addEventListener("click", async () => {
   await store.clearConnectorData();
   await chrome.permissions.remove({ origins: [NOTEBOOKLM_PERMISSION] });
   targetUrlEl.value = "";
-  showConnectorStatus(
+  showTargetStatus(
     "success",
     "Local connector data and NotebookLM site access were removed. This did not change server state in Brain.",
   );
   await refreshConnectorSummary();
 });
 
-async function refreshConnectorSummary(): Promise<void> {
-  const [credential, binding, workerStatus, permission] = await Promise.all([
-    store.getCredential(),
-    store.getBinding(),
-    store.getWorkerStatus(),
-    chrome.permissions.contains({ origins: [NOTEBOOKLM_PERMISSION] }),
-  ]);
-  const parts = [
-    credential ? "Brain paired" : "Brain pairing needed",
-    permission ? "NotebookLM access granted" : "NotebookLM access needed",
-    binding && credential?.connectorId === binding.connectorId
-      ? `Bound to “${binding.safeLabel}” (version ${binding.bindingVersion})`
-      : "Target notebook not bound for this pairing",
-  ];
-  if (workerStatus) parts.push(workerStatus.detail);
-  connectorSummaryEl.textContent = parts.join(" · ");
-}
-
-function connectorErrorMessage(error: unknown): string {
-  if (error instanceof NotebookLmProviderError) {
-    switch (error.kind) {
-      case "authentication":
-        return "Sign in to NotebookLM in this browser profile, then try again.";
-      case "public":
-      case "shared":
-        return "The target must be an owner-only private notebook.";
-      case "wrong_target":
-      case "unavailable":
-        return "That notebook is unavailable to the currently signed-in NotebookLM account.";
-      case "protocol":
-        return "NotebookLM changed its protocol. Provider writes are blocked until the connector is updated.";
-      default:
-        return "NotebookLM could not be checked. No source was added.";
+async function refreshConnectorSummary(): Promise<boolean> {
+  try {
+    const [credential, binding, workerStatus, notebookLmAccess, brainAccess] = await Promise.all([
+      store.getCredential(),
+      store.getBinding(),
+      store.getWorkerStatus(),
+      chrome.permissions.contains({ origins: [NOTEBOOKLM_PERMISSION] }),
+      chrome.permissions.contains({ origins: [BRAIN_PERMISSION] }),
+    ]);
+    const bound = Boolean(binding && credential?.connectorId === binding.connectorId);
+    const controls = connectorControlState({
+      paired: Boolean(credential),
+      bound,
+      hasBinding: Boolean(binding),
+      brainAccess,
+      notebookLmAccess,
+    });
+    grantBtn.disabled = controls.grantDisabled;
+    grantBtn.textContent = notebookLmAccess ? "NotebookLM access granted" : "Grant NotebookLM access";
+    pairBtn.disabled = controls.pairDisabled;
+    pairBtn.textContent = credential ? "Brain paired" : brainAccess ? "Pair connector" : "Brain access needed";
+    pairingCodeEl.disabled = controls.pairingInputDisabled;
+    togglePairingCodeBtn.disabled = controls.pairingRevealDisabled;
+    targetUrlEl.disabled = controls.targetDisabled;
+    bindBtn.disabled = controls.bindDisabled;
+    runBtn.disabled = controls.runDisabled;
+    forgetBtn.hidden = controls.emergencyHidden;
+    if (credential) clearPairingCodeInput();
+    showNotebookLmAccessStatus(
+      notebookLmAccess ? "success" : "attention",
+      notebookLmAccess ? "NotebookLM site access granted." : "NotebookLM site access is not granted.",
+    );
+    const brainAccessMessage =
+      "Chrome site access for brain.arunp.in is off. Allow it in the Brain extension Details, then reload the extension.";
+    if (!brainAccess) {
+      showPairingStatus(
+        "attention",
+        brainAccessMessage,
+      );
+    } else if (pairingStatusEl.textContent === brainAccessMessage) {
+      if (credential) showPairingStatus("success", "Brain paired.");
+      else hideStatus(pairingStatusEl);
+    } else if (credential && pairingStatusEl.hidden) {
+      showPairingStatus("success", "Brain paired.");
     }
+    const parts = [
+      brainAccess ? "Brain access granted" : "Brain access needed",
+      credential ? "Brain paired" : "Brain pairing needed",
+      notebookLmAccess ? "NotebookLM access granted" : "NotebookLM access needed",
+      bound
+        ? `Bound to “${binding?.safeLabel}” (version ${binding?.bindingVersion})`
+        : "Target notebook not bound for this pairing",
+    ];
+    if (workerStatus) parts.push(workerStatus.detail);
+    connectorSummaryEl.textContent = parts.join(" · ");
+    return true;
+  } catch {
+    grantBtn.disabled = true;
+    pairBtn.disabled = true;
+    pairingCodeEl.disabled = true;
+    togglePairingCodeBtn.disabled = true;
+    targetUrlEl.disabled = true;
+    bindBtn.disabled = true;
+    runBtn.disabled = true;
+    connectorSummaryEl.textContent = "Connector status is unavailable. Reload the extension and try again.";
+    return false;
   }
-  if (error instanceof BrainConnectorError) {
-    return brainConnectorSetupMessage(error);
-  }
-  return error instanceof Error ? error.message : "Connector setup failed safely.";
 }
 
 function showCaptureStatus(kind: "success" | "error", message: string): void {
   showStatus(captureStatusEl, kind, message);
 }
 
-function showConnectorStatus(kind: "success" | "error" | "attention", message: string): void {
-  showStatus(connectorStatusEl, kind, message);
+function showNotebookLmAccessStatus(kind: "success" | "error" | "attention", message: string): void {
+  showStatus(notebookLmAccessStatusEl, kind, message);
+}
+
+function showPairingStatus(kind: "success" | "error" | "attention", message: string): void {
+  showStatus(pairingStatusEl, kind, message);
+}
+
+function showTargetStatus(kind: "success" | "error" | "attention", message: string): void {
+  showStatus(targetStatusEl, kind, message);
 }
 
 function showStatus(
@@ -279,17 +405,58 @@ function showStatus(
   kind: "success" | "error" | "attention",
   message: string,
 ): void {
-  elementValue.hidden = false;
-  elementValue.textContent = message;
   elementValue.className = `status status--${kind}`;
+  elementValue.setAttribute("role", kind === "error" ? "alert" : "status");
+  if (kind === "error") elementValue.removeAttribute("aria-live");
+  else elementValue.setAttribute("aria-live", "polite");
+  elementValue.textContent = message;
+  elementValue.hidden = false;
 }
 
-async function withDisabled(button: HTMLButtonElement, action: () => Promise<void>): Promise<void> {
+function clearPairingCodeInput(): void {
+  pairingCodeEl.value = "";
+  pairingCodeEl.type = "password";
+  togglePairingCodeBtn.textContent = "Show code";
+  togglePairingCodeBtn.setAttribute("aria-pressed", "false");
+}
+
+function applyDurablePairedControls(): void {
+  pairBtn.disabled = true;
+  pairBtn.textContent = "Brain paired";
+  pairingCodeEl.disabled = true;
+  togglePairingCodeBtn.disabled = true;
+}
+
+function hideStatus(elementValue: HTMLDivElement): void {
+  elementValue.hidden = true;
+  elementValue.textContent = "";
+  elementValue.className = "status";
+  elementValue.removeAttribute("role");
+  elementValue.setAttribute("aria-live", "polite");
+}
+
+async function currentConnectorPermissions(): Promise<{
+  notebookLmAccess: boolean;
+  brainAccess: boolean;
+} | null> {
+  try {
+    const [notebookLmAccess, brainAccess] = await Promise.all([
+      chrome.permissions.contains({ origins: [NOTEBOOKLM_PERMISSION] }),
+      chrome.permissions.contains({ origins: [BRAIN_PERMISSION] }),
+    ]);
+    return { notebookLmAccess, brainAccess };
+  } catch {
+    return null;
+  }
+}
+
+async function withDisabled<T>(button: HTMLButtonElement, action: () => Promise<T>): Promise<T> {
+  const wasDisabled = button.disabled;
   button.disabled = true;
   try {
-    await action();
+    return await action();
   } finally {
-    button.disabled = false;
+    button.disabled = wasDisabled;
   }
 }
 
