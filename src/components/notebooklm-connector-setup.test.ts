@@ -47,6 +47,8 @@ function settingsStatus(
       sharingPosture: null,
       healthStatus: null,
       healthReason: null,
+      safeSourceLimit: null,
+      reserveCount: null,
       safeSlots: null,
       connectorOnline: false,
       lastCheckedAt: null,

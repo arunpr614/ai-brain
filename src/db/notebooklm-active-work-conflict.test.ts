@@ -179,6 +179,20 @@ function assertConflictBlocksTargetChanges(input: {
     }),
   );
   expectTargetHasActiveWork(() =>
+    bindNotebookLmTarget({
+      connector: input.connector,
+      safeLabel: NOTEBOOKLM_SAFE_TARGET_LABEL,
+      localBindingFingerprint: TARGET_FINGERPRINT,
+      subjectFingerprint: SUBJECT_FINGERPRINT,
+      sharingPosture: "private",
+      sourceCount: 2,
+      sourceLimit: 100,
+      reserveCount: 5,
+      observedBindingVersion: 1,
+      now: BASE_NOW + 200,
+    }),
+  );
+  expectTargetHasActiveWork(() =>
     revokeActiveNotebookLmConnector({ now: BASE_NOW + 201 }),
   );
 

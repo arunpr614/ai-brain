@@ -1,6 +1,8 @@
 import { z } from "zod";
 import {
   NOTEBOOKLM_CONNECTOR_PROTOCOL_VERSION,
+  NOTEBOOKLM_MAX_SOURCE_LIMIT,
+  NOTEBOOKLM_MIN_SOURCE_LIMIT,
   NOTEBOOKLM_SAFE_TARGET_LABEL,
 } from "./contracts";
 
@@ -97,7 +99,7 @@ export const notebookLmBindSchema = z
     subjectFingerprint: fingerprint,
     sharingPosture: z.enum(["private", "shared", "public", "unknown"]),
     sourceCount: z.number().int().min(0).max(1_000),
-    sourceLimit: z.literal(50),
+    sourceLimit: z.number().int().min(NOTEBOOKLM_MIN_SOURCE_LIMIT).max(NOTEBOOKLM_MAX_SOURCE_LIMIT),
     reserveCount: z.literal(5),
   })
   .strict();
@@ -109,7 +111,7 @@ const notebookLmEventSchema = z.discriminatedUnion("type", [
     .object({
       type: z.literal("preflight_ok"),
       sourceCount: z.number().int().min(0).max(1_000),
-      sourceLimit: z.literal(50),
+      sourceLimit: z.number().int().min(NOTEBOOKLM_MIN_SOURCE_LIMIT).max(NOTEBOOKLM_MAX_SOURCE_LIMIT),
       sharingPosture: z.literal("private"),
     })
     .strict(),
@@ -129,7 +131,7 @@ const notebookLmEventSchema = z.discriminatedUnion("type", [
     .object({
       type: z.literal("capacity_blocked"),
       sourceCount: z.number().int().min(0).max(1_000),
-      sourceLimit: z.literal(50),
+      sourceLimit: z.number().int().min(NOTEBOOKLM_MIN_SOURCE_LIMIT).max(NOTEBOOKLM_MAX_SOURCE_LIMIT),
     })
     .strict(),
   z.object({ type: z.literal("dispatch_started") }).strict(),

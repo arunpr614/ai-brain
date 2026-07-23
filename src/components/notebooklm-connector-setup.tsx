@@ -46,6 +46,8 @@ export interface NotebookLmSettingsStatus {
     sharingPosture: "unknown" | "private" | "shared" | "public" | null;
     healthStatus: "unknown" | "healthy" | "attention" | null;
     healthReason: string | null;
+    safeSourceLimit: number | null;
+    reserveCount: number | null;
     safeSlots: number | null;
     connectorOnline: boolean;
     lastCheckedAt: string | null;
@@ -449,6 +451,10 @@ export function NotebookLmConnectorSetup({ initialStatus }: { initialStatus: Not
               <dl className="grid grid-cols-[auto_auto] gap-x-4 gap-y-1 text-xs">
                 <dt className="text-[var(--text-muted)]">Safe slots</dt>
                 <dd className="text-right text-[var(--text-primary)]">{status.connection.safeSlots ?? "Needs review"}</dd>
+                <dt className="text-[var(--text-muted)]">Brain safe limit</dt>
+                <dd className="text-right text-[var(--text-primary)]">{status.connection.safeSourceLimit ?? "Needs review"}</dd>
+                <dt className="text-[var(--text-muted)]">Reserved slots</dt>
+                <dd className="text-right text-[var(--text-primary)]">{status.connection.reserveCount ?? "Needs review"}</dd>
                 <dt className="text-[var(--text-muted)]">Sharing</dt>
                 <dd className="text-right text-[var(--text-primary)]">{sharingPostureLabel(status.connection.sharingPosture)}</dd>
                 <dt className="text-[var(--text-muted)]">Health</dt>

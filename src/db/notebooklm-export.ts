@@ -15,10 +15,11 @@ import type { NotebookLmConnectorRow } from "@/lib/notebooklm/connector-auth";
 import { hashConnectorToken } from "@/lib/notebooklm/connector-auth";
 import {
   NOTEBOOKLM_EVENT_RETENTION_MS,
-  NOTEBOOKLM_DEFAULT_SOURCE_LIMIT,
   NOTEBOOKLM_LEASE_MS,
+  NOTEBOOKLM_MAX_SOURCE_LIMIT,
   NOTEBOOKLM_MAX_PRECREATE_LEASES,
   NOTEBOOKLM_MAPPER_VERSION,
+  NOTEBOOKLM_MIN_SOURCE_LIMIT,
   NOTEBOOKLM_ORPHAN_LEDGER_RETENTION_MS,
   NOTEBOOKLM_POST_DISPATCH_RETENTION_MS,
   NOTEBOOKLM_PRE_CREATE_RETENTION_MS,
@@ -142,7 +143,8 @@ export function bindNotebookLmTarget(input: {
     !Number.isSafeInteger(input.sourceCount) ||
     input.sourceCount < 0 ||
     !Number.isSafeInteger(input.sourceLimit) ||
-    input.sourceLimit !== NOTEBOOKLM_DEFAULT_SOURCE_LIMIT ||
+    input.sourceLimit < NOTEBOOKLM_MIN_SOURCE_LIMIT ||
+    input.sourceLimit > NOTEBOOKLM_MAX_SOURCE_LIMIT ||
     !Number.isSafeInteger(input.reserveCount) ||
     input.reserveCount !== NOTEBOOKLM_SOURCE_RESERVE ||
     !Number.isSafeInteger(input.observedBindingVersion) ||
@@ -172,7 +174,9 @@ export function bindNotebookLmTarget(input: {
       active &&
       active.connector_id === input.connector.id &&
       active.local_binding_fingerprint === input.localBindingFingerprint &&
-      active.subject_fingerprint === input.subjectFingerprint
+      active.subject_fingerprint === input.subjectFingerprint &&
+      active.source_limit === input.sourceLimit &&
+      active.reserve_count === input.reserveCount
     ) {
       db.prepare(
         `UPDATE notebooklm_targets
@@ -1319,6 +1323,8 @@ export function getNotebookLmConnectionSummary(now: number = Date.now()): {
   configured: boolean;
   targetLabel: string | null;
   sharingPosture: NotebookLmTargetRow["sharing_posture"] | null;
+  safeSourceLimit: number | null;
+  reserveCount: number | null;
   safeSlots: number | null;
   healthStatus: NotebookLmTargetRow["health_status"] | null;
   healthReason: string | null;
@@ -1332,6 +1338,8 @@ export function getNotebookLmConnectionSummary(now: number = Date.now()): {
       configured: false,
       targetLabel: null,
       sharingPosture: null,
+      safeSourceLimit: null,
+      reserveCount: null,
       safeSlots: null,
       healthStatus: null,
       healthReason: null,
@@ -1352,6 +1360,8 @@ export function getNotebookLmConnectionSummary(now: number = Date.now()): {
     configured: true,
     targetLabel: target.safe_label,
     sharingPosture: target.sharing_posture,
+    safeSourceLimit: target.source_limit - target.reserve_count,
+    reserveCount: target.reserve_count,
     safeSlots,
     healthStatus: target.health_status,
     healthReason: target.health_reason,

@@ -269,6 +269,27 @@ test("binding blocks non-private targets and returns no raw binding or subject f
   assert.equal(JSON.stringify(body).includes("b".repeat(64)), false);
 });
 
+test("binding accepts the internal envelope for a 259 safe limit and rejects values above it", async () => {
+  const atCeiling = pair();
+  let response = await bindPost(
+    req("/api/notebooklm/connector/bind", {
+      token: atCeiling.token,
+      body: bindingBody({ sourceLimit: 264 }),
+    }),
+  );
+  assert.equal(response.status, 200);
+  assert.equal((await response.json()).target.safeSlots, 258);
+
+  response = await bindPost(
+    req("/api/notebooklm/connector/bind", {
+      token: atCeiling.token,
+      body: bindingBody({ sourceLimit: 265 }),
+    }),
+  );
+  assert.equal(response.status, 400);
+  assert.deepEqual(await response.json(), { error: "invalid_request" });
+});
+
 test("bind endpoint recovers lost initial and rebind responses only for the exact proof", async () => {
   const { token } = pair();
   const initialProof = bindingBody();

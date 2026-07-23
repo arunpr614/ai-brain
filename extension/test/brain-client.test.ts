@@ -213,6 +213,13 @@ test("claim parser pins the server protocol DTO", () => {
     expiresAt: "2030-01-01T00:00:00.000Z",
   });
   assert.equal(claim.action, "create");
+  assert.equal(
+    brainContractTestHooks.parseClaim({
+      ...claim,
+      target: { ...claim.target, sourceLimit: 264 },
+    }).target.sourceLimit,
+    264,
+  );
   assert.throws(() => brainContractTestHooks.parseClaim({ ...claim, action: "write_again" }));
   assert.throws(() =>
     brainContractTestHooks.parseClaim({
@@ -236,7 +243,13 @@ test("claim parser pins the server protocol DTO", () => {
   assert.throws(() =>
     brainContractTestHooks.parseClaim({
       ...claim,
-      target: { ...claim.target, sourceLimit: 300 },
+      target: { ...claim.target, sourceLimit: 265 },
+    }),
+  );
+  assert.throws(() =>
+    brainContractTestHooks.parseClaim({
+      ...claim,
+      target: { ...claim.target, sourceLimit: 49 },
     }),
   );
 });
@@ -270,6 +283,32 @@ test("first binding sends observed version 0 and accepts authoritative version 1
     { bindingVersion: 1 },
   );
   assert.equal((requestBody as { bindingVersion: number }).bindingVersion, 0);
+});
+
+test("binding accepts the internal envelope for a 259 safe limit and rejects values outside the safe range", async () => {
+  const client = new BrainConnectorClient(async () =>
+    Response.json({ bound: true, target: { bindingVersion: 1 } }),
+  );
+  const credential = {
+    connectorId: "d".repeat(24),
+    token: "b".repeat(64),
+    protocolVersion: 1 as const,
+    pairedAt: 1,
+  };
+  const input = {
+    bindingVersion: 0,
+    safeLabel: "Private notebook",
+    localBindingFingerprint: FINGERPRINT,
+    subjectFingerprint: "c".repeat(64),
+    sharingPosture: "private" as const,
+    sourceCount: 2,
+    sourceLimit: 264,
+    reserveCount: 5,
+  };
+
+  assert.deepEqual(await client.bind(credential, input), { bindingVersion: 1 });
+  await assert.rejects(client.bind(credential, { ...input, sourceLimit: 49 }));
+  await assert.rejects(client.bind(credential, { ...input, sourceLimit: 265 }));
 });
 
 test("lost-response bind retry accepts the server's newer authoritative version", async () => {

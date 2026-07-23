@@ -60,11 +60,12 @@ This is an experimental, unofficial consumer integration over undocumented Noteb
 2. Use **Open NotebookLM sign-in**, which intentionally opens `https://notebooklm.google/` as Google's public entry point. This public URL is not the authenticated RPC origin.
 3. Click **Grant NotebookLM access**. The optional permission is limited to `https://notebooklm.google.com/*`, the authenticated app/RPC host.
 4. Open `https://brain.arunp.in/settings/notebooklm-export`, create a fresh one-time connector code, and enter it under **Pair connector**. The code expires after five minutes, works once, and must not be shared or included in screenshots. The resulting connector credential is distinct from the page-capture bearer token.
-5. Paste a specific `https://notebooklm.google.com/notebook/<uuid>` target URL and click **Check and bind notebook**. A numeric `?authuser=N` selector is accepted for secondary signed-in accounts and remains local.
+5. Paste a specific `https://notebooklm.google.com/notebook/<uuid>` target URL. A numeric `?authuser=N` selector is accepted for secondary signed-in accounts and remains local.
+6. Choose the **Brain safe source limit**, then click **Check and bind notebook**. The default is 45 and the allowed range is 45–259. This is the actual observed-source ceiling: a setting of 259 stops new exports when the notebook reaches 259 sources.
 
 Binding performs read-only notebook, source-count, ownership, and sharing checks. It accepts only an owner-only private notebook and keeps the raw notebook ID plus a sanitized, bounded local notebook label in Chrome. Brain receives a generic target label, private/capacity health, SHA-256 binding proofs, and opaque SHA-256 source aliases—not Google account, notebook, or source identifiers.
 
-V1 fixes the effective source limit at 50 with five reserved slots, even for paid plans. The connector does not infer a higher tier from account branding or user input. A higher limit requires new positive provider evidence, tests, and a versioned policy change.
+The safe source limit is explicit and versioned per binding. Both the extension and Brain server independently enforce 259 as the effective hard maximum, and the internal five-slot guard cannot be changed. Changing the limit requires a safe rebind and is blocked while export work is unresolved.
 
 The service worker checks for approved work on a one-minute MV3 alarm. It uses the browser's existing NotebookLM sign-in without requesting Chrome's cookie API or storing Google cookies, CSRF tokens, session IDs, HTML, or RPC responses.
 

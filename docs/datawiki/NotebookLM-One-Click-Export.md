@@ -34,7 +34,7 @@ The following remain deferred: library-wide export, automatic or daily synchroni
 This review is scoped to an owner-operated consumer account and the narrow one-click copied-text workflow. It is not legal advice or a permanent approval; re-review is required if Google changes the applicable terms, account type, sharing model, machine-readable instructions, or provider behavior.
 
 - Google's [privacy and terms help](https://support.google.com/notebooklm/answer/17004255?hl=en) says ordinary consumer use is governed by the Google Terms of Service. It says notebook content is not used to directly train foundational models unless the user submits feedback; feedback can include sources/uploads and may be reviewed. Qualifying work and school accounts have different terms and handling. The owner must therefore confirm the intended account type and must not submit feedback containing sensitive export content.
-- Google's [source help](https://support.google.com/notebooklm/answer/16215270?hl=en) documents copied-and-pasted text as a supported source type, a free-user limit of 50 sources, and per-source limits far above this feature's stricter 200,000-byte/50,000-word ceiling. The implementation deliberately retains its conservative 50-source policy and five-source reserve instead of inferring a paid tier.
+- Google's [source help](https://support.google.com/notebooklm/answer/16215270?hl=en) documents copied-and-pasted text as a supported source type, a free-user limit of 50 sources, and per-source limits far above this feature's stricter 200,000-byte/50,000-word ceiling. The effective safe ceiling defaults to 45 but permits an explicit integer through the independent extension/server hard maximum of 259.
 - Google's [public-notebook help](https://support.google.com/notebooklm/answer/16322204?hl=en) confirms that notebooks can be made public and later restricted. The connector therefore requires a positive owner-only private check; absence of a public link is not treated as sufficient proof.
 - The [Google Terms of Service](https://policies.google.com/terms?hl=en-US) prohibit bypassing protective measures and automated access that violates machine-readable instructions. The public entrance's [robots.txt](https://notebooklm.google/robots.txt) currently allows `/`, but that is not an API contract or permission to bypass application controls.
 
@@ -132,11 +132,11 @@ Immutable-versioned server proof of the one active private target. The raw targe
 | `local_binding_fingerprint` | C2 | SHA-256 proof derived locally from the notebook ID and account route. |
 | `subject_fingerprint` | C2 | SHA-256 owner proof salted with the undisclosed notebook UUID. |
 | `sharing_policy`, `sharing_posture` | C1 | Policy is fixed to `private_only`; only positively verified `private` can bind/create. |
-| `source_limit`, `reserve_count`, `source_count` | C1 | Frozen capacity policy and last observed occupancy. V1 requires 50/5 exactly. |
+| `source_limit`, `reserve_count`, `source_count` | C1 | Versioned capacity policy and last observed occupancy. The effective safe ceiling is `source_limit - reserve_count`, ranges from 45 through the hard maximum of 259, and `reserve_count` is fixed at five. |
 | `health_status`, `health_reason`, `verified_at` | C1 | Last safe target verification. |
 | `active`, `created_at`, `deactivated_at` | C1 | At most one target is active globally. |
 
-An exact same-target bind replay is an idempotent health refresh. A changed target creates a new binding/dedupe namespace and is blocked while unresolved work exists. Rebinding through a different connector revokes the old connector only after the old target is safe to retire.
+An exact same-target, same-capacity bind replay is an idempotent health refresh. A changed target or source limit creates a new binding/dedupe namespace and is blocked while unresolved work exists. Rebinding through a different connector revokes the old connector only after the old target is safe to retire.
 
 ### `notebooklm_runtime_control`
 
@@ -325,10 +325,10 @@ The product guarantee is **at most one automated create unless non-delivery is c
 
 ### Target and capacity
 
-V1 freezes the source limit at 50 and reserves five slots:
+The binding uses an explicit effective safe ceiling from 45 through 259. The stored protocol envelope includes the fixed five-slot guard:
 
 ```text
-safe_slots = 50 - 5 - observed_source_count - reserved_source_slots
+safe_slots = configured_safe_source_limit - observed_source_count - reserved_source_slots
 ```
 
 `reserved_source_slots` includes conclusively unsent pre-create rows that can still create and every dispatched or possibly delivered row that does not yet have a source alias, including an ambiguous terminal row. This prevents an uncertain write from silently releasing capacity before its source existence is known.
@@ -339,7 +339,7 @@ safe_slots = 50 - 5 - observed_source_count - reserved_source_slots
 - Every create performs a fresh local private/account/target/occupancy preflight.
 - Visible processing, failed, and pending-deletion provider sources count as occupied because they remain in the observed source list.
 - The system never auto-deletes, evicts, replaces, or moves a NotebookLM source.
-- A paid plan is not inferred; a higher capacity requires a versioned policy change backed by provider evidence and tests.
+- The extension defaults to a safe ceiling of 45. Raising or lowering it requires an explicit user value and a safe versioned rebind. Both the extension and server reject an effective ceiling above 259.
 
 ## 10. Retention and deletion semantics
 
@@ -469,7 +469,7 @@ This is the remaining live-provider release gate, not evidence that the deployed
 ### Preconditions
 
 - A current terms/account-security review accepts the experimental local connector for the chosen account.
-- A dedicated owner-only private synthetic notebook exists and starts with enough headroom under the fixed 50-source limit and five-source reserve.
+- A dedicated owner-only private synthetic notebook exists and starts with enough headroom under its configured 45–259 effective safe ceiling.
 - A signed-in desktop Chrome profile is available. Open/sign in through `https://notebooklm.google/`; the connector will operate only on `https://notebooklm.google.com/`.
 - Protected-main server release, migration checks, extension tests/build, release artifact checks, database backup/restore proof, adversarial review, and rollback plan are green.
 - No unresolved real-content request exists.

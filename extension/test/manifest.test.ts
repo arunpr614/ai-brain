@@ -11,7 +11,7 @@ test("manifest keeps NotebookLM access narrow and optional", async () => {
     host_permissions: string[];
     optional_host_permissions: string[];
   };
-  assert.equal(manifest.version, "0.7.1");
+  assert.equal(manifest.version, "0.7.2");
   assert.ok(manifest.permissions.includes("alarms"));
   assert.deepEqual(manifest.host_permissions, ["https://brain.arunp.in/*"]);
   assert.deepEqual(manifest.optional_host_permissions, ["https://notebooklm.google.com/*"]);

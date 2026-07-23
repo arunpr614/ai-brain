@@ -162,9 +162,11 @@
       <input id="target-url" type="url" placeholder="https://notebooklm.google.com/notebook/…" autocomplete="off" spellcheck="false" disabled />
       <p class="help">A numeric <code>?authuser=N</code> selector is preserved locally for secondary signed-in Google accounts. Account emails are not accepted or sent to Brain.</p>
 
-      <label>V1 capacity policy</label>
-      <div class="readonly">50 sources · 5 slots reserved</div>
-      <p class="help">V1 uses the lowest documented consumer limit even on paid plans. Setup is blocked unless the notebook is owner-only, private, and below the safe threshold.</p>
+      <label for="safe-source-limit">4. Brain safe source limit</label>
+      <input id="safe-source-limit" class="compact" type="number" inputmode="numeric" min="45" max="259" step="1" value="45" aria-describedby="safe-source-limit-help" disabled />
+      <p id="safe-source-limit-help" class="help">
+        Choose a whole number from 45 to 259. This is the actual source count where Brain stops new exports. Brain enforces 259 as the hard maximum even if your NotebookLM plan supports more; in a 300-source notebook, that leaves at least 41 sources outside Brain's export allowance.
+      </p>
 
       <div class="row">
         <button id="bind-target" disabled>Check and bind notebook</button>

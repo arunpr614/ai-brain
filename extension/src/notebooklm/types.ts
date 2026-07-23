@@ -4,7 +4,31 @@ export const NOTEBOOKLM_PERMISSION = "https://notebooklm.google.com/*" as const;
 export const NOTEBOOKLM_PUBLIC_LOGIN_URL = "https://notebooklm.google/" as const;
 export const DEFAULT_SOURCE_LIMIT = 50;
 export const DEFAULT_SOURCE_RESERVE = 5;
+export const DEFAULT_SAFE_SOURCE_LIMIT =
+  DEFAULT_SOURCE_LIMIT - DEFAULT_SOURCE_RESERVE;
+export const MIN_SAFE_SOURCE_LIMIT = DEFAULT_SAFE_SOURCE_LIMIT;
+export const MAX_SAFE_SOURCE_LIMIT = 259;
+export const MIN_SOURCE_LIMIT =
+  MIN_SAFE_SOURCE_LIMIT + DEFAULT_SOURCE_RESERVE;
+export const MAX_SOURCE_LIMIT =
+  MAX_SAFE_SOURCE_LIMIT + DEFAULT_SOURCE_RESERVE;
 export const BRAIN_SAFE_TARGET_LABEL = "Private NotebookLM target";
+
+export function isSupportedSafeSourceLimit(value: unknown): value is number {
+  return (
+    Number.isInteger(value) &&
+    Number(value) >= MIN_SAFE_SOURCE_LIMIT &&
+    Number(value) <= MAX_SAFE_SOURCE_LIMIT
+  );
+}
+
+export function isSupportedSourceLimit(value: unknown): value is number {
+  return (
+    Number.isInteger(value) &&
+    Number(value) >= MIN_SOURCE_LIMIT &&
+    Number(value) <= MAX_SOURCE_LIMIT
+  );
+}
 
 export type ConnectorCredential = {
   connectorId: string;

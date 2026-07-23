@@ -1,9 +1,10 @@
-import type {
-  ConnectorCredential,
-  DeliveryJournalEntry,
-  LocalBinding,
-  LocalSourceReference,
-  WorkerStatus,
+import {
+  isSupportedSourceLimit,
+  type ConnectorCredential,
+  type DeliveryJournalEntry,
+  type LocalBinding,
+  type LocalSourceReference,
+  type WorkerStatus,
 } from "./types";
 
 export const CONNECTOR_CREDENTIAL_KEY = "notebooklm_connector_credential_v1";
@@ -172,8 +173,8 @@ function isBinding(value: unknown): value is LocalBinding {
     /^[a-f0-9]{64}$/.test(String(value.localBindingFingerprint)) &&
     /^[a-f0-9]{64}$/.test(String(value.subjectFingerprint)) &&
     typeof value.safeLabel === "string" &&
-    Number.isInteger(value.sourceLimit) &&
-    Number.isInteger(value.reserveCount) &&
+    isSupportedSourceLimit(value.sourceLimit) &&
+    value.reserveCount === 5 &&
     typeof value.verifiedAt === "number"
   );
 }
