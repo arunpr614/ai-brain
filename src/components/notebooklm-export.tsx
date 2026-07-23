@@ -67,6 +67,7 @@ export interface ExportStatusDto {
   };
   item: {
     eligible: boolean;
+    exportKind: "url" | "copied_text" | null;
     ineligibleReason: string | null;
     requiresLimitedConfirmation: boolean;
     changedContent: boolean;
@@ -480,6 +481,7 @@ export function NotebookLmExport({
       <ExportDialog
         kind={dialog}
         payloadPreview={payloadPreview}
+        exportKind={status?.item.exportKind ?? null}
         limitedConfirmed={limitedConfirmed}
         onLimitedConfirmed={setLimitedConfirmed}
         onClose={() => setDialog(null)}
@@ -510,6 +512,7 @@ export function NotebookLmExport({
 function ExportDialog({
   kind,
   payloadPreview,
+  exportKind,
   limitedConfirmed,
   onLimitedConfirmed,
   onClose,
@@ -518,6 +521,7 @@ function ExportDialog({
 }: {
   kind: DialogKind;
   payloadPreview: string;
+  exportKind: "url" | "copied_text" | null;
   limitedConfirmed: boolean;
   onLimitedConfirmed: (value: boolean) => void;
   onClose: () => void;
@@ -545,7 +549,9 @@ function ExportDialog({
           </Dialog.Title>
           <Dialog.Description className="mt-2 text-sm leading-6 text-[var(--text-secondary)]">
             {payload
-              ? "Below is the complete minimized copied-text content for this saved version. The NotebookLM source title also receives a short opaque recovery marker."
+              ? exportKind === "url"
+                ? "Below is the exact saved source URL. NotebookLM will import this link as a web or YouTube source."
+                : "Below is the complete minimized text content for this saved version. The NotebookLM source title also receives a short opaque recovery marker."
               : limited
                 ? "AI Memory saved only limited text. Review the complete minimized text below before sending it as a source."
                 : changed
@@ -720,7 +726,19 @@ export function buildNotebookLmExportView(
       false,
     );
   }
-  return view("Ready to export", "One deliberate click creates one static copied-text source in the configured private notebook.", "neutral", BookOpen, false, false, status.item.requiresLimitedConfirmation ? "Review and export" : "Export to NotebookLM", false, false);
+  return view(
+    "Ready to export",
+    status.item.exportKind === "url"
+      ? "One deliberate click adds this saved source URL to the configured private notebook."
+      : "One deliberate click creates one static copied-text source in the configured private notebook.",
+    "neutral",
+    BookOpen,
+    false,
+    false,
+    status.item.requiresLimitedConfirmation ? "Review and export" : "Export to NotebookLM",
+    false,
+    false,
+  );
 }
 
 export function shouldUseAssertiveNotebookLmStatus(
@@ -847,13 +865,15 @@ function errorDetail(code: string) {
 
 function ineligibleTitle(reason: string | null) {
   if (reason === "payload_too_large") return "This item is too large for a safe one-source export";
+  if (reason === "unsafe_source_url") return "This source URL cannot be exported safely";
   if (reason === "empty_body") return "No saved text is available to export";
-  if (reason === "unsupported_capture") return "This capture is not eligible for copied-text export";
+  if (reason === "unsupported_capture") return "This capture is not eligible for text export";
   return "Review this saved text before export";
 }
 
 function ineligibleDetail(reason: string | null) {
   if (reason === "payload_too_large") return "AI Memory will not truncate or split the saved text.";
+  if (reason === "unsafe_source_url") return "Use a public HTTP or HTTPS URL without credentials, secrets, fragments, or a private-network address.";
   if (reason === "empty_body") return "Add or repair the saved text first.";
   if (reason === "unsupported_capture") return "Repair the capture with full saved text before exporting.";
   return "The saved capture needs explicit review.";

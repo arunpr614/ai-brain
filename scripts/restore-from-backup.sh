@@ -256,7 +256,7 @@ if [[ "$PRODUCTION_RESTORE" == "1" ]]; then
   [[ -f "$migration_check" && -f "$RUNTIME_ROOT/release-manifest.json" ]] \
     || { echo "error: current attested migration-compatibility evidence is unavailable" >&2; exit 5; }
   run_volatile_backup_stage_step "$stage" node "$migration_check" \
-    "$RUNTIME_ROOT" "$RUNTIME_ROOT/release-manifest.json" "$candidate" 0 "" "" \
+    "$RUNTIME_ROOT" "$RUNTIME_ROOT/release-manifest.json" "$candidate" 0 "" "" "" \
     "$restore_block_latched" >/dev/null
 fi
 

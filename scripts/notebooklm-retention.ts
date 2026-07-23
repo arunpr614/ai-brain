@@ -73,13 +73,13 @@ function openValidatedDatabase(path: string): Database.Database {
   const db = new Database(path, { fileMustExist: true, timeout: 5_000 });
   try {
     if (!hasTable(db, "_migrations")) {
-      throw new NotebookLmRetentionCliError("migration_026_not_installed");
+      throw new NotebookLmRetentionCliError("migration_027_not_installed");
     }
     const migration = db
-      .prepare("SELECT 1 value FROM _migrations WHERE name='026_notebooklm_export.sql'")
+      .prepare("SELECT 1 value FROM _migrations WHERE name='027_notebooklm_url_sources.sql'")
       .get();
     if (!migration) {
-      throw new NotebookLmRetentionCliError("migration_026_not_installed");
+      throw new NotebookLmRetentionCliError("migration_027_not_installed");
     }
     for (const table of [
       "notebooklm_runtime_control",
@@ -88,8 +88,15 @@ function openValidatedDatabase(path: string): Database.Database {
       "notebooklm_operational_events",
     ]) {
       if (!hasTable(db, table)) {
-        throw new NotebookLmRetentionCliError("migration_026_schema_invalid");
+        throw new NotebookLmRetentionCliError("migration_027_schema_invalid");
       }
+    }
+    const requestColumns = new Set(
+      (db.pragma("table_info('notebooklm_export_requests')") as Array<{ name: string }>)
+        .map((column) => column.name),
+    );
+    if (!requestColumns.has("payload_kind") || !requestColumns.has("payload_url")) {
+      throw new NotebookLmRetentionCliError("migration_027_schema_invalid");
     }
 
     const journalMode = String(db.pragma("journal_mode", { simple: true })).toLowerCase();

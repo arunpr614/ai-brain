@@ -5,7 +5,7 @@ import { executePairingAttempt, PairingAttemptGate } from "../src/notebooklm/pai
 const credential = {
   connectorId: "d".repeat(24),
   token: "b".repeat(64),
-  protocolVersion: 1 as const,
+  protocolVersion: 2 as const,
   pairedAt: 1,
 };
 

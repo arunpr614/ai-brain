@@ -20,7 +20,10 @@ import {
   POST as exchangePost,
 } from "../connectors/exchange/route";
 import { TEST_API_TOKEN, TEST_DB_DIR } from "./routes.test.setup";
-import { NOTEBOOKLM_SAFE_TARGET_LABEL } from "@/lib/notebooklm/contracts";
+import {
+  NOTEBOOKLM_CONNECTOR_PROTOCOL_VERSION,
+  NOTEBOOKLM_SAFE_TARGET_LABEL,
+} from "@/lib/notebooklm/contracts";
 
 const ORIGIN = `chrome-extension://${"a".repeat(32)}`;
 const OTHER_ORIGIN = `chrome-extension://${"b".repeat(32)}`;
@@ -67,7 +70,10 @@ function req(
   if (options.origin !== null) headers.set("origin", options.origin ?? ORIGIN);
   if (options.token) headers.set("authorization", `Bearer ${options.token}`);
   if (options.protocol !== null) {
-    headers.set("x-notebooklm-connector-protocol", options.protocol ?? "1");
+    headers.set(
+      "x-notebooklm-connector-protocol",
+      options.protocol ?? String(NOTEBOOKLM_CONNECTOR_PROTOCOL_VERSION),
+    );
   }
   const contentType = options.contentType === undefined ? "application/json" : options.contentType;
   if (contentType) headers.set("content-type", contentType);
@@ -86,7 +92,7 @@ function pair(now = 1_700_300_000_000) {
   const exchanged = exchangeConnectorPairingCode({
     code: pairing.code,
     origin: ORIGIN,
-    protocolVersion: 1,
+    protocolVersion: NOTEBOOKLM_CONNECTOR_PROTOCOL_VERSION,
     now: now + 1,
   });
   assert.equal(exchanged.ok, true);
@@ -94,7 +100,7 @@ function pair(now = 1_700_300_000_000) {
   const authenticated = authenticateNotebookLmConnector({
     authorization: `Bearer ${exchanged.connectorToken}`,
     origin: ORIGIN,
-    protocolVersion: "1",
+    protocolVersion: String(NOTEBOOKLM_CONNECTOR_PROTOCOL_VERSION),
     now: now + 2,
   });
   assert.equal(authenticated.ok, true);
@@ -160,7 +166,7 @@ test("pairing exchange is origin-bound, one-time, CORS-safe, and does not reveal
   const response = await exchangePost(
     req("/api/notebooklm/connectors/exchange", {
       origin: ORIGIN,
-      body: { code: pairing.code, label: "Synthetic browser", protocolVersion: 1 },
+      body: { code: pairing.code, label: "Synthetic browser", protocolVersion: NOTEBOOKLM_CONNECTOR_PROTOCOL_VERSION },
     }),
   );
   assert.equal(response.status, 201);
@@ -176,7 +182,7 @@ test("pairing exchange is origin-bound, one-time, CORS-safe, and does not reveal
   const replay = await exchangePost(
     req("/api/notebooklm/connectors/exchange", {
       origin: ORIGIN,
-      body: { code: pairing.code, protocolVersion: 1 },
+      body: { code: pairing.code, protocolVersion: NOTEBOOKLM_CONNECTOR_PROTOCOL_VERSION },
     }),
   );
   assert.equal(replay.status, 410);
@@ -186,7 +192,7 @@ test("pairing exchange is origin-bound, one-time, CORS-safe, and does not reveal
   const noOrigin = await exchangePost(
     req("/api/notebooklm/connectors/exchange", {
       origin: null,
-      body: { code: noOriginCode.code, protocolVersion: 1 },
+      body: { code: noOriginCode.code, protocolVersion: NOTEBOOKLM_CONNECTOR_PROTOCOL_VERSION },
     }),
   );
   assert.equal(noOrigin.status, 403);
@@ -198,7 +204,7 @@ test("concurrent exchange of one code creates exactly one live connector", async
   const makeRequest = () => exchangePost(
     req("/api/notebooklm/connectors/exchange", {
       origin: ORIGIN,
-      body: { code: pairing.code, label: "Concurrent synthetic browser", protocolVersion: 1 },
+      body: { code: pairing.code, label: "Concurrent synthetic browser", protocolVersion: NOTEBOOKLM_CONNECTOR_PROTOCOL_VERSION },
     }),
   );
   const responses = await Promise.all([makeRequest(), makeRequest()]);
@@ -229,10 +235,17 @@ test("connector handlers reject missing credentials, origin swaps, and protocol 
   assert.deepEqual(await swapped.json(), { error: "origin_mismatch" });
 
   const drift = await claimPost(
-    req("/api/notebooklm/connector/claim", { token, protocol: "2", body: {} }),
+    req("/api/notebooklm/connector/claim", {
+      token,
+      protocol: String(NOTEBOOKLM_CONNECTOR_PROTOCOL_VERSION + 1),
+      body: {},
+    }),
   );
   assert.equal(drift.status, 426);
-  assert.deepEqual(await drift.json(), { error: "protocol_mismatch", expectedProtocolVersion: 1 });
+  assert.deepEqual(await drift.json(), {
+    error: "protocol_mismatch",
+    expectedProtocolVersion: NOTEBOOKLM_CONNECTOR_PROTOCOL_VERSION,
+  });
 });
 
 test("binding blocks non-private targets and returns no raw binding or subject fingerprint", async () => {

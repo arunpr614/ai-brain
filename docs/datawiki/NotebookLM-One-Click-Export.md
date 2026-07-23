@@ -4,11 +4,11 @@ Purpose: Define the authoritative data, API, state, privacy, retention, and oper
 
 Audience: Engineers, data stewards, security reviewers, release operators, support responders, and AI agents changing this feature.
 
-Verified against: Protected-main release `167a15d57b8f70574a017ea4cda507870f3600d4`, deployed to production on 2026-07-22 with `026_notebooklm_export.sql`, connector protocol v1, mapper v1, and the attested Chrome extension 0.7.0 artifact.
+Verified against: URL-source release candidate based on protected main `9c5e8d88846ea3fb9f3c835cc10136be4b8b29b4`, with migrations `026_notebooklm_export.sql` and `027_notebooklm_url_sources.sql`, connector protocol v2, mapper v2, and Chrome extension 0.7.4.
 
-Runtime evidence through: 2026-07-22 for the protected-main deployment, migration/hash/integrity checks, health, NotebookLM retention and operations timers, and authenticated AI Memory Settings/item UI. The verified production flag tuple is UI-only `1:0:0`: queueing and provider writes are off. The extension artifact is installed in a stable local directory but is not loaded or paired. No target bind, consumer NotebookLM source, signed-in synthetic canary, or owner-only real-content enablement is claimed.
+Runtime evidence through: 2026-07-23 for the existing production connector and prior copied-text canary. The URL-source release candidate has automated server, extension, migration, rollback, retention, and artifact coverage; its signed-in YouTube URL canary remains a post-deployment gate.
 
-Status: **Experimental; deployed UI-only; queue and provider writes off; signed-in provider validation and owner-only enablement pending.**
+Status: **Experimental; URL-source release candidate; signed-in post-deployment YouTube URL canary pending.**
 
 Release evidence: [NotebookLM one-click export production release evidence](../feature-council/notebooklm-sync/release/production-release-evidence-2026-07-22.md).
 
@@ -16,7 +16,7 @@ Owner: AI Brain maintainer.
 
 ## 1. Scope and truth boundary
 
-This feature exports one explicitly selected saved item as one static copied-text source to one prebound, owner-only private consumer NotebookLM notebook. It is deliberately named **Export to NotebookLM**, not synchronization.
+This feature exports one explicitly selected saved item to one prebound, owner-only private consumer NotebookLM notebook. An item with a safe public HTTP(S) source URL is added as that exact URL source, including a YouTube source. A note without a source URL is added as one static copied-text source. It is deliberately named **Export to NotebookLM**, not synchronization.
 
 Google [renamed NotebookLM to Gemini Notebook](https://blog.google/innovation-and-ai/products/gemini-notebook/notebooklm-gemini-notebook/) on 2026-07-16. The implementation and this DataWiki retain `NotebookLM` identifiers for code and evidence continuity; `https://notebooklm.google/` remains the public product entrance.
 
@@ -31,10 +31,10 @@ The following remain deferred: library-wide export, automatic or daily synchroni
 
 ### Terms and account review — 2026-07-22
 
-This review is scoped to an owner-operated consumer account and the narrow one-click copied-text workflow. It is not legal advice or a permanent approval; re-review is required if Google changes the applicable terms, account type, sharing model, machine-readable instructions, or provider behavior.
+This review is scoped to an owner-operated consumer account and the narrow one-click URL-or-copied-text workflow. It is not legal advice or a permanent approval; re-review is required if Google changes the applicable terms, account type, sharing model, machine-readable instructions, or provider behavior.
 
 - Google's [privacy and terms help](https://support.google.com/notebooklm/answer/17004255?hl=en) says ordinary consumer use is governed by the Google Terms of Service. It says notebook content is not used to directly train foundational models unless the user submits feedback; feedback can include sources/uploads and may be reviewed. Qualifying work and school accounts have different terms and handling. The owner must therefore confirm the intended account type and must not submit feedback containing sensitive export content.
-- Google's [source help](https://support.google.com/notebooklm/answer/16215270?hl=en) documents copied-and-pasted text as a supported source type, a free-user limit of 50 sources, and per-source limits far above this feature's stricter 200,000-byte/50,000-word ceiling. The effective safe ceiling defaults to 45 but permits an explicit integer through the independent extension/server hard maximum of 259.
+- Google's [source help](https://support.google.com/notebooklm/answer/16215270?hl=en) documents web URLs, public YouTube URLs, and copied-and-pasted text as supported source types. Plan capacity varies; the owner's current NotebookLM UI reports a 300-source notebook capacity. Brain keeps an independently configurable safe stop point from 45 through 259 and always reserves five slots.
 - Google's [public-notebook help](https://support.google.com/notebooklm/answer/16322204?hl=en) confirms that notebooks can be made public and later restricted. The connector therefore requires a positive owner-only private check; absence of a public link is not treated as sufficient proof.
 - The [Google Terms of Service](https://policies.google.com/terms?hl=en-US) prohibit bypassing protective measures and automated access that violates machine-readable instructions. The public entrance's [robots.txt](https://notebooklm.google/robots.txt) currently allows `/`, but that is not an API contract or permission to bypass application controls.
 
@@ -59,7 +59,7 @@ flowchart LR
 
 ### Server boundary
 
-The server owns authorization, deterministic minimization, idempotency, target-scoped capacity reservations, the durable request/state ledger, leases, runtime write controls, and retention. It sends a frozen title/body only on a `create` claim. Reconcile claims carry the opaque marker but no content; poll claims carry the marker and an opaque source alias but no content.
+The server owns authorization, deterministic minimization, idempotency, target-scoped capacity reservations, the durable request/state ledger, leases, runtime write controls, and retention. A `create` claim carries either the exact frozen safe URL or a frozen copied-text title/body. URL claims also carry a one-way SHA-256 URL fingerprint. After the private URL snapshot is purged, reconcile claims retain only that fingerprint; copied-text reconciliation uses the opaque marker. Poll claims also carry an opaque source alias.
 
 AI Memory is intentionally single-owner. NotebookLM export rows therefore use the fixed local owner namespace `primary`, and the schema permits one active target globally for this deployment. Browser APIs are authorized by the one owner's signed AI Memory session. “Owner-only private notebook” is a separate provider-side fact: the extension reads NotebookLM ownership/sharing locally, derives a notebook-salted subject proof, and sends only that proof plus `private` posture to the server. The server does not receive or independently resolve the raw Google identity.
 
@@ -67,15 +67,15 @@ AI Memory is intentionally single-owner. NotebookLM export rows therefore use th
 
 Chrome owns the raw Google notebook URL/ID, optional local `authuser` route, sanitized and bounded locally observed notebook label, raw provider source IDs, connector bearer token, and the active Google browser session. Chrome requests only optional host access to `https://notebooklm.google.com/*`; the manifest does not request `cookies`, `debugger`, `scripting`, or `<all_urls>`.
 
-V1 does not enumerate notebooks. The owner pastes one exact `https://notebooklm.google.com/notebook/<uuid>` URL into extension Options; the strict parser accepts only that host/path plus an optional numeric `authuser` from 0 through 10. The extension then reads and verifies only that target.
+This release does not enumerate notebooks. The owner pastes one exact `https://notebooklm.google.com/notebook/<uuid>` URL into extension Options; the strict parser accepts only that host/path plus an optional numeric `authuser` from 0 through 10. The extension then reads and verifies only that target.
 
-The connector bootstraps ephemeral NotebookLM CSRF/session values from the signed-in page, uses them in memory, and never writes them to Chrome storage or the server. The provider-bound title/body are held in memory for the create attempt and are not persisted by the connector.
+The connector bootstraps ephemeral NotebookLM CSRF/session values from the signed-in page, uses them in memory, and never writes them to Chrome storage or the server. The provider-bound URL or title/body is held in memory for the create attempt and is not persisted by the connector.
 
-The deployed adapter declares the copied wire reference `notebooklm-py` `v0.8.0rc1` at commit `45fd4258e608fbb9685496f26cfcea48810c44ee`. That reference is neither a runtime dependency nor an official Google contract; unknown RPC IDs, response shapes, ownership/sharing facts, redirects, or status values are treated as protocol drift.
+The adapter pins the URL and copied-text wire reference to `notebooklm-py` commit `45fd4258e608fbb9685496f26cfcea48810c44ee`. That reference is neither a runtime dependency nor an official Google contract; unknown RPC IDs, response shapes, ownership/sharing facts, redirects, or status values are treated as protocol drift.
 
 ### Provider boundary
 
-NotebookLM receives minimized copied text whose first heading preserves the full normalized human title. Its separate provider display title appends the opaque recovery marker and may shorten only the human-title portion to fit the 180-character provider envelope. The full title remains in the copied text and content hash. The marker supports read-only lost-response reconciliation. NotebookLM does not receive AI Memory database IDs, content hashes, connector IDs, notebook fingerprints, session cookies from the server, summaries, quotes, chats, or attached private notes.
+For a URL-bearing item, NotebookLM receives only the safe source URL through the provider's web-URL or YouTube-URL source slot. For a note without a URL, NotebookLM receives minimized copied text whose first heading preserves the full normalized human title; its separate display title carries the opaque recovery marker. NotebookLM does not receive AI Memory database IDs, content hashes, connector IDs, notebook fingerprints, server-side Google session material, summaries, quotes, chats, or attached private notes.
 
 ## 3. Classification scheme
 
@@ -90,7 +90,7 @@ Hashes and aliases are pseudonymous, not anonymous. A value that can correlate a
 
 ## 4. SQLite entities and field classifications
 
-Migration `026_notebooklm_export.sql` adds seven tables. It does not store Google cookies, CSRF values, OAuth tokens, raw notebook IDs, raw provider source IDs, Google account emails, the provider notebook title, or the bounded local notebook label.
+Migration `026_notebooklm_export.sql` adds seven tables. Migration `027_notebooklm_url_sources.sql` additively adds the request payload kind and temporary URL snapshot, plus rollback-safe guards. Neither migration stores Google cookies, CSRF values, OAuth tokens, raw notebook IDs, raw provider source IDs, Google account emails, the provider notebook title, or the bounded local notebook label.
 
 ### `notebooklm_connector_pairing_codes`
 
@@ -115,7 +115,7 @@ Scoped server-side identity for one paired extension origin.
 | `token_hash` | C2 | SHA-256 of the 256-bit connector token. The raw token exists only in Chrome local storage. |
 | `token_hint`, `label` | C1 | Safe identification aids; neither authenticates a request. |
 | `extension_origin` | C1 | Exact paired `chrome-extension://` origin. |
-| `protocol_version` | C0 | Connector contract version; v1 for this release. |
+| `protocol_version` | C0 | Connector contract version; v2 for this release. |
 | `state`, `created_at`, `updated_at`, `last_seen_at`, `revoked_at` | C1 | Connection lifecycle and online approximation. |
 
 `state` is `registered`, `bound`, or `revoked`. Revocation is irreversible for that token.
@@ -166,10 +166,11 @@ Durable request, idempotency, snapshot, lease, and provider-outcome ledger.
 |---|---|---|
 | `id` | C1 | Opaque request identity exposed only to authenticated surfaces. |
 | `owner_id`, `item_id`, `idempotency_key` | C2 | Owner/item correlation and browser-safe replay key. |
-| `connector_id`, `target_id`, `binding_version`, `mapper_version` | C1/C2 | Delivery namespace and exact contract versions. Treat the combined tuple as linkable. |
-| `content_hash` | C2 | SHA-256 of the canonical mapped title/text; retained for dedupe after snapshot purge. |
+| `connector_id`, `target_id`, `binding_version`, `mapper_version` | C1/C2 | Delivery namespace and exact contract versions. Mapper v2 distinguishes URL and copied-text sources. Treat the combined tuple as linkable. |
+| `content_hash` | C2 | SHA-256 of the canonical copied text or domain-separated URL; retained for dedupe and exact URL reconciliation after snapshot purge. |
 | `opaque_marker` | C2 | HMAC-derived, provider-visible title suffix used for reconciliation. Unique across requests. |
-| `payload_title`, `payload_text` | C2 | Temporary frozen minimized snapshot. Both are null after purge. |
+| `payload_kind` | C1 | Exact provider source kind: `url` or `copied_text`. |
+| `payload_title`, `payload_text`, `payload_url` | C2 | Temporary frozen minimized snapshot. All private payload fields are null after purge. URL rows retain only the one-way `content_hash` for read-only reconciliation. |
 | `payload_bytes`, `payload_words`, `limited_capture` | C1 | Content-free size/quality metadata. |
 | `state`, `phase`, `safe_reason` | C1 | Truthful state machine and normalized failure reason. |
 | `lease_epoch`, `lease_token_hash`, `lease_until`, `claimed_at` | C1/C2 | Two-minute fencing lease; the raw lease token is returned only to the connector. |
@@ -213,30 +214,31 @@ The emergency local-clear action removes these keys and optional NotebookLM host
 
 ## 6. Canonical mapper and outbound fields
 
-Mapper v1 is a pure, default-deny transformation. It normalizes Unicode to NFC, normalizes newlines, removes null/trailing whitespace, and freezes the result at click time.
+Mapper v2 is a pure, default-deny transformation. It first checks for a source URL. A safe public HTTP(S) URL is frozen as a URL source and the saved body is not sent. When there is no source URL, the mapper normalizes Unicode to NFC, normalizes newlines, removes null/trailing whitespace, and freezes a copied-text source at click time.
 
-Included:
+Included for a URL-bearing item:
+
+1. the exact canonical public HTTP(S) source URL, including its ordinary query when required, such as a YouTube `v` parameter.
+
+Included for a note without a source URL:
 
 1. normalized human title;
 2. normalized saved body;
-3. author when present;
-4. valid publication date when present; and
-5. a source URL only after an explicit, trustworthy public-access signal exists and the HTTP(S) URL has no credentials, query, fragment, private/local/special-use host, or unsafe IP range.
+3. author when present; and
+4. valid publication date when present.
 
-The current item schema has no such public-access signal. Mapper v1 therefore omits every source URL, including an otherwise queryless public-host URL. The URL policy is a future-safe allow-list contract, not a claim that this release emits URLs.
-
-The copied text preserves the full normalized title as its first heading. The provider display title is a separate bounded field: it appends the recovery marker and may shorten only its human-title portion to remain within 180 characters. This display-only shortening does not change the copied-text title, saved body, or canonical content hash.
+Copied text preserves the full normalized title as its first heading. Its provider display title is a separate bounded field: it appends the recovery marker and may shorten only its human-title portion to remain within 180 characters. This display-only shortening does not change the copied-text title, saved body, or canonical content hash. URL sources use NotebookLM's provider-generated title and reconcile by exact URL or its one-way fingerprint.
 
 Excluded:
 
 - summaries, quotes, chats, private attached notes, capture internals, thumbnails, temporary paths, and adjacent artifacts;
 - raw AI Memory IDs, content hashes, target/connector/source identifiers, and database timestamps;
 - Google cookies, CSRF/session material, OAuth data, account email, and raw provider errors;
-- signed, query-bearing, credential-bearing, malformed, local, private-network, special-use, `.onion`, or `.i2p` URLs.
+- credential-bearing, fragment-bearing, malformed, local, private-network, special-use, `.onion`, or `.i2p` URLs, and URLs containing sensitive query-key names such as `token`, `secret`, `signature`, or `access_token`.
 
-Recall content is eligible only after an exact six-line Recall provenance envelope and delimiter are removed. A malformed Recall envelope fails closed to empty content. Schema-only podcast/EPUB/DOCX items require an explicitly full-text capture quality. Weak captures require owner confirmation. Empty content is blocked.
+If an item has a non-empty but unsafe source URL, export is blocked with `unsafe_source_url`; it never silently falls back to copied text. Recall copied text is eligible only after an exact six-line Recall provenance envelope and delimiter are removed. A malformed Recall envelope fails closed to empty content. Schema-only podcast/EPUB/DOCX items require an explicitly full-text capture quality. Weak copied-text captures require owner confirmation. Empty copied text is blocked, while a safe URL can export even when the saved body is empty.
 
-The complete canonical payload must be no more than 200,000 UTF-8 bytes and 50,000 normalized words. Both limits apply. V1 does not truncate or chunk the copied-text title or body; only the separate provider display title may be shortened as described above.
+The complete canonical copied-text payload must be no more than 200,000 UTF-8 bytes and 50,000 normalized words. Both limits apply. This release does not truncate or chunk the copied-text title or body; only the separate provider display title may be shortened as described above. URL sources use the separate 4,096-character URL envelope.
 
 ## 7. State and phase machine
 
@@ -255,7 +257,7 @@ stateDiagram-v2
   sending --> succeeded: create accepted already ready
   sending --> reconciling: response uncertain / lease expires / create-phase auth or drift
 
-  reconciling --> reconciliation_required: zero visible marker matches
+  reconciling --> reconciliation_required: zero exact source matches
   reconciliation_required --> reconciling: later read-only claim
   reconciling --> processing: exactly one match, still processing
   reconciling --> succeeded: exactly one match, ready
@@ -296,12 +298,12 @@ All responses are private/no-store. Browser session writes require an exact same
 | `POST /api/settings/notebooklm-export` | Signed session + exact same origin | Create a five-minute one-time pairing code. |
 | `DELETE /api/settings/notebooklm-export` | Signed session + exact same origin | `safe_disconnect` revokes/deactivates only when no unresolved work exists. `emergency_revoke` requires explicit acknowledgement, immediately revokes live scoped tokens, terminalizes unresolved work, and purges that unresolved work's frozen snapshots without claiming remote deletion. |
 | `PATCH /api/settings/notebooklm-export` | Signed session + exact same origin | Explicitly clear only an ordinary protocol-drift safety block after the operator attests that the connector was updated and the target revalidated, and the server verifies a recent healthy private target. Identity-conflict and restore-reconciliation reasons fail closed. |
-| `POST /api/notebooklm/connectors/exchange` | One-time code + exact Chrome extension origin + protocol v1 | Exchange once for a scoped connector ID/token. Limited to 10 attempts per minute per observed IP. |
+| `POST /api/notebooklm/connectors/exchange` | One-time code + exact Chrome extension origin + protocol v2 | Exchange once for a scoped connector ID/token. Limited to 10 attempts per minute per observed IP. |
 | `POST /api/notebooklm/connector/bind` | Scoped connector bearer + exact paired origin + protocol header | Bind/refresh a private target using only generic label, fingerprints, posture, and 50/5 capacity facts. |
 | `POST /api/notebooklm/connector/claim` | Scoped connector bearer + exact paired origin + protocol header | Return a two-minute `create`, `reconcile`, or `poll` claim. A `204` means no work. Connector traffic is limited to 120 requests/minute per connector. |
 | `POST /api/notebooklm/connector/requests/{id}/events` | Scoped connector bearer + exact paired origin + protocol header + valid lease token/epoch | Apply one strict event transition. `dispatchAuthorized: true` is returned only after `dispatch_started` is durably committed while writes are enabled. |
 
-Connector protocol header: `x-notebooklm-connector-protocol: 1`.
+Connector protocol header: `x-notebooklm-connector-protocol: 2`.
 
 The connector event vocabulary is: `preflight_ok`, `authentication_required`, `target_attention`, `capacity_blocked`, `dispatch_started`, `create_accepted`, `create_uncertain`, `reconcile_result`, `source_status`, `retryable_failure`, and `connector_update_required`. Request bodies are strict, bounded JSON; unknown fields and impossible event combinations fail closed.
 
@@ -318,6 +320,7 @@ The per-IP exchange and per-connector request limits are in-process damage contr
 - A prior possibly delivered non-success blocks a replacement create in the same binding namespace.
 - `dispatch_started` requires a successful private/capacity preflight recorded in the same lease epoch, write enablement, `attempt_count = 0`, and no previous dispatch timestamp.
 - The extension writes a content-free `possibly_delivered` journal record immediately before its single non-idempotent provider request. Any later create claim with an existing journal is converted to uncertainty, never re-sent.
+- URL reconciliation matches the exact URL while the snapshot is retained and the domain-separated SHA-256 URL fingerprint after purge; copied-text reconciliation matches only the opaque title marker.
 - Success is recorded only when the exact accepted/adopted source reports `ready`.
 - A provider source alias cannot be reused by another request for the same target.
 
@@ -345,19 +348,19 @@ safe_slots = configured_safe_source_limit - observed_source_count - reserved_sou
 
 | Data | Current retention |
 |---|---|
-| Frozen pre-create `payload_title`/`payload_text` | Up to seven days while conclusively unsent. Expiry purges both and records `expired_before_send`. |
+| Frozen pre-create `payload_title`/`payload_text`/`payload_url` | Up to seven days while conclusively unsent. Expiry purges every private payload field and records `expired_before_send`. |
 | Frozen snapshot after possible dispatch | Purge deadline is shortened to no later than 24 hours after dispatch/possible delivery. |
 | Pre-send cancellation | Snapshot purged immediately. |
 | Owner `Stop checking and purge` | Snapshot purged immediately; state becomes terminal unresolved and explicitly does not claim remote deletion. |
 | AI Memory item deletion | Every matching snapshot is purged immediately. Active pre-dispatch work becomes terminal `cancelled`; active post-dispatch work becomes terminal `reconciliation_required` with `item_deleted_source_may_exist`. No remote source is deleted. |
-| Content hash, marker, target/binding/mapper tuple, safe state, source alias, timestamps | Retained for dedupe/safety while linked. A terminal request becomes eligible for pruning after 30 days only when its AI Memory item is absent and its target is inactive. Old inactive targets and revoked connectors are then pruned only when unreferenced. |
+| Content hash, marker, target/binding/mapper tuple, safe state, source alias, timestamps | Retained for dedupe/safety while linked. For URL rows, the content hash is also the one-way reconciliation fingerprint after `payload_url` purge. A terminal request becomes eligible for pruning after 30 days only when its AI Memory item is absent and its target is inactive. Old inactive targets and revoked connectors are then pruned only when unreferenced. |
 | Request and operational events | Deleted before the 30-day maximum using the five-minute safety margin. |
 | Pairing-code rows | Used/expired rows are removed after they are more than approximately 24 hours past expiry. |
 | Chrome unresolved possibly-delivered journal | Retained without age/count pruning until explicit positive/terminal reconciliation or local emergency clear. |
 | Chrome source references | Most recent 500 by update time. |
 | NotebookLM source | Never automatically deleted by V1, including cancellation, stop-checking, disconnect, rollback, or rebind. |
 
-The application retention worker runs at server startup and every minute thereafter. Enqueue and claim paths also invoke cleanup opportunistically. A separate mutating fallback, `brain-notebooklm-retention.timer`, runs every minute outside the application process and takes over only when the application sweep is stale, failed, physically pending, or has an overdue snapshot. Its service resolves the exact immutable runtime from root-owned `BRAIN_RELEASE_ID`; it never executes through `/opt/brain/current`. The distinct `brain-notebooklm-operations.timer` is a read-only audit: it reports unsafe state but never purges or writes. Seven-day, 24-hour, and 30-day deadlines are scheduled with a five-minute safety margin. Snapshot purge removes only the frozen title/text while preserving the ledger needed to prevent duplicates.
+The application retention worker runs at server startup and every minute thereafter. Enqueue and claim paths also invoke cleanup opportunistically. A separate mutating fallback, `brain-notebooklm-retention.timer`, runs every minute outside the application process and takes over only when the application sweep is stale, failed, physically pending, or has an overdue snapshot. Its service resolves the exact immutable runtime from root-owned `BRAIN_RELEASE_ID`; it never executes through `/opt/brain/current`. The distinct `brain-notebooklm-operations.timer` is a read-only audit: it reports unsafe state but never purges or writes. Seven-day, 24-hour, and 30-day deadlines are scheduled with a five-minute safety margin. Snapshot purge removes the frozen title/text/URL while preserving the content-free ledger and one-way URL fingerprint needed to prevent duplicates and reconcile safely.
 
 Live SQLite runs with `secure_delete=ON`. After a sensitive snapshot update commits, cleanup requires a successful `wal_checkpoint(TRUNCATE)` so prior title/body frames are not silently left in the WAL. A cleanup or checkpoint failure records normalized retention health, fails new enqueue/provider-write admission closed, and is retried by later sweeps.
 
@@ -373,7 +376,7 @@ All three environment flags default off and are dependent in this order:
 
 Turning provider writes off prevents new provider creates but keeps connector claims for known-source polling and read-only marker reconciliation. The database runtime gate independently disables enqueue/create immediately after provider source-list, create-response, or status protocol/schema drift, after three consecutive other normalized connector/transport failures (including retryable or create-uncertain outcomes), or when snapshot retention is unhealthy/stale, while preserving safe recovery reads.
 
-The immutable deployment workflow preserves the existing Processing feature-flag tuple by default. Its NotebookLM flag policy defaults to `dark` and requires the production tuple to remain `0:0:0`; an explicit `preserve` policy accepts only the dependency-ordered tuples and proves the tuple did not change during deployment. The release was first deployed dark and then staged to the currently verified UI-only tuple `1:0:0`. Queueing and provider writes remain off. Feature rollback must not be represented as remote-source cleanup.
+The immutable deployment workflow preserves the existing Processing feature-flag tuple by default. Its NotebookLM flag policy defaults to `dark` and requires the production tuple to remain `0:0:0`; an explicit `preserve` policy accepts only dependency-ordered tuples and proves the tuple did not change during deployment. The URL-source deployment uses `preserve`, so it cannot silently enable or disable the owner-selected master, queue, or provider-write controls. Feature rollback must not be represented as remote-source cleanup.
 
 `BRAIN_NOTEBOOKLM_REMEDIATION_POLICY` defaults to `strict`, so an existing `provider_write_blocked=1` safety stop prevents deployment mutations. The sole remediation exception is the explicit value `preserve_existing_provider_block`: the deploy must prove the block is `1` before and after, leave it set, record the policy in evidence, and allow the operations checker to ignore only that existing provider block. Retention failure or staleness, a pending physical purge, overdue snapshots, and post-dispatch work unresolved beyond 24 hours remain hard failures in both modes.
 
@@ -422,9 +425,9 @@ The implementation does not persist raw provider responses/errors, source conten
 | Authentication before create | Pause in `authentication_attention/pre_create`; no provider write occurred. |
 | Authentication after dispatch | Move/keep request in reconcile or poll; do not create again. |
 | Wrong account/target, shared/public/unknown posture, unreadable capacity | Mark target/request attention and block creates until a fresh healthy private bind/check. |
-| Timeout/network/429/5xx/protocol failure after dispatch | `reconciling/reconcile`; inspect exact bound target for marker only. Zero matches are not proof of non-delivery. A protocol/schema failure also immediately latches the provider-write block. |
-| One marker match | Adopt its exact source identity and poll; increment stored occupancy once. |
-| Multiple marker matches or reused source identity | Terminal duplicate conflict; no automatic create or delete. |
+| Timeout/network/429/5xx/protocol failure after dispatch | `reconciling/reconcile`; inspect the exact bound target for the copied-text marker or URL fingerprint only. Zero matches are not proof of non-delivery. A protocol/schema failure also immediately latches the provider-write block. |
+| One exact marker/URL match | Adopt its exact source identity and poll; increment stored occupancy once. |
+| Multiple exact matches or reused source identity | Terminal duplicate conflict; no automatic create or delete. |
 | Known source processing failure | Terminal provider failure; no automatic replacement. |
 | Known source disappears | Target attention; do not infer deletion or recreate. |
 | Provider source-list, create-response, or status protocol/schema drift | Immediately latch the runtime write block, require connector update, and preserve read-only reconciliation/polling. |
@@ -437,18 +440,18 @@ The implementation does not persist raw provider responses/errors, source conten
 
 ## 14. Migration, release, and rollback
 
-Migration 026 is additive: seven tables, their indexes, constraints, and the singleton runtime-control row. The migration runner applies each SQL file transactionally, stores the exact SHA-256 in `_migrations`, and rejects any changed hash on a later startup.
+Migration 026 is additive: seven tables, their indexes, constraints, and the singleton runtime-control row. Migration 027 additively adds `payload_kind` and `payload_url`, payload consistency guards, and a compatibility trigger that clears the URL when a pre-027 runtime clears the known title/text snapshot. The migration runner applies each SQL file transactionally, stores the exact SHA-256 in `_migrations`, and rejects any changed hash on a later startup.
 
 Release expectations:
 
 1. apply/reapply-on-copy tests, migration hash checks, `quick_check`, `foreign_key_check`, backup, and restore proof must pass;
-2. server and extension protocol versions must agree at v1;
+2. server and extension protocol versions must agree at v2;
 3. the immutable server artifact must contain the exact migration inventory and attested release files;
 4. Product CI must package the extension separately as one deterministic Manifest V3 zip, release manifest, and checksum, with GitHub attestations bound to `arunpr614/ai-brain`, `.github/workflows/product-ci.yml`, `refs/heads/main`, and the full builder SHA;
 5. `scripts/install-verified-extension-release.mjs` must verify the three attested artifacts, exact archive/file hashes and paths, Manifest V3, and the optional `https://notebooklm.google.com/*` permission before installing into one stable absolute unpacked-extension directory; later updates reuse that path and reload the same Chrome extension origin;
 6. activation must begin from a verified database backup whose frozen NotebookLM snapshots were scrubbed/vacuumed, install and enable both the read-only one-minute NotebookLM operational audit and the mutating one-minute retention fallback, execution-prove the latter against the exact immutable release, and pass authenticated health, retention-readiness, and data-path checks.
 
-There is no destructive down migration. Application rollback leaves schema 026 and its ledger in place. The release compatibility guard permits a pre-026 known-good runtime only through the explicit audited-additive rollback path, only when the applied migration hashes exactly match the attested values, and only while the NotebookLM schema has no setup or work state. A freshly migrated empty schema is allowed, as is the narrowly equivalent first-dark-boot state containing only zero-count `notebooklm.retention_sweep_succeeded` heartbeats and their last-success timestamp. Any pairing, connector, target, other event, request, payload, unresolved work, protocol/retention failure or nonzero counter, or pending physical purge requires a feature-aware prior runtime. The activation scripts stop the mutating fallback timer and any running oneshot, repeat this proof with application writers stopped, and only restore timer state after the prior immutable release identity is restored. A pre-026 target never starts the retention unit. The durable scrubbed off-site backup path remains installed across rollback, but it is not used to weaken this guard because a pre-feature runtime's own backup scheduler cannot enforce NotebookLM snapshot retention. An unknown 027+, missing hash, or modified migration also blocks rollback.
+There is no destructive down migration. Application rollback leaves migrations 026 and 027 and their ledger in place. Rollback from 027 to the schema-026-aware prior runtime is allowed only when no URL request history or URL payload exists; otherwise it fails closed because the old runtime cannot safely represent URL reconciliation. The separate pre-026 compatibility guard remains limited to an empty/equivalent no-work NotebookLM schema with exact attested migration hashes. Any pairing, target, request, payload, unresolved work, protocol/retention failure, nonzero counter, pending physical purge, unknown later migration, missing hash, or modified migration blocks an unsafe rollback.
 
 A database restore is a different duplicate-safety boundary from an application rollback. The operator must stop both NotebookLM timers and any running retention oneshot before invoking restore; the hardened restore proves those units remain inactive before and after acquiring its locks. It rejects a pre-026 snapshot because that database cannot carry the required durable safety latch. Before publishing a schema-026 snapshot, it sets `provider_write_blocked=1` with the distinct reason `restore_reconciliation_required` and records a content-free latch event. Ordinary restarts, protocol success/failure handling, the generic settings reset, and deployment cannot clear or overwrite this reason. Provider writes remain off until the owner checks the exact bound owner-only private target for every source or opaque marker that may have been created after the backup timestamp and records redacted evidence including the backup timestamp/hash, target-binding fingerprint, inspection time, and each source/marker disposition. No approved unblock command exists in this release: a separately reviewed feature-aware command must atomically verify that evidence and the current latch before clearing it. Direct SQL is not an approved recovery interface. After restarting `brain`, the operator must `enable --now` both the mutating retention timer and read-only operations timer, prove both are enabled/active, and run the retention oneshot once with `Result=success`; none of those steps clears the restore latch.
 
@@ -464,7 +467,7 @@ Rollback order:
 
 ## 15. Private synthetic canary procedure
 
-This is the remaining live-provider release gate, not evidence that the deployed UI-only release has passed it. Use synthetic, non-personal content only. Do not place account details, notebook URLs/IDs/titles, source IDs, markers, cookies, screenshots, or raw provider responses in commits, tickets, chat, or public evidence.
+This is the remaining live-provider gate for the URL-source release. Use synthetic, non-personal content only. Do not place account details, notebook URLs/IDs/titles, source IDs, markers, cookies, screenshots, or raw provider responses in commits, tickets, chat, or public evidence.
 
 ### Preconditions
 
@@ -476,42 +479,38 @@ This is the remaining live-provider release gate, not evidence that the deployed
 
 ### Staged proof
 
-1. **Complete:** deploy the protected-main release with all NotebookLM flags off, then verify migration 026, health, integrity, retention worker startup, and no connector/provider work. The UI was subsequently enabled with the production tuple held at `1:0:0`.
-2. **Partially complete:** the Product CI zip, manifest, checksum, and GitHub attestations passed and the artifact was installed through `scripts/install-verified-extension-release.mjs` at the stable unpacked-extension path. Loading/reloading it in Chrome and granting only the optional `https://notebooklm.google.com/*` permission remain pending.
-3. **Partially complete:** UI/setup is enabled. Pairing with a fresh five-minute code, binding the dedicated notebook locally, and verifying that the server sees only a generic label, private posture, fingerprints, 50/5 policy, occupancy, and safe slots remain pending.
-4. Enable queue while provider writes remain off. Create one synthetic AI Memory item with a unique, non-sensitive title/body and no private URL. Enqueue it and observe at least one connector polling interval. It must remain queued and must not appear in NotebookLM.
-5. Confirm the target/account/private posture and fresh occupancy again, then enable provider writes for the controlled canary window.
-6. Run/wait for the connector. Verify one preflight, one dispatch authorization, one provider source, stored occupancy increment once, `processing` if applicable, and `succeeded` only after that exact source is ready.
-7. Compare the ready source to the frozen synthetic payload. It must contain only the expected normalized title/body/allowed metadata plus the opaque title marker. It must not contain internal IDs, summaries, quotes, attached notes, unsafe URLs, or session material.
-8. Click export again without changing the item. Verify the existing success is returned and the notebook source count does not increase.
-9. Change only the synthetic body. Verify explicit updated-version confirmation is required and, after confirmation, exactly one additional source is created while the first remains.
-10. With an approved test-only interruption after the provider request but before the server receives the acceptance acknowledgement, prove the request enters read-only reconciliation, finds exactly one marker match, adopts it, and never sends a second create. Do not improvise this test with real content.
-11. Exercise the independent write stop with a synthetic queued request: provider writes off must prevent creation, while any already-known poll or uncertain reconciliation remains read-only. Cancel the conclusively unsent request afterward.
-12. Verify low-capacity warning and reserve blocking using isolated/test fixtures or a dedicated safe capacity fixture; do not fill a real user notebook merely to reach the threshold.
-13. Confirm request/operational events contain only normalized metadata, no snapshot is overdue, the one-minute operational audit is healthy, and the controlled retention tests cover seven-day expiry, 24-hour post-dispatch purge, immediate cancel/stop/item-deletion and unresolved-work emergency-revoke purge, 30-day event cleanup, conditional orphan-ledger pruning, WAL truncation, and backup-copy scrubbing.
-14. Record only redacted counts, states, timestamps, artifact hashes, and pass/fail outcomes. Turn provider writes off immediately on any wrong-target write, duplicate create, premature success, privacy leak, preflight bypass, or protocol drift.
+1. Merge the protected-main URL-source release, deploy migration 027 with the existing valid NotebookLM flag tuple preserved, and verify health, integrity, retention readiness, operations checks, and immutable release identity.
+2. Install the attested 0.7.4 extension build into the existing stable unpacked-extension directory. In `chrome://extensions`, reload the existing extension once. The protocol-1 credential upgrades in place to protocol 2; do not remove/re-add or re-pair it.
+3. Open extension Options and confirm installed version 0.7.4, NotebookLM access granted, the existing private target still bound, and its fresh safe capacity.
+4. Create or select one synthetic/non-sensitive AI Brain item whose `source_url` is a public YouTube watch URL. Keep queue and provider writes enabled only for this controlled canary.
+5. Click **Export to NotebookLM** once. Verify one preflight, one dispatch authorization, one URL-source create, and `succeeded` only after that exact source is ready.
+6. In NotebookLM, verify the new source has the YouTube/URL source treatment and opens the same source URL. It must not appear as a Markdown or copied-text source.
+7. Click export again without changing the item. Verify the existing success is returned and the notebook source count does not increase.
+8. Verify the server request has `payload_kind=url`; the connector invoked `addUrl`, never `addCopiedText`; and logs/events contain no raw URL, source ID, notebook ID, or session material.
+9. Exercise uncertain-delivery reconciliation only with an approved test interruption: it must find the exact URL (or its one-way fingerprint after snapshot purge), adopt one match, and never send a second create.
+10. Record only redacted counts, states, timestamps, artifact hashes, and pass/fail outcomes. Turn provider writes off immediately on any wrong-target write, duplicate create, Markdown/copy-text fallback, privacy leak, preflight bypass, or protocol drift.
 
-Real-content enablement remains blocked until every release gate and this live synthetic proof pass.
+The URL-source behavior is not considered fully released until this signed-in canary passes.
 
 ## 16. Verification matrix and current gaps
 
-A [production release-evidence record](../feature-council/notebooklm-sync/release/production-release-evidence-2026-07-22.md) records the protected-main artifact and UI-only deployment. The [Wiki publication verification](../feature-council/notebooklm-sync/release/wiki-publication-verification.md) records the qualified no-delete publication and fresh-clone checks. The release remains incomplete for signed-in provider behavior and owner-only enablement. The presence of tests, release controls, documentation publication, or a deployed UI does not itself prove the consumer NotebookLM workflow.
+A [production release-evidence record](../feature-council/notebooklm-sync/release/production-release-evidence-2026-07-22.md) records the original connector release. The [Wiki publication verification](../feature-council/notebooklm-sync/release/wiki-publication-verification.md) records its qualified publication checks. The URL-source release adds migration 027, protocol/mapper v2, and extension 0.7.4. Automated evidence does not replace the signed-in post-deployment YouTube URL canary.
 
 | Area | Release/code evidence | Live/production evidence |
 |---|---|---|
-| Mapper/privacy/limits | Automated release tests passed. | No provider-bound payload has been exercised in a signed-in canary. |
-| Ledger/state/idempotency/leases/retention | Automated release tests passed. | Production retention and operations checks are healthy; no export request exists because queueing is off. |
-| Session/connector APIs and CORS | Route/unit tests passed. | Authenticated Settings and item UI were verified with queue paused and provider writes off; no extension pairing or connector API lifecycle is claimed. |
-| Chrome target/provider/worker contract | Type/unit/build, artifact, attestation, and stable-install checks passed. | The extension is not loaded or paired; no signed-in Google canary is claimed. |
-| Migration/release compatibility | Migration, artifact, rollback-compatibility, and release-smoke coverage passed. | Release `167a15d57b8f70574a017ea4cda507870f3600d4` and migration 026 are deployed with the UI-only tuple `1:0:0`. |
-| UX/accessibility | Component, prototype, and automated checks passed. | Authenticated production Settings/item UI showed the paused/unavailable state; signed-in connector and provider-state UX remain pending. |
-| Observability | Durable journals, retention health, runtime safety gate, read-only checker, and timers are implemented and tested. | Production timers and the zero-count retention heartbeat are healthy. The UI-only verification produced two content-free `notebooklm.export_viewed` analytics events; pairing, connector, target, request, request-transition, and provider lifecycle history remain absent. Those UI events make a pre-026 binary rollback ineligible under the additive compatibility guard. |
-| Non-content ledger deletion | Snapshot/event retention, conditional orphan pruning, physical-purge, and backup-scrub paths passed release checks. | The dark/UI-only production state has no export snapshot to purge; live synthetic retention evidence remains pending. |
+| Mapper/privacy/limits | URL-first mapping, unsafe-URL blocking, URL hashing, copied-text fallback only for no-URL notes, and the 45–259 safe-limit envelope have automated coverage. | Post-deployment YouTube URL-source canary pending. |
+| Ledger/state/idempotency/leases/retention | URL snapshot/claim/dedupe, one-write fencing, 24-hour purge, hash-only reconciliation, backup scrub, and rollback guards have automated coverage. | Production migration 027 and retention/operations checks must be reverified after deployment. |
+| Session/connector APIs and CORS | Protocol-v2 routes, in-place connector upgrade, strict DTO parsing, and exact Chrome origin checks have automated coverage. | Existing paired connector must reconnect after one extension reload. |
+| Chrome target/provider/worker contract | Exact web/YouTube RPC slots, one provider fetch, no copied-text call for URL claims, exact/hash reconciliation, typecheck, tests, and build are covered. | Installed extension version 0.7.4 and signed-in provider behavior must be verified. |
+| Migration/release compatibility | 026→027 preservation, guards, pre-027 scrub compatibility, immutable artifact, and fail-closed rollback checks are release gates. | Production release identity and migration hashes must be verified after deployment. |
+| UX/accessibility | URL-aware confirmation/status copy, unsafe-URL blocking, capacity controls, and installed extension version display have automated coverage. | Authenticated production item and Settings surfaces must be spot-checked after deployment. |
+| Observability | Durable journals, retention health, runtime safety gates, read-only checker, and timers remain content-free and covered. | Redacted canary state/count evidence must show exactly one URL source. |
+| Non-content ledger deletion | Title/text/URL purge, WAL truncation, backup-copy scrub, and retained one-way URL fingerprint are covered. | Production retention health must remain current after migration. |
 
 ## 17. Source-of-truth files
 
 - Product contract: `docs/feature-council/notebooklm-sync/product/ONE_CLICK_EXPORT_DELIVERY_CONTRACT_2026-07-21.md`
-- Migration: `src/db/migrations/026_notebooklm_export.sql`
+- Migrations: `src/db/migrations/026_notebooklm_export.sql`, `src/db/migrations/027_notebooklm_url_sources.sql`
 - Server domain/state: `src/db/notebooklm-export.ts`, `src/db/notebooklm-export-control.ts`
 - Mapper/contracts/security: `src/lib/notebooklm/`
 - Session and connector routes: `src/app/api/items/[id]/notebooklm-export/`, `src/app/api/settings/notebooklm-export/`, `src/app/api/notebooklm/`

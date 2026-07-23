@@ -60,6 +60,7 @@ function status(overrides: Partial<ExportStatusDto> = {}): ExportStatusDto {
     },
     item: {
       eligible: true,
+      exportKind: "copied_text",
       ineligibleReason: null,
       requiresLimitedConfirmation: false,
       changedContent: false,
@@ -249,6 +250,7 @@ test("matching ready request is shown before generic already-exported state", ()
   const view = buildNotebookLmExportView(status({
     item: {
       eligible: true,
+      exportKind: "copied_text",
       ineligibleReason: null,
       requiresLimitedConfirmation: false,
       changedContent: false,
@@ -267,6 +269,7 @@ test("a later cancelled version cannot mask an exact already-exported current ve
   const view = buildNotebookLmExportView(status({
     item: {
       eligible: true,
+      exportKind: "copied_text",
       ineligibleReason: null,
       requiresLimitedConfirmation: false,
       changedContent: false,
@@ -285,6 +288,7 @@ test("terminal safety failure takes precedence over changed-content confirmation
   const current = status({
     item: {
       eligible: true,
+      exportKind: "copied_text",
       ineligibleReason: null,
       requiresLimitedConfirmation: false,
       changedContent: true,
@@ -312,6 +316,7 @@ test("provider-write rollout stage is truthful and disables new exports", () => 
     },
     item: {
       eligible: true,
+      exportKind: "copied_text",
       ineligibleReason: null,
       requiresLimitedConfirmation: false,
       changedContent: true,
@@ -324,6 +329,30 @@ test("provider-write rollout stage is truthful and disables new exports", () => 
   assert.equal(view.title, "Provider writes are off");
   assert.equal(view.action, "Provider writes off");
   assert.equal(view.actionDisabled, true);
+});
+
+test("URL-bearing items are described as URL sources, never copied text", () => {
+  const view = buildNotebookLmExportView(
+    status({
+      item: {
+        eligible: true,
+        exportKind: "url",
+        ineligibleReason: null,
+        requiresLimitedConfirmation: false,
+        changedContent: false,
+        alreadyExported: false,
+        requestMatchesCurrentVersion: false,
+        hasUnresolvedDifferentVersion: false,
+      },
+      disclosure: "Adds the saved source URL to NotebookLM.",
+    }),
+    null,
+    null,
+  );
+
+  assert.equal(view.title, "Ready to export");
+  assert.match(view.detail, /adds this saved source URL/i);
+  assert.doesNotMatch(view.detail, /copied-text/i);
 });
 
 test("queued and reconciling progress are polite while actionable safety failures are assertive", () => {

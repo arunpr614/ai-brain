@@ -1,5 +1,5 @@
-export const NOTEBOOKLM_CONNECTOR_PROTOCOL_VERSION = 1;
-export const NOTEBOOKLM_MAPPER_VERSION = 1;
+export const NOTEBOOKLM_CONNECTOR_PROTOCOL_VERSION = 2;
+export const NOTEBOOKLM_MAPPER_VERSION = 2;
 export const NOTEBOOKLM_PAYLOAD_MAX_BYTES = 200_000;
 export const NOTEBOOKLM_PAYLOAD_MAX_WORDS = 50_000;
 export const NOTEBOOKLM_PRE_CREATE_RETENTION_MS = 7 * 24 * 60 * 60 * 1_000;
@@ -85,9 +85,12 @@ export interface NotebookLmClaimDto {
     reserveCount: number;
   };
   source: {
+    kind: "url" | "copied_text";
     marker: string;
     title: string | null;
     text: string | null;
+    url: string | null;
+    urlHash: string | null;
     sourceAlias: string | null;
   };
   leaseExpiresAt: string;

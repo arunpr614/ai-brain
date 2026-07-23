@@ -121,7 +121,8 @@ verify_migration_compatibility() {
   local runtime="$1" manifest="$2" allow_audited="$3"
   node "$MIGRATION_COMPAT_TOOL" "$runtime" "$manifest" "$BRAIN_DB_PATH" \
     "$allow_audited" \
-    "${BRAIN_AUDITED_SCHEMA_025_SHA256:-}" "${BRAIN_AUDITED_SCHEMA_026_SHA256:-}"
+    "${BRAIN_AUDITED_SCHEMA_025_SHA256:-}" "${BRAIN_AUDITED_SCHEMA_026_SHA256:-}" \
+    "${BRAIN_AUDITED_SCHEMA_027_SHA256:-}"
 }
 
 snapshot_system_state() {
@@ -168,7 +169,8 @@ restore_previous_state() {
     prior_manifest="$(dirname -- "$prior_target")/evidence/brain-release-${prior_app_sha:0:12}.tar.gz.manifest.json"
     [[ -f "$prior_manifest" ]] || return 1
     if [[ "${BRAIN_AUDITED_SCHEMA_025_SHA256:-}" =~ ^[a-f0-9]{64}$ &&
-          "${BRAIN_AUDITED_SCHEMA_026_SHA256:-}" =~ ^[a-f0-9]{64}$ ]]; then
+          "${BRAIN_AUDITED_SCHEMA_026_SHA256:-}" =~ ^[a-f0-9]{64}$ &&
+          "${BRAIN_AUDITED_SCHEMA_027_SHA256:-}" =~ ^[a-f0-9]{64}$ ]]; then
       allow_audited=1
     fi
     verify_migration_compatibility "$prior_target" "$prior_manifest" "$allow_audited" \

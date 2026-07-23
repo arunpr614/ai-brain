@@ -15,11 +15,11 @@ The current immutable release workflow accepts only protected-main GitHub-hosted
 
 `/opt/brain/data/backups` is shared by application/release backups and the guarded Recall pre-apply backup. Its required contract is owner `brain`, group `brain-data`, mode `2770`. Release paths must preserve that contract and prove file creation as `brain-recall`; owner-only mode breaks both automatic and manual Recall apply after a successful dry run.
 
-Card Processing adds a deep readiness audit at deploy, startup, and every six hours. Its production rollout enables reads, then writes, then navigation, with health/readiness/integrity/journal observation windows after each stage. Its retained rollout evidence covers migration 025, 129 dormant historical items, one bounded legacy-item proof, the synthetic lifecycle, and the active audit timer. The current protected-main release additionally applies migration 026 for NotebookLM export.
+Card Processing adds a deep readiness audit at deploy, startup, and every six hours. Its production rollout enables reads, then writes, then navigation, with health/readiness/integrity/journal observation windows after each stage. Its retained rollout evidence covers migration 025, 129 dormant historical items, one bounded legacy-item proof, the synthetic lifecycle, and the active audit timer. NotebookLM export uses migration 026 for its durable ledger and migration 027 for URL-source payloads.
 
 ### NotebookLM export rollout gate
 
-The protected-main server release and migration 026 are deployed, with the operations and durable-retention timers enabled and healthy. The current rollout is experimental UI-only: UI/queue/provider flags are `1:0:0`, so setup and read-only status can be observed but no new export can enter the queue and no provider create can be authorized. The attested extension 0.7.0 is stable-installed but not loaded or paired. A fixed private target, signed-in synthetic provider canary, and owner-only real-content enablement remain pending.
+The connector is owner-operated and experimental. A paired owner-only private target and earlier copied-text canary exist. The URL-source release adds migration 027, connector protocol v2, and extension 0.7.4. Deployments preserve the current dependency-ordered master/queue/provider tuple and verify the operations and durable-retention timers. Live URL delivery is not considered proven until the post-deployment YouTube canary appears as a URL/YouTube source and reaches `Ready`.
 
 ### Recall manual-sync enablement gate
 
@@ -31,7 +31,7 @@ Use service state/restarts, authenticated health, provider status, queue/backlog
 
 ## Rollback and recovery
 
-Rollback requires an attested known application artifact, configuration/flag state, database backup, and migration compatibility. Card Processing first disables navigation, writes, and reads; NotebookLM first disables provider writes, queue acceptance, and UI. An audited pre-026 runtime may cross the additive migration only while NotebookLM request/connector/target state is absent and runtime-control/retention state is proven pristine. The current post-UI database already has two content-free `notebooklm.export_viewed` operational events, so it is ineligible for pre-026 rollback; the safe current rollback is schema-026-aware with NotebookLM flags off. Restore is a last resort because later writes would be lost. Preserve current data before restore. Use [Backups and Restore](Backups-and-Restore) and private operator context.
+Rollback requires an attested known application artifact, configuration/flag state, database backup, and migration compatibility. Card Processing first disables navigation, writes, and reads; NotebookLM first disables provider writes, queue acceptance, and UI. Migration 027 is additive, and the release gate permits automatic rollback to a schema-026-aware runtime only before any URL request history exists. Once a URL request has been created, the older runtime is rejected. Restore is a last resort because later writes would be lost. Preserve current data before restore. Use [Backups and Restore](Backups-and-Restore) and private operator context.
 
 Operational coupling is significant: HTTP, workers, cron, backups and SQLite share one Node process/database. GitHub CI validates documentation but not the full product suite; release validation remains an explicit gate.
 

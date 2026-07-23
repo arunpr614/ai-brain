@@ -45,6 +45,12 @@ export function scrubNotebookLmBackup(databasePath, now = Date.now()) {
       )
       .get();
     if (!installed) return { installed: false, snapshotsScrubbed: 0 };
+    const requestColumns = new Set(
+      db.pragma("table_info('notebooklm_export_requests')").map((column) => column.name),
+    );
+    const hasUrlPayload = requestColumns.has("payload_url");
+    const clearUrl = hasUrlPayload ? ", payload_url = NULL" : "";
+    const urlPredicate = hasUrlPayload ? " OR payload_url IS NOT NULL" : "";
     const result = db.transaction(() =>
       db.prepare(
         `UPDATE notebooklm_export_requests SET
@@ -66,7 +72,7 @@ export function scrubNotebookLmBackup(databasePath, now = Date.now()) {
              WHEN phase = 'pre_create' AND create_dispatched_at IS NULL THEN 'backup_snapshot_omitted'
              ELSE safe_reason
            END,
-           payload_title = NULL, payload_text = NULL,
+           payload_title = NULL, payload_text = NULL${clearUrl},
            snapshot_purge_at = MIN(snapshot_purge_at, ?),
            snapshot_purged_at = COALESCE(snapshot_purged_at, ?),
            completed_at = CASE
@@ -75,14 +81,14 @@ export function scrubNotebookLmBackup(databasePath, now = Date.now()) {
              ELSE completed_at
            END,
            lease_token_hash = NULL, lease_until = NULL, updated_at = MAX(updated_at, ?)
-         WHERE payload_title IS NOT NULL OR payload_text IS NOT NULL`,
+         WHERE payload_title IS NOT NULL OR payload_text IS NOT NULL${urlPredicate}`,
       ).run(now, now, now, now).changes,
     ).immediate();
     db.exec("VACUUM");
     const remaining = db
       .prepare(
         `SELECT COUNT(*) value FROM notebooklm_export_requests
-         WHERE payload_title IS NOT NULL OR payload_text IS NOT NULL`,
+         WHERE payload_title IS NOT NULL OR payload_text IS NOT NULL${urlPredicate}`,
       )
       .get().value;
     if (remaining !== 0) throw new Error("snapshot_scrub_incomplete");

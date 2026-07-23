@@ -124,8 +124,10 @@ function runMigrationCompatibilityCli(
       CREATE TABLE notebooklm_export_requests (
         id TEXT PRIMARY KEY,
         phase TEXT NOT NULL,
+        payload_kind TEXT NOT NULL DEFAULT 'copied_text',
         payload_title TEXT,
-        payload_text TEXT
+        payload_text TEXT,
+        payload_url TEXT
       );
       CREATE TABLE notebooklm_export_events (id TEXT PRIMARY KEY);
       CREATE TABLE notebooklm_runtime_control (
@@ -202,14 +204,17 @@ function runMigrationCompatibilityCli(
     }
     const insertRequest = database.prepare(
       `INSERT INTO notebooklm_export_requests
-       (id, phase, payload_title, payload_text) VALUES (?, ?, ?, ?)`,
+       (id, phase, payload_kind, payload_title, payload_text, payload_url)
+       VALUES (?, ?, ?, ?, ?, ?)`,
     );
     for (const [index, request] of (notebookLmState.requests ?? []).entries()) {
       insertRequest.run(
         `request-${index}`,
         request.phase ?? "terminal",
+        request.payloadKind ?? "copied_text",
         request.payloadTitle ?? null,
         request.payloadText ?? null,
+        request.payloadUrl ?? null,
       );
     }
   }
@@ -224,6 +229,7 @@ function runMigrationCompatibilityCli(
     allowAuditedAdditiveRollback ? "1" : "0",
     "b".repeat(64),
     "c".repeat(64),
+    "d".repeat(64),
     expectedProviderWriteBlocked === "" ? "" : String(expectedProviderWriteBlocked),
   ], { cwd: root, encoding: "utf8" });
 }
@@ -464,6 +470,7 @@ try {
   put(".next/standalone/.env.production", "SECRET=must-not-ship\n");
   put(".next/standalone/src/db/migrations/025_item_workflow.sql", "migration\n");
   put(".next/standalone/src/db/migrations/026_notebooklm_export.sql", "notebooklm migration\n");
+  put(".next/standalone/src/db/migrations/027_notebooklm_url_sources.sql", "notebooklm URL migration\n");
   put(".next/static/chunks/app.js", "chunk\n");
   put("public/icon.svg", "icon\n");
   put("extension-dist/manifest.json", JSON.stringify({
@@ -482,6 +489,7 @@ try {
   } }));
   put("src/db/migrations/025_item_workflow.sql", "migration\n");
   put("src/db/migrations/026_notebooklm_export.sql", "notebooklm migration\n");
+  put("src/db/migrations/027_notebooklm_url_sources.sql", "notebooklm URL migration\n");
   for (const path of [
     "scripts/check-ai-providers.mjs", "scripts/backup-offsite.sh", "scripts/install-durable-backup-tools.sh",
     "scripts/verified-volatile-backup-staging.sh", "scripts/cleanup-volatile-backup-staging.mjs",
@@ -840,7 +848,7 @@ try {
   assert.match(packagedRestore, /this does not clear the provider-write latch/);
   assert.match(
     packagedRestore,
-    /"\$candidate" 0 "" "" \\\s+"\$restore_block_latched" >\/dev\/null/,
+    /"\$candidate" 0 "" "" "" \\\s+"\$restore_block_latched" >\/dev\/null/,
   );
 
   // Execute the packaged restore control flow with a deliberately minimal
@@ -1108,12 +1116,14 @@ process.stdout.write(String(fs.statSync(args.at(-1)).size) + "\\n");
   assert.deepEqual(AUDITED_ADDITIVE_ROLLBACK_MIGRATIONS, [
     "025_item_workflow.sql",
     "026_notebooklm_export.sql",
+    "027_notebooklm_url_sources.sql",
   ]);
   const migrationEntry = (name, digit) => ({ name, sha256: digit.repeat(64) });
   const migration024 = migrationEntry("024_recall_manual_sync.sql", "a");
   const migration025 = migrationEntry("025_item_workflow.sql", "b");
   const migration026 = migrationEntry("026_notebooklm_export.sql", "c");
-  const migration027 = migrationEntry("027_unreviewed.sql", "d");
+  const migration027 = migrationEntry("027_notebooklm_url_sources.sql", "d");
+  const migration028 = migrationEntry("028_unreviewed.sql", "e");
   const pre026CannotProveRestoreLatch = runMigrationCompatibilityCli(
     [migration024],
     [migration024],
@@ -1148,6 +1158,7 @@ process.stdout.write(String(fs.statSync(args.at(-1)).size) + "\\n");
   const auditedRollbackHashes = new Map([
     [migration025.name, migration025.sha256],
     [migration026.name, migration026.sha256],
+    [migration027.name, migration027.sha256],
   ]);
   const evaluate = (applied, packaged, allowAuditedAdditiveRollback = true) =>
     evaluateMigrationCompatibility({
@@ -1172,10 +1183,15 @@ process.stdout.write(String(fs.statSync(args.at(-1)).size) + "\\n");
     auditedRollback: true,
     unknown: ["025_item_workflow.sql", "026_notebooklm_export.sql"],
   });
+  assert.deepEqual(evaluate([migration024, migration027], [migration024], true), {
+    ok: true,
+    auditedRollback: true,
+    unknown: ["027_notebooklm_url_sources.sql"],
+  });
   assert.equal(evaluate([migration024, migration026], [migration024], false).code, "migration_incompatible");
-  assert.equal(evaluate([migration024, migration027], [migration024], true).code, "migration_incompatible");
+  assert.equal(evaluate([migration024, migration028], [migration024], true).code, "migration_incompatible");
   assert.equal(
-    evaluate([migration024, migration025, migration027], [migration024], true).code,
+    evaluate([migration024, migration025, migration028], [migration024], true).code,
     "migration_incompatible",
   );
   assert.equal(
@@ -1281,10 +1297,35 @@ process.stdout.write(String(fs.statSync(args.at(-1)).size) + "\\n");
   );
   assert.notEqual(cliRejects026WithoutRollback.status, 0);
   assert.match(cliRejects026WithoutRollback.stderr, /migration_incompatible/);
-  const cliRejects027 = runMigrationCompatibilityCli([migration024, migration027], [migration024], true);
-  assert.notEqual(cliRejects027.status, 0);
-  assert.match(cliRejects027.stderr, /migration_incompatible/);
-  assert.match(cliRejects027.stderr, /027_unreviewed\.sql/);
+  const cliAllowsEmpty027Rollback = runMigrationCompatibilityCli(
+    [migration024, migration026, migration027],
+    [migration024, migration026],
+    true,
+  );
+  assert.equal(cliAllowsEmpty027Rollback.status, 0, cliAllowsEmpty027Rollback.stderr);
+  const cliRejectsUrlHistoryOn027Rollback = runMigrationCompatibilityCli(
+    [migration024, migration026, migration027],
+    [migration024, migration026],
+    true,
+    {
+      requests: [{
+        phase: "terminal",
+        payloadKind: "url",
+        payloadUrl: null,
+      }],
+    },
+  );
+  assert.notEqual(cliRejectsUrlHistoryOn027Rollback.status, 0);
+  assert.match(cliRejectsUrlHistoryOn027Rollback.stderr, /notebooklm_url_rollback_unsafe/);
+  assert.match(cliRejectsUrlHistoryOn027Rollback.stderr, /url_request_history_present/);
+  const cliRejects028 = runMigrationCompatibilityCli(
+    [migration024, migration028],
+    [migration024],
+    true,
+  );
+  assert.notEqual(cliRejects028.status, 0);
+  assert.match(cliRejects028.stderr, /migration_incompatible/);
+  assert.match(cliRejects028.stderr, /028_unreviewed\.sql/);
   const cliRejectsUntrusted026 = runMigrationCompatibilityCli(
     [migration024, { ...migration026, sha256: "e".repeat(64) }],
     [migration024],
@@ -1301,6 +1342,7 @@ process.stdout.write(String(fs.statSync(args.at(-1)).size) + "\\n");
     safe_reason TEXT,
     payload_title TEXT,
     payload_text TEXT,
+    payload_url TEXT,
     snapshot_purge_at INTEGER NOT NULL,
     snapshot_purged_at INTEGER,
     completed_at INTEGER,
@@ -1313,10 +1355,10 @@ process.stdout.write(String(fs.statSync(args.at(-1)).size) + "\\n");
   )`);
   const scrubNow = Date.now();
   const insertScrubRequest = scrubDatabase.prepare(`INSERT INTO notebooklm_export_requests
-    (id, state, phase, safe_reason, payload_title, payload_text, snapshot_purge_at,
+    (id, state, phase, safe_reason, payload_title, payload_text, payload_url, snapshot_purge_at,
      snapshot_purged_at, completed_at, create_dispatched_at, lease_token_hash, lease_until,
      updated_at, opaque_marker, source_alias)
-    VALUES (?, ?, ?, ?, ?, ?, ?, NULL, NULL, ?, ?, ?, ?, ?, ?)`);
+    VALUES (?, ?, ?, ?, ?, ?, NULL, ?, NULL, NULL, ?, ?, ?, ?, ?, ?)`);
   insertScrubRequest.run(
     "pre-create",
     "queued",
@@ -1400,7 +1442,7 @@ process.stdout.write(String(fs.statSync(args.at(-1)).size) + "\\n");
   const scrubbedDatabase = new Database(scrubDatabasePath, { readonly: true });
   assert.deepEqual(
     scrubbedDatabase.prepare(`SELECT id, state, phase, safe_reason,
-      payload_title, payload_text, lease_token_hash, lease_until, opaque_marker, source_alias
+      payload_title, payload_text, payload_url, lease_token_hash, lease_until, opaque_marker, source_alias
       FROM notebooklm_export_requests ORDER BY id`).all(),
     [
       {
@@ -1410,6 +1452,7 @@ process.stdout.write(String(fs.statSync(args.at(-1)).size) + "\\n");
         safe_reason: "status_pending",
         payload_title: null,
         payload_text: null,
+        payload_url: null,
         lease_token_hash: null,
         lease_until: null,
         opaque_marker: "opaque-marker-leased-poll",
@@ -1422,6 +1465,7 @@ process.stdout.write(String(fs.statSync(args.at(-1)).size) + "\\n");
         safe_reason: "provider_state_unknown",
         payload_title: null,
         payload_text: null,
+        payload_url: null,
         lease_token_hash: null,
         lease_until: null,
         opaque_marker: "opaque-marker-leased-reconcile",
@@ -1434,6 +1478,7 @@ process.stdout.write(String(fs.statSync(args.at(-1)).size) + "\\n");
         safe_reason: "backup_snapshot_omitted",
         payload_title: null,
         payload_text: null,
+        payload_url: null,
         lease_token_hash: null,
         lease_until: null,
         opaque_marker: "opaque-marker-pre-create",
@@ -1446,6 +1491,7 @@ process.stdout.write(String(fs.statSync(args.at(-1)).size) + "\\n");
         safe_reason: "connector_claimed",
         payload_title: null,
         payload_text: null,
+        payload_url: null,
         lease_token_hash: null,
         lease_until: null,
         opaque_marker: "opaque-marker-sending-create",
@@ -1456,6 +1502,61 @@ process.stdout.write(String(fs.statSync(args.at(-1)).size) + "\\n");
   scrubbedDatabase.close();
   const scrubbedBytes = readFileSync(scrubDatabasePath);
   assert.equal(scrubbedBytes.includes(Buffer.from("UNIQUE_FROZEN_")), false);
+
+  // Deployment installs the candidate scrubber before migration 027 applies.
+  // It must therefore sanitize a live migration-026 backup that has no URL
+  // columns as well as the new schema.
+  const pre027ScrubDatabasePath = resolve(fixture, "scrub-backup-pre027.sqlite");
+  const pre027ScrubDatabase = new Database(pre027ScrubDatabasePath);
+  pre027ScrubDatabase.exec(`CREATE TABLE notebooklm_export_requests (
+    id TEXT PRIMARY KEY,
+    state TEXT NOT NULL,
+    phase TEXT NOT NULL,
+    safe_reason TEXT,
+    payload_title TEXT,
+    payload_text TEXT,
+    snapshot_purge_at INTEGER NOT NULL,
+    snapshot_purged_at INTEGER,
+    completed_at INTEGER,
+    create_dispatched_at INTEGER,
+    lease_token_hash TEXT,
+    lease_until INTEGER,
+    updated_at INTEGER NOT NULL
+  )`);
+  pre027ScrubDatabase.prepare(`INSERT INTO notebooklm_export_requests
+    (id,state,phase,safe_reason,payload_title,payload_text,snapshot_purge_at,
+     updated_at)
+    VALUES('pre027','queued','pre_create','queued','OLD_TITLE','OLD_BODY',?,?)`)
+    .run(scrubNow + 1_000, scrubNow);
+  pre027ScrubDatabase.close();
+  const pre027Scrub = spawnSync(process.execPath, [
+    resolve(root, "scripts/scrub-notebooklm-backup.mjs"), "--db", pre027ScrubDatabasePath,
+  ], {
+    cwd: root,
+    encoding: "utf8",
+    env: {
+      ...process.env,
+      NODE_ENV: "test",
+      BRAIN_SCRUB_RUNTIME_ROOT: root,
+      BRAIN_UNSAFE_TEST_SKIP_BACKUP_STAGING_TMPFS_PROOF: "1",
+      SQLITE_TMPDIR: scrubTempBoundary,
+      TMPDIR: scrubTempBoundary,
+    },
+  });
+  assert.equal(pre027Scrub.status, 0, pre027Scrub.stderr);
+  const scrubbedPre027 = new Database(pre027ScrubDatabasePath, { readonly: true });
+  assert.deepEqual(
+    scrubbedPre027.prepare(
+      "SELECT state,phase,payload_title,payload_text FROM notebooklm_export_requests WHERE id='pre027'",
+    ).get(),
+    {
+      state: "expired",
+      phase: "terminal",
+      payload_title: null,
+      payload_text: null,
+    },
+  );
+  scrubbedPre027.close();
   const operationsDatabasePath = resolve(fixture, "notebooklm-operations.sqlite");
   const operationsDatabase = new Database(operationsDatabasePath);
   operationsDatabase.exec(`

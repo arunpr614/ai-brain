@@ -8,6 +8,7 @@ import { resolve } from "node:path";
 export const AUDITED_ADDITIVE_ROLLBACK_MIGRATIONS = Object.freeze([
   "025_item_workflow.sql",
   "026_notebooklm_export.sql",
+  "027_notebooklm_url_sources.sql",
 ]);
 
 export function evaluateMigrationCompatibility({
@@ -169,6 +170,70 @@ export function evaluateNotebookLmRollbackSafety(database, compatibility) {
   }
 }
 
+export function evaluateNotebookLmUrlRollbackSafety(database, compatibility) {
+  if (
+    !compatibility.ok ||
+    !compatibility.auditedRollback ||
+    !compatibility.unknown.includes("027_notebooklm_url_sources.sql") ||
+    compatibility.unknown.includes("026_notebooklm_export.sql")
+  ) {
+    return { ok: true, required: false };
+  }
+
+  try {
+    const counts = database.prepare(
+      `SELECT
+         COUNT(*) AS request_count,
+         COALESCE(SUM(CASE WHEN payload_kind = 'url' THEN 1 ELSE 0 END), 0)
+           AS url_request_count,
+         COALESCE(SUM(CASE WHEN payload_url IS NOT NULL THEN 1 ELSE 0 END), 0)
+           AS retained_url_count
+       FROM notebooklm_export_requests`,
+    ).get();
+    if (
+      !counts ||
+      !Number.isInteger(counts.request_count) ||
+      !Number.isInteger(counts.url_request_count) ||
+      !Number.isInteger(counts.retained_url_count) ||
+      counts.request_count < 0 ||
+      counts.url_request_count < 0 ||
+      counts.retained_url_count < 0
+    ) {
+      return {
+        ok: false,
+        code: "notebooklm_url_rollback_state_invalid",
+        reasons: ["rollback_state_unreadable"],
+      };
+    }
+    if (counts.url_request_count > 0 || counts.retained_url_count > 0) {
+      return {
+        ok: false,
+        code: "notebooklm_url_rollback_unsafe",
+        reasons: [
+          counts.url_request_count > 0 ? "url_request_history_present" : null,
+          counts.retained_url_count > 0 ? "frozen_url_present" : null,
+        ].filter(Boolean),
+        requestCount: counts.request_count,
+        urlRequestCount: counts.url_request_count,
+        retainedUrlCount: counts.retained_url_count,
+      };
+    }
+    return {
+      ok: true,
+      required: true,
+      requestCount: counts.request_count,
+      urlRequestCount: 0,
+      retainedUrlCount: 0,
+    };
+  } catch {
+    return {
+      ok: false,
+      code: "notebooklm_url_rollback_state_invalid",
+      reasons: ["rollback_state_unreadable"],
+    };
+  }
+}
+
 function fail(message) {
   console.error(JSON.stringify({ ok: false, code: "invalid_release_migration_check", error: message }));
   process.exit(1);
@@ -182,6 +247,7 @@ function main() {
     allowArg = "0",
     schema025Hash = "",
     schema026Hash = "",
+    schema027Hash = "",
     expectedProviderWriteBlock = "",
   ] = process.argv.slice(2);
   if (
@@ -191,14 +257,15 @@ function main() {
     !["0", "1"].includes(allowArg) ||
     !["", "0", "1"].includes(expectedProviderWriteBlock)
   ) {
-    fail("usage: check-release-migration-compatibility <runtime-dir> <manifest.json> <database> <allow-audited-additive-rollback:0|1> [schema-025-sha256] [schema-026-sha256] [expected-provider-write-block:0|1]");
+    fail("usage: check-release-migration-compatibility <runtime-dir> <manifest.json> <database> <allow-audited-additive-rollback:0|1> [schema-025-sha256] [schema-026-sha256] [schema-027-sha256] [expected-provider-write-block:0|1]");
   }
   const auditedRollbackHashes = new Map([
     ["025_item_workflow.sql", schema025Hash],
     ["026_notebooklm_export.sql", schema026Hash],
+    ["027_notebooklm_url_sources.sql", schema027Hash],
   ]);
   if (allowArg === "1" && [...auditedRollbackHashes.values()].some((hash) => !/^[a-f0-9]{64}$/.test(hash))) {
-    fail("audited additive rollback requires exact schema-025 and schema-026 hashes");
+    fail("audited additive rollback requires exact schema-025, schema-026, and schema-027 hashes");
   }
 
   const runtime = resolve(runtimeArg);
@@ -281,6 +348,17 @@ function main() {
   }
   if (!rollbackSafety.ok) {
     console.error(JSON.stringify(rollbackSafety));
+    process.exit(1);
+  }
+  const urlRollbackDatabase = new Database(resolve(databaseArg), { readonly: true, fileMustExist: true });
+  let urlRollbackSafety;
+  try {
+    urlRollbackSafety = evaluateNotebookLmUrlRollbackSafety(urlRollbackDatabase, result);
+  } finally {
+    urlRollbackDatabase.close();
+  }
+  if (!urlRollbackSafety.ok) {
+    console.error(JSON.stringify(urlRollbackSafety));
     process.exit(1);
   }
 }

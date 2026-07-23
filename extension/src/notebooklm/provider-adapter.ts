@@ -120,6 +120,30 @@ export class NotebookLmProviderAdapter {
     return parseAddedSource(result);
   }
 
+  /**
+   * Performs exactly one non-idempotent ADD_SOURCE request for a web or
+   * YouTube URL. Lost responses are reconciled by exact URL; this method
+   * never retries the mutation.
+   */
+  async addUrl(
+    session: ProviderSession,
+    input: { notebookId: string; url: string },
+  ): Promise<ProviderSource> {
+    if (!validOpaqueIdentifier(input.notebookId) || !validProviderUrl(input.url)) {
+      throw new NotebookLmProviderError("protocol", "The URL source is outside the connector limits.");
+    }
+    const sourceData = isYouTubeUrl(input.url)
+      ? [null, null, null, null, null, null, null, [input.url], null, null, 1]
+      : [null, null, [input.url], null, null, null, null, null, null, null, 1];
+    const result = await this.callRpc(
+      session,
+      RPC.addSource,
+      [[sourceData], input.notebookId, templateBlock()],
+      `/notebook/${encodeURIComponent(input.notebookId)}`,
+    );
+    return parseAddedSource(result);
+  }
+
   private async bootstrap(authUser: number | null): Promise<ProviderSession> {
     const url = new URL(`${NOTEBOOKLM_APP_ORIGIN}/`);
     applyAuthUser(url, authUser);
@@ -411,7 +435,56 @@ function parseSourceEntry(value: unknown): ProviderSource {
   if (title !== null && typeof title !== "string") {
     throw new NotebookLmProviderError("protocol", "NotebookLM source title changed shape.");
   }
-  return { id: id.toLowerCase(), title, status: parseSourceStatus(value[3]) };
+  return {
+    id: id.toLowerCase(),
+    title,
+    url: parseSourceUrl(value[2]),
+    status: parseSourceStatus(value[3]),
+  };
+}
+
+function parseSourceUrl(metadata: unknown): string | null {
+  if (!Array.isArray(metadata)) return null;
+  const canonical = arrayFirstString(metadata[7]);
+  if (canonical) return canonical;
+  const youtube = arrayFirstString(metadata[5]);
+  if (youtube) return youtube;
+  const bare = metadata[0];
+  return typeof bare === "string" && /^https?:\/\//i.test(bare) ? bare : null;
+}
+
+function arrayFirstString(value: unknown): string | null {
+  return Array.isArray(value) && typeof value[0] === "string" && value[0]
+    ? value[0]
+    : null;
+}
+
+function validProviderUrl(value: string): boolean {
+  if (!value || value.length > 4_096) return false;
+  try {
+    const url = new URL(value);
+    return (
+      (url.protocol === "https:" || url.protocol === "http:") &&
+      !url.username &&
+      !url.password &&
+      Boolean(url.hostname)
+    );
+  } catch {
+    return false;
+  }
+}
+
+function isYouTubeUrl(value: string): boolean {
+  try {
+    const hostname = new URL(value).hostname.toLowerCase();
+    return (
+      hostname === "youtube.com" ||
+      hostname.endsWith(".youtube.com") ||
+      hostname === "youtu.be"
+    );
+  } catch {
+    return false;
+  }
 }
 
 function parseSourceStatus(block: unknown): SourceStatus {
@@ -512,4 +585,6 @@ export const providerAdapterTestHooks = {
   parsePrivateSharing,
   parseAddedSource,
   parseSourceEntry,
+  parseSourceUrl,
+  isYouTubeUrl,
 };

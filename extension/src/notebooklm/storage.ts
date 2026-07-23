@@ -1,4 +1,5 @@
 import {
+  CONNECTOR_PROTOCOL_VERSION,
   isSupportedSourceLimit,
   type ConnectorCredential,
   type DeliveryJournalEntry,
@@ -24,7 +25,18 @@ export class ConnectorStore {
 
   async getCredential(): Promise<ConnectorCredential | null> {
     const value = (await this.area.get(CONNECTOR_CREDENTIAL_KEY))[CONNECTOR_CREDENTIAL_KEY];
-    return isCredential(value) ? value : null;
+    if (isCredential(value)) return value;
+    if (isLegacyCredential(value)) {
+      const upgraded: ConnectorCredential = {
+        connectorId: value.connectorId,
+        token: value.token,
+        protocolVersion: CONNECTOR_PROTOCOL_VERSION,
+        pairedAt: value.pairedAt,
+      };
+      await this.setCredential(upgraded);
+      return upgraded;
+    }
+    return null;
   }
 
   async setCredential(value: ConnectorCredential): Promise<void> {
@@ -149,6 +161,19 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 }
 
 function isCredential(value: unknown): value is ConnectorCredential {
+  return (
+    isRecord(value) &&
+    typeof value.connectorId === "string" &&
+    /^[a-f0-9]{24}$/.test(value.connectorId) &&
+    /^[a-f0-9]{64}$/.test(String(value.token)) &&
+    value.protocolVersion === CONNECTOR_PROTOCOL_VERSION &&
+    typeof value.pairedAt === "number"
+  );
+}
+
+function isLegacyCredential(
+  value: unknown,
+): value is Omit<ConnectorCredential, "protocolVersion"> & { protocolVersion: 1 } {
   return (
     isRecord(value) &&
     typeof value.connectorId === "string" &&

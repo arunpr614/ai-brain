@@ -30,6 +30,66 @@ test("copied-text request matches current notebooklm-py wire format", () => {
   ]);
 });
 
+test("URL requests use NotebookLM web and YouTube source slots", async () => {
+  async function capturedParams(url: string): Promise<unknown[]> {
+    let body = "";
+    const metadata = [
+      null,
+      null,
+      null,
+      null,
+      providerAdapterTestHooks.isYouTubeUrl(url) ? 9 : 5,
+      providerAdapterTestHooks.isYouTubeUrl(url) ? [url] : null,
+      null,
+      [url],
+    ];
+    const result = [[[[SOURCE_ID], "Imported source", metadata, [null, 2]]]];
+    const frame = [["wrb.fr", "izAoDd", JSON.stringify(result), null, null, null, "generic"]];
+    const adapter = new NotebookLmProviderAdapter(async (_input, init) => {
+      body = String(init?.body);
+      return new Response(`)]}'\n${JSON.stringify(frame)}`, { status: 200 });
+    });
+    assert.deepEqual(
+      await adapter.addUrl(
+        { csrfToken: "csrf", sessionId: "sid", authUser: null },
+        { notebookId: NOTEBOOK_ID, url },
+      ),
+      { id: SOURCE_ID, title: "Imported source", url, status: "ready" },
+    );
+    const encoded = /^f\.req=([^&]+)/.exec(body)?.[1];
+    assert.ok(encoded);
+    const envelope = JSON.parse(decodeURIComponent(encoded)) as unknown[][][];
+    return JSON.parse(String(envelope[0]?.[0]?.[1])) as unknown[];
+  }
+
+  const webUrl = "https://example.com/article?edition=1";
+  assert.deepEqual((await capturedParams(webUrl))[0], [
+    [null, null, [webUrl], null, null, null, null, null, null, null, 1],
+  ]);
+
+  const youtubeUrl = "https://www.youtube.com/watch?v=t0GiTyz4syY";
+  assert.deepEqual((await capturedParams(youtubeUrl))[0], [
+    [null, null, null, null, null, null, null, [youtubeUrl], null, null, 1],
+  ]);
+  assert.equal(providerAdapterTestHooks.isYouTubeUrl("https://youtube.com.evil.test/watch?v=x"), false);
+});
+
+test("addUrl performs one provider fetch and never retries a thrown dispatch", async () => {
+  let calls = 0;
+  const adapter = new NotebookLmProviderAdapter(async () => {
+    calls += 1;
+    throw new TypeError("connection lost");
+  }, 1_000);
+  await assert.rejects(
+    adapter.addUrl(
+      { csrfToken: "csrf", sessionId: "sid", authUser: null },
+      { notebookId: NOTEBOOK_ID, url: "https://www.youtube.com/watch?v=t0GiTyz4syY" },
+    ),
+    (error) => error instanceof NotebookLmProviderError && error.kind === "network",
+  );
+  assert.equal(calls, 1);
+});
+
 test("provider adapter invokes receiver-sensitive native fetch without binding itself", async () => {
   const result = [[[[SOURCE_ID], "Title", [], [null, 2]]]];
   const frame = [["wrb.fr", "izAoDd", JSON.stringify(result), null, null, null, "generic"]];
@@ -50,7 +110,7 @@ test("provider adapter invokes receiver-sensitive native fetch without binding i
       { csrfToken: "csrf", sessionId: "sid", authUser: null },
       { notebookId: NOTEBOOK_ID, title: "Title", text: "Content" },
     ),
-    { id: SOURCE_ID, title: "Title", status: "ready" },
+    { id: SOURCE_ID, title: "Title", url: null, status: "ready" },
   );
   assert.equal(calls, 1);
 });
@@ -107,7 +167,7 @@ test("notebook and sharing preflight require exact target ownership and sole-own
   assert.deepEqual(providerAdapterTestHooks.parseNotebook(notebook, NOTEBOOK_ID), {
     title: "Private notebook",
     sourceCount: 1,
-    sources: [{ id: SOURCE_ID, title: "Title", status: "processing" }],
+    sources: [{ id: SOURCE_ID, title: "Title", url: null, status: "processing" }],
   });
   assert.equal(
     providerAdapterTestHooks.parsePrivateSharing([[['owner@example.invalid', 1, [], []]], null, 1000]),
@@ -185,7 +245,7 @@ test("addCopiedText emits the exact percent-encoded form and parses the current 
       { csrfToken: "csrf token", sessionId: "sid", authUser: 2 },
       { notebookId: NOTEBOOK_ID, title: "A title", text: "Body's text" },
     ),
-    { id: SOURCE_ID, title: "Title", status: "ready" },
+    { id: SOURCE_ID, title: "Title", url: null, status: "ready" },
   );
   const url = new URL(requestUrl);
   assert.equal(url.searchParams.get("rpcids"), "izAoDd");

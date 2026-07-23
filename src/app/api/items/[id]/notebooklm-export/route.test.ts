@@ -255,7 +255,7 @@ test("queue and configuration kill switches fail before any frozen snapshot is w
   );
 });
 
-test("POST queues one frozen copy but returns only a safe status DTO", async () => {
+test("POST queues the exact source URL but returns only a safe status DTO", async () => {
   const item = createItem({
     source_type: "url",
     source_url: "https://example.com/synthetic",
@@ -278,12 +278,16 @@ test("POST queues one frozen copy but returns only a safe status DTO", async () 
   }
 
   const stored = getDb().prepare("SELECT * FROM notebooklm_export_requests").get() as {
+    payload_kind: string;
     payload_title: string;
     payload_text: string;
+    payload_url: string | null;
     lease_token_hash: string | null;
   };
+  assert.equal(stored.payload_kind, "url");
   assert.match(stored.payload_title, /PRIVATE_ROUTE_TITLE.*AI-MEM-/);
-  assert.match(stored.payload_text, /PRIVATE_ROUTE_BODY/);
+  assert.equal(stored.payload_text, "https://example.com/synthetic");
+  assert.equal(stored.payload_url, "https://example.com/synthetic");
   assert.equal(stored.lease_token_hash, null);
 
   const replay = await POST(request(item.id, "POST", { body }), context(item.id));
@@ -389,6 +393,32 @@ test("limited capture needs explicit confirmation and over-limit text is rejecte
   const rejected = await response.json();
   assert.equal(rejected.error, "payload_too_large");
   assert.ok(rejected.bytes > 200_000);
+});
+
+test("an unsafe saved URL is blocked instead of silently exporting Markdown", async () => {
+  const item = createItem({
+    source_type: "url",
+    source_url: "https://example.com/private?access_token=secret",
+    title: "Sensitive URL",
+    body: "This body must not become a fallback NotebookLM source.",
+  });
+  configureTarget();
+
+  const response = await POST(
+    request(item.id, "POST", { body: createBody() }),
+    context(item.id),
+  );
+
+  assert.equal(response.status, 422);
+  assert.deepEqual(await response.json(), { error: "unsafe_source_url" });
+  assert.equal(
+    (
+      getDb()
+        .prepare("SELECT COUNT(*) count FROM notebooklm_export_requests")
+        .get() as { count: number }
+    ).count,
+    0,
+  );
 });
 
 test("DELETE cancels only the matching pre-dispatch item request and purges its snapshot", async () => {

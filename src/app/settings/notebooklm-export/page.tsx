@@ -48,7 +48,7 @@ export default async function NotebookLmExportSettingsPage() {
           Export to NotebookLM
         </h1>
         <p className="mt-3 max-w-2xl text-sm leading-6 text-[var(--text-secondary)]">
-          Bind one fixed private consumer NotebookLM notebook. Each export is a deliberate static copy of one saved AI Memory item; it is not synchronization.
+          Bind one fixed private consumer NotebookLM notebook. Each export deliberately adds the saved source URL when one is available, or a static text source for a note; it is not synchronization.
         </p>
       </div>
       <NotebookLmConnectorSetup

@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
   "name": "Brain",
-  "version": "0.7.3",
-  "description": "Save pages to Brain and securely deliver approved text sources to NotebookLM.",
+  "version": "0.7.4",
+  "description": "Save pages to Brain and securely deliver approved URL or text sources to NotebookLM.",
   "action": {
     "default_popup": "src/popup.html",
     "default_title": "Save to Brain"

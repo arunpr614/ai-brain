@@ -413,6 +413,76 @@ test("idempotency and content dedupe return one durable request and one opaque m
   );
 });
 
+test("URL exports freeze, claim, and reconcile the exact source URL without copied text", () => {
+  const owner = connector();
+  bind(owner);
+  const sourceUrl = "https://www.youtube.com/watch?v=t0GiTyz4syY";
+  const queued = enqueue({
+    itemId: "youtube-url-item",
+    sourceKind: "url",
+    sourceUrl,
+    mappedTitle: "Synthetic YouTube item",
+    mappedText: sourceUrl,
+    contentHash: contentHash(`url\u0000${sourceUrl}`),
+    payloadBytes: Buffer.byteLength(sourceUrl),
+    payloadWords: 1,
+  });
+  assert.equal(queued.request.payload_kind, "url");
+  assert.equal(queued.request.payload_url, sourceUrl);
+
+  const create = claimNotebookLmExportRequest({
+    connector: owner,
+    allowCreate: true,
+    now: BASE_NOW + 100,
+  });
+  assert.ok(create);
+  assert.equal(create.action, "create");
+  assert.deepEqual(create.source, {
+    kind: "url",
+    marker: queued.request.opaque_marker,
+    title: null,
+    text: null,
+    url: sourceUrl,
+    urlHash: contentHash(`url\u0000${sourceUrl}`),
+    sourceAlias: null,
+  });
+  dispatch(owner, create, BASE_NOW + 101);
+  applyNotebookLmConnectorEvent({
+    connector: owner,
+    requestId: queued.request.id,
+    leaseToken: create.leaseToken,
+    leaseEpoch: create.leaseEpoch,
+    event: { type: "create_uncertain", reason: "timeout" },
+    allowProviderWrite: true,
+    now: BASE_NOW + 102,
+  });
+  getDb()
+    .prepare(
+      `UPDATE notebooklm_export_requests
+       SET payload_title = NULL, payload_text = NULL
+       WHERE id = ?`,
+    )
+    .run(queued.request.id);
+  const purged = getDb()
+    .prepare("SELECT payload_url, content_hash FROM notebooklm_export_requests WHERE id = ?")
+    .get(queued.request.id) as { payload_url: string | null; content_hash: string };
+  assert.equal(purged.payload_url, null);
+  assert.equal(purged.content_hash, contentHash(`url\u0000${sourceUrl}`));
+
+  const reconcile = claimNotebookLmExportRequest({
+    connector: owner,
+    allowCreate: false,
+    now: BASE_NOW + 102 + NOTEBOOKLM_RETRY_BACKOFF_MS,
+  });
+  assert.ok(reconcile);
+  assert.equal(reconcile.action, "reconcile");
+  assert.equal(reconcile.source.kind, "url");
+  assert.equal(reconcile.source.url, null);
+  assert.equal(reconcile.source.urlHash, contentHash(`url\u0000${sourceUrl}`));
+  assert.equal(reconcile.source.title, null);
+  assert.equal(reconcile.source.text, null);
+});
+
 test("a changed item version requires explicit confirmation after a successful export", () => {
   const owner = connector();
   bind(owner);

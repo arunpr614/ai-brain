@@ -5,6 +5,7 @@ import {
   assertMarker,
   providerTitle,
   sourceAlias,
+  sourceUrlHash,
   titleHasMarker,
 } from "./target";
 import type {
@@ -147,13 +148,18 @@ export class NotebookLmConnectorWorker {
 
     let accepted: { alias: string; providerStatus: "processing" | "ready" } | null = null;
     try {
-      const markedTitle = providerTitle(claim.source.title, claim.source.marker);
-      const added = await this.provider.addCopiedText(session, {
-        notebookId: binding.notebookId,
-        title: markedTitle,
-        text: claim.source.text ?? "",
-      });
-      if (added.status === "failed" || !titleHasMarker(added.title, claim.source.marker)) {
+      const added =
+        claim.source.kind === "url"
+          ? await this.provider.addUrl(session, {
+              notebookId: binding.notebookId,
+              url: claim.source.url ?? "",
+            })
+          : await this.provider.addCopiedText(session, {
+              notebookId: binding.notebookId,
+              title: providerTitle(claim.source.title, claim.source.marker),
+              text: claim.source.text ?? "",
+            });
+      if (added.status === "failed" || !(await sourceMatchesClaim(added, claim))) {
         throw new NotebookLmProviderError("protocol", "NotebookLM rejected the source after accepting it.");
       }
       const alias = await sourceAlias(added.id);
@@ -173,7 +179,7 @@ export class NotebookLmConnectorWorker {
       accepted = { alias, providerStatus: added.status };
     } catch (error) {
       const reason = uncertainReason(error);
-      // No call back into addCopiedText is permitted from this path.
+      // No second provider create is permitted from this path.
       await this.brain.sendEvent(credential, claim, { type: "create_uncertain", reason });
       await this.status(
         "attention",
@@ -208,7 +214,7 @@ export class NotebookLmConnectorWorker {
       await this.sendReadFailure(credential, claim, "reconcile", error);
       return;
     }
-    const matches = inspection.sources.filter((source) => titleHasMarker(source.title, claim.source.marker));
+    const matches = await matchingSources(inspection.sources, claim);
     if (matches.length === 0) {
       await this.brain.sendEvent(credential, claim, { type: "reconcile_result", matches: 0 });
       // A zero-match read is not proof that the write did not land: NotebookLM
@@ -275,11 +281,9 @@ export class NotebookLmConnectorWorker {
       source = inspection.sources.find((candidate) => candidate.id === remembered.sourceId);
     }
     if (!source) {
-      const markerMatches = inspection.sources.filter((candidate) =>
-        titleHasMarker(candidate.title, claim.source.marker),
-      );
-      if (markerMatches.length === 1 && (await sourceAlias(markerMatches[0]!.id)) === expectedAlias) {
-        source = markerMatches[0];
+      const claimMatches = await matchingSources(inspection.sources, claim);
+      if (claimMatches.length === 1 && (await sourceAlias(claimMatches[0]!.id)) === expectedAlias) {
+        source = claimMatches[0];
       }
     }
     if (!source) {
@@ -371,6 +375,31 @@ function assertInspectionMatchesBinding(inspection: TargetInspection, binding: L
   }
 }
 
+async function sourceMatchesClaim(
+  source: ProviderSource,
+  claim: NotebookLmClaim,
+): Promise<boolean> {
+  if (claim.source.kind === "copied_text") {
+    return titleHasMarker(source.title, claim.source.marker);
+  }
+  if (source.url === null || claim.source.urlHash === null) return false;
+  if (claim.source.url !== null && source.url === claim.source.url) return true;
+  return (await sourceUrlHash(source.url)) === claim.source.urlHash;
+}
+
+async function matchingSources(
+  sources: ProviderSource[],
+  claim: NotebookLmClaim,
+): Promise<ProviderSource[]> {
+  const matches = await Promise.all(
+    sources.map(async (source) => ({
+      source,
+      matches: await sourceMatchesClaim(source, claim),
+    })),
+  );
+  return matches.filter((candidate) => candidate.matches).map((candidate) => candidate.source);
+}
+
 function readFailureEvent(
   error: unknown,
   phase: "pre_create" | "reconcile" | "poll",
@@ -440,4 +469,5 @@ export const workerTestHooks = {
   assertInspectionMatchesBinding,
   readFailureEvent,
   uncertainReason,
+  sourceMatchesClaim,
 };

@@ -95,6 +95,10 @@ export async function sourceAlias(sourceId: string): Promise<string> {
   return sha256(`notebooklm-source-v1\u0000${sourceId.toLowerCase()}`);
 }
 
+export async function sourceUrlHash(url: string): Promise<string> {
+  return sha256(`url\u0000${url}`);
+}
+
 export function assertFingerprint(value: string): void {
   if (!SHA256_PATTERN.test(value)) throw new TargetValidationError("Invalid binding fingerprint.");
 }

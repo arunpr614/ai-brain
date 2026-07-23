@@ -219,9 +219,19 @@ export function authenticateNotebookLmConnector(input: {
   if (connector.extension_origin !== origin) return { ok: false, reason: "origin_mismatch" };
   const now = input.now ?? Date.now();
   db.prepare(
-    "UPDATE notebooklm_connectors SET last_seen_at = ?, updated_at = ? WHERE id = ?",
-  ).run(now, now, connector.id);
-  return { ok: true, connector: { ...connector, last_seen_at: now, updated_at: now } };
+    `UPDATE notebooklm_connectors
+     SET protocol_version = ?, last_seen_at = ?, updated_at = ?
+     WHERE id = ?`,
+  ).run(NOTEBOOKLM_CONNECTOR_PROTOCOL_VERSION, now, now, connector.id);
+  return {
+    ok: true,
+    connector: {
+      ...connector,
+      protocol_version: NOTEBOOKLM_CONNECTOR_PROTOCOL_VERSION,
+      last_seen_at: now,
+      updated_at: now,
+    },
+  };
 }
 
 export function hashConnectorToken(token: string): string {

@@ -85,6 +85,8 @@ export async function POST(req: NextRequest, context: Context) {
         const accepted = createNotebookLmExportRequest({
           itemId,
           idempotencyKey: body.idempotencyKey,
+          sourceKind: mapped.sourceKind,
+          sourceUrl: mapped.safeSourceUrl,
           mappedTitle: mapped.title,
           mappedText: mapped.text,
           contentHash: mapped.contentHash,
@@ -107,6 +109,8 @@ export async function POST(req: NextRequest, context: Context) {
     const accepted = createNotebookLmExportRequest({
       itemId,
       idempotencyKey: body.idempotencyKey,
+      sourceKind: mapped.sourceKind,
+      sourceUrl: mapped.safeSourceUrl,
       mappedTitle: mapped.title,
       mappedText: mapped.text,
       contentHash: mapped.contentHash,
@@ -230,6 +234,7 @@ function buildStatus(
     },
     item: {
       eligible: mapping.ok,
+      exportKind: mapping.ok ? mapping.sourceKind : null,
       ineligibleReason: mapping.ok ? null : mapping.reason,
       requiresLimitedConfirmation:
         !firstMapping.ok && firstMapping.reason === "limited_confirmation_required",
@@ -253,7 +258,10 @@ function buildStatus(
       : null,
     setupPath: "/settings/notebooklm-export",
     notebookLmUrl: NOTEBOOKLM_PUBLIC_URL,
-    disclosure: "Sends a static copy of the saved text. Changes do not sync automatically.",
+    disclosure:
+      mapping.ok && mapping.sourceKind === "url"
+        ? "Adds the saved source URL to NotebookLM. NotebookLM imports and processes that link."
+        : "Sends a static copy of the saved text. Changes do not sync automatically.",
   };
 }
 
