@@ -30558,3 +30558,275 @@ Documentation, review evidence, prototype, assets, screenshots, and reports are 
 - **Working tree:** Publication-evidence follow-up pending its own small commit/push at entry time.
 - **Deployed/runtime state:** Production unchanged.
 - **Next milestone:** Parent/stacked PR review and merge, or separately commissioned PR-0 implementation.
+
+---
+
+## 2026-07-23 08:28 IST - Item-recovery implementation baseline and migration decision frozen
+
+**Entry author:** AI agent (Codex) - **Triggered by:** Commissioned implementation goal; source/PR reconciliation and migration-collision milestone.
+
+### Done
+
+- Created the clean Phase4 worktree at `/Users/arun.prakash/Documents/ArunVault2026-2/Initiatives/Arun_AI_Projects/ai-brain/Phase4` on `feat/youtube-item-recovery-enrichment` and preserved all unrelated checkouts/changes.
+- Reconciled and merged the planning/verification dependency stack through protected `main`: PR #42 merge `508d9f2c`, PR #48 merge `bf08e3a3`, and PR #50 merge `f905f6a1`; PR #41 remained merged. Updated mutable heads were byte-identical in their authoritative artifact trees and passed protected Product CI.
+- Fast-forwarded the implementation branch to frozen base `f905f6a1ef69b5a1b2a986449d61a2e40a7fdee8`.
+- Read the governing goal and final V2 capture, exact-item, manual-enrichment, verification, traceability, prototype-QA, and adversarial evidence. Visually inspected the supplied desktop/mobile state screenshots.
+- Inventoried 140 supplied/local-evidence paths: 126 unique SHA-256 values, 14 exact duplicate groups, and zero missing sources. Recorded the immutable hash manifest and source conflict dispositions.
+- Resolved the occupied `026` migration: `026_notebooklm_export.sql` is frozen at SHA-256 `1ba76b030c58af334b588923ee2eef34282c360d79b8b162d653ef454c96513f`. Selected nominal 027 browser expand, 028 manual expand, and deferred 029 contract identifiers with a shift-together rule. Existing 017/018 duplicate prefixes remain immutable/grandfathered; a prospective uniqueness guard is required.
+- Recorded the 65-P0 and 9-NFR implementation traceability allocation, dependency graph, implementation tracker, decisions, risks, and migration/binary compatibility matrix under `docs/feature-council/youtube-item-recovery-implementation/`.
+- Re-audited every current writer/claimant/status/deletion/startup path at `f905f6a1`. Confirmed production policy override, literal Save-link, legacy enrich, worker hold/revision, status-truthfulness, and standalone backfill containment gaps that Stage 1 must close.
+- Froze a narrow proposed two-channel handoff addendum: the service worker keeps the paired bearer and mints one-time fixed-origin authority; confirmed transcript content remains in the trusted side-panel document and never enters worker/storage/page state. Independent review is in progress.
+
+### Baseline validation
+
+- Root `npm ci`, typecheck, lint, 1,036 tests across 97 suites, and production build passed. The build emitted only the pre-existing `unpdf` `import.meta` warning.
+- Extension `npm ci` and `npm run check` passed: typecheck, 44 tests, and build.
+- Environment, agent-documentation, project-documentation, and Wiki-source checks passed.
+- Dependency installation reported six pre-existing advisories (1 moderate, 4 high, 1 critical); no unrelated upgrades were attempted. Reachability/release impact remains a QA review item.
+
+### Release authority
+
+- Production-safe containment and true metadata-only link saving may proceed only after their tests/reviews pass.
+- Browser-visible transcript capture and held browser-transcript processing remain explicitly denied in production.
+- No live YouTube inspection or isolated lab canary was performed. The required policy/target, separate identity/data-root, private-manifest, provider, retention, cleanup, monitoring, and rollback packet is absent.
+
+### Current remaining to-do
+
+1. Complete the independent Stage 0 adversarial review and resolve every P0/P1 finding.
+2. Implement old-schema-compatible production containment before adding migration 027.
+3. Implement and freeze 027 SQL/hash/schema, run the mixed binary/schema matrix, and obtain the independent migration review.
+4. Continue through data, extension, exact-item, manual-processing, UX, security, packaged, production-negative, release, Wiki, and final-report gates without crossing the production no-go.
+
+### State snapshot
+
+- **Current phase:** Stage 0 baseline frozen; adversarial gate in progress; no feature code or migration has been written.
+- **Active branch/base:** `feat/youtube-item-recovery-enrichment` at `f905f6a1` plus uncommitted Stage 0 documentation.
+- **Production/runtime:** unchanged; capture and manual processing unavailable.
+- **Next milestone:** Stage 0 review disposition, followed by backward-compatible containment only if it returns GO.
+
+---
+
+## 2026-07-23 09:16 IST - Stage 0 focused recheck conditionally authorizes containment only
+
+**Entry author:** AI agent (Codex) - **Triggered by:** Completion of the independent Stage 0 adversarial gate and its focused remediation recheck.
+
+### Done
+
+- Ran the required independent adversarial review against the frozen `f905f6a1ef69b5a1b2a986449d61a2e40a7fdee8` baseline. The initial review returned NO-GO and identified three P0, five P1, three P2, and one P3 documentation/contract defects.
+- Remediated every P0/P1 defect: complete 65-functional-requirement traceability, a narrow pre-027 D-014 containment carveout, migration 027 as a hard link-only predecessor, three separately named D-008 origins with secret one-time grant handling, four D-009 version domains, durable 027 intent/grant expectations, and D-015 source/body-scoped hold semantics.
+- Ran a focused adversarial recheck. It found no remaining P0/P1 issue and issued CONDITIONAL GO for only D-014's non-enabling, schema-026-safe Stage 1 containment slice.
+- Corrected all three residual P2 consistency findings before runtime work: propagated D-016 exact migration-ledger filename/SHA plus complete shape attestation; removed the accidental pre-027 public held-status scope; reconciled stale tracker/baseline/risk/D-008 wording. A final independent consistency audit found no remaining P0/P1/P2 issue.
+- Revalidated 65 unique functional P0 rows, nine unique NFR rows, 197 existing code/test path references with zero missing paths, 20 relative Markdown links with zero broken targets, and clean whitespace checks.
+
+### Release authority
+
+- Stage 1 may implement only authoritative deployment classification, configured-origin/private responses, schema-026-safe capability attestation, worker-mode/startup planning, existing claimant/backfill containment, kill switches, and content-free diagnostics.
+- Migration 027, true link-only behavior, Chrome recovery, exact-item APIs, held-transcript manual enrichment, new public status/actions/copy, and live lab activity remain blocked by their later gates.
+- Browser-visible transcript capture and held browser-transcript processing remain denied in production. No live YouTube access, feature enablement, database migration, extension change, or deployment occurred.
+
+### Current remaining to-do
+
+1. Implement and independently review the D-014 Stage 1 containment slice with schema-026 parity and production-negative evidence.
+2. Contain every runtime claimant, apply path, legacy `/enrich` mutation, and standalone backfill without adding a feature surface.
+3. Only after containment passes, implement/freeze/review migration 027 and run clean, upgrade, partial, and mixed-binary compatibility tests.
+4. Continue later gated slices without crossing the live-lab or production no-go boundaries.
+
+### State snapshot
+
+- **Current phase:** Stage 0 complete with conditional GO; Stage 1 runtime foundations in progress.
+- **Active branch/base:** `feat/youtube-item-recovery-enrichment` at `f905f6a1` plus uncommitted Stage 0 artifacts and append-only log entries.
+- **Production/runtime:** unchanged; restricted capture and processing unavailable.
+- **Next milestone:** schema-026-safe deployment/origin/schema/startup foundation tests, followed by claimant containment.
+
+---
+
+## 2026-07-23 09:40 IST - Stage 1 containment foundations green; claimant waves started
+
+**Entry author:** AI agent (Codex) - **Triggered by:** Completion of D-014 deployment, origin, schema, startup, and first item-hold foundations.
+
+### Done
+
+- Added authoritative deployment classification that requires the reviewed deployment markers for restricted eligibility, gives production denial precedence, and ignores legacy/caller promotion inputs. `lab_public_caption` remains lab-only with `production_allowed=0`.
+- Added strict configured-public-origin parsing/comparison and shared private/no-store response headers. Forwarded and request-host headers cannot become authority.
+- Added closed-enum, content-free containment diagnostics. Raw deployment values, configured origins, identifiers, provider bodies, and exception details are not emitted by the new diagnostics.
+- Added schema capability attestation with `absent`, `ready`, and `incompatible` outcomes. Runtime `ready` remains impossible because the packaged 027 contract is deliberately null. The future contract requires exact migration filename/SHA and complete table/column/check/trigger/index ownership. Schema shape is cached only by database handle/schema version; the migration ledger is re-read on every decision so same-version name/hash/insert/delete changes revoke authority immediately.
+- Added explicit `disabled`, `standard`, and `manual-transcript-lab` worker-mode planning. Instrumentation now runs migrations, classifies deployment/origin/schema/mode, and resolves the complete plan before dynamically importing any content claimant. Schema 026 retains its ordinary worker set; invalid/conflicting/restricted-missing/incompatible/manual-lab plans start none. A reviewed code latch keeps future-ready claimants stopped.
+- Added the schema-aware item-body hold gate plus one canonical content-free typed blocked error/assertion helper. Schema 026 preserves legacy behavior, incompatible schemas make no effect, ready would query active hold state on every invocation and apply-time callers can pass their transaction handle.
+- Added the exact D-014 legacy-route blocked response helper: private 409 `processing_hold_active` or private 503 `processing_schema_incompatible`, always with `effect: none`. The existing `/enrich` route now checks before and inside queue/realtime mutations, maps pipeline blocked outcomes without retry/error mutation, and no longer reflects raw provider response/error text.
+- Added a startup regression test proving fixed Edge skip diagnostics, containment-authority ordering, and the absence of static claimant imports. Updated M5 to in progress and dispatched three non-overlapping claimant waves for body writers, enrichment/embedding, and transcript repository/backfill containment.
+
+### Verification
+
+- Deployment/origin/diagnostic/schema/startup/policy/hold focused suites passed, including 79 integrated foundation tests and 18 startup/instrumentation tests.
+- Schema attestation passed 33 focused tests, including same-version ledger mutation/revocation and malformed/truncated contract negatives.
+- Hold and legacy HTTP response helpers passed exact no-effect/header tests. The legacy `/enrich` route passed seven direct tests, including a feature-marker 503 with byte-stable item/job state.
+- Targeted ESLint, `npm run typecheck`, and `git diff --check` passed after each integrated slice.
+- The earlier integrated full suite passed 1,088 tests across 100 suites before the latest startup/hold/route additions. A fresh full suite and production build remain required after all claimant waves land.
+
+### Release authority
+
+- This is non-enabling schema-026 containment only. No migration, route, action, feature status, transcript write, hold release, extension behavior, intent/grant, manual runner, or production capability was added.
+- Migration 027, link-only behavior, browser transcript transfer, manual held-transcript enrichment, live YouTube/lab access, and production enablement remain blocked.
+
+### Current remaining to-do
+
+1. Finish every body writer, enrichment/embedding pipeline, transcript repository/backfill, worker/batch/cron, note-index, attachment-provider, and standalone-script containment wave.
+2. Prove schema-026 parity, zero provider/write behavior under incompatibility, race-barrier rechecks, content-free diagnostics, and kill-switch behavior across the full claimant inventory.
+3. Run a fresh full root suite/build, extension regression, scope assertion, and independent Stage 1 adversarial review; remediate every P0/P1 before M5 can complete.
+4. Only then implement and freeze migration 027 under its separate review gate.
+
+### State snapshot
+
+- **Current phase:** Stage 1 foundations complete; claimant containment in progress; M5 not complete.
+- **Active branch/base:** `feat/youtube-item-recovery-enrichment` at frozen base `f905f6a1` plus uncommitted containment code/tests/docs.
+- **Production/runtime:** unchanged; restricted capture and manual processing unavailable.
+- **Next milestone:** integrated claimant containment with full old-schema and negative-path evidence.
+
+---
+
+## 2026-07-23 10:47 IST - Stage 1 claimant containment integrated; formal gate review started
+
+**Entry author:** AI agent (Codex) - **Triggered by:** Completion of the Stage 1 claimant, apply, terminal, privacy, and scope-containment waves.
+
+### Done
+
+- Contained the inventoried body writers, extractors, attachment providers, enrichment and embedding paths, transcript repository/worker/backfills, batch/cron workers, note-index worker, repair paths, Telegram path, legacy `/enrich` mutation, and standalone scripts with schema-026-compatible authority checks and transaction-bound revalidation.
+- Closed provider-result and terminal-write races. Transcript attempt plus job finalization is atomic and CAS-bound; automatic recovery rechecks holds, worker mode, claim identity, item existence, and ready-schema active transcript sources after provider return and at apply/finalization boundaries. The item-update transaction uses an explicit automatic-only active-source assertion while manual user replacement retains legacy semantics.
+- Removed stable Brain item identifiers from new batch-provider requests. Every new submission uses a fresh random 256-bit alias, keeps the provider-batch/alias binding local, rejects malformed bindings, and suppresses stale results with an exact binding CAS. Legacy bindings remain read-only compatible.
+- Replaced the operational error sink with a closed event-code vocabulary and timestamp-only persistence. Updated direct callers, standalone backfills, client-error ingestion, status API, and item UI so raw bodies, URLs, identifiers, paths, provider/model details, batch identifiers, exception text, and durable raw failure strings do not cross the reviewed diagnostic surfaces.
+- Recorded D-017 as the exact privacy-only exception to D-014 for the existing enrichment-status route and UI. It adds no recovery status, action, held-state surface, or capability.
+- Added the executable D-014 frozen-base scope assertion. It uses exact path/status allowlisting, includes tracked/staged/unstaged/untracked changes, rejects migration/extension/mobile/new public surfaces and prohibited implementation additions, and fails closed for unknown paths and invalid filesystem/ref inputs.
+- Started a fresh independent adversarial Stage 1 gate review after freezing implementation changes. The reviewer is not authorized to remediate its own findings.
+
+### Verification
+
+- Full repository suite passed: 1,222 tests, 104 suites, zero failures/skips/cancellations.
+- Focused transcript repository/worker/item-update suite passed 28 tests; the expanded transcript set passed 55 tests. Ready-schema tests cover active-source, hold, deletion, stale-claim, mode-drift, provider-return, apply-time, and terminal-write races with atomic no-effects.
+- The Stage 1 scope checker passed 25 hermetic tests and the live frozen-base check over 117 exact changed paths with zero violations.
+- `npm run typecheck`, `npm run lint`, and `git diff --check` passed on the integrated tree.
+
+### Release authority
+
+- Stage 1 remains non-enabling containment. Migration 027, browser/extension behavior, intent/grant/commit paths, transcript attachment, hold release, held-manual processing, feature enablement, live YouTube inspection, lab canary, and production deployment remain denied.
+- Stage 1 is not complete until the independent adversarial report has no unresolved P0/P1 findings and the remaining build/release-artifact/security checks are green.
+
+### Current remaining to-do
+
+1. Receive the independent privacy recheck and formal Stage 1 adversarial report; remediate every P0/P1 and repeat the focused review until clear.
+2. Run the production build, release-artifact smoke, privacy/static scans, and final frozen-base scope assertion against the stable reviewed tree.
+3. Freeze Stage 1 evidence and commits only after the gate returns GO.
+4. Begin migration 027 contract reconciliation and implementation only after that Stage 1 authorization.
+
+### State snapshot
+
+- **Current phase:** Stage 1 implementation integrated and regression-clean; independent gate review in progress; M5 not yet complete.
+- **Active branch/base:** `feat/youtube-item-recovery-enrichment` at frozen base `f905f6a1` plus uncommitted Stage 0/1 artifacts.
+- **Production/runtime:** unchanged; restricted capture and held manual processing remain unavailable.
+- **Next milestone:** zero-unresolved-P0/P1 Stage 1 review, followed by packaged/build verification.
+
+---
+
+## 2026-07-23 11:30 IST - Stage 1 formal gate returned NO-GO; rollback remediation started
+
+**Entry author:** AI agent (Codex) - **Triggered by:** Completion of the independent Stage 1 final-gate adversarial review.
+
+### Done
+
+- Completed the consolidated Stage 1 verification on the frozen tree: 1,233 repository tests, lint, typecheck, production build, build/environment checks, the 36-case scope suite, and the 325-check immutable release-artifact smoke all passed.
+- Closed the focused privacy recheck's final P3 by treating every `opaque-reservation-v1:` namespace member as fail-closed and nonpollable, including malformed markers. The focused reviewer retained GO with no P0-P2 finding.
+- Persisted the independent formal gate report at `docs/feature-council/youtube-item-recovery-implementation/YOUTUBE_ITEM_RECOVERY_STAGE_1_FINAL_GATE_ADVERSARIAL_REVIEW_2026-07-23_11-26-51_IST.md`.
+- Minimized the D-017 item-page diff from 298 additions/174 deletions to 25 additions/10 deletions while retaining the fixed failure copy, provider-label allowlist, raw attempt-error removal, and test-only rendered-component sentinel.
+
+### Formal review findings
+
+- **P1 release blocker:** an unresolved batch reservation created by the new binary can be erased by a rollback to the frozen base because that runtime does not understand the marker. A supported rollback could therefore reopen duplicate provider submission after an accepted-but-lost response.
+- **P2 hardening:** current-binary marker protection must be independent of drifted item/job state and enforced by manual, scheduled, and batch claimants.
+- **P2 Stage 2 requirement:** successful transcript body apply and transcript-job finalization are separate transactions; a crash between them can replay the source request, body reset, and artifact write.
+- **P3 reviewability:** the broad item-page formatting churn obscured the D-017 semantic diff; the branch now carries the minimized diff.
+
+### Remediation in progress
+
+- Add an attested target-runtime reservation-awareness capability to immutable release manifests.
+- Make the existing release compatibility checker refuse any reservation-unaware target while the live database contains an unresolved reservation, including during automatic restoration and the stopped-writer pre-switch recheck.
+- Treat reservation presence as authoritative across manual `/enrich`, scheduled enrichment, and batch selection/claim/dispatch regardless of drifted state.
+- Carry transcript apply/finalize atomic reconciliation into the Stage 2 physical-schema/receipt contract and deterministic crash tests.
+
+### Release authority
+
+- Stage 1 release and merge promotion are **NO-GO** until the rollback P1 is fixed and independently rechecked.
+- Migration 027, browser/extension implementation, transcript attachment, held manual enrichment, live YouTube/lab activity, production feature enablement, and production deployment remain blocked.
+
+### State snapshot
+
+- **Current phase:** Stage 1 P1/P2 remediation and focused re-review; M5 not complete.
+- **Active branch/base:** `feat/youtube-item-recovery-enrichment` at frozen base `f905f6a1` plus uncommitted Stage 0/1 artifacts.
+- **Production/runtime:** unchanged; no code or data has been deployed.
+- **Next milestone:** rollback-aware artifact compatibility plus marker-drift tests, followed by a zero-P0/P1 focused recheck.
+
+---
+
+## 2026-07-23 11:56 IST - Stage 1 rollback and marker remediations passed component rechecks
+
+**Entry author:** AI agent (Codex) - **Triggered by:** Completion of the formal P1/P2 remediation wave and two independent focused code audits.
+
+### Done
+
+- Made every `opaque-reservation-v1:` namespace member authoritative across manual queue/realtime, batch selection/reservation, scheduled candidate/claim/dispatch, stale sweep, success/embedding, retry, and terminal boundaries, independent of drifted item/job state.
+- Added a realtime provider-boundary race: a marker introduced after the atomic route claim prevents every later item, job, usage, and derived write and returns the generic private/no-store 409 response.
+- Added D-019's app-owned `brainRuntimeCapabilities` declaration. The release builder now requires exact canonical equality between the source app package and built standalone app package and derives both inner/external manifest capabilities from that app-owned contract.
+- Proved the supported mixed-artifact workflow: current tools plus a historical app with no declaration emits `runtimeCapabilities: []`; the current compatibility checker refuses that target against a live unresolved marker. A current aware app remains aware when packaged by a different builder SHA.
+- Kept marker compatibility outside the audited-additive rollback bypass and preserved the existing activation preflight, stopped-writer recheck, and automatic restoration checks. Detached/malformed capability claims, malformed markers, and unreadable live state fail closed with content-free codes.
+
+### Verification
+
+- Full repository suite passed: 1,251 tests, 104 suites, zero failures/skips/cancellations.
+- Marker-focused suite passed 68 tests; its independent audit returned GO with no P0-P3 finding.
+- Immutable release-artifact smoke passed 384 checks, including current-tools/historical-app packaging; its independent rollback audit returned GO with no P0-P3 finding.
+- `npm run typecheck`, `npm run lint`, `git diff --check`, the 36-case scope suite, and the live 120-path frozen-base scope check passed.
+
+### Release authority
+
+- The original formal Stage 1 report remains NO-GO until its reviewer performs a separate focused final recheck of D-019, marker-state containment, and the minimized D-017 UI diff.
+- Migration 027, browser/extension implementation, transcript attachment, held manual enrichment, live YouTube/lab activity, production feature enablement, and production deployment remain blocked.
+- R-032 remains a mandatory Stage 2 atomic transcript apply/receipt/finalization requirement.
+
+### State snapshot
+
+- **Current phase:** Stage 1 remediations independently component-GO; formal focused gate recheck pending; M5 not complete.
+- **Active branch/base:** `feat/youtube-item-recovery-enrichment` at frozen base `f905f6a1` plus uncommitted Stage 0/1 artifacts.
+- **Production/runtime:** unchanged; no code or data has been deployed.
+- **Next milestone:** stable-tree production build and formal zero-P0/P1 Stage 1 focused recheck.
+
+---
+
+## 2026-07-23 12:15 IST - Stage 1 formal focused recheck returned GO
+
+**Entry author:** AI agent (Codex) - **Triggered by:** Completion of the independent focused final-gate recheck and post-report stable-tree verification.
+
+### Done
+
+- Persisted the independent focused final-gate report at `docs/feature-council/youtube-item-recovery-implementation/YOUTUBE_ITEM_RECOVERY_STAGE_1_FOCUSED_FINAL_RECHECK_ADVERSARIAL_REVIEW_2026-07-23_12-07-09_IST.md`.
+- Closed M5 and Stage 1 with no unresolved P0, P1, or P3 findings. The reviewer accepted the app-owned rollback capability, marker/state-independent claimant containment, minimized D-017 UI diff, and exact frozen-base scope.
+- Retained R-032 as an unresolved P2 and mandatory Stage 2 design constraint: transcript body apply and source receipt/job finalization require atomic completion or durable reconciliation, revision/claim fencing, and a deterministic crash barrier before Stage 2 may complete.
+- Updated the decision log, risk register, implementation tracker, security/privacy review, caller-containment inventory, release-authority matrix, and exact Stage 1 scope allowlist to record the focused GO without granting runtime authority.
+
+### Final verification
+
+- Full repository suite passed: 1,251 tests across 104 suites, zero failures/skips/cancellations.
+- Production build, TypeScript typecheck, ESLint, environment guard, build-artifact guard, and `git diff --check` passed.
+- The exact app-owned `enrichment-batch-reservation:opaque-reservation-v1` capability matched between source and `.next/standalone/package.json`.
+- Immutable release-artifact smoke passed 384 checks, including historical-app/current-tools packaging and live unresolved-marker rollback refusal.
+- The 36-case Stage 1 scope suite passed; the final live frozen-base check accepted exactly 121 changed paths with zero violations.
+
+### Release authority
+
+- Stage 1 is **GO** and M5 is complete. Stage 2 may begin current-frontier reconciliation and physical contract/migration planning only; no Stage 2 SQL may be authored until its narrow addendum receives an independent adversarial GO.
+- Migration 027, browser/extension implementation, transcript attachment, held manual enrichment execution, live YouTube/lab activity, production feature enablement, and production deployment remain blocked.
+- Production/runtime remain unchanged; no code, schema, configuration, or data has been deployed or enabled.
+
+### State snapshot
+
+- **Current phase:** Stage 1 formally complete; Stage 2 frontier refresh and contract addendum are next.
+- **Active branch/base:** `feat/youtube-item-recovery-enrichment` at frozen base `f905f6a1` plus uncommitted Stage 0/1 artifacts.
+- **Production/runtime:** unchanged; restricted capture and held manual processing remain unavailable.
+- **Next milestone:** commit the reviewed Stage 0/1 boundary, re-fetch `origin/main` and pending migration work, then adversarially review the Stage 2 physical-schema addendum before SQL.
