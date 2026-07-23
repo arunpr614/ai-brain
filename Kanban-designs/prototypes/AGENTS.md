@@ -1,0 +1,16 @@
+# Prototype Instructions
+
+Run the local server yourself and open the preview in the browser available to this environment. Do not give the user server-start instructions when you can run it.
+
+Before making substantial visual changes, use the Product Design plugin's `get-context` skill when the visual source is unclear or no longer matches the current goal. When the user gives durable prototype-specific design feedback, preferences, or decisions, record them in `AGENTS.md`.
+
+When implementing from a selected generated mock, treat that image as the source of truth for layout, component anatomy, density, spacing, color, typography, visible content, and hierarchy.
+
+## Durable prototype decisions
+
+- Direction B — Processing, Inbox-first — is the approved direction.
+- Board and List must share an easy, comprehensive Group by / Sort by interaction modeled on the compact two-row reference menu supplied on 2026-07-11.
+- Grouping by non-status fields is organizational only and must never mutate workflow status; source-specific Move remains the workflow action.
+- Maintain intentionally designed Light and Dark modes across the prototype rather than treating light mode as a simple color inversion.
+- Keep Board/List organization controls at the existing compact utility-control density: approximately 36px desktop trigger height, 322px popover width, 50px rows, 12–13px type, and the existing small-radius/border treatment. Do not scale this menu like a primary task surface.
+- The stakeholder accepted this compact Direction B design on 2026-07-11. Treat `design-handoff.html`, `group-sort-specimen.html`, `agent-pickup.html`, `handoff/agent-handoff.json`, and `handoff/AI_AGENT_HANDOFF.md` as the canonical cold-start pickup package. Preserve the **Explored — not implemented** classification unless new authority is explicit.

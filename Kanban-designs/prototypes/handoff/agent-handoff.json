@@ -1,0 +1,70 @@
+{
+  "schema_version": "1.0",
+  "recorded_at": "2026-07-11",
+  "relocated_at": "2026-07-12",
+  "current_local_package": "/Users/arun.prakash/Documents/arunvault/arun-cursor/Initiatives/Arun_AI_Projects/ai-brain/Phase3/Kanban-designs",
+  "feature": "Card Processing Workflow",
+  "classification": "Explored — not implemented",
+  "approved_direction": {
+    "id": "direction-b",
+    "name": "Processing — Inbox-first",
+    "stakeholder_status": "approved for continued design exploration"
+  },
+  "organization_control": {
+    "shared_views": ["board", "list"],
+    "defaults": { "group": "status", "sort": "oldest", "theme": "dark" },
+    "group_options": ["status", "user_tag", "ai_topic", "source_type", "channel", "quality", "age", "none"],
+    "sort_options": ["custom", "oldest", "newest", "title_asc", "title_desc", "status", "source_type", "channel"],
+    "desktop_css_pixels": {
+      "trigger_height": 36,
+      "trigger_min_width": 238,
+      "popover_width": 322,
+      "popover_height": 148,
+      "row_height": 50,
+      "popover_padding": 6,
+      "popover_radius": 12,
+      "label_font_size": 13,
+      "value_font_size": 12,
+      "icon_size": 18
+    },
+    "mobile_css_pixels": {
+      "trigger_min_height": 44,
+      "popover_height": 156,
+      "row_min_height": 54
+    },
+    "behavior_contract": {
+      "status_group_drag": true,
+      "non_status_group_drag": false,
+      "non_status_grouping_mutates_status": false,
+      "native_move_control_required": true,
+      "url_params": ["view", "group", "sort", "theme"],
+      "reset": { "group": "status", "sort": "oldest" }
+    }
+  },
+  "appearance": {
+    "modes": ["light", "dark"],
+    "parity_required": true,
+    "simple_inversion_allowed": false
+  },
+  "canonical_html_assets": [
+    "design-handoff.html",
+    "group-sort-specimen.html",
+    "agent-pickup.html"
+  ],
+  "source_of_truth": [
+    "prototypes/AGENTS.md",
+    "prototypes/src/App.jsx",
+    "prototypes/src/styles.css",
+    "prototypes/design-qa.md",
+    "decisions/decision-log.md",
+    "product/prd-v2.md",
+    "ux/ux-ui-v2.md",
+    "technical/technical-plan-v2.md",
+    "reviews/traceability-matrix-v2.md"
+  ],
+  "review": {
+    "branch": "concept/card-processing-workflow",
+    "pull_request": "https://github.com/arunpr614/ai-brain/pull/21",
+    "production_authorized": false
+  }
+}
