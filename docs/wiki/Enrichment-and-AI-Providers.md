@@ -3,8 +3,8 @@
 Purpose: Explain generated content, provider selection, queues, retries, note consent, and known telemetry/batch risks.
 Audience: AI agents changing AI, embeddings, prompts, queues, or provider configuration.
 Verified against: `167a15d57b8f70574a017ea4cda507870f3600d4`.
-Runtime evidence through: 2026-07-22; strict Anthropic/Gemini checks passed for the protected-main release. NotebookLM remains UI-only and is not an enrichment provider.
-Last reviewed: 2026-07-22.
+Runtime evidence through: 2026-07-23; strict Anthropic/Gemini checks retain their prior scope. NotebookLM URL-source export has a provider-level production canary but is not an enrichment provider.
+Last reviewed: 2026-07-23.
 Owner: AI Brain maintainer.
 
 **Status:** Implemented · **Confidence:** High · **Availability:** Provider-configured
@@ -25,7 +25,7 @@ Captured items enter enrichment jobs. The pipeline generates title, digest, quot
 
 Provider status is point-in-time. Local defaults may differ from the verified hosted provider choice. Attached-note AI adds rollout flags, per-note opt-in and a provider/model/destination acknowledgement; exact note search is independent.
 
-NotebookLM is outside this enrichment/provider-selection pipeline. It is an experimental post-save export of one frozen copied-text item through the owner's signed-in Chrome session to one fixed private consumer notebook. It neither generates AI Memory metadata nor supplies embeddings/Ask. Production is `1:0:0`, so its durable queue and provider writes are off; the extension artifact is not loaded/paired and no live target/source/canary is claimed.
+NotebookLM is outside this enrichment/provider-selection pipeline. It is an experimental post-save export of one explicitly selected item through the owner's signed-in Chrome session to one fixed private consumer notebook. A safe saved URL becomes a web/YouTube source; a true URL-less note becomes copied text. It neither generates AI Memory metadata nor supplies embeddings/Ask. Production is `1:1:1`, the extension is paired at protocol v2, and a provider-level URL-source request reached `ready`.
 
 ## Queue behavior and failure states
 

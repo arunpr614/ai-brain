@@ -3,8 +3,8 @@
 Purpose: Explain AI Brain's users, jobs, workflows, terminology, and current product boundaries.
 Audience: AI agents, engineers, and product/design collaborators.
 Verified against: `167a15d57b8f70574a017ea4cda507870f3600d4`.
-Runtime evidence through: 2026-07-22 at deployed protected-main application `167a15d57b8f70574a017ea4cda507870f3600d4`; feature scope varies. NotebookLM is UI-only with no provider canary.
-Last reviewed: 2026-07-22.
+Runtime evidence through: 2026-07-23 at deployed protected-main application `8314d39fd11cf82e612de44e6ac0fa0cf1633719`; feature scope varies. NotebookLM has a provider-level production URL-source canary.
+Last reviewed: 2026-07-23.
 Owner: AI Brain maintainer.
 
 AI Brain serves one owner who wants to capture material from several channels, retain trustworthy source context, let background AI organize/index it, find it later, and ask cited questions without turning the system into a collaborative workspace or full research-writing IDE.
@@ -31,7 +31,7 @@ AI Brain serves one owner who wants to capture material from several channels, r
 | Find/ask | FTS, semantic/hybrid retrieval, Related, scoped cited Ask, persisted chat | Retrieval quality and provider/citation behavior can fail independently |
 | Operate remotely | Hosted web app, private Android shell, extension, Telegram | Not a public multi-user or complete offline-native product |
 | Protect/recover | PIN/session/bearer boundaries, consent, database backups, health and queues | Private does not mean E2EE; artifact files are outside database backups |
-| Export to NotebookLM | Experimental one-item copied-text export to one fixed owner-only private consumer notebook | Deployed UI-only `1:0:0`; queue/provider writes, connector pairing, target/source, canary, and real-content enablement are not complete |
+| Export to NotebookLM | Experimental one-item static export to one fixed owner-only private consumer notebook; safe saved URLs become web/YouTube sources and URL-less notes become copied text | Deployed at `1:1:1`; extension 0.7.4 paired at protocol v2; private target healthy; provider-level URL-source canary verified |
 
 ## Boundaries
 

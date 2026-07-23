@@ -4,13 +4,13 @@ Purpose: Define the authoritative data, API, state, privacy, retention, and oper
 
 Audience: Engineers, data stewards, security reviewers, release operators, support responders, and AI agents changing this feature.
 
-Verified against: URL-source release candidate based on protected main `9c5e8d88846ea3fb9f3c835cc10136be4b8b29b4`, with migrations `026_notebooklm_export.sql` and `027_notebooklm_url_sources.sql`, connector protocol v2, mapper v2, and Chrome extension 0.7.4.
+Verified against: deployed protected main `8314d39fd11cf82e612de44e6ac0fa0cf1633719`, implementation commit `4f95a4689adb7b1cbe682faea2c5e25dc737177f`, migrations `026_notebooklm_export.sql` and `027_notebooklm_url_sources.sql`, connector protocol v2, mapper v2, and Chrome extension 0.7.4.
 
-Runtime evidence through: 2026-07-23 for the existing production connector and prior copied-text canary. The URL-source release candidate has automated server, extension, migration, rollback, retention, and artifact coverage; its signed-in YouTube URL canary remains a post-deployment gate.
+Runtime evidence through: 2026-07-23 for the paired private target, enabled `1:1:1` controls, protocol-v2 connector upgrade, healthy operations/retention checks, and a provider-level production YouTube URL-source canary.
 
-Status: **Experimental; URL-source release candidate; signed-in post-deployment YouTube URL canary pending.**
+Status: **Experimental; URL-source production release; provider-level YouTube URL-source canary verified.**
 
-Release evidence: [NotebookLM one-click export production release evidence](../feature-council/notebooklm-sync/release/production-release-evidence-2026-07-22.md).
+Release evidence: [NotebookLM URL-source production release evidence](../feature-council/notebooklm-sync/release/production-url-source-release-evidence-2026-07-23.md). The [2026-07-22 UI-only release record](../feature-council/notebooklm-sync/release/production-release-evidence-2026-07-22.md) remains historical evidence.
 
 Owner: AI Brain maintainer.
 
@@ -477,7 +477,7 @@ This is the remaining live-provider gate for the URL-source release. Use synthet
 - Protected-main server release, migration checks, extension tests/build, release artifact checks, database backup/restore proof, adversarial review, and rollback plan are green.
 - No unresolved real-content request exists.
 
-### Staged proof
+### Staged proof completed on 2026-07-23
 
 1. Merge the protected-main URL-source release, deploy migration 027 with the existing valid NotebookLM flag tuple preserved, and verify health, integrity, retention readiness, operations checks, and immutable release identity.
 2. Install the attested 0.7.4 extension build into the existing stable unpacked-extension directory. In `chrome://extensions`, reload the existing extension once. The protocol-1 credential upgrades in place to protocol 2; do not remove/re-add or re-pair it.
@@ -490,22 +490,22 @@ This is the remaining live-provider gate for the URL-source release. Use synthet
 9. Exercise uncertain-delivery reconciliation only with an approved test interruption: it must find the exact URL (or its one-way fingerprint after snapshot purge), adopt one match, and never send a second create.
 10. Record only redacted counts, states, timestamps, artifact hashes, and pass/fail outcomes. Turn provider writes off immediately on any wrong-target write, duplicate create, Markdown/copy-text fallback, privacy leak, preflight bypass, or protocol drift.
 
-The URL-source behavior is not considered fully released until this signed-in canary passes.
+The provider-level URL-source behavior passed: one public YouTube item produced a `payload_kind=url` request, one provider attempt, terminal `succeeded`/`ready`, a one-source count increase, and no copied-text fallback. A paired-profile visual source-icon screenshot was not retained, so independent visual-icon proof remains outside the claimed evidence.
 
 ## 16. Verification matrix and current gaps
 
-A [production release-evidence record](../feature-council/notebooklm-sync/release/production-release-evidence-2026-07-22.md) records the original connector release. The [Wiki publication verification](../feature-council/notebooklm-sync/release/wiki-publication-verification.md) records its qualified publication checks. The URL-source release adds migration 027, protocol/mapper v2, and extension 0.7.4. Automated evidence does not replace the signed-in post-deployment YouTube URL canary.
+A [production release-evidence record](../feature-council/notebooklm-sync/release/production-release-evidence-2026-07-22.md) records the original connector release. The [Wiki publication verification](../feature-council/notebooklm-sync/release/wiki-publication-verification.md) records its qualified publication checks. The [2026-07-23 URL-source evidence](../feature-council/notebooklm-sync/release/production-url-source-release-evidence-2026-07-23.md) records migration 027, protocol/mapper v2, extension 0.7.4, and the provider-level production canary.
 
 | Area | Release/code evidence | Live/production evidence |
 |---|---|---|
-| Mapper/privacy/limits | URL-first mapping, unsafe-URL blocking, URL hashing, copied-text fallback only for no-URL notes, and the 45–259 safe-limit envelope have automated coverage. | Post-deployment YouTube URL-source canary pending. |
-| Ledger/state/idempotency/leases/retention | URL snapshot/claim/dedupe, one-write fencing, 24-hour purge, hash-only reconciliation, backup scrub, and rollback guards have automated coverage. | Production migration 027 and retention/operations checks must be reverified after deployment. |
-| Session/connector APIs and CORS | Protocol-v2 routes, in-place connector upgrade, strict DTO parsing, and exact Chrome origin checks have automated coverage. | Existing paired connector must reconnect after one extension reload. |
-| Chrome target/provider/worker contract | Exact web/YouTube RPC slots, one provider fetch, no copied-text call for URL claims, exact/hash reconciliation, typecheck, tests, and build are covered. | Installed extension version 0.7.4 and signed-in provider behavior must be verified. |
-| Migration/release compatibility | 026→027 preservation, guards, pre-027 scrub compatibility, immutable artifact, and fail-closed rollback checks are release gates. | Production release identity and migration hashes must be verified after deployment. |
-| UX/accessibility | URL-aware confirmation/status copy, unsafe-URL blocking, capacity controls, and installed extension version display have automated coverage. | Authenticated production item and Settings surfaces must be spot-checked after deployment. |
-| Observability | Durable journals, retention health, runtime safety gates, read-only checker, and timers remain content-free and covered. | Redacted canary state/count evidence must show exactly one URL source. |
-| Non-content ledger deletion | Title/text/URL purge, WAL truncation, backup-copy scrub, and retained one-way URL fingerprint are covered. | Production retention health must remain current after migration. |
+| Mapper/privacy/limits | URL-first mapping, unsafe-URL blocking, URL hashing, copied-text fallback only for no-URL notes, and the 45–259 safe-limit envelope have automated coverage. | One public YouTube request used `payload_kind=url`, reached provider `ready`, and did not use copied text. |
+| Ledger/state/idempotency/leases/retention | URL snapshot/claim/dedupe, one-write fencing, 24-hour purge, hash-only reconciliation, backup scrub, and rollback guards have automated coverage. | Migration 027 and retention/operations checks passed in production. |
+| Session/connector APIs and CORS | Protocol-v2 routes, in-place connector upgrade, strict DTO parsing, and exact Chrome origin checks have automated coverage. | Existing paired connector reconnected at protocol v2 after one extension reload. |
+| Chrome target/provider/worker contract | Exact web/YouTube RPC slots, one provider fetch, no copied-text call for URL claims, exact/hash reconciliation, typecheck, tests, and build are covered. | Extension 0.7.4 completed the provider-level URL canary in one attempt. |
+| Migration/release compatibility | 026→027 preservation, guards, pre-027 scrub compatibility, immutable artifact, and fail-closed rollback checks are release gates. | Production release identity and migration 027 hash were verified. |
+| UX/accessibility | URL-aware confirmation/status copy, unsafe-URL blocking, capacity controls, and installed extension version display have automated coverage. | Authenticated production item and Settings surfaces were exercised; no paired-profile visual source-icon screenshot was retained. |
+| Observability | Durable journals, retention health, runtime safety gates, read-only checker, and timers remain content-free and covered. | Redacted request state showed one URL source, one attempt, and terminal `ready`. |
+| Non-content ledger deletion | Title/text/URL purge, WAL truncation, backup-copy scrub, and retained one-way URL fingerprint are covered. | Production retention health remained current after migration. |
 
 ## 17. Source-of-truth files
 

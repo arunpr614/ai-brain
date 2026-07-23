@@ -3,8 +3,8 @@
 Purpose: Document the public-safe backup model, recovery boundaries, and known coverage gap.
 Audience: AI agents, maintainers, and operators.
 Verified against: Deployed protected-main release `167a15d57b8f70574a017ea4cda507870f3600d4`, including the NotebookLM backup/restore hardening.
-Runtime evidence through: Historical dated database backup/restore evidence plus the 2026-07-22 release-smoke proof, scrubbed pre-deploy production backup, migration 026 deployment, and healthy NotebookLM retention/operations timers. Provider queueing and writes remain off.
-Last reviewed: 2026-07-22.
+Runtime evidence through: Historical dated database backup/restore evidence plus the 2026-07-23 migration 027 deployment and healthy NotebookLM retention/operations timers. Provider queueing and writes were enabled only after release and target checks passed.
+Last reviewed: 2026-07-23.
 Owner: AI Brain maintainer.
 
 **Status:** Implemented database backup; operator-oriented restore · **Confidence:** High

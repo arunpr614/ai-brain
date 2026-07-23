@@ -3,8 +3,8 @@
 Purpose: Map major capabilities from user entrypoints through domain logic, storage, jobs, and integrations.
 Audience: AI agents and engineers planning code changes.
 Verified against: `167a15d57b8f70574a017ea4cda507870f3600d4`.
-Runtime evidence through: 2026-07-22 at deployed application `167a15d57b8f70574a017ea4cda507870f3600d4`; feature scope varies and NotebookLM is UI-only.
-Last reviewed: 2026-07-22.
+Runtime evidence through: 2026-07-23 at deployed application `8314d39fd11cf82e612de44e6ac0fa0cf1633719`; feature scope varies and NotebookLM has a provider-level URL-source canary.
+Last reviewed: 2026-07-23.
 Owner: AI Brain maintainer.
 
 | Capability | Entry points | Domain path | Storage/jobs | Change-impact page |
@@ -26,7 +26,7 @@ Owner: AI Brain maintainer.
 - Capture provenance and quality survive repair and reprocessing.
 - Workflow state and archive never replace Library membership, content identity, notes, retrieval, or quality state.
 - NotebookLM export is one explicit URL or text source to one pre-bound private consumer notebook, never continuous or bidirectional synchronization.
-- Queue acceptance and provider creates require independent fail-closed rollout gates; the current `1:0:0` state exposes UI only, with the extension not loaded/paired and no provider canary or owner enablement.
+- Queue acceptance and provider creates require independent fail-closed rollout gates. The verified production tuple is `1:1:1`; extension 0.7.4 is paired at protocol v2, the fixed private target is healthy, and a one-attempt public YouTube URL request reached provider `ready`.
 - Save, enrichment, embedding, transcript, and note-index states can fail independently.
 - Code presence is not runtime proof.
 - Migrations are append-only and tracked by full filename.

@@ -3,8 +3,8 @@
 Purpose: Summarize internal HTTP contracts, external clients, authentication, and operational constraints.
 Audience: AI agents and engineers changing interfaces or integrations.
 Verified against: deployed application `167a15d57b8f70574a017ea4cda507870f3600d4` plus retained route-specific evidence.
-Runtime evidence through: 2026-07-22; route-level runtime evidence varies. NotebookLM is deployed UI-only with queue/provider flags off and no completed provider canary.
-Last reviewed: 2026-07-22.
+Runtime evidence through: 2026-07-23; route-level runtime evidence varies. NotebookLM URL-source export is deployed at `1:1:1` with a provider-level production canary.
+Last reviewed: 2026-07-23.
 Owner: AI Brain maintainer.
 
 ## Route families
@@ -37,7 +37,7 @@ The NotebookLM connector has a separate five-minute, one-use pairing exchange an
 | Recall | Outbound read/import | Guarded one-way scheduled import plus a default-off manual request UI that reuses the full trusted wrapper |
 | Android | Authenticated web/API client | Private sideload thin client |
 | Browser extension | Authenticated API client | Token stored in extension local storage |
-| Consumer NotebookLM | Outbound copy through local Chrome connector | Designed for one fixed private notebook and static copied-text sources only; experimental UI is visible but queue and provider writes are off (`1:0:0`), the installed extension is not loaded/paired, and no target, provider canary, or owner-only real-content enablement has completed |
+| Consumer NotebookLM | Outbound copy through local Chrome connector | Experimental owner-operated export to one fixed private notebook; safe saved URLs become web/YouTube sources, URL-less notes become copied text; extension 0.7.4 is paired at protocol v2 and a production URL-source request reached provider `ready` |
 | Off-site backup service | Outbound backup | Database snapshot workflow; private runbook details excluded |
 
 Error behavior is intentionally capability-specific. Preserve explicit `401/403/409/422/429/503` semantics and avoid converting inactive routes into apparent configuration-only features.
@@ -46,7 +46,7 @@ The public NotebookLM entry/sign-in URL is `https://notebooklm.google/`. The aut
 
 ### NotebookLM export endpoints
 
-`/api/settings/notebooklm-export` and `/api/items/[id]/notebooklm-export` are signed-browser-session routes; writes require exact same-origin requests. `/api/notebooklm/connectors/exchange`, `/api/notebooklm/connector/bind`, `/api/notebooklm/connector/claim`, and `/api/notebooklm/connector/requests/[id]/events` form the scoped local-connector protocol. The queue and provider-write gates are independent fail-closed controls: at the current UI-only `1:0:0` rollout, setup and read-only status are available, new export requests return `503 export_queue_disabled`, and connector claims cannot authorize a provider create.
+`/api/settings/notebooklm-export` and `/api/items/[id]/notebooklm-export` are signed-browser-session routes; writes require exact same-origin requests. `/api/notebooklm/connectors/exchange`, `/api/notebooklm/connector/bind`, `/api/notebooklm/connector/claim`, and `/api/notebooklm/connector/requests/[id]/events` form the scoped local-connector protocol. The master, queue, and provider-write gates are independent and fail closed. The verified production tuple is `1:1:1`; disabling queue intake blocks new requests, while disabling provider writes prevents connector create authorization without removing read-only status and recovery.
 
 ### Processing endpoints
 

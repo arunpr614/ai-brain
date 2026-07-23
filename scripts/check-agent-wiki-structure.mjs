@@ -150,8 +150,10 @@ const approvedShas = new Set(
     baseline?.defaultBranchSha,
     baseline?.worktreeSha,
     baseline?.productionSha,
+    baseline?.wikiPageVerificationSha,
     baseline?.livingWikiDocumentationSha,
     baseline?.notebookLmRepositoryEvidenceSha,
+    baseline?.notebookLmPreviousRepositoryEvidenceSha,
     baseline?.cardProcessingExplorationSha,
     baseline?.featureCouncilArtifactSha,
   ].filter(

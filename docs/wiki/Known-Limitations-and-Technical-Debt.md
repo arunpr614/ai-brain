@@ -19,8 +19,8 @@ Owner: AI Brain maintainer.
 - Attached notes are not end-to-end encrypted and are excluded from default bulk export.
 - One shared bearer token prevents per-device identity/revocation.
 - Database backup workflows do not include filesystem capture-artifact files.
-- NotebookLM is a one-item static copied-text export to one fixed owner-only private consumer notebook, not synchronization. It has no batch/schedule/backfill, multi-target choice, remote update/delete, or return path.
-- NotebookLM remains Experimental and default-off beyond its UI: production is `1:0:0`, queue/provider writes are off, the attested 0.7.0 extension is locally installed but not loaded/paired, and no target/source/signed-in canary/real-content enablement is proven.
+- NotebookLM is a one-item static export to one fixed owner-only private consumer notebook, not synchronization. Safe saved URLs become web/YouTube sources and URL-less notes become copied text. It has no batch/schedule/backfill, multi-target choice, remote update/delete, or return path.
+- NotebookLM remains Experimental and uses undocumented consumer web behavior. Production is `1:1:1`, extension 0.7.4 is paired at protocol v2, and a provider-level URL-source canary passed, but Google can change the workflow without notice. No retained paired-profile visual source-icon screenshot exists.
 
 ## Technical risks
 

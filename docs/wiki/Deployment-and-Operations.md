@@ -2,9 +2,9 @@
 
 Purpose: Describe public-safe runtime, build/deploy, scheduling, health, monitoring and rollback concepts.
 Audience: AI agents, contributors, and operators.
-Verified against: deployed application `167a15d57b8f70574a017ea4cda507870f3600d4`.
-Runtime evidence through: 2026-07-22 protected-main NotebookLM dark/UI-only deployment verification.
-Last reviewed: 2026-07-22.
+Verified against: deployed application `8314d39fd11cf82e612de44e6ac0fa0cf1633719` plus retained Wiki verification baseline `167a15d57b8f70574a017ea4cda507870f3600d4`.
+Runtime evidence through: 2026-07-23 for the protected-main NotebookLM URL-source production release and provider-level canary.
+Last reviewed: 2026-07-23.
 Owner: AI Brain maintainer.
 
 The hosted Next.js standalone service runs unprivileged on loopback behind a managed edge. Instrumentation applies migrations and starts database backup, enrichment, transcript and conditional note-index workers plus batch cron. Separate persistent timers run Recall import, the NotebookLM operations gate, and the independent NotebookLM retention writer; the deployed manual Recall path/timer/service units use a distinct trusted identity. Off-site database backup is separately scheduled.
@@ -19,7 +19,7 @@ Card Processing adds a deep readiness audit at deploy, startup, and every six ho
 
 ### NotebookLM export rollout gate
 
-The connector is owner-operated and experimental. A paired owner-only private target and earlier copied-text canary exist. The URL-source release adds migration 027, connector protocol v2, and extension 0.7.4. Deployments preserve the current dependency-ordered master/queue/provider tuple and verify the operations and durable-retention timers. Live URL delivery is not considered proven until the post-deployment YouTube canary appears as a URL/YouTube source and reaches `Ready`.
+The connector is owner-operated and experimental. The deployed URL-source release includes migration 027, connector protocol v2, and extension 0.7.4. Deployments preserve the current dependency-ordered master/queue/provider tuple and verify the operations and durable-retention timers. On 2026-07-23, one owner-selected public YouTube item completed as a URL request in one attempt, reached provider `ready`, increased the bound private notebook source count, and did not use copied text. A paired-profile visual source-icon screenshot was not retained.
 
 ### Recall manual-sync enablement gate
 

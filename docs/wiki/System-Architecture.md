@@ -3,8 +3,8 @@
 Purpose: Explain AI Brain's components, trust boundaries, data flow, failure isolation, and deployment shape.
 Audience: AI agents and engineers making cross-cutting changes.
 Verified against: `167a15d57b8f70574a017ea4cda507870f3600d4`.
-Runtime evidence through: 2026-07-22 at deployed application `167a15d57b8f70574a017ea4cda507870f3600d4`; NotebookLM is UI-only with no provider canary.
-Last reviewed: 2026-07-22.
+Runtime evidence through: 2026-07-23 at deployed application `8314d39fd11cf82e612de44e6ac0fa0cf1633719`; NotebookLM has a provider-level production URL-source canary.
+Last reviewed: 2026-07-23.
 Owner: AI Brain maintainer.
 
 ```mermaid
@@ -17,7 +17,7 @@ flowchart TB
   web --> workers["Enrichment, transcript, note-index workers"]
   workers --> providers["Generation and embedding providers"]
   web <--> connector["Scoped local Chrome connector"]
-  connector --> notebooklm["Designed fixed private NotebookLM target (currently unbound)"]
+  connector --> notebooklm["Fixed owner-only private NotebookLM target"]
   recall["Guarded Recall timer/runner"] --> domain
   backups["Database backup workflows"] --> db
 ```
@@ -32,7 +32,7 @@ The Node process handles HTTP, migrations, workers, some schedules, backups, and
 - Capture artifact files retain bounded extraction evidence outside SQLite.
 - In-process workers handle enrichment, transcript recovery and note indexing.
 - The separate Recall timer invokes a guarded packaged importer.
-- Android is a thin WebView/share client; the extension and Telegram call capture contracts. Extension 0.7.0 also contains the experimental scoped NotebookLM connector, but the installed build is not yet loaded or paired.
+- Android is a thin WebView/share client; the extension and Telegram call capture contracts. Extension 0.7.4 also contains the experimental scoped NotebookLM connector and is loaded/paired at protocol v2 for owner-operated one-item export.
 
 ## Primary flows
 

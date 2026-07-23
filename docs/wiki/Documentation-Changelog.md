@@ -2,22 +2,23 @@
 
 Purpose: Record material wiki revisions, baselines, and publication state without replacing Git history.
 Audience: Maintainers and future AI agents.
-Verified against: NotebookLM URL-source release candidate based on protected main `9c5e8d88846ea3fb9f3c835cc10136be4b8b29b4`, retained Wiki verification baseline `167a15d57b8f70574a017ea4cda507870f3600d4`, and older historical baselines.
-Runtime evidence through: 2026-07-23 for the paired private NotebookLM connector and prior copied-text canary; the post-deployment YouTube URL canary is pending.
+Verified against: deployed NotebookLM URL-source release `8314d39fd11cf82e612de44e6ac0fa0cf1633719`, implementation commit `4f95a4689adb7b1cbe682faea2c5e25dc737177f`, retained Wiki verification baseline `167a15d57b8f70574a017ea4cda507870f3600d4`, and older historical baselines.
+Runtime evidence through: 2026-07-23 for the paired private NotebookLM connector and provider-level production YouTube URL-source canary.
 Last reviewed: 2026-07-23.
 Owner: AI Brain maintainer.
 
-## 2026-07-23 — NotebookLM URL-source release candidate
+## 2026-07-23 — NotebookLM URL-source production release
 
 | Change | Implementation baseline | Runtime baseline | State |
 |---|---|---|---|
-| Treat every safe saved HTTP(S) source URL as the NotebookLM source, including YouTube; retain copied-text export only for notes without a URL; add retention-safe URL reconciliation | Protected-main baseline `9c5e8d88846ea3fb9f3c835cc10136be4b8b29b4`; migration 027; protocol/mapper v2; extension 0.7.4 | Existing paired private target and copied-text canary verified; URL-source deployment and signed-in YouTube canary pending | **Release candidate** |
+| Treat every safe saved HTTP(S) source URL as the NotebookLM source, including YouTube; retain copied-text export only for notes without a URL; add retention-safe URL reconciliation | Implementation `4f95a4689adb7b1cbe682faea2c5e25dc737177f`; protected-main deployment `8314d39fd11cf82e612de44e6ac0fa0cf1633719`; migration 027; protocol/mapper v2; extension 0.7.4 | Paired private target healthy; controls `1:1:1`; one public YouTube URL request completed in one attempt, reached provider `ready`, increased source count, and did not use copied text | **Experimental production release; provider-level URL-source canary verified** |
 
 - Added exact web/YouTube provider dispatch; URL-bearing items never call the copied-text provider path.
 - Unsafe or private/sensitive URLs fail closed instead of silently becoming Markdown/copied text.
 - Added a bounded temporary URL snapshot and a retained domain-separated SHA-256 fingerprint for duplicate-safe reconciliation after snapshot purge.
 - Existing extension credentials and connector records upgrade from protocol v1 to v2 in place; one Chrome extension reload is required, not removal/reinstallation or new pairing.
 - Updated user, operator, deployment, data-model, architecture, troubleshooting, and authoritative DataWiki guidance.
+- A paired-profile visual source-icon screenshot was not retained; the production claim is limited to the content-free provider protocol and reconciled-state evidence recorded in the repository's `production-url-source-release-evidence-2026-07-23.md` release record.
 
 ## 2026-07-22 — NotebookLM one-click export protected-main UI-only release
 

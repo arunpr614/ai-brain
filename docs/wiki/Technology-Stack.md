@@ -3,8 +3,8 @@
 Purpose: Record the manifest-backed technology choices and versions used by current main.
 Audience: AI agents, engineers, and operators.
 Verified against: `167a15d57b8f70574a017ea4cda507870f3600d4`.
-Runtime evidence through: 2026-07-22; versions are source-manifest evidence unless explicitly runtime-verified.
-Last reviewed: 2026-07-22.
+Runtime evidence through: 2026-07-23; versions are source-manifest evidence unless explicitly runtime-verified.
+Last reviewed: 2026-07-23.
 Owner: AI Brain maintainer.
 
 | Layer | Current technology |
@@ -17,9 +17,9 @@ Owner: AI Brain maintainer.
 | Generation | Ollama, Anthropic, OpenRouter adapters |
 | Embeddings | Ollama `nomic-embed-text`; Gemini `gemini-embedding-001` at 768 dimensions |
 | Mobile | Capacitor 8.3.3; Android min SDK 24, target/compile 36; Java 21; Gradle 8.14.3 |
-| Browser extension | Chrome Manifest V3; Vite build; extension version 0.7.0; optional `https://notebooklm.google.com/*` host permission for the local connector |
+| Browser extension | Chrome Manifest V3; Vite build; extension version 0.7.4; optional `https://notebooklm.google.com/*` host permission for the local connector |
 | Testing/checks | Node test runner through `tsx`, jsdom, fake IndexedDB, TypeScript, ESLint 9 |
 | Deployment | Next standalone Node service, managed edge/tunnel, system service, SQLite backups |
 | Observability | health/provider endpoints, JSONL client-error sink, system journal, queue/report tables, NotebookLM operations and retention timers |
 
-The repository version `0.6.2`, extension version `0.7.0`, and Android version `1.0.7`/8 are client/package identifiers, not reliable feature-status sources. The extension release is attested and stable-installed but is not yet loaded or paired; NotebookLM remains experimental and UI-only.
+The repository version `0.6.2`, extension version `0.7.4`, and Android version `1.0.7`/8 are client/package identifiers, not reliable feature-status sources. Extension 0.7.4 is attested, stable-installed, loaded, and paired at protocol v2; NotebookLM remains experimental and owner-operated.
