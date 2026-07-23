@@ -165,10 +165,10 @@ The complete copied-text payload must be no larger than:
 
 Both limits apply. V1 does not silently truncate or split the copied-text title or body. Only the separate provider display title may be shortened as described above.
 
-The connector deliberately assumes the lowest supported planning limit:
+The connector defaults to a safe ceiling of 45 and lets the owner configure a versioned Brain safe source limit through the hard maximum of 259:
 
 ```text
-safe slots = 50 - 5 reserved - observed sources - open requests that can still create
+safe slots = configured safe source limit - observed sources - open requests that can still create
 ```
 
 The final term reserves a slot for every conclusively unsent pre-create request that can still create and for every dispatched/possibly-delivered request that lacks a known source alias, even if that ambiguous request has been terminalized. An uncertain provider write therefore cannot silently return capacity to the pool.
@@ -180,7 +180,7 @@ The final term reserves a slot for every conclusively unsent pre-create request 
 - Unknown occupancy is treated as blocked, never as zero.
 - AI Memory never deletes another source to make room.
 
-Paid-plan capacity is not inferred from branding or user input.
+Both the extension and server independently reject an effective ceiling above 259. A setting of 259 stops new exports when the observed source count reaches 259, leaving at least 41 sources outside Brain's export allowance in a 300-source notebook. Changing the limit requires a safe rebind and is blocked while exports are unresolved.
 
 ## Architecture and runtime flow
 

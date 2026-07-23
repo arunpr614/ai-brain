@@ -10,14 +10,35 @@ import {
 import {
   DEFAULT_SOURCE_LIMIT,
   DEFAULT_SOURCE_RESERVE,
+  DEFAULT_SAFE_SOURCE_LIMIT,
+  isSupportedSafeSourceLimit,
+  isSupportedSourceLimit,
+  MAX_SAFE_SOURCE_LIMIT,
+  MAX_SOURCE_LIMIT,
+  MIN_SAFE_SOURCE_LIMIT,
+  MIN_SOURCE_LIMIT,
 } from "../src/notebooklm/types.ts";
 
 const NOTEBOOK_ID = "f66923f0-1df4-4ffe-9822-3ed63c558b1c";
 const MARKER = "brain_req_1234567890";
 
-test("V1 capacity policy stays fixed at the lowest documented consumer tier", () => {
+test("capacity policy defaults conservatively and never exceeds the 259-source ceiling", () => {
   assert.equal(DEFAULT_SOURCE_LIMIT, 50);
+  assert.equal(DEFAULT_SAFE_SOURCE_LIMIT, 45);
+  assert.equal(MIN_SAFE_SOURCE_LIMIT, 45);
+  assert.equal(MAX_SAFE_SOURCE_LIMIT, 259);
+  assert.equal(MIN_SOURCE_LIMIT, 50);
+  assert.equal(MAX_SOURCE_LIMIT, 264);
   assert.equal(DEFAULT_SOURCE_RESERVE, 5);
+  assert.equal(isSupportedSafeSourceLimit(45), true);
+  assert.equal(isSupportedSafeSourceLimit(259), true);
+  assert.equal(isSupportedSafeSourceLimit(44), false);
+  assert.equal(isSupportedSafeSourceLimit(260), false);
+  assert.equal(isSupportedSourceLimit(50), true);
+  assert.equal(isSupportedSourceLimit(264), true);
+  assert.equal(isSupportedSourceLimit(49), false);
+  assert.equal(isSupportedSourceLimit(265), false);
+  assert.equal(isSupportedSourceLimit(100.5), false);
 });
 
 test("target parser accepts only the exact NotebookLM app notebook URL", () => {

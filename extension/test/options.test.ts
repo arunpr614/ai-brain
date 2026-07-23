@@ -34,3 +34,19 @@ test("setup feedback and prerequisites are adjacent and fail closed initially", 
   assert.match(html, /id="run-connector" class="secondary" disabled/);
   assert.match(html, /id="forget-connector" class="secondary danger" hidden/);
 });
+
+test("safe capacity control is configurable and its effective ceiling is hard-capped at 259", async () => {
+  const html = await readFile(new URL("../src/options.html", import.meta.url), "utf8");
+  const labelIndex = html.indexOf("4. Brain safe source limit");
+  const inputIndex = html.indexOf('id="safe-source-limit"', labelIndex);
+  const bindIndex = html.indexOf('id="bind-target"', inputIndex);
+
+  assert.ok(labelIndex >= 0 && inputIndex > labelIndex && bindIndex > inputIndex);
+  assert.match(
+    html.slice(inputIndex, bindIndex),
+    /type="number"[^>]*min="45"[^>]*max="259"[^>]*step="1"[^>]*value="45"[^>]*disabled/,
+  );
+  assert.match(html.slice(inputIndex, bindIndex), /hard maximum/);
+  assert.match(html.slice(inputIndex, bindIndex), /actual source count where Brain stops new exports/);
+  assert.match(html.slice(inputIndex, bindIndex), /leaves at least 41 sources/);
+});

@@ -152,6 +152,8 @@ test("GET returns only safe configuration, liveness, capacity, and runtime-contr
   assert.equal(body.connection.sharingPosture, "private");
   assert.equal(body.connection.healthStatus, "healthy");
   assert.equal(body.connection.healthReason, null);
+  assert.equal(body.connection.safeSourceLimit, 45);
+  assert.equal(body.connection.reserveCount, 5);
   assert.equal(body.connection.safeSlots, 43);
   const serialized = JSON.stringify(body);
   for (const forbidden of [

@@ -88,6 +88,8 @@ export default async function NotebookLmExportSettingsPage() {
             sharingPosture: connection.sharingPosture,
             healthStatus: connection.healthStatus,
             healthReason: connection.healthReason,
+            safeSourceLimit: connection.safeSourceLimit,
+            reserveCount: connection.reserveCount,
             safeSlots: connection.safeSlots,
             connectorOnline: connection.connectorOnline,
             lastCheckedAt:

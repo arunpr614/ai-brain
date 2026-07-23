@@ -129,6 +129,15 @@ test("legacy default-account bindings normalize without changing their target pr
   assert.equal(restored?.localBindingFingerprint, TARGET_FINGERPRINT);
 });
 
+test("stored bindings accept the configured ceiling and reject out-of-range capacity", async () => {
+  const area = new MemoryStorage();
+  area.values[BINDING_KEY] = { ...binding(), sourceLimit: 264 };
+  assert.equal((await new ConnectorStore(area).getBinding())?.sourceLimit, 264);
+
+  area.values[BINDING_KEY] = { ...binding(), sourceLimit: 265 };
+  assert.equal(await new ConnectorStore(area).getBinding(), null);
+});
+
 test("worker journals before dispatch and never blindly retries a possibly-delivered create", async () => {
   const area = new MemoryStorage();
   const store = new ConnectorStore(area);

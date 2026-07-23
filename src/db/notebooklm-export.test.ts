@@ -32,6 +32,7 @@ import type { NotebookLmConnectorRow } from "@/lib/notebooklm/connector-auth";
 import {
   NOTEBOOKLM_EVENT_RETENTION_MS,
   NOTEBOOKLM_LEASE_MS,
+  NOTEBOOKLM_MAX_SOURCE_LIMIT,
   NOTEBOOKLM_POST_DISPATCH_RETENTION_MS,
   NOTEBOOKLM_RECONCILE_ZERO_BACKOFF_MS,
   NOTEBOOKLM_RETENTION_SAFETY_MARGIN_MS,
@@ -264,6 +265,34 @@ test("binding accepts the final safe slot at 44 sources and rejects 45", () => {
     }),
   );
   assert.equal(getActiveNotebookLmTarget()?.source_count, 44);
+});
+
+test("binding supports a configurable safe ceiling through 259 and versions policy changes", () => {
+  const owner = connector();
+  expectCode("invalid_binding", () => bind(owner, { sourceLimit: 49 }));
+  expectCode("invalid_binding", () => bind(owner, { sourceLimit: 265 }));
+
+  const first = bind(owner);
+  const raised = bind(owner, {
+    observedBindingVersion: first.binding_version,
+    sourceLimit: NOTEBOOKLM_MAX_SOURCE_LIMIT,
+    now: BASE_NOW + 1,
+  });
+  assert.equal(raised.binding_version, 2);
+  assert.equal(raised.source_limit, 264);
+  assert.equal(raised.reserve_count, 5);
+  assert.equal(getNotebookLmConnectionSummary(BASE_NOW + 1).safeSourceLimit, 259);
+  assert.equal(getNotebookLmConnectionSummary(BASE_NOW + 1).safeSlots, 258);
+
+  const replay = bind(owner, {
+    observedBindingVersion: 1,
+    sourceLimit: NOTEBOOKLM_MAX_SOURCE_LIMIT,
+    sourceCount: 2,
+    now: BASE_NOW + 2,
+  });
+  assert.equal(replay.id, raised.id);
+  assert.equal(replay.binding_version, 2);
+  assert.equal(replay.source_count, 2);
 });
 
 test("exact bind replays recover lost responses without weakening the binding-version CAS", () => {

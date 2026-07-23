@@ -3,8 +3,8 @@ import { payloadFitsV1 } from "./policy";
 import { assertFingerprint, assertMarker, titleHasMarker } from "./target";
 import {
   CONNECTOR_PROTOCOL_VERSION,
-  DEFAULT_SOURCE_LIMIT,
   DEFAULT_SOURCE_RESERVE,
+  isSupportedSourceLimit,
   type ConnectorCredential,
   type ConnectorEvent,
   type NotebookLmClaim,
@@ -354,7 +354,7 @@ function parseClaim(body: Record<string, unknown>): NotebookLmClaim {
   }
   if (
     Number(target.bindingVersion) < 1 ||
-    Number(target.sourceLimit) !== DEFAULT_SOURCE_LIMIT ||
+    !isSupportedSourceLimit(target.sourceLimit) ||
     Number(target.reserveCount) !== DEFAULT_SOURCE_RESERVE
   ) {
     throw new BrainConnectorError("protocol", "Brain returned invalid target capacity settings.");
@@ -395,8 +395,7 @@ function validateBindInput(input: BindInput): void {
     !Number.isInteger(input.sourceCount) ||
     input.sourceCount < 0 ||
     input.sourceCount > 1_000 ||
-    !Number.isInteger(input.sourceLimit) ||
-    input.sourceLimit !== DEFAULT_SOURCE_LIMIT ||
+    !isSupportedSourceLimit(input.sourceLimit) ||
     !Number.isInteger(input.reserveCount) ||
     input.reserveCount !== DEFAULT_SOURCE_RESERVE
   ) {

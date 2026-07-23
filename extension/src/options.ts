@@ -13,8 +13,12 @@ import { parseNotebookTarget, targetFingerprint } from "./notebooklm/target";
 import {
   BRAIN_PERMISSION,
   BRAIN_SAFE_TARGET_LABEL,
-  DEFAULT_SOURCE_LIMIT,
+  DEFAULT_SAFE_SOURCE_LIMIT,
   DEFAULT_SOURCE_RESERVE,
+  isSupportedSafeSourceLimit,
+  isSupportedSourceLimit,
+  MAX_SAFE_SOURCE_LIMIT,
+  MIN_SAFE_SOURCE_LIMIT,
   NOTEBOOKLM_PERMISSION,
   type LocalBinding,
 } from "./notebooklm/types";
@@ -30,6 +34,7 @@ const togglePairingCodeBtn = element<HTMLButtonElement>("toggle-pairing-code");
 const pairBtn = element<HTMLButtonElement>("pair-connector");
 const grantBtn = element<HTMLButtonElement>("grant-notebooklm");
 const targetUrlEl = element<HTMLInputElement>("target-url");
+const safeSourceLimitEl = element<HTMLInputElement>("safe-source-limit");
 const bindBtn = element<HTMLButtonElement>("bind-target");
 const runBtn = element<HTMLButtonElement>("run-connector");
 const forgetBtn = element<HTMLButtonElement>("forget-connector");
@@ -50,6 +55,7 @@ async function initialize(): Promise<void> {
   if (captureToken) tokenEl.value = captureToken;
   if (binding) {
     targetUrlEl.value = binding.targetUrl;
+    safeSourceLimitEl.value = String(binding.sourceLimit - binding.reserveCount);
   }
   await refreshConnectorSummary();
 }
@@ -197,16 +203,22 @@ bindBtn.addEventListener("click", async () => {
       "Enter a NotebookLM URL in the form https://notebooklm.google.com/notebook/<id>.",
     );
   }
-  // V1 deliberately uses the lowest documented consumer capacity. A higher
-  // paid-plan tier cannot be inferred safely from account branding or input.
-  const sourceLimit = DEFAULT_SOURCE_LIMIT;
+  const safeSourceLimit = safeSourceLimitEl.valueAsNumber;
+  if (!isSupportedSafeSourceLimit(safeSourceLimit)) {
+    return showTargetStatus(
+      "error",
+      `Enter a whole-number Brain safe source limit from ${MIN_SAFE_SOURCE_LIMIT} to ${MAX_SAFE_SOURCE_LIMIT}.`,
+    );
+  }
+  const sourceLimit = safeSourceLimit + DEFAULT_SOURCE_RESERVE;
   const credential = await store.getCredential();
   if (!credential) return showTargetStatus("attention", "Pair the connector with Brain first.");
   const storedBinding = await store.getBinding();
   const previous = storedBinding?.connectorId === credential.connectorId ? storedBinding : null;
   if (
     previous &&
-    (previous.sourceLimit !== DEFAULT_SOURCE_LIMIT || previous.reserveCount !== DEFAULT_SOURCE_RESERVE)
+    (!isSupportedSourceLimit(previous.sourceLimit) ||
+      previous.reserveCount !== DEFAULT_SOURCE_RESERVE)
   ) {
     return showTargetStatus(
       "attention",
@@ -214,6 +226,15 @@ bindBtn.addEventListener("click", async () => {
     );
   }
   const fingerprint = await targetFingerprint(target.notebookId, target.authUser);
+  if (
+    previous &&
+    previous.sourceLimit !== sourceLimit &&
+    !window.confirm(
+      `Change the Brain safe source limit from ${previous.sourceLimit - previous.reserveCount} to ${safeSourceLimit}? The notebook must be rebound, and unresolved exports must be finished first.`,
+    )
+  ) {
+    return;
+  }
   if (
     previous &&
     previous.localBindingFingerprint !== fingerprint &&
@@ -308,6 +329,7 @@ forgetBtn.addEventListener("click", async () => {
   await store.clearConnectorData();
   await chrome.permissions.remove({ origins: [NOTEBOOKLM_PERMISSION] });
   targetUrlEl.value = "";
+  safeSourceLimitEl.value = String(DEFAULT_SAFE_SOURCE_LIMIT);
   showTargetStatus(
     "success",
     "Local connector data and NotebookLM site access were removed. This did not change server state in Brain.",
@@ -339,6 +361,7 @@ async function refreshConnectorSummary(): Promise<boolean> {
     pairingCodeEl.disabled = controls.pairingInputDisabled;
     togglePairingCodeBtn.disabled = controls.pairingRevealDisabled;
     targetUrlEl.disabled = controls.targetDisabled;
+    safeSourceLimitEl.disabled = controls.targetDisabled;
     bindBtn.disabled = controls.bindDisabled;
     runBtn.disabled = controls.runDisabled;
     forgetBtn.hidden = controls.emergencyHidden;
@@ -365,7 +388,7 @@ async function refreshConnectorSummary(): Promise<boolean> {
       credential ? "Brain paired" : "Brain pairing needed",
       notebookLmAccess ? "NotebookLM access granted" : "NotebookLM access needed",
       bound
-        ? `Bound to “${binding?.safeLabel}” (version ${binding?.bindingVersion})`
+        ? `Bound to “${binding?.safeLabel}” (version ${binding?.bindingVersion}; ${(binding?.sourceLimit ?? 0) - (binding?.reserveCount ?? 0)} safe source limit)`
         : "Target notebook not bound for this pairing",
     ];
     if (workerStatus) parts.push(workerStatus.detail);
@@ -377,6 +400,7 @@ async function refreshConnectorSummary(): Promise<boolean> {
     pairingCodeEl.disabled = true;
     togglePairingCodeBtn.disabled = true;
     targetUrlEl.disabled = true;
+    safeSourceLimitEl.disabled = true;
     bindBtn.disabled = true;
     runBtn.disabled = true;
     connectorSummaryEl.textContent = "Connector status is unavailable. Reload the extension and try again.";

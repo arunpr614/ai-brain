@@ -1,6 +1,6 @@
 {
   "name": "brain-extension",
-  "version": "0.7.1",
+  "version": "0.7.2",
   "private": true,
   "description": "Chrome MV3 extension for Brain capture and local, approved NotebookLM deliveries.",
   "type": "module",
