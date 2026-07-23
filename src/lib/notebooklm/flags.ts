@@ -1,4 +1,9 @@
-import { notebookLmRuntimeProviderWritesAllowed } from "@/db/notebooklm-export-control";
+import {
+  getNotebookLmExportMasterPreference,
+  getNotebookLmExportQueuePreference,
+  getNotebookLmProviderWritesPreference,
+  notebookLmRuntimeProviderWritesAllowed,
+} from "@/db/notebooklm-export-control";
 
 function enabled(name: string): boolean {
   const value = process.env[name]?.trim().toLowerCase();
@@ -11,12 +16,39 @@ export function notebookLmExportUiEnabled(): boolean {
 
 export function notebookLmExportQueueEnabled(): boolean {
   return (
-    notebookLmExportUiEnabled() &&
-    enabled("BRAIN_NOTEBOOKLM_EXPORT_QUEUE_ENABLED") &&
-    notebookLmRuntimeProviderWritesAllowed()
+    notebookLmExportQueueControlAvailable() &&
+    getNotebookLmExportQueuePreference()
   );
 }
 
 export function notebookLmExportProviderWriteEnabled(): boolean {
-  return notebookLmExportQueueEnabled() && enabled("BRAIN_NOTEBOOKLM_EXPORT_PROVIDER_WRITE_ENABLED");
+  return (
+    notebookLmProviderWriteRolloutEnabled() &&
+    getNotebookLmProviderWritesPreference()
+  );
+}
+
+export function notebookLmProviderWriteRolloutEnabled(): boolean {
+  return (
+    notebookLmExportQueueEnabled() &&
+    enabled("BRAIN_NOTEBOOKLM_EXPORT_PROVIDER_WRITE_ENABLED")
+  );
+}
+
+export function notebookLmExportMasterControlAvailable(): boolean {
+  return notebookLmExportUiEnabled() && notebookLmRuntimeProviderWritesAllowed();
+}
+
+export function notebookLmExportMasterEnabled(): boolean {
+  return (
+    notebookLmExportMasterControlAvailable() &&
+    getNotebookLmExportMasterPreference()
+  );
+}
+
+export function notebookLmExportQueueControlAvailable(): boolean {
+  return (
+    notebookLmExportMasterEnabled() &&
+    enabled("BRAIN_NOTEBOOKLM_EXPORT_QUEUE_ENABLED")
+  );
 }

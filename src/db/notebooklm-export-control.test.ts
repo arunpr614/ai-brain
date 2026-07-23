@@ -7,6 +7,9 @@ import { getDb } from "./client";
 import {
   clearNotebookLmPhysicalPurgePending,
   clearNotebookLmProtocolWriteBlock,
+  getNotebookLmExportMasterPreference,
+  getNotebookLmExportQueuePreference,
+  getNotebookLmProviderWritesPreference,
   getNotebookLmRetentionOperationalStatus,
   getNotebookLmRuntimeControl,
   markNotebookLmPhysicalPurgePending,
@@ -18,6 +21,8 @@ import {
   recordNotebookLmProtocolSuccess,
   recordNotebookLmRetentionSweepFailure,
   recordNotebookLmRetentionSweepSuccess,
+  setNotebookLmExportGatePreference,
+  setNotebookLmProviderWritesPreference,
   tripNotebookLmProviderWriteBlock,
 } from "./notebooklm-export-control";
 import { NOTEBOOKLM_SAFE_TARGET_LABEL } from "@/lib/notebooklm/contracts";
@@ -40,6 +45,7 @@ test.beforeEach(() => {
   db.prepare("DELETE FROM notebooklm_export_requests").run();
   db.prepare("DELETE FROM notebooklm_targets").run();
   db.prepare("DELETE FROM notebooklm_connectors").run();
+  db.prepare("DELETE FROM settings WHERE key LIKE 'notebooklm.%_enabled'").run();
   db.prepare(
     `UPDATE notebooklm_runtime_control SET provider_write_blocked=0,
      protocol_failure_streak=0, block_reason=NULL, last_protocol_failure_at=NULL,
@@ -53,6 +59,76 @@ test.beforeEach(() => {
   process.env.BRAIN_NOTEBOOKLM_EXPORT_UI_ENABLED = "1";
   process.env.BRAIN_NOTEBOOKLM_EXPORT_QUEUE_ENABLED = "1";
   process.env.BRAIN_NOTEBOOKLM_EXPORT_PROVIDER_WRITE_ENABLED = "1";
+});
+
+test("master and queue preferences are durable independent runtime gates", () => {
+  assert.equal(getNotebookLmExportMasterPreference(), true);
+  assert.equal(getNotebookLmExportQueuePreference(), true);
+  const queue = setNotebookLmExportGatePreference({
+    gate: "queue",
+    enabled: false,
+    rolloutAvailable: true,
+    now: BASE_NOW,
+  });
+  assert.deepEqual(queue, { enabled: false, changed: true });
+  assert.equal(getNotebookLmExportQueuePreference(), false);
+  assert.equal(notebookLmExportQueueEnabled(), false);
+
+  const master = setNotebookLmExportGatePreference({
+    gate: "master",
+    enabled: false,
+    rolloutAvailable: true,
+    now: BASE_NOW + 1,
+  });
+  assert.deepEqual(master, { enabled: false, changed: true });
+  assert.equal(getNotebookLmExportMasterPreference(), false);
+  assert.equal(notebookLmExportQueueEnabled(), false);
+});
+
+test("operator preference disables immediately and enables only for a fresh online private target", () => {
+  installHealthyTarget(BASE_NOW);
+  getDb().prepare(
+    "UPDATE notebooklm_connectors SET last_seen_at=? WHERE id=?",
+  ).run(BASE_NOW, CONNECTOR_ID);
+  assert.equal(getNotebookLmProviderWritesPreference(), true);
+
+  const disabled = setNotebookLmProviderWritesPreference({
+    enabled: false,
+    rolloutAvailable: true,
+    now: BASE_NOW,
+  });
+  assert.deepEqual(disabled, { enabled: false, changed: true });
+  assert.equal(getNotebookLmProviderWritesPreference(), false);
+  assert.equal(notebookLmExportProviderWriteEnabled(), false);
+
+  expectControlCode(
+    "acknowledgement_required",
+    () => setNotebookLmProviderWritesPreference({
+      enabled: true,
+      rolloutAvailable: true,
+      now: BASE_NOW,
+    }),
+  );
+  const enabled = setNotebookLmProviderWritesPreference({
+    enabled: true,
+    acknowledgeStaticCopiesWillBeCreated: true,
+    rolloutAvailable: true,
+    now: BASE_NOW,
+  });
+  assert.deepEqual(enabled, { enabled: true, changed: true });
+  assert.equal(notebookLmExportProviderWriteEnabled(), true);
+
+  const eventTypes = getDb()
+    .prepare(
+      `SELECT event_type FROM notebooklm_operational_events
+       WHERE event_type LIKE 'notebooklm.provider_writes_%'
+       ORDER BY id`,
+    )
+    .all() as Array<{ event_type: string }>;
+  assert.deepEqual(eventTypes.map((row) => row.event_type), [
+    "notebooklm.provider_writes_disabled",
+    "notebooklm.provider_writes_enabled",
+  ]);
 });
 
 function installHealthyTarget(verifiedAt = BASE_NOW) {

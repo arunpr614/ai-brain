@@ -7,6 +7,9 @@ import { NextRequest } from "next/server";
 import { getDb } from "@/db/client";
 import { bindNotebookLmTarget } from "@/db/notebooklm-export";
 import {
+  getNotebookLmExportMasterPreference,
+  getNotebookLmExportQueuePreference,
+  getNotebookLmProviderWritesPreference,
   getNotebookLmRuntimeControl,
   markNotebookLmPhysicalPurgePending,
   recordNotebookLmProtocolFailure,
@@ -36,6 +39,7 @@ test.beforeEach(() => {
   db.prepare("DELETE FROM notebooklm_targets").run();
   db.prepare("DELETE FROM notebooklm_connectors").run();
   db.prepare("DELETE FROM notebooklm_connector_pairing_codes").run();
+  db.prepare("DELETE FROM settings WHERE key LIKE 'notebooklm.%_enabled'").run();
   db.prepare(
     `UPDATE notebooklm_runtime_control SET provider_write_blocked=0,
      protocol_failure_streak=0, block_reason=NULL, last_protocol_failure_at=NULL,
@@ -125,7 +129,14 @@ test("GET returns only safe configuration, liveness, capacity, and runtime-contr
   assert.equal(response.status, 200);
   const body = await response.json();
   assert.equal(body.feature.queueAccepting, true);
+  assert.equal(body.feature.queueRequested, true);
+  assert.equal(body.feature.queueAvailable, true);
+  assert.equal(body.feature.masterEnabled, true);
+  assert.equal(body.feature.masterRequested, true);
+  assert.equal(body.feature.masterAvailable, true);
   assert.equal(body.feature.providerWritesEnabled, true);
+  assert.equal(body.feature.providerWritesRequested, true);
+  assert.equal(body.feature.providerWritesAvailable, true);
   assert.equal(body.feature.runtimeWriteBlocked, false);
   assert.equal(body.feature.protocolFailureStreak, 0);
   assert.equal(body.feature.retentionHealthy, true);
@@ -153,6 +164,123 @@ test("GET returns only safe configuration, liveness, capacity, and runtime-contr
   ]) {
     assert.equal(serialized.includes(forbidden), false, `settings leaked ${forbidden}`);
   }
+});
+
+test("PATCH independently controls the export master switch and queue gate", async () => {
+  installBoundTarget();
+
+  let response = await PATCH(
+    req("PATCH", {
+      body: { action: "set_export_queue", enabled: false },
+    }),
+  );
+  assert.equal(response.status, 200);
+  let body = await response.json();
+  assert.equal(body.status.feature.queueAccepting, false);
+  assert.equal(body.status.feature.queueRequested, false);
+  assert.equal(body.status.feature.providerWritesEnabled, false);
+  assert.equal(getNotebookLmExportQueuePreference(), false);
+
+  response = await PATCH(
+    req("PATCH", {
+      body: {
+        action: "set_export_queue",
+        enabled: true,
+        acknowledgeExportsMayBeAccepted: true,
+      },
+    }),
+  );
+  assert.equal(response.status, 200);
+  body = await response.json();
+  assert.equal(body.status.feature.queueAccepting, true);
+
+  response = await PATCH(
+    req("PATCH", {
+      body: { action: "set_export_master", enabled: false },
+    }),
+  );
+  assert.equal(response.status, 200);
+  body = await response.json();
+  assert.equal(body.status.feature.masterEnabled, false);
+  assert.equal(body.status.feature.masterRequested, false);
+  assert.equal(body.status.feature.queueAccepting, false);
+  assert.equal(body.status.feature.providerWritesEnabled, false);
+  assert.equal(getNotebookLmExportMasterPreference(), false);
+
+  response = await PATCH(
+    req("PATCH", {
+      body: {
+        action: "set_export_queue",
+        enabled: true,
+        acknowledgeExportsMayBeAccepted: true,
+      },
+    }),
+  );
+  assert.equal(response.status, 409);
+  assert.deepEqual(await response.json(), { error: "rollout_unavailable" });
+});
+
+test("PATCH requires explicit confirmation and a fresh online private target to enable writes", async () => {
+  const { connector } = installBoundTarget();
+  getDb().prepare(
+    "UPDATE notebooklm_connectors SET last_seen_at=? WHERE id=?",
+  ).run(Date.now(), connector.id);
+
+  let response = await PATCH(
+    req("PATCH", {
+      body: { action: "set_provider_writes", enabled: false },
+    }),
+  );
+  assert.equal(response.status, 200);
+  assert.equal(getNotebookLmProviderWritesPreference(), false);
+  let body = await response.json();
+  assert.equal(body.status.feature.providerWritesEnabled, false);
+  assert.equal(body.status.feature.providerWritesRequested, false);
+
+  response = await PATCH(
+    req("PATCH", {
+      body: { action: "set_provider_writes", enabled: true },
+    }),
+  );
+  assert.equal(response.status, 400);
+  assert.equal(getNotebookLmProviderWritesPreference(), false);
+
+  response = await PATCH(
+    req("PATCH", {
+      body: {
+        action: "set_provider_writes",
+        enabled: true,
+        acknowledgeStaticCopiesWillBeCreated: true,
+      },
+    }),
+  );
+  assert.equal(response.status, 200);
+  body = await response.json();
+  assert.equal(body.status.feature.providerWritesEnabled, true);
+  assert.equal(body.status.feature.providerWritesRequested, true);
+  assert.equal(getNotebookLmProviderWritesPreference(), true);
+});
+
+test("PATCH enable fails closed when the rollout ceiling is off", async () => {
+  installBoundTarget();
+  await PATCH(
+    req("PATCH", {
+      body: { action: "set_provider_writes", enabled: false },
+    }),
+  );
+  process.env.BRAIN_NOTEBOOKLM_EXPORT_PROVIDER_WRITE_ENABLED = "0";
+  const response = await PATCH(
+    req("PATCH", {
+      body: {
+        action: "set_provider_writes",
+        enabled: true,
+        acknowledgeStaticCopiesWillBeCreated: true,
+      },
+    }),
+  );
+  assert.equal(response.status, 409);
+  assert.deepEqual(await response.json(), { error: "provider_writes_unavailable" });
+  assert.equal(getNotebookLmProviderWritesPreference(), false);
 });
 
 test("GET exposes only bounded retention-health status and fails the write rollout closed", async () => {

@@ -36,12 +36,40 @@ export const notebookLmEnrollmentCodeSchema = z
   .object({ label: z.string().trim().min(1).max(64).optional() })
   .strict();
 
-export const notebookLmRuntimeResetSchema = z
-  .object({
-    action: z.literal("clear_protocol_block"),
-    acknowledgeConnectorUpdatedAndTargetRevalidated: z.literal(true),
-  })
-  .strict();
+export const notebookLmSettingsPatchSchema = z.union([
+  z
+    .object({
+      action: z.literal("clear_protocol_block"),
+      acknowledgeConnectorUpdatedAndTargetRevalidated: z.literal(true),
+    })
+    .strict(),
+  z
+    .object({
+      action: z.literal("set_provider_writes"),
+      enabled: z.literal(true),
+      acknowledgeStaticCopiesWillBeCreated: z.literal(true),
+    })
+    .strict(),
+  z
+    .object({
+      action: z.literal("set_provider_writes"),
+      enabled: z.literal(false),
+    })
+    .strict(),
+  z
+    .object({
+      action: z.enum(["set_export_master", "set_export_queue"]),
+      enabled: z.literal(true),
+      acknowledgeExportsMayBeAccepted: z.literal(true),
+    })
+    .strict(),
+  z
+    .object({
+      action: z.enum(["set_export_master", "set_export_queue"]),
+      enabled: z.literal(false),
+    })
+    .strict(),
+]);
 
 export const notebookLmDisconnectSchema = z.discriminatedUnion("mode", [
   z.object({ mode: z.literal("safe_disconnect") }).strict(),

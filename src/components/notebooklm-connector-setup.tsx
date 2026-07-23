@@ -8,6 +8,7 @@ import {
   Clipboard,
   ExternalLink,
   Monitor,
+  Power,
   RefreshCw,
   ShieldCheck,
   Unplug,
@@ -18,7 +19,14 @@ import { useCallback, useEffect, useRef, useState } from "react";
 export interface NotebookLmSettingsStatus {
   feature: {
     queueAccepting: boolean;
+    queueRequested: boolean;
+    queueAvailable: boolean;
+    masterEnabled: boolean;
+    masterRequested: boolean;
+    masterAvailable: boolean;
     providerWritesEnabled: boolean;
+    providerWritesRequested: boolean;
+    providerWritesAvailable: boolean;
     experimental: boolean;
     runtimeWriteBlocked: boolean;
     runtimeBlockReason: string | null;
@@ -54,6 +62,9 @@ export function NotebookLmConnectorSetup({ initialStatus }: { initialStatus: Not
   const [notice, setNotice] = useState<string | null>(null);
   const [disconnectOpen, setDisconnectOpen] = useState(false);
   const [emergencyOpen, setEmergencyOpen] = useState(false);
+  const [enableControl, setEnableControl] = useState<
+    "master" | "queue" | "provider" | null
+  >(null);
   const pairingCodeRegion = useRef<HTMLDivElement>(null);
 
   const refresh = useCallback(async () => {
@@ -198,6 +209,66 @@ export function NotebookLmConnectorSetup({ initialStatus }: { initialStatus: Not
     }
   }
 
+  async function setExportControl(
+    control: "master" | "queue" | "provider",
+    enabled: boolean,
+  ) {
+    if (busy) return;
+    setBusy(true);
+    if (enabled) setEnableControl(null);
+    setError(null);
+    setNotice(null);
+    try {
+      const response = await fetch("/api/settings/notebooklm-export", {
+        method: "PATCH",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify(
+          control === "provider" && enabled
+            ? {
+                action: "set_provider_writes",
+                enabled: true,
+                acknowledgeStaticCopiesWillBeCreated: true,
+              }
+            : control === "provider"
+              ? {
+                  action: "set_provider_writes",
+                  enabled: false,
+                }
+              : enabled
+                ? {
+                    action:
+                      control === "master"
+                        ? "set_export_master"
+                        : "set_export_queue",
+                    enabled: true,
+                    acknowledgeExportsMayBeAccepted: true,
+                  }
+                : {
+                    action:
+                      control === "master"
+                        ? "set_export_master"
+                        : "set_export_queue",
+                    enabled: false,
+                  },
+        ),
+      });
+      const body = (await response.json().catch(() => ({}))) as {
+        error?: string;
+        status?: NotebookLmSettingsStatus;
+      };
+      if (!response.ok || !body.status) {
+        setError(exportControlError(control, body.error, enabled));
+        return;
+      }
+      setStatus(body.status);
+      setNotice(controlNotice(control, enabled));
+    } catch {
+      setError("The NotebookLM export setting could not be changed. Try again.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
   const secondsRemaining = pairing
     ? Math.max(0, Math.ceil((Date.parse(pairing.expiresAt) - now) / 1_000))
     : 0;
@@ -250,6 +321,59 @@ export function NotebookLmConnectorSetup({ initialStatus }: { initialStatus: Not
           <p className="mt-3 text-xs leading-5 text-[var(--text-secondary)]">
             Read-only status checks remain available when queue intake or provider writes are off.
           </p>
+          <div className="mt-4 divide-y divide-[var(--border)] border-t border-[var(--border)]">
+            <ExportControlRow
+              label="NotebookLM master switch"
+              detail={
+                status.feature.masterRequested
+                  ? status.feature.masterEnabled
+                    ? "Enabled. Runtime export controls may operate beneath the deployment ceiling."
+                    : "Enabled by you, but a deployment or safety ceiling is currently blocking exports."
+                  : "Disabled. Queue intake and provider dispatch are stopped."
+              }
+              requested={status.feature.masterRequested}
+              available={status.feature.masterAvailable}
+              busy={busy}
+              onEnable={() => setEnableControl("master")}
+              onDisable={() => void setExportControl("master", false)}
+              enableLabel="Enable master switch"
+              disableLabel="Disable master switch"
+            />
+            <ExportControlRow
+              label="Export queue"
+              detail={
+                status.feature.queueRequested
+                  ? status.feature.queueAccepting
+                    ? "Enabled. New deliberate export requests may be accepted."
+                    : "Enabled by you, but the master switch or a safety ceiling is currently blocking intake."
+                  : "Disabled. Existing request status and recovery remain available."
+              }
+              requested={status.feature.queueRequested}
+              available={status.feature.queueAvailable}
+              busy={busy}
+              onEnable={() => setEnableControl("queue")}
+              onDisable={() => void setExportControl("queue", false)}
+              enableLabel="Enable export queue"
+              disableLabel="Disable export queue"
+            />
+            <ExportControlRow
+              label="Provider writes"
+              detail={
+                status.feature.providerWritesRequested
+                  ? status.feature.providerWritesEnabled
+                    ? "Enabled. Deliberate exports may create new sources in the fixed private notebook."
+                    : "Enabled by you, but the queue, rollout, or a safety gate is currently blocking writes."
+                  : "Disabled. Status checks and safe recovery remain available."
+              }
+              requested={status.feature.providerWritesRequested}
+              available={status.feature.providerWritesAvailable}
+              busy={busy}
+              onEnable={() => setEnableControl("provider")}
+              onDisable={() => void setExportControl("provider", false)}
+              enableLabel="Enable provider writes"
+              disableLabel="Disable provider writes"
+            />
+          </div>
         </div>
 
         {!status.feature.retentionHealthy && (
@@ -473,6 +597,46 @@ export function NotebookLmConnectorSetup({ initialStatus }: { initialStatus: Not
         </Dialog.Portal>
       </Dialog.Root>
 
+      <Dialog.Root
+        open={enableControl !== null}
+        onOpenChange={(open) => {
+          if (!open) setEnableControl(null);
+        }}
+      >
+        <Dialog.Portal>
+          <Dialog.Overlay className="fixed inset-0 z-50 bg-black/45" />
+          <Dialog.Content className="fixed left-1/2 top-1/2 z-50 w-[calc(100%-2rem)] max-w-md -translate-x-1/2 -translate-y-1/2 rounded-xl border border-[var(--warning)] bg-[var(--surface)] p-5 shadow-xl">
+            <Dialog.Title className="pr-10 text-lg font-semibold text-[var(--text-primary)]">
+              {enableControlTitle(enableControl)}
+            </Dialog.Title>
+            <Dialog.Description className="mt-2 text-sm leading-6 text-[var(--text-secondary)]">
+              {enableControlDescription(enableControl)}
+            </Dialog.Description>
+            <Dialog.Close
+              className="absolute right-3 top-3 inline-flex h-11 w-11 items-center justify-center rounded-md text-[var(--text-secondary)]"
+              aria-label="Close"
+            >
+              <X className="h-5 w-5" aria-hidden="true" />
+            </Dialog.Close>
+            <div className="mt-5 flex flex-col gap-2 sm:flex-row-reverse">
+              <button
+                type="button"
+                onClick={() => {
+                  if (enableControl) void setExportControl(enableControl, true);
+                }}
+                disabled={busy}
+                className="min-h-11 rounded-md bg-[var(--action-primary-bg)] px-4 text-sm font-semibold text-[var(--action-primary-fg)] disabled:opacity-50"
+              >
+                {enableControlButtonLabel(enableControl)}
+              </button>
+              <Dialog.Close className="min-h-11 rounded-md border border-[var(--border-strong)] px-4 text-sm font-medium text-[var(--text-primary)]">
+                Cancel
+              </Dialog.Close>
+            </div>
+          </Dialog.Content>
+        </Dialog.Portal>
+      </Dialog.Root>
+
       <Dialog.Root open={emergencyOpen} onOpenChange={setEmergencyOpen}>
         <Dialog.Portal>
           <Dialog.Overlay className="fixed inset-0 z-50 bg-black/45" />
@@ -527,6 +691,135 @@ function RolloutState({ label, value, healthy }: { label: string; value: string;
       </dd>
     </div>
   );
+}
+
+function ExportControlRow({
+  label,
+  detail,
+  requested,
+  available,
+  busy,
+  onEnable,
+  onDisable,
+  enableLabel,
+  disableLabel,
+}: {
+  label: string;
+  detail: string;
+  requested: boolean;
+  available: boolean;
+  busy: boolean;
+  onEnable: () => void;
+  onDisable: () => void;
+  enableLabel: string;
+  disableLabel: string;
+}) {
+  return (
+    <div className="flex flex-col gap-3 py-4 sm:flex-row sm:items-center sm:justify-between">
+      <div>
+        <p className="text-sm font-semibold text-[var(--text-primary)]">{label}</p>
+        <p className="mt-1 text-xs leading-5 text-[var(--text-secondary)]">{detail}</p>
+        {!requested && !available && (
+          <p className="mt-1 text-xs leading-5 text-[var(--warning)]">
+            Enabling is unavailable until the controls above it and all safety gates are healthy.
+          </p>
+        )}
+      </div>
+      <button
+        type="button"
+        onClick={requested ? onDisable : onEnable}
+        disabled={busy || (!requested && !available)}
+        className={
+          requested
+            ? "inline-flex min-h-11 shrink-0 items-center justify-center gap-2 rounded-md border border-[var(--danger)] px-4 text-sm font-semibold text-[var(--danger)] disabled:opacity-50"
+            : "inline-flex min-h-11 shrink-0 items-center justify-center gap-2 rounded-md bg-[var(--action-primary-bg)] px-4 text-sm font-semibold text-[var(--action-primary-fg)] disabled:cursor-not-allowed disabled:opacity-50"
+        }
+      >
+        <Power className="h-4 w-4" aria-hidden="true" />
+        {requested ? disableLabel : enableLabel}
+      </button>
+    </div>
+  );
+}
+
+function exportControlError(
+  control: "master" | "queue" | "provider",
+  error: string | undefined,
+  enabling: boolean,
+): string {
+  const label =
+    control === "master"
+      ? "master switch"
+      : control === "queue"
+        ? "export queue"
+        : "provider writes";
+  if (!enabling) return `The ${label} could not be disabled. Try again.`;
+  if (error === "rollout_unavailable") {
+    return `The ${label} cannot be enabled until the deployment and runtime safety ceilings are healthy.`;
+  }
+  if (error === "target_not_recently_verified") {
+    return "Revalidate the private NotebookLM target in the Chrome extension, then try again within five minutes.";
+  }
+  if (error === "connector_offline") {
+    return "The Chrome connector is offline. Open Chrome and the extension, then try again.";
+  }
+  if (error === "target_capacity_exhausted") {
+    return "The private notebook does not have enough safe source capacity.";
+  }
+  if (error === "target_not_safe") {
+    return "The destination must be a healthy private NotebookLM target.";
+  }
+  if (error === "provider_writes_unavailable") {
+    return "A rollout, retention, or runtime safety gate is currently blocking provider writes.";
+  }
+  return `The ${label} could not be enabled. Check the controls above it and try again.`;
+}
+
+function controlNotice(
+  control: "master" | "queue" | "provider",
+  enabled: boolean,
+): string {
+  if (control === "master") {
+    return enabled
+      ? "NotebookLM master switch enabled. Queue and provider controls remain independently enforced."
+      : "NotebookLM master switch disabled. Queue intake and provider dispatch are stopped.";
+  }
+  if (control === "queue") {
+    return enabled
+      ? "NotebookLM export queue enabled. New deliberate requests may be accepted."
+      : "NotebookLM export queue disabled. Existing status and safe recovery remain available.";
+  }
+  return enabled
+    ? "Provider writes enabled. Export remains limited to deliberate one-item copies."
+    : "Provider writes disabled. No new NotebookLM source can be dispatched.";
+}
+
+function enableControlTitle(
+  control: "master" | "queue" | "provider" | null,
+): string {
+  if (control === "master") return "Enable the NotebookLM master switch?";
+  if (control === "queue") return "Enable the NotebookLM export queue?";
+  return "Enable NotebookLM provider writes?";
+}
+
+function enableControlButtonLabel(
+  control: "master" | "queue" | "provider" | null,
+): string {
+  if (control === "master") return "Enable master switch";
+  if (control === "queue") return "Enable export queue";
+  return "Enable provider writes";
+}
+
+function enableControlDescription(
+  control: "master" | "queue" | "provider" | null,
+): string {
+  if (control === "master") {
+    return "This enables runtime NotebookLM export controls beneath the immutable deployment ceiling. Queue intake and provider writes remain separately controllable and all safety stops continue to apply.";
+  }
+  if (control === "queue") {
+    return "This allows new deliberate export requests to enter the bounded queue. It does not authorize a provider write unless the separate provider control and every safety gate are also enabled.";
+  }
+  return "A deliberate export can create a new static source in the fixed private NotebookLM notebook. This is not synchronization. Before enabling, the server will require a recently verified private target, an online connector, safe source capacity, healthy retention, and no active safety stop.";
 }
 
 export function sharingPostureLabel(posture: NotebookLmSettingsStatus["connection"]["sharingPosture"]): string {

@@ -19,7 +19,14 @@ function settingsStatus(
   return {
     feature: {
       queueAccepting: true,
+      queueRequested: true,
+      queueAvailable: true,
+      masterEnabled: true,
+      masterRequested: true,
+      masterAvailable: true,
       providerWritesEnabled: true,
+      providerWritesRequested: true,
+      providerWritesAvailable: true,
       experimental: true,
       runtimeWriteBlocked: false,
       runtimeBlockReason: null,
@@ -76,13 +83,61 @@ test("settings render rollout truth, actual posture, health reason, and emergenc
 
   assert.match(html, /Export queue/);
   assert.match(html, /Provider writes/);
+  assert.match(html, /NotebookLM master switch/);
+  assert.match(html, /Export queue/);
   assert.match(html, /\sOff<\/dd>/);
+  assert.match(html, /Disable provider writes/);
   assert.match(html, /Snapshot cleanup needs attention/);
   assert.match(html, /Physical snapshot cleanup is still pending/);
   assert.match(html, /· Shared/);
   assert.match(html, /Destination needs review/);
   assert.match(html, /Emergency revoke/);
   assert.doesNotMatch(html, /cleanup_failed|wrong_target/);
+});
+
+test("settings expose an enable control with an explicit confirmation dialog", () => {
+  const html = renderToStaticMarkup(createElement(NotebookLmConnectorSetup, {
+    initialStatus: settingsStatus(
+      {
+        configured: true,
+        targetLabel: "Private NotebookLM target",
+        sharingPosture: "private",
+        healthStatus: "healthy",
+        connectorOnline: true,
+      },
+      {
+        providerWritesEnabled: false,
+        providerWritesRequested: false,
+        providerWritesAvailable: true,
+      },
+    ),
+  }));
+  assert.match(html, /Provider writes/);
+  assert.match(html, /Enable provider writes/);
+  assert.doesNotMatch(html, /disabled=""[^>]*>[^<]*Enable provider writes/);
+});
+
+test("settings expose independent master and queue enable-disable controls", () => {
+  const html = renderToStaticMarkup(createElement(NotebookLmConnectorSetup, {
+    initialStatus: settingsStatus(
+      {
+        configured: true,
+        targetLabel: "Private NotebookLM target",
+        sharingPosture: "private",
+        healthStatus: "healthy",
+      },
+      {
+        masterEnabled: true,
+        masterRequested: true,
+        queueAccepting: false,
+        queueRequested: false,
+        queueAvailable: true,
+      },
+    ),
+  }));
+  assert.match(html, /Disable master switch/);
+  assert.match(html, /Enable export queue/);
+  assert.match(html, /Disable provider writes/);
 });
 
 test("settings never offer the ordinary reset for restore or identity-conflict stops", () => {
