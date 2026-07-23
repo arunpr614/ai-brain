@@ -1,0 +1,3503 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>AI Brain Transcript Recovery And Manual Enrichment - UX Prototype</title>
+    <style>
+      :root {
+        color-scheme: light;
+        --ink-950: #14213d;
+        --ink-800: #24344f;
+        --surface-base: #fbfcfe;
+        --panel: #ffffff;
+        --panel-soft: #f3f6f9;
+        --line: #d7dfea;
+        --line-strong: #a9b8cd;
+        --muted: #667085;
+        --ruby: #e63b6f;
+        --coral: #f26a4f;
+        --amber: #a66a00;
+        --amber-soft: #fff7e2;
+        --teal: #158c80;
+        --teal-soft: #eaf8f5;
+        --azure: #2f80ed;
+        --azure-soft: #eef4ff;
+        --youtube: #ff0033;
+        --sidebar: #14213d;
+        --sidebar-muted: #b4c0d2;
+        --shadow-sm: 0 1px 2px rgb(20 33 61 / 0.06);
+        --shadow-md: 0 8px 24px rgb(20 33 61 / 0.12);
+        --shadow-lg: 0 18px 48px rgb(20 33 61 / 0.18);
+        --radius-xs: 4px;
+        --radius-sm: 6px;
+        --radius-md: 8px;
+        --font-ui: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        --font-article: Charter, "Iowan Old Style", Cambria, Georgia, serif;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        min-height: 100%;
+      }
+
+      body {
+        margin: 0;
+        background: #edf1f6;
+        color: var(--ink-950);
+        font-family: var(--font-ui);
+        font-size: 14px;
+        line-height: 1.45;
+        letter-spacing: 0;
+        -webkit-font-smoothing: antialiased;
+      }
+
+      button,
+      input,
+      textarea,
+      select {
+        font: inherit;
+        letter-spacing: 0;
+      }
+
+      button {
+        cursor: pointer;
+      }
+
+      button:focus-visible,
+      a:focus-visible,
+      select:focus-visible {
+        outline: 2px solid #7ccffd;
+        outline-offset: 2px;
+      }
+
+      button:disabled {
+        cursor: not-allowed;
+        opacity: 0.5;
+      }
+
+      .prototype {
+        min-height: 100vh;
+        padding: 18px;
+      }
+
+      .prototype-toolbar {
+        width: min(1320px, 100%);
+        min-height: 52px;
+        margin: 0 auto 12px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+      }
+
+      .prototype-title {
+        min-width: 245px;
+      }
+
+      .prototype-title strong {
+        display: block;
+        font-size: 14px;
+      }
+
+      .prototype-title span {
+        display: block;
+        margin-top: 2px;
+        color: var(--muted);
+        font-size: 12px;
+      }
+
+      .scenario-tools {
+        min-width: 0;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .scenario-tabs {
+        min-width: 0;
+        display: flex;
+        align-items: center;
+        gap: 2px;
+        padding: 3px;
+        overflow-x: auto;
+        border: 1px solid var(--line);
+        border-radius: var(--radius-md);
+        background: var(--panel);
+        box-shadow: var(--shadow-sm);
+        scrollbar-width: none;
+      }
+
+      .scenario-tabs::-webkit-scrollbar {
+        display: none;
+      }
+
+      .scenario-tab {
+        min-height: 30px;
+        flex: 0 0 auto;
+        padding: 0 10px;
+        border: 0;
+        border-radius: var(--radius-sm);
+        background: transparent;
+        color: var(--muted);
+        font-size: 12px;
+        font-weight: 650;
+        white-space: nowrap;
+      }
+
+      .scenario-tab:hover {
+        background: var(--panel-soft);
+        color: var(--ink-950);
+      }
+
+      .scenario-tab[aria-selected="true"] {
+        background: var(--azure-soft);
+        color: var(--ink-950);
+        box-shadow: inset 0 0 0 1px var(--line-strong);
+      }
+
+      .icon-button {
+        position: relative;
+        width: 36px;
+        height: 36px;
+        display: inline-grid;
+        place-items: center;
+        flex: 0 0 auto;
+        padding: 0;
+        border: 1px solid var(--line);
+        border-radius: var(--radius-sm);
+        background: var(--panel);
+        color: var(--ink-800);
+      }
+
+      .icon-button:hover {
+        border-color: var(--line-strong);
+        color: var(--ink-950);
+      }
+
+      [data-tooltip]::after {
+        content: attr(data-tooltip);
+        position: absolute;
+        z-index: 100;
+        top: calc(100% + 7px);
+        right: 0;
+        width: max-content;
+        max-width: 220px;
+        padding: 5px 7px;
+        border-radius: var(--radius-xs);
+        background: var(--ink-950);
+        color: #fff;
+        font-size: 11px;
+        font-weight: 550;
+        line-height: 1.3;
+        pointer-events: none;
+        opacity: 0;
+        transform: translateY(-2px);
+        transition: opacity 120ms ease, transform 120ms ease;
+      }
+
+      [data-tooltip]:hover::after,
+      [data-tooltip]:focus-visible::after {
+        opacity: 1;
+        transform: translateY(0);
+      }
+
+      .browser {
+        position: relative;
+        width: min(1320px, 100%);
+        height: min(840px, calc(100vh - 100px));
+        min-height: 700px;
+        margin: 0 auto;
+        overflow: hidden;
+        border: 1px solid #bdc8d7;
+        border-radius: 10px;
+        background: var(--panel);
+        box-shadow: var(--shadow-lg);
+      }
+
+      .browser-top {
+        position: relative;
+        z-index: 20;
+        height: 74px;
+        border-bottom: 1px solid #cfd7e2;
+        background: #e8edf3;
+      }
+
+      .tab-strip {
+        height: 34px;
+        display: flex;
+        align-items: end;
+        gap: 7px;
+        padding: 0 12px;
+      }
+
+      .window-controls {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        align-self: center;
+        margin-right: 4px;
+      }
+
+      .window-dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background: #55b96d;
+      }
+
+      .window-dot:first-child {
+        background: #f06a66;
+      }
+
+      .window-dot:nth-child(2) {
+        background: #e8b23f;
+      }
+
+      .browser-tab {
+        width: 250px;
+        height: 30px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        min-width: 0;
+        padding: 0 12px;
+        border: 0;
+        border-radius: 7px 7px 0 0;
+        background: #dfe6ef;
+        color: #566172;
+        font-size: 12px;
+        text-align: left;
+      }
+
+      .browser-tab.is-active {
+        background: #f8fafc;
+        color: #303b4b;
+      }
+
+      .browser-tab svg {
+        flex: 0 0 auto;
+      }
+
+      .browser-tab.youtube-tab svg {
+        color: var(--youtube);
+      }
+
+      .browser-tab span {
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .browser-toolbar {
+        height: 40px;
+        display: grid;
+        grid-template-columns: auto minmax(220px, 1fr) auto;
+        align-items: center;
+        gap: 9px;
+        padding: 4px 12px 6px;
+        background: #f8fafc;
+      }
+
+      .browser-nav,
+      .browser-actions {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+      }
+
+      .browser-nav button,
+      .toolbar-action {
+        position: relative;
+        width: 29px;
+        height: 29px;
+        display: grid;
+        place-items: center;
+        padding: 0;
+        border: 0;
+        border-radius: 50%;
+        background: transparent;
+        color: #596678;
+      }
+
+      .browser-nav button:hover,
+      .toolbar-action:hover,
+      .toolbar-action[aria-pressed="true"] {
+        background: #e5ebf2;
+        color: var(--ink-950);
+      }
+
+      .address-bar {
+        height: 30px;
+        min-width: 0;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 0 12px;
+        border-radius: 15px;
+        background: #e9eef4;
+        color: #4b5665;
+        font-size: 12px;
+      }
+
+      .address-bar span {
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .toolbar-action.brain-action {
+        color: var(--ink-950);
+      }
+
+      .toolbar-action.brain-action::before {
+        content: "";
+        position: absolute;
+        inset: 2px;
+        border: 1px solid var(--line-strong);
+        border-radius: 50%;
+      }
+
+      .toolbar-action.is-disabled {
+        opacity: 0.35;
+        cursor: default;
+      }
+
+      .action-badge {
+        position: absolute;
+        top: -3px;
+        right: -2px;
+        min-width: 15px;
+        height: 15px;
+        display: grid;
+        place-items: center;
+        padding: 0 3px;
+        border: 2px solid #f8fafc;
+        border-radius: 8px;
+        background: var(--ruby);
+        color: #fff;
+        font-size: 9px;
+        font-weight: 750;
+      }
+
+      .browser-avatar {
+        width: 25px;
+        height: 25px;
+        display: grid;
+        place-items: center;
+        border-radius: 50%;
+        background: var(--teal);
+        color: #fff;
+        font-size: 10px;
+        font-weight: 750;
+      }
+
+      .browser-content {
+        height: calc(100% - 74px);
+        overflow: hidden;
+        background: var(--surface-base);
+      }
+
+      .extension-nudge {
+        position: absolute;
+        z-index: 30;
+        top: 68px;
+        right: 37px;
+        width: 285px;
+        padding: 12px 14px;
+        border: 1px solid var(--line-strong);
+        border-radius: var(--radius-md);
+        background: #fff;
+        box-shadow: var(--shadow-md);
+      }
+
+      .extension-nudge::before {
+        content: "";
+        position: absolute;
+        top: -7px;
+        right: 18px;
+        width: 12px;
+        height: 12px;
+        border-top: 1px solid var(--line-strong);
+        border-left: 1px solid var(--line-strong);
+        background: #fff;
+        transform: rotate(45deg);
+      }
+
+      .extension-nudge strong {
+        display: block;
+        font-size: 12px;
+      }
+
+      .extension-nudge span {
+        display: block;
+        margin-top: 3px;
+        color: var(--muted);
+        font-size: 11px;
+      }
+
+      .extension-popup {
+        position: absolute;
+        z-index: 31;
+        top: 66px;
+        right: 31px;
+        width: 300px;
+        overflow: hidden;
+        border: 1px solid var(--line-strong);
+        border-radius: var(--radius-md);
+        background: #fff;
+        box-shadow: var(--shadow-md);
+      }
+
+      .extension-popup[hidden] {
+        display: none;
+      }
+
+      .extension-popup-header {
+        min-height: 48px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 13px;
+        border-bottom: 1px solid var(--line);
+      }
+
+      .extension-popup-header strong {
+        display: flex;
+        align-items: center;
+        gap: 7px;
+        font-size: 12px;
+      }
+
+      .extension-popup-body {
+        padding: 14px;
+      }
+
+      .extension-popup-body h2,
+      .extension-popup-body p {
+        margin: 0;
+      }
+
+      .extension-popup-body h2 {
+        font-size: 14px;
+      }
+
+      .extension-popup-body p {
+        margin-top: 5px;
+        color: var(--muted);
+        font-size: 11px;
+      }
+
+      .extension-popup-body .button {
+        width: 100%;
+        margin-top: 13px;
+      }
+
+      .brain-app {
+        height: 100%;
+        display: grid;
+        grid-template-columns: 214px minmax(0, 1fr);
+        background: var(--surface-base);
+      }
+
+      .brain-sidebar {
+        min-width: 0;
+        display: flex;
+        flex-direction: column;
+        padding: 18px 12px 16px;
+        background: var(--sidebar);
+        color: #fff;
+      }
+
+      .brain-logo {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 0 8px 18px;
+      }
+
+      .brain-logo-mark {
+        width: 34px;
+        height: 34px;
+        display: grid;
+        place-items: center;
+        border-radius: var(--radius-md);
+        background: #fff;
+        color: var(--ink-950);
+      }
+
+      .brain-logo strong,
+      .brain-logo span {
+        display: block;
+      }
+
+      .brain-logo strong {
+        font-size: 14px;
+      }
+
+      .brain-logo span {
+        color: var(--sidebar-muted);
+        font-size: 10px;
+      }
+
+      .brain-nav {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+      }
+
+      .brain-nav button {
+        width: 100%;
+        min-height: 38px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 0 10px;
+        border: 0;
+        border-radius: var(--radius-sm);
+        background: transparent;
+        color: #ced7e4;
+        text-align: left;
+      }
+
+      .brain-nav button:hover,
+      .brain-nav button.is-active {
+        background: #24344f;
+        color: #fff;
+      }
+
+      .nav-count {
+        min-width: 22px;
+        margin-left: auto;
+        padding: 1px 6px;
+        border-radius: 8px;
+        background: #39516f;
+        color: #dce7f5;
+        font-size: 10px;
+        text-align: center;
+      }
+
+      .sidebar-foot {
+        margin-top: auto;
+        padding: 16px 10px 0;
+        border-top: 1px solid #33435b;
+        color: var(--sidebar-muted);
+        font-size: 11px;
+      }
+
+      .brain-main {
+        min-width: 0;
+        overflow-y: auto;
+        padding: 28px 32px 44px;
+      }
+
+      .brain-back {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        min-height: 36px;
+        color: var(--muted);
+        font-size: 12px;
+        text-decoration: none;
+      }
+
+      .item-layout {
+        display: grid;
+        grid-template-columns: minmax(0, 68ch) 330px;
+        gap: 34px;
+        align-items: start;
+        max-width: 1080px;
+        margin: 5px auto 0;
+      }
+
+      .item-article {
+        min-width: 0;
+      }
+
+      .item-header {
+        padding-bottom: 20px;
+        border-bottom: 1px solid var(--line);
+      }
+
+      .eyebrow-row {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 7px;
+        margin-bottom: 12px;
+      }
+
+      .source-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        min-height: 25px;
+        padding: 0 8px;
+        border: 1px solid var(--line);
+        border-radius: var(--radius-sm);
+        background: #fff;
+        color: var(--ink-800);
+        font-size: 11px;
+        font-weight: 650;
+      }
+
+      .source-chip.youtube {
+        color: #b00020;
+      }
+
+      .source-chip.weak {
+        border-color: #efc2ce;
+        color: #b1224c;
+      }
+
+      .source-chip.complete {
+        border-color: #9dd8cf;
+        color: #0d766c;
+      }
+
+      .item-title {
+        max-width: 730px;
+        margin: 0;
+        color: var(--ink-950);
+        font-family: var(--font-article);
+        font-size: 31px;
+        font-weight: 700;
+        line-height: 1.22;
+        letter-spacing: 0;
+      }
+
+      .item-source-link {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        margin-top: 13px;
+        color: var(--azure);
+        font-size: 12px;
+        text-decoration: none;
+      }
+
+      .video-preview {
+        position: relative;
+        width: min(640px, 100%);
+        aspect-ratio: 16 / 7;
+        margin-top: 20px;
+        overflow: hidden;
+        border-radius: var(--radius-md);
+        background: #0e1218;
+      }
+
+      .video-preview img {
+        width: 100%;
+        height: 100%;
+        display: block;
+        object-fit: cover;
+      }
+
+      .preview-label {
+        position: absolute;
+        left: 12px;
+        bottom: 12px;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        min-height: 27px;
+        padding: 0 9px;
+        border-radius: var(--radius-sm);
+        background: rgb(20 33 61 / 0.9);
+        color: #fff;
+        font-size: 11px;
+        font-weight: 650;
+      }
+
+      .warning-copy {
+        display: flex;
+        align-items: flex-start;
+        gap: 8px;
+        margin: 16px 0 0;
+        color: #a31f49;
+        font-size: 12px;
+      }
+
+      .recovery-panel,
+      .success-banner {
+        margin-top: 18px;
+        padding: 17px;
+        border: 1px solid var(--ruby);
+        border-radius: var(--radius-md);
+        background: #fff;
+      }
+
+      .success-banner {
+        border-color: var(--teal);
+        background: var(--teal-soft);
+      }
+
+      .panel-heading-row {
+        display: flex;
+        align-items: flex-start;
+        gap: 10px;
+      }
+
+      .semantic-icon {
+        width: 32px;
+        height: 32px;
+        display: grid;
+        place-items: center;
+        flex: 0 0 auto;
+        border-radius: var(--radius-sm);
+        background: #fff0f4;
+        color: var(--ruby);
+      }
+
+      .semantic-icon.success {
+        background: #d9f2ed;
+        color: var(--teal);
+      }
+
+      .panel-heading-row h2,
+      .panel-heading-row p {
+        margin: 0;
+      }
+
+      .panel-heading-row h2 {
+        font-size: 15px;
+      }
+
+      .panel-heading-row p {
+        margin-top: 3px;
+        color: var(--ink-800);
+        font-size: 12px;
+      }
+
+      .recovery-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-top: 14px;
+      }
+
+      .button {
+        min-height: 38px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 7px;
+        padding: 0 13px;
+        border: 1px solid transparent;
+        border-radius: var(--radius-sm);
+        font-size: 12px;
+        font-weight: 700;
+        text-decoration: none;
+      }
+
+      .button--primary {
+        border-color: var(--ink-950);
+        background: var(--ink-950);
+        color: #fff;
+      }
+
+      .button--primary:hover {
+        background: var(--ink-800);
+      }
+
+      .button--secondary {
+        border-color: var(--line);
+        background: #fff;
+        color: var(--ink-950);
+      }
+
+      .button--secondary:hover {
+        border-color: var(--line-strong);
+        background: var(--panel-soft);
+      }
+
+      .button--danger {
+        border-color: #efc2ce;
+        background: #fff;
+        color: #b1224c;
+      }
+
+      .button--text {
+        min-height: 34px;
+        padding: 0 6px;
+        border: 0;
+        background: transparent;
+        color: var(--muted);
+      }
+
+      .button--wide {
+        width: 100%;
+      }
+
+      .recovery-status {
+        margin-top: 13px;
+        padding-top: 13px;
+        border-top: 1px solid var(--line);
+      }
+
+      .status-line {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        color: var(--ink-800);
+        font-size: 12px;
+      }
+
+      .spinner {
+        width: 15px;
+        height: 15px;
+        flex: 0 0 auto;
+        border: 2px solid #cbd4df;
+        border-top-color: var(--azure);
+        border-radius: 50%;
+        animation: spin 800ms linear infinite;
+      }
+
+      @keyframes spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+
+      .article-copy {
+        margin-top: 23px;
+        color: var(--ink-800);
+        font-family: var(--font-article);
+        font-size: 16px;
+        line-height: 1.65;
+      }
+
+      .article-copy p {
+        margin: 0 0 12px;
+      }
+
+      .brain-aside {
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+      }
+
+      .aside-card {
+        padding: 16px;
+        border: 1px solid var(--line);
+        border-radius: var(--radius-md);
+        background: #fff;
+      }
+
+      .aside-card h2 {
+        margin: 0 0 12px;
+        font-size: 13px;
+      }
+
+      .metadata-list {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        margin: 0;
+      }
+
+      .metadata-row {
+        display: flex;
+        justify-content: space-between;
+        gap: 12px;
+        padding-bottom: 8px;
+        border-bottom: 1px solid #e8edf3;
+        font-size: 11px;
+      }
+
+      .metadata-row:last-child {
+        padding-bottom: 0;
+        border: 0;
+      }
+
+      .metadata-row dt {
+        color: var(--muted);
+      }
+
+      .metadata-row dd {
+        margin: 0;
+        color: var(--ink-950);
+        font-weight: 650;
+        text-align: right;
+      }
+
+      .metadata-row dd.missing {
+        color: #b1224c;
+      }
+
+      .metadata-row dd.added {
+        color: var(--teal);
+      }
+
+      .note-box {
+        min-height: 92px;
+        padding: 10px;
+        border: 1px solid var(--line);
+        border-radius: var(--radius-sm);
+        color: var(--muted);
+        font-size: 11px;
+      }
+
+      .transcript-panel-brain {
+        margin-top: 20px;
+        border-top: 1px solid var(--line);
+        border-bottom: 1px solid var(--line);
+        background: #fff;
+      }
+
+      .transcript-panel-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        padding: 13px 0;
+        border-bottom: 1px solid var(--line);
+      }
+
+      .transcript-panel-header h2,
+      .transcript-panel-header p {
+        margin: 0;
+      }
+
+      .transcript-panel-header h2 {
+        font-size: 14px;
+      }
+
+      .transcript-panel-header p {
+        margin-top: 2px;
+        color: var(--muted);
+        font-size: 11px;
+      }
+
+      .transcript-snippet {
+        display: grid;
+        grid-template-columns: 56px 1fr;
+        gap: 10px;
+        padding: 11px 0;
+        border-bottom: 1px solid #edf0f4;
+        color: var(--ink-800);
+        font-size: 12px;
+      }
+
+      .transcript-snippet:last-child {
+        border: 0;
+      }
+
+      .transcript-snippet time {
+        color: var(--azure);
+        font-variant-numeric: tabular-nums;
+      }
+
+      .brain-mobile-nav {
+        display: none;
+      }
+
+      .digest-mobile,
+      .mobile-item-tabs {
+        display: none;
+      }
+
+      .digest-panel {
+        position: sticky;
+        top: 0;
+        padding: 16px;
+        border: 1px solid var(--line);
+        border-radius: var(--radius-md);
+        background: #fff;
+        box-shadow: var(--shadow-sm);
+      }
+
+      .digest-panel[data-tone="held"] {
+        border-color: #d4a448;
+      }
+
+      .digest-panel[data-tone="active"] {
+        border-color: var(--azure);
+      }
+
+      .digest-panel[data-tone="success"] {
+        border-color: var(--teal);
+      }
+
+      .digest-panel[data-tone="error"] {
+        border-color: #d66b85;
+      }
+
+      .digest-heading-row {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 10px;
+      }
+
+      .digest-heading-row h2,
+      .digest-heading-row p {
+        margin: 0;
+      }
+
+      .digest-heading-row h2 {
+        font-size: 15px;
+        line-height: 1.35;
+      }
+
+      .digest-heading-row p {
+        margin-top: 3px;
+        color: var(--muted);
+        font-size: 11px;
+      }
+
+      .digest-state {
+        min-height: 24px;
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        flex: 0 0 auto;
+        padding: 0 7px;
+        border: 1px solid var(--line);
+        border-radius: var(--radius-sm);
+        background: var(--panel-soft);
+        color: var(--ink-800);
+        font-size: 10px;
+        font-weight: 750;
+        white-space: nowrap;
+      }
+
+      .digest-state.held {
+        border-color: #e5c887;
+        background: var(--amber-soft);
+        color: #805200;
+      }
+
+      .digest-state.active {
+        border-color: #b7d2f6;
+        background: var(--azure-soft);
+        color: #185cac;
+      }
+
+      .digest-state.success {
+        border-color: #9dd8cf;
+        background: var(--teal-soft);
+        color: #0d766c;
+      }
+
+      .digest-state.error {
+        border-color: #efc2ce;
+        background: #fff0f4;
+        color: #a31f49;
+      }
+
+      .digest-intro {
+        margin: 12px 0 0;
+        color: var(--ink-800);
+        font-size: 12px;
+      }
+
+      .provider-plan {
+        margin-top: 14px;
+        border-top: 1px solid var(--line);
+        border-bottom: 1px solid var(--line);
+      }
+
+      .provider-row {
+        display: grid;
+        grid-template-columns: 28px minmax(0, 1fr);
+        gap: 9px;
+        padding: 11px 0;
+        border-bottom: 1px solid #e8edf3;
+      }
+
+      .provider-row:last-child {
+        border-bottom: 0;
+      }
+
+      .provider-icon {
+        width: 28px;
+        height: 28px;
+        display: grid !important;
+        place-items: center;
+        border-radius: var(--radius-sm);
+        background: var(--panel-soft);
+        color: var(--ink-800);
+      }
+
+      .provider-row strong,
+      .provider-row span {
+        display: block;
+      }
+
+      .provider-row strong {
+        font-size: 11px;
+      }
+
+      .provider-row span {
+        margin-top: 2px;
+        color: var(--muted);
+        font-size: 10px;
+        overflow-wrap: anywhere;
+      }
+
+      .provider-boundary {
+        display: inline-flex !important;
+        width: max-content;
+        margin-top: 5px !important;
+        padding: 2px 5px;
+        border-radius: var(--radius-xs);
+        background: var(--panel-soft);
+        color: var(--ink-800) !important;
+        font-weight: 700;
+      }
+
+      .disclosure-toggle {
+        min-height: 36px;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        margin-top: 7px;
+        padding: 0;
+        border: 0;
+        background: transparent;
+        color: var(--azure);
+        font-size: 11px;
+        font-weight: 700;
+      }
+
+      .disclosure-detail {
+        margin-top: 5px;
+        padding: 11px 0 2px;
+        border-top: 1px solid var(--line);
+        color: var(--ink-800);
+        font-size: 10px;
+      }
+
+      .disclosure-detail h3 {
+        margin: 0 0 6px;
+        font-size: 11px;
+      }
+
+      .disclosure-detail ul {
+        margin: 0;
+        padding-left: 17px;
+      }
+
+      .disclosure-detail li + li {
+        margin-top: 5px;
+      }
+
+      .consent-copy {
+        margin-top: 13px;
+        padding: 10px 0;
+        border-top: 1px solid var(--line);
+        border-bottom: 1px solid var(--line);
+        color: var(--ink-800);
+        font-size: 10px;
+      }
+
+      .consent-copy strong {
+        display: block;
+        margin-bottom: 5px;
+        color: var(--ink-950);
+        font-size: 11px;
+      }
+
+      .digest-actions {
+        display: flex;
+        flex-direction: column;
+        gap: 7px;
+        margin-top: 13px;
+      }
+
+      .digest-actions .button {
+        width: 100%;
+      }
+
+      .processing-stages {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        margin-top: 14px;
+        padding: 0;
+        list-style: none;
+      }
+
+      .processing-stage {
+        display: grid;
+        grid-template-columns: 22px minmax(0, 1fr);
+        gap: 8px;
+        align-items: start;
+        color: var(--muted);
+        font-size: 10px;
+      }
+
+      .stage-marker {
+        width: 22px;
+        height: 22px;
+        display: grid;
+        place-items: center;
+        border: 1px solid var(--line);
+        border-radius: 50%;
+        background: #fff;
+      }
+
+      .processing-stage strong,
+      .processing-stage span {
+        display: block;
+      }
+
+      .processing-stage strong {
+        color: var(--ink-800);
+        font-size: 11px;
+      }
+
+      .processing-stage.is-current .stage-marker {
+        border-color: var(--azure);
+        background: var(--azure-soft);
+        color: var(--azure);
+      }
+
+      .processing-stage.is-done .stage-marker {
+        border-color: var(--teal);
+        background: var(--teal-soft);
+        color: var(--teal);
+      }
+
+      .processing-stage.is-error .stage-marker {
+        border-color: var(--ruby);
+        background: #fff0f4;
+        color: var(--ruby);
+      }
+
+      .digest-output {
+        margin-top: 14px;
+        padding-top: 13px;
+        border-top: 1px solid var(--line);
+      }
+
+      .digest-output h3 {
+        margin: 0 0 6px;
+        font-size: 11px;
+      }
+
+      .digest-output p {
+        margin: 0;
+        color: var(--ink-800);
+        font-family: var(--font-article);
+        font-size: 13px;
+        line-height: 1.55;
+      }
+
+      .topic-list {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 5px;
+        margin-top: 9px;
+      }
+
+      .topic-chip {
+        padding: 3px 6px;
+        border: 1px solid var(--line);
+        border-radius: var(--radius-xs);
+        background: var(--panel-soft);
+        color: var(--ink-800);
+        font-size: 9px;
+        font-weight: 650;
+      }
+
+      .digest-footer {
+        margin: 12px 0 0;
+        padding-top: 10px;
+        border-top: 1px solid var(--line);
+        color: var(--muted);
+        font-size: 9px;
+      }
+
+      .partial-success {
+        margin-top: 13px;
+        padding: 9px;
+        border: 1px solid #e5c887;
+        border-radius: var(--radius-sm);
+        background: var(--amber-soft);
+        color: #684500;
+        font-size: 10px;
+      }
+
+      .partial-success strong {
+        display: block;
+        margin-bottom: 3px;
+        font-size: 11px;
+      }
+
+      .mobile-item-tabs {
+        grid-template-columns: repeat(2, 1fr);
+        margin: 16px 0 0;
+        padding: 3px;
+        border: 1px solid var(--line);
+        border-radius: var(--radius-md);
+        background: var(--panel-soft);
+      }
+
+      .mobile-item-tabs button {
+        min-height: 36px;
+        border: 0;
+        border-radius: var(--radius-sm);
+        background: transparent;
+        color: var(--muted);
+        font-size: 11px;
+        font-weight: 700;
+      }
+
+      .mobile-item-tabs button[aria-selected="true"] {
+        background: #fff;
+        color: var(--ink-950);
+        box-shadow: var(--shadow-sm);
+      }
+
+      .viewport-switch {
+        display: flex;
+        align-items: center;
+        padding: 3px;
+        border: 1px solid var(--line);
+        border-radius: var(--radius-md);
+        background: var(--panel);
+      }
+
+      .viewport-switch button {
+        width: 30px;
+        height: 30px;
+        display: grid;
+        place-items: center;
+        padding: 0;
+        border: 0;
+        border-radius: var(--radius-sm);
+        background: transparent;
+        color: var(--muted);
+      }
+
+      .viewport-switch button[aria-pressed="true"] {
+        background: var(--azure-soft);
+        color: var(--ink-950);
+      }
+
+      .youtube-shell {
+        position: relative;
+        height: 100%;
+        display: grid;
+        grid-template-columns: minmax(0, 1fr);
+        background: #fff;
+        color: #0f0f0f;
+      }
+
+      .youtube-shell.has-side-panel {
+        grid-template-columns: minmax(0, 1fr) 390px;
+      }
+
+      .youtube-page {
+        min-width: 0;
+        overflow-y: auto;
+        background: #fff;
+      }
+
+      .youtube-header {
+        position: sticky;
+        top: 0;
+        z-index: 3;
+        height: 52px;
+        display: grid;
+        grid-template-columns: 190px minmax(240px, 470px) 1fr;
+        align-items: center;
+        gap: 16px;
+        padding: 0 18px;
+        border-bottom: 1px solid #efefef;
+        background: rgb(255 255 255 / 0.97);
+      }
+
+      .youtube-brand {
+        display: flex;
+        align-items: center;
+        gap: 7px;
+        font-size: 16px;
+        font-weight: 800;
+      }
+
+      .youtube-brand svg {
+        color: var(--youtube);
+        fill: var(--youtube);
+      }
+
+      .youtube-search {
+        height: 34px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 12px 0 15px;
+        border: 1px solid #d7d7d7;
+        border-radius: 17px;
+        color: #777;
+        font-size: 12px;
+      }
+
+      .youtube-actions {
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        gap: 13px;
+      }
+
+      .youtube-avatar {
+        width: 27px;
+        height: 27px;
+        display: grid;
+        place-items: center;
+        border-radius: 50%;
+        background: #176f66;
+        color: #fff;
+        font-size: 10px;
+        font-weight: 750;
+      }
+
+      .youtube-layout {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) 300px;
+        gap: 18px;
+        padding: 18px;
+      }
+
+      .watch-column {
+        min-width: 0;
+      }
+
+      .video-player {
+        position: relative;
+        width: 100%;
+        aspect-ratio: 16 / 9;
+        overflow: hidden;
+        border-radius: var(--radius-md);
+        background: #090a0d;
+      }
+
+      .video-player img {
+        width: 100%;
+        height: 100%;
+        display: block;
+        object-fit: cover;
+      }
+
+      .play-button {
+        position: absolute;
+        inset: 50% auto auto 50%;
+        width: 44px;
+        height: 44px;
+        display: grid;
+        place-items: center;
+        padding: 0;
+        border: 0;
+        border-radius: 50%;
+        background: rgb(0 0 0 / 0.72);
+        color: #fff;
+        transform: translate(-50%, -50%);
+      }
+
+      .player-progress {
+        position: absolute;
+        left: 12px;
+        right: 12px;
+        bottom: 10px;
+        height: 3px;
+        background: rgb(255 255 255 / 0.3);
+      }
+
+      .player-progress span {
+        width: 38%;
+        height: 100%;
+        display: block;
+        background: var(--youtube);
+      }
+
+      .youtube-video-title {
+        margin: 13px 0 0;
+        font-size: 18px;
+        line-height: 1.35;
+      }
+
+      .youtube-meta-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 14px;
+        margin-top: 11px;
+      }
+
+      .channel {
+        display: flex;
+        align-items: center;
+        gap: 9px;
+      }
+
+      .channel-avatar {
+        width: 34px;
+        height: 34px;
+        display: grid;
+        place-items: center;
+        border-radius: 50%;
+        background: #202124;
+        color: #fff;
+        font-size: 10px;
+        font-weight: 750;
+      }
+
+      .channel strong,
+      .channel span {
+        display: block;
+      }
+
+      .channel strong {
+        font-size: 12px;
+      }
+
+      .channel span {
+        color: #666;
+        font-size: 10px;
+      }
+
+      .youtube-pill {
+        min-height: 32px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        padding: 0 11px;
+        border: 0;
+        border-radius: 16px;
+        background: #f2f2f2;
+        color: #171717;
+        font-size: 11px;
+        font-weight: 650;
+      }
+
+      .youtube-pill:hover {
+        background: #e6e6e6;
+      }
+
+      .youtube-description {
+        margin-top: 13px;
+        padding: 12px;
+        border-radius: var(--radius-md);
+        background: #f2f2f2;
+        font-size: 11px;
+      }
+
+      .description-copy {
+        margin-bottom: 10px;
+        color: #444;
+      }
+
+      .show-transcript {
+        position: relative;
+        min-height: 34px;
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        padding: 0 12px;
+        border: 1px solid #d6d6d6;
+        border-radius: var(--radius-sm);
+        background: #fff;
+        color: #111;
+        font-size: 11px;
+        font-weight: 700;
+      }
+
+      .show-transcript.is-highlighted {
+        outline: 3px solid #42c7e8;
+        outline-offset: 3px;
+        animation: pulse 1.4s ease-in-out infinite;
+      }
+
+      @keyframes pulse {
+        50% {
+          outline-color: #2f80ed;
+        }
+      }
+
+      .youtube-transcript {
+        min-width: 0;
+        height: min(610px, calc(100vh - 182px));
+        overflow: hidden;
+        border: 1px solid #e3e3e3;
+        border-radius: var(--radius-md);
+        background: #fff;
+      }
+
+      .youtube-transcript-header {
+        min-height: 49px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        padding: 0 12px;
+        border-bottom: 1px solid #ededed;
+      }
+
+      .youtube-transcript-header h2 {
+        margin: 0;
+        font-size: 13px;
+      }
+
+      .language-select {
+        height: 28px;
+        padding: 0 8px;
+        border: 1px solid #ddd;
+        border-radius: var(--radius-sm);
+        background: #fff;
+        color: #333;
+        font-size: 10px;
+      }
+
+      .transcript-scroll {
+        height: calc(100% - 49px);
+        overflow-y: auto;
+        padding: 6px 0;
+      }
+
+      .youtube-cue {
+        display: grid;
+        grid-template-columns: 47px 1fr;
+        gap: 8px;
+        padding: 8px 11px;
+        color: #333;
+        font-size: 11px;
+      }
+
+      .youtube-cue:hover {
+        background: #f6f6f6;
+      }
+
+      .youtube-cue time {
+        color: #065fd4;
+        font-variant-numeric: tabular-nums;
+      }
+
+      .transcript-placeholder {
+        height: 100%;
+        display: grid;
+        place-items: center;
+        padding: 22px;
+        color: #777;
+        text-align: center;
+      }
+
+      .transcript-placeholder strong {
+        display: block;
+        margin-top: 8px;
+        color: #222;
+        font-size: 12px;
+      }
+
+      .transcript-placeholder p {
+        max-width: 220px;
+        margin: 4px auto 0;
+        font-size: 10px;
+      }
+
+      .side-panel {
+        min-width: 0;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        border-left: 1px solid #cfd7e2;
+        background: #fff;
+        color: var(--ink-950);
+        box-shadow: -8px 0 20px rgb(20 33 61 / 0.08);
+      }
+
+      .side-panel-header {
+        min-height: 56px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        padding: 0 16px;
+        border-bottom: 1px solid var(--line);
+      }
+
+      .side-panel-brand {
+        display: flex;
+        align-items: center;
+        gap: 9px;
+      }
+
+      .side-panel-brand-mark {
+        width: 30px;
+        height: 30px;
+        display: grid;
+        place-items: center;
+        border-radius: var(--radius-sm);
+        background: var(--ink-950);
+        color: #fff;
+      }
+
+      .side-panel-brand strong,
+      .side-panel-brand span {
+        display: block;
+      }
+
+      .side-panel-brand strong {
+        font-size: 12px;
+      }
+
+      .side-panel-brand span {
+        color: var(--muted);
+        font-size: 10px;
+      }
+
+      .side-panel-close {
+        width: 32px;
+        height: 32px;
+        display: grid;
+        place-items: center;
+        padding: 0;
+        border: 0;
+        border-radius: var(--radius-sm);
+        background: transparent;
+        color: var(--muted);
+      }
+
+      .side-panel-close:hover {
+        background: var(--panel-soft);
+        color: var(--ink-950);
+      }
+
+      .side-panel-scroll {
+        min-height: 0;
+        flex: 1 1 auto;
+        overflow-y: auto;
+        padding: 15px 16px 18px;
+      }
+
+      .item-binding {
+        display: grid;
+        grid-template-columns: 48px 1fr;
+        gap: 10px;
+        padding-bottom: 14px;
+        border-bottom: 1px solid var(--line);
+      }
+
+      .binding-thumb {
+        width: 48px;
+        height: 34px;
+        overflow: hidden;
+        border-radius: var(--radius-xs);
+        background: #111;
+      }
+
+      .binding-thumb img {
+        width: 100%;
+        height: 100%;
+        display: block;
+        object-fit: cover;
+      }
+
+      .binding-copy strong,
+      .binding-copy span {
+        display: block;
+      }
+
+      .binding-copy strong {
+        overflow: hidden;
+        color: var(--ink-950);
+        font-size: 11px;
+        line-height: 1.35;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .binding-copy span {
+        margin-top: 3px;
+        color: var(--muted);
+        font-size: 10px;
+      }
+
+      .steps {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 7px;
+        margin-top: 14px;
+      }
+
+      .step {
+        min-width: 0;
+      }
+
+      .step-bar {
+        height: 3px;
+        border-radius: 2px;
+        background: #dfe5ec;
+      }
+
+      .step.is-active .step-bar {
+        background: var(--azure);
+      }
+
+      .step.is-complete .step-bar {
+        background: var(--teal);
+      }
+
+      .step span {
+        display: block;
+        margin-top: 5px;
+        color: var(--muted);
+        font-size: 9px;
+      }
+
+      .step.is-active span,
+      .step.is-complete span {
+        color: var(--ink-950);
+        font-weight: 650;
+      }
+
+      .side-state {
+        margin-top: 19px;
+      }
+
+      .state-label {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        color: var(--azure);
+        font-size: 10px;
+        font-weight: 750;
+        text-transform: uppercase;
+      }
+
+      .side-state h2 {
+        margin: 7px 0 0;
+        font-size: 19px;
+        line-height: 1.25;
+      }
+
+      .side-state > p {
+        margin: 7px 0 0;
+        color: var(--ink-800);
+        font-size: 12px;
+        line-height: 1.5;
+      }
+
+      .privacy-note,
+      .guide-note,
+      .error-note,
+      .success-note {
+        display: grid;
+        grid-template-columns: 18px 1fr;
+        gap: 8px;
+        margin-top: 14px;
+        padding: 11px;
+        border-left: 3px solid var(--azure);
+        background: var(--azure-soft);
+        color: var(--ink-800);
+        font-size: 10px;
+        line-height: 1.45;
+      }
+
+      .guide-note {
+        border-color: var(--amber);
+        background: var(--amber-soft);
+      }
+
+      .error-note {
+        border-color: var(--ruby);
+        background: #fff1f5;
+      }
+
+      .success-note {
+        border-color: var(--teal);
+        background: var(--teal-soft);
+      }
+
+      .privacy-note strong,
+      .guide-note strong,
+      .error-note strong,
+      .success-note strong {
+        display: block;
+        margin-bottom: 2px;
+        color: var(--ink-950);
+        font-size: 10px;
+      }
+
+      .panel-actions {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        margin-top: 16px;
+      }
+
+      .evidence-list {
+        margin-top: 14px;
+        border-top: 1px solid var(--line);
+      }
+
+      .evidence-row {
+        min-height: 37px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        border-bottom: 1px solid #e8edf3;
+        font-size: 10px;
+      }
+
+      .evidence-row span:first-child {
+        color: var(--muted);
+      }
+
+      .evidence-value {
+        color: var(--ink-950);
+        font-weight: 700;
+        text-align: right;
+      }
+
+      .evidence-value.success {
+        color: var(--teal);
+      }
+
+      .evidence-value.warning {
+        color: var(--amber);
+      }
+
+      .scan-state {
+        min-height: 310px;
+        display: grid;
+        place-items: center;
+        text-align: center;
+      }
+
+      .scan-state h2 {
+        margin: 13px 0 0;
+        font-size: 18px;
+      }
+
+      .scan-state p {
+        max-width: 265px;
+        margin: 6px auto 0;
+        color: var(--muted);
+        font-size: 11px;
+      }
+
+      .large-spinner {
+        width: 42px;
+        height: 42px;
+        border: 4px solid #dce3eb;
+        border-top-color: var(--azure);
+        border-radius: 50%;
+        animation: spin 900ms linear infinite;
+      }
+
+      .side-panel-foot {
+        min-height: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        padding: 0 16px;
+        border-top: 1px solid var(--line);
+        color: var(--muted);
+        font-size: 9px;
+      }
+
+      .connection {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+      }
+
+      .connection-dot {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: var(--teal);
+      }
+
+      .prototype-foot {
+        width: min(1320px, 100%);
+        min-height: 28px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        margin: 6px auto 0;
+        color: var(--muted);
+        font-size: 10px;
+      }
+
+      .prototype-foot span {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+      }
+
+      .toast {
+        position: fixed;
+        z-index: 200;
+        left: 50%;
+        bottom: 24px;
+        max-width: min(420px, calc(100vw - 32px));
+        padding: 10px 14px;
+        border-radius: var(--radius-sm);
+        background: var(--ink-950);
+        color: #fff;
+        box-shadow: var(--shadow-md);
+        font-size: 12px;
+        opacity: 0;
+        pointer-events: none;
+        transform: translate(-50%, 8px);
+        transition: opacity 140ms ease, transform 140ms ease;
+      }
+
+      .toast.is-visible {
+        opacity: 1;
+        transform: translate(-50%, 0);
+      }
+
+      .desktop-only {
+        display: inline-flex;
+      }
+
+      .mobile-only {
+        display: none;
+      }
+
+      @media (max-width: 1080px) {
+        .brain-app {
+          grid-template-columns: 188px minmax(0, 1fr);
+        }
+
+        .brain-main {
+          padding: 24px;
+        }
+
+        .item-layout {
+          grid-template-columns: minmax(0, 1fr);
+        }
+
+        .brain-aside {
+          display: none;
+        }
+
+        .digest-mobile {
+          display: block;
+          margin-top: 20px;
+        }
+
+        .youtube-shell.has-side-panel {
+          grid-template-columns: minmax(0, 1fr) 370px;
+        }
+
+        .youtube-layout {
+          grid-template-columns: minmax(0, 1fr);
+        }
+
+        .youtube-transcript {
+          height: 330px;
+        }
+      }
+
+      @media (max-width: 760px) {
+        .prototype {
+          padding: 9px;
+        }
+
+        .prototype-toolbar {
+          min-height: 78px;
+          align-items: stretch;
+          flex-direction: column;
+          gap: 6px;
+          margin-bottom: 8px;
+        }
+
+        .prototype-title {
+          min-width: 0;
+          padding: 0 2px;
+        }
+
+        .scenario-tools {
+          width: 100%;
+        }
+
+        .scenario-tabs {
+          flex: 1 1 auto;
+        }
+
+        .browser {
+          height: calc(100vh - 105px);
+          min-height: 620px;
+          border-radius: var(--radius-md);
+        }
+
+        .browser-top {
+          height: 66px;
+        }
+
+        .tab-strip {
+          height: 31px;
+          padding: 0 7px;
+        }
+
+        .window-controls,
+        .browser-nav,
+        .browser-actions .toolbar-action:not(.brain-action) {
+          display: none;
+        }
+
+        .browser-tab {
+          width: min(225px, calc(100vw - 72px));
+          height: 27px;
+          padding: 0 9px;
+        }
+
+        .browser-tab:not(.is-active) {
+          display: none;
+        }
+
+        .browser-toolbar {
+          height: 35px;
+          grid-template-columns: minmax(0, 1fr) auto;
+          gap: 5px;
+          padding: 3px 7px 4px;
+        }
+
+        .address-bar {
+          height: 27px;
+        }
+
+        .browser-content {
+          height: calc(100% - 66px);
+        }
+
+        .brain-app {
+          display: block;
+        }
+
+        .brain-sidebar {
+          display: none;
+        }
+
+        .brain-main {
+          height: 100%;
+          padding: 14px 15px 72px;
+        }
+
+        .brain-back {
+          min-height: 34px;
+        }
+
+        .item-layout {
+          display: block;
+          margin-top: 1px;
+        }
+
+        .mobile-item-tabs {
+          display: grid;
+        }
+
+        .original-content[hidden],
+        .digest-mobile[hidden] {
+          display: none;
+        }
+
+        .item-title {
+          font-size: 24px;
+          line-height: 1.25;
+        }
+
+        .video-preview {
+          aspect-ratio: 16 / 8;
+          margin-top: 15px;
+        }
+
+        .recovery-panel,
+        .success-banner {
+          padding: 14px;
+        }
+
+        .recovery-actions {
+          flex-direction: column;
+        }
+
+        .recovery-actions .button {
+          width: 100%;
+          min-height: 44px;
+        }
+
+        .desktop-only {
+          display: none;
+        }
+
+        .mobile-only {
+          display: flex;
+        }
+
+        .brain-mobile-nav {
+          position: absolute;
+          z-index: 5;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          min-height: 57px;
+          display: grid;
+          grid-template-columns: repeat(4, 1fr);
+          border-top: 1px solid var(--line);
+          background: rgb(255 255 255 / 0.97);
+        }
+
+        .brain-mobile-nav button {
+          display: grid;
+          place-items: center;
+          align-content: center;
+          gap: 2px;
+          padding: 0;
+          border: 0;
+          background: transparent;
+          color: var(--muted);
+          font-size: 9px;
+        }
+
+        .brain-mobile-nav button.is-active {
+          color: var(--ink-950);
+        }
+
+        .article-copy {
+          font-size: 15px;
+        }
+
+        .digest-mobile {
+          margin-top: 14px;
+        }
+
+        .digest-panel {
+          position: static;
+        }
+
+        .youtube-shell,
+        .youtube-shell.has-side-panel {
+          grid-template-columns: minmax(0, 1fr);
+        }
+
+        .side-panel {
+          position: absolute;
+          inset: 0;
+          z-index: 8;
+          border: 0;
+        }
+
+        .prototype-foot {
+          display: none;
+        }
+
+        .extension-nudge {
+          top: 61px;
+          right: 7px;
+          width: min(285px, calc(100vw - 32px));
+        }
+      }
+
+      .prototype.viewport-mobile .prototype-toolbar {
+        max-width: 390px;
+      }
+
+      .prototype.viewport-mobile .browser {
+        width: 390px;
+        height: min(780px, calc(100vh - 100px));
+        min-height: 660px;
+      }
+
+      .prototype.viewport-mobile .browser-top {
+        height: 66px;
+      }
+
+      .prototype.viewport-mobile .tab-strip {
+        height: 31px;
+        padding: 0 7px;
+      }
+
+      .prototype.viewport-mobile .window-controls,
+      .prototype.viewport-mobile .browser-nav,
+      .prototype.viewport-mobile .browser-actions .toolbar-action:not(.brain-action) {
+        display: none;
+      }
+
+      .prototype.viewport-mobile .browser-tab {
+        width: 318px;
+        height: 27px;
+        padding: 0 9px;
+      }
+
+      .prototype.viewport-mobile .browser-tab:not(.is-active) {
+        display: none;
+      }
+
+      .prototype.viewport-mobile .browser-toolbar {
+        height: 35px;
+        grid-template-columns: minmax(0, 1fr) auto;
+        gap: 5px;
+        padding: 3px 7px 4px;
+      }
+
+      .prototype.viewport-mobile .address-bar {
+        height: 27px;
+      }
+
+      .prototype.viewport-mobile .browser-content {
+        height: calc(100% - 66px);
+      }
+
+      .prototype.viewport-mobile .brain-app {
+        display: block;
+      }
+
+      .prototype.viewport-mobile .brain-sidebar {
+        display: none;
+      }
+
+      .prototype.viewport-mobile .brain-main {
+        height: 100%;
+        padding: 14px 15px 72px;
+      }
+
+      .prototype.viewport-mobile .item-layout {
+        display: block;
+        margin-top: 1px;
+      }
+
+      .prototype.viewport-mobile .brain-aside {
+        display: none;
+      }
+
+      .prototype.viewport-mobile .item-title {
+        font-size: 24px;
+      }
+
+      .prototype.viewport-mobile .video-preview {
+        aspect-ratio: 16 / 8;
+        margin-top: 15px;
+      }
+
+      .prototype.viewport-mobile .recovery-panel,
+      .prototype.viewport-mobile .success-banner {
+        padding: 14px;
+      }
+
+      .prototype.viewport-mobile .recovery-actions {
+        flex-direction: column;
+      }
+
+      .prototype.viewport-mobile .recovery-actions .button,
+      .prototype.viewport-mobile .digest-actions .button {
+        width: 100%;
+        min-height: 44px;
+      }
+
+      .prototype.viewport-mobile .desktop-only {
+        display: none;
+      }
+
+      .prototype.viewport-mobile .mobile-only {
+        display: flex;
+      }
+
+      .prototype.viewport-mobile .mobile-item-tabs {
+        display: grid;
+      }
+
+      .prototype.viewport-mobile .digest-mobile {
+        display: block;
+        margin-top: 14px;
+      }
+
+      .prototype.viewport-mobile .original-content[hidden],
+      .prototype.viewport-mobile .digest-mobile[hidden] {
+        display: none;
+      }
+
+      .prototype.viewport-mobile .digest-panel {
+        position: static;
+      }
+
+      .prototype.viewport-mobile .brain-mobile-nav {
+        position: absolute;
+        z-index: 5;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        min-height: 57px;
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        border-top: 1px solid var(--line);
+        background: rgb(255 255 255 / 0.97);
+      }
+
+      .prototype.viewport-mobile .brain-mobile-nav button {
+        display: grid;
+        place-items: center;
+        align-content: center;
+        gap: 2px;
+        padding: 0;
+        border: 0;
+        background: transparent;
+        color: var(--muted);
+        font-size: 9px;
+      }
+
+      .prototype.viewport-mobile .youtube-shell,
+      .prototype.viewport-mobile .youtube-shell.has-side-panel {
+        grid-template-columns: minmax(0, 1fr);
+      }
+
+      .prototype.viewport-mobile .side-panel {
+        position: absolute;
+        inset: 0;
+        z-index: 8;
+        border: 0;
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        *,
+        *::before,
+        *::after {
+          scroll-behavior: auto !important;
+          animation-duration: 0.01ms !important;
+          animation-iteration-count: 1 !important;
+          transition-duration: 0.01ms !important;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="prototype">
+      <header class="prototype-toolbar">
+        <div class="prototype-title">
+          <strong>AI Brain transcript recovery + manual enrichment</strong>
+          <span>Three separate choices: inspect, attach, then authorize AI processing</span>
+        </div>
+        <div class="scenario-tools">
+          <div class="scenario-tabs" role="tablist" aria-label="Prototype scenarios">
+            <button class="scenario-tab" type="button" role="tab" data-scenario="guided">Full journey</button>
+            <button class="scenario-tab" type="button" role="tab" data-scenario="ready-enrich">Ready to enrich</button>
+            <button class="scenario-tab" type="button" role="tab" data-scenario="local">Local providers</button>
+            <button class="scenario-tab" type="button" role="tab" data-scenario="done">Complete</button>
+            <button class="scenario-tab" type="button" role="tab" data-scenario="provider-change">Provider changed</button>
+            <button class="scenario-tab" type="button" role="tab" data-scenario="transcript-change">Transcript changed</button>
+            <button class="scenario-tab" type="button" role="tab" data-scenario="indexing-failure">Indexing failed</button>
+            <button class="scenario-tab" type="button" role="tab" data-scenario="feature-off">Feature off</button>
+            <button class="scenario-tab" type="button" role="tab" data-scenario="production">Production</button>
+          </div>
+          <div class="viewport-switch" aria-label="Prototype viewport">
+            <button type="button" data-action="viewport" data-viewport="desktop" aria-pressed="true" data-tooltip="Desktop preview" aria-label="Show desktop preview"><i data-lucide="monitor" width="15" height="15" aria-hidden="true"></i></button>
+            <button type="button" data-action="viewport" data-viewport="mobile" aria-pressed="false" data-tooltip="Mobile preview" aria-label="Show mobile preview"><i data-lucide="smartphone" width="15" height="15" aria-hidden="true"></i></button>
+          </div>
+          <button class="icon-button" type="button" data-action="reset" data-tooltip="Reset scenario" aria-label="Reset prototype">
+            <i data-lucide="rotate-ccw" width="16" height="16" aria-hidden="true"></i>
+          </button>
+        </div>
+      </header>
+
+      <section class="browser" aria-label="Interactive browser prototype">
+        <div class="browser-top">
+          <div class="tab-strip" id="tab-strip"></div>
+          <div class="browser-toolbar">
+            <div class="browser-nav">
+              <button type="button" tabindex="-1" aria-label="Back"><i data-lucide="arrow-left" width="16" height="16"></i></button>
+              <button type="button" tabindex="-1" aria-label="Forward"><i data-lucide="arrow-right" width="16" height="16"></i></button>
+              <button type="button" tabindex="-1" aria-label="Reload"><i data-lucide="rotate-cw" width="15" height="15"></i></button>
+            </div>
+            <div class="address-bar">
+              <i data-lucide="sliders-horizontal" width="13" height="13" aria-hidden="true"></i>
+              <span id="address-text"></span>
+            </div>
+            <div class="browser-actions">
+              <button class="toolbar-action" type="button" tabindex="-1" aria-label="Extensions"><i data-lucide="puzzle" width="16" height="16"></i></button>
+              <button class="toolbar-action brain-action" id="brain-action" type="button" data-action="open-extension" aria-label="Open Brain extension" data-tooltip="Brain extension">
+                <i data-lucide="brain" width="16" height="16" aria-hidden="true"></i>
+              </button>
+              <span class="browser-avatar" aria-hidden="true">A</span>
+            </div>
+          </div>
+        </div>
+        <div class="browser-content" id="browser-content"></div>
+        <div class="extension-nudge" id="extension-nudge" hidden></div>
+        <aside class="extension-popup" id="extension-popup" aria-label="Existing Brain extension popup" hidden>
+          <header class="extension-popup-header">
+            <strong><i data-lucide="brain" width="15" height="15" aria-hidden="true"></i>Brain extension</strong>
+            <button class="side-panel-close" type="button" data-action="close-popup" aria-label="Close extension popup"><i data-lucide="x" width="15" height="15" aria-hidden="true"></i></button>
+          </header>
+          <div class="extension-popup-body">
+            <h2>Save this page to Brain</h2>
+            <p>This is the existing popup for ordinary tabs. Transcript recovery starts only from a specific Brain item.</p>
+            <button class="button button--primary" type="button" data-action="ordinary-save"><i data-lucide="bookmark-plus" width="14" height="14" aria-hidden="true"></i>Save YouTube link</button>
+          </div>
+        </aside>
+      </section>
+
+      <footer class="prototype-foot">
+        <span><i data-lucide="flask-conical" width="13" height="13" aria-hidden="true"></i>Throwaway prototype; no extension, YouTube, or Brain request is made.</span>
+        <span><i data-lucide="shield-check" width="13" height="13" aria-hidden="true"></i>Provider calls, hold release, and queue receipts are synthetic.</span>
+      </footer>
+    </div>
+
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+    <script src="https://unpkg.com/lucide@0.468.0/dist/umd/lucide.js"></script>
+    <script>
+      const VIDEO_TITLE = "But what is a neural network? | Deep learning chapter 1";
+      const VIDEO_ID = "aircAruvnKk";
+      const THUMBNAIL = `https://i.ytimg.com/vi/${VIDEO_ID}/maxresdefault.jpg`;
+      const transcriptCues = [
+        ["0:00", "This is a three, written sloppily, and rendered at an extremely low resolution of 28 by 28 pixels."],
+        ["0:08", "Your brain has no trouble recognizing it as a three."],
+        ["0:13", "But what if you want a computer to recognize which digit is in this image?"],
+        ["0:21", "The way we will do that is with a neural network."],
+        ["0:26", "Neural networks are inspired by the brain, but the useful idea is a layered mathematical function."],
+        ["0:36", "The first layer contains neurons representing the brightness of each pixel."],
+        ["0:45", "Values flow through hidden layers, where the network learns increasingly useful patterns."],
+        ["0:55", "The final layer gives ten numbers, one for each possible digit."],
+        ["1:04", "Training adjusts weights and biases so the desired output becomes more likely."],
+        ["1:15", "What matters is how the structure lets the network build complicated behavior from simple pieces."],
+        ["1:26", "In the next chapters we will make each part of this process concrete."],
+      ];
+
+      const state = {
+        scenario: "guided",
+        surface: "brain",
+        phase: "eligible",
+        enrichment: "held",
+        provider: "anthropic",
+        embedProvider: "gemini",
+        disclosureOpen: false,
+        mobileTab: "original",
+        viewport: "desktop",
+        youtubeOpened: false,
+        intentBound: false,
+        sidePanelOpen: false,
+        popupOpen: false,
+        panelOpen: false,
+        videoChanged: false,
+        timers: [],
+      };
+
+      const browserContent = document.getElementById("browser-content");
+      const tabStrip = document.getElementById("tab-strip");
+      const addressText = document.getElementById("address-text");
+      const brainAction = document.getElementById("brain-action");
+      const extensionNudge = document.getElementById("extension-nudge");
+      const extensionPopup = document.getElementById("extension-popup");
+      const toast = document.getElementById("toast");
+      const prototype = document.querySelector(".prototype");
+
+      function icon(name, size = 16) {
+        return `<i data-lucide="${name}" width="${size}" height="${size}" aria-hidden="true"></i>`;
+      }
+
+      function refreshIcons() {
+        if (window.lucide) {
+          window.lucide.createIcons({ attrs: { "stroke-width": 1.8 } });
+        }
+      }
+
+      function clearTimers() {
+        state.timers.forEach((timer) => clearTimeout(timer));
+        state.timers = [];
+      }
+
+      function schedule(callback, delay) {
+        const timer = setTimeout(callback, delay);
+        state.timers.push(timer);
+      }
+
+      function setScenarioSelection() {
+        document.querySelectorAll("[data-scenario]").forEach((button) => {
+          button.setAttribute("aria-selected", String(button.dataset.scenario === state.scenario));
+        });
+      }
+
+      function setViewportSelection() {
+        prototype.classList.toggle("viewport-mobile", state.viewport === "mobile");
+        document.querySelectorAll("[data-viewport]").forEach((button) => {
+          button.setAttribute("aria-pressed", String(button.dataset.viewport === state.viewport));
+        });
+      }
+
+      function renderBrowserChrome() {
+        const brainActive = state.surface === "brain";
+        tabStrip.innerHTML = `
+          <div class="window-controls" aria-hidden="true"><span class="window-dot"></span><span class="window-dot"></span><span class="window-dot"></span></div>
+          <button class="browser-tab ${brainActive ? "is-active" : ""}" type="button" data-action="switch-tab" data-tab="brain">
+            ${icon("brain", 14)}<span>${VIDEO_TITLE} - AI Memory</span>
+          </button>
+          ${state.youtubeOpened ? `<button class="browser-tab youtube-tab ${!brainActive ? "is-active" : ""}" type="button" data-action="switch-tab" data-tab="youtube">${icon("youtube", 15)}<span>${state.videoChanged ? "A different video" : VIDEO_TITLE} - YouTube</span></button>` : ""}
+        `;
+
+        addressText.textContent = brainActive
+          ? "brain.arunp.in/items/yt-neural-networks"
+          : `youtube.com/watch?v=${state.videoChanged ? "nextVideo" : VIDEO_ID}`;
+
+        const actionable = !brainActive && state.youtubeOpened;
+        brainAction.classList.toggle("is-disabled", !actionable);
+        brainAction.setAttribute("aria-disabled", String(!actionable));
+        brainAction.setAttribute("aria-pressed", String((state.sidePanelOpen || state.popupOpen) && !brainActive));
+        brainAction.dataset.tooltip = state.intentBound ? "Continue transcript recovery" : "Open Brain extension";
+        brainAction.setAttribute("aria-label", state.intentBound ? "Continue transcript recovery" : "Open Brain extension");
+        const badgeNeeded = actionable && state.intentBound && !state.sidePanelOpen && state.phase !== "complete";
+        brainAction.innerHTML = `${icon("brain", 16)}${badgeNeeded ? '<span class="action-badge">1</span>' : ""}`;
+
+        const showNudge = actionable && state.intentBound && !state.sidePanelOpen && state.phase === "waiting";
+        extensionNudge.hidden = !showNudge;
+        if (showNudge) {
+          extensionNudge.innerHTML = `<strong>Continue with Brain</strong><span>Click the Brain extension icon. Nothing has been read yet.</span>`;
+        }
+        extensionPopup.hidden = brainActive || !state.popupOpen;
+      }
+
+      function sidebar() {
+        return `
+          <aside class="brain-sidebar">
+            <div class="brain-logo">
+              <span class="brain-logo-mark">${icon("brain", 19)}</span>
+              <span><strong>AI Memory</strong><span>v0.6.2 - private memory</span></span>
+            </div>
+            <nav class="brain-nav" aria-label="AI Memory navigation">
+              <button type="button">${icon("search", 15)}Search</button>
+              <button type="button">${icon("circle-plus", 15)}Capture</button>
+              <button type="button" class="is-active">${icon("library", 15)}Library</button>
+              <button type="button">${icon("inbox", 15)}Processing<span class="nav-count">5</span></button>
+              <button type="button">${icon("triangle-alert", 15)}Needs Upgrade<span class="nav-count">3</span></button>
+              <button type="button">${icon("message-square", 15)}Ask</button>
+              <button type="button">${icon("settings", 15)}Settings</button>
+            </nav>
+            <div class="sidebar-foot">Pair device<br />Privacy controls</div>
+          </aside>
+        `;
+      }
+
+      function mobileNav() {
+        return `
+          <nav class="brain-mobile-nav" aria-label="Mobile navigation">
+            <button type="button" class="is-active">${icon("library", 16)}<span>Library</span></button>
+            <button type="button">${icon("inbox", 16)}<span>Processing</span></button>
+            <button type="button">${icon("message-square", 16)}<span>Ask</span></button>
+            <button type="button">${icon("menu", 16)}<span>More</span></button>
+          </nav>
+        `;
+      }
+
+      function recoveryPanel() {
+        if (state.phase === "extension-missing") {
+          return `
+            <section class="recovery-panel" role="alert" aria-labelledby="recovery-heading">
+              <div class="panel-heading-row">
+                <span class="semantic-icon">${icon("puzzle", 17)}</span>
+                <div><h2 id="recovery-heading" tabindex="-1">Brain extension needs attention</h2><p>It may be missing, hidden, unpaired, or out of date in this Chrome profile. Nothing was changed.</p></div>
+              </div>
+              <div class="recovery-status">
+                <div class="status-line">${icon("puzzle", 14)}Install the approved research build, then pin its icon.</div>
+                <div class="status-line">${icon("link", 14)}Pair this Chrome profile with the same Brain account.</div>
+                <div class="status-line">${icon("refresh-cw", 14)}Update the extension when the research build requires it.</div>
+              </div>
+              <div class="recovery-actions">
+                <button class="button button--primary desktop-only" type="button" data-action="extension-setup">${icon("settings", 14)}Open extension setup</button>
+                <button class="button button--secondary desktop-only" type="button" data-action="retry-extension">${icon("rotate-cw", 14)}Try again</button>
+                <button class="button button--secondary" type="button" data-action="paste">${icon("clipboard-paste", 14)}Paste transcript instead</button>
+              </div>
+            </section>
+          `;
+        }
+
+        if (state.phase === "starting") {
+          return `
+            <section class="recovery-panel" role="status" aria-labelledby="recovery-heading">
+              <div class="panel-heading-row">
+                <span class="semantic-icon">${icon("captions", 17)}</span>
+                <div><h2 id="recovery-heading" tabindex="-1">Opening YouTube</h2><p>Creating a private, item-bound recovery request for this video.</p></div>
+              </div>
+              <div class="recovery-status"><div class="status-line"><span class="spinner"></span>Connecting to the Brain extension...</div></div>
+            </section>
+          `;
+        }
+
+        if (state.youtubeOpened && state.intentBound && state.phase !== "complete" && state.phase !== "success") {
+          return `
+            <section class="recovery-panel" role="status" aria-labelledby="recovery-heading">
+              <div class="panel-heading-row">
+                <span class="semantic-icon">${icon("external-link", 17)}</span>
+                <div><h2 id="recovery-heading" tabindex="-1">Continue in YouTube</h2><p>YouTube opened. Click the Brain extension icon in that tab. Nothing has been read.</p></div>
+              </div>
+              <div class="recovery-actions">
+                <button class="button button--primary" type="button" data-action="switch-tab" data-tab="youtube">${icon("youtube", 15)}Open video</button>
+                <button class="button button--secondary" type="button" data-action="cancel">Cancel</button>
+              </div>
+              <div class="recovery-status"><div class="status-line">${icon("clock-3", 14)}Request expires in 29 minutes. No transcript text is stored.</div></div>
+            </section>
+          `;
+        }
+
+        if (state.scenario === "production") {
+          return `
+            <section class="recovery-panel" aria-labelledby="recovery-heading">
+              <div class="panel-heading-row">
+                <span class="semantic-icon">${icon("shield-alert", 17)}</span>
+                <div><h2 id="recovery-heading">Transcript missing</h2><p>Chrome recovery is limited to authorized research environments. Production keeps manual recovery only.</p></div>
+              </div>
+              <div class="recovery-actions">
+                <button class="button button--primary" type="button" data-action="paste">${icon("clipboard-paste", 14)}Paste transcript</button>
+                <button class="button button--secondary" type="button" data-action="upload">${icon("upload", 14)}Upload transcript file</button>
+              </div>
+              <div class="recovery-status"><div class="status-line">${icon("lock-keyhole", 14)}No browser recovery request can be created in this environment.</div></div>
+            </section>
+          `;
+        }
+
+        return `
+          <section class="recovery-panel" aria-labelledby="recovery-heading">
+            <div class="panel-heading-row">
+              <span class="semantic-icon">${icon("captions", 17)}</span>
+              <div><h2 id="recovery-heading">Transcript missing</h2><p>Add the visible YouTube transcript to make this item searchable and useful in Ask.</p></div>
+            </div>
+            <div class="recovery-actions">
+              <button class="button button--primary desktop-only" type="button" data-action="start-recovery">${icon("scan-text", 15)}Get transcript with Chrome</button>
+              <button class="button button--secondary" type="button" data-action="paste">${icon("clipboard-paste", 14)}Paste transcript</button>
+              <button class="button button--secondary" type="button" data-action="upload">${icon("upload", 14)}Upload transcript file</button>
+            </div>
+            <div class="recovery-status desktop-only"><div class="status-line">${icon("mouse-pointer-click", 14)}Opens this video and connects it to this item. Brain will not read the page until you click Inspect in the extension.</div></div>
+            <div class="recovery-status mobile-only"><div class="status-line">${icon("monitor", 14)}The Brain Chrome extension isn't available on mobile. Paste or upload a transcript instead.</div></div>
+          </section>
+        `;
+      }
+
+      function brainTranscript() {
+        return `
+          <section class="transcript-panel-brain" aria-labelledby="brain-transcript-heading">
+            <header class="transcript-panel-header">
+              <div><h2 id="brain-transcript-heading">Transcript</h2><p>Browser-visible observation - English - caption type unknown</p></div>
+              <span class="source-chip complete">${icon("circle-check", 13)}286 segments</span>
+            </header>
+            ${transcriptCues.slice(0, 5).map(([time, cue]) => `<div class="transcript-snippet"><time>${time}</time><span>${cue}</span></div>`).join("")}
+          </section>
+        `;
+      }
+
+      function providerPlan() {
+        if (state.provider === "ollama") {
+          return {
+            llm: { label: "Ollama", model: "qwen2.5:7b-instruct", boundary: "On this Brain server", remote: false },
+            embed: { label: "Ollama", model: "nomic-embed-text", boundary: "On this Brain server", remote: false },
+            mode: "Background processing",
+          };
+        }
+        if (state.provider === "openrouter") {
+          return {
+            llm: { label: "OpenRouter", model: "anthropic/claude-sonnet-4-6", boundary: "External provider", remote: true },
+            embed: { label: "Google Gemini", model: "gemini-embedding-001", boundary: "External provider", remote: true },
+            mode: "Background processing",
+          };
+        }
+        return {
+          llm: { label: "Anthropic", model: "Claude Haiku 4.5", boundary: "External provider", remote: true },
+          embed: { label: "Google Gemini", model: "gemini-embedding-001", boundary: "External provider", remote: true },
+          mode: "Background processing",
+        };
+      }
+
+      function providerRows() {
+        const plan = providerPlan();
+        return `
+          <div class="provider-plan" aria-label="AI provider plan">
+            <div class="provider-row">
+              <span class="provider-icon">${icon("sparkles", 14)}</span>
+              <span><strong>AI digest - ${plan.llm.label}</strong><span>${plan.llm.model}</span><span class="provider-boundary">${plan.llm.boundary}</span></span>
+            </div>
+            <div class="provider-row">
+              <span class="provider-icon">${icon("network", 14)}</span>
+              <span><strong>Semantic index - ${plan.embed.label}</strong><span>${plan.embed.model}</span><span class="provider-boundary">${plan.embed.boundary}</span></span>
+            </div>
+          </div>
+        `;
+      }
+
+      function disclosureDetail(forceOpen = false, disclosureId = "enrichment-disclosure") {
+        const open = forceOpen || state.disclosureOpen;
+        return `
+          ${forceOpen ? "" : `<button class="disclosure-toggle" type="button" data-action="toggle-disclosure" aria-expanded="${open}" aria-controls="${disclosureId}">${icon(open ? "chevron-up" : "chevron-down", 14)}What is sent?</button>`}
+          ${open ? `<div class="disclosure-detail" id="${disclosureId}">
+            <h3>Data used for this one transcript version</h3>
+            <ul>
+              <li><strong>Digest provider:</strong> video title, source type, and up to the first 12,000 transcript characters.</li>
+              <li><strong>Embedding provider:</strong> chunked full transcript text and the generated digest.</li>
+              <li><strong>Stored here:</strong> summary, key quotes, category, AI topics, and semantic index.</li>
+              <li><strong>Not sent:</strong> YouTube cookies, Google account details, browsing history, player data, signed caption URLs, manual notes, or unrelated Brain items.</li>
+              <li>This does not authorize future transcript versions or future Ask questions.</li>
+            </ul>
+          </div>` : ""}
+        `;
+      }
+
+      function stageList(current, failed = false) {
+        const order = ["queued", "digesting", "indexing"];
+        const currentIndex = order.indexOf(current);
+        const stages = [
+          ["queued", "Queued", "Durable authorization and job receipt"],
+          ["digesting", "Create AI digest", "Summary, quotes, category, and topics"],
+          ["indexing", "Build semantic index", "Current transcript and digest chunks"],
+        ];
+        return `<ol class="processing-stages">${stages.map(([key, label, detail], index) => {
+          const done = current === "done" || index < currentIndex || (failed && key !== "indexing");
+          const active = key === current && !failed;
+          const error = failed && key === "indexing";
+          const marker = done ? icon("check", 12) : error ? icon("x", 12) : active ? '<span class="spinner" style="width:12px;height:12px;"></span>' : String(index + 1);
+          return `<li class="processing-stage ${done ? "is-done" : ""} ${active ? "is-current" : ""} ${error ? "is-error" : ""}"><span class="stage-marker">${marker}</span><span><strong>${label}</strong><span>${detail}</span></span></li>`;
+        }).join("")}</ol>`;
+      }
+
+      function digestOutput() {
+        return `
+          <div class="digest-output">
+            <h3>AI digest</h3>
+            <p>A neural network turns pixel values into a prediction through layers of simple mathematical operations. Training adjusts weights and biases so increasingly useful patterns lead to the desired digit.</p>
+            <div class="topic-list"><span class="topic-chip">Neural networks</span><span class="topic-chip">Deep learning</span><span class="topic-chip">Weights and biases</span></div>
+          </div>
+        `;
+      }
+
+      function aiDigestPanel(hasTranscript = true, headingId = "digest-heading") {
+        const plan = providerPlan();
+        const localOnly = !plan.llm.remote && !plan.embed.remote;
+        if (!hasTranscript) {
+          return `<section class="digest-panel" aria-labelledby="${headingId}"><div class="digest-heading-row"><div><h2 id="${headingId}">AI digest</h2><p>Add a transcript before creating an AI digest.</p></div></div></section>`;
+        }
+
+        if (state.enrichment === "disabled") {
+          return `<section class="digest-panel" data-tone="held" aria-labelledby="${headingId}"><div class="digest-heading-row"><div><h2 id="${headingId}">AI processing remains paused</h2><p>The transcript is attached and available to read.</p></div><span class="digest-state held">${icon("pause", 11)}Paused</span></div><p class="digest-intro">This research environment has not approved AI enrichment for browser-visible transcripts. No provider received the transcript.</p></section>`;
+        }
+
+        if (state.enrichment === "provider-changed") {
+          return `<section class="digest-panel" data-tone="error" role="alert" aria-labelledby="${headingId}"><div class="digest-heading-row"><div><h2 id="${headingId}" tabindex="-1">AI provider details changed</h2><p>Nothing was sent.</p></div><span class="digest-state error">${icon("refresh-cw", 11)}Review again</span></div><p class="digest-intro">The approved plan now uses ${plan.llm.label} for the digest. Review both destinations before starting.</p>${providerRows()}<div class="digest-actions"><button class="button button--primary" type="button" data-action="review-enrichment">Review updated plan</button><button class="button button--text" type="button" data-action="keep-paused">Keep AI processing paused</button></div></section>`;
+        }
+
+        if (state.enrichment === "superseded") {
+          return `<section class="digest-panel" data-tone="error" role="alert" aria-labelledby="${headingId}"><div class="digest-heading-row"><div><h2 id="${headingId}" tabindex="-1">Transcript changed while enrichment was running</h2><p>The older result was rejected.</p></div><span class="digest-state error">${icon("git-compare", 11)}New version</span></div><p class="digest-intro">The latest transcript is attached and safe. Review the provider plan again before processing this version.</p><div class="digest-actions"><button class="button button--primary" type="button" data-action="review-latest">Review latest transcript</button></div></section>`;
+        }
+
+        if (state.enrichment === "done") {
+          return `<section class="digest-panel" data-tone="success" aria-labelledby="${headingId}"><div class="digest-heading-row"><div><h2 id="${headingId}">AI digest</h2><p>Ready from the current transcript.</p></div><span class="digest-state success">${icon("circle-check", 11)}Complete</span></div>${digestOutput()}${stageList("done")}<p class="digest-footer">Created from the current transcript with ${plan.llm.label}; semantic index built with ${plan.embed.label}. Future Ask questions remain a separate action.</p></section>`;
+        }
+
+        if (state.enrichment === "indexing-error") {
+          return `<section class="digest-panel" data-tone="error" aria-labelledby="${headingId}"><div class="digest-heading-row"><div><h2 id="${headingId}">AI digest ready</h2><p>Search indexing needs attention.</p></div><span class="digest-state error">${icon("triangle-alert", 11)}Partial</span></div>${digestOutput()}${stageList("indexing", true)}<div class="partial-success"><strong>The digest is safe</strong>Retrying the index will not call the digest provider again.</div><div class="digest-actions"><button class="button button--primary" type="button" data-action="retry-indexing">Retry semantic indexing</button><button class="button button--secondary" type="button" data-action="provider-settings">Check provider settings</button></div></section>`;
+        }
+
+        if (["starting", "queued", "digesting", "indexing"].includes(state.enrichment)) {
+          const copy = {
+            starting: ["Starting enrichment", "Securing this transcript version and creating one durable job."],
+            queued: ["Enrichment queued", "You can leave this page. Brain will use the provider plan you reviewed."],
+            digesting: ["Creating AI digest", `Using ${plan.llm.label} for the current transcript version.`],
+            indexing: ["Digest ready, building search index", `Using ${plan.embed.label}; the digest will not be regenerated.`],
+          }[state.enrichment];
+          const stage = state.enrichment === "starting" ? "queued" : state.enrichment;
+          return `<section class="digest-panel" data-tone="active" aria-live="polite" aria-busy="${state.enrichment !== "queued"}" aria-labelledby="${headingId}"><div class="digest-heading-row"><div><h2 id="${headingId}">${copy[0]}</h2><p>${copy[1]}</p></div><span class="digest-state active">${state.enrichment === "queued" ? icon("clock-3", 11) : icon("loader-circle", 11)}${state.enrichment === "queued" ? "Queued" : "In progress"}</span></div>${stageList(stage)}${state.enrichment === "indexing" ? digestOutput() : ""}<p class="digest-footer">The transcript remains attached and unchanged throughout processing.</p></section>`;
+        }
+
+        if (state.enrichment === "review") {
+          return `<section class="digest-panel" data-tone="held" aria-labelledby="${headingId}"><div class="digest-heading-row"><div><h2 id="${headingId}" tabindex="-1">Create an AI digest and search index?</h2><p>This is a separate processing choice.</p></div><span class="digest-state held">${icon("shield-check", 11)}Review</span></div><p class="digest-intro">This permission applies only to the current transcript version and the provider plan below.</p>${providerRows()}${disclosureDetail(true, `${headingId}-disclosure`)}<div class="consent-copy"><strong>Queue behavior</strong>${plan.mode}. Brain returns a durable receipt before showing queued, and the job stops if the transcript or provider plan changes.</div><div class="digest-actions"><button class="button button--primary" type="button" data-action="confirm-enrichment">Agree and queue enrichment</button><button class="button button--secondary" type="button" data-action="keep-paused">Keep AI processing paused</button></div></section>`;
+        }
+
+        return `<section class="digest-panel" data-tone="held" aria-labelledby="${headingId}"><div class="digest-heading-row"><div><h2 id="${headingId}">Transcript added. AI processing is paused.</h2><p>No AI provider has received it.</p></div><span class="digest-state held">${icon("pause", 11)}Ready</span></div><p class="digest-intro">Create an AI digest and semantic index for this exact transcript version.</p>${providerRows()}${disclosureDetail(localOnly, `${headingId}-disclosure`)}<div class="digest-actions"><button class="button button--primary" type="button" data-action="${localOnly ? "confirm-enrichment" : "review-enrichment"}">${icon("sparkles", 14)}${localOnly ? "Enrich on this Brain" : "Review and enrich transcript"}</button></div><p class="digest-footer">Opening or leaving this page does not start processing.</p></section>`;
+      }
+
+      function renderBrainPage() {
+        const complete = state.phase === "complete" || state.phase === "success";
+        const metadataQuality = complete ? "Transcript" : "Metadata only";
+        const digestActive = state.mobileTab === "digest";
+        const enrichmentLabel = state.enrichment === "done"
+          ? `${icon("circle-check", 13)}AI ready`
+          : ["starting", "queued", "digesting", "indexing"].includes(state.enrichment)
+            ? `${icon("loader-circle", 13)}AI processing`
+            : state.enrichment === "indexing-error"
+              ? `${icon("triangle-alert", 13)}Index needs attention`
+              : state.enrichment === "superseded" || state.enrichment === "provider-changed"
+                ? `${icon("triangle-alert", 13)}Review needed`
+                : `${icon("pause", 13)}AI paused`;
+        browserContent.innerHTML = `
+          <div class="brain-app">
+            ${sidebar()}
+            <main class="brain-main">
+              <a class="brain-back" href="#" data-action="noop">${icon("arrow-left", 14)}Back to Library</a>
+              <div class="item-layout">
+                <article class="item-article">
+                  <header class="item-header">
+                    <div class="eyebrow-row">
+                      <span class="source-chip youtube">${icon("youtube", 13)}YouTube</span>
+                      <span class="source-chip ${complete ? "complete" : "weak"}">${complete ? icon("circle-check", 13) + "Transcript added" : icon("triangle-alert", 13) + "Needs upgrade"}</span>
+                      ${complete ? `<span class="source-chip ${state.enrichment === "done" ? "complete" : state.enrichment === "indexing-error" || state.enrichment === "superseded" || state.enrichment === "provider-changed" ? "weak" : ""}">${enrichmentLabel}</span>` : ""}
+                    </div>
+                    <h1 class="item-title">${VIDEO_TITLE}</h1>
+                    <a class="item-source-link" href="#" data-action="open-youtube">${icon("external-link", 13)}youtube.com/watch?v=${VIDEO_ID}</a>
+                    <div class="video-preview"><img src="${THUMBNAIL}" alt="Neural networks video thumbnail" /><span class="preview-label">${icon("youtube", 13)}${complete ? "Transcript attached" : "Metadata saved"}</span></div>
+                    ${complete ? "" : `<p class="warning-copy">${icon("triangle-alert", 15)}Brain saved the video, but YouTube blocked server-side transcript retrieval.</p>`}
+                    ${complete ? `<section class="success-banner" role="status"><div class="panel-heading-row"><span class="semantic-icon success">${icon("circle-check", 18)}</span><div><h2 tabindex="-1" id="recovery-heading">Transcript added from Chrome</h2><p>The confirmed transcript is attached to this exact item. AI enrichment has not started.</p></div></div></section>` : recoveryPanel()}
+                  </header>
+                  ${complete ? `<nav class="mobile-item-tabs" aria-label="Item views"><button type="button" data-action="mobile-tab" data-tab="original" aria-selected="${!digestActive}">Original</button><button type="button" data-action="mobile-tab" data-tab="digest" aria-selected="${digestActive}">Digest</button></nav>` : ""}
+                  <div class="original-content" ${complete && digestActive ? "hidden" : ""}>
+                    ${complete ? brainTranscript() : ""}
+                    <div class="article-copy">
+                      <p>${complete ? "This item now includes the complete visible transcript, with cue times and browser-visible provenance." : "An introduction to the structure and intuition behind neural networks."}</p>
+                      <p>${complete ? "The transcript remains readable while AI processing is paused. Semantic search and Ask become available only after the separately authorized index completes." : "Only the title, channel, description, thumbnail, and source link are currently available."}</p>
+                    </div>
+                  </div>
+                  ${complete ? `<div class="digest-mobile" ${digestActive ? "" : "hidden"}>${aiDigestPanel(true, "digest-heading-mobile")}</div>` : ""}
+                </article>
+                <aside class="brain-aside">
+                  ${aiDigestPanel(complete, "digest-heading-desktop")}
+                  <section class="aside-card"><h2>Capture</h2><dl class="metadata-list"><div class="metadata-row"><dt>Platform</dt><dd>YouTube</dd></div><div class="metadata-row"><dt>Quality</dt><dd>${metadataQuality}</dd></div><div class="metadata-row"><dt>Transcript</dt><dd class="${complete ? "added" : "missing"}">${complete ? "Added from Chrome" : "Missing"}</dd></div><div class="metadata-row"><dt>Via</dt><dd>${complete ? "Brain extension" : "URL capture"}</dd></div></dl></section>
+                  <section class="aside-card"><h2>My notes</h2><div class="note-box">Add a private note about why this video matters.</div></section>
+                </aside>
+              </div>
+            </main>
+            ${mobileNav()}
+          </div>
+        `;
+      }
+
+      function youtubeTranscriptPanel() {
+        if (state.scenario === "no-transcript" && state.panelOpen) {
+          return `<aside class="youtube-transcript"><div class="youtube-transcript-header"><h2>Transcript</h2>${icon("x", 15)}</div><div class="transcript-placeholder">${icon("captions-off", 26)}<div><strong>Transcript unavailable</strong><p>This video does not expose captions.</p></div></div></aside>`;
+        }
+
+        if (!state.panelOpen) {
+          return `<aside class="youtube-transcript"><div class="transcript-placeholder">${icon("panel-right-open", 26)}<div><strong>Transcript panel is closed</strong><p>${state.phase === "guide" ? "Use the highlighted Show transcript control below the video." : "Open Show transcript below the video."}</p></div></div></aside>`;
+        }
+
+        return `
+          <aside class="youtube-transcript" aria-label="Visible YouTube transcript">
+            <div class="youtube-transcript-header"><h2>Transcript</h2><select class="language-select" aria-label="Transcript language"><option>English</option></select></div>
+            <div class="transcript-scroll">${transcriptCues.map(([time, cue]) => `<div class="youtube-cue"><time>${time}</time><span>${cue}</span></div>`).join("")}</div>
+          </aside>
+        `;
+      }
+
+      function stepTrack(active) {
+        const names = ["Open", "Inspect", "Add"];
+        return `<div class="steps" aria-label="Recovery progress">${names.map((name, index) => `<div class="step ${index + 1 < active ? "is-complete" : index + 1 === active ? "is-active" : ""}"><div class="step-bar"></div><span>${name}</span></div>`).join("")}</div>`;
+      }
+
+      function sidePanelFrame(content, active = 1) {
+        return `
+          <aside class="side-panel" aria-label="Brain transcript recovery companion">
+            <header class="side-panel-header">
+              <div class="side-panel-brand"><span class="side-panel-brand-mark">${icon("brain", 17)}</span><span><strong>Brain companion</strong><span>Item transcript recovery</span></span></div>
+              <button class="side-panel-close" type="button" data-action="close-side-panel" aria-label="Close Brain side panel">${icon("x", 16)}</button>
+            </header>
+            <div class="side-panel-scroll">
+              <div class="item-binding"><span class="binding-thumb"><img src="${THUMBNAIL}" alt="" /></span><span class="binding-copy"><strong>${VIDEO_TITLE}</strong><span>Adding to this Brain item - request expires in 29 min</span></span></div>
+              ${stepTrack(active)}
+              ${content}
+            </div>
+            <footer class="side-panel-foot"><span class="connection"><span class="connection-dot"></span>Brain connected</span><span>Active tab only</span></footer>
+          </aside>
+        `;
+      }
+
+      function sideReady() {
+        return sidePanelFrame(`
+          <section class="side-state">
+            <div class="state-label">${icon("captions", 12)}Open</div>
+            <h2 tabindex="-1" id="side-state-heading">This YouTube tab is linked to this item</h2>
+            <p>Open YouTube's transcript panel and choose a language, then inspect. Nothing has been read.</p>
+            <div class="privacy-note">${icon("shield", 15)}<div><strong>Two separate permissions</strong>Inspect reads the visible transcript into temporary extension memory. Add sends it to the Brain item above.</div></div>
+            <div class="panel-actions">
+              <button class="button button--primary button--wide" type="button" data-action="inspect">${icon("scan-text", 15)}Inspect visible transcript</button>
+              <button class="button button--secondary button--wide" type="button" data-action="show-guide">${icon("map", 15)}Show me where</button>
+              <button class="button button--text" type="button" data-action="cancel">Cancel request</button>
+            </div>
+          </section>
+        `, 1);
+      }
+
+      function sideGuide() {
+        return sidePanelFrame(`
+          <section class="side-state">
+            <div class="state-label">${icon("map", 12)}Open</div>
+            <h2 tabindex="-1" id="side-state-heading">Open YouTube's transcript</h2>
+            <p>Use the highlighted <strong>Show transcript</strong> control below the video. Select the language you want YouTube to display.</p>
+            <div class="guide-note">${icon("mouse-pointer-click", 15)}<div><strong>No transcript has been read</strong>This guide only points to YouTube's own control.</div></div>
+            <div class="panel-actions">
+              <button class="button button--secondary button--wide" type="button" data-action="inspect">${icon("scan-text", 15)}I've opened it - inspect now</button>
+              <button class="button button--text" type="button" data-action="cancel">Cancel request</button>
+            </div>
+          </section>
+        `, 1);
+      }
+
+      function sideTranscriptReady() {
+        return sidePanelFrame(`
+          <section class="side-state">
+            <div class="state-label">${icon("captions", 12)}Open</div>
+            <h2 tabindex="-1" id="side-state-heading">Transcript is open</h2>
+            <p>English is visible in the YouTube panel. Click Inspect to read it locally and verify that every cue is present.</p>
+            <div class="privacy-note">${icon("shield", 15)}<div><strong>Nothing has been sent</strong>Inspection stays in extension memory until you review and add it.</div></div>
+            <div class="panel-actions">
+              <button class="button button--primary button--wide" type="button" data-action="inspect">${icon("scan-text", 15)}Inspect visible transcript</button>
+              <button class="button button--text" type="button" data-action="cancel">Cancel request</button>
+            </div>
+          </section>
+        `, 1);
+      }
+
+      function sideInspecting() {
+        return sidePanelFrame(`<div class="scan-state" role="status"><div><span class="large-spinner" aria-hidden="true"></span><h2 id="side-state-heading" tabindex="-1">Inspecting visible transcript</h2><p>Checking order, cue timing, and the final visible cue. Nothing is being sent to Brain yet.</p></div></div>`, 2);
+      }
+
+      function sideReview() {
+        return sidePanelFrame(`
+          <section class="side-state">
+            <div class="state-label">${icon("list-checks", 12)}Review</div>
+            <h2 tabindex="-1" id="side-state-heading">Transcript ready to add</h2>
+            <p>Brain inspected the visible English track and reached the final cue.</p>
+            <div class="evidence-list">
+              <div class="evidence-row"><span>Destination</span><span class="evidence-value">This Brain item</span></div>
+              <div class="evidence-row"><span>Language</span><span class="evidence-value">English</span></div>
+              <div class="evidence-row"><span>Transcript</span><span class="evidence-value">286 timed segments</span></div>
+              <div class="evidence-row"><span>Size</span><span class="evidence-value">32,840 characters</span></div>
+              <div class="evidence-row"><span>Completeness</span><span class="evidence-value success">Reached final cue</span></div>
+              <div class="evidence-row"><span>Caption type</span><span class="evidence-value warning">Unknown</span></div>
+            </div>
+            <div class="privacy-note">${icon("shield-check", 15)}<div><strong>What Brain will receive</strong>Transcript text, cue times, video title and URL, and visible language. YouTube cookies, Google account details, browsing history, player data, and signed caption URLs are not sent.</div></div>
+            <div class="guide-note">${icon("pause-circle", 15)}<div><strong>Research processing hold</strong>External AI processing remains paused for this capture.</div></div>
+            <div class="panel-actions">
+              <button class="button button--primary button--wide" type="button" data-action="confirm-add">${icon("file-plus-2", 15)}Add transcript to this Brain item</button>
+              <button class="button button--secondary button--wide" type="button" data-action="back-ready">${icon("arrow-left", 15)}Back</button>
+            </div>
+          </section>
+        `, 3);
+      }
+
+      function sideSaving() {
+        return sidePanelFrame(`<div class="scan-state" role="status"><div><span class="large-spinner" aria-hidden="true"></span><h2 id="side-state-heading" tabindex="-1">Adding transcript</h2><p>Validating the item binding and committing the confirmed transcript atomically.</p></div></div>`, 3);
+      }
+
+      function sideSuccess() {
+        return sidePanelFrame(`
+          <section class="side-state">
+            <div class="state-label" style="color: var(--teal);">${icon("circle-check", 12)}Complete</div>
+            <h2 tabindex="-1" id="side-state-heading">Transcript added</h2>
+            <p>286 timed segments were added to the exact Brain item that started this request. AI enrichment has not started.</p>
+            <div class="success-note">${icon("shield-check", 15)}<div><strong>No browser session data shared</strong>Caption type remains unknown. Review AI processing separately in Brain.</div></div>
+            <div class="panel-actions">
+              <button class="button button--primary button--wide" type="button" data-action="open-item">${icon("external-link", 15)}Open item in Brain</button>
+              <button class="button button--text" type="button" data-action="close-side-panel">Done</button>
+            </div>
+          </section>
+        `, 3);
+      }
+
+      function sideError(kind) {
+        const errors = {
+          panel: { icon: "panel-right-close", title: "Open the transcript on YouTube", body: "No visible transcript panel was found. Nothing was read or sent.", action: "show-guide", label: "Show me where" },
+          "no-transcript": { icon: "captions-off", title: "No visible transcript for this video", body: "YouTube did not expose a transcript. Nothing was added to the Brain item.", action: "paste", label: "Paste transcript instead" },
+          "video-changed": { icon: "shuffle", title: "This is a different video", body: "The open YouTube video no longer matches the Brain item. Nothing was read.", action: "open-original", label: "Open original video" },
+          "item-changed": { icon: "file-warning", title: "The Brain item changed", body: "The item was updated after this request started. Nothing was replaced.", action: "open-item-conflict", label: "Review item in Brain" },
+          expired: { icon: "clock-alert", title: "This request expired", body: "The item-bound request reached its 30-minute limit. Nothing was read or added.", action: "restart-request", label: "Start a new request" },
+          incomplete: { icon: "list-end", title: "Transcript may be incomplete", body: "Brain could not prove that inspection reached YouTube's final cue. Partial text will not be added.", action: "retry-inspect", label: "Inspect again" },
+          "network-error": { icon: "wifi-off", title: "Brain could not save the transcript", body: "The confirmed transcript remains only in this open panel. The Brain item was not changed.", action: "retry-commit", label: "Try saving again" },
+        };
+        const error = errors[kind];
+        return sidePanelFrame(`
+          <section class="side-state">
+            <div class="state-label" style="color: var(--ruby);">${icon("circle-x", 12)}Stopped safely</div>
+            <h2 tabindex="-1" id="side-state-heading">${error.title}</h2>
+            <p>${error.body}</p>
+            <div class="error-note">${icon(error.icon, 15)}<div><strong>Nothing was changed</strong>Brain fails closed instead of guessing between pages, items, or partial transcript text.</div></div>
+            <div class="panel-actions">
+              <button class="button button--primary button--wide" type="button" data-action="${error.action}">${icon("rotate-cw", 15)}${error.label}</button>
+              <button class="button button--secondary button--wide" type="button" data-action="cancel">Cancel request</button>
+            </div>
+          </section>
+        `, kind === "item-changed" || kind === "network-error" ? 3 : kind === "incomplete" ? 2 : 1);
+      }
+
+      function renderSidePanel() {
+        if (state.phase === "guide") return sideGuide();
+        if (state.phase === "transcript-ready") return sideTranscriptReady();
+        if (state.phase === "inspecting") return sideInspecting();
+        if (state.phase === "review") return sideReview();
+        if (state.phase === "saving") return sideSaving();
+        if (state.phase === "success") return sideSuccess();
+        if (state.phase === "panel-error") return sideError("panel");
+        if (state.phase === "no-transcript") return sideError("no-transcript");
+        if (state.phase === "video-changed") return sideError("video-changed");
+        if (state.phase === "item-changed") return sideError("item-changed");
+        if (state.phase === "expired") return sideError("expired");
+        if (state.phase === "incomplete") return sideError("incomplete");
+        if (state.phase === "network-error") return sideError("network-error");
+        return sideReady();
+      }
+
+      function renderYoutubePage() {
+        const title = state.videoChanged ? "A different video is now playing" : VIDEO_TITLE;
+        browserContent.innerHTML = `
+          <div class="youtube-shell ${state.sidePanelOpen ? "has-side-panel" : ""}">
+            <main class="youtube-page">
+              <header class="youtube-header"><div class="youtube-brand">${icon("youtube", 24)}YouTube</div><div class="youtube-search"><span>Search</span>${icon("search", 14)}</div><div class="youtube-actions">${icon("video", 17)}${icon("bell", 17)}<span class="youtube-avatar">A</span></div></header>
+              <div class="youtube-layout">
+                <section class="watch-column">
+                  <div class="video-player"><img src="${THUMBNAIL}" alt="Neural networks video frame" /><button class="play-button" type="button" aria-label="Play video">${icon("play", 21)}</button><div class="player-progress"><span></span></div></div>
+                  <h1 class="youtube-video-title">${title}</h1>
+                  <div class="youtube-meta-row"><div class="channel"><span class="channel-avatar">3B</span><span><strong>3Blue1Brown</strong><span>7.4M subscribers</span></span></div><button class="youtube-pill" type="button">${icon("thumbs-up", 13)}2.4K</button></div>
+                  <div class="youtube-description"><div class="description-copy"><strong>16M views - 8 years ago</strong><br />An introduction to the structure and intuition behind neural networks.</div><button class="show-transcript ${state.phase === "guide" ? "is-highlighted" : ""}" type="button" data-action="open-transcript">${icon("captions", 14)}Show transcript</button></div>
+                </section>
+                ${youtubeTranscriptPanel()}
+              </div>
+            </main>
+            ${state.sidePanelOpen ? renderSidePanel() : ""}
+          </div>
+        `;
+      }
+
+      function render() {
+        setViewportSelection();
+        renderBrowserChrome();
+        if (state.surface === "brain") renderBrainPage();
+        else renderYoutubePage();
+        setScenarioSelection();
+        refreshIcons();
+      }
+
+      function resetScenario(scenario = state.scenario) {
+        clearTimers();
+        state.scenario = scenario;
+        state.surface = "brain";
+        state.phase = "eligible";
+        state.enrichment = "held";
+        state.provider = scenario === "local" ? "ollama" : scenario === "provider-change" ? "openrouter" : "anthropic";
+        state.embedProvider = scenario === "local" ? "ollama" : "gemini";
+        state.disclosureOpen = false;
+        state.mobileTab = "original";
+        state.youtubeOpened = false;
+        state.intentBound = false;
+        state.sidePanelOpen = false;
+        state.popupOpen = false;
+        state.panelOpen = false;
+        state.videoChanged = false;
+        if (["ready-enrich", "local", "done", "provider-change", "transcript-change", "indexing-failure", "feature-off"].includes(scenario)) {
+          state.phase = "complete";
+          state.youtubeOpened = true;
+          state.mobileTab = "digest";
+        }
+        if (scenario === "done") state.enrichment = "done";
+        if (scenario === "provider-change") state.enrichment = "provider-changed";
+        if (scenario === "transcript-change") state.enrichment = "superseded";
+        if (scenario === "indexing-failure") state.enrichment = "indexing-error";
+        if (scenario === "feature-off") state.enrichment = "disabled";
+        render();
+      }
+
+      function startRecovery() {
+        if (window.matchMedia("(max-width: 760px)").matches) {
+          showToast("Chrome extension recovery is available on desktop.");
+          return;
+        }
+        clearTimers();
+        state.intentBound = true;
+        state.popupOpen = false;
+        state.phase = "starting";
+        render();
+        schedule(() => {
+          if (state.scenario === "extension-missing") {
+            state.phase = "extension-missing";
+            render();
+            focusHeading("recovery-heading");
+            return;
+          }
+          state.youtubeOpened = true;
+          state.surface = "youtube";
+          state.phase = "waiting";
+          state.panelOpen = state.scenario === "ready";
+          state.videoChanged = state.scenario === "video-changed";
+          render();
+        }, 850);
+      }
+
+      function openExtension() {
+        if (state.surface !== "youtube" || !state.youtubeOpened) return;
+        if (!state.intentBound) {
+          state.popupOpen = !state.popupOpen;
+          state.sidePanelOpen = false;
+          render();
+          return;
+        }
+        state.popupOpen = false;
+        state.sidePanelOpen = true;
+        state.phase = state.scenario === "expired" ? "expired" : state.videoChanged ? "video-changed" : state.panelOpen ? "transcript-ready" : "ready";
+        render();
+        focusHeading("side-state-heading");
+      }
+
+      function startInspection() {
+        clearTimers();
+        if (state.videoChanged) {
+          state.phase = "video-changed";
+          render();
+          focusHeading("side-state-heading");
+          return;
+        }
+        if (state.scenario === "no-transcript" && state.panelOpen) {
+          state.phase = "no-transcript";
+          render();
+          focusHeading("side-state-heading");
+          return;
+        }
+        state.phase = "inspecting";
+        render();
+        schedule(() => {
+          state.phase = !state.panelOpen ? "panel-error" : state.scenario === "incomplete" ? "incomplete" : "review";
+          render();
+          focusHeading("side-state-heading");
+        }, 1450);
+      }
+
+      function confirmAdd() {
+        clearTimers();
+        state.phase = "saving";
+        render();
+        schedule(() => {
+          state.phase = state.scenario === "item-changed" ? "item-changed" : state.scenario === "network-error" ? "network-error" : "success";
+          render();
+          focusHeading("side-state-heading");
+        }, 1100);
+      }
+
+      function startEnrichment() {
+        clearTimers();
+        state.enrichment = "starting";
+        render();
+        schedule(() => {
+          state.enrichment = "queued";
+          render();
+        }, 650);
+        schedule(() => {
+          state.enrichment = "digesting";
+          render();
+        }, 1650);
+        schedule(() => {
+          state.enrichment = "indexing";
+          render();
+        }, 3150);
+        schedule(() => {
+          state.enrichment = state.scenario === "indexing-failure" ? "indexing-error" : "done";
+          render();
+          showToast(state.enrichment === "done" ? "AI digest and semantic index are ready." : "Digest ready. Semantic indexing needs attention.");
+        }, 4800);
+      }
+
+      function retryIndexing() {
+        clearTimers();
+        state.enrichment = "indexing";
+        render();
+        schedule(() => {
+          state.scenario = "done";
+          state.enrichment = "done";
+          render();
+          showToast("Semantic index is ready. The digest was not regenerated.");
+        }, 1800);
+      }
+
+      function focusHeading(id) {
+        requestAnimationFrame(() => document.getElementById(id)?.focus({ preventScroll: true }));
+      }
+
+      function focusDigestHeading() {
+        const compact = state.viewport === "mobile" || window.matchMedia("(max-width: 1080px)").matches;
+        focusHeading(compact ? "digest-heading-mobile" : "digest-heading-desktop");
+      }
+
+      let toastTimer;
+      function showToast(message) {
+        clearTimeout(toastTimer);
+        toast.textContent = message;
+        toast.classList.add("is-visible");
+        toastTimer = setTimeout(() => toast.classList.remove("is-visible"), 2300);
+      }
+
+      document.addEventListener("click", (event) => {
+        const scenarioButton = event.target.closest("[data-scenario]");
+        if (scenarioButton) {
+          resetScenario(scenarioButton.dataset.scenario);
+          return;
+        }
+
+        const button = event.target.closest("[data-action]");
+        if (!button) return;
+        const action = button.dataset.action;
+
+        if (action === "reset") resetScenario();
+        if (action === "viewport") {
+          state.viewport = button.dataset.viewport;
+          if (state.viewport === "mobile" && state.phase === "complete") state.mobileTab = "digest";
+          render();
+        }
+        if (action === "mobile-tab") {
+          state.mobileTab = button.dataset.tab;
+          render();
+        }
+        if (action === "toggle-disclosure") {
+          state.disclosureOpen = !state.disclosureOpen;
+          render();
+        }
+        if (action === "review-enrichment") {
+          state.enrichment = "review";
+          render();
+          focusDigestHeading();
+        }
+        if (action === "keep-paused") {
+          state.enrichment = "held";
+          render();
+          focusDigestHeading();
+        }
+        if (action === "confirm-enrichment") startEnrichment();
+        if (action === "retry-indexing") retryIndexing();
+        if (action === "provider-settings") showToast("AI provider settings would open here.");
+        if (action === "review-latest") {
+          state.scenario = "ready-enrich";
+          state.enrichment = "held";
+          state.disclosureOpen = false;
+          render();
+          focusDigestHeading();
+        }
+        if (action === "start-recovery") startRecovery();
+        if (action === "open-extension") openExtension();
+        if (action === "switch-tab") {
+          if (button.dataset.tab === "youtube" && state.youtubeOpened) state.surface = "youtube";
+          if (button.dataset.tab === "brain") state.surface = "brain";
+          state.popupOpen = false;
+          render();
+        }
+        if (action === "open-youtube") {
+          if (!state.youtubeOpened) {
+            state.youtubeOpened = true;
+          }
+          state.intentBound = false;
+          state.popupOpen = false;
+          state.sidePanelOpen = false;
+          state.phase = "eligible";
+          state.surface = "youtube";
+          render();
+        }
+        if (action === "close-popup") {
+          state.popupOpen = false;
+          render();
+        }
+        if (action === "close-side-panel") {
+          state.sidePanelOpen = false;
+          if (state.phase !== "success") {
+            state.phase = "waiting";
+            showToast("Unconfirmed transcript data discarded. The request can be resumed.");
+          }
+          render();
+        }
+        if (action === "show-guide") {
+          state.phase = "guide";
+          render();
+          focusHeading("side-state-heading");
+        }
+        if (action === "open-transcript") {
+          state.panelOpen = true;
+          state.phase = state.scenario === "no-transcript" ? "no-transcript" : "transcript-ready";
+          render();
+          focusHeading("side-state-heading");
+        }
+        if (action === "inspect") startInspection();
+        if (action === "confirm-add") confirmAdd();
+        if (action === "back-ready") {
+          state.phase = state.panelOpen ? "transcript-ready" : "ready";
+          render();
+          focusHeading("side-state-heading");
+        }
+        if (action === "open-original") {
+          state.videoChanged = false;
+          state.panelOpen = false;
+          state.phase = "ready";
+          render();
+          focusHeading("side-state-heading");
+        }
+        if (action === "open-item" || action === "open-item-conflict") {
+          state.surface = "brain";
+          state.sidePanelOpen = false;
+          state.intentBound = false;
+          state.phase = action === "open-item" ? "complete" : "eligible";
+          state.enrichment = "held";
+          state.mobileTab = "digest";
+          render();
+          focusHeading("recovery-heading");
+        }
+        if (action === "cancel") resetScenario();
+        if (action === "retry-extension") {
+          state.scenario = "guided";
+          state.phase = "eligible";
+          startRecovery();
+        }
+        if (action === "extension-setup") showToast("Extension setup would open in a new tab.");
+        if (action === "paste") showToast("The existing manual transcript form would open here.");
+        if (action === "upload") showToast("The existing transcript file picker would open here.");
+        if (action === "ordinary-save") showToast("The existing link capture flow would continue.");
+        if (action === "retry-inspect") {
+          state.scenario = "guided";
+          startInspection();
+        }
+        if (action === "retry-commit") {
+          state.scenario = "guided";
+          confirmAdd();
+        }
+        if (action === "restart-request") {
+          resetScenario("guided");
+          startRecovery();
+        }
+        if (action === "noop") event.preventDefault();
+      });
+
+      const params = new URLSearchParams(window.location.search);
+      const scenario = ["guided", "ready-enrich", "local", "done", "provider-change", "transcript-change", "indexing-failure", "feature-off", "production", "ready", "no-transcript", "extension-missing", "video-changed", "item-changed", "expired", "incomplete", "network-error"].includes(params.get("scenario")) ? params.get("scenario") : "guided";
+      const view = params.get("view") || "brain";
+      state.viewport = params.get("viewport") === "mobile" ? "mobile" : "desktop";
+      resetScenario(scenario);
+      if (view === "guide" || view === "review" || view === "side-panel") {
+        state.youtubeOpened = true;
+        state.intentBound = true;
+        state.surface = "youtube";
+        state.sidePanelOpen = true;
+        state.panelOpen = view === "review" || scenario === "ready";
+        state.videoChanged = scenario === "video-changed";
+        state.phase = view === "guide" ? "guide" : view === "review" ? "review" : scenario === "expired" ? "expired" : state.videoChanged ? "video-changed" : state.panelOpen ? "transcript-ready" : "ready";
+        render();
+      }
+      if (view === "complete") {
+        state.youtubeOpened = true;
+        state.intentBound = false;
+        state.surface = "brain";
+        state.phase = "complete";
+        state.mobileTab = "digest";
+        render();
+      }
+      if (view === "ordinary") {
+        state.youtubeOpened = true;
+        state.intentBound = false;
+        state.popupOpen = true;
+        state.surface = "youtube";
+        state.phase = "eligible";
+        render();
+      }
+      if (view === "missing") {
+        state.phase = "extension-missing";
+        render();
+      }
+    </script>
+  </body>
+</html>

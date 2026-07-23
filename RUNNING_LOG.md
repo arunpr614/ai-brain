@@ -30326,3 +30326,235 @@ Nothing deployed or production-enabled. Branch `codex/youtube-dom-capture-prd-v2
 - **Working tree:** Final report link and this append-only log entry pending the publication follow-up commit at entry time.
 - **Deployed/runtime state:** Production unchanged; no local server or temporary Chrome session remains running.
 - **Next milestone:** Protected PR #41 checks/review/merge, followed only by separately commissioned Phase 0/1 implementation.
+
+---
+
+## 2026-07-22 14:00 IST - Item-initiated YouTube transcript recovery council and prototype completed
+
+**Entry author:** AI agent (Codex) - **Triggered by:** User asked for a web prototype that starts from each transcript-missing YouTube item in AI Brain, opens the video, coordinates with the existing Chrome extension, guides transcript extraction, and attaches the result back to the same item. User explicitly requested Designer, Product Manager, and Technical Architect agents to brainstorm as a Product Council.
+
+### Planned since last entry
+
+The prior V2 package defined a standalone explicit-click DOM capture workflow and kept production blocked. This milestone had to extend that concept into the existing AI Brain item experience without weakening consent, exact-item binding, link-only truth, production gates, or the extension's ordinary-tab behavior. The deliverable was an inert, click-through prototype plus a reconciled council decision and browser evidence, not application or extension implementation.
+
+### Done
+
+- Inspected the existing item detail UI, weak-source repair panel, transcript recovery states, upgrade policy, extension manifest/background/popup behavior, V2 plans, prior prototype, and repository design tokens.
+- Ran three independent specialist agents: Designer Planck, Product Manager Socrates, and Technical Architect Carson. Each produced an initial recommendation and then reviewed a shared reconciliation proposal.
+- Reconciled unanimous conditional GO guidance around the same model: an exact-item Brain CTA, short-lived server-backed request, explicit toolbar click, per-tab side panel, local Inspect, confirmed Add, and explicit return to the same Brain item.
+- Chose **Get transcript with Chrome** as the item CTA. Kept **Paste transcript** and **Upload transcript file** as manual alternatives.
+- Preserved the extension's existing popup for ordinary tabs. Only a YouTube tab created by an item-bound request receives the empty per-tab popup override and tab-specific side panel.
+- Kept the toolbar click mandatory. It is the user-visible authorization point and the reliable `activeTab` grant; no DOM content is read by the Brain button or by opening the side panel.
+- Added a self-contained HTML prototype under `docs/plans/youtube-dom-capture/prototype/item-initiated-recovery/` that simulates the Brain item, browser tabs/toolbar, ordinary popup, YouTube transcript panel, persistent companion side panel, evidence review, exact-item commit, and same-item result.
+- Added scenarios for guided recovery, already-open transcript, no transcript, extension setup, video change, item revision change, expiry, incomplete traversal, network retry, and production manual-only behavior.
+- Made panel-close semantics explicit: unconfirmed transcript data is discarded and inspection is required again while request metadata can still resume.
+- Added a truthful mobile experience that hides the Chrome action, explains that the extension is unavailable on mobile, and offers paste/upload without horizontal overflow.
+- Wrote a Product Council decision covering the complete UX, state model, API shape, per-tab extension lifecycle, exact-item atomic commit, security/privacy rules, Chrome support facts, and implementation gates.
+- Captured six reference screens: eligible item, ordinary popup, guided side panel, review, completed item, and mobile fallback.
+- Exercised the prototype in Chrome through DevTools Protocol. All 29 interaction and responsive checks passed, including full happy path, ordinary-popup distinction, panel resume/reinspection, no-transcript, identity conflicts, expiry, incomplete traversal, retry, production gate, and mobile widths.
+- Verified TypeScript and ESLint remained clean. Checked new relative links, script syntax, evidence hashes, private workstation paths, secret patterns, and responsive dimensions.
+
+### Cross-lane notes
+
+- Work stayed on `codex/youtube-dom-capture-prd-v2` and extends open PR #41. No application route, extension source, manifest, database, or production configuration was changed.
+- The source AI Brain worktree and unrelated user changes were not reset, cleaned, or included.
+- All new behavior is simulated. Production browser capture remains blocked by the V2 decision.
+
+### Learned
+
+- A Brain web-page click cannot itself grant Chrome `activeTab`; the extension toolbar click must remain visible and explicit.
+- Chrome supports the proposed split through per-tab action popup configuration and tab-specific side panels. Programmatic `sidePanel.open()` requires Chrome 116 or later, so a research package must pin or fall back from that version.
+- `externally_connectable` is a message-routing capability, not API authorization. The opaque request must be correlation only; claim, inspect authorization, and commit still require paired extension authentication and exact origin/version/item/video/revision checks.
+- A side panel is more usable than a popup for this flow because it remains present while the user opens YouTube's transcript and chooses a language. Ordinary tabs should still retain the compact existing popup.
+- Exact-item commit must resolve only the server-owned request destination. URL deduplication is not an acceptable fallback because it can attach content to the wrong item.
+- Brain should observe only terminal request states. Local inspection progress and transcript content must stay out of Brain telemetry before the user confirms Add.
+
+### Deployed / Released
+
+Nothing deployed or production-enabled. The prototype package is pending the final documentation commit and push to the existing PR #41 branch at the time of this entry.
+
+### Documents created or updated this period
+
+**Created:**
+- `docs/plans/youtube-dom-capture/prototype/item-initiated-recovery/README.md` - guided tour, scenarios, direct views, and screenshot index.
+- `docs/plans/youtube-dom-capture/prototype/item-initiated-recovery/2026-07-22_ai_brain_item_transcript_recovery_ux_prototype.html` - inert integrated click-through prototype.
+- `docs/plans/youtube-dom-capture/prototype/item-initiated-recovery/2026-07-22_ai_brain_item_transcript_recovery_product_council.md` - reconciled product/UX/architecture decision and gates.
+- `docs/plans/youtube-dom-capture/prototype/item-initiated-recovery/2026-07-22_ai_brain_item_transcript_recovery_prototype_qa.md` - 29-check browser QA record, dimensions, hashes, and limits.
+- Six PNG files in the same folder - eligible item, ordinary popup, guide, review, completion, and mobile evidence.
+
+**Updated:**
+- `docs/plans/youtube-dom-capture/prototype/README.md` - links the integrated follow-on prototype and its QA/council artifacts.
+- `docs/plans/youtube-dom-capture/README.md` - adds the integrated prototype to the package reading order and inventory.
+- `RUNNING_LOG.md` - this append-only milestone entry.
+
+### Current remaining to-do
+
+1. Stage, commit, and push the item-recovery prototype package to `codex/youtube-dom-capture-prd-v2`, then confirm PR #41 and protected CI remain healthy.
+2. If implementation is commissioned, first build a packaged MV3 E2E proving per-tab empty popup, `action.onClicked`, `activeTab`, `sidePanel.open({ tabId })`, and restoration of the existing popup on request cleanup.
+3. Keep the approved lab blocked until exact-origin external messaging, paired claim, request lifecycle, SPA video invalidation, transcript-memory deletion, exact-item atomic commit, and production-disable tests pass.
+4. Keep production browser capture disabled until a new legal/platform/privacy/security decision and reviewed implementation explicitly supersede V2.
+
+### Open questions / decisions needed
+
+1. Product owner must decide whether to commission implementation of the item-bound request and per-tab side-panel path.
+2. Platform/privacy/security owners must separately approve any future live lab after the packaged-extension and server enforcement gates exist.
+3. Product owner should confirm accepted manual transcript upload formats during implementation; the prototype represents the existing file-picker path without selecting a format.
+
+### Session self-critique
+
+- The prototype validates interaction logic and responsive layout, not a packaged extension, real YouTube transcript DOM, signed-in account behavior, Brain authentication, database concurrency, or cleanup.
+- The public thumbnail and Lucide CDN require network access in the interactive HTML; committed screenshots preserve an offline visual reference.
+- The council agents converged strongly, but implementation estimates should be revisited only after the per-tab MV3 E2E and API migration preflight prove the assumed Chrome and server behavior.
+
+### Action items for the next agent
+
+1. Read `docs/plans/youtube-dom-capture/prototype/item-initiated-recovery/README.md`, then the Product Council decision and QA record.
+2. Check PR #41 and its latest commit/status before changing the branch.
+3. Treat **Inspect visible transcript** and **Add transcript to this Brain item** as separate, non-collapsible consent boundaries.
+4. Preserve ordinary popup behavior, exact-item binding, no YouTube host permission, no transcript persistence in extension storage, no pre-confirm content telemetry, and production no-go.
+
+### State snapshot
+
+- **Current phase / version:** Integrated item-recovery concept and inert prototype complete; implementation not started.
+- **Active branch:** `codex/youtube-dom-capture-prd-v2`.
+- **Working tree:** Prototype, council memo, QA record, screenshots, indexes, and this log entry pending final commit/push at entry time.
+- **Deployed/runtime state:** Production unchanged; no local server or temporary Chrome session remains running.
+- **Next milestone:** Publish to PR #41, pass protected CI, then await a separate implementation commission.
+
+---
+
+## 2026-07-22 18:01 IST - Held YouTube transcript manual-enrichment V2 package completed
+
+**Entry author:** AI agent (Codex) - **Triggered by:** User requested a detailed PRD and implementation plan extending item-initiated transcript recovery with a manual enrichment button, separate Designer/Product Manager/Technical Architect agents, Product Council synthesis, V1 adversarial review and resolved V2 finals, a throwaway HTML prototype, an isolated worktree, a final report, and GitHub publication.
+
+### Planned since last entry
+
+The prior item-recovery prototype stopped after a confirmed transcript was attached. This milestone had to define a safe third action for downstream AI processing without collapsing browser inspection, transcript storage, and provider authorization into one consent. It also had to preserve the upstream production no-go, exact-item binding, no pre-confirm transcript telemetry, and the distinction between a research prototype and implemented behavior.
+
+### Done
+
+- Created worktree `ai-brain-worktrees/youtube-item-recovery-enrichment-plan` and branch `codex/youtube-item-recovery-enrichment-plan`, stacked on `origin/codex/youtube-item-recovery-prototype` at integrated baseline `c22b5aa`.
+- Audited current item repair, transcript capture, enrichment, embedding, queue, provider, migration, status, deletion, and UI behavior against the integrated parent.
+- Ran separate Designer, Product Manager, and Technical Architect specialist agents. Preserved their input and review memoranda and reconciled them through a Product Council.
+- Created immutable V1 audit, Council, PRD, implementation plan, UX specification, and interactive prototype artifacts.
+- Used the `adversarial-review` skill on every V1 artifact plus a package-wide consistency pass. Consolidated and dispositioned all 32 review findings.
+- Produced final V2 audit, Product Council decision, PRD, implementation plan, UX specification, finding-disposition matrix, and a 38-row requirement-to-implementation/evidence/owner/no-go traceability matrix.
+- Locked P0 to manual enrichment for a held browser-recovery transcript. Paste, upload, official captions, and generic legacy items do not inherit a broader consent promise.
+- Selected strict `POST /api/items/:id/enrichment-runs` for the consent-bearing command. The legacy `/api/items/:id/enrich` route remains contained and cannot release or process an active browser-transcript hold.
+- Defined immutable authorization input/context snapshots, two fingerprints, stage/provider fingerprints, expiry, strictly increasing generations, claim tokens, mutation receipts, attempt lineage, response-loss reconciliation, stage-aware drift, stage-specific retries, deletion fencing, generalized provider usage, exact embedding-space identity, and one-current-source retrieval eligibility.
+- Locked the output contract to three digest paragraphs, one to five verified excerpts, one category, and three to eight topics. Ask remains a separate future action.
+- Defined `manual-transcript-lab` as an isolated worker mode that claims only explicitly authorized interactive digest/index jobs under a separate private processing manifest.
+- Corrected the integrated migration assumption: `026_notebooklm_export.sql` already exists. The upstream browser-transcript migration must be rebased and frozen at the next free number; nominally upstream 027, manual expand 028, and deferred contract 029 on `c22b5aa`.
+- Built a final inert HTML prototype with local Lucide/image assets, a real dialog/mobile sheet, six item tabs, held/local/complete/partial/reconciliation/drift/expiry/deletion/retry/production states, durable receipt provenance, and a complete inspect-to-attach-to-authorize journey.
+- Captured and visually reviewed eight V2 screenshots. Fixed compact toolbar overflow, duplicate rendering, dialog focus containment, local disclosure association, exact completion copy, and the mobile disclosure touch target during QA.
+- Wrote the final V2 cross-artifact adversarial review and final delivery report. Verdict: go for planning publication; no-go for implementation until PR-0 resolves and freezes the upstream migration/foundation; no-go for production.
+
+### Cross-lane notes
+
+- This branch is intentionally stacked on the item-recovery prototype parent rather than `main`; the new package depends on that concept and should be reviewed/merged in order.
+- Parent baseline was fast-forwarded to `c22b5aa` before finalization. The source worktree and unrelated user changes were not reset or included.
+- All product behavior remains simulated. No application route, extension source, database, AI provider configuration, YouTube account/session, Brain item, server, or production runtime was changed.
+- `eslint.config.mjs` now ignores vendored minified libraries in inert `docs/plans/**/prototype/assets/` folders; without that narrow exclusion ESLint exhausted its parser stack on `lucide.min.js`.
+
+### Learned
+
+- The integrated baseline invalidated the earlier migration-number assumption: NotebookLM export owns 026. Migration identity must be frozen by source SHA, final filename, hash, and schema shape, not by a planning number alone.
+- Reusing `/enrich` would require deployed-client and access-log evidence that is not present. A new run resource is safer while an unconditional active-hold guard contains the old route.
+- A provider-plan fingerprint is not a complete consent identity. Exact authorization also needs material input/context, purpose, boundaries, policy/copy versions, retention, and expiry.
+- A dropped HTTP response cannot prove that no work started. The durable receipt/mutation is authoritative and the UI must reconcile before permitting another approval.
+- Digest success and search-index success must remain separate. Index-only retry must make zero LLM calls and a historical digest may remain readable while retrieval is blocked.
+- Browser-native modal behavior still needed an explicit focus loop in the prototype to prevent a brief Tab escape in headless Chrome.
+
+### Verification
+
+- Final browser suite passed at 1280, 1024, 768, 390, 360, and 320 CSS px: no horizontal overflow, duplicate IDs, unnamed workflow controls, duplicate authorization surfaces, external requests, or page errors.
+- All 26 direct enrichment states rendered distinct headings without layout overflow. Desktop/mobile review surfaces passed labelling, scroll/footer separation, Tab/Shift+Tab containment, Escape close, and focus return.
+- Local-only mode, exact output shape, receipt provenance, and the full synthetic journey passed. Compact workflow controls measured at least 44 px mobile and 36 px desktop.
+- All 38 PRD requirement IDs map exactly once in traceability; 28 package Markdown files contain 26 resolving relative links and no broken links.
+- `npm run lint`, `npm run typecheck`, `npm run check:env`, and `git diff --check` passed.
+- `npm test` passed 1,034/1,034 tests across 97 suites with zero failed, skipped, cancelled, or todo.
+- `npm ci` reported six existing advisories (one moderate, four high, one critical). No forced dependency change was made for this documentation-only work.
+
+### Deployed / Released
+
+Nothing deployed or production-enabled. The branch, documentation package, prototype, screenshots, reports, and this log entry are pending final commit/push and stacked pull-request publication at entry time.
+
+### Documents created or updated this period
+
+**Created:**
+- `docs/plans/youtube-item-recovery-enrichment/README.md` - package index, final authority order, prototype routes, review evidence, and boundary.
+- V1 current-state audit, Council, PRD, implementation plan, UX specification, specialist-agent memoranda, six formal adversarial reports, and a package-wide adversarial report in `docs/plans/youtube-item-recovery-enrichment/`.
+- Final V2 audit, Council, PRD, implementation plan, UX specification, 32-finding disposition matrix, 38-requirement traceability matrix, final adversarial review, and final delivery report in the same folder.
+- `docs/plans/youtube-item-recovery-enrichment/prototype/` - V1 and final V2 inert HTML prototypes, local assets, prototype adversarial report, and V1/V2 screenshots.
+
+**Updated:**
+- `eslint.config.mjs` - narrowly ignores vendored minified planning-prototype libraries.
+- `RUNNING_LOG.md` - this append-only milestone and handoff entry.
+
+### Current remaining to-do
+
+1. Stage and commit the package, push `codex/youtube-item-recovery-enrichment-plan`, open a stacked pull request against `codex/youtube-item-recovery-prototype`, and verify protected checks.
+2. Merge the parent item-recovery prototype before this stacked PR or retarget after the parent merges.
+3. If implementation is commissioned, begin only with PR-0: rebase/freeze the upstream browser-transcript migration and prove hold/revision/sole-active-source enforcement in every writer.
+4. Keep production and any live YouTube/account experiment disabled until separately approved implementation, manifest, isolated-lab, privacy, deletion, and evidence gates pass.
+
+### Open questions / decisions needed
+
+1. Product owner must decide whether to commission PR-0 and subsequent implementation after planning review.
+2. Platform/privacy/security owners must separately approve any future isolated live lab and production path; this package does not grant that approval.
+
+### Session self-critique
+
+- The prototype is unusually complete for a throwaway artifact, but it still cannot validate a packaged extension, current YouTube DOM, signed-in Chrome behavior, Brain authentication, database races, queue ownership, provider retention, or deletion against late provider results.
+- Automated accessibility evidence does not replace VoiceOver/NVDA, physical keyboard/switch, 200% zoom, high-contrast, or packaged-extension testing.
+- The final implementation estimate remains sensitive to the upstream foundation because the required migration and all-writer hold gates are not implemented yet.
+- Dependency advisories were observed but not changed; forcing upgrades would be unrelated and risky in this documentation branch.
+
+### Action items for the next agent
+
+1. Read `docs/plans/youtube-item-recovery-enrichment/README.md`, then the final implementation plan, PRD, UX spec, disposition matrix, traceability matrix, final adversarial review, and delivery report.
+2. Check the stacked PR and parent PR status before rebasing, retargeting, or merging.
+3. Preserve the hard migration collision gate and all three explicit user choices. Do not implement a bodyless/force legacy bypass or generic all-source privacy promise.
+4. Treat the HTML as UX evidence only. Implementation acceptance requires the full DB/API/worker/provider/extension/accessibility evidence mapped in traceability.
+
+### State snapshot
+
+- **Current phase / version:** Final V2 planning package and inert prototype complete; implementation not started.
+- **Active branch:** `codex/youtube-item-recovery-enrichment-plan` stacked on `origin/codex/youtube-item-recovery-prototype` at `c22b5aa`.
+- **Working tree:** Final package, lint exclusion, and this append-only entry pending commit/push at entry time.
+- **Deployed/runtime state:** Production unchanged; no local dev server, provider job, extension runtime, or temporary browser session remains active.
+- **Next milestone:** GitHub stacked PR and protected checks, followed only by separately commissioned PR-0 implementation.
+
+---
+
+## 2026-07-22 18:13 IST - Manual-enrichment planning package published with green CI
+
+**Entry author:** AI agent (Codex) - **Triggered by:** Completion of the GitHub publication and protected-check milestone left pending in the preceding entry.
+
+### Done
+
+- Committed the 51-file package as `9a08f3ea88cd12df649d7e60f386c12db0aacb14` (`docs: plan held YouTube transcript enrichment`).
+- Pushed `codex/youtube-item-recovery-enrichment-plan` to `origin`.
+- Opened stacked PR [#48](https://github.com/arunpr614/ai-brain/pull/48) against `codex/youtube-item-recovery-prototype` / parent PR [#42](https://github.com/arunpr614/ai-brain/pull/42).
+- GitHub Product CI `verify` passed in 3m06s. Locked installs, static verification, extension verification, product tests, documentation privacy/structure, operator-tool builds, and production build all succeeded.
+- Confirmed `package-known-good` and `package-main-release` were skipped as intended because this is not a main-branch release.
+- Recorded publication evidence in the final delivery report.
+
+### Deployed / Released
+
+Documentation, review evidence, prototype, assets, screenshots, and reports are published to PR #48. No product behavior or production runtime was deployed.
+
+### Current remaining to-do
+
+1. Review and merge parent PR #42, then merge or retarget stacked PR #48 through the protected flow.
+2. Commission PR-0 separately before any implementation: resolve/freeze the upstream migration and prove all-writer hold/revision enforcement.
+3. Keep live lab and production disabled until their separate approvals and evidence gates pass.
+
+### State snapshot
+
+- **Current phase / version:** V2 planning/review/prototype goal complete and published.
+- **Active branch:** `codex/youtube-item-recovery-enrichment-plan`.
+- **GitHub:** PR #48 open, stacked on PR #42; latest published package CI green at this entry.
+- **Working tree:** Publication-evidence follow-up pending its own small commit/push at entry time.
+- **Deployed/runtime state:** Production unchanged.
+- **Next milestone:** Parent/stacked PR review and merge, or separately commissioned PR-0 implementation.
