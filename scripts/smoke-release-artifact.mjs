@@ -24,7 +24,10 @@ import JSZip from "jszip";
 import * as tar from "tar";
 import {
   AUDITED_ADDITIVE_ROLLBACK_MIGRATIONS,
+  OPAQUE_ENRICHMENT_BATCH_RESERVATION_CAPABILITY,
+  evaluateEnrichmentBatchReservationCompatibility,
   evaluateMigrationCompatibility,
+  evaluateRuntimeCapabilityAttestation,
 } from "./check-release-migration-compatibility.mjs";
 import {
   parseApiJson,
@@ -39,7 +42,11 @@ const fixture = mkdtempSync(join(tmpdir(), "brain-release-smoke-"));
 const outputA = resolve(fixture, "out-a");
 const outputB = resolve(fixture, "out-b");
 const outputServerOnly = resolve(fixture, "out-server-only");
+const outputDifferentBuilder = resolve(fixture, "out-different-builder");
+const outputHistoricalApp = resolve(fixture, "out-historical-app");
 const sha = "0123456789abcdef0123456789abcdef01234567";
+const historicalAppSha = "1111111111111111111111111111111111111111";
+const differentBuilderSha = "89abcdef0123456789abcdef0123456789abcdef";
 const createdAt = "2026-07-12T00:00:00.000Z";
 const instrumentation = readFileSync(resolve(root, "src/instrumentation.ts"), "utf8");
 assert.ok(
@@ -73,21 +80,30 @@ function assertReleaseId(manifest, releaseId) {
   assert.equal(releaseId, releaseIdFromManifest(manifest));
 }
 
-function build(output, includeExtension = true) {
+function build(output, includeExtension = true, overrides = {}) {
+  const appSha = overrides.appSha ?? sha;
+  const builderSha = overrides.builderSha ?? sha;
   const args = [resolve(root, "scripts/build-release-artifact.mjs"),
-    "--root", fixture, "--output", output, "--sha", sha, "--builder-sha", sha, "--created-at", createdAt];
+    "--root", fixture, "--output", output, "--sha", appSha, "--builder-sha", builderSha,
+    "--created-at", createdAt];
+  if (overrides.toolsRoot) args.push("--tools-root", overrides.toolsRoot);
   if (includeExtension) args.push("--extension-dist", resolve(fixture, "extension-dist"));
   const result = spawnSync(process.execPath, args, { cwd: root, encoding: "utf8" });
   assert.equal(result.status, 0, result.stderr);
   return JSON.parse(result.stdout.trim().split("\n").at(-1));
 }
 
-function buildMustFail(output, message) {
-  const result = spawnSync(process.execPath, [resolve(root, "scripts/build-release-artifact.mjs"),
-    "--root", fixture, "--output", output, "--sha", sha, "--builder-sha", sha, "--created-at", createdAt,
-    "--extension-dist", resolve(fixture, "extension-dist")],
+function buildMustFail(output, message, overrides = {}) {
+  const appSha = overrides.appSha ?? sha;
+  const builderSha = overrides.builderSha ?? sha;
+  const args = [resolve(root, "scripts/build-release-artifact.mjs"),
+    "--root", fixture, "--output", output, "--sha", appSha, "--builder-sha", builderSha,
+    "--created-at", createdAt, "--extension-dist", resolve(fixture, "extension-dist")];
+  if (overrides.toolsRoot) args.push("--tools-root", overrides.toolsRoot);
+  const result = spawnSync(process.execPath, args,
   { cwd: root, encoding: "utf8" });
   assert.notEqual(result.status, 0, message);
+  return result;
 }
 
 let migrationCompatibilityCase = 0;
@@ -101,9 +117,31 @@ function runMigrationCompatibilityCli(
   migrationCompatibilityCase += 1;
   const caseRoot = resolve(fixture, `migration-compat-${migrationCompatibilityCase}`);
   mkdirSync(caseRoot, { recursive: true });
+  const runtimePath = resolve(caseRoot, "runtime");
+  mkdirSync(runtimePath, { recursive: true });
+  writeFileSync(resolve(runtimePath, "package.json"), "{}\n");
+  symlinkSync(resolve(root, "node_modules"), resolve(runtimePath, "node_modules"), "dir");
+  if (!notebookLmState.omitInnerManifest) {
+    const innerManifest = {};
+    if (notebookLmState.innerRuntimeCapabilities !== undefined) {
+      innerManifest.runtimeCapabilities =
+        notebookLmState.innerRuntimeCapabilities;
+    }
+    writeFileSync(
+      resolve(runtimePath, "release-manifest.json"),
+      JSON.stringify(innerManifest),
+    );
+  }
   const databasePath = resolve(caseRoot, "brain.sqlite");
   const database = new Database(databasePath);
   database.exec("CREATE TABLE _migrations (name TEXT PRIMARY KEY, sha256 TEXT NOT NULL)");
+  if (!notebookLmState.omitItemsTable) {
+    database.exec("CREATE TABLE items (id TEXT PRIMARY KEY, batch_id TEXT)");
+    const insertItem = database.prepare("INSERT INTO items (id, batch_id) VALUES (?, ?)");
+    for (const [index, batchId] of (notebookLmState.batchIds ?? []).entries()) {
+      insertItem.run(`item-${index}`, batchId);
+    }
+  }
   const insert = database.prepare("INSERT INTO _migrations (name, sha256) VALUES (?, ?)");
   const insertAll = database.transaction((entries) => {
     for (const entry of entries) insert.run(entry.name, entry.sha256);
@@ -220,10 +258,14 @@ function runMigrationCompatibilityCli(
   }
   database.close();
   const manifestPath = resolve(caseRoot, "manifest.json");
-  writeFileSync(manifestPath, JSON.stringify({ migrations: { files: packaged } }));
+  const targetManifest = { migrations: { files: packaged } };
+  if (notebookLmState.targetRuntimeCapabilities !== undefined) {
+    targetManifest.runtimeCapabilities = notebookLmState.targetRuntimeCapabilities;
+  }
+  writeFileSync(manifestPath, JSON.stringify(targetManifest));
   return spawnSync(process.execPath, [
     resolve(root, "scripts/check-release-migration-compatibility.mjs"),
-    root,
+    runtimePath,
     manifestPath,
     databasePath,
     allowAuditedAdditiveRollback ? "1" : "0",
@@ -465,8 +507,15 @@ try {
     deployScript.lastIndexOf("promote_release_tools ||") > deployScript.lastIndexOf("telegram webhook boundary returned"),
     "the global tool pointer must be promoted only after all candidate checks",
   );
+  const awareAppPackage = `${JSON.stringify({
+    brainRuntimeCapabilities: [
+      OPAQUE_ENRICHMENT_BATCH_RESERVATION_CAPABILITY,
+    ],
+  })}\n`;
+  const historicalAppPackage = "{}\n";
+  put("package.json", awareAppPackage);
   put(".next/standalone/server.js", "server\n");
-  put(".next/standalone/package.json", "{}\n");
+  put(".next/standalone/package.json", awareAppPackage);
   put(".next/standalone/.env.production", "SECRET=must-not-ship\n");
   put(".next/standalone/src/db/migrations/025_item_workflow.sql", "migration\n");
   put(".next/standalone/src/db/migrations/026_notebooklm_export.sql", "notebooklm migration\n");
@@ -494,7 +543,8 @@ try {
     "scripts/check-ai-providers.mjs", "scripts/backup-offsite.sh", "scripts/install-durable-backup-tools.sh",
     "scripts/verified-volatile-backup-staging.sh", "scripts/cleanup-volatile-backup-staging.mjs",
     "scripts/backfill-embeddings-prod.mjs",
-    "scripts/backfill-youtube-transcripts-prod.mjs", "scripts/restore-from-backup.sh",
+    "scripts/backfill-youtube-transcripts-prod.mjs", "scripts/lib/content-processing-containment.mjs",
+    "scripts/restore-from-backup.sh",
     "scripts/activate-release.sh", "scripts/switch-release.sh", "scripts/verify-release-runtime.mjs",
     "scripts/check-notebooklm-operations.mjs", "scripts/scrub-notebooklm-backup.mjs",
     "scripts/check-release-migration-compatibility.mjs", "scripts/verify-protected-main.mjs",
@@ -555,6 +605,9 @@ try {
   assert.equal(manifest.appSha, sha);
   assert.equal(manifest.builderSha, sha);
   assert.equal(manifest.releaseGateVersion, 1);
+  assert.deepEqual(manifest.runtimeCapabilities, [
+    OPAQUE_ENRICHMENT_BATCH_RESERVATION_CAPABILITY,
+  ]);
   assert.equal(manifest.artifactSha256, first.artifactSha256);
   assert.equal(manifest.nodeMajor, Number(process.versions.node.split(".")[0]));
   assert.ok(manifest.files.some((entry) => entry.path === "server.js"));
@@ -568,7 +621,186 @@ try {
   assert.ok(manifest.files.every((entry) => entry.kind === "file"));
   assert.ok(manifest.files.every((entry) => !entry.path.startsWith(".env")));
   assert.ok(manifest.files.every((entry) => !entry.path.startsWith("data/") && entry.path !== ".env"));
-  const builderB = "89abcdef0123456789abcdef0123456789abcdef";
+  const differentBuilderRelease = build(
+    outputDifferentBuilder,
+    false,
+    {
+      builderSha: differentBuilderSha,
+      toolsRoot: root,
+    },
+  );
+  const differentBuilderManifest = JSON.parse(
+    readFileSync(differentBuilderRelease.manifest, "utf8"),
+  );
+  assert.equal(differentBuilderManifest.appSha, sha);
+  assert.equal(differentBuilderManifest.builderSha, differentBuilderSha);
+  assert.deepEqual(differentBuilderManifest.runtimeCapabilities, [
+    OPAQUE_ENRICHMENT_BATCH_RESERVATION_CAPABILITY,
+  ]);
+  const differentBuilderExtract = resolve(
+    fixture,
+    "different-builder-extract",
+  );
+  mkdirSync(differentBuilderExtract, { recursive: true });
+  await tar.x({
+    cwd: differentBuilderExtract,
+    file: differentBuilderRelease.artifact,
+    strict: true,
+  });
+  const differentBuilderInnerManifest = JSON.parse(
+    readFileSync(
+      resolve(
+        differentBuilderExtract,
+        "runtime/release-manifest.json",
+      ),
+      "utf8",
+    ),
+  );
+  assert.deepEqual(differentBuilderInnerManifest.runtimeCapabilities, [
+    OPAQUE_ENRICHMENT_BATCH_RESERVATION_CAPABILITY,
+  ]);
+  const differentBuilderRuntimePackage = JSON.parse(
+    readFileSync(
+      resolve(differentBuilderExtract, "runtime/package.json"),
+      "utf8",
+    ),
+  );
+  assert.deepEqual(
+    differentBuilderRuntimePackage.brainRuntimeCapabilities,
+    [OPAQUE_ENRICHMENT_BATCH_RESERVATION_CAPABILITY],
+  );
+
+  put("package.json", historicalAppPackage);
+  put(".next/standalone/package.json", historicalAppPackage);
+  const historicalRelease = build(
+    outputHistoricalApp,
+    false,
+    {
+      appSha: historicalAppSha,
+      builderSha: sha,
+      toolsRoot: root,
+    },
+  );
+  const historicalManifest = JSON.parse(
+    readFileSync(historicalRelease.manifest, "utf8"),
+  );
+  assert.equal(historicalManifest.appSha, historicalAppSha);
+  assert.equal(historicalManifest.builderSha, sha);
+  assert.deepEqual(historicalManifest.runtimeCapabilities, []);
+  const historicalExtract = resolve(fixture, "historical-extract");
+  mkdirSync(historicalExtract, { recursive: true });
+  await tar.x({
+    cwd: historicalExtract,
+    file: historicalRelease.artifact,
+    strict: true,
+  });
+  const historicalRuntime = resolve(historicalExtract, "runtime");
+  const historicalInnerManifest = JSON.parse(
+    readFileSync(resolve(historicalRuntime, "release-manifest.json"), "utf8"),
+  );
+  assert.deepEqual(historicalInnerManifest.runtimeCapabilities, []);
+  const historicalRuntimePackage = JSON.parse(
+    readFileSync(resolve(historicalRuntime, "package.json"), "utf8"),
+  );
+  assert.equal(
+    Object.hasOwn(historicalRuntimePackage, "brainRuntimeCapabilities"),
+    false,
+  );
+  symlinkSync(
+    resolve(root, "node_modules"),
+    resolve(historicalRuntime, "node_modules"),
+    "dir",
+  );
+  const historicalDatabasePath = resolve(
+    fixture,
+    "historical-reservation.sqlite",
+  );
+  const historicalDatabase = new Database(historicalDatabasePath);
+  historicalDatabase.exec(`
+    CREATE TABLE _migrations (
+      name TEXT PRIMARY KEY,
+      sha256 TEXT NOT NULL
+    );
+    CREATE TABLE items (
+      id TEXT PRIMARY KEY,
+      batch_id TEXT
+    );
+  `);
+  const historicalReservationMarker =
+    `opaque-reservation-v1:${"H".repeat(43)}`;
+  historicalDatabase
+    .prepare("INSERT INTO items (id, batch_id) VALUES (?, ?)")
+    .run("historical-item", historicalReservationMarker);
+  historicalDatabase.close();
+  const historicalCompatibility = spawnSync(
+    process.execPath,
+    [
+      resolve(root, "scripts/check-release-migration-compatibility.mjs"),
+      historicalRuntime,
+      historicalRelease.manifest,
+      historicalDatabasePath,
+      "0",
+    ],
+    { cwd: root, encoding: "utf8" },
+  );
+  assert.notEqual(historicalCompatibility.status, 0);
+  assert.match(
+    historicalCompatibility.stderr,
+    /"code":"enrichment_batch_reservation_runtime_incompatible"/,
+  );
+  assert.doesNotMatch(
+    historicalCompatibility.stderr,
+    /opaque-reservation-v1|H{8}/,
+  );
+
+  put("package.json", awareAppPackage);
+  put(".next/standalone/package.json", historicalAppPackage);
+  const mismatchedCapabilityBuild = buildMustFail(
+    resolve(fixture, "out-capability-mismatch"),
+    "a detached source/runtime capability declaration must fail closed",
+    { toolsRoot: root },
+  );
+  assert.match(
+    mismatchedCapabilityBuild.stderr,
+    /runtime capability declarations do not match/,
+  );
+  for (const [name, runtimeCapabilities] of [
+    [
+      "duplicate",
+      [
+        OPAQUE_ENRICHMENT_BATCH_RESERVATION_CAPABILITY,
+        OPAQUE_ENRICHMENT_BATCH_RESERVATION_CAPABILITY,
+      ],
+    ],
+    [
+      "unsorted",
+      [
+        "z-runtime:future-v1",
+        OPAQUE_ENRICHMENT_BATCH_RESERVATION_CAPABILITY,
+      ],
+    ],
+    ["overlong", ["a".repeat(129)]],
+    ["malformed", ["invalid value"]],
+  ]) {
+    const invalidPackage = `${JSON.stringify({
+      brainRuntimeCapabilities: runtimeCapabilities,
+    })}\n`;
+    put("package.json", invalidPackage);
+    put(".next/standalone/package.json", invalidPackage);
+    const invalidCapabilityBuild = buildMustFail(
+      resolve(fixture, `out-capability-${name}`),
+      `${name} app runtime capabilities must fail closed`,
+      { toolsRoot: root },
+    );
+    assert.match(
+      invalidCapabilityBuild.stderr,
+      /runtime capability declaration is invalid/,
+    );
+  }
+  put("package.json", awareAppPackage);
+  put(".next/standalone/package.json", awareAppPackage);
+
+  const builderB = differentBuilderSha;
   const builderC = "fedcba9876543210fedcba9876543210fedcba98";
   const candidateReleaseId = releaseIdFromManifest(manifest);
   const knownGoodB = { ...manifest, builderSha: builderB };
@@ -635,6 +867,12 @@ try {
   mkdirSync(extract, { recursive: true });
   await tar.x({ cwd: extract, file: first.artifact, strict: true });
   assert.ok(existsSync(resolve(extract, "runtime/server.js")));
+  const packagedRuntimeManifest = JSON.parse(
+    readFileSync(resolve(extract, "runtime/release-manifest.json"), "utf8"),
+  );
+  assert.deepEqual(packagedRuntimeManifest.runtimeCapabilities, [
+    OPAQUE_ENRICHMENT_BATCH_RESERVATION_CAPABILITY,
+  ]);
   assert.ok(!existsSync(resolve(extract, "runtime/.env")));
   assert.ok(!existsSync(resolve(extract, "runtime/data")));
   const packagedService = readFileSync(resolve(extract, "runtime/scripts/deploy/brain.service"), "utf8");
@@ -1106,6 +1344,19 @@ process.stdout.write(String(fs.statSync(args.at(-1)).size) + "\\n");
     ["activate", packagedActivate, 'ln -s -- "$FINAL/runtime"'],
     ["switch", packagedSwitch, 'ln -s -- "$RUNTIME"'],
   ]) {
+    const compatibilityFunction = body.slice(
+      body.indexOf("verify_migration_compatibility()"),
+      body.indexOf("\nsnapshot_system_state()"),
+    );
+    assert.match(
+      compatibilityFunction,
+      /node "\$MIGRATION_COMPAT_TOOL" "\$runtime" "\$manifest" "\$BRAIN_DB_PATH"/,
+      `${name} must keep using the candidate/current compatibility checker against the target manifest`,
+    );
+    assert.ok(
+      (body.match(/\bverify_migration_compatibility "/g) ?? []).length >= 3,
+      `${name} must retain preflight, stopped-writer, and restoration compatibility checks`,
+    );
     const mutation = body.slice(body.lastIndexOf("MUTATED=1"));
     assert.ok(
       mutation.indexOf("systemctl stop brain") < mutation.indexOf("verify_migration_compatibility") &&
@@ -1124,6 +1375,227 @@ process.stdout.write(String(fs.statSync(args.at(-1)).size) + "\\n");
   const migration026 = migrationEntry("026_notebooklm_export.sql", "c");
   const migration027 = migrationEntry("027_notebooklm_url_sources.sql", "d");
   const migration028 = migrationEntry("028_unreviewed.sql", "e");
+  const opaqueReservationMarker = `opaque-reservation-v1:${"A".repeat(43)}`;
+  assert.deepEqual(
+    evaluateRuntimeCapabilityAttestation({
+      externalManifest: {},
+      innerManifest: {},
+    }),
+    { ok: true, runtimeCapabilities: [] },
+    "old inner and external manifests may both omit runtime capabilities",
+  );
+  assert.deepEqual(
+    evaluateRuntimeCapabilityAttestation({
+      externalManifest: {
+        runtimeCapabilities: [
+          OPAQUE_ENRICHMENT_BATCH_RESERVATION_CAPABILITY,
+        ],
+      },
+      innerManifest: {
+        runtimeCapabilities: [
+          OPAQUE_ENRICHMENT_BATCH_RESERVATION_CAPABILITY,
+        ],
+      },
+    }),
+    {
+      ok: true,
+      runtimeCapabilities: [
+        OPAQUE_ENRICHMENT_BATCH_RESERVATION_CAPABILITY,
+      ],
+    },
+  );
+  assert.deepEqual(
+    evaluateRuntimeCapabilityAttestation({
+      externalManifest: {
+        runtimeCapabilities: [
+          OPAQUE_ENRICHMENT_BATCH_RESERVATION_CAPABILITY,
+        ],
+      },
+      innerManifest: {},
+    }),
+    {
+      ok: false,
+      code: "release_runtime_capabilities_mismatch",
+    },
+  );
+  assert.deepEqual(
+    evaluateRuntimeCapabilityAttestation({
+      externalManifest: { runtimeCapabilities: ["invalid value"] },
+      innerManifest: { runtimeCapabilities: ["invalid value"] },
+    }),
+    {
+      ok: false,
+      code: "release_runtime_capabilities_invalid",
+    },
+  );
+  const unawareReservationResult = evaluateEnrichmentBatchReservationCompatibility({
+    targetRuntimeCapabilities: [],
+    batchIds: [opaqueReservationMarker],
+  });
+  assert.deepEqual(unawareReservationResult, {
+    ok: false,
+    code: "enrichment_batch_reservation_runtime_incompatible",
+  });
+  assert.doesNotMatch(
+    JSON.stringify(unawareReservationResult),
+    /opaque-reservation-v1|A{8}/,
+    "reservation compatibility failures must not disclose marker content",
+  );
+  assert.deepEqual(
+    evaluateEnrichmentBatchReservationCompatibility({
+      targetRuntimeCapabilities: [],
+      batchIds: [],
+    }),
+    { ok: true, required: false },
+  );
+  assert.deepEqual(
+    evaluateEnrichmentBatchReservationCompatibility({
+      targetRuntimeCapabilities: [OPAQUE_ENRICHMENT_BATCH_RESERVATION_CAPABILITY],
+      batchIds: [opaqueReservationMarker],
+    }),
+    { ok: true, required: true },
+  );
+  assert.deepEqual(
+    evaluateEnrichmentBatchReservationCompatibility({
+      targetRuntimeCapabilities: [OPAQUE_ENRICHMENT_BATCH_RESERVATION_CAPABILITY],
+      batchIds: ["opaque-reservation-v1:malformed"],
+    }),
+    {
+      ok: false,
+      code: "enrichment_batch_reservation_state_invalid",
+    },
+  );
+  assert.equal(
+    evaluateEnrichmentBatchReservationCompatibility({
+      targetRuntimeCapabilities: [
+        `${OPAQUE_ENRICHMENT_BATCH_RESERVATION_CAPABILITY}:lookalike`,
+      ],
+      batchIds: [opaqueReservationMarker],
+    }).code,
+    "enrichment_batch_reservation_runtime_incompatible",
+    "only the exact target capability may authorize a reservation-bearing database",
+  );
+  const cliUnawareWithoutReservation = runMigrationCompatibilityCli(
+    [migration024],
+    [migration024],
+    false,
+  );
+  assert.equal(cliUnawareWithoutReservation.status, 0, cliUnawareWithoutReservation.stderr);
+  const cliMixedArtifactRejectsReservation = runMigrationCompatibilityCli(
+    [migration024],
+    [migration024],
+    false,
+    { batchIds: [opaqueReservationMarker] },
+  );
+  assert.notEqual(cliMixedArtifactRejectsReservation.status, 0);
+  assert.match(
+    cliMixedArtifactRejectsReservation.stderr,
+    /"code":"enrichment_batch_reservation_runtime_incompatible"/,
+  );
+  assert.doesNotMatch(
+    cliMixedArtifactRejectsReservation.stderr,
+    /opaque-reservation-v1|A{8}/,
+  );
+  const cliAwareAllowsReservation = runMigrationCompatibilityCli(
+    [migration024],
+    [migration024],
+    false,
+    {
+      batchIds: [opaqueReservationMarker],
+      targetRuntimeCapabilities: [OPAQUE_ENRICHMENT_BATCH_RESERVATION_CAPABILITY],
+      innerRuntimeCapabilities: [OPAQUE_ENRICHMENT_BATCH_RESERVATION_CAPABILITY],
+    },
+  );
+  assert.equal(cliAwareAllowsReservation.status, 0, cliAwareAllowsReservation.stderr);
+  const cliRejectsMalformedReservation = runMigrationCompatibilityCli(
+    [migration024],
+    [migration024],
+    false,
+    {
+      batchIds: ["opaque-reservation-v1:malformed"],
+      targetRuntimeCapabilities: [OPAQUE_ENRICHMENT_BATCH_RESERVATION_CAPABILITY],
+      innerRuntimeCapabilities: [OPAQUE_ENRICHMENT_BATCH_RESERVATION_CAPABILITY],
+    },
+  );
+  assert.notEqual(cliRejectsMalformedReservation.status, 0);
+  assert.match(
+    cliRejectsMalformedReservation.stderr,
+    /"code":"enrichment_batch_reservation_state_invalid"/,
+  );
+  const cliRejectsUnreadableReservationState = runMigrationCompatibilityCli(
+    [migration024],
+    [migration024],
+    false,
+    { omitItemsTable: true },
+  );
+  assert.notEqual(cliRejectsUnreadableReservationState.status, 0);
+  assert.match(
+    cliRejectsUnreadableReservationState.stderr,
+    /"code":"enrichment_batch_reservation_state_unreadable"/,
+  );
+  const cliRejectsDetachedExternalCapability =
+    runMigrationCompatibilityCli(
+      [migration024],
+      [migration024],
+      false,
+      {
+        batchIds: [opaqueReservationMarker],
+        targetRuntimeCapabilities: [
+          OPAQUE_ENRICHMENT_BATCH_RESERVATION_CAPABILITY,
+        ],
+      },
+    );
+  assert.notEqual(cliRejectsDetachedExternalCapability.status, 0);
+  assert.match(
+    cliRejectsDetachedExternalCapability.stderr,
+    /"code":"release_runtime_capabilities_mismatch"/,
+  );
+  assert.doesNotMatch(
+    cliRejectsDetachedExternalCapability.stderr,
+    /opaque-reservation-v1|A{8}/,
+  );
+  const cliRejectsDetachedInnerCapability =
+    runMigrationCompatibilityCli(
+      [migration024],
+      [migration024],
+      false,
+      {
+        innerRuntimeCapabilities: [
+          OPAQUE_ENRICHMENT_BATCH_RESERVATION_CAPABILITY,
+        ],
+      },
+    );
+  assert.notEqual(cliRejectsDetachedInnerCapability.status, 0);
+  assert.match(
+    cliRejectsDetachedInnerCapability.stderr,
+    /"code":"release_runtime_capabilities_mismatch"/,
+  );
+  const cliRejectsInvalidCapabilityAttestation =
+    runMigrationCompatibilityCli(
+      [migration024],
+      [migration024],
+      false,
+      {
+        targetRuntimeCapabilities: ["invalid value"],
+        innerRuntimeCapabilities: ["invalid value"],
+      },
+    );
+  assert.notEqual(cliRejectsInvalidCapabilityAttestation.status, 0);
+  assert.match(
+    cliRejectsInvalidCapabilityAttestation.stderr,
+    /"code":"release_runtime_capabilities_invalid"/,
+  );
+  const cliRejectsMissingInnerManifest = runMigrationCompatibilityCli(
+    [migration024],
+    [migration024],
+    false,
+    { omitInnerManifest: true },
+  );
+  assert.notEqual(cliRejectsMissingInnerManifest.status, 0);
+  assert.match(
+    cliRejectsMissingInnerManifest.stderr,
+    /"code":"release_runtime_capabilities_unreadable"/,
+  );
   const pre026CannotProveRestoreLatch = runMigrationCompatibilityCli(
     [migration024],
     [migration024],
@@ -1739,7 +2211,7 @@ process.stdout.write(String(fs.statSync(args.at(-1)).size) + "\\n");
   assert.notEqual(sha256(resolve(fixture, "tampered.tar.gz")), first.artifactSha256);
   console.log(JSON.stringify({
     ok: true,
-    checks: 325,
+    checks: 384,
     restoreExecutionProof: "pre026_rejected_026_latched",
     retentionExecutionProof: "immutable_bundle_executed",
     artifactSha256: first.artifactSha256,

@@ -10,6 +10,192 @@ export const AUDITED_ADDITIVE_ROLLBACK_MIGRATIONS = Object.freeze([
   "026_notebooklm_export.sql",
   "027_notebooklm_url_sources.sql",
 ]);
+export const OPAQUE_ENRICHMENT_BATCH_RESERVATION_CAPABILITY =
+  "enrichment-batch-reservation:opaque-reservation-v1";
+
+const OPAQUE_ENRICHMENT_BATCH_RESERVATION_PREFIX =
+  "opaque-reservation-v1:";
+const OPAQUE_ENRICHMENT_BATCH_RESERVATION_PATTERN =
+  /^opaque-reservation-v1:[A-Za-z0-9_-]{43}$/u;
+const RUNTIME_CAPABILITY_PATTERN =
+  /^[a-z0-9][a-z0-9._-]*(?::[a-z0-9][a-z0-9._-]*)*$/u;
+
+function parseRuntimeCapabilities(manifest) {
+  if (
+    !manifest ||
+    typeof manifest !== "object" ||
+    Array.isArray(manifest)
+  ) {
+    return {
+      ok: false,
+      code: "release_runtime_capabilities_invalid",
+    };
+  }
+  if (!Object.hasOwn(manifest, "runtimeCapabilities")) {
+    return {
+      ok: true,
+      present: false,
+      runtimeCapabilities: [],
+    };
+  }
+  const runtimeCapabilities = manifest.runtimeCapabilities;
+  if (
+    !Array.isArray(runtimeCapabilities) ||
+    runtimeCapabilities.some(
+      (capability) =>
+        typeof capability !== "string" ||
+        capability.length > 128 ||
+        !RUNTIME_CAPABILITY_PATTERN.test(capability),
+    ) ||
+    new Set(runtimeCapabilities).size !== runtimeCapabilities.length ||
+    runtimeCapabilities.some(
+      (capability, index) =>
+        index > 0 && runtimeCapabilities[index - 1] >= capability,
+    )
+  ) {
+    return {
+      ok: false,
+      code: "release_runtime_capabilities_invalid",
+    };
+  }
+  return {
+    ok: true,
+    present: true,
+    runtimeCapabilities,
+  };
+}
+
+export function evaluateRuntimeCapabilityAttestation({
+  externalManifest,
+  innerManifest,
+}) {
+  const external = parseRuntimeCapabilities(externalManifest);
+  const inner = parseRuntimeCapabilities(innerManifest);
+  if (!external.ok || !inner.ok) {
+    return {
+      ok: false,
+      code: "release_runtime_capabilities_invalid",
+    };
+  }
+  if (
+    external.present !== inner.present ||
+    external.runtimeCapabilities.length !==
+      inner.runtimeCapabilities.length ||
+    external.runtimeCapabilities.some(
+      (capability, index) =>
+        capability !== inner.runtimeCapabilities[index],
+    )
+  ) {
+    return {
+      ok: false,
+      code: "release_runtime_capabilities_mismatch",
+    };
+  }
+  return {
+    ok: true,
+    runtimeCapabilities: inner.runtimeCapabilities,
+  };
+}
+
+export function evaluateEnrichmentBatchReservationCompatibility({
+  targetRuntimeCapabilities,
+  batchIds,
+}) {
+  const namespaceMembers = batchIds.filter(
+    (batchId) =>
+      typeof batchId === "string" &&
+      batchId.startsWith(OPAQUE_ENRICHMENT_BATCH_RESERVATION_PREFIX),
+  );
+  if (
+    namespaceMembers.some(
+      (batchId) =>
+        !OPAQUE_ENRICHMENT_BATCH_RESERVATION_PATTERN.test(batchId),
+    )
+  ) {
+    return {
+      ok: false,
+      code: "enrichment_batch_reservation_state_invalid",
+    };
+  }
+  if (namespaceMembers.length === 0) {
+    return {
+      ok: true,
+      required: false,
+    };
+  }
+  const targetSupportsReservations =
+    Array.isArray(targetRuntimeCapabilities) &&
+    targetRuntimeCapabilities.includes(
+      OPAQUE_ENRICHMENT_BATCH_RESERVATION_CAPABILITY,
+    );
+  if (!targetSupportsReservations) {
+    return {
+      ok: false,
+      code: "enrichment_batch_reservation_runtime_incompatible",
+    };
+  }
+  return {
+    ok: true,
+    required: true,
+  };
+}
+
+function readEnrichmentBatchReservationState(database) {
+  try {
+    const columns = database.prepare("PRAGMA table_info(items)").all();
+    const batchIdColumn = columns.find((column) => column.name === "batch_id");
+    if (
+      !batchIdColumn ||
+      String(batchIdColumn.type).trim().toUpperCase() !== "TEXT"
+    ) {
+      return {
+        ok: false,
+        code: "enrichment_batch_reservation_state_unreadable",
+      };
+    }
+    const nonTextBatchId = database
+      .prepare(
+        `SELECT 1
+         FROM items
+         WHERE batch_id IS NOT NULL AND typeof(batch_id) != 'text'
+         LIMIT 1`,
+      )
+      .pluck()
+      .get();
+    if (nonTextBatchId !== undefined) {
+      return {
+        ok: false,
+        code: "enrichment_batch_reservation_state_unreadable",
+      };
+    }
+    const batchIds = database
+      .prepare(
+        `SELECT batch_id
+         FROM items
+         WHERE substr(batch_id, 1, ?) = ?`,
+      )
+      .pluck()
+      .all(
+        OPAQUE_ENRICHMENT_BATCH_RESERVATION_PREFIX.length,
+        OPAQUE_ENRICHMENT_BATCH_RESERVATION_PREFIX,
+      );
+    if (batchIds.some((batchId) => typeof batchId !== "string")) {
+      return {
+        ok: false,
+        code: "enrichment_batch_reservation_state_unreadable",
+      };
+    }
+    return {
+      ok: true,
+      batchIds,
+    };
+  } catch {
+    return {
+      ok: false,
+      code: "enrichment_batch_reservation_state_unreadable",
+    };
+  }
+}
 
 export function evaluateMigrationCompatibility({
   applied,
@@ -269,7 +455,12 @@ function main() {
   }
 
   const runtime = resolve(runtimeArg);
-  const manifest = JSON.parse(readFileSync(resolve(manifestArg), "utf8"));
+  let manifest;
+  try {
+    manifest = JSON.parse(readFileSync(resolve(manifestArg), "utf8"));
+  } catch {
+    fail("release manifest is unreadable");
+  }
   const packaged = manifest?.migrations?.files;
   if (!Array.isArray(packaged) || packaged.some((entry) =>
     !entry || typeof entry.name !== "string" || !/^[a-f0-9]{64}$/.test(entry.sha256))) {
@@ -278,11 +469,45 @@ function main() {
   if (new Set(packaged.map((entry) => entry.name)).size !== packaged.length) {
     fail("release manifest migration inventory contains duplicate names");
   }
+  let innerManifest;
+  try {
+    innerManifest = JSON.parse(
+      readFileSync(resolve(runtime, "release-manifest.json"), "utf8"),
+    );
+  } catch {
+    console.error(JSON.stringify({
+      ok: false,
+      code: "release_runtime_capabilities_unreadable",
+    }));
+    process.exit(1);
+  }
+  const runtimeCapabilityAttestation =
+    evaluateRuntimeCapabilityAttestation({
+      externalManifest: manifest,
+      innerManifest,
+    });
+  if (!runtimeCapabilityAttestation.ok) {
+    console.error(JSON.stringify(runtimeCapabilityAttestation));
+    process.exit(1);
+  }
 
   const runtimeRequire = createRequire(resolve(runtime, "package.json"));
   const Database = runtimeRequire("better-sqlite3");
-  const database = new Database(resolve(databaseArg), { readonly: true, fileMustExist: true });
+  let database;
+  try {
+    database = new Database(resolve(databaseArg), {
+      readonly: true,
+      fileMustExist: true,
+    });
+  } catch {
+    console.error(JSON.stringify({
+      ok: false,
+      code: "enrichment_batch_reservation_state_unreadable",
+    }));
+    process.exit(1);
+  }
   let applied;
+  let enrichmentBatchReservationState;
   try {
     const columns = new Set(database.prepare("PRAGMA table_info(_migrations)").all().map((row) => row.name));
     const hashColumn = ["sha256", "migration_sha256", "content_sha256"].find((name) => columns.has(name));
@@ -291,6 +516,8 @@ function main() {
       fail("applied migration ledger has no recognized hash column");
     }
     applied = database.prepare(`SELECT name, ${hashColumn} AS sha256 FROM _migrations ORDER BY name`).all();
+    enrichmentBatchReservationState =
+      readEnrichmentBatchReservationState(database);
   } finally {
     if (database.open) database.close();
   }
@@ -306,6 +533,20 @@ function main() {
   });
   if (!result.ok) {
     console.error(JSON.stringify(result));
+    process.exit(1);
+  }
+  if (!enrichmentBatchReservationState.ok) {
+    console.error(JSON.stringify(enrichmentBatchReservationState));
+    process.exit(1);
+  }
+  const enrichmentBatchReservationCompatibility =
+    evaluateEnrichmentBatchReservationCompatibility({
+      targetRuntimeCapabilities:
+        runtimeCapabilityAttestation.runtimeCapabilities,
+      batchIds: enrichmentBatchReservationState.batchIds,
+    });
+  if (!enrichmentBatchReservationCompatibility.ok) {
+    console.error(JSON.stringify(enrichmentBatchReservationCompatibility));
     process.exit(1);
   }
   if (expectedProviderWriteBlock !== "") {

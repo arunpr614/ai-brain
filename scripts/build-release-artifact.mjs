@@ -20,6 +20,8 @@ import JSZip from "jszip";
 import * as tar from "tar";
 
 const RELEASE_GATE_VERSION = 1;
+const RUNTIME_CAPABILITY_PATTERN =
+  /^[a-z0-9][a-z0-9._-]*(?::[a-z0-9][a-z0-9._-]*)*$/u;
 
 const SCRIPT_ALLOWLIST = [
   "scripts/check-ai-providers.mjs",
@@ -31,6 +33,7 @@ const SCRIPT_ALLOWLIST = [
   "scripts/scrub-notebooklm-backup.mjs",
   "scripts/backfill-embeddings-prod.mjs",
   "scripts/backfill-youtube-transcripts-prod.mjs",
+  "scripts/lib/content-processing-containment.mjs",
   "scripts/restore-from-backup.sh",
   "scripts/activate-release.sh",
   "scripts/switch-release.sh",
@@ -182,6 +185,68 @@ function packageMetadata(root) {
   };
 }
 
+function parsePackageRuntimeCapabilities(path) {
+  let manifest;
+  try {
+    manifest = JSON.parse(readFileSync(path, "utf8"));
+  } catch {
+    fail("app runtime capability declaration is unreadable");
+  }
+  if (!manifest || typeof manifest !== "object" || Array.isArray(manifest)) {
+    fail("app runtime capability declaration is invalid");
+  }
+  if (!Object.hasOwn(manifest, "brainRuntimeCapabilities")) {
+    return {
+      present: false,
+      runtimeCapabilities: [],
+    };
+  }
+  const runtimeCapabilities = manifest.brainRuntimeCapabilities;
+  if (
+    !Array.isArray(runtimeCapabilities) ||
+    runtimeCapabilities.some(
+      (capability) =>
+        typeof capability !== "string" ||
+        capability.length > 128 ||
+        !RUNTIME_CAPABILITY_PATTERN.test(capability),
+    ) ||
+    new Set(runtimeCapabilities).size !== runtimeCapabilities.length ||
+    runtimeCapabilities.some(
+      (capability, index) =>
+        index > 0 && runtimeCapabilities[index - 1] >= capability,
+    )
+  ) {
+    fail("app runtime capability declaration is invalid");
+  }
+  return {
+    present: true,
+    runtimeCapabilities,
+  };
+}
+
+function appRuntimeCapabilities(root) {
+  const source = parsePackageRuntimeCapabilities(
+    resolve(root, "package.json"),
+  );
+  const runtime = parsePackageRuntimeCapabilities(
+    resolve(root, ".next/standalone/package.json"),
+  );
+  if (
+    source.present !== runtime.present ||
+    source.runtimeCapabilities.length !==
+      runtime.runtimeCapabilities.length ||
+    source.runtimeCapabilities.some(
+      (capability, index) =>
+        capability !== runtime.runtimeCapabilities[index],
+    )
+  ) {
+    fail(
+      "source and standalone app runtime capability declarations do not match",
+    );
+  }
+  return source.runtimeCapabilities;
+}
+
 function migrationManifest(directory) {
   if (!existsSync(directory)) fail("migration source directory missing");
   const files = readdirSync(directory).filter((name) => name.endsWith(".sql")).sort()
@@ -286,6 +351,7 @@ try {
   const files = fileManifest(staging, payloadPaths);
   const fileListSha256 = crypto.createHash("sha256").update(JSON.stringify(files)).digest("hex");
   const metadata = packageMetadata(options.root);
+  const runtimeCapabilities = appRuntimeCapabilities(options.root);
   const sourceMigrations = migrationManifest(resolve(options.root, "src/db/migrations"));
   const runtimeMigrations = migrationManifest(resolve(staging, "src/db/migrations"));
   if (JSON.stringify(runtimeMigrations) !== JSON.stringify(sourceMigrations)) {
@@ -295,6 +361,7 @@ try {
   const innerManifest = {
     schemaVersion: 1,
     releaseGateVersion: RELEASE_GATE_VERSION,
+    runtimeCapabilities,
     appSha: options.sha,
     builderSha: options.builderSha,
     createdAt: options.createdAt.toISOString(),

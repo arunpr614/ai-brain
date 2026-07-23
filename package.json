@@ -3,6 +3,9 @@
   "version": "0.6.2",
   "description": "Personal knowledge base, hosted on Hetzner. Recall.it + Knowly features. Next.js + SQLite + Anthropic + Capacitor.",
   "private": true,
+  "brainRuntimeCapabilities": [
+    "enrichment-batch-reservation:opaque-reservation-v1"
+  ],
   "engines": {
     "node": ">=22 <23"
   },
@@ -21,6 +24,7 @@
     "test:coverage": "node --import tsx --test --experimental-test-coverage --test-coverage-include=\"src/lib/llm/**/*.ts\" --test-coverage-include=\"src/lib/embed/**/*.ts\" --test-coverage-exclude=\"**/*.test.ts\" \"src/**/*.test.ts\"",
     "check:env": "bash scripts/check-env-gitignored.sh",
     "check:build-artifacts": "node scripts/check-build-artifacts.mjs",
+    "check:youtube-item-recovery-stage1-scope": "node scripts/check-youtube-item-recovery-stage1-scope.mjs",
     "build:recall-cli": "node scripts/build-recall-cli.mjs",
     "check:recall-manual-sync-artifacts": "node scripts/check-recall-manual-sync-artifacts.mjs",
     "test:recall-manual-sync-process": "node scripts/test-recall-manual-sync-process.mjs",
