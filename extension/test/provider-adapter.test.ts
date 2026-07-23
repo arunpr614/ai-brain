@@ -30,6 +30,55 @@ test("copied-text request matches current notebooklm-py wire format", () => {
   ]);
 });
 
+test("provider adapter invokes receiver-sensitive native fetch without binding itself", async () => {
+  const result = [[[[SOURCE_ID], "Title", [], [null, 2]]]];
+  const frame = [["wrb.fr", "izAoDd", JSON.stringify(result), null, null, null, "generic"]];
+  let calls = 0;
+  const receiverSensitiveFetch = async function (
+    this: unknown,
+    _input: RequestInfo | URL,
+  ): Promise<Response> {
+    calls += 1;
+    void _input;
+    assert.equal(this, undefined);
+    return new Response(`)]}'\n${JSON.stringify(frame)}`, { status: 200 });
+  } as typeof fetch;
+  const adapter = new NotebookLmProviderAdapter(receiverSensitiveFetch);
+
+  assert.deepEqual(
+    await adapter.addCopiedText(
+      { csrfToken: "csrf", sessionId: "sid", authUser: null },
+      { notebookId: NOTEBOOK_ID, title: "Title", text: "Content" },
+    ),
+    { id: SOURCE_ID, title: "Title", status: "ready" },
+  );
+  assert.equal(calls, 1);
+});
+
+test("provider timeout remains active while the response body stalls", async () => {
+  let calls = 0;
+  const headersThenStalledBody = ((_input: RequestInfo | URL, init?: RequestInit) => {
+    calls += 1;
+    const body = new ReadableStream({
+      start(controller) {
+        init?.signal?.addEventListener("abort", () => {
+          controller.error(new DOMException("aborted", "AbortError"));
+        }, { once: true });
+      },
+    });
+    return Promise.resolve(new Response(body, { status: 200 }));
+  }) as typeof fetch;
+  const adapter = new NotebookLmProviderAdapter(headersThenStalledBody, 5);
+  await assert.rejects(
+    adapter.addCopiedText(
+      { csrfToken: "csrf", sessionId: "sid", authUser: null },
+      { notebookId: NOTEBOOK_ID, title: "Title", text: "Content" },
+    ),
+    (error) => error instanceof NotebookLmProviderError && error.kind === "timeout",
+  );
+  assert.equal(calls, 1);
+});
+
 test("decoder accepts streamed framing and fails closed on RPC drift", () => {
   const result = [[[[SOURCE_ID], "Title", [], [null, 2]]]];
   const frame = [["wrb.fr", "izAoDd", JSON.stringify(result), null, null, null, "generic"]];
