@@ -2,9 +2,9 @@
 
 Purpose: Map major capabilities from user entrypoints through domain logic, storage, jobs, and integrations.
 Audience: AI agents and engineers planning code changes.
-Verified against: `8c1341100b174fe4ca518e6a745c30b9078df21c`.
-Runtime evidence through: 2026-07-12 at deployed application `ea7b159515fc37f76ffdb83dedf2d33d17f9a193`; feature scope varies.
-Last reviewed: 2026-07-12.
+Verified against: `167a15d57b8f70574a017ea4cda507870f3600d4`.
+Runtime evidence through: 2026-07-22 at deployed application `167a15d57b8f70574a017ea4cda507870f3600d4`; feature scope varies and NotebookLM is UI-only.
+Last reviewed: 2026-07-22.
 Owner: AI Brain maintainer.
 
 | Capability | Entry points | Domain path | Storage/jobs | Change-impact page |
@@ -16,6 +16,7 @@ Owner: AI Brain maintainer.
 | Attached notes | item My notes tab and note/settings APIs | editor, notes policy, note repository | state/current/revisions/receipts/FTS/jobs/consent | [Manual Content Notes](Manual-Content-Notes) |
 | Enrichment | capture completion and workers | prompt/provider/enrich/embed queues | generated item fields, jobs, usage | [Enrichment and AI Providers](Enrichment-and-AI-Providers) |
 | Pairing/clients | settings, setup APK, native share, extension | auth, pairing, reachability, result mapping | settings, codes, client-local token | [Authentication and Pairing](Authentication-Sessions-and-Device-Pairing) |
+| NotebookLM static export | item export control, settings connector setup, extension 0.7.0 | `src/lib/notebooklm/`, scoped connector protocol, local provider adapter | connector/target/runtime control, frozen requests, request/operational events, retention timer | [NotebookLM One-Click Export](NotebookLM-One-Click-Export) |
 | Recall | external daily timer and packaged runner | client/map/fidelity/import/sync | Recall run/item/state tables | [Recall Synchronization](Recall-Synchronization) |
 | Operations | instrumentation, deploy, backup, health | scripts/services/provider checks | SQLite snapshots, logs, reports | [Deployment and Operations](Deployment-and-Operations) |
 
@@ -24,6 +25,8 @@ Owner: AI Brain maintainer.
 - Original source, generated digest, standalone note item, and attached My notes remain distinct.
 - Capture provenance and quality survive repair and reprocessing.
 - Workflow state and archive never replace Library membership, content identity, notes, retrieval, or quality state.
+- NotebookLM export is one explicit static copy to one pre-bound private consumer notebook, never continuous or bidirectional synchronization.
+- Queue acceptance and provider creates require independent fail-closed rollout gates; the current `1:0:0` state exposes UI only, with the extension not loaded/paired and no provider canary or owner enablement.
 - Save, enrichment, embedding, transcript, and note-index states can fail independently.
 - Code presence is not runtime proof.
 - Migrations are append-only and tracked by full filename.

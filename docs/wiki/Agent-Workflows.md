@@ -2,9 +2,9 @@
 
 Purpose: Provide repeatable, safety-scoped playbooks for common AI Brain tasks.
 Audience: AI agents and engineers implementing or debugging changes.
-Verified against: `8c1341100b174fe4ca518e6a745c30b9078df21c`.
-Runtime evidence through: 2026-07-10 at deployed application `6858529ef179a51442d319c6c58e5ace79757619`; workflow runtime evidence is task-specific.
-Last reviewed: 2026-07-11.
+Verified against: `167a15d57b8f70574a017ea4cda507870f3600d4`.
+Runtime evidence through: 2026-07-22 at deployed protected-main application `167a15d57b8f70574a017ea4cda507870f3600d4`; workflow runtime evidence is task-specific.
+Last reviewed: 2026-07-22.
 Owner: AI Brain maintainer.
 
 ## Common Opening
@@ -53,6 +53,12 @@ Use synthetic updates for schema, chat policy, idempotency, rate limiting, and d
 
 Use static code, redacted local metadata, and existing public-safe reports. Do not call Recall, inspect the key, run a live diagnostic, apply, alter a checkpoint, or change scheduler state from this workflow. Escalate to the current private runbook.
 
+## NotebookLM Read-Only Debugging
+
+Start from the current rollout tuple, Settings/item safe status, redacted server state, connector load/pair state, and immutable release identity. Keep capture-bearer and scoped-connector auth distinct. The public entry/sign-in URL is `https://notebooklm.google/`; the signed-in app and optional permission use `https://notebooklm.google.com/`. Never expose the notebook URL, account route, target/source IDs, marker, token, session material, private content, or raw provider response/error.
+
+Production is UI-only `1:0:0`; queue/provider writes are off and no extension pairing, target bind, source, or signed-in canary is proven. Do not enable a flag, grant permission, bind/rebind, create/retry/delete a source, clear a duplicate-risk latch, or treat a read-only diagnostic as canary authority. A provider-write canary requires the separately reviewed owner-only private synthetic matrix and an immediate stop on authentication/security friction or protocol/privacy uncertainty.
+
 ## Documentation Update
 
-Edit canonical `docs/wiki/`, update baseline/coverage/command registries, run privacy/structure/coverage checks, commit canonical docs, then publish through the concurrency-safe wiki process. See [Documentation Maintenance](Documentation-Maintenance).
+Edit canonical `docs/wiki/`, update baseline/coverage/command registries, run privacy/structure/coverage checks, commit canonical docs, then publish through the concurrency-safe wiki process. A local canonical edit is not publication evidence; verify the remote Wiki separately after merge. See [Documentation Maintenance](Documentation-Maintenance).

@@ -123,13 +123,14 @@ export class NotebookLmProviderAdapter {
   private async bootstrap(authUser: number | null): Promise<ProviderSession> {
     const url = new URL(`${NOTEBOOKLM_APP_ORIGIN}/`);
     applyAuthUser(url, authUser);
-    const response = await this.fetchOnce(url.toString(), {
+    const { response, text } = await this.fetchTextOnce(url.toString(), {
       method: "GET",
       headers: { accept: "text/html,application/xhtml+xml" },
     });
     assertNotebookLmResponseOrigin(response);
     if (!response.ok) throw mapHttpFailure(response.status);
-    const html = await boundedText(response);
+    if (text === null) throw new NotebookLmProviderError("protocol", "NotebookLM returned an empty bootstrap response.");
+    const html = text;
     const csrfToken = extractWizField(html, "SNlM0e");
     const sessionId = extractWizField(html, "FdrFJe");
     if (!csrfToken || !sessionId || csrfToken.length > 2_048 || sessionId.length > 2_048) {
@@ -155,21 +156,28 @@ export class NotebookLmProviderAdapter {
     url.searchParams.set("rt", "c");
     applyAuthUser(url, session.authUser);
     const request = encodeRpcRequest(rpcId, params);
-    const response = await this.fetchOnce(url.toString(), {
+    const { response, text } = await this.fetchTextOnce(url.toString(), {
       method: "POST",
       headers: { "content-type": "application/x-www-form-urlencoded;charset=UTF-8" },
       body: `f.req=${percentEncode(JSON.stringify(request))}&at=${percentEncode(session.csrfToken)}&`,
     });
     assertNotebookLmResponseOrigin(response);
     if (!response.ok) throw mapHttpFailure(response.status);
-    return decodeRpcResponse(await boundedText(response), rpcId);
+    if (text === null) throw new NotebookLmProviderError("protocol", "NotebookLM returned an empty RPC response.");
+    return decodeRpcResponse(text, rpcId);
   }
 
-  private async fetchOnce(url: string, init: RequestInit): Promise<Response> {
+  private async fetchTextOnce(
+    url: string,
+    init: RequestInit,
+  ): Promise<{ response: Response; text: string | null }> {
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), this.timeoutMs);
+    let response: Response;
     try {
-      return await this.fetchImpl(url, {
+      // Preserve the native fetch receiver contract in extension pages.
+      const fetchImpl = this.fetchImpl;
+      response = await fetchImpl(url, {
         ...init,
         cache: "no-store",
         credentials: "include",
@@ -179,6 +187,7 @@ export class NotebookLmProviderAdapter {
         signal: controller.signal,
       });
     } catch (error) {
+      clearTimeout(timeout);
       if (controller.signal.aborted || (error instanceof DOMException && error.name === "AbortError")) {
         throw new NotebookLmProviderError("timeout", "NotebookLM did not respond before the request deadline.");
       }
@@ -186,6 +195,17 @@ export class NotebookLmProviderAdapter {
         "network",
         error instanceof Error ? error.message : "NotebookLM could not be reached.",
       );
+    }
+    try {
+      assertNotebookLmResponseOrigin(response);
+      if (!response.ok) throw mapHttpFailure(response.status);
+      const text = response.ok ? await boundedText(response) : null;
+      return { response, text };
+    } catch (error) {
+      if (controller.signal.aborted) {
+        throw new NotebookLmProviderError("timeout", "NotebookLM did not respond before the request deadline.");
+      }
+      throw error;
     } finally {
       clearTimeout(timeout);
     }

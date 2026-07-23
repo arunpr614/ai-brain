@@ -2,9 +2,9 @@
 
 Purpose: Explain AI Brain's users, jobs, workflows, terminology, and current product boundaries.
 Audience: AI agents, engineers, and product/design collaborators.
-Verified against: `8c1341100b174fe4ca518e6a745c30b9078df21c`.
-Runtime evidence through: 2026-07-12 at deployed application `ea7b159515fc37f76ffdb83dedf2d33d17f9a193`; feature scope varies.
-Last reviewed: 2026-07-12.
+Verified against: `167a15d57b8f70574a017ea4cda507870f3600d4`.
+Runtime evidence through: 2026-07-22 at deployed protected-main application `167a15d57b8f70574a017ea4cda507870f3600d4`; feature scope varies. NotebookLM is UI-only with no provider canary.
+Last reviewed: 2026-07-22.
 Owner: AI Brain maintainer.
 
 AI Brain serves one owner who wants to capture material from several channels, retain trustworthy source context, let background AI organize/index it, find it later, and ask cited questions without turning the system into a collaborative workspace or full research-writing IDE.
@@ -19,7 +19,7 @@ AI Brain serves one owner who wants to capture material from several channels, r
 6. Find them through exact, semantic, or hybrid retrieval.
 7. Ask cited questions over a controlled source scope.
 8. Add private attached notes and optionally include them in retrieval/AI under explicit policy.
-9. Export and back up the library.
+9. Export/back up the library, or deliberately copy one reviewed item to the configured private NotebookLM target when that experimental integration is fully enabled.
 
 ## Product jobs
 
@@ -31,6 +31,7 @@ AI Brain serves one owner who wants to capture material from several channels, r
 | Find/ask | FTS, semantic/hybrid retrieval, Related, scoped cited Ask, persisted chat | Retrieval quality and provider/citation behavior can fail independently |
 | Operate remotely | Hosted web app, private Android shell, extension, Telegram | Not a public multi-user or complete offline-native product |
 | Protect/recover | PIN/session/bearer boundaries, consent, database backups, health and queues | Private does not mean E2EE; artifact files are outside database backups |
+| Export to NotebookLM | Experimental one-item copied-text export to one fixed owner-only private consumer notebook | Deployed UI-only `1:0:0`; queue/provider writes, connector pairing, target/source, canary, and real-content enablement are not complete |
 
 ## Boundaries
 
@@ -40,6 +41,8 @@ AI Brain serves one owner who wants to capture material from several channels, r
 - Review and Needs Upgrade are source-quality queues, not spaced repetition.
 - Related is query-time similarity, not a graph.
 - Export is not round-trip Markdown/Obsidian synchronization.
+- NotebookLM export is not synchronization, provider-backed enrichment, or a general connector platform. It does not update/delete remote sources, import NotebookLM content, choose among notebooks per click, or run in batch/schedule mode.
+- The public NotebookLM entrance is [https://notebooklm.google/](https://notebooklm.google/); the signed-in application and optional Chrome permission use `https://notebooklm.google.com/`.
 - Schema/type substrate for cards, podcasts, EPUB, or DOCX does not establish product support.
 
 See [Glossary](Glossary), [Feature Catalog](Feature-Catalog), and [Ideas and Exploration](Ideas-and-Exploration-Catalog).

@@ -2,26 +2,29 @@
 
 Purpose: Summarize internal HTTP contracts, external clients, authentication, and operational constraints.
 Audience: AI agents and engineers changing interfaces or integrations.
-Verified against: deployed application `8c1341100b174fe4ca518e6a745c30b9078df21c` plus retained route-specific evidence.
-Runtime evidence through: 2026-07-12; route-level runtime evidence varies.
-Last reviewed: 2026-07-12.
+Verified against: deployed application `167a15d57b8f70574a017ea4cda507870f3600d4` plus retained route-specific evidence.
+Runtime evidence through: 2026-07-22; route-level runtime evidence varies. NotebookLM is deployed UI-only with queue/provider flags off and no completed provider canary.
+Last reviewed: 2026-07-22.
 Owner: AI Brain maintainer.
 
 ## Route families
 
 - Capture: note, URL, PDF, and user-provided transcript.
 - Retrieval: search and streamed Ask.
-- Items: enrichment trigger/status, item/note exports, attached-note CRUD/policy/revisions/restore.
+- Items: enrichment trigger/status, item/note exports, attached-note CRUD/policy/revisions/restore, and experimental NotebookLM export status/request/cancel controls.
 - Processing: summary, bounded item/group pages, filters, preferences, enrollment, mutation outcomes, Move/Archive/Restore/Reprocess/Undo.
 - Library: ZIP export.
 - Threads: create/list/read/rename/delete and messages.
-- Settings: pairing/exchange, token rotation, provider status, note consent/default, and default-off Recall manual-sync status/request.
+- Settings: pairing/exchange, token rotation, provider status, note consent/default, default-off Recall manual-sync status/request, and NotebookLM connector setup/status/revocation.
+- NotebookLM connector: scoped pairing exchange, fixed-private-target bind, request claim, and lease-scoped lifecycle events.
 - Integrations: Telegram webhook and inactive owned-media transcript route.
 - Diagnostics: authenticated health and client-error intake.
 
 ## Authentication
 
-Browser routes use the signed PIN session. Android and extension capture use one shared bearer token as the primary control. Client version is checked only when present; Origin can be absent for server-to-server use, and Chrome-extension origins are broadly accepted. Pairing exchange uses a short-lived one-use code. Telegram combines a webhook secret with owner/private-chat policy. Recall and AI providers use separate environment credentials. Attached-note browser mutations require same-origin requests.
+Browser routes use the signed PIN session. Android and extension capture use one shared bearer token as the primary control. Client version is checked only when present; Origin can be absent for server-to-server use, and Chrome-extension origins are broadly accepted. General device pairing exchanges a short-lived one-use code. Telegram combines a webhook secret with owner/private-chat policy. Recall and AI providers use separate environment credentials. Attached-note and NotebookLM browser mutations require same-origin requests.
+
+The NotebookLM connector has a separate five-minute, one-use pairing exchange and stores a scoped connector-token hash plus a non-authenticating token hint server-side, never the raw token. Bind, claim and event routes require that connector token plus the exact paired Chrome-extension origin. Google authentication and session material stay in the owner's local Chrome profile; the hosted application never receives them.
 
 ## External systems
 
@@ -34,9 +37,16 @@ Browser routes use the signed PIN session. Android and extension capture use one
 | Recall | Outbound read/import | Guarded one-way scheduled import plus a default-off manual request UI that reuses the full trusted wrapper |
 | Android | Authenticated web/API client | Private sideload thin client |
 | Browser extension | Authenticated API client | Token stored in extension local storage |
+| Consumer NotebookLM | Outbound copy through local Chrome connector | Designed for one fixed private notebook and static copied-text sources only; experimental UI is visible but queue and provider writes are off (`1:0:0`), the installed extension is not loaded/paired, and no target, provider canary, or owner-only real-content enablement has completed |
 | Off-site backup service | Outbound backup | Database snapshot workflow; private runbook details excluded |
 
 Error behavior is intentionally capability-specific. Preserve explicit `401/403/409/422/429/503` semantics and avoid converting inactive routes into apparent configuration-only features.
+
+The public NotebookLM entry/sign-in URL is `https://notebooklm.google/`. The authenticated app and the extension's optional host permission use `https://notebooklm.google.com/` and `https://notebooklm.google.com/*` respectively.
+
+### NotebookLM export endpoints
+
+`/api/settings/notebooklm-export` and `/api/items/[id]/notebooklm-export` are signed-browser-session routes; writes require exact same-origin requests. `/api/notebooklm/connectors/exchange`, `/api/notebooklm/connector/bind`, `/api/notebooklm/connector/claim`, and `/api/notebooklm/connector/requests/[id]/events` form the scoped local-connector protocol. The queue and provider-write gates are independent fail-closed controls: at the current UI-only `1:0:0` rollout, setup and read-only status are available, new export requests return `503 export_queue_disabled`, and connector claims cannot authorize a provider create.
 
 ### Processing endpoints
 

@@ -4,17 +4,21 @@ Purpose: Define the authoritative data, API, state, privacy, retention, and oper
 
 Audience: Engineers, data stewards, security reviewers, release operators, support responders, and AI agents changing this feature.
 
-Verified against: Deployed pre-feature baseline `8c1341100b174fe4ca518e6a745c30b9078df21c`, plus committed implementation candidate `4fd2bd637c76d39b835416067027bdb719f71171` containing `026_notebooklm_export.sql`, connector protocol v1, mapper v1, and Chrome extension 0.7.0, rebased onto `ea801efa024914d601b495f968153aa5680e2e1e`. Insert the final release commit after merge.
+Verified against: Protected-main release `167a15d57b8f70574a017ea4cda507870f3600d4`, deployed to production on 2026-07-22 with `026_notebooklm_export.sql`, connector protocol v1, mapper v1, and the attested Chrome extension 0.7.0 artifact.
 
-Runtime evidence through: None. As of 2026-07-22, this document does not claim a production deployment, a live consumer NotebookLM source, or a passing signed-in synthetic canary.
+Runtime evidence through: 2026-07-22 for the protected-main deployment, migration/hash/integrity checks, health, NotebookLM retention and operations timers, and authenticated AI Memory Settings/item UI. The verified production flag tuple is UI-only `1:0:0`: queueing and provider writes are off. The extension artifact is installed in a stable local directory but is not loaded or paired. No target bind, consumer NotebookLM source, signed-in synthetic canary, or owner-only real-content enablement is claimed.
 
-Status: **Implementation candidate; default-off; production and live-provider validation pending.**
+Status: **Experimental; deployed UI-only; queue and provider writes off; signed-in provider validation and owner-only enablement pending.**
+
+Release evidence: [NotebookLM one-click export production release evidence](../feature-council/notebooklm-sync/release/production-release-evidence-2026-07-22.md).
 
 Owner: AI Brain maintainer.
 
 ## 1. Scope and truth boundary
 
 This feature exports one explicitly selected saved item as one static copied-text source to one prebound, owner-only private consumer NotebookLM notebook. It is deliberately named **Export to NotebookLM**, not synchronization.
+
+Google [renamed NotebookLM to Gemini Notebook](https://blog.google/innovation-and-ai/products/gemini-notebook/notebooklm-gemini-notebook/) on 2026-07-16. The implementation and this DataWiki retain `NotebookLM` identifiers for code and evidence continuity; `https://notebooklm.google/` remains the public product entrance.
 
 The public product entrance and authenticated application host are different:
 
@@ -30,7 +34,7 @@ The following remain deferred: library-wide export, automatic or daily synchroni
 This review is scoped to an owner-operated consumer account and the narrow one-click copied-text workflow. It is not legal advice or a permanent approval; re-review is required if Google changes the applicable terms, account type, sharing model, machine-readable instructions, or provider behavior.
 
 - Google's [privacy and terms help](https://support.google.com/notebooklm/answer/17004255?hl=en) says ordinary consumer use is governed by the Google Terms of Service. It says notebook content is not used to directly train foundational models unless the user submits feedback; feedback can include sources/uploads and may be reviewed. Qualifying work and school accounts have different terms and handling. The owner must therefore confirm the intended account type and must not submit feedback containing sensitive export content.
-- Google's [source help](https://support.google.com/notebooklm/answer/16215270?hl=en-5) documents copied-and-pasted text as a supported source type, a free-user limit of 50 sources, and per-source limits far above this feature's stricter 200,000-byte/50,000-word ceiling. The implementation deliberately retains its conservative 50-source policy and five-source reserve instead of inferring a paid tier.
+- Google's [source help](https://support.google.com/notebooklm/answer/16215270?hl=en) documents copied-and-pasted text as a supported source type, a free-user limit of 50 sources, and per-source limits far above this feature's stricter 200,000-byte/50,000-word ceiling. The implementation deliberately retains its conservative 50-source policy and five-source reserve instead of inferring a paid tier.
 - Google's [public-notebook help](https://support.google.com/notebooklm/answer/16322204?hl=en) confirms that notebooks can be made public and later restricted. The connector therefore requires a positive owner-only private check; absence of a public link is not treated as sufficient proof.
 - The [Google Terms of Service](https://policies.google.com/terms?hl=en-US) prohibit bypassing protective measures and automated access that violates machine-readable instructions. The public entrance's [robots.txt](https://notebooklm.google/robots.txt) currently allows `/`, but that is not an API contract or permission to bypass application controls.
 
@@ -67,7 +71,7 @@ V1 does not enumerate notebooks. The owner pastes one exact `https://notebooklm.
 
 The connector bootstraps ephemeral NotebookLM CSRF/session values from the signed-in page, uses them in memory, and never writes them to Chrome storage or the server. The provider-bound title/body are held in memory for the create attempt and are not persisted by the connector.
 
-The candidate adapter declares the copied wire reference `notebooklm-py` `v0.8.0rc1` at commit `45fd4258e608fbb9685496f26cfcea48810c44ee`. That reference is neither a runtime dependency nor an official Google contract; unknown RPC IDs, response shapes, ownership/sharing facts, redirects, or status values are treated as protocol drift.
+The deployed adapter declares the copied wire reference `notebooklm-py` `v0.8.0rc1` at commit `45fd4258e608fbb9685496f26cfcea48810c44ee`. That reference is neither a runtime dependency nor an official Google contract; unknown RPC IDs, response shapes, ownership/sharing facts, redirects, or status values are treated as protocol drift.
 
 ### Provider boundary
 
@@ -124,7 +128,7 @@ Immutable-versioned server proof of the one active private target. The raw targe
 |---|---|---|
 | `id`, `connector_id` | C1 | Opaque target and connector references. |
 | `binding_version` | C1 | Monotonic version within a connector; participates in dedupe and claim fencing. |
-| `safe_label` | C1 | Server-visible generic label. The candidate connector sends `Private NotebookLM target`, not the provider notebook title or bounded local label. |
+| `safe_label` | C1 | Server-visible generic label. The released connector sends `Private NotebookLM target`, not the provider notebook title or bounded local label. |
 | `local_binding_fingerprint` | C2 | SHA-256 proof derived locally from the notebook ID and account route. |
 | `subject_fingerprint` | C2 | SHA-256 owner proof salted with the undisclosed notebook UUID. |
 | `sharing_policy`, `sharing_posture` | C1 | Policy is fixed to `private_only`; only positively verified `private` can bind/create. |
@@ -142,7 +146,7 @@ Singleton database-backed provider-write safety state.
 |---|---|---|
 | `id` | C0 | Always `1`. |
 | `provider_write_blocked` | C1 | Independent runtime stop for new enqueue/create. |
-| `protocol_failure_streak` | C1 | Consecutive normalized drift failures, capped at three. |
+| `protocol_failure_streak` | C1 | Consecutive normalized connector/transport failures, capped at three. |
 | `block_reason`, `last_protocol_failure_at`, `updated_at` | C1 | Content-free operator evidence. |
 | `retention_last_success_at`, `retention_last_failure_at` | C1 | Last successful and failed snapshot-cleanup sweeps. |
 | `retention_failure_streak`, `retention_last_error_code` | C1 | Fail-closed cleanup health and normalized `cleanup_failed`/`physical_purge_pending`/`wal_checkpoint_incomplete` reason. |
@@ -150,7 +154,7 @@ Singleton database-backed provider-write safety state.
 | `retention_physical_purge_pending`, `retention_physical_purge_generation` | C1 | Durable WAL-truncation latch and fencing generation; a later sweep must finish the exact pending physical purge before health can recover. |
 | `retention_overdue_snapshot_count`, `unresolved_over_24h_count` | C1 | Latest overdue-snapshot and long-unresolved-work counts for operator attention. |
 
-Provider source-list, create-response, and status protocol/schema drift trips the block immediately. Other normalized protocol failures trip the block after three consecutive failures. The block does not auto-clear. Ordinary protocol drift can be cleared only when the operator explicitly attests that the connector was updated and the target was revalidated and the server verifies a bound, healthy, private target checked within the previous five minutes. `multiple_marker_matches`, `provider_source_identity_reused`, and `restore_reconciliation_required` cannot be cleared by that generic reset because they require exact duplicate-safety evidence; V1 has no approved clear path for them. The server does not independently prove which extension build was installed.
+Provider source-list, create-response, and status protocol/schema drift trips the block immediately. Other normalized connector/transport failures—including retryable network/server outcomes and uncertain create outcomes—trip the block after three consecutive failures. The block does not auto-clear. Ordinary protocol drift can be cleared only when the operator explicitly attests that the connector was updated and the target was revalidated and the server verifies a bound, healthy, private target checked within the previous five minutes. `multiple_marker_matches`, `provider_source_identity_reused`, and `restore_reconciliation_required` cannot be cleared by that generic reset because they require exact duplicate-safety evidence; V1 has no approved clear path for them. The server does not independently prove which extension build was installed.
 
 Provider-write admission also fails closed when no retention success has been recorded, the last success is more than three one-minute sweep intervals old, a retention failure remains unresolved, a physical purge remains pending, or any frozen snapshot is overdue. The independent one-minute read-only operational audit additionally reports attention for unresolved post-dispatch work older than 24 hours.
 
@@ -367,9 +371,9 @@ All three environment flags default off and are dependent in this order:
 2. `BRAIN_NOTEBOOKLM_EXPORT_QUEUE_ENABLED` — permits new durable enqueue only when UI is enabled and the runtime safety block is clear.
 3. `BRAIN_NOTEBOOKLM_EXPORT_PROVIDER_WRITE_ENABLED` — permits create claims and dispatch only when both earlier gates are enabled.
 
-Turning provider writes off prevents new provider creates but keeps connector claims for known-source polling and read-only marker reconciliation. The database runtime gate independently disables enqueue/create immediately after provider source-list, create-response, or status protocol/schema drift, after three consecutive other normalized protocol failures, or when snapshot retention is unhealthy/stale, while preserving safe recovery reads.
+Turning provider writes off prevents new provider creates but keeps connector claims for known-source polling and read-only marker reconciliation. The database runtime gate independently disables enqueue/create immediately after provider source-list, create-response, or status protocol/schema drift, after three consecutive other normalized connector/transport failures (including retryable or create-uncertain outcomes), or when snapshot retention is unhealthy/stale, while preserving safe recovery reads.
 
-The immutable deployment workflow preserves the existing Processing feature-flag tuple by default. Its NotebookLM flag policy defaults to `dark` and requires the production tuple to remain `0:0:0`; an explicit `preserve` policy accepts only the dependency-ordered tuples and proves the tuple did not change during deployment. Feature rollback must not be represented as remote-source cleanup.
+The immutable deployment workflow preserves the existing Processing feature-flag tuple by default. Its NotebookLM flag policy defaults to `dark` and requires the production tuple to remain `0:0:0`; an explicit `preserve` policy accepts only the dependency-ordered tuples and proves the tuple did not change during deployment. The release was first deployed dark and then staged to the currently verified UI-only tuple `1:0:0`. Queueing and provider writes remain off. Feature rollback must not be represented as remote-source cleanup.
 
 `BRAIN_NOTEBOOKLM_REMEDIATION_POLICY` defaults to `strict`, so an existing `provider_write_blocked=1` safety stop prevents deployment mutations. The sole remediation exception is the explicit value `preserve_existing_provider_block`: the deploy must prove the block is `1` before and after, leave it set, record the policy in evidence, and allow the operations checker to ignore only that existing provider block. Retention failure or staleness, a pending physical purge, overdue snapshots, and post-dispatch work unresolved beyond 24 hours remain hard failures in both modes.
 
@@ -377,7 +381,7 @@ The immutable deployment workflow preserves the existing Processing feature-flag
 
 ### Persisted operational events
 
-The candidate records these feature-level events:
+The release records these feature-level events:
 
 - `notebooklm.setup_started`
 - `notebooklm.permission_granted`
@@ -406,7 +410,7 @@ The request event ledger records `notebooklm.export_clicked`, `notebooklm.limite
 - `check:notebooklm-operations:ready`: a separate read-only gate that fails on a provider block, retention failure/staleness, pending physical purge, overdue snapshot, or post-dispatch work unresolved beyond 24 hours; `brain-notebooklm-operations.timer` runs it approximately once a minute and never mutates the database;
 - SQLite migration/hash, integrity, foreign-key, backup/restore, and release health evidence.
 
-The implementation does not persist raw provider responses/errors, source content in event tables, notebook/account identifiers, or Google session material. There is no third-party analytics service or dedicated centralized NotebookLM dashboard in this candidate. UI view/click, limited-confirmation, and dedupe facts are persisted only in the content-free operational/request journals.
+The implementation does not persist raw provider responses/errors, source content in event tables, notebook/account identifiers, or Google session material. There is no third-party analytics service or dedicated centralized NotebookLM dashboard in this release. UI view/click, limited-confirmation, and dedupe facts are persisted only in the content-free operational/request journals.
 
 ## 13. Failure recovery
 
@@ -424,7 +428,7 @@ The implementation does not persist raw provider responses/errors, source conten
 | Known source processing failure | Terminal provider failure; no automatic replacement. |
 | Known source disappears | Target attention; do not infer deletion or recreate. |
 | Provider source-list, create-response, or status protocol/schema drift | Immediately latch the runtime write block, require connector update, and preserve read-only reconciliation/polling. |
-| Other normalized protocol failure | Record the failure, require connector update, and trip the runtime write block at three consecutive failures. |
+| Other normalized connector/transport failure, including retryable or create-uncertain outcomes | Record the failure, preserve reconciliation truth, and trip the runtime write block at three consecutive failures. |
 | Retention sweep missing, stale, failed, or overdue | Block new enqueue/provider writes, keep read-only recovery available, surface normalized settings/audit health, and retry cleanup; never weaken the deadline silently. |
 | Owner stops checking | Purge snapshot, stop claims, preserve terminal unresolved truth, and state that a source may exist. |
 | AI Memory item deleted | Purge every frozen snapshot in the same deletion transaction; cancel conclusively unsent work, terminalize possibly delivered work as `source may exist`, then truncate sensitive WAL frames after commit. |
@@ -460,21 +464,21 @@ Rollback order:
 
 ## 15. Private synthetic canary procedure
 
-This is a release gate, not evidence that the current candidate has passed. Use synthetic, non-personal content only. Do not place account details, notebook URLs/IDs/titles, source IDs, markers, cookies, screenshots, or raw provider responses in commits, tickets, chat, or public evidence.
+This is the remaining live-provider release gate, not evidence that the deployed UI-only release has passed it. Use synthetic, non-personal content only. Do not place account details, notebook URLs/IDs/titles, source IDs, markers, cookies, screenshots, or raw provider responses in commits, tickets, chat, or public evidence.
 
 ### Preconditions
 
 - A current terms/account-security review accepts the experimental local connector for the chosen account.
 - A dedicated owner-only private synthetic notebook exists and starts with enough headroom under the fixed 50-source limit and five-source reserve.
 - A signed-in desktop Chrome profile is available. Open/sign in through `https://notebooklm.google/`; the connector will operate only on `https://notebooklm.google.com/`.
-- Server candidate, migration checks, extension tests/build, release artifact checks, database backup/restore proof, adversarial review, and rollback plan are green.
+- Protected-main server release, migration checks, extension tests/build, release artifact checks, database backup/restore proof, adversarial review, and rollback plan are green.
 - No unresolved real-content request exists.
 
 ### Staged proof
 
-1. Deploy the server candidate with all NotebookLM flags off. Verify migration 026, health, integrity, retention worker startup, and zero provider traffic.
-2. Verify the Product CI zip, manifest, checksum, and GitHub attestations, then install/reload through `scripts/install-verified-extension-release.mjs` at the stable unpacked-extension path. Grant only the optional `https://notebooklm.google.com/*` permission.
-3. Enable UI/setup only. Pair with a fresh five-minute code and bind the dedicated notebook locally. Verify the server sees only a generic label, private posture, fingerprints, 50/5 policy, occupancy, and safe slots.
+1. **Complete:** deploy the protected-main release with all NotebookLM flags off, then verify migration 026, health, integrity, retention worker startup, and no connector/provider work. The UI was subsequently enabled with the production tuple held at `1:0:0`.
+2. **Partially complete:** the Product CI zip, manifest, checksum, and GitHub attestations passed and the artifact was installed through `scripts/install-verified-extension-release.mjs` at the stable unpacked-extension path. Loading/reloading it in Chrome and granting only the optional `https://notebooklm.google.com/*` permission remain pending.
+3. **Partially complete:** UI/setup is enabled. Pairing with a fresh five-minute code, binding the dedicated notebook locally, and verifying that the server sees only a generic label, private posture, fingerprints, 50/5 policy, occupancy, and safe slots remain pending.
 4. Enable queue while provider writes remain off. Create one synthetic AI Memory item with a unique, non-sensitive title/body and no private URL. Enqueue it and observe at least one connector polling interval. It must remain queued and must not appear in NotebookLM.
 5. Confirm the target/account/private posture and fresh occupancy again, then enable provider writes for the controlled canary window.
 6. Run/wait for the connector. Verify one preflight, one dispatch authorization, one provider source, stored occupancy increment once, `processing` if applicable, and `succeeded` only after that exact source is ready.
@@ -491,18 +495,18 @@ Real-content enablement remains blocked until every release gate and this live s
 
 ## 16. Verification matrix and current gaps
 
-No final release-evidence record exists yet. Before changing this page from candidate to deployed, link the exact final test report, adversarial review, server and extension artifact manifests, production deployment record, redacted signed-in canary record, and GitHub Wiki publication verification. The presence of test files or release controls is not itself a passing result.
+A [production release-evidence record](../feature-council/notebooklm-sync/release/production-release-evidence-2026-07-22.md) records the protected-main artifact and UI-only deployment. The [Wiki publication verification](../feature-council/notebooklm-sync/release/wiki-publication-verification.md) records the qualified no-delete publication and fresh-clone checks. The release remains incomplete for signed-in provider behavior and owner-only enablement. The presence of tests, release controls, documentation publication, or a deployed UI does not itself prove the consumer NotebookLM workflow.
 
-| Area | Candidate evidence | Live/production evidence |
+| Area | Release/code evidence | Live/production evidence |
 |---|---|---|
-| Mapper/privacy/limits | Code and automated tests exist; final full-suite result belongs in release evidence. | None claimed. |
-| Ledger/state/idempotency/leases/retention | Code and automated tests exist; final full-suite result belongs in release evidence. | None claimed. |
-| Session/connector APIs and CORS | Route/unit tests exist; authenticated production smoke pending. | None claimed. |
-| Chrome target/provider/worker contract | Type/unit/build checks exist; final signed-off result pending. | No signed-in Google canary claimed. |
-| Migration/release compatibility | Migration and release-smoke coverage exists; final candidate artifact evidence pending. | Migration 026 not claimed deployed. |
-| UX/accessibility | Candidate component and prototype exist; browser/device validation pending. | None claimed. |
-| Observability | Durable request/operational events, UI view/click/confirmation/dedupe facts, retention health, runtime safety gate, read-only checker, and one-minute timer are implemented; final release evidence pending. | No production alert/run history claimed. |
-| Non-content ledger deletion | Snapshot/event retention and conditional 30-day orphan request/target/connector pruning are implemented; final physical-purge/backup-scrub evidence pending. | No production cleanup run claimed. |
+| Mapper/privacy/limits | Automated release tests passed. | No provider-bound payload has been exercised in a signed-in canary. |
+| Ledger/state/idempotency/leases/retention | Automated release tests passed. | Production retention and operations checks are healthy; no export request exists because queueing is off. |
+| Session/connector APIs and CORS | Route/unit tests passed. | Authenticated Settings and item UI were verified with queue paused and provider writes off; no extension pairing or connector API lifecycle is claimed. |
+| Chrome target/provider/worker contract | Type/unit/build, artifact, attestation, and stable-install checks passed. | The extension is not loaded or paired; no signed-in Google canary is claimed. |
+| Migration/release compatibility | Migration, artifact, rollback-compatibility, and release-smoke coverage passed. | Release `167a15d57b8f70574a017ea4cda507870f3600d4` and migration 026 are deployed with the UI-only tuple `1:0:0`. |
+| UX/accessibility | Component, prototype, and automated checks passed. | Authenticated production Settings/item UI showed the paused/unavailable state; signed-in connector and provider-state UX remain pending. |
+| Observability | Durable journals, retention health, runtime safety gate, read-only checker, and timers are implemented and tested. | Production timers and the zero-count retention heartbeat are healthy. The UI-only verification produced two content-free `notebooklm.export_viewed` analytics events; pairing, connector, target, request, request-transition, and provider lifecycle history remain absent. Those UI events make a pre-026 binary rollback ineligible under the additive compatibility guard. |
+| Non-content ledger deletion | Snapshot/event retention, conditional orphan pruning, physical-purge, and backup-scrub paths passed release checks. | The dark/UI-only production state has no export snapshot to purge; live synthetic retention evidence remains pending. |
 
 ## 17. Source-of-truth files
 

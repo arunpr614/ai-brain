@@ -2,9 +2,9 @@
 
 Purpose: Orient readers to the current product, evidence model, architecture, and documentation paths.
 Audience: AI agents, engineers, product/design collaborators, and maintainers.
-Verified against: deployed application `8c1341100b174fe4ca518e6a745c30b9078df21c`.
-Runtime evidence through: 2026-07-12; runtime evidence remains feature-specific.
-Last reviewed: 2026-07-22 for the NotebookLM one-click export candidate; current-product runtime scope remains dated 2026-07-12.
+Verified against: deployed application `167a15d57b8f70574a017ea4cda507870f3600d4`.
+Runtime evidence through: 2026-07-22 for the NotebookLM UI-only production stage; runtime evidence remains feature-specific.
+Last reviewed: 2026-07-22 for the NotebookLM one-click export release; other feature-specific runtime evidence retains its recorded date.
 Owner: AI Brain maintainer.
 
 AI Brain is a private, single-owner knowledge system for capturing material, preserving source provenance, enriching it with AI, organizing it, finding it through lexical and semantic retrieval, and asking cited questions across the saved library. Parts of the UI use the alias **AI Memory**.
@@ -21,7 +21,7 @@ AI Brain is a private, single-owner knowledge system for capturing material, pre
 
 Current main contains web, Android, browser-extension, Telegram, and guarded Recall entry paths; SQLite persistence; capture provenance and repair; the dedicated Inbox/Board/List/Archived [Card Processing Workflow](Card-Processing-Workflow); AI enrichment; full-text, semantic, and hybrid retrieval; cited Ask conversations; organization; attached My notes; exports; backups; and owner-oriented operations.
 
-Several capabilities are deliberately not current product behavior. Official caption recovery and owned-media speech-to-text are Inactive. The full Evidence Scan, graph UI, Reading Studio, Trust Center, spaced repetition, Obsidian sync, and fully offline mobile library are Planned. Broad or daily [NotebookLM synchronization research](NotebookLM-Synchronization-Research) remains Deferred. A separately authorized [NotebookLM One-Click Export](NotebookLM-One-Click-Export) is an experimental, default-off implementation candidate for one deliberate item and one fixed private notebook; it is not yet claimed as deployed or live-provider verified. Other ideas are separately Explored, Deferred, Rejected or Superseded. See [Ideas and Exploration](Ideas-and-Exploration-Catalog).
+Several capabilities are deliberately not current product behavior. Official caption recovery and owned-media speech-to-text are Inactive. The full Evidence Scan, graph UI, Reading Studio, Trust Center, spaced repetition, Obsidian sync, and fully offline mobile library are Planned. Broad or daily [NotebookLM synchronization research](NotebookLM-Synchronization-Research) remains Deferred. A separately authorized [NotebookLM One-Click Export](NotebookLM-One-Click-Export) is experimental and deployed UI-only. It is designed for one deliberate item and one owner-selected fixed private notebook, but no target is bound: queueing and provider writes remain off, and no signed-in provider canary or owner-only real-content enablement is claimed. Other ideas are separately Explored, Deferred, Rejected or Superseded. See [Ideas and Exploration](Ideas-and-Exploration-Catalog).
 
 ## Architecture at a glance
 
