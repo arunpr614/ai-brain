@@ -11,7 +11,7 @@ test("manifest keeps NotebookLM access narrow and optional", async () => {
     host_permissions: string[];
     optional_host_permissions: string[];
   };
-  assert.equal(manifest.version, "0.7.2");
+  assert.equal(manifest.version, "0.7.3");
   assert.ok(manifest.permissions.includes("alarms"));
   assert.deepEqual(manifest.host_permissions, ["https://brain.arunp.in/*"]);
   assert.deepEqual(manifest.optional_host_permissions, ["https://notebooklm.google.com/*"]);
@@ -27,4 +27,22 @@ test("package and manifest versions stay aligned", async () => {
     readFile(new URL("../package.json", import.meta.url), "utf8").then(JSON.parse),
   ]);
   assert.equal(manifest.version, packageJson.version);
+});
+
+test("popup and options show the installed manifest version", async () => {
+  const [popupHtml, popupTs, optionsHtml, optionsTs] = await Promise.all([
+    readFile(new URL("../src/popup.html", import.meta.url), "utf8"),
+    readFile(new URL("../src/popup.ts", import.meta.url), "utf8"),
+    readFile(new URL("../src/options.html", import.meta.url), "utf8"),
+    readFile(new URL("../src/options.ts", import.meta.url), "utf8"),
+  ]);
+
+  for (const html of [popupHtml, optionsHtml]) {
+    assert.match(html, /id="extension-version"/);
+    assert.match(html, /aria-label="Installed extension version"/);
+  }
+  for (const source of [popupTs, optionsTs]) {
+    assert.match(source, /chrome\.runtime\.getManifest\(\)\.version/);
+    assert.match(source, /Extension v/);
+  }
 });
