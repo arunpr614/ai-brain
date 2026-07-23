@@ -2,15 +2,15 @@ import { getDb, type ItemRow } from "@/db/client";
 import { getItem } from "@/db/items";
 import { CAPTURE_EXTRACTION_VERSION } from "@/lib/capture/quality";
 import type { CaptureQuality } from "@/lib/capture/types";
+import { assertItemBodyProcessingAllowed } from "@/lib/processing/hold-gate";
+import { assertNoUnresolvedBatchReservation } from "@/lib/queue/enrichment-batch-binding";
 
 export const MIN_REPAIR_TEXT_CHARS = 200;
 
 export type RepairTextKind = "text" | "transcript";
 
 export type RepairItemErrorCode =
-  | "not_found"
-  | "text_too_short"
-  | "invalid_title";
+  "not_found" | "text_too_short" | "invalid_title";
 
 export class RepairItemError extends Error {
   constructor(
@@ -52,6 +52,9 @@ export function repairItemWithText(
     throw new RepairItemError("not_found", "Item not found.");
   }
 
+  const db = getDb();
+  assertItemBodyProcessingAllowed(input.itemId, db);
+  assertNoUnresolvedBatchReservation(existing.batch_id);
   const body = normalizeRepairText(input.text);
   if (usefulTextLength(body) < MIN_REPAIR_TEXT_CHARS) {
     throw new RepairItemError(
@@ -65,13 +68,15 @@ export function repairItemWithText(
     throw new RepairItemError("invalid_title", "Title is too long.");
   }
 
-  const db = getDb();
   const textKind = input.textKind === "transcript" ? "transcript" : "text";
   const extractionMethod =
     input.extractionMethod ??
-    (textKind === "transcript" ? "manual_repair_transcript" : "manual_repair_text");
+    (textKind === "transcript"
+      ? "manual_repair_transcript"
+      : "manual_repair_text");
   const captureQuality = input.captureQuality ?? "user_provided_full_text";
-  const extractionVersion = input.extractionVersion ?? CAPTURE_EXTRACTION_VERSION;
+  const extractionVersion =
+    input.extractionVersion ?? CAPTURE_EXTRACTION_VERSION;
   const beforeQuality = existing.capture_quality ?? null;
 
   let removedChunks = 0;
@@ -81,6 +86,11 @@ export function repairItemWithText(
   let removedEmbeddingJobs = 0;
 
   const tx = db.transaction(() => {
+    assertItemBodyProcessingAllowed(input.itemId, db);
+    const current = db
+      .prepare("SELECT batch_id FROM items WHERE id = ?")
+      .get(input.itemId) as { batch_id: string | null } | undefined;
+    assertNoUnresolvedBatchReservation(current?.batch_id);
     const vectorRows = db
       .prepare(
         `SELECT r.rowid
@@ -108,7 +118,7 @@ export function repairItemWithText(
       )
       .run(input.itemId).changes;
 
-    if (tableExists("item_topics")) {
+    if (tableExists("item_topics", db)) {
       removedTopics = db
         .prepare("DELETE FROM item_topics WHERE item_id = ?")
         .run(input.itemId).changes;
@@ -155,14 +165,16 @@ export function repairItemWithText(
          WHERE item_id = ?`,
       ).run(input.itemId);
     } else {
-      db.prepare("INSERT INTO enrichment_jobs (item_id) VALUES (?)").run(input.itemId);
+      db.prepare("INSERT INTO enrichment_jobs (item_id) VALUES (?)").run(
+        input.itemId,
+      );
     }
 
     removedEmbeddingJobs = db
       .prepare("DELETE FROM embedding_jobs WHERE item_id = ?")
       .run(input.itemId).changes;
   });
-  tx();
+  tx.immediate();
 
   return {
     item: getItem(input.itemId)!,
@@ -184,8 +196,8 @@ function usefulTextLength(text: string): number {
   return text.replace(/\s+/g, "").length;
 }
 
-function tableExists(name: string): boolean {
-  const row = getDb()
+function tableExists(name: string, db = getDb()): boolean {
+  const row = db
     .prepare("SELECT 1 FROM sqlite_master WHERE type = 'table' AND name = ?")
     .get(name);
   return Boolean(row);

@@ -22,6 +22,7 @@ import {
   repairItemWithText,
   type RepairItemWithTextResult,
 } from "@/lib/repair/item-repair";
+import { assertItemBodyProcessingAllowed } from "@/lib/processing/hold-gate";
 
 export const OWNED_MEDIA_STT_ADAPTER_VERSION = "owned-media-stt-v1";
 export const DEFAULT_OWNED_MEDIA_STT_MAX_BYTES = 25 * 1024 * 1024;
@@ -185,12 +186,16 @@ export async function attachOwnedMediaSttToYoutubeItem(
     );
   }
 
+  const db = getDb();
+  assertItemBodyProcessingAllowed(input.itemId, db);
   const media = validateOwnedMediaSttMedia(input.media, input.provider.maxBytes);
   const languageCode = normalizeLanguageCode(input.languageCode);
+  assertItemBodyProcessingAllowed(input.itemId, db);
   const policy = (input.policyDecider ?? allowOwnedMediaSttForItem)(existing);
   if (policy.status === "blocked") {
     throw new OwnedMediaSttError("policy_blocked", policy.blockedReason);
   }
+  assertItemBodyProcessingAllowed(input.itemId, db);
   const providerInput: OwnedMediaSttProviderInput = {
     media: {
       filename: media.basename,
@@ -205,14 +210,19 @@ export async function attachOwnedMediaSttToYoutubeItem(
 
   let transcript: OwnedMediaSttTranscript;
   try {
+    assertItemBodyProcessingAllowed(input.itemId, db);
     transcript = await input.provider.transcribe(providerInput);
   } catch {
+    assertItemBodyProcessingAllowed(input.itemId, db);
     throw new OwnedMediaSttError("provider_failed", "Owned-media STT provider failed.");
   }
 
+  assertItemBodyProcessingAllowed(input.itemId, db);
   const validatedTranscript = validateTranscript(transcript, media.durationMs);
+  assertItemBodyProcessingAllowed(input.itemId, db);
 
-  const tx = getDb().transaction((): AttachOwnedMediaSttResult => {
+  const tx = db.transaction((): AttachOwnedMediaSttResult => {
+    assertItemBodyProcessingAllowed(input.itemId, db);
     let repair: RepairItemWithTextResult;
     try {
       repair = repairItemWithText({
@@ -231,6 +241,7 @@ export async function attachOwnedMediaSttToYoutubeItem(
       throw err;
     }
 
+    assertItemBodyProcessingAllowed(input.itemId, db);
     supersedeTranscriptSourcesForItem(repair.item.id);
     deleteTranscriptSegmentsForItem(repair.item.id);
     const transcriptSource = insertTranscriptSource({
@@ -278,7 +289,7 @@ export async function attachOwnedMediaSttToYoutubeItem(
     };
   });
 
-  return tx();
+  return tx.immediate();
 }
 
 export function validateOwnedMediaSttMedia(

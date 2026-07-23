@@ -11,14 +11,18 @@ import { TEST_DB_DIR } from "./items.test.setup";
 import {
   countItems,
   countNeedsUpgradeItems,
+  getItem,
   getItemsByIds,
   insertCaptured,
   listItems,
   listNeedsUpgradeItems,
   searchItems,
+  updateItemCaptureContent,
 } from "./items";
+import { getDb } from "./client";
 import { insertCaptureArtifact, listCaptureArtifactsForItem } from "./capture-artifacts";
 import { attachTagToItem, upsertTag } from "./tags";
+import { ItemBodyProcessingBlockedError } from "@/lib/processing/hold-gate";
 
 test.after(() => {
   try {
@@ -215,4 +219,60 @@ test("getItemsByIds returns existing items in requested order", () => {
     getItemsByIds([second.id, "missing", first.id]).map((item) => item.id),
     [second.id, first.id],
   );
+});
+
+test("updateItemCaptureContent rechecks schema capability inside its write transaction", (t) => {
+  const db = getDb();
+  const item = insertCaptured({
+    source_type: "youtube",
+    title: "Transaction gate item",
+    body: "Original body",
+    source_platform: "youtube",
+    capture_quality: "metadata_only",
+  });
+  const before = getItem(item.id);
+  const originalTransaction = db.transaction.bind(db);
+  let insertedMarker = false;
+
+  t.mock.method(
+    db,
+    "transaction",
+    (...args: Parameters<typeof db.transaction>) => {
+      if (!insertedMarker) {
+        insertedMarker = true;
+        db.exec(`
+          CREATE TABLE content_processing_holds (
+            item_id TEXT NOT NULL,
+            state TEXT NOT NULL
+          )
+        `);
+      }
+      return originalTransaction(...args);
+    },
+  );
+
+  assert.throws(
+    () =>
+      updateItemCaptureContent(item.id, {
+        title: "Blocked title",
+        body: "Blocked replacement body",
+      }),
+    (error: unknown) =>
+      error instanceof ItemBodyProcessingBlockedError &&
+      error.code === "processing_schema_incompatible",
+  );
+  assert.equal(insertedMarker, true);
+  assert.deepEqual(getItem(item.id), before);
+
+  assert.throws(
+    () =>
+      updateItemCaptureContent(item.id, {
+        title: "Still blocked",
+        body: "Still blocked",
+      }),
+    (error: unknown) =>
+      error instanceof ItemBodyProcessingBlockedError &&
+      error.code === "processing_schema_incompatible",
+  );
+  assert.deepEqual(getItem(item.id), before);
 });

@@ -16,9 +16,16 @@
 import { getDb } from "@/db/client";
 import { insertChunkWithRowid } from "@/db/chunks";
 import { chunkBody } from "@/lib/chunk";
-import { EmbedError, EMBED_DIM } from "./client";
+import { EmbedError, EMBED_DIM, type EmbedErrorCode } from "./client";
 import { getEmbedProvider } from "./factory";
-import { logError } from "@/lib/errors/sink";
+import { logContainmentDiagnostic } from "@/lib/errors/sink";
+import {
+  assertItemBodyProcessingAllowed,
+  ItemBodyProcessingBlockedError,
+  resolveItemBodyProcessingGate,
+  type BodyProcessingBlockedGate,
+} from "@/lib/processing/hold-gate";
+import { createContainmentDiagnostic } from "@/lib/runtime/containment-diagnostics";
 
 const BATCH_SIZE = 16;
 const MAX_ATTEMPTS = 3;
@@ -26,7 +33,21 @@ const BACKOFF_MS = [200, 800, 3200];
 
 export type EmbedResult =
   | { ok: true; item_id: string; chunk_count: number; duration_ms: number }
-  | { ok: false; item_id: string; code: string; message: string; attempts: number };
+  | {
+      ok: false;
+      blocked?: false;
+      item_id: string;
+      code: EmbedFailureCode;
+      attempts: number;
+    }
+  | {
+      ok: false;
+      blocked: true;
+      code: BodyProcessingBlockedGate["code"] | "processing_authority_changed";
+    };
+
+export type EmbedFailureCode =
+  EmbedErrorCode | "EMBED_ITEM_NOT_FOUND" | "EMBED_UNKNOWN";
 
 /** Structural alias so tests can inject a fake without importing the
  * provider type. Matches EmbedProvider.embed's call shape. */
@@ -39,6 +60,8 @@ interface EmbedItemOptions {
   chunkOpts?: Parameters<typeof chunkBody>[1];
   /** Attempt number for retry accounting (default 1). */
   attempt?: number;
+  /** Recompute a stricter caller-owned deployment/mode authority. */
+  revalidateAuthority?: () => boolean;
 }
 
 /**
@@ -54,19 +77,27 @@ export async function embedItem(
 ): Promise<EmbedResult> {
   const started = Date.now();
   const db = getDb();
+  if (!additionalAuthorityAllowed(opts)) return authorityChanged();
   const item = db
-    .prepare("SELECT id, title, body, summary, enriched_at FROM items WHERE id = ?")
-    .get(item_id) as {
-      id: string;
-      title: string;
-      body: string;
-      summary: string | null;
-      enriched_at: number | null;
-    } | undefined;
+    .prepare(
+      "SELECT id, title, body, summary, enriched_at FROM items WHERE id = ?",
+    )
+    .get(item_id) as
+    | {
+        id: string;
+        title: string;
+        body: string;
+        summary: string | null;
+        enriched_at: number | null;
+      }
+    | undefined;
 
   if (!item) {
-    return failed(item_id, "EMBED_ITEM_NOT_FOUND", `Item ${item_id} not found`, opts.attempt ?? 1);
+    return failed(item_id, "EMBED_ITEM_NOT_FOUND", opts.attempt ?? 1);
   }
+
+  const initialGate = resolveItemBodyProcessingGate(item_id, db);
+  if (!initialGate.allowed) return blocked(initialGate);
 
   const existing = db
     .prepare(
@@ -75,6 +106,9 @@ export async function embedItem(
     )
     .get(item_id) as { n: number };
   if (existing.n > 0) {
+    const shortcutGate = resolveItemBodyProcessingGate(item_id, db);
+    if (!shortcutGate.allowed) return blocked(shortcutGate);
+    if (!additionalAuthorityAllowed(opts)) return authorityChanged();
     return { ok: true, item_id, chunk_count: existing.n, duration_ms: 0 };
   }
 
@@ -82,56 +116,77 @@ export async function embedItem(
   // state where a claim came from. Existing mixed chunks remain explicitly
   // labeled legacy_item_context by migration 023.
   const sourceChunks = [
-    ...chunkBody(`${item.title}\n\n${item.body}`, opts.chunkOpts).map((chunk) => ({
-      ...chunk,
-      source_kind: "original_content" as const,
-      source_version: 0,
-    })),
+    ...chunkBody(`${item.title}\n\n${item.body}`, opts.chunkOpts).map(
+      (chunk) => ({
+        ...chunk,
+        source_kind: "original_content" as const,
+        source_version: 0,
+      }),
+    ),
     ...(item.summary
-      ? chunkBody(`${item.title}\n\n${item.summary}`, opts.chunkOpts).map((chunk) => ({
-          ...chunk,
-          source_kind: "ai_summary" as const,
-          source_version: item.enriched_at ?? 1,
-        }))
+      ? chunkBody(`${item.title}\n\n${item.summary}`, opts.chunkOpts).map(
+          (chunk) => ({
+            ...chunk,
+            source_kind: "ai_summary" as const,
+            source_version: item.enriched_at ?? 1,
+          }),
+        )
       : []),
   ];
   if (sourceChunks.length === 0) {
-    return { ok: true, item_id, chunk_count: 0, duration_ms: Date.now() - started };
+    const shortcutGate = resolveItemBodyProcessingGate(item_id, db);
+    if (!shortcutGate.allowed) return blocked(shortcutGate);
+    if (!additionalAuthorityAllowed(opts)) return authorityChanged();
+    return {
+      ok: true,
+      item_id,
+      chunk_count: 0,
+      duration_ms: Date.now() - started,
+    };
   }
 
-  const embedFn: EmbedFn = opts.embedFn ?? ((inputs) => getEmbedProvider().embed(inputs));
+  const embedFn: EmbedFn =
+    opts.embedFn ?? ((inputs) => getEmbedProvider().embed(inputs));
   const vectors: Float32Array[] = [];
   for (let i = 0; i < sourceChunks.length; i += BATCH_SIZE) {
+    const dispatchGate = resolveItemBodyProcessingGate(item_id, db);
+    if (!dispatchGate.allowed) return blocked(dispatchGate);
+    if (!additionalAuthorityAllowed(opts)) return authorityChanged();
     const batch = sourceChunks.slice(i, i + BATCH_SIZE).map((c) => c.body);
     let got: Float32Array[];
     try {
       got = await embedFn(batch);
     } catch (err) {
-      if (err instanceof EmbedError && err.code === "EMBED_MODEL_NOT_INSTALLED") {
+      const failureGate = resolveItemBodyProcessingGate(item_id, db);
+      if (!failureGate.allowed) return blocked(failureGate);
+      if (!additionalAuthorityAllowed(opts)) return authorityChanged();
+      if (
+        err instanceof EmbedError &&
+        err.code === "EMBED_MODEL_NOT_INSTALLED"
+      ) {
         // Non-retriable. Fail fast with the exact pull command in the message.
-        return failed(item_id, err.code, err.message, opts.attempt ?? 1);
+        return failed(item_id, err.code, opts.attempt ?? 1);
       }
       if (err instanceof EmbedError && err.code === "EMBED_INVALID_RESPONSE") {
-        return failed(item_id, err.code, err.message, opts.attempt ?? 1);
+        return failed(item_id, err.code, opts.attempt ?? 1);
       }
       // Retriable: EMBED_CONNECTION, EMBED_HTTP
       const code = err instanceof EmbedError ? err.code : "EMBED_UNKNOWN";
-      const message = err instanceof Error ? err.message : String(err);
-      return failed(item_id, code, message, opts.attempt ?? 1);
+      return failed(item_id, code, opts.attempt ?? 1);
     }
+    if (!additionalAuthorityAllowed(opts)) return authorityChanged();
     if (got.some((v) => v.length !== EMBED_DIM)) {
-      return failed(
-        item_id,
-        "EMBED_INVALID_RESPONSE",
-        `Expected ${EMBED_DIM}-dim vectors`,
-        opts.attempt ?? 1,
-      );
+      const validationGate = resolveItemBodyProcessingGate(item_id, db);
+      if (!validationGate.allowed) return blocked(validationGate);
+      return failed(item_id, "EMBED_INVALID_RESPONSE", opts.attempt ?? 1);
     }
     vectors.push(...got);
   }
 
   // Single transaction: chunks + chunks_rowid + chunks_vec.
   const tx = db.transaction(() => {
+    assertItemBodyProcessingAllowed(item_id, db);
+    assertAdditionalAuthority(opts);
     const insertVec = db.prepare(
       "INSERT INTO chunks_vec(rowid, embedding) VALUES (?, ?)",
     );
@@ -147,7 +202,13 @@ export async function embedItem(
       insertVec.run(rowid, Buffer.from(vectors[i].buffer));
     }
   });
-  tx();
+  try {
+    tx();
+  } catch (error) {
+    const noEffect = blockedFromError(error);
+    if (noEffect) return noEffect;
+    throw error;
+  }
 
   return {
     ok: true,
@@ -169,14 +230,24 @@ export async function embedItemWithRetry(
   let last: EmbedResult | null = null;
   for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
     const result = await embedItem(item_id, { ...opts, attempt });
+    if (isBlocked(result)) return result;
     if (result.ok) {
-      getDb()
-        .prepare(
-          `UPDATE embedding_jobs
+      const db = getDb();
+      try {
+        db.transaction(() => {
+          assertItemBodyProcessingAllowed(item_id, db);
+          assertAdditionalAuthority(opts);
+          db.prepare(
+            `UPDATE embedding_jobs
              SET state = 'done', completed_at = unixepoch() * 1000, last_error = NULL
              WHERE item_id = ? AND state != 'done'`,
-        )
-        .run(item_id);
+          ).run(item_id);
+        })();
+      } catch (error) {
+        const noEffect = blockedFromError(error);
+        if (noEffect) return noEffect;
+        throw error;
+      }
       return result;
     }
     last = result;
@@ -191,37 +262,109 @@ export async function embedItemWithRetry(
     }
 
     if (attempt < MAX_ATTEMPTS) {
+      const retryGate = resolveItemBodyProcessingGate(item_id);
+      if (!retryGate.allowed) return blocked(retryGate);
+      if (!additionalAuthorityAllowed(opts)) return authorityChanged();
       const ms = BACKOFF_MS[attempt - 1] ?? 3200;
       await new Promise((r) => setTimeout(r, ms));
     }
   }
 
   // Reached only on failure.
-  if (last && !last.ok) {
-    logError({
-      type: "embed_failed",
-      ts: Date.now(),
-      item_id,
-      code: last.code,
-      message: last.message,
-      attempts: last.attempts,
-      terminal: true,
-    });
+  if (last && !last.ok && !isBlocked(last)) {
     const db = getDb();
-    db.prepare(
-      `UPDATE embedding_jobs
-         SET state = 'error', last_error = ?, attempts = ?
-         WHERE item_id = ? AND state != 'done'`,
-    ).run(last.message, last.attempts, item_id);
+    const terminalGate = resolveItemBodyProcessingGate(item_id, db);
+    if (!terminalGate.allowed) return blocked(terminalGate);
+    try {
+      db.transaction(() => {
+        assertItemBodyProcessingAllowed(item_id, db);
+        assertAdditionalAuthority(opts);
+        db.prepare(
+          `UPDATE embedding_jobs
+             SET state = 'error', last_error = ?, attempts = ?
+             WHERE item_id = ? AND state != 'done'`,
+        ).run(last.code, last.attempts, item_id);
+      })();
+    } catch (error) {
+      const noEffect = blockedFromError(error);
+      if (noEffect) return noEffect;
+      throw error;
+    }
+    logContainmentDiagnostic(
+      createContainmentDiagnostic({
+        event: "claimant_guarded",
+        outcome: "failed_closed",
+        claimant: "generic_embedding",
+        phase: "terminal",
+        workStarted: true,
+        providerContacted: true,
+        stopDecision: "stop",
+        timestamp: new Date().toISOString(),
+      }),
+    );
   }
-  return last ?? failed(item_id, "EMBED_UNKNOWN", "no attempts made", 0);
+  return last ?? failed(item_id, "EMBED_UNKNOWN", 0);
+}
+
+function isBlocked(
+  result: EmbedResult,
+): result is Extract<EmbedResult, { blocked: true }> {
+  return !result.ok && result.blocked === true;
+}
+
+function blocked(
+  decision: BodyProcessingBlockedGate,
+): Extract<EmbedResult, { blocked: true }> {
+  return {
+    ok: false,
+    blocked: true,
+    code: decision.code,
+  };
+}
+
+function blockedFromError(
+  error: unknown,
+): Extract<EmbedResult, { blocked: true }> | null {
+  if (error instanceof ProcessingExecutionAuthorityChangedError) {
+    return authorityChanged();
+  }
+  if (!(error instanceof ItemBodyProcessingBlockedError)) return null;
+  return {
+    ok: false,
+    blocked: true,
+    code: error.code,
+  };
+}
+
+class ProcessingExecutionAuthorityChangedError extends Error {
+  constructor() {
+    super("processing_authority_changed");
+    this.name = "ProcessingExecutionAuthorityChangedError";
+  }
+}
+
+function additionalAuthorityAllowed(options: EmbedItemOptions): boolean {
+  return options.revalidateAuthority?.() ?? true;
+}
+
+function assertAdditionalAuthority(options: EmbedItemOptions): void {
+  if (!additionalAuthorityAllowed(options)) {
+    throw new ProcessingExecutionAuthorityChangedError();
+  }
+}
+
+function authorityChanged(): Extract<EmbedResult, { blocked: true }> {
+  return {
+    ok: false,
+    blocked: true,
+    code: "processing_authority_changed",
+  };
 }
 
 function failed(
   item_id: string,
-  code: string,
-  message: string,
+  code: EmbedFailureCode,
   attempts: number,
 ): EmbedResult {
-  return { ok: false, item_id, code, message, attempts };
+  return { ok: false, item_id, code, attempts };
 }

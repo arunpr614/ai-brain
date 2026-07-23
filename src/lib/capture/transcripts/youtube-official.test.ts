@@ -4,6 +4,7 @@ import { after, test } from "node:test";
 import assert from "node:assert/strict";
 import { rmSync } from "node:fs";
 import { TEST_DB_DIR } from "./youtube-official.test.setup";
+import { getDb } from "@/db/client";
 import { getItem, insertCaptured } from "@/db/items";
 import {
   listCapturePolicyDecisionsForItem,
@@ -14,6 +15,7 @@ import {
   attachOfficialYoutubeCaptionToYoutubeItem,
   OfficialYoutubeCaptionError,
 } from "./youtube-official";
+import { ItemBodyProcessingBlockedError } from "@/lib/processing/hold-gate";
 
 after(() => {
   try {
@@ -126,6 +128,46 @@ function assertItemUnchanged(itemId: string): void {
   assert.equal(item.capture_quality, "metadata_only");
   assert.equal(item.extraction_warning, "no_transcript");
   assert.equal(listTranscriptSourcesForItem(itemId).length, 0);
+}
+
+function protectedAttachmentState(itemId: string) {
+  const db = getDb();
+  return {
+    item: db.prepare("SELECT * FROM items WHERE id = ?").get(itemId),
+    sources: db
+      .prepare("SELECT * FROM transcript_sources WHERE item_id = ? ORDER BY id")
+      .all(itemId),
+    segments: db
+      .prepare("SELECT * FROM transcript_segments WHERE item_id = ? ORDER BY id")
+      .all(itemId),
+    chunks: db
+      .prepare("SELECT * FROM chunks WHERE item_id = ? ORDER BY id")
+      .all(itemId),
+    vectorCount: db
+      .prepare(
+        `SELECT COUNT(*) AS n
+           FROM chunks_vec v
+           JOIN chunks_rowid r ON r.rowid = v.rowid
+           JOIN chunks c ON c.id = r.chunk_id
+          WHERE c.item_id = ?`,
+      )
+      .get(itemId),
+    enrichmentJob: db
+      .prepare("SELECT * FROM enrichment_jobs WHERE item_id = ?")
+      .get(itemId),
+    embeddingJob: db
+      .prepare("SELECT * FROM embedding_jobs WHERE item_id = ?")
+      .get(itemId),
+    transcriptJob: db
+      .prepare("SELECT * FROM transcript_jobs WHERE item_id = ?")
+      .get(itemId),
+    transcriptAttempts: db
+      .prepare("SELECT * FROM transcript_attempts WHERE item_id = ? ORDER BY id")
+      .all(itemId),
+    artifacts: db
+      .prepare("SELECT * FROM capture_artifacts WHERE item_id = ? ORDER BY id")
+      .all(itemId),
+  };
 }
 
 test("imports an authorized English standard caption with truthful item metadata and token-free provenance", async () => {
@@ -482,4 +524,76 @@ test("missing token is rejected before policy or network work", async () => {
 
   assert.equal(calls.length, 0);
   assert.equal(listCapturePolicyDecisionsForItem(item.id).length, 0);
+});
+
+test("caption containment stops after an external response and blocks incompatible items before network", async () => {
+  const db = getDb();
+  const raceItem = insertYoutubeItem({
+    source_url: "https://www.youtube.com/watch?v=race123ABCD",
+  });
+  const beforeRace = protectedAttachmentState(raceItem.id);
+  let raceFetchCalls = 0;
+  const raceFetch = (async () => {
+    raceFetchCalls += 1;
+    if (raceFetchCalls === 1) {
+      return jsonResponse({
+        items: [
+          captionResource({
+            id: "race-caption",
+            videoId: "race123ABCD",
+          }),
+        ],
+      });
+    }
+    db.exec(`
+      CREATE TABLE content_processing_holds (
+        item_id TEXT NOT NULL,
+        state TEXT NOT NULL
+      )
+    `);
+    return vttResponse(longVttText());
+  }) as typeof fetch;
+
+  await assert.rejects(
+    attachOfficialYoutubeCaptionToYoutubeItem({
+      itemId: raceItem.id,
+      accessToken: TOKEN,
+      rightsBasis: "authorized_youtube_video",
+      fetchImpl: raceFetch,
+    }),
+    (error: unknown) =>
+      error instanceof ItemBodyProcessingBlockedError &&
+      error.code === "processing_schema_incompatible",
+  );
+  assert.equal(raceFetchCalls, 2);
+  assert.deepEqual(protectedAttachmentState(raceItem.id), beforeRace);
+  assert.equal(listCapturePolicyDecisionsForItem(raceItem.id).length, 1);
+
+  const preblockedItem = insertYoutubeItem({
+    source_url: "https://www.youtube.com/watch?v=block123ABC",
+  });
+  const beforePreblocked = protectedAttachmentState(preblockedItem.id);
+  let forbiddenFetchCalls = 0;
+  const forbiddenFetch = (async () => {
+    forbiddenFetchCalls += 1;
+    throw new Error("caption_fetch_must_not_run");
+  }) as typeof fetch;
+
+  await assert.rejects(
+    attachOfficialYoutubeCaptionToYoutubeItem({
+      itemId: preblockedItem.id,
+      accessToken: TOKEN,
+      rightsBasis: "authorized_youtube_video",
+      fetchImpl: forbiddenFetch,
+    }),
+    (error: unknown) =>
+      error instanceof ItemBodyProcessingBlockedError &&
+      error.code === "processing_schema_incompatible",
+  );
+  assert.equal(forbiddenFetchCalls, 0);
+  assert.deepEqual(
+    protectedAttachmentState(preblockedItem.id),
+    beforePreblocked,
+  );
+  assert.equal(listCapturePolicyDecisionsForItem(preblockedItem.id).length, 0);
 });

@@ -20,6 +20,7 @@ import {
   type OwnedMediaSttProviderInput,
   type OwnedMediaSttTranscript,
 } from "./owned-media-stt";
+import { ItemBodyProcessingBlockedError } from "@/lib/processing/hold-gate";
 
 after(() => {
   try {
@@ -97,6 +98,46 @@ function provider(
       if (output instanceof Error) throw output;
       return output;
     },
+  };
+}
+
+function protectedAttachmentState(itemId: string) {
+  const db = getDb();
+  return {
+    item: db.prepare("SELECT * FROM items WHERE id = ?").get(itemId),
+    sources: db
+      .prepare("SELECT * FROM transcript_sources WHERE item_id = ? ORDER BY id")
+      .all(itemId),
+    segments: db
+      .prepare("SELECT * FROM transcript_segments WHERE item_id = ? ORDER BY id")
+      .all(itemId),
+    chunks: db
+      .prepare("SELECT * FROM chunks WHERE item_id = ? ORDER BY id")
+      .all(itemId),
+    vectorCount: db
+      .prepare(
+        `SELECT COUNT(*) AS n
+           FROM chunks_vec v
+           JOIN chunks_rowid r ON r.rowid = v.rowid
+           JOIN chunks c ON c.id = r.chunk_id
+          WHERE c.item_id = ?`,
+      )
+      .get(itemId),
+    enrichmentJob: db
+      .prepare("SELECT * FROM enrichment_jobs WHERE item_id = ?")
+      .get(itemId),
+    embeddingJob: db
+      .prepare("SELECT * FROM embedding_jobs WHERE item_id = ?")
+      .get(itemId),
+    transcriptJob: db
+      .prepare("SELECT * FROM transcript_jobs WHERE item_id = ?")
+      .get(itemId),
+    transcriptAttempts: db
+      .prepare("SELECT * FROM transcript_attempts WHERE item_id = ? ORDER BY id")
+      .all(itemId),
+    artifacts: db
+      .prepare("SELECT * FROM capture_artifacts WHERE item_id = ? ORDER BY id")
+      .all(itemId),
   };
 }
 
@@ -412,4 +453,72 @@ test("provenance uses an allowlist and redacts path or token-like provider value
   assert.equal(provenanceJson.includes("def456"), false);
   assert.equal(provenanceJson.includes("provider-secret"), false);
   assert.equal(provenanceJson.includes("youtube.com"), false);
+});
+
+test("STT containment stops after provider response and blocks incompatible items before dispatch", async () => {
+  const db = getDb();
+  const raceItem = youtubeItem({
+    source_url: "https://youtu.be/sttRace123",
+  });
+  const beforeRace = protectedAttachmentState(raceItem.id);
+  let raceProviderCalls = 0;
+  const raceProvider: OwnedMediaSttProvider = {
+    providerName: "race-provider",
+    providerVersion: "test-v1",
+    async transcribe() {
+      raceProviderCalls += 1;
+      db.exec(`
+        CREATE TABLE content_processing_holds (
+          item_id TEXT NOT NULL,
+          state TEXT NOT NULL
+        )
+      `);
+      return transcript();
+    },
+  };
+
+  await assert.rejects(
+    attachOwnedMediaSttToYoutubeItem({
+      itemId: raceItem.id,
+      media: media(),
+      provider: raceProvider,
+    }),
+    (error: unknown) =>
+      error instanceof ItemBodyProcessingBlockedError &&
+      error.code === "processing_schema_incompatible",
+  );
+  assert.equal(raceProviderCalls, 1);
+  assert.deepEqual(protectedAttachmentState(raceItem.id), beforeRace);
+  assert.equal(listCapturePolicyDecisionsForItem(raceItem.id).length, 1);
+
+  const preblockedItem = youtubeItem({
+    source_url: "https://youtu.be/sttBlocked123",
+  });
+  const beforePreblocked = protectedAttachmentState(preblockedItem.id);
+  let forbiddenProviderCalls = 0;
+  const forbiddenProvider: OwnedMediaSttProvider = {
+    providerName: "forbidden-provider",
+    providerVersion: "test-v1",
+    async transcribe() {
+      forbiddenProviderCalls += 1;
+      throw new Error("stt_provider_must_not_run");
+    },
+  };
+
+  await assert.rejects(
+    attachOwnedMediaSttToYoutubeItem({
+      itemId: preblockedItem.id,
+      media: media(),
+      provider: forbiddenProvider,
+    }),
+    (error: unknown) =>
+      error instanceof ItemBodyProcessingBlockedError &&
+      error.code === "processing_schema_incompatible",
+  );
+  assert.equal(forbiddenProviderCalls, 0);
+  assert.deepEqual(
+    protectedAttachmentState(preblockedItem.id),
+    beforePreblocked,
+  );
+  assert.equal(listCapturePolicyDecisionsForItem(preblockedItem.id).length, 0);
 });

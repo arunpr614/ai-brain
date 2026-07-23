@@ -1,5 +1,6 @@
 import { deleteSetting, getJsonSetting, setJsonSetting } from "@/db/settings";
-import { logError } from "@/lib/errors/sink";
+import { logContainmentDiagnostic } from "@/lib/errors/sink";
+import type { ContainmentDiagnostic } from "@/lib/runtime/containment-diagnostics";
 
 export const YOUTUBE_TIMEDTEXT_PROVIDER_KEY = "youtube_timedtext";
 export const YOUTUBE_TIMEDTEXT_PROVIDER_NAME = "youtube_innertube_timedtext";
@@ -138,14 +139,34 @@ export function youtubeTimedTextCooldownDelayMs(
   return YOUTUBE_TIMEDTEXT_COOLDOWN_MIN_MS + jitter;
 }
 
-export function logTranscriptProviderEvent(
-  entry: Record<string, unknown>,
+export function logTranscriptContainmentDiagnostic(
+  entry: ContainmentDiagnostic,
 ): void {
-  logError({
-    type: "transcript.provider",
-    ts: Date.now(),
-    ...entry,
-  });
+  logContainmentDiagnostic(entry);
+}
+
+export function transcriptElapsedBucket(
+  elapsedMs: number,
+): NonNullable<ContainmentDiagnostic["elapsedBucket"]> {
+  if (!Number.isFinite(elapsedMs) || elapsedMs < 0) return "not_measured";
+  if (elapsedMs < 10) return "lt_10ms";
+  if (elapsedMs < 100) return "lt_100ms";
+  if (elapsedMs < 1_000) return "lt_1s";
+  if (elapsedMs < 10_000) return "lt_10s";
+  return "gte_10s";
+}
+
+export function transcriptPayloadSizeBucket(
+  bytes: number | null | undefined,
+): NonNullable<ContainmentDiagnostic["payloadSizeBucket"]> {
+  if (bytes === null || bytes === undefined || !Number.isFinite(bytes)) {
+    return "not_measured";
+  }
+  if (bytes <= 0) return "zero";
+  if (bytes < 1_024) return "lt_1kib";
+  if (bytes < 16 * 1_024) return "lt_16kib";
+  if (bytes < 256 * 1_024) return "lt_256kib";
+  return "gte_256kib";
 }
 
 export function clearYoutubeTimedTextProviderHealthForTests(): void {

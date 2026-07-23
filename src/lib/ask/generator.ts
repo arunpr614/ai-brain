@@ -15,7 +15,10 @@ import { getDb } from "@/db/client";
 import { getAskProvider } from "@/lib/llm/factory";
 import type { GenerateStreamOptions } from "@/lib/llm/types";
 import { logError } from "@/lib/errors/sink";
-import { filterCurrentlyEligibleChunks, type RetrievedChunk } from "@/lib/retrieve";
+import {
+  filterCurrentlyEligibleChunks,
+  type RetrievedChunk,
+} from "@/lib/retrieve";
 
 type StreamFn = (opts: GenerateStreamOptions) => AsyncIterable<string>;
 
@@ -68,12 +71,17 @@ export function ollamaGenerator(opts: OllamaGeneratorOptions = {}) {
     const model = opts.model ?? process.env.OLLAMA_DEFAULT_MODEL;
 
     const streamImpl: StreamFn =
-      opts.streamFn ?? ((streamOpts) => getAskProvider().generateStream(streamOpts));
+      opts.streamFn ??
+      ((streamOpts) => getAskProvider().generateStream(streamOpts));
 
     // Incremental parser state. Buffer only the portion that might be an
     // in-progress [CITE:... — everything else flushes immediately.
     let carry = "";
-    type Usage = { input_tokens: number; output_tokens: number; wall_ms: number };
+    type Usage = {
+      input_tokens: number;
+      output_tokens: number;
+      wall_ms: number;
+    };
     // `usage` is written from within the `onDone` callback below, but TS's
     // closure analysis narrows the outer binding to `null` and doesn't see
     // the async write. Use a mutable container to preserve the type.
@@ -146,8 +154,9 @@ export function splitAtPossibleCitation(buffer: string): [string, string] {
 export function* filterCitations(
   text: string,
   validIds: Set<string>,
-  thread_id: string | undefined,
+  _thread_id: string | undefined,
 ): Generator<string, void, void> {
+  void _thread_id;
   const re = /\[CITE:([^\]]+)\]/g;
   let last = 0;
   let m: RegExpExecArray | null;
@@ -157,12 +166,7 @@ export function* filterCitations(
     if (validIds.has(id)) {
       yield m[0];
     } else {
-      logError({
-        type: "orphan_citation",
-        ts: Date.now(),
-        chunk_id: id,
-        thread_id: thread_id ?? null,
-      });
+      logError("orphan_citation");
       // Drop silently from the stream.
     }
     last = m.index + m[0].length;
@@ -182,8 +186,16 @@ function recordAskUsage(args: {
         `INSERT INTO llm_usage (provider, model, purpose, input_tokens, output_tokens, cost_usd, billing_month)
          VALUES (?, ?, ?, ?, ?, ?, ?)`,
       )
-      .run("ollama", args.model, "ask", args.input_tokens, args.output_tokens, 0, bm);
-  } catch (err) {
-    console.warn("[ask] llm_usage write failed:", (err as Error).message);
+      .run(
+        "ollama",
+        args.model,
+        "ask",
+        args.input_tokens,
+        args.output_tokens,
+        0,
+        bm,
+      );
+  } catch {
+    console.warn("[ask] llm_usage write failed");
   }
 }

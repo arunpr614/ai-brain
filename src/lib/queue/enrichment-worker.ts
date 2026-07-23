@@ -14,19 +14,24 @@
  *   layer handles the distinct class of model-unavailable / timeout errors.
  */
 
-import {
-  appendFileSync,
-  existsSync,
-  mkdirSync,
-  renameSync,
-  statSync,
-} from "node:fs";
-import { dirname } from "node:path";
 import { getDb } from "@/db/client";
+import { getYouTubeBrowserSchemaCapability } from "@/db/schema-capabilities";
 import { enrichItem } from "@/lib/enrich/pipeline";
 import { embedItemWithRetry } from "@/lib/embed/pipeline";
-import { ERRORS_LOG_MAX_BYTES, ERRORS_LOG_PATH } from "@/lib/errors/sink";
+import { logContainmentDiagnostic } from "@/lib/errors/sink";
 import { getEnrichProvider } from "@/lib/llm/factory";
+import {
+  isUnresolvedBatchReservation,
+  UnresolvedBatchReservationError,
+} from "@/lib/queue/enrichment-batch-binding";
+import {
+  assertItemBodyProcessingAllowed,
+  ItemBodyProcessingBlockedError,
+  resolveItemBodyProcessingGate,
+} from "@/lib/processing/hold-gate";
+import { classifyDeployment } from "@/lib/runtime/deployment";
+import { createContainmentDiagnostic } from "@/lib/runtime/containment-diagnostics";
+import { resolveContentWorkerPlan } from "@/lib/startup/content-workers";
 
 const POLL_INTERVAL_MS = 2_000;
 const IDLE_INTERVAL_MS = 10_000; // when no work, back off
@@ -48,8 +53,7 @@ const LLM_PROVIDER_DOWN_BACKOFF_MS = 30_000;
 // process."
 declare global {
   var __brainEnrichmentWorker:
-    | { running: boolean; stopRequested: boolean }
-    | undefined;
+    { running: boolean; stopRequested: boolean } | undefined;
 }
 
 function workerState() {
@@ -63,6 +67,7 @@ function workerState() {
 }
 
 export function startEnrichmentWorker(): void {
+  if (!isScheduledEnrichmentStandardMode()) return;
   const state = workerState();
   if (state.running) return;
   state.running = true;
@@ -89,21 +94,15 @@ async function loop(): Promise<void> {
       lastSweepAt = Date.now();
     }
 
-    const alive = await getEnrichProvider().isAlive();
-    if (!alive) {
-      console.warn(`[enrich] LLM provider overloaded/backoff; backing off ${LLM_PROVIDER_DOWN_BACKOFF_MS}ms`);
+    const outcome = await runEnrichmentWorkerIteration();
+    if (outcome === "provider_down") {
+      console.warn("[enrich] provider unavailable; backoff active");
       await sleep(LLM_PROVIDER_DOWN_BACKOFF_MS);
-      continue;
-    }
-
-    const job = claimNext();
-    if (!job) {
+    } else if (outcome === "processed") {
+      await sleep(POLL_INTERVAL_MS);
+    } else {
       await sleep(IDLE_INTERVAL_MS);
-      continue;
     }
-
-    await runOne(job);
-    await sleep(POLL_INTERVAL_MS);
   }
 
   state.running = false;
@@ -125,63 +124,183 @@ interface JobRow {
   attempts: number;
 }
 
-function sweepStaleClaims(): void {
+export type EnrichmentWorkerIterationOutcome =
+  "idle" | "provider_down" | "processed" | "blocked";
+
+export interface EnrichmentWorkerIterationDependencies {
+  readonly isProviderAlive: () => Promise<boolean>;
+  readonly enrich: typeof enrichItem;
+  readonly embed: typeof embedItemWithRetry;
+  /** Deterministic race barrier after the atomic claim, before dispatch. */
+  readonly afterClaim?: (itemId: string) => void;
+}
+
+const DEFAULT_ITERATION_DEPENDENCIES: EnrichmentWorkerIterationDependencies = {
+  isProviderAlive: () => getEnrichProvider().isAlive(),
+  enrich: enrichItem,
+  embed: embedItemWithRetry,
+};
+
+/**
+ * Direct-entry guard for callers outside the startup loader and a runtime
+ * recheck for workers that were already running when authority changed.
+ * Schema-026's compatibility bridge remains ordinary standard operation.
+ */
+export function isScheduledEnrichmentStandardMode(
+  db: ReturnType<typeof getDb> = getDb(),
+): boolean {
+  const plan = resolveContentWorkerPlan({
+    deployment: classifyDeployment(),
+    schemaCapability: getYouTubeBrowserSchemaCapability(db),
+  });
+  return (
+    plan.starts.scheduledEnrichment &&
+    (plan.effectiveMode === "standard" ||
+      plan.effectiveMode === "legacy_default_standard")
+  );
+}
+
+/**
+ * One loop iteration, exported so containment races can be exercised without
+ * starting timers. The candidate probe is read-only and occurs before the
+ * provider liveness call.
+ */
+export async function runEnrichmentWorkerIteration(
+  dependencies: EnrichmentWorkerIterationDependencies = DEFAULT_ITERATION_DEPENDENCIES,
+): Promise<EnrichmentWorkerIterationOutcome> {
+  const candidate = findEligiblePendingCandidate();
+  if (!candidate) return "idle";
+
+  if (!(await dependencies.isProviderAlive())) return "provider_down";
+
+  const job = claimNext(candidate.id);
+  if (!job) return "blocked";
+  dependencies.afterClaim?.(job.item_id);
+  return runOne(job, dependencies);
+}
+
+export function sweepStaleClaims(): void {
   const now = Date.now();
   const threshold = now - STALE_CLAIM_MS;
   const db = getDb();
-  const info = db
+  if (!isScheduledEnrichmentStandardMode(db)) return;
+
+  const stale = db
     .prepare(
-      `UPDATE enrichment_jobs
-       SET state = 'pending', claimed_at = NULL
-       WHERE state = 'running' AND claimed_at < ?`,
+      `SELECT id, item_id, state, attempts
+       FROM enrichment_jobs
+       WHERE state = 'running' AND claimed_at < ?
+       ORDER BY created_at ASC`,
     )
-    .run(threshold);
-  if (info.changes > 0) {
-    console.log(`[enrich] resurrected ${info.changes} stale claim(s)`);
+    .all(threshold) as JobRow[];
+
+  let resurrected = 0;
+  for (const row of stale) {
+    try {
+      const changed = db
+        .transaction(() => {
+          if (!isScheduledEnrichmentStandardMode(db)) return 0;
+          if (itemHasUnresolvedBatchReservation(row.item_id, db)) return 0;
+          assertItemBodyProcessingAllowed(row.item_id, db);
+          return db
+            .prepare(
+              `UPDATE enrichment_jobs
+               SET state = 'pending', claimed_at = NULL
+               WHERE id = ? AND state = 'running' AND claimed_at < ?`,
+            )
+            .run(row.id, threshold).changes;
+        })
+        .immediate();
+      resurrected += changed;
+    } catch (error) {
+      if (error instanceof ItemBodyProcessingBlockedError) continue;
+      throw error;
+    }
+  }
+  if (resurrected > 0) {
+    console.log(`[enrich] resurrected ${resurrected} stale claim(s)`);
   }
 }
 
-function claimNext(): JobRow | null {
+function findEligiblePendingCandidate(): JobRow | null {
   const db = getDb();
+  if (!isScheduledEnrichmentStandardMode(db)) return null;
+  const rows = db
+    .prepare(
+      `SELECT id, item_id, state, attempts
+       FROM enrichment_jobs
+       WHERE state = 'pending'
+       ORDER BY created_at ASC`,
+    )
+    .all() as JobRow[];
+  for (const row of rows) {
+    if (workerItemAllowed(row.item_id, db)) return row;
+  }
+  return null;
+}
+
+function claimNext(jobId: number): JobRow | null {
+  const db = getDb();
+  if (!isScheduledEnrichmentStandardMode(db)) return null;
   const tx = db.transaction((): JobRow | null => {
+    if (!isScheduledEnrichmentStandardMode(db)) return null;
     const row = db
       .prepare(
         `SELECT id, item_id, state, attempts
          FROM enrichment_jobs
-         WHERE state = 'pending'
-         ORDER BY created_at ASC
-         LIMIT 1`,
+         WHERE id = ? AND state = 'pending'`,
       )
-      .get() as JobRow | undefined;
+      .get(jobId) as JobRow | undefined;
     if (!row) return null;
-    db.prepare(
-      `UPDATE enrichment_jobs
-       SET state = 'running', claimed_at = unixepoch() * 1000, attempts = attempts + 1
-       WHERE id = ? AND state = 'pending'`,
-    ).run(row.id);
+    if (itemHasUnresolvedBatchReservation(row.item_id, db)) return null;
+    assertItemBodyProcessingAllowed(row.item_id, db);
+    const claimed = db
+      .prepare(
+        `UPDATE enrichment_jobs
+         SET state = 'running', claimed_at = unixepoch() * 1000, attempts = attempts + 1
+         WHERE id = ? AND state = 'pending'`,
+      )
+      .run(row.id);
+    if (claimed.changes === 0) return null;
+    if (itemHasUnresolvedBatchReservation(row.item_id, db)) {
+      throw new UnresolvedBatchReservationError();
+    }
     db.prepare(
       `UPDATE items SET enrichment_state = 'running' WHERE id = ?`,
     ).run(row.item_id);
+    if (itemHasUnresolvedBatchReservation(row.item_id, db)) {
+      throw new UnresolvedBatchReservationError();
+    }
     return { ...row, state: "running", attempts: row.attempts + 1 };
   });
-  return tx();
+  try {
+    return tx.immediate();
+  } catch (error) {
+    if (
+      error instanceof ItemBodyProcessingBlockedError ||
+      error instanceof UnresolvedBatchReservationError
+    ) {
+      return null;
+    }
+    throw error;
+  }
 }
 
-async function runOne(job: JobRow): Promise<void> {
-  console.log(`[enrich] job #${job.id} item=${job.item_id} attempt=${job.attempts}`);
+async function runOne(
+  job: JobRow,
+  dependencies: EnrichmentWorkerIterationDependencies,
+): Promise<EnrichmentWorkerIterationOutcome> {
+  if (!workerItemAllowed(job.item_id)) return "blocked";
+  console.log("[enrich] claimant dispatch started");
   try {
-    const result = await enrichItem(job.item_id);
+    const result = await dependencies.enrich(job.item_id, {
+      revalidateAuthority: () => workerItemAllowed(job.item_id),
+    });
+    if (!result.ok && result.blocked === true) return "blocked";
     if (result.ok) {
-      getDb()
-        .prepare(
-          `UPDATE enrichment_jobs
-           SET state = 'done', completed_at = unixepoch() * 1000, last_error = NULL
-           WHERE id = ?`,
-        )
-        .run(job.id);
-      console.log(
-        `[enrich] job #${job.id} DONE in ${result.wall_ms}ms (attempts: ${result.attempts})`,
-      );
+      if (!completeJob(job)) return "blocked";
+      if (!workerItemAllowed(job.item_id)) return "blocked";
+      console.log("[enrich] claimant completed");
       // v0.4.0 SC-1: embedding follows enrichment in the same worker pass.
       // The enrichment-state trigger (migration 006) inserts the
       // embedding_jobs row when enrichment flips to 'done'; we drain it
@@ -189,82 +308,145 @@ async function runOne(job: JobRow): Promise<void> {
       // separate worker. Failure here is non-fatal for the user-visible
       // capture flow — embedItemWithRetry marks the job state='error' on
       // retry-exhaust and the next sweep can re-queue.
-      const embedResult = await embedItemWithRetry(job.item_id);
+      if (!workerItemAllowed(job.item_id)) return "blocked";
+      const embedResult = await dependencies.embed(job.item_id, {
+        revalidateAuthority: () => workerItemAllowed(job.item_id),
+      });
+      if (!embedResult.ok && embedResult.blocked === true) return "blocked";
+      if (!workerItemAllowed(job.item_id)) return "blocked";
       if (embedResult.ok) {
-        console.log(
-          `[embed] item=${job.item_id} chunks=${embedResult.chunk_count} duration=${embedResult.duration_ms}ms`,
-        );
+        console.log("[embed] claimant completed");
       } else {
-        console.warn(
-          `[embed] item=${job.item_id} FAILED ${embedResult.code}: ${embedResult.message}`,
-        );
+        console.warn("[embed] claimant failed");
       }
-      return;
+      return "processed";
     }
-    handleFailure(job, result.error);
+    return handleFailure(job, result.error) ? "processed" : "blocked";
   } catch (err) {
-    const message = err instanceof Error ? err.message : String(err);
-    handleFailure(job, message);
+    if (err instanceof ItemBodyProcessingBlockedError) return "blocked";
+    return handleFailure(job, "enrichment_worker_exception")
+      ? "processed"
+      : "blocked";
   }
 }
 
-function logFailureToJsonl(entry: {
-  ts: number;
-  item_id: string;
-  attempt: number;
-  error: string;
-  terminal: boolean;
-}): void {
+function completeJob(job: JobRow): boolean {
+  const db = getDb();
   try {
-    mkdirSync(dirname(ERRORS_LOG_PATH), { recursive: true });
-    if (existsSync(ERRORS_LOG_PATH)) {
-      const { size } = statSync(ERRORS_LOG_PATH);
-      if (size >= ERRORS_LOG_MAX_BYTES) {
-        renameSync(ERRORS_LOG_PATH, `${ERRORS_LOG_PATH}.1`);
-      }
-    }
-    appendFileSync(ERRORS_LOG_PATH, `${JSON.stringify(entry)}\n`);
-  } catch (err) {
-    // Don't let a file-system problem cascade into worker failure.
-    console.warn(`[enrich] errors.jsonl write failed: ${(err as Error).message}`);
+    return db
+      .transaction(() => {
+        if (!isScheduledEnrichmentStandardMode(db)) return false;
+        if (itemHasUnresolvedBatchReservation(job.item_id, db)) return false;
+        assertItemBodyProcessingAllowed(job.item_id, db);
+        return (
+          db
+            .prepare(
+              `UPDATE enrichment_jobs
+               SET state = 'done', completed_at = unixepoch() * 1000, last_error = NULL
+               WHERE id = ? AND state = 'running'`,
+            )
+            .run(job.id).changes > 0
+        );
+      })
+      .immediate();
+  } catch (error) {
+    if (error instanceof ItemBodyProcessingBlockedError) return false;
+    throw error;
   }
 }
 
-function handleFailure(job: JobRow, error: string): void {
+function workerItemAllowed(
+  itemId: string,
+  db: ReturnType<typeof getDb> = getDb(),
+): boolean {
+  return (
+    isScheduledEnrichmentStandardMode(db) &&
+    resolveItemBodyProcessingGate(itemId, db).allowed &&
+    !itemHasUnresolvedBatchReservation(itemId, db)
+  );
+}
+
+function itemHasUnresolvedBatchReservation(
+  itemId: string,
+  db: ReturnType<typeof getDb>,
+): boolean {
+  const row = db
+    .prepare("SELECT batch_id FROM items WHERE id = ?")
+    .get(itemId) as { batch_id: string | null } | undefined;
+  return isUnresolvedBatchReservation(row?.batch_id);
+}
+
+function handleFailure(job: JobRow, error: string): boolean {
   const db = getDb();
   const terminal = job.attempts >= MAX_ATTEMPTS;
-  logFailureToJsonl({
-    ts: Date.now(),
-    item_id: job.item_id,
-    attempt: job.attempts,
-    error,
-    terminal,
-  });
-  if (terminal) {
-    db.prepare(
-      `UPDATE enrichment_jobs
-       SET state = 'error', last_error = ?, completed_at = unixepoch() * 1000
-       WHERE id = ?`,
-    ).run(error, job.id);
-    db.prepare(
-      `UPDATE items SET enrichment_state = 'error' WHERE id = ?`,
-    ).run(job.item_id);
-    console.error(
-      `[enrich] job #${job.id} FAILED after ${job.attempts} attempts: ${error}`,
-    );
-    return;
+  const failureCode = normalizeFailureCode(error);
+  try {
+    const changed = db
+      .transaction(() => {
+        if (!isScheduledEnrichmentStandardMode(db)) return false;
+        if (itemHasUnresolvedBatchReservation(job.item_id, db)) return false;
+        assertItemBodyProcessingAllowed(job.item_id, db);
+        if (terminal) {
+          db.prepare(
+            `UPDATE enrichment_jobs
+             SET state = 'error', last_error = ?, completed_at = unixepoch() * 1000
+             WHERE id = ? AND state = 'running'`,
+          ).run(failureCode, job.id);
+          db.prepare(
+            `UPDATE items SET enrichment_state = 'error'
+             WHERE id = ? AND enrichment_state = 'running'`,
+          ).run(job.item_id);
+        } else {
+          db.prepare(
+            `UPDATE enrichment_jobs
+             SET state = 'pending', claimed_at = NULL, last_error = ?
+             WHERE id = ? AND state = 'running'`,
+          ).run(failureCode, job.id);
+          db.prepare(
+            `UPDATE items SET enrichment_state = 'pending'
+             WHERE id = ? AND enrichment_state = 'running'`,
+          ).run(job.item_id);
+        }
+        return true;
+      })
+      .immediate();
+    if (!changed) return false;
+  } catch (blocked) {
+    if (blocked instanceof ItemBodyProcessingBlockedError) return false;
+    throw blocked;
   }
-  db.prepare(
-    `UPDATE enrichment_jobs
-     SET state = 'pending', claimed_at = NULL, last_error = ?
-     WHERE id = ?`,
-  ).run(error, job.id);
-  db.prepare(
-    `UPDATE items SET enrichment_state = 'pending' WHERE id = ?`,
-  ).run(job.item_id);
-  console.warn(
-    `[enrich] job #${job.id} retry ${job.attempts}/${MAX_ATTEMPTS}: ${error}`,
+
+  if (!workerItemAllowed(job.item_id)) return true;
+  logContainmentDiagnostic(
+    createContainmentDiagnostic({
+      event: "claimant_guarded",
+      outcome: "failed_closed",
+      claimant: "scheduled_enrichment",
+      phase: terminal ? "terminal" : "retry",
+      workStarted: true,
+      providerContacted: true,
+      stopDecision: terminal ? "stop" : "go",
+      timestamp: new Date().toISOString(),
+    }),
   );
+  if (terminal) {
+    console.error("[enrich] claimant failed terminally");
+    return true;
+  }
+  console.warn("[enrich] claimant scheduled for retry");
+  return true;
+}
+
+function normalizeFailureCode(error: string): string {
+  switch (error) {
+    case "item_not_found":
+    case "enrichment_provider_failed":
+    case "enrichment_validation_failed":
+    case "enrichment_worker_exception":
+      return error;
+    default:
+      return "enrichment_worker_exception";
+  }
 }
 
 function sleep(ms: number): Promise<void> {

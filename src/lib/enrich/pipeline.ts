@@ -11,7 +11,12 @@ import { getDb, type ItemRow } from "@/db/client";
 import { attachTagToItem, clearAutoTagsForItem, upsertTag } from "@/db/tags";
 import { replaceTopicsForItem } from "@/db/topics";
 import { getEnrichProvider } from "@/lib/llm/factory";
-import { LLMError } from "@/lib/llm/errors";
+import {
+  assertItemBodyProcessingAllowed,
+  ItemBodyProcessingBlockedError,
+  resolveItemBodyProcessingGate,
+  type BodyProcessingBlockedGate,
+} from "@/lib/processing/hold-gate";
 import {
   enrichmentUserPrompt,
   ENRICHMENT_SYSTEM,
@@ -20,14 +25,42 @@ import {
 } from "./prompts";
 
 export type EnrichmentResult =
-  | { ok: true; item_id: string; output: EnrichmentOutput; wall_ms: number; attempts: number }
-  | { ok: false; item_id: string; error: string; raw?: string };
+  | {
+      ok: true;
+      item_id: string;
+      output: EnrichmentOutput;
+      wall_ms: number;
+      attempts: number;
+    }
+  | {
+      ok: false;
+      blocked?: false;
+      item_id: string;
+      error:
+        | "item_not_found"
+        | "enrichment_provider_failed"
+        | "enrichment_validation_failed";
+    }
+  | {
+      ok: false;
+      blocked: true;
+      code: BodyProcessingBlockedGate["code"] | "processing_authority_changed";
+    };
 
-function loadItem(id: string): ItemRow | null {
+export interface EnrichItemOptions {
+  /**
+   * Optional context authority supplied by a worker/route that owns a
+   * stricter deployment or mode contract. It is recomputed at every async
+   * and transactional boundary and is never treated as production authority
+   * unless the caller itself derives it from authoritative state.
+   */
+  readonly revalidateAuthority?: () => boolean;
+}
+
+function loadItem(id: string, db: ReturnType<typeof getDb>): ItemRow | null {
   return (
-    (getDb()
-      .prepare("SELECT * FROM items WHERE id = ?")
-      .get(id) as ItemRow | undefined) ?? null
+    (db.prepare("SELECT * FROM items WHERE id = ?").get(id) as
+      ItemRow | undefined) ?? null
   );
 }
 
@@ -126,46 +159,68 @@ export function postProcessTitle(raw: string): string {
     .join(" ");
 }
 
-function recordLlmUsage(args: {
-  provider: "ollama";
-  model: string;
-  purpose: string;
-  input_tokens: number;
-  output_tokens: number;
-  cost_usd: number;
-}): void {
-  getDb()
-    .prepare(
-      `INSERT INTO llm_usage (provider, model, purpose, input_tokens, output_tokens, cost_usd, billing_month)
+function recordLlmUsage(
+  args: {
+    provider: "ollama";
+    model: string;
+    purpose: string;
+    input_tokens: number;
+    output_tokens: number;
+    cost_usd: number;
+  },
+  db: ReturnType<typeof getDb>,
+): void {
+  db.prepare(
+    `INSERT INTO llm_usage (provider, model, purpose, input_tokens, output_tokens, cost_usd, billing_month)
        VALUES (?, ?, ?, ?, ?, ?, ?)`,
-    )
-    .run(
-      args.provider,
-      args.model,
-      args.purpose,
-      args.input_tokens,
-      args.output_tokens,
-      args.cost_usd,
-      billingMonth(),
-    );
+  ).run(
+    args.provider,
+    args.model,
+    args.purpose,
+    args.input_tokens,
+    args.output_tokens,
+    args.cost_usd,
+    billingMonth(),
+  );
 }
 
-export async function enrichItem(item_id: string): Promise<EnrichmentResult> {
-  const item = loadItem(item_id);
+export async function enrichItem(
+  item_id: string,
+  options: EnrichItemOptions = {},
+): Promise<EnrichmentResult> {
+  const db = getDb();
+  if (!additionalAuthorityAllowed(options)) return authorityChanged();
+  const item = loadItem(item_id, db);
   if (!item) {
-    return { ok: false, item_id, error: "item not found" };
+    return { ok: false, item_id, error: "item_not_found" };
   }
+
+  const initialGate = resolveItemBodyProcessingGate(item_id, db);
+  if (!initialGate.allowed) return blocked(initialGate);
 
   // Guard: very short bodies can't produce a meaningful summary. Fail fast
   // so the worker doesn't burn GPU on notes like "todo: call dentist".
   if (item.body.trim().length < 200) {
-    const db = getDb();
-    db.transaction(() => {
-      db.prepare(
-        "UPDATE items SET enrichment_state = 'done', enriched_at = unixepoch() * 1000 WHERE id = ?",
-      ).run(item_id);
-      replaceTopicsForItem(item_id, []);
-    })();
+    try {
+      db.transaction(() => {
+        assertItemBodyProcessingAllowed(item_id, db);
+        assertAdditionalAuthority(options);
+        const updated = db
+          .prepare(
+            "UPDATE items SET enrichment_state = 'done', enriched_at = unixepoch() * 1000 WHERE id = ?",
+          )
+          .run(item_id);
+        if (updated.changes !== 1) throw new EnrichmentItemUnavailableError();
+        replaceTopicsForItem(item_id, []);
+      })();
+    } catch (error) {
+      const noEffect = blockedFromError(error);
+      if (noEffect) return noEffect;
+      if (error instanceof EnrichmentItemUnavailableError) {
+        return { ok: false, item_id, error: "item_not_found" };
+      }
+      throw error;
+    }
     return {
       ok: true,
       item_id,
@@ -183,6 +238,9 @@ export async function enrichItem(item_id: string): Promise<EnrichmentResult> {
 
   const t0 = Date.now();
   const provider = getEnrichProvider();
+  const dispatchGate = resolveItemBodyProcessingGate(item_id, db);
+  if (!dispatchGate.allowed) return blocked(dispatchGate);
+  if (!additionalAuthorityAllowed(options)) return authorityChanged();
   let result: Awaited<ReturnType<typeof provider.generateJson<unknown>>>;
   try {
     result = await provider.generateJson<unknown>({
@@ -196,33 +254,36 @@ export async function enrichItem(item_id: string): Promise<EnrichmentResult> {
       num_predict: 1200,
       temperature: 0.3,
     });
-  } catch (err) {
-    const e = err as LLMError;
-    const raw =
-      typeof (e as unknown as { cause?: { raw?: string } }).cause?.raw === "string"
-        ? (e as unknown as { cause: { raw: string } }).cause.raw
-        : undefined;
-    return { ok: false, item_id, error: `${e.code}: ${e.message}`, raw };
+  } catch {
+    const failureGate = resolveItemBodyProcessingGate(item_id, db);
+    if (!failureGate.allowed) return blocked(failureGate);
+    if (!additionalAuthorityAllowed(options)) return authorityChanged();
+    return { ok: false, item_id, error: "enrichment_provider_failed" };
   }
+
+  if (!additionalAuthorityAllowed(options)) return authorityChanged();
 
   const validated = validateEnrichment(result.parsed);
   if (!validated.ok) {
+    const validationGate = resolveItemBodyProcessingGate(item_id, db);
+    if (!validationGate.allowed) return blocked(validationGate);
     return {
       ok: false,
       item_id,
-      error: `validation failed: ${validated.problems.join("; ")}`,
-      raw: result.raw,
+      error: "enrichment_validation_failed",
     };
   }
   const output = validated.value;
 
   // Write everything in a single transaction so a crash mid-update doesn't
   // leave a half-enriched item.
-  const db = getDb();
   const cleanedTitle = postProcessTitle(output.title);
   const tx = db.transaction(() => {
-    db.prepare(
-      `UPDATE items
+    assertItemBodyProcessingAllowed(item_id, db);
+    assertAdditionalAuthority(options);
+    const updated = db
+      .prepare(
+        `UPDATE items
        SET summary = ?,
            quotes = ?,
            category = ?,
@@ -230,13 +291,15 @@ export async function enrichItem(item_id: string): Promise<EnrichmentResult> {
            enrichment_state = 'done',
            enriched_at = unixepoch() * 1000
        WHERE id = ?`,
-    ).run(
-      output.summary,
-      JSON.stringify(output.quotes),
-      output.category,
-      cleanedTitle,
-      item_id,
-    );
+      )
+      .run(
+        output.summary,
+        JSON.stringify(output.quotes),
+        output.category,
+        cleanedTitle,
+        item_id,
+      );
+    if (updated.changes !== 1) throw new EnrichmentItemUnavailableError();
 
     // Auto-tags: clear any previous auto-tags on this item, then attach.
     clearAutoTagsForItem(item_id);
@@ -247,17 +310,29 @@ export async function enrichItem(item_id: string): Promise<EnrichmentResult> {
     replaceTopicsForItem(item_id, output.tags, {
       evidence: `Detected during enrichment for ${output.category}.`,
     });
-  });
-  tx();
 
-  recordLlmUsage({
-    provider: "ollama",
-    model: result.metrics ? "qwen2.5:7b-instruct-q4_K_M" : "unknown",
-    purpose: "enrichment",
-    input_tokens: result.metrics.input_tokens,
-    output_tokens: result.metrics.output_tokens,
-    cost_usd: 0, // local inference
+    recordLlmUsage(
+      {
+        provider: "ollama",
+        model: result.metrics ? "qwen2.5:7b-instruct-q4_K_M" : "unknown",
+        purpose: "enrichment",
+        input_tokens: result.metrics.input_tokens,
+        output_tokens: result.metrics.output_tokens,
+        cost_usd: 0, // local inference
+      },
+      db,
+    );
   });
+  try {
+    tx();
+  } catch (error) {
+    const noEffect = blockedFromError(error);
+    if (noEffect) return noEffect;
+    if (error instanceof EnrichmentItemUnavailableError) {
+      return { ok: false, item_id, error: "item_not_found" };
+    }
+    throw error;
+  }
 
   return {
     ok: true,
@@ -265,6 +340,62 @@ export async function enrichItem(item_id: string): Promise<EnrichmentResult> {
     output,
     wall_ms: Date.now() - t0,
     attempts: result.attempts,
+  };
+}
+
+class EnrichmentItemUnavailableError extends Error {
+  constructor() {
+    super("item_not_found");
+    this.name = "EnrichmentItemUnavailableError";
+  }
+}
+
+class ProcessingExecutionAuthorityChangedError extends Error {
+  constructor() {
+    super("processing_authority_changed");
+    this.name = "ProcessingExecutionAuthorityChangedError";
+  }
+}
+
+function blocked(
+  decision: BodyProcessingBlockedGate,
+): Extract<EnrichmentResult, { blocked: true }> {
+  return {
+    ok: false,
+    blocked: true,
+    code: decision.code,
+  };
+}
+
+function blockedFromError(
+  error: unknown,
+): Extract<EnrichmentResult, { blocked: true }> | null {
+  if (error instanceof ProcessingExecutionAuthorityChangedError) {
+    return authorityChanged();
+  }
+  if (!(error instanceof ItemBodyProcessingBlockedError)) return null;
+  return {
+    ok: false,
+    blocked: true,
+    code: error.code,
+  };
+}
+
+function additionalAuthorityAllowed(options: EnrichItemOptions): boolean {
+  return options.revalidateAuthority?.() ?? true;
+}
+
+function assertAdditionalAuthority(options: EnrichItemOptions): void {
+  if (!additionalAuthorityAllowed(options)) {
+    throw new ProcessingExecutionAuthorityChangedError();
+  }
+}
+
+function authorityChanged(): Extract<EnrichmentResult, { blocked: true }> {
+  return {
+    ok: false,
+    blocked: true,
+    code: "processing_authority_changed",
   };
 }
 

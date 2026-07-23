@@ -6,7 +6,11 @@ import { rmSync } from "node:fs";
 import { TEST_DB_DIR } from "./item-repair.test.setup";
 import { getDb } from "@/db/client";
 import { insertChunkWithRowid } from "@/db/chunks";
-import { attachItemToCollection, createCollection, listCollectionsForItem } from "@/db/collections";
+import {
+  attachItemToCollection,
+  createCollection,
+  listCollectionsForItem,
+} from "@/db/collections";
 import {
   countNeedsUpgradeItems,
   getItem,
@@ -18,6 +22,8 @@ import { attachTagToItem, listTagsForItem, upsertTag } from "@/db/tags";
 import { listTopicsForItem, replaceTopicsForItem } from "@/db/topics";
 import { EMBED_DIM } from "@/lib/embed/client";
 import { retrieve } from "@/lib/retrieve";
+import { ItemBodyProcessingBlockedError } from "@/lib/processing/hold-gate";
+import { UnresolvedBatchReservationError } from "@/lib/queue/enrichment-batch-binding";
 import {
   MIN_REPAIR_TEXT_CHARS,
   RepairItemError,
@@ -84,12 +90,14 @@ test("repairItemWithText updates weak content and resets stale derived state", a
     "UPDATE enrichment_jobs SET state = 'done', completed_at = unixepoch() * 1000 WHERE item_id = ?",
   ).run(item.id);
 
-  const { rowid } = db.transaction(() => insertChunkWithRowid({
-    item_id: item.id,
-    idx: 0,
-    body: "Old stale phrase chunk",
-    token_count: 4,
-  }))();
+  const { rowid } = db.transaction(() =>
+    insertChunkWithRowid({
+      item_id: item.id,
+      idx: 0,
+      body: "Old stale phrase chunk",
+      token_count: 4,
+    }),
+  )();
   db.prepare("INSERT INTO chunks_vec(rowid, embedding) VALUES (?, ?)").run(
     rowid,
     Buffer.from(vector().buffer),
@@ -101,10 +109,17 @@ test("repairItemWithText updates weak content and resets stale derived state", a
   ).run(item.id);
 
   assert.ok(
-    (await retrieve("old stale phrase", { itemId: item.id, embedFn: fakeEmbed })).length > 0,
+    (
+      await retrieve("old stale phrase", {
+        itemId: item.id,
+        embedFn: fakeEmbed,
+      })
+    ).length > 0,
     "precondition: stale chunk is retrievable before repair",
   );
-  assert.ok(listNeedsUpgradeItems({ limit: 50 }).some((row) => row.id === item.id));
+  assert.ok(
+    listNeedsUpgradeItems({ limit: 50 }).some((row) => row.id === item.id),
+  );
 
   const result = repairItemWithText({
     itemId: item.id,
@@ -139,20 +154,34 @@ test("repairItemWithText updates weak content and resets stale derived state", a
   assert.equal(repaired.batch_id, null);
   assert.equal(repaired.total_chars, longRepairText().length);
 
-  assert.deepEqual(listTagsForItem(item.id).map((tag) => tag.name), ["keep-me"]);
-  assert.deepEqual(listCollectionsForItem(item.id).map((row) => row.id), [collection.id]);
+  assert.deepEqual(
+    listTagsForItem(item.id).map((tag) => tag.name),
+    ["keep-me"],
+  );
+  assert.deepEqual(
+    listCollectionsForItem(item.id).map((row) => row.id),
+    [collection.id],
+  );
   assert.deepEqual(listTopicsForItem(item.id), []);
 
   const counts = {
-    chunks: db.prepare("SELECT COUNT(*) AS n FROM chunks WHERE item_id = ?").get(item.id) as { n: number },
-    rowids: db.prepare(
-      `SELECT COUNT(*) AS n
+    chunks: db
+      .prepare("SELECT COUNT(*) AS n FROM chunks WHERE item_id = ?")
+      .get(item.id) as { n: number },
+    rowids: db
+      .prepare(
+        `SELECT COUNT(*) AS n
        FROM chunks_rowid r
        LEFT JOIN chunks c ON c.id = r.chunk_id
        WHERE c.id IS NULL`,
-    ).get() as { n: number },
-    vectors: db.prepare("SELECT COUNT(*) AS n FROM chunks_vec").get() as { n: number },
-    embeddingJobs: db.prepare("SELECT COUNT(*) AS n FROM embedding_jobs WHERE item_id = ?").get(item.id) as { n: number },
+      )
+      .get() as { n: number },
+    vectors: db.prepare("SELECT COUNT(*) AS n FROM chunks_vec").get() as {
+      n: number;
+    },
+    embeddingJobs: db
+      .prepare("SELECT COUNT(*) AS n FROM embedding_jobs WHERE item_id = ?")
+      .get(item.id) as { n: number },
   };
   assert.equal(counts.chunks.n, 0);
   assert.equal(counts.rowids.n, 0);
@@ -160,7 +189,9 @@ test("repairItemWithText updates weak content and resets stale derived state", a
   assert.equal(counts.embeddingJobs.n, 0);
 
   const enrichJob = db
-    .prepare("SELECT state, attempts, last_error, claimed_at FROM enrichment_jobs WHERE item_id = ?")
+    .prepare(
+      "SELECT state, attempts, last_error, claimed_at FROM enrichment_jobs WHERE item_id = ?",
+    )
     .get(item.id) as {
     state: string;
     attempts: number;
@@ -177,12 +208,23 @@ test("repairItemWithText updates weak content and resets stale derived state", a
     [],
     "stale chunks must not be retrievable after repair",
   );
-  assert.equal(searchItems("stale phrase").some((row) => row.id === item.id), false);
-  assert.equal(searchItems("customer workflows").some((row) => row.id === item.id), true);
-  assert.equal(listNeedsUpgradeItems({ limit: 50 }).some((row) => row.id === item.id), false);
+  assert.equal(
+    searchItems("stale phrase").some((row) => row.id === item.id),
+    false,
+  );
+  assert.equal(
+    searchItems("customer workflows").some((row) => row.id === item.id),
+    true,
+  );
+  assert.equal(
+    listNeedsUpgradeItems({ limit: 50 }).some((row) => row.id === item.id),
+    false,
+  );
   assert.ok(countNeedsUpgradeItems() >= 0);
 
-  db.prepare("UPDATE items SET enrichment_state = 'done' WHERE id = ?").run(item.id);
+  db.prepare("UPDATE items SET enrichment_state = 'done' WHERE id = ?").run(
+    item.id,
+  );
   const rebuiltEmbeddingJob = db
     .prepare("SELECT state FROM embedding_jobs WHERE item_id = ?")
     .get(item.id) as { state: string } | undefined;
@@ -209,4 +251,126 @@ test("repairItemWithText rejects short text", () => {
       err.code === "text_too_short" &&
       err.message.includes(String(MIN_REPAIR_TEXT_CHARS)),
   );
+});
+
+test("repairItemWithText preserves an unresolved batch reservation with no effects", () => {
+  const db = getDb();
+  const item = insertCaptured({
+    source_type: "youtube",
+    title: "Ambiguous batch repair",
+    body: "Original weak body",
+    source_platform: "youtube",
+    capture_quality: "metadata_only",
+    extraction_warning: "youtube_antibot_metadata_only",
+  });
+  const reservation = `opaque-reservation-v1:${"C".repeat(43)}`;
+  db.prepare(
+    "UPDATE items SET enrichment_state = 'batched', batch_id = ? WHERE id = ?",
+  ).run(reservation, item.id);
+  db.prepare(
+    "UPDATE enrichment_jobs SET state = 'batched' WHERE item_id = ?",
+  ).run(item.id);
+  const beforeItem = getItem(item.id);
+  const beforeJob = db
+    .prepare("SELECT * FROM enrichment_jobs WHERE item_id = ?")
+    .get(item.id);
+
+  assert.throws(
+    () =>
+      repairItemWithText({
+        itemId: item.id,
+        text: longRepairText(),
+      }),
+    (error: unknown) =>
+      error instanceof UnresolvedBatchReservationError &&
+      error.code === "batch_submit_outcome_unknown",
+  );
+  assert.deepEqual(getItem(item.id), beforeItem);
+  assert.deepEqual(
+    db.prepare("SELECT * FROM enrichment_jobs WHERE item_id = ?").get(item.id),
+    beforeJob,
+  );
+});
+
+test("repairItemWithText rechecks capability in the write transaction with no destructive effects", (t) => {
+  const db = getDb();
+  const item = insertCaptured({
+    source_type: "youtube",
+    title: "Blocked repair",
+    body: "Original weak body",
+    source_platform: "youtube",
+    capture_quality: "metadata_only",
+    extraction_warning: "youtube_antibot_metadata_only",
+  });
+  const autoTag = upsertTag("Blocked Auto", "auto");
+  attachTagToItem(item.id, autoTag.id);
+  replaceTopicsForItem(item.id, ["Blocked Topic"]);
+  const { rowid } = db.transaction(() =>
+    insertChunkWithRowid({
+      item_id: item.id,
+      idx: 0,
+      body: "Chunk that must remain",
+      token_count: 4,
+    }),
+  )();
+  db.prepare("INSERT INTO chunks_vec(rowid, embedding) VALUES (?, ?)").run(
+    rowid,
+    Buffer.from(vector().buffer),
+  );
+  db.prepare(
+    `INSERT INTO embedding_jobs (item_id, state)
+     VALUES (?, 'done')
+     ON CONFLICT(item_id) DO UPDATE SET state = 'done'`,
+  ).run(item.id);
+
+  const snapshot = () => ({
+    item: getItem(item.id),
+    chunks: db
+      .prepare("SELECT * FROM chunks WHERE item_id = ? ORDER BY idx")
+      .all(item.id),
+    vectors: db.prepare("SELECT COUNT(*) AS n FROM chunks_vec").get(),
+    autoTags: listTagsForItem(item.id),
+    topics: listTopicsForItem(item.id),
+    enrichmentJob: db
+      .prepare("SELECT * FROM enrichment_jobs WHERE item_id = ?")
+      .get(item.id),
+    embeddingJob: db
+      .prepare("SELECT * FROM embedding_jobs WHERE item_id = ?")
+      .get(item.id),
+  });
+  const before = snapshot();
+  const originalTransaction = db.transaction.bind(db);
+  let insertedMarker = false;
+
+  t.mock.method(
+    db,
+    "transaction",
+    (...args: Parameters<typeof db.transaction>) => {
+      if (!insertedMarker) {
+        insertedMarker = true;
+        db.exec(`
+          CREATE TABLE content_processing_holds (
+            item_id TEXT NOT NULL,
+            state TEXT NOT NULL
+          )
+        `);
+      }
+      return originalTransaction(...args);
+    },
+  );
+
+  assert.throws(
+    () =>
+      repairItemWithText({
+        itemId: item.id,
+        textKind: "transcript",
+        title: "Must not apply",
+        text: longRepairText(),
+      }),
+    (error: unknown) =>
+      error instanceof ItemBodyProcessingBlockedError &&
+      error.code === "processing_schema_incompatible",
+  );
+  assert.equal(insertedMarker, true);
+  assert.deepEqual(snapshot(), before);
 });

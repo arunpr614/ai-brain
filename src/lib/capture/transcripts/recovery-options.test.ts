@@ -9,6 +9,35 @@ import { getDb } from "@/db/client";
 import type { TranscriptSourceRow } from "@/db/transcripts";
 import { buildYoutubeTranscriptRecoveryStatus } from "./recovery-options";
 
+const DEPLOYMENT_KEYS = [
+  "BRAIN_DEPLOYMENT_ENV",
+  "BRAIN_PRODUCTION_RUNTIME",
+  "BRAIN_TRANSCRIPT_ENV",
+  "NODE_ENV",
+] as const;
+
+function withDeployment<T>(
+  values: Partial<Record<(typeof DEPLOYMENT_KEYS)[number], string>>,
+  run: () => T,
+): T {
+  const saved = Object.fromEntries(
+    DEPLOYMENT_KEYS.map((key) => [key, process.env[key]]),
+  ) as Record<(typeof DEPLOYMENT_KEYS)[number], string | undefined>;
+  for (const key of DEPLOYMENT_KEYS) delete process.env[key];
+  for (const [key, value] of Object.entries(values)) {
+    if (value !== undefined) Reflect.set(process.env, key, value);
+  }
+  try {
+    return run();
+  } finally {
+    for (const key of DEPLOYMENT_KEYS) {
+      const value = saved[key];
+      if (value === undefined) delete process.env[key];
+      else Reflect.set(process.env, key, value);
+    }
+  }
+}
+
 after(() => {
   try {
     rmSync(TEST_DB_DIR, { recursive: true, force: true });
@@ -151,13 +180,16 @@ test("reflects active transcript source independently of capture quality", () =>
 });
 
 test("gated and blocked options never expose actions", () => {
-  const status = buildYoutubeTranscriptRecoveryStatus({
+  const status = withDeployment({
+    BRAIN_DEPLOYMENT_ENV: "lab",
+    BRAIN_PRODUCTION_RUNTIME: "0",
+  }, () => buildYoutubeTranscriptRecoveryStatus({
     item: item(),
-    environment: "lab",
+    environment: "production",
     labPublicExtractionApproved: true,
     officialCaptionsWired: true,
     ownedMediaSttWired: true,
-  });
+  }));
 
   for (const option of status.options) {
     if (option.status === "available") continue;
@@ -169,16 +201,22 @@ test("gated and blocked options never expose actions", () => {
 });
 
 test("does not present public extraction as a normal production route", () => {
-  const production = buildYoutubeTranscriptRecoveryStatus({
-    item: item(),
-    environment: "production",
-    labPublicExtractionApproved: true,
-  });
-  const lab = buildYoutubeTranscriptRecoveryStatus({
+  const production = withDeployment({
+    BRAIN_DEPLOYMENT_ENV: "production",
+    BRAIN_PRODUCTION_RUNTIME: "1",
+  }, () => buildYoutubeTranscriptRecoveryStatus({
     item: item(),
     environment: "lab",
     labPublicExtractionApproved: true,
-  });
+  }));
+  const lab = withDeployment({
+    BRAIN_DEPLOYMENT_ENV: "lab",
+    BRAIN_PRODUCTION_RUNTIME: "0",
+  }, () => buildYoutubeTranscriptRecoveryStatus({
+    item: item(),
+    environment: "production",
+    labPublicExtractionApproved: true,
+  }));
 
   const productionPublic = production.options.find((option) => option.id === "public_extraction")!;
   const labPublic = lab.options.find((option) => option.id === "public_extraction")!;
@@ -187,6 +225,88 @@ test("does not present public extraction as a normal production route", () => {
   assert.equal(labPublic.status, "gated");
   assert.equal(labPublic.href, undefined);
   assert.match(labPublic.description, /not a production recovery route/i);
+});
+
+test("caller and legacy environment inputs cannot promote public extraction", () => {
+  const deniedDeployments = [
+    {},
+    {
+      BRAIN_DEPLOYMENT_ENV: "production",
+      BRAIN_PRODUCTION_RUNTIME: "1",
+    },
+    {
+      BRAIN_DEPLOYMENT_ENV: "production",
+    },
+    {
+      BRAIN_PRODUCTION_RUNTIME: "1",
+    },
+    {
+      BRAIN_DEPLOYMENT_ENV: "production",
+      BRAIN_PRODUCTION_RUNTIME: "0",
+    },
+    {
+      BRAIN_DEPLOYMENT_ENV: "lab",
+      BRAIN_PRODUCTION_RUNTIME: "1",
+    },
+    {
+      BRAIN_DEPLOYMENT_ENV: "LAB",
+      BRAIN_PRODUCTION_RUNTIME: "0",
+    },
+    {
+      BRAIN_DEPLOYMENT_ENV: "lab",
+      BRAIN_PRODUCTION_RUNTIME: "false",
+    },
+  ] as const;
+
+  for (const deployment of deniedDeployments) {
+    const status = withDeployment({
+      ...deployment,
+      BRAIN_TRANSCRIPT_ENV: "lab",
+      NODE_ENV: "development",
+    }, () => buildYoutubeTranscriptRecoveryStatus({
+      item: item(),
+      environment: "lab",
+      labPublicExtractionApproved: true,
+    }));
+    const option = status.options.find(
+      (candidate) => candidate.id === "public_extraction",
+    )!;
+    assert.equal(option.status, "blocked");
+    assert.equal(option.href, undefined);
+    assert.equal(option.actionLabel, undefined);
+  }
+});
+
+test("only an authoritative lab can show the approved no-action gated display", () => {
+  for (const deployment of ["development", "test"] as const) {
+    const status = withDeployment({
+      BRAIN_DEPLOYMENT_ENV: deployment,
+      BRAIN_PRODUCTION_RUNTIME: "0",
+    }, () => buildYoutubeTranscriptRecoveryStatus({
+      item: item(),
+      environment: "lab",
+      labPublicExtractionApproved: true,
+    }));
+    const option = status.options.find(
+      (candidate) => candidate.id === "public_extraction",
+    )!;
+    assert.equal(option.status, "blocked");
+  }
+
+  const lab = withDeployment({
+    BRAIN_DEPLOYMENT_ENV: "lab",
+    BRAIN_PRODUCTION_RUNTIME: "0",
+  }, () => buildYoutubeTranscriptRecoveryStatus({
+    item: item(),
+    environment: "production",
+    labPublicExtractionApproved: true,
+  }));
+  const option = lab.options.find(
+    (candidate) => candidate.id === "public_extraction",
+  )!;
+  assert.equal(option.status, "gated");
+  assert.equal(option.href, undefined);
+  assert.equal(option.actionLabel, undefined);
 });
 
 test("option text does not describe unsafe automatic behavior as available", () => {

@@ -26,6 +26,7 @@ import {
   repairItemWithText,
   type RepairItemWithTextResult,
 } from "@/lib/repair/item-repair";
+import { assertItemBodyProcessingAllowed } from "@/lib/processing/hold-gate";
 
 export const MAX_PASTED_TRANSCRIPT_CHARS = 500_000;
 
@@ -94,6 +95,8 @@ export function attachUserProvidedTranscriptToYoutubeItem(
     );
   }
 
+  const db = getDb();
+  assertItemBodyProcessingAllowed(input.itemId, db);
   const normalizedText = normalizePastedTranscriptText(input.text);
   if (normalizedText.length > MAX_PASTED_TRANSCRIPT_CHARS) {
     throw new UserProvidedTranscriptError(
@@ -108,12 +111,15 @@ export function attachUserProvidedTranscriptToYoutubeItem(
     );
   }
 
-  const tx = getDb().transaction((): AttachUserProvidedTranscriptResult => {
+  assertItemBodyProcessingAllowed(input.itemId, db);
+  const tx = db.transaction((): AttachUserProvidedTranscriptResult => {
+    assertItemBodyProcessingAllowed(input.itemId, db);
     const policy = allowUserProvidedTranscriptForItem(existing);
     if (policy.status === "blocked") {
       throw new UserProvidedTranscriptError("policy_blocked", policy.blockedReason);
     }
 
+    assertItemBodyProcessingAllowed(input.itemId, db);
     let repair: RepairItemWithTextResult;
     try {
       repair = repairItemWithText({
@@ -129,6 +135,7 @@ export function attachUserProvidedTranscriptToYoutubeItem(
       throw err;
     }
 
+    assertItemBodyProcessingAllowed(input.itemId, db);
     supersedeTranscriptSourcesForItem(repair.item.id);
     deleteTranscriptSegmentsForItem(repair.item.id);
     const transcriptSource = insertTranscriptSource({
@@ -152,7 +159,7 @@ export function attachUserProvidedTranscriptToYoutubeItem(
     };
   });
 
-  return tx();
+  return tx.immediate();
 }
 
 export function attachUploadedTranscriptFileToYoutubeItem(
@@ -169,6 +176,8 @@ export function attachUploadedTranscriptFileToYoutubeItem(
     );
   }
 
+  const db = getDb();
+  assertItemBodyProcessingAllowed(input.itemId, db);
   let parsed;
   try {
     parsed = parseTranscriptFile({
@@ -177,18 +186,22 @@ export function attachUploadedTranscriptFileToYoutubeItem(
       bytes: input.bytes,
     });
   } catch (err) {
+    assertItemBodyProcessingAllowed(input.itemId, db);
     if (err instanceof TranscriptFileParseError) {
       throw new UserProvidedTranscriptError(err.code, err.message);
     }
     throw err;
   }
 
-  const tx = getDb().transaction((): AttachUploadedTranscriptFileResult => {
+  assertItemBodyProcessingAllowed(input.itemId, db);
+  const tx = db.transaction((): AttachUploadedTranscriptFileResult => {
+    assertItemBodyProcessingAllowed(input.itemId, db);
     const policy = allowUploadedTranscriptFileForItem(existing);
     if (policy.status === "blocked") {
       throw new UserProvidedTranscriptError("policy_blocked", policy.blockedReason);
     }
 
+    assertItemBodyProcessingAllowed(input.itemId, db);
     let repair: RepairItemWithTextResult;
     try {
       repair = repairItemWithText({
@@ -204,6 +217,7 @@ export function attachUploadedTranscriptFileToYoutubeItem(
       throw err;
     }
 
+    assertItemBodyProcessingAllowed(input.itemId, db);
     supersedeTranscriptSourcesForItem(repair.item.id);
     deleteTranscriptSegmentsForItem(repair.item.id);
     const transcriptSource = insertTranscriptSource({
@@ -242,7 +256,7 @@ export function attachUploadedTranscriptFileToYoutubeItem(
     };
   });
 
-  return tx();
+  return tx.immediate();
 }
 
 export function normalizePastedTranscriptText(text: string): string {

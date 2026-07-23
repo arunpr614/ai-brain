@@ -27,6 +27,7 @@ import {
   repairItemWithText,
   type RepairItemWithTextResult,
 } from "@/lib/repair/item-repair";
+import { assertItemBodyProcessingAllowed } from "@/lib/processing/hold-gate";
 
 const YOUTUBE_CAPTIONS_API_URL = "https://www.googleapis.com/youtube/v3/captions";
 const OFFICIAL_CAPTIONS_ADAPTER_VERSION = "youtube-official-captions-v1";
@@ -121,6 +122,8 @@ export async function attachOfficialYoutubeCaptionToYoutubeItem(
     );
   }
 
+  const db = getDb();
+  assertItemBodyProcessingAllowed(input.itemId, db);
   const videoId = extractVideoId(existing.source_url ?? "");
   if (!videoId) {
     throw new OfficialYoutubeCaptionError(
@@ -137,19 +140,29 @@ export async function attachOfficialYoutubeCaptionToYoutubeItem(
     );
   }
 
+  assertItemBodyProcessingAllowed(input.itemId, db);
   const policy = allowOfficialYoutubeCaptionForItem(existing, input.rightsBasis);
   if (policy.status === "blocked") {
     throw new OfficialYoutubeCaptionError("policy_blocked", policy.blockedReason);
   }
 
+  assertItemBodyProcessingAllowed(input.itemId, db);
   const fetchImpl = input.fetchImpl ?? fetch;
   const preferredLanguages = normalizeLanguagePreferences(input.preferredLanguages);
   const includeAsr = input.includeAsr ?? true;
-  const tracks = await listCaptionTracks({
-    fetchImpl,
-    accessToken,
-    videoId,
-  });
+  let tracks: OfficialYoutubeCaptionTrack[];
+  try {
+    assertItemBodyProcessingAllowed(input.itemId, db);
+    tracks = await listCaptionTracks({
+      fetchImpl,
+      accessToken,
+      videoId,
+    });
+  } catch (err) {
+    assertItemBodyProcessingAllowed(input.itemId, db);
+    throw err;
+  }
+  assertItemBodyProcessingAllowed(input.itemId, db);
   if (tracks.length === 0) {
     throw new OfficialYoutubeCaptionError(
       "no_caption_tracks",
@@ -169,11 +182,19 @@ export async function attachOfficialYoutubeCaptionToYoutubeItem(
     );
   }
 
-  const captionBytes = await downloadCaptionTrack({
-    fetchImpl,
-    accessToken,
-    captionId: selectedTrack.id,
-  });
+  let captionBytes: Uint8Array;
+  try {
+    assertItemBodyProcessingAllowed(input.itemId, db);
+    captionBytes = await downloadCaptionTrack({
+      fetchImpl,
+      accessToken,
+      captionId: selectedTrack.id,
+    });
+  } catch (err) {
+    assertItemBodyProcessingAllowed(input.itemId, db);
+    throw err;
+  }
+  assertItemBodyProcessingAllowed(input.itemId, db);
 
   let parsed;
   try {
@@ -183,6 +204,7 @@ export async function attachOfficialYoutubeCaptionToYoutubeItem(
       bytes: captionBytes,
     });
   } catch (err) {
+    assertItemBodyProcessingAllowed(input.itemId, db);
     if (err instanceof TranscriptFileParseError) {
       throw new OfficialYoutubeCaptionError(
         err.code === "text_too_short" ? "text_too_short" : "caption_parse_failed",
@@ -192,7 +214,9 @@ export async function attachOfficialYoutubeCaptionToYoutubeItem(
     throw err;
   }
 
-  const tx = getDb().transaction((): AttachOfficialYoutubeCaptionResult => {
+  assertItemBodyProcessingAllowed(input.itemId, db);
+  const tx = db.transaction((): AttachOfficialYoutubeCaptionResult => {
+    assertItemBodyProcessingAllowed(input.itemId, db);
     let repair: RepairItemWithTextResult;
     try {
       repair = repairItemWithText({
@@ -210,6 +234,7 @@ export async function attachOfficialYoutubeCaptionToYoutubeItem(
       throw err;
     }
 
+    assertItemBodyProcessingAllowed(input.itemId, db);
     supersedeTranscriptSourcesForItem(repair.item.id);
     deleteTranscriptSegmentsForItem(repair.item.id);
     const transcriptSource = insertTranscriptSource({
@@ -260,7 +285,7 @@ export async function attachOfficialYoutubeCaptionToYoutubeItem(
     };
   });
 
-  return tx();
+  return tx.immediate();
 }
 
 async function listCaptionTracks(input: {

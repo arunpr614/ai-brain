@@ -13,6 +13,7 @@ import {
   finalizeNotebookLmSensitivePurge,
   terminalizeNotebookLmExportsForDeletedItem,
 } from "./notebooklm-export";
+import { assertItemBodyProcessingAllowed } from "@/lib/processing/hold-gate";
 
 export type SourceType = ItemRow["source_type"];
 export type CaptureSource = ItemRow["capture_source"];
@@ -387,39 +388,47 @@ export function updateItemCaptureContent(
   input: UpdateItemCaptureContentInput,
 ): ItemRow | null {
   const db = getDb();
-  db.prepare(
-    `UPDATE items
-     SET title = ?,
-         body = ?,
-         author = ?,
-         extraction_warning = ?,
-         duration_seconds = ?,
-         source_platform = ?,
-         capture_quality = ?,
-         extraction_method = ?,
-         extraction_version = ?,
-         published_at = ?,
-         thumbnail_url = ?,
-         description = ?,
-         total_chars = ?
-     WHERE id = ?`,
-  ).run(
-    input.title,
-    input.body,
-    input.author ?? null,
-    input.extraction_warning ?? null,
-    input.duration_seconds ?? null,
-    input.source_platform ?? null,
-    input.capture_quality ?? null,
-    input.extraction_method ?? null,
-    input.extraction_version ?? null,
-    input.published_at ?? null,
-    input.thumbnail_url ?? null,
-    input.description ?? null,
-    input.body.length,
-    id,
-  );
-  return getItem(id);
+  const existing = db.prepare("SELECT 1 FROM items WHERE id = ?").get(id);
+  if (!existing) return null;
+
+  assertItemBodyProcessingAllowed(id, db);
+  const tx = db.transaction(() => {
+    assertItemBodyProcessingAllowed(id, db);
+    db.prepare(
+      `UPDATE items
+       SET title = ?,
+           body = ?,
+           author = ?,
+           extraction_warning = ?,
+           duration_seconds = ?,
+           source_platform = ?,
+           capture_quality = ?,
+           extraction_method = ?,
+           extraction_version = ?,
+           published_at = ?,
+           thumbnail_url = ?,
+           description = ?,
+           total_chars = ?
+       WHERE id = ?`,
+    ).run(
+      input.title,
+      input.body,
+      input.author ?? null,
+      input.extraction_warning ?? null,
+      input.duration_seconds ?? null,
+      input.source_platform ?? null,
+      input.capture_quality ?? null,
+      input.extraction_method ?? null,
+      input.extraction_version ?? null,
+      input.published_at ?? null,
+      input.thumbnail_url ?? null,
+      input.description ?? null,
+      input.body.length,
+      id,
+    );
+    return getItem(id);
+  });
+  return tx.immediate();
 }
 
 /**

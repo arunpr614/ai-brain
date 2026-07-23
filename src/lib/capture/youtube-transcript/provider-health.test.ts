@@ -9,6 +9,8 @@ import {
   isYoutubeTimedTextProviderThrottled,
   recordYoutubeTimedTextProviderOutcome,
   setYoutubeTimedTextProviderHealthForTests,
+  transcriptElapsedBucket,
+  transcriptPayloadSizeBucket,
   YOUTUBE_TIMEDTEXT_COOLDOWN_JITTER_MS,
   YOUTUBE_TIMEDTEXT_COOLDOWN_MIN_MS,
   youtubeTimedTextCooldownDelayMs,
@@ -84,5 +86,21 @@ describe("YouTube timed-text provider health", () => {
       YOUTUBE_TIMEDTEXT_COOLDOWN_MIN_MS +
         Math.floor(0.999 * YOUTUBE_TIMEDTEXT_COOLDOWN_JITTER_MS),
     );
+  });
+
+  it("buckets transcript measures without preserving exact values", () => {
+    assert.equal(transcriptElapsedBucket(-1), "not_measured");
+    assert.equal(transcriptElapsedBucket(9), "lt_10ms");
+    assert.equal(transcriptElapsedBucket(99), "lt_100ms");
+    assert.equal(transcriptElapsedBucket(999), "lt_1s");
+    assert.equal(transcriptElapsedBucket(9_999), "lt_10s");
+    assert.equal(transcriptElapsedBucket(10_000), "gte_10s");
+
+    assert.equal(transcriptPayloadSizeBucket(null), "not_measured");
+    assert.equal(transcriptPayloadSizeBucket(0), "zero");
+    assert.equal(transcriptPayloadSizeBucket(1_023), "lt_1kib");
+    assert.equal(transcriptPayloadSizeBucket(16_383), "lt_16kib");
+    assert.equal(transcriptPayloadSizeBucket(262_143), "lt_256kib");
+    assert.equal(transcriptPayloadSizeBucket(262_144), "gte_256kib");
   });
 });

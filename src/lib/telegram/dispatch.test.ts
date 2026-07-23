@@ -11,6 +11,7 @@ import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 import { handleCaptureMessage, type DispatchDeps } from "./dispatch";
 import type { TelegramMessage } from "./types";
+import { ItemBodyProcessingBlockedError } from "@/lib/processing/hold-gate";
 
 const CHAT_ID = 1;
 
@@ -39,11 +40,17 @@ function buildDeps(overrides: Partial<DispatchDeps> = {}) {
     options: Parameters<DispatchDeps["enqueueTranscriptJobForItem"]>[1];
   }> = [];
 
-  const enqueueTranscriptJobForItem: DispatchDeps["enqueueTranscriptJobForItem"] = (item, options) => {
-    transcriptJobEnqueues++;
-    transcriptJobEnqueueInputs.push({ itemId: item.id, options });
-    return null;
-  };
+  const enqueueTranscriptJobForItem: DispatchDeps["enqueueTranscriptJobForItem"] =
+    (item, options) => {
+      transcriptJobEnqueues++;
+      transcriptJobEnqueueInputs.push({ itemId: item.id, options });
+      return {
+        item_id: item.id,
+        state: "pending",
+      } as unknown as NonNullable<
+        ReturnType<DispatchDeps["enqueueTranscriptJobForItem"]>
+      >;
+    };
 
   const deps: DispatchDeps = {
     sendMessage: async (chatId, text) => {
@@ -55,12 +62,34 @@ function buildDeps(overrides: Partial<DispatchDeps> = {}) {
       };
     },
     editMessageText: async () => true,
-    getFile: async () => ({ file_id: "x", file_unique_id: "y", file_path: "documents/foo.pdf" }),
+    getFile: async () => ({
+      file_id: "x",
+      file_unique_id: "y",
+      file_path: "documents/foo.pdf",
+    }),
     downloadFile: async () => new ArrayBuffer(8),
     findItemByUrl: () => null,
     findTelegramDocumentByUniqueId: () => null,
     isDuplicateShare: () => false,
-    insertCaptured: ((input: { source_type: string; capture_source?: string; title: string; body: string; author?: string | null; source_url?: string | null; total_pages?: number | null; total_chars?: number | null; extraction_warning?: string | null; duration_seconds?: number | null; source_platform?: string | null; capture_quality?: string | null; extraction_method?: string | null; extraction_version?: string | null; published_at?: number | null; thumbnail_url?: string | null; description?: string | null }) => {
+    insertCaptured: ((input: {
+      source_type: string;
+      capture_source?: string;
+      title: string;
+      body: string;
+      author?: string | null;
+      source_url?: string | null;
+      total_pages?: number | null;
+      total_chars?: number | null;
+      extraction_warning?: string | null;
+      duration_seconds?: number | null;
+      source_platform?: string | null;
+      capture_quality?: string | null;
+      extraction_method?: string | null;
+      extraction_version?: string | null;
+      published_at?: number | null;
+      thumbnail_url?: string | null;
+      description?: string | null;
+    }) => {
       inserted.push({
         source_type: input.source_type,
         capture_source: input.capture_source,
@@ -97,7 +126,10 @@ function buildDeps(overrides: Partial<DispatchDeps> = {}) {
         batch_id: null,
       };
     }) as unknown as DispatchDeps["insertCaptured"],
-    upgradeItemCaptureContent: (async ({ itemId, content }: Parameters<DispatchDeps["upgradeItemCaptureContent"]>[0]) => {
+    upgradeItemCaptureContent: (async ({
+      itemId,
+      content,
+    }: Parameters<DispatchDeps["upgradeItemCaptureContent"]>[0]) => {
       updated.push({
         source_type: "url",
         capture_source: "telegram",
@@ -136,6 +168,10 @@ function buildDeps(overrides: Partial<DispatchDeps> = {}) {
     }) as DispatchDeps["upgradeItemCaptureContent"],
     enqueueTranscriptJobForItem,
     saveCaptureArtifacts: async () => [],
+    assertItemBodyProcessingAllowed: (() => ({
+      allowed: true,
+      basis: "legacy_schema_absent",
+    })) as DispatchDeps["assertItemBodyProcessingAllowed"],
     extractUrlCapture: (async () => {
       urlExtractCalls++;
       return {
@@ -158,15 +194,16 @@ function buildDeps(overrides: Partial<DispatchDeps> = {}) {
         },
       };
     }) as DispatchDeps["extractUrlCapture"],
-    extractPdf: async () => ({
-      title: "PDF Title",
-      body: "pdf body",
-      author: null,
-      total_pages: 3,
-      total_chars: 8,
-      extraction_warning: null,
-      created_at: Date.now(),
-    }) as never,
+    extractPdf: async () =>
+      ({
+        title: "PDF Title",
+        body: "pdf body",
+        author: null,
+        total_pages: 3,
+        total_chars: 8,
+        extraction_warning: null,
+        created_at: Date.now(),
+      }) as never,
     ...overrides,
   };
 
@@ -200,7 +237,11 @@ describe("telegram/dispatch.handleCaptureMessage", () => {
       }),
       t.deps,
     );
-    assert.deepEqual(result, { status: "captured", itemId: "abc123", source: "url" });
+    assert.deepEqual(result, {
+      status: "captured",
+      itemId: "abc123",
+      source: "url",
+    });
     assert.equal(t.urlExtractCalls(), 1);
     assert.equal(t.inserted.length, 1);
     assert.equal(t.inserted[0].source_type, "url");
@@ -211,7 +252,10 @@ describe("telegram/dispatch.handleCaptureMessage", () => {
 
   it("falls back to URL regex when entities are absent", async () => {
     const t = buildDeps();
-    await handleCaptureMessage(msg({ text: "Look at this https://example.com/post please" }), t.deps);
+    await handleCaptureMessage(
+      msg({ text: "Look at this https://example.com/post please" }),
+      t.deps,
+    );
     assert.equal(t.urlExtractCalls(), 1);
     assert.equal(t.inserted.length, 1);
   });
@@ -246,15 +290,60 @@ describe("telegram/dispatch.handleCaptureMessage", () => {
       t.deps,
     );
 
-    assert.deepEqual(result, { status: "captured", itemId: "abc123", source: "youtube" });
+    assert.deepEqual(result, {
+      status: "captured",
+      itemId: "abc123",
+      source: "youtube",
+    });
     assert.equal(t.inserted.length, 1);
     assert.equal(t.inserted[0].source_type, "youtube");
     assert.equal(t.inserted[0].capture_source, "telegram");
     assert.equal(t.transcriptJobEnqueues(), 1);
-    assert.match(t.sent[0].text, /Saved the YouTube link, but I could not read the transcript yet/);
+    assert.match(
+      t.sent[0].text,
+      /Saved the YouTube link, but I could not read the transcript yet/,
+    );
     assert.match(t.sent[0].text, /queued transcript recovery/);
     assert.match(t.sent[0].text, /brain\.arunp\.in\/review\?focus=abc123/);
     assert.match(t.sent[0].text, /brain\.arunp\.in\/items\/abc123/);
+  });
+
+  it("does not claim recovery was queued for a new weak capture when enqueue is blocked", async () => {
+    const t = buildDeps({
+      enqueueTranscriptJobForItem: (() =>
+        null) as DispatchDeps["enqueueTranscriptJobForItem"],
+      extractUrlCapture: async () => ({
+        detection: {
+          platform: "youtube",
+          canonicalUrl: "https://www.youtube.com/watch?v=blocked12345",
+          videoId: "blocked12345",
+          sourceType: "youtube",
+        },
+        source_type: "youtube",
+        content: {
+          title: "Blocked recovery video",
+          body: "Metadata only",
+          author: "Channel",
+          source_url: "https://www.youtube.com/watch?v=blocked12345",
+          extraction_warning: "youtube_antibot_metadata_only",
+          duration_seconds: null,
+          source_platform: "youtube",
+          capture_quality: "metadata_only",
+          extraction_method: "youtube_oembed_metadata",
+          extraction_version: "capture-v0.7.5",
+        },
+      }),
+    });
+
+    const result = await handleCaptureMessage(
+      msg({ text: "https://youtu.be/blocked12345" }),
+      t.deps,
+    );
+
+    assert.equal(result.status, "captured");
+    assert.match(t.sent[0].text, /Saved the YouTube link/);
+    assert.doesNotMatch(t.sent[0].text, /queued transcript recovery/i);
+    assert.doesNotMatch(t.sent[0].text, /Track it in Review/i);
   });
 
   it("captures LinkedIn URL plus pasted text as user-provided full text", async () => {
@@ -287,7 +376,11 @@ describe("telegram/dispatch.handleCaptureMessage", () => {
       t.deps,
     );
 
-    assert.deepEqual(result, { status: "captured", itemId: "abc123", source: "url" });
+    assert.deepEqual(result, {
+      status: "captured",
+      itemId: "abc123",
+      source: "url",
+    });
     assert.equal(t.inserted[0].source_platform, "linkedin");
     assert.equal(t.inserted[0].capture_quality, "user_provided_full_text");
     assert.match(t.sent[0].text, /Saved LinkedIn post text/);
@@ -322,7 +415,8 @@ describe("telegram/dispatch.handleCaptureMessage", () => {
       batch_id: null,
     };
     const t = buildDeps({
-      findItemByUrl: (() => existing) as unknown as DispatchDeps["findItemByUrl"],
+      findItemByUrl: (() =>
+        existing) as unknown as DispatchDeps["findItemByUrl"],
       extractUrlCapture: async () => ({
         detection: {
           platform: "linkedin",
@@ -351,11 +445,18 @@ describe("telegram/dispatch.handleCaptureMessage", () => {
       t.deps,
     );
 
-    assert.deepEqual(result, { status: "captured", itemId: "existing-linkedin", source: "url" });
+    assert.deepEqual(result, {
+      status: "captured",
+      itemId: "existing-linkedin",
+      source: "url",
+    });
     assert.equal(t.inserted.length, 0);
     assert.equal(t.updated.length, 1);
     assert.equal(t.updated[0].capture_quality, "user_provided_full_text");
-    assert.match(t.sent[0].text, /Updated the existing LinkedIn item with your pasted text/);
+    assert.match(
+      t.sent[0].text,
+      /Updated the existing LinkedIn item with your pasted text/,
+    );
   });
 
   it("upgrades an existing YouTube metadata-only capture when pasted text is provided", async () => {
@@ -387,7 +488,8 @@ describe("telegram/dispatch.handleCaptureMessage", () => {
       batch_id: null,
     };
     const t = buildDeps({
-      findItemByUrl: (() => existing) as unknown as DispatchDeps["findItemByUrl"],
+      findItemByUrl: (() =>
+        existing) as unknown as DispatchDeps["findItemByUrl"],
       extractUrlCapture: async () => ({
         detection: {
           platform: "youtube",
@@ -418,11 +520,73 @@ describe("telegram/dispatch.handleCaptureMessage", () => {
       t.deps,
     );
 
-    assert.deepEqual(result, { status: "captured", itemId: "existing-youtube", source: "youtube" });
+    assert.deepEqual(result, {
+      status: "captured",
+      itemId: "existing-youtube",
+      source: "youtube",
+    });
     assert.equal(t.inserted.length, 0);
     assert.equal(t.updated.length, 1);
     assert.equal(t.updated[0].capture_quality, "user_provided_full_text");
-    assert.match(t.sent[0].text, /Updated the existing YouTube item with your pasted text/);
+    assert.match(
+      t.sent[0].text,
+      /Updated the existing YouTube item with your pasted text/,
+    );
+  });
+
+  it("revalidates processing authority before an existing-item extractor is called", async () => {
+    const existing = {
+      id: "held-existing-item",
+      source_type: "url" as const,
+      capture_source: "telegram" as const,
+      title: "Held preview",
+      body: "Preview",
+      author: null,
+      source_url: "https://www.linkedin.com/posts/held-example",
+      summary: null,
+      quotes: null,
+      category: null,
+      captured_at: 0,
+      enriched_at: null,
+      enrichment_state: "pending" as const,
+      total_pages: null,
+      total_chars: 7,
+      extraction_warning: null,
+      duration_seconds: null,
+      source_platform: "linkedin",
+      capture_quality: "metadata_only",
+      extraction_method: "linkedin_opengraph",
+      extraction_version: "capture-v0.7.5",
+      published_at: null,
+      thumbnail_url: null,
+      description: null,
+      batch_id: null,
+    };
+    const t = buildDeps({
+      findItemByUrl: (() =>
+        existing) as unknown as DispatchDeps["findItemByUrl"],
+      assertItemBodyProcessingAllowed: (() => {
+        throw new ItemBodyProcessingBlockedError({
+          allowed: false,
+          basis: "held",
+          code: "processing_hold_active",
+        });
+      }) as DispatchDeps["assertItemBodyProcessingAllowed"],
+    });
+
+    await assert.rejects(
+      handleCaptureMessage(
+        msg({
+          text: "https://www.linkedin.com/posts/held-example This pasted body has enough words to attempt upgrading the existing weak item.",
+        }),
+        t.deps,
+      ),
+      (error: unknown) =>
+        error instanceof ItemBodyProcessingBlockedError &&
+        error.code === "processing_hold_active",
+    );
+    assert.equal(t.urlExtractCalls(), 0);
+    assert.equal(t.updated.length, 0);
   });
 
   it("replies 'already captured' on duplicate URL without inserting", async () => {
@@ -456,7 +620,10 @@ describe("telegram/dispatch.handleCaptureMessage", () => {
       })) as unknown as DispatchDeps["findItemByUrl"],
     });
     const result = await handleCaptureMessage(
-      msg({ text: "https://example.com/post", entities: [{ type: "url", offset: 0, length: 24 }] }),
+      msg({
+        text: "https://example.com/post",
+        entities: [{ type: "url", offset: 0, length: 24 }],
+      }),
       t.deps,
     );
     assert.equal(t.inserted.length, 0);
@@ -498,7 +665,8 @@ describe("telegram/dispatch.handleCaptureMessage", () => {
       batch_id: null,
     };
     const t = buildDeps({
-      findItemByUrl: (() => existing) as unknown as DispatchDeps["findItemByUrl"],
+      findItemByUrl: (() =>
+        existing) as unknown as DispatchDeps["findItemByUrl"],
     });
 
     const result = await handleCaptureMessage(
@@ -515,27 +683,96 @@ describe("telegram/dispatch.handleCaptureMessage", () => {
     });
     assert.equal(t.transcriptJobEnqueues(), 1);
     assert.deepEqual(t.transcriptJobEnqueueInputs(), [
-      { itemId: "existing-weak-youtube", options: { reset: true, priority: 20 } },
+      {
+        itemId: "existing-weak-youtube",
+        options: { reset: true, priority: 20 },
+      },
     ]);
     assert.match(t.sent[0].text, /queued transcript recovery again/);
-    assert.match(t.sent[0].text, /brain\.arunp\.in\/review\?focus=existing-weak-youtube/);
-    assert.match(t.sent[0].text, /brain\.arunp\.in\/items\/existing-weak-youtube/);
+    assert.match(
+      t.sent[0].text,
+      /brain\.arunp\.in\/review\?focus=existing-weak-youtube/,
+    );
+    assert.match(
+      t.sent[0].text,
+      /brain\.arunp\.in\/items\/existing-weak-youtube/,
+    );
+  });
+
+  it("does not claim duplicate recovery was queued when enqueue returns blocked", async () => {
+    const existing = {
+      id: "blocked-weak-youtube",
+      source_type: "youtube" as const,
+      capture_source: "telegram" as const,
+      title: "Blocked weak YouTube capture",
+      body: "Preview",
+      author: "Channel",
+      source_url: "https://www.youtube.com/watch?v=blockeddupe1",
+      summary: null,
+      quotes: null,
+      category: null,
+      captured_at: 0,
+      enriched_at: null,
+      enrichment_state: "pending" as const,
+      total_pages: null,
+      total_chars: 7,
+      extraction_warning: "youtube_antibot_metadata_only",
+      duration_seconds: null,
+      source_platform: "youtube",
+      capture_quality: "metadata_only",
+      extraction_method: "youtube_oembed_metadata",
+      extraction_version: "capture-v0.7.5",
+      published_at: null,
+      thumbnail_url: null,
+      description: null,
+      batch_id: null,
+    };
+    const t = buildDeps({
+      findItemByUrl: (() =>
+        existing) as unknown as DispatchDeps["findItemByUrl"],
+      enqueueTranscriptJobForItem: (() =>
+        null) as DispatchDeps["enqueueTranscriptJobForItem"],
+    });
+
+    const result = await handleCaptureMessage(
+      msg({ text: "https://youtu.be/blockeddupe1" }),
+      t.deps,
+    );
+
+    assert.deepEqual(result, {
+      status: "duplicate",
+      itemId: existing.id,
+      reason: "url-exists",
+    });
+    assert.equal(t.urlExtractCalls(), 0);
+    assert.doesNotMatch(t.sent[0].text, /queued transcript recovery/i);
+    assert.doesNotMatch(t.sent[0].text, /Track it in Review/i);
   });
 
   it("routes plain text (no URL) to note capture", async () => {
     const t = buildDeps();
-    const result = await handleCaptureMessage(msg({ text: "remember to ask Jess about offsite" }), t.deps);
+    const result = await handleCaptureMessage(
+      msg({ text: "remember to ask Jess about offsite" }),
+      t.deps,
+    );
     assert.equal(t.inserted.length, 1);
     assert.equal(t.inserted[0].source_type, "note");
     assert.equal(t.inserted[0].capture_source, "telegram");
     assert.equal(t.inserted[0].title, "remember to ask Jess about offsite");
-    assert.deepEqual(result, { status: "captured", itemId: "abc123", source: "note" });
+    assert.deepEqual(result, {
+      status: "captured",
+      itemId: "abc123",
+      source: "note",
+    });
     assert.match(t.sent[0].text, /✅ Saved as note/);
   });
 
   it("uses first line as title for multi-line notes", async () => {
     const t = buildDeps();
-    await handleCaptureMessage(msg({ text: "First line title\n\nlonger body content here" }), t.deps);
+    await handleCaptureMessage(
+      msg({ text: "First line title\n\nlonger body content here" }),
+      t.deps,
+    );
     assert.equal(t.inserted[0].title, "First line title");
     assert.match(t.inserted[0].body, /First line title\n\nlonger body/);
   });
@@ -544,8 +781,14 @@ describe("telegram/dispatch.handleCaptureMessage", () => {
     const t = buildDeps();
     const result = await handleCaptureMessage(msg({ text: "ok" }), t.deps);
     assert.equal(t.inserted.length, 0);
-    assert.deepEqual(result, { status: "ignored", reason: "unsupported-message" });
-    assert.match(t.sent[0].text, /can capture URLs, plain-text notes, and PDFs/);
+    assert.deepEqual(result, {
+      status: "ignored",
+      reason: "unsupported-message",
+    });
+    assert.match(
+      t.sent[0].text,
+      /can capture URLs, plain-text notes, and PDFs/,
+    );
   });
 
   it("handles /start without saving a note", async () => {
@@ -564,7 +807,10 @@ describe("telegram/dispatch.handleCaptureMessage", () => {
 
   it("deduplicates duplicate notes inside the short share window", async () => {
     const t = buildDeps({ isDuplicateShare: () => true });
-    const result = await handleCaptureMessage(msg({ text: "same note body" }), t.deps);
+    const result = await handleCaptureMessage(
+      msg({ text: "same note body" }),
+      t.deps,
+    );
     assert.equal(t.inserted.length, 0);
     assert.deepEqual(result, { status: "duplicate", reason: "note-window" });
     assert.match(t.sent[0].text, /Already received/);
@@ -585,7 +831,10 @@ describe("telegram/dispatch.handleCaptureMessage", () => {
       t.deps,
     );
     assert.equal(t.inserted.length, 0);
-    assert.deepEqual(result, { status: "ignored", reason: "unsupported-document" });
+    assert.deepEqual(result, {
+      status: "ignored",
+      reason: "unsupported-document",
+    });
     assert.match(t.sent[0].text, /only handle PDF/);
   });
 
@@ -604,7 +853,11 @@ describe("telegram/dispatch.handleCaptureMessage", () => {
       t.deps,
     );
     assert.equal(t.inserted.length, 0);
-    assert.deepEqual(result, { status: "failed", reason: "pdf-too-large", retryable: false });
+    assert.deepEqual(result, {
+      status: "failed",
+      reason: "pdf-too-large",
+      retryable: false,
+    });
     assert.match(t.sent[0].text, /PDF too large.*30\.0 MB/);
   });
 
@@ -625,7 +878,11 @@ describe("telegram/dispatch.handleCaptureMessage", () => {
     assert.equal(t.inserted.length, 1);
     assert.equal(t.inserted[0].source_type, "pdf");
     assert.equal(t.inserted[0].capture_source, "telegram");
-    assert.deepEqual(result, { status: "captured", itemId: "abc123", source: "pdf" });
+    assert.deepEqual(result, {
+      status: "captured",
+      itemId: "abc123",
+      source: "pdf",
+    });
     assert.match(t.sent[0].text, /📄 Capturing PDF/);
   });
 

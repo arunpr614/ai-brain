@@ -44,6 +44,10 @@
 // Dynamic imports at call sites — matches scripts/smoke-v0.3.1.mjs pattern
 // because tsx's top-level ESM import resolution on .ts files can drop
 // class/type exports (observed on EmbedError).
+import {
+  assertStandaloneContentProcessingAllowed,
+  StandaloneContentProcessingBlockedError,
+} from "./lib/content-processing-containment.mjs";
 
 const args = parseArgs(process.argv.slice(2));
 
@@ -53,44 +57,34 @@ async function preflight() {
   let provider;
   try {
     provider = getEmbedProvider();
-  } catch (err) {
-    console.error(
-      `[backfill] Could not construct embed provider for EMBED_PROVIDER=${process.env.EMBED_PROVIDER ?? "ollama"}:`,
-      err instanceof Error ? err.message : String(err),
-    );
+  } catch {
+    console.error("[backfill] provider_configuration_invalid");
     process.exit(2);
   }
-  const info = provider.getInfo();
-  console.log(`[backfill] embed provider=${info.provider} model=${info.model} dim=${info.dim}`);
+  const expectedDimension = provider.getInfo().dim;
   try {
     const probe = await provider.embed(["probe"]);
-    if (probe.length !== 1 || probe[0].length !== info.dim) {
-      console.error(
-        `[backfill] Probe embed shape mismatch: got ${probe.length}×${probe[0]?.length ?? 0}, expected 1×${info.dim}`,
-      );
+    if (probe.length !== 1 || probe[0]?.length !== expectedDimension) {
+      console.error("[backfill] provider_response_invalid");
       process.exit(4);
     }
   } catch (err) {
     if (err instanceof EmbedError && err.code === "EMBED_MODEL_NOT_INSTALLED") {
-      console.error(
-        `[backfill] Embedding model missing. Hint: ${err.pullCommand ?? "ollama pull nomic-embed-text"}`,
-      );
+      console.error("[backfill] provider_model_unavailable");
       process.exit(3);
     }
-    console.error("[backfill] Preflight embed probe failed:", err instanceof Error ? err.message : String(err));
+    console.error("[backfill] provider_preflight_failed");
     process.exit(4);
   }
 }
 
-async function findTargets(limit, reset) {
-  const { getDb } = await import("../src/db/client.ts");
-  const db = getDb();
+function findTargets(db, limit, reset) {
   // Default: only enriched items with no chunks (resumable backfill).
   // --reset: every enriched item, regardless of existing chunks.
   const predicate = reset ? "" : "AND c.id IS NULL";
   const rows = db
     .prepare(
-      `SELECT i.id, i.title
+      `SELECT i.id
          FROM items i
          LEFT JOIN chunks c ON c.item_id = i.id
         WHERE i.enrichment_state = 'done'
@@ -103,23 +97,20 @@ async function findTargets(limit, reset) {
   return rows;
 }
 
-async function wipeChunksFor(itemIds) {
-  const { getDb } = await import("../src/db/client.ts");
-  const db = getDb();
+function wipeChunksFor(db, itemIds) {
   const wipe = db.transaction((ids) => {
+    assertStandaloneContentProcessingAllowed(db);
     const delVec = db.prepare(
       `DELETE FROM chunks_vec WHERE rowid IN (SELECT rowid FROM chunks WHERE item_id = ?)`,
     );
     const delChunks = db.prepare(`DELETE FROM chunks WHERE item_id = ?`);
-    let v = 0;
-    let c = 0;
     for (const id of ids) {
-      v += delVec.run(id).changes;
-      c += delChunks.run(id).changes;
+      assertStandaloneContentProcessingAllowed(db);
+      delVec.run(id);
+      delChunks.run(id);
     }
-    return { vec: v, chunks: c };
   });
-  return wipe(itemIds);
+  wipe(itemIds);
 }
 
 function parseArgs(argv) {
@@ -131,7 +122,7 @@ function parseArgs(argv) {
     else if (a === "--limit") {
       const n = Number(argv[++i]);
       if (!Number.isFinite(n) || n <= 0) {
-        console.error(`[backfill] --limit requires a positive number, got: ${argv[i]}`);
+        console.error("[backfill] invalid_limit");
         process.exit(1);
       }
       out.limit = n;
@@ -144,67 +135,61 @@ function parseArgs(argv) {
 }
 
 async function main() {
-  const t0 = Date.now();
+  const { getDb } = await import("../src/db/client.ts");
+  const db = getDb();
+  assertStandaloneContentProcessingAllowed(db);
+
+  const targets = findTargets(db, args.limit, args.reset);
+  if (args.dryRun) {
+    console.log("[backfill] dry_run_no_provider=true");
+    logSummary(targets.length, 0, 0);
+    return;
+  }
+  if (targets.length === 0) {
+    logSummary(0, 0, 0);
+    return;
+  }
+
+  assertStandaloneContentProcessingAllowed(db);
   await preflight();
 
-  const targets = await findTargets(args.limit, args.reset);
-  if (targets.length === 0) {
-    console.log(
-      args.reset
-        ? "[backfill] Nothing to do — no enriched items found."
-        : "[backfill] Nothing to do — every enriched item already has chunks.",
-    );
-    return;
-  }
-  console.log(
-    `[backfill] ${targets.length} item(s) to process${args.dryRun ? " (dry run)" : ""}${args.reset ? " (RESET — will wipe existing chunks)" : ""}`,
-  );
-
-  if (args.dryRun) {
-    for (const t of targets.slice(0, 20)) console.log(`  - ${t.id}  ${t.title}`);
-    if (targets.length > 20) console.log(`  ... +${targets.length - 20} more`);
-    return;
-  }
-
   if (args.reset) {
-    const wiped = await wipeChunksFor(targets.map((t) => t.id));
-    console.log(`[backfill] reset wiped ${wiped.chunks} chunk row(s) and ${wiped.vec} vec row(s)`);
+    wipeChunksFor(db, targets.map((target) => target.id));
+    console.log("[backfill] reset_complete");
   }
 
   const { embedItemWithRetry } = await import("../src/lib/embed/pipeline.ts");
 
   let ok = 0;
   let fail = 0;
-  let chunks = 0;
-  for (let i = 0; i < targets.length; i++) {
-    const t = targets[i];
-    const started = Date.now();
-    const result = await embedItemWithRetry(t.id);
-    const ms = Date.now() - started;
+  for (const target of targets) {
+    assertStandaloneContentProcessingAllowed(db);
+    const result = await embedItemWithRetry(target.id);
     if (result.ok) {
       ok++;
-      chunks += result.chunk_count;
-      console.log(
-        `[${i + 1}/${targets.length}] ok   ${t.id}  ${result.chunk_count} chunk(s) · ${ms} ms · ${truncate(t.title, 40)}`,
-      );
+    } else if (result.blocked === true) {
+      throw new StandaloneContentProcessingBlockedError(result.code);
     } else {
       fail++;
-      console.log(
-        `[${i + 1}/${targets.length}] FAIL ${t.id}  ${result.code}: ${truncate(result.message, 60)}`,
-      );
     }
   }
 
-  const elapsed = ((Date.now() - t0) / 1000).toFixed(1);
-  console.error(
-    `\n[backfill] done in ${elapsed}s — ${ok} ok · ${fail} fail · ${chunks} chunk(s) embedded`,
-  );
+  logSummary(targets.length, ok, fail);
   if (fail > 0) process.exit(5);
 }
 
-function truncate(s, n) {
-  if (!s) return "";
-  return s.length > n ? s.slice(0, n - 1) + "…" : s;
+function logSummary(targets, ok, failed) {
+  console.log(`[backfill] summary targets=${targets} ok=${ok} failed=${failed}`);
 }
 
-await main();
+try {
+  await main();
+} catch (error) {
+  if (error instanceof StandaloneContentProcessingBlockedError) {
+    console.error(`[backfill] blocked code=${error.code}`);
+    process.exitCode = 6;
+  } else {
+    console.error("[backfill] failed code=backfill_failed");
+    process.exitCode = 1;
+  }
+}

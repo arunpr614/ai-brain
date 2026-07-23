@@ -1,14 +1,22 @@
 import { getDb, type ItemRow } from "@/db/client";
+import { getYouTubeBrowserSchemaCapability } from "@/db/schema-capabilities";
 import {
-  enqueueTranscriptJobForItem,
+  enqueueTranscriptJobForItemWithOutcome,
   isYoutubeTranscriptRecoveryCandidate,
   type TranscriptJobState,
 } from "@/db/transcript-jobs";
 import {
+  resolveItemBodyProcessingGate,
+  type BodyProcessingBlockedGate,
+} from "@/lib/processing/hold-gate";
+import {
   getYoutubeTimedTextCooldown,
-  logTranscriptProviderEvent,
-  YOUTUBE_TIMEDTEXT_PROVIDER_KEY,
+  logTranscriptContainmentDiagnostic,
 } from "./provider-health";
+import {
+  createContainmentDiagnostic,
+  type ContainmentDiagnostic,
+} from "@/lib/runtime/containment-diagnostics";
 
 export interface YoutubeTranscriptBackfillOptions {
   dryRun?: boolean;
@@ -18,6 +26,8 @@ export interface YoutubeTranscriptBackfillOptions {
 }
 
 export interface YoutubeTranscriptBackfillResult {
+  status: "completed" | "blocked";
+  blockedCode: BodyProcessingBlockedGate["code"] | null;
   dryRun: boolean;
   limit: number;
   scanned: number;
@@ -26,6 +36,7 @@ export interface YoutubeTranscriptBackfillResult {
   skippedExisting: number;
   skippedTerminal: number;
   skippedCooldown: number;
+  skippedBlocked: number;
   cooldownActive: boolean;
   cooldownUntil: number | null;
 }
@@ -52,10 +63,34 @@ export function backfillYoutubeTranscriptRecoveryJobs(
   const now = options.now ?? Date.now();
   const dryRun = options.dryRun ?? true;
   const limit = clampLimit(options.limit ?? 25);
+  const db = getDb();
+  const capability = getYouTubeBrowserSchemaCapability(db);
+  if (capability.kind === "incompatible") {
+    const blocked: YoutubeTranscriptBackfillResult = {
+      status: "blocked",
+      blockedCode: "processing_schema_incompatible",
+      dryRun,
+      limit,
+      scanned: 0,
+      eligible: 0,
+      enqueued: 0,
+      skippedExisting: 0,
+      skippedTerminal: 0,
+      skippedCooldown: 0,
+      skippedBlocked: 0,
+      cooldownActive: false,
+      cooldownUntil: null,
+    };
+    logBackfillSummary(blocked);
+    return blocked;
+  }
+
   const cooldown = getYoutubeTimedTextCooldown(now);
   const cooldownActive = cooldown.active && options.ignoreCooldown !== true;
   const rows = listWeakYoutubeItemsForBackfill(limit);
   const result: YoutubeTranscriptBackfillResult = {
+    status: "completed",
+    blockedCode: null,
     dryRun,
     limit,
     scanned: 0,
@@ -64,6 +99,7 @@ export function backfillYoutubeTranscriptRecoveryJobs(
     skippedExisting: 0,
     skippedTerminal: 0,
     skippedCooldown: 0,
+    skippedBlocked: 0,
     cooldownActive,
     cooldownUntil: cooldown.cooldownUntil,
   };
@@ -71,6 +107,14 @@ export function backfillYoutubeTranscriptRecoveryJobs(
   for (const row of rows) {
     result.scanned += 1;
     if (!isYoutubeTranscriptRecoveryCandidate(row)) continue;
+
+    const gate = resolveItemBodyProcessingGate(row.id, db);
+    if (!gate.allowed) {
+      result.skippedBlocked += 1;
+      result.blockedCode ??= gate.code;
+      if (gate.basis === "schema_incompatible") result.status = "blocked";
+      continue;
+    }
 
     if (row.transcript_job_state && TERMINAL_JOB_STATES.has(row.transcript_job_state)) {
       result.skippedTerminal += 1;
@@ -87,27 +131,46 @@ export function backfillYoutubeTranscriptRecoveryJobs(
       result.skippedCooldown += 1;
       continue;
     }
-    if (!dryRun && enqueueTranscriptJobForItem(row)) {
-      result.enqueued += 1;
+    if (!dryRun) {
+      const enqueue = enqueueTranscriptJobForItemWithOutcome(row);
+      if (enqueue.kind === "applied") {
+        result.enqueued += 1;
+      } else if (enqueue.kind === "blocked") {
+        result.skippedBlocked += 1;
+        result.blockedCode ??= enqueue.code;
+        if (enqueue.basis === "schema_incompatible") result.status = "blocked";
+      }
     }
   }
 
-  logTranscriptProviderEvent({
-    event: "transcript.backfill.summary",
-    provider_key: YOUTUBE_TIMEDTEXT_PROVIDER_KEY,
-    dry_run: result.dryRun,
-    limit: result.limit,
-    scanned: result.scanned,
-    eligible: result.eligible,
-    enqueued: result.enqueued,
-    skipped_existing: result.skippedExisting,
-    skipped_terminal: result.skippedTerminal,
-    skipped_cooldown: result.skippedCooldown,
-    cooldown_active: result.cooldownActive,
-    cooldown_until: result.cooldownUntil,
-  });
-
+  logBackfillSummary(result);
   return result;
+}
+
+function logBackfillSummary(result: YoutubeTranscriptBackfillResult): void {
+  logTranscriptContainmentDiagnostic(
+    createYoutubeTranscriptBackfillDiagnostic(result),
+  );
+}
+
+export function createYoutubeTranscriptBackfillDiagnostic(
+  result: YoutubeTranscriptBackfillResult,
+): ContainmentDiagnostic {
+  return createContainmentDiagnostic({
+    event: "claimant_guarded",
+    outcome: result.status === "blocked" ? "denied" : "allowed",
+    claimant: "maintenance_backfill",
+    phase: "candidate",
+    aggregateCount: result.enqueued,
+    guardrailTriggered:
+      result.status === "blocked" ||
+      result.cooldownActive ||
+      result.skippedBlocked > 0,
+    workStarted: result.scanned > 0,
+    providerContacted: false,
+    elapsedBucket: "not_measured",
+    payloadSizeBucket: "not_measured",
+  });
 }
 
 function listWeakYoutubeItemsForBackfill(limit: number): BackfillRow[] {

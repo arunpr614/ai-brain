@@ -7,15 +7,25 @@
  * pollAllInFlightBatches in isolation) plus the S-11 spike for cron
  * lifecycle in Next.js.
  */
+import { TEST_DB_DIR } from "./enrichment-batch.test.setup";
 import { test } from "node:test";
 import assert from "node:assert/strict";
+import { rmSync } from "node:fs";
 import cron from "node-cron";
+import { getDb } from "@/db/client";
 import {
   POLL_CRON,
   SUBMIT_CRON,
+  runPollTick,
+  runSubmitTick,
   startEnrichmentBatchCron,
   stopEnrichmentBatchCron,
+  type EnrichmentBatchCronDependencies,
 } from "./enrichment-batch-cron";
+
+const ORIGINAL_WORKER_MODE = process.env.BRAIN_BACKGROUND_WORKERS_MODE;
+const ORIGINAL_DEPLOYMENT = process.env.BRAIN_DEPLOYMENT_ENV;
+const ORIGINAL_PRODUCTION_RUNTIME = process.env.BRAIN_PRODUCTION_RUNTIME;
 
 test.beforeEach(() => {
   // Each test starts from a clean slate — global guard cleared, all cron
@@ -24,6 +34,10 @@ test.beforeEach(() => {
   for (const task of cron.getTasks().values()) {
     task.destroy();
   }
+  getDb().exec("DROP TABLE IF EXISTS content_processing_holds");
+  process.env.BRAIN_BACKGROUND_WORKERS_MODE = "standard";
+  process.env.BRAIN_DEPLOYMENT_ENV = "test";
+  process.env.BRAIN_PRODUCTION_RUNTIME = "0";
 });
 
 test.after(() => {
@@ -31,7 +45,48 @@ test.after(() => {
   for (const task of cron.getTasks().values()) {
     task.destroy();
   }
+  restoreEnvironment("BRAIN_BACKGROUND_WORKERS_MODE", ORIGINAL_WORKER_MODE);
+  restoreEnvironment("BRAIN_DEPLOYMENT_ENV", ORIGINAL_DEPLOYMENT);
+  restoreEnvironment("BRAIN_PRODUCTION_RUNTIME", ORIGINAL_PRODUCTION_RUNTIME);
+  rmSync(TEST_DB_DIR, { recursive: true, force: true });
 });
+
+function restoreEnvironment(name: string, value: string | undefined): void {
+  if (value === undefined) {
+    delete process.env[name];
+  } else {
+    process.env[name] = value;
+  }
+}
+
+function installPartialFeatureSchema(): void {
+  getDb().exec(`
+    CREATE TABLE content_processing_holds (
+      id TEXT PRIMARY KEY,
+      item_id TEXT NOT NULL,
+      state TEXT NOT NULL
+    )
+  `);
+}
+
+function countingTickDependencies(): {
+  dependencies: EnrichmentBatchCronDependencies;
+  calls: { submit: number; poll: number };
+} {
+  const calls = { submit: 0, poll: 0 };
+  return {
+    calls,
+    dependencies: {
+      submit: async () => {
+        calls.submit += 1;
+        return { batch_id: "must_not_escape", count: 1 };
+      },
+      poll: async () => {
+        calls.poll += 1;
+      },
+    },
+  };
+}
 
 test("schedule expressions match v0.6.0 design contract", () => {
   // 01:00 IST == 19:30 UTC (IST = UTC+5:30). Hetzner runs UTC.
@@ -46,7 +101,11 @@ test("startEnrichmentBatchCron registers exactly two tasks on first call", () =>
   const before = cron.getTasks().size;
   startEnrichmentBatchCron();
   const after = cron.getTasks().size;
-  assert.equal(after - before, 2, "expected exactly 2 new tasks (submit + poll)");
+  assert.equal(
+    after - before,
+    2,
+    "expected exactly 2 new tasks (submit + poll)",
+  );
 });
 
 test("startEnrichmentBatchCron is idempotent — second call is a no-op", () => {
@@ -85,8 +144,9 @@ test("globalThis guard survives module re-evaluation", () => {
   // globalThis flag survives.
   const path = require.resolve("./enrichment-batch-cron");
   delete require.cache[path];
-  // eslint-disable-next-line @typescript-eslint/no-require-imports
-  const reloaded = require("./enrichment-batch-cron") as typeof import("./enrichment-batch-cron");
+  const reloaded =
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    require("./enrichment-batch-cron") as typeof import("./enrichment-batch-cron");
   reloaded.startEnrichmentBatchCron();
 
   const afterRequire = cron.getTasks().size;
@@ -95,4 +155,77 @@ test("globalThis guard survives module re-evaluation", () => {
     beforeRequire,
     "re-importing the module must not add new tasks",
   );
+});
+
+test("disabled mode registers no schedules and invokes neither tick", async () => {
+  process.env.BRAIN_BACKGROUND_WORKERS_MODE = "disabled";
+  const before = cron.getTasks().size;
+  startEnrichmentBatchCron();
+  assert.equal(cron.getTasks().size, before);
+
+  const { dependencies, calls } = countingTickDependencies();
+  await runSubmitTick(dependencies);
+  await runPollTick(dependencies);
+  assert.deepEqual(calls, { submit: 0, poll: 0 });
+});
+
+test("manual-transcript-lab mode registers no schedules and invokes neither tick", async () => {
+  process.env.BRAIN_BACKGROUND_WORKERS_MODE = "manual-transcript-lab";
+  process.env.BRAIN_DEPLOYMENT_ENV = "lab";
+  const before = cron.getTasks().size;
+  startEnrichmentBatchCron();
+  assert.equal(cron.getTasks().size, before);
+
+  const { dependencies, calls } = countingTickDependencies();
+  await runSubmitTick(dependencies);
+  await runPollTick(dependencies);
+  assert.deepEqual(calls, { submit: 0, poll: 0 });
+});
+
+test("incompatible schema registers no schedules and invokes neither tick", async () => {
+  installPartialFeatureSchema();
+  const before = cron.getTasks().size;
+  startEnrichmentBatchCron();
+  assert.equal(cron.getTasks().size, before);
+
+  const { dependencies, calls } = countingTickDependencies();
+  await runSubmitTick(dependencies);
+  await runPollTick(dependencies);
+  assert.deepEqual(calls, { submit: 0, poll: 0 });
+});
+
+test("standard-mode tick logs omit batch identifiers and raw exceptions", async (t) => {
+  const privateBatchId = "PRIVATE_CRON_BATCH_ID_SENTINEL";
+  const privateError = "PRIVATE_CRON_ERROR_SENTINEL";
+  const writes: string[] = [];
+  t.mock.method(console, "log", (...args: unknown[]) => {
+    writes.push(args.map(String).join(" "));
+  });
+  t.mock.method(console, "error", (...args: unknown[]) => {
+    writes.push(args.map(String).join(" "));
+  });
+
+  await runSubmitTick({
+    submit: async () => ({ batch_id: privateBatchId, count: 2 }),
+    poll: async () => undefined,
+  });
+  await runSubmitTick({
+    submit: async () => {
+      throw new Error(privateError);
+    },
+    poll: async () => undefined,
+  });
+  await runPollTick({
+    submit: async () => null,
+    poll: async () => {
+      throw new Error(privateError);
+    },
+  });
+
+  const output = writes.join("\n");
+  assert.match(output, /submit tick completed count=2/);
+  assert.match(output, /submit tick failed/);
+  assert.match(output, /poll tick failed/);
+  assert.equal(output.includes(privateBatchId), false);
+  assert.equal(output.includes(privateError), false);
 });

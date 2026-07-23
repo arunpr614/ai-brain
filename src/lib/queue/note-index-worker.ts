@@ -1,12 +1,16 @@
 import { hostname } from "node:os";
+import type Database from "better-sqlite3";
 import { getDb } from "@/db/client";
 import { deleteChunksAndVectors, insertChunkWithRowid } from "@/db/chunks";
+import { getYouTubeBrowserSchemaCapability } from "@/db/schema-capabilities";
 import { chunkBody } from "@/lib/chunk";
 import { EMBED_DIM } from "@/lib/embed/client";
 import { getEmbedProvider } from "@/lib/embed/factory";
 import { manualNotesSemanticProcessingEnabled } from "@/lib/notes/flags";
 import { noteAiProviderPolicy } from "@/lib/notes/provider-policy";
 import { itemSemanticsChanged } from "@/lib/notes/semantic-events";
+import { classifyDeployment } from "@/lib/runtime/deployment";
+import { resolveContentWorkerPlan } from "@/lib/startup/content-workers";
 
 const POLL_MS = 2_000;
 const IDLE_MS = 10_000;
@@ -53,7 +57,20 @@ function state() {
   return globalThis.__brainNoteIndexWorker;
 }
 
+function noteIndexPlanAllows(
+  db: Database.Database = getDb(),
+): boolean {
+  return resolveContentWorkerPlan({
+    deployment: classifyDeployment(),
+    schemaCapability: getYouTubeBrowserSchemaCapability(db),
+  }).starts.noteIndex;
+}
+
 export function startNoteIndexWorker(): void {
+  if (!noteIndexPlanAllows()) {
+    console.log("[note-index] worker stopped by content plan");
+    return;
+  }
   if (!manualNotesSemanticProcessingEnabled()) {
     console.log("[note-index] worker disabled");
     return;
@@ -62,7 +79,7 @@ export function startNoteIndexWorker(): void {
   if (current.running) return;
   current.running = true;
   current.stopRequested = false;
-  console.log(`[note-index] worker starting id=${WORKER_ID}`);
+  console.log("[note-index] worker starting");
   void workerLoop();
 }
 
@@ -73,7 +90,10 @@ export function stopNoteIndexWorker(): void {
 async function workerLoop(): Promise<void> {
   const current = state();
   while (!current.stopRequested) {
-    if (!manualNotesSemanticProcessingEnabled()) {
+    if (
+      !noteIndexPlanAllows() ||
+      !manualNotesSemanticProcessingEnabled()
+    ) {
       await sleep(IDLE_MS);
       continue;
     }
@@ -90,9 +110,20 @@ async function workerLoop(): Promise<void> {
 }
 
 export function claimNextNoteIndexJob(now = Date.now()): NoteIndexJob | null {
-  if (!manualNotesSemanticProcessingEnabled()) return null;
   const db = getDb();
+  if (
+    !noteIndexPlanAllows(db) ||
+    !manualNotesSemanticProcessingEnabled()
+  ) {
+    return null;
+  }
   return db.transaction(() => {
+    if (
+      !noteIndexPlanAllows(db) ||
+      !manualNotesSemanticProcessingEnabled()
+    ) {
+      return null;
+    }
     const job = db
       .prepare(
         `SELECT item_id, target_epoch, target_generation, desired_action, state,
@@ -135,12 +166,15 @@ export function claimNextNoteIndexJob(now = Date.now()): NoteIndexJob | null {
           lease_expires_at: now + LEASE_MS,
         }
       : null;
-  })();
+  }).immediate();
 }
 
-function currentNote(itemId: string): CurrentNote | null {
+function currentNote(
+  itemId: string,
+  db: Database.Database = getDb(),
+): CurrentNote | null {
   return (
-    (getDb()
+    (db
       .prepare(
         `SELECT s.item_id, i.title, s.epoch, s.generation, s.is_deleted,
                 n.content_text, n.include_in_ai
@@ -159,9 +193,28 @@ function isCurrent(job: NoteIndexJob, note: CurrentNote | null): boolean {
   );
 }
 
-function completeJob(job: NoteIndexJob, now: number): boolean {
+function sameIndexInput(
+  job: NoteIndexJob,
+  before: CurrentNote,
+  latest: CurrentNote | null,
+): boolean {
+  return Boolean(
+    isCurrent(job, latest) &&
+      latest?.is_deleted === 0 &&
+      latest.include_in_ai === 1 &&
+      latest.title === before.title &&
+      latest.content_text === before.content_text &&
+      latest.content_text?.trim(),
+  );
+}
+
+function completeJob(
+  job: NoteIndexJob,
+  now: number,
+  db: Database.Database = getDb(),
+): boolean {
   return (
-    getDb()
+    db
       .prepare(
         `UPDATE note_index_jobs
          SET state = 'done', claimed_by = NULL, lease_expires_at = NULL,
@@ -180,9 +233,13 @@ function completeJob(job: NoteIndexJob, now: number): boolean {
   );
 }
 
-function failJob(job: NoteIndexJob, code: string): void {
+function failJob(
+  job: NoteIndexJob,
+  code: string,
+  db: Database.Database = getDb(),
+): void {
   const terminal = job.attempts >= MAX_ATTEMPTS;
-  getDb()
+  db
     .prepare(
       `UPDATE note_index_jobs
        SET state = 'error', claimed_by = NULL, lease_expires_at = NULL,
@@ -207,16 +264,23 @@ export async function runClaimedNoteIndexJob(
   job: NoteIndexJob,
   deps: NoteIndexWorkerDeps = {},
 ): Promise<void> {
+  const db = getDb();
+  if (!noteIndexPlanAllows(db)) return;
   if (!manualNotesSemanticProcessingEnabled()) {
-    failJob(job, "WORKER_DISABLED");
+    failJob(job, "WORKER_DISABLED", db);
     return;
   }
-  const before = currentNote(job.item_id);
+  const before = currentNote(job.item_id, db);
 
   if (job.desired_action === "purge") {
-    const db = getDb();
     const purged = db.transaction(() => {
       const now = Date.now();
+      if (
+        !noteIndexPlanAllows(db) ||
+        !manualNotesSemanticProcessingEnabled()
+      ) {
+        return false;
+      }
       const owned = db
         .prepare(
           `SELECT 1 AS ok FROM note_index_jobs
@@ -231,10 +295,10 @@ export async function runClaimedNoteIndexJob(
           WORKER_ID,
           now,
         );
-      if (!owned || !manualNotesSemanticProcessingEnabled()) return false;
+      if (!owned) return false;
       deleteChunksAndVectors(job.item_id, "manual_note");
-      return completeJob(job, now);
-    })();
+      return completeJob(job, now, db);
+    }).immediate();
     if (purged) {
       itemSemanticsChanged({
         itemId: job.item_id,
@@ -253,23 +317,39 @@ export async function runClaimedNoteIndexJob(
     before.include_in_ai !== 1 ||
     !before.content_text?.trim()
   ) {
-    failJob(job, "NOTE_NO_LONGER_ELIGIBLE");
+    failJob(job, "NOTE_NO_LONGER_ELIGIBLE", db);
     return;
   }
   if (!noteAiProviderPolicy().eligible) {
-    failJob(job, "NOTE_AI_CONSENT_REQUIRED");
+    failJob(job, "NOTE_AI_CONSENT_REQUIRED", db);
     return;
   }
 
   const chunks = chunkBody(`${before.title}\n\n${before.content_text}`);
   if (chunks.length === 0) {
-    deleteChunksAndVectors(job.item_id, "manual_note");
-    completeJob(job, Date.now());
+    db.transaction(() => {
+      if (
+        !noteIndexPlanAllows(db) ||
+        !manualNotesSemanticProcessingEnabled() ||
+        !noteAiProviderPolicy().eligible ||
+        !sameIndexInput(job, before, currentNote(job.item_id, db))
+      ) {
+        return false;
+      }
+      deleteChunksAndVectors(job.item_id, "manual_note");
+      return completeJob(job, Date.now(), db);
+    }).immediate();
     return;
   }
 
   const heartbeat = setInterval(() => {
-    getDb()
+    if (
+      !noteIndexPlanAllows(db) ||
+      !sameIndexInput(job, before, currentNote(job.item_id, db))
+    ) {
+      return;
+    }
+    db
       .prepare(
         `UPDATE note_index_jobs SET lease_expires_at = ?, updated_at = ?
          WHERE item_id = ? AND claimed_by = ? AND state = 'running'`,
@@ -278,26 +358,48 @@ export async function runClaimedNoteIndexJob(
   }, Math.floor(LEASE_MS / 3));
 
   try {
-    if (!manualNotesSemanticProcessingEnabled() || !noteAiProviderPolicy().eligible) {
-      failJob(job, "NOTE_INDEX_POLICY_CHANGED");
+    if (!noteIndexPlanAllows(db)) return;
+    if (
+      !manualNotesSemanticProcessingEnabled() ||
+      !noteAiProviderPolicy().eligible
+    ) {
+      failJob(job, "NOTE_INDEX_POLICY_CHANGED", db);
+      return;
+    }
+    if (!sameIndexInput(job, before, currentNote(job.item_id, db))) {
       return;
     }
     const vectors = await (deps.embedFn ?? ((inputs) => getEmbedProvider().embed(inputs)))(
       chunks.map((chunk) => chunk.body),
     );
-    if (vectors.length !== chunks.length || vectors.some((vector) => vector.length !== EMBED_DIM)) {
-      failJob(job, "NOTE_EMBED_INVALID_RESPONSE");
+    if (
+      !noteIndexPlanAllows(db) ||
+      !sameIndexInput(job, before, currentNote(job.item_id, db))
+    ) {
       return;
     }
-    const db = getDb();
+    if (
+      !manualNotesSemanticProcessingEnabled() ||
+      !noteAiProviderPolicy().eligible
+    ) {
+      failJob(job, "NOTE_INDEX_POLICY_CHANGED", db);
+      return;
+    }
+    if (vectors.length !== chunks.length || vectors.some((vector) => vector.length !== EMBED_DIM)) {
+      failJob(job, "NOTE_EMBED_INVALID_RESPONSE", db);
+      return;
+    }
     const committed = db.transaction(() => {
-      if (!manualNotesSemanticProcessingEnabled() || !noteAiProviderPolicy().eligible) return false;
-      const latest = currentNote(job.item_id);
       if (
-        !isCurrent(job, latest) ||
-        latest?.is_deleted !== 0 ||
-        latest.include_in_ai !== 1 ||
-        latest.content_text !== before.content_text
+        !noteIndexPlanAllows(db) ||
+        !manualNotesSemanticProcessingEnabled() ||
+        !noteAiProviderPolicy().eligible
+      ) {
+        return false;
+      }
+      const latest = currentNote(job.item_id, db);
+      if (
+        !sameIndexInput(job, before, latest)
       ) {
         return false;
       }
@@ -336,8 +438,8 @@ export async function runClaimedNoteIndexJob(
         `UPDATE item_notes SET indexed_generation = ?
          WHERE item_id = ? AND epoch = ? AND generation = ? AND include_in_ai = 1`,
       ).run(job.target_generation, job.item_id, job.target_epoch, job.target_generation);
-      return completeJob(job, Date.now());
-    })();
+      return completeJob(job, Date.now(), db);
+    }).immediate();
 
     if (committed) {
       itemSemanticsChanged({
@@ -349,8 +451,14 @@ export async function runClaimedNoteIndexJob(
       });
     }
   } catch (error) {
+    if (
+      !noteIndexPlanAllows(db) ||
+      !sameIndexInput(job, before, currentNote(job.item_id, db))
+    ) {
+      return;
+    }
     const code = error instanceof Error ? error.name || "NOTE_INDEX_FAILED" : "NOTE_INDEX_FAILED";
-    failJob(job, code);
+    failJob(job, code, db);
   } finally {
     clearInterval(heartbeat);
   }
@@ -361,6 +469,7 @@ export async function runOneNoteIndexJob(
   now = Date.now(),
   deps: NoteIndexWorkerDeps = {},
 ): Promise<boolean> {
+  if (!noteIndexPlanAllows()) return false;
   const job = claimNextNoteIndexJob(now);
   if (!job) return false;
   await runClaimedNoteIndexJob(job, deps);

@@ -4,12 +4,16 @@ import { extractArticleFromUrl } from "./url";
 import { extractYoutubeVideo } from "./youtube";
 import { detectCapturePlatform, type PlatformDetection } from "./platform";
 import { extractSubstackFromUrl } from "./substack";
-import { captureLinkedInUserText, extractLinkedInMetadataFromUrl } from "./linkedin";
+import {
+  captureLinkedInUserText,
+  extractLinkedInMetadataFromUrl,
+} from "./linkedin";
 import type { CapturedContent } from "./types";
 import { CAPTURE_EXTRACTION_VERSION } from "./quality";
 import { buildYoutubeUserTextCapture } from "./youtube-user-text";
 import { meaningfulUserText as extractMeaningfulUserText } from "./user-provided";
 import { buildBrowserSelectedTextCapture } from "./selected-text";
+import { assertItemBodyProcessingAllowed } from "@/lib/processing/hold-gate";
 
 export interface ExtractUrlCaptureInput {
   url: string;
@@ -28,9 +32,16 @@ export interface ExtractUrlCaptureResult {
 export async function extractUrlCapture(
   input: ExtractUrlCaptureInput,
 ): Promise<ExtractUrlCaptureResult> {
+  if (input.existingItem) {
+    assertItemBodyProcessingAllowed(input.existingItem.id);
+  }
   const detection = detectCapturePlatform(input.url);
   let content: CapturedContent;
-  const pasted = meaningfulUserText(input.userText, input.url, detection.canonicalUrl);
+  const pasted = meaningfulUserText(
+    input.userText,
+    input.url,
+    detection.canonicalUrl,
+  );
 
   if (input.userTextSource === "selected_text" && pasted) {
     content = buildBrowserSelectedTextCapture({
@@ -43,7 +54,8 @@ export async function extractUrlCapture(
   } else if (detection.videoId && pasted) {
     content = await buildYoutubeUserTextCapture({
       canonicalUrl: detection.canonicalUrl,
-      platform: detection.platform === "youtube_short" ? "youtube_short" : "youtube",
+      platform:
+        detection.platform === "youtube_short" ? "youtube_short" : "youtube",
       videoId: detection.videoId,
       userText: pasted,
       existingItem: input.existingItem,
@@ -81,7 +93,11 @@ export function meaningfulUserText(
   canonicalUrl?: string | null,
 ): string | null {
   try {
-    return extractMeaningfulUserText(text, url, canonicalUrl ?? detectCapturePlatform(url).canonicalUrl);
+    return extractMeaningfulUserText(
+      text,
+      url,
+      canonicalUrl ?? detectCapturePlatform(url).canonicalUrl,
+    );
   } catch {
     return extractMeaningfulUserText(text, url);
   }

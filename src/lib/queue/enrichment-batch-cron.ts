@@ -32,7 +32,12 @@
  */
 
 import cron from "node-cron";
-import { pollAllInFlightBatches, submitDailyBatch } from "./enrichment-batch";
+import {
+  isEnrichmentBatchStandardMode,
+  pollAllInFlightBatches,
+  submitDailyBatch,
+  type SubmitOutcome,
+} from "./enrichment-batch";
 
 /**
  * 01:00 IST daily. IST is UTC+5:30, so 01:00 IST = 19:30 UTC of the prior
@@ -72,18 +77,17 @@ function cronState() {
  * server boot AND across HMR re-evaluations in dev.
  */
 export function startEnrichmentBatchCron(): void {
+  if (!isEnrichmentBatchStandardMode()) return;
   const state = cronState();
   if (state.registered) {
     return;
   }
   state.registered = true;
 
-  state.submitTask = cron.schedule(SUBMIT_CRON, runSubmitTick);
-  state.pollTask = cron.schedule(POLL_CRON, runPollTick);
+  state.submitTask = cron.schedule(SUBMIT_CRON, () => runSubmitTick());
+  state.pollTask = cron.schedule(POLL_CRON, () => runPollTick());
 
-  console.log(
-    `[batch-cron] scheduled submit='${SUBMIT_CRON}' (01:00 IST) poll='${POLL_CRON}' (every 5m)`,
-  );
+  console.log("[batch-cron] schedules registered");
 }
 
 /**
@@ -106,29 +110,42 @@ export function stopEnrichmentBatchCron(): void {
   state.registered = false;
 }
 
-async function runSubmitTick(): Promise<void> {
+export interface EnrichmentBatchCronDependencies {
+  readonly submit: () => Promise<SubmitOutcome>;
+  readonly poll: () => Promise<void>;
+}
+
+const DEFAULT_CRON_DEPENDENCIES: EnrichmentBatchCronDependencies = {
+  submit: submitDailyBatch,
+  poll: pollAllInFlightBatches,
+};
+
+export async function runSubmitTick(
+  dependencies: EnrichmentBatchCronDependencies = DEFAULT_CRON_DEPENDENCIES,
+): Promise<void> {
+  if (!isEnrichmentBatchStandardMode()) return;
   try {
-    const result = await submitDailyBatch();
+    const result = await dependencies.submit();
+    if (!isEnrichmentBatchStandardMode()) return;
     if (result === null) {
       console.log("[batch-cron] submit tick: nothing to submit");
       return;
     }
-    console.log(
-      `[batch-cron] submit tick: batch_id=${result.batch_id} count=${result.count}`,
-    );
-  } catch (err) {
-    console.error(
-      `[batch-cron] submit tick FAILED: ${(err as Error).message}`,
-    );
+    console.log(`[batch-cron] submit tick completed count=${result.count}`);
+  } catch {
+    if (!isEnrichmentBatchStandardMode()) return;
+    console.error("[batch-cron] submit tick failed");
   }
 }
 
-async function runPollTick(): Promise<void> {
+export async function runPollTick(
+  dependencies: EnrichmentBatchCronDependencies = DEFAULT_CRON_DEPENDENCIES,
+): Promise<void> {
+  if (!isEnrichmentBatchStandardMode()) return;
   try {
-    await pollAllInFlightBatches();
-  } catch (err) {
-    console.error(
-      `[batch-cron] poll tick FAILED: ${(err as Error).message}`,
-    );
+    await dependencies.poll();
+  } catch {
+    if (!isEnrichmentBatchStandardMode()) return;
+    console.error("[batch-cron] poll tick failed");
   }
 }

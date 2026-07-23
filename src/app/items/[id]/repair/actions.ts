@@ -99,12 +99,7 @@ export async function repairItemWithTextAction(
     if (err instanceof RepairItemError || err instanceof UserProvidedTranscriptError) {
       return { error: err.message };
     }
-    logError({
-      type: "repair.item.unexpected-failure",
-      item_id: parsed.data.item_id,
-      message: err instanceof Error ? err.message : String(err),
-      ts: Date.now(),
-    });
+    logError("repair.item.unexpected-failure");
     return { error: "Repair could not be saved. Try again." };
   }
 

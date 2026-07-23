@@ -4,7 +4,8 @@ import type {
   TranscriptEnvironment,
   TranscriptSourceRow,
 } from "@/db/transcripts";
-import { currentTranscriptEnvironment, isYoutubeItem } from "@/lib/capture/policy";
+import { isYoutubeItem } from "@/lib/capture/policy";
+import { classifyDeployment } from "@/lib/runtime/deployment";
 
 export type YoutubeTranscriptRecoveryOptionId =
   | "paste_transcript"
@@ -56,6 +57,7 @@ export interface BuildYoutubeTranscriptRecoveryStatusInput {
     | "segment_count"
     | "language_code"
   > | null;
+  /** Legacy presentation input only; never used as deployment authority. */
   environment?: TranscriptEnvironment;
   officialCaptionsWired?: boolean;
   ownedMediaSttWired?: boolean;
@@ -80,7 +82,7 @@ export function buildYoutubeTranscriptRecoveryStatus(
   }
 
   const hasActiveTranscript = Boolean(input.activeTranscriptSource);
-  const environment = input.environment ?? currentTranscriptEnvironment();
+  const deployment = classifyDeployment();
   const repairHref = input.repairHref ?? `/items/${input.item.id}/repair`;
   const primaryActionLabel = hasActiveTranscript ? "Replace transcript" : "Add transcript";
 
@@ -125,7 +127,9 @@ export function buildYoutubeTranscriptRecoveryStatus(
       officialCaptionOption(input.officialCaptionsWired ?? false),
       ownedMediaSttOption(input.ownedMediaSttWired ?? false),
       publicExtractionOption({
-        environment,
+        authoritativeLab:
+          deployment.restrictedCapability === "eligible" &&
+          deployment.effectiveDeployment === "lab",
         labPublicExtractionApproved: input.labPublicExtractionApproved ?? false,
       }),
     ],
@@ -170,10 +174,11 @@ function ownedMediaSttOption(ownedMediaSttWired: boolean): YoutubeTranscriptReco
 }
 
 function publicExtractionOption(input: {
-  environment: TranscriptEnvironment;
+  authoritativeLab: boolean;
   labPublicExtractionApproved: boolean;
 }): YoutubeTranscriptRecoveryOption {
-  const labApproved = input.environment === "lab" && input.labPublicExtractionApproved;
+  const labApproved =
+    input.authoritativeLab && input.labPublicExtractionApproved;
   return {
     id: "public_extraction",
     label: "Public YouTube transcript extraction",

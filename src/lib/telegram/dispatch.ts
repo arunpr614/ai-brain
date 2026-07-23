@@ -33,14 +33,21 @@ import {
 import { findTelegramDocumentByUniqueId as realFindTelegramDocumentByUniqueId } from "@/db/telegram-updates";
 import { saveCaptureArtifacts as realSaveCaptureArtifacts } from "@/lib/capture/artifacts";
 import { extractUrlCapture as realExtractUrlCapture } from "@/lib/capture/capture-url";
-import { isDuplicateShare as realIsDuplicateShare, shareDedupKey } from "@/lib/capture/dedup";
-import { extractPdf as realExtractPdf, PdfCaptureError } from "@/lib/capture/pdf";
+import {
+  isDuplicateShare as realIsDuplicateShare,
+  shareDedupKey,
+} from "@/lib/capture/dedup";
+import {
+  extractPdf as realExtractPdf,
+  PdfCaptureError,
+} from "@/lib/capture/pdf";
 import { UrlCaptureError } from "@/lib/capture/url";
 import { YoutubeCaptureError } from "@/lib/capture/youtube";
 import { detectCapturePlatform } from "@/lib/capture/platform";
 import { classifyCaptureUpgrade } from "@/lib/capture/upgrade-policy";
 import { analyzeUserProvidedText } from "@/lib/capture/user-provided";
 import { logError } from "@/lib/errors/sink";
+import { assertItemBodyProcessingAllowed as realAssertItemBodyProcessingAllowed } from "@/lib/processing/hold-gate";
 import {
   downloadFile as realDownloadFile,
   editMessageText as realEditMessageText,
@@ -68,6 +75,7 @@ export interface DispatchDeps {
   saveCaptureArtifacts: typeof realSaveCaptureArtifacts;
   extractUrlCapture: typeof realExtractUrlCapture;
   extractPdf: typeof realExtractPdf;
+  assertItemBodyProcessingAllowed: typeof realAssertItemBodyProcessingAllowed;
 }
 
 const defaultDeps: DispatchDeps = {
@@ -84,6 +92,7 @@ const defaultDeps: DispatchDeps = {
   saveCaptureArtifacts: realSaveCaptureArtifacts,
   extractUrlCapture: realExtractUrlCapture,
   extractPdf: realExtractPdf,
+  assertItemBodyProcessingAllowed: realAssertItemBodyProcessingAllowed,
 };
 
 function itemUrl(id: string): string {
@@ -96,7 +105,11 @@ function reviewUrl(itemId?: string): string {
 }
 
 export type TelegramCaptureResult =
-  | { status: "captured"; itemId: string; source: "url" | "youtube" | "note" | "pdf" }
+  | {
+      status: "captured";
+      itemId: string;
+      source: "url" | "youtube" | "note" | "pdf";
+    }
   | { status: "duplicate"; itemId?: string; reason: string }
   | { status: "ignored"; reason: string }
   | { status: "failed"; reason: string; retryable: boolean };
@@ -160,9 +173,13 @@ export async function handleCaptureMessage(
 function extractBotCommand(msg: TelegramMessage): string | null {
   const text = msg.text ?? msg.caption ?? "";
   const entities = msg.entities ?? msg.caption_entities ?? [];
-  const entityCommand = entities.find((entity) => entity.type === "bot_command" && entity.offset === 0);
+  const entityCommand = entities.find(
+    (entity) => entity.type === "bot_command" && entity.offset === 0,
+  );
   if (entityCommand) {
-    return text.slice(entityCommand.offset, entityCommand.offset + entityCommand.length).split("@", 1)[0];
+    return text
+      .slice(entityCommand.offset, entityCommand.offset + entityCommand.length)
+      .split("@", 1)[0];
   }
   const match = text.trimStart().match(/^\/[A-Za-z0-9_]+(?:@[A-Za-z0-9_]+)?/);
   return match ? match[0].split("@", 1)[0] : null;
@@ -201,16 +218,21 @@ async function captureUrl(
   const existing = deps.findItemByUrl(url);
   if (existing && !hasUserText) {
     if (isYoutubeTranscriptRecoveryCandidate(existing)) {
-      deps.enqueueTranscriptJobForItem(existing, { reset: true, priority: 20 });
-      await deps.sendMessage(
-        chatId,
-        `↩️ Already captured: ${existing.title || "(untitled)"}\nI queued transcript recovery again. Track it in Review:\n${reviewUrl(existing.id)}\n${itemUrl(existing.id)}`,
-      );
-      return {
-        status: "duplicate",
-        itemId: existing.id,
-        reason: "transcript-recovery-queued",
-      };
+      const queued = deps.enqueueTranscriptJobForItem(existing, {
+        reset: true,
+        priority: 20,
+      });
+      if (queued) {
+        await deps.sendMessage(
+          chatId,
+          `↩️ Already captured: ${existing.title || "(untitled)"}\nI queued transcript recovery again. Track it in Review:\n${reviewUrl(existing.id)}\n${itemUrl(existing.id)}`,
+        );
+        return {
+          status: "duplicate",
+          itemId: existing.id,
+          reason: "transcript-recovery-queued",
+        };
+      }
     }
     await deps.sendMessage(
       chatId,
@@ -219,32 +241,22 @@ async function captureUrl(
     return { status: "duplicate", itemId: existing.id, reason: "url-exists" };
   }
   if (existing && hasUserText && !userText) {
-    logCaptureDecision("capture.upgrade.rejected", {
-      item_id: existing.id,
-      platform: existing.source_platform ?? detection.platform,
-      source_url: url,
-      old_quality: existing.capture_quality ?? null,
-      action: "rejected_too_short",
-      reason: userTextAnalysis.tooLong ? "user_text_too_long" : "user_text_too_short",
-      text_chars: userTextAnalysis.charCount,
-      text_words: userTextAnalysis.wordCount,
-    });
-    await deps.sendMessage(
-      chatId,
-      userTextAnalysis.tooLong
-        ? `That paste is too long. Send a shorter transcript or notes block.\n${itemUrl(existing.id)}`
-        : `Paste at least 8 words after the link to upgrade this item.\n${itemUrl(existing.id)}`,
-    ).catch((err) => {
-      logError({
-        type: "telegram.ack.failed",
-        item_id: existing.id,
-        message: (err as Error).message,
-        ts: Date.now(),
+    logError("capture.upgrade.rejected");
+    await deps
+      .sendMessage(
+        chatId,
+        userTextAnalysis.tooLong
+          ? `That paste is too long. Send a shorter transcript or notes block.\n${itemUrl(existing.id)}`
+          : `Paste at least 8 words after the link to upgrade this item.\n${itemUrl(existing.id)}`,
+      )
+      .catch(() => {
+        logError("telegram.ack.failed");
       });
-    });
     return {
       status: "failed",
-      reason: userTextAnalysis.tooLong ? "user-text-too-long" : "user-text-too-short",
+      reason: userTextAnalysis.tooLong
+        ? "user-text-too-long"
+        : "user-text-too-short",
       retryable: false,
     };
   }
@@ -256,46 +268,38 @@ async function captureUrl(
       hasUserText: true,
     });
     if (preDecision.action !== "upgrade") {
-      logCaptureDecision(
-        preDecision.action === "unsupported" ? "capture.upgrade.rejected" : "capture.duplicate",
-        {
-          item_id: existing.id,
-          platform: existing.source_platform ?? detection.platform,
-          source_url: url,
-          old_quality: existing.capture_quality ?? null,
-          action: preDecision.action,
-          reason: preDecision.reason,
-          text_chars: userTextAnalysis.charCount,
-          text_words: userTextAnalysis.wordCount,
-        },
-      );
-      await deps.sendMessage(
-        chatId,
-        `↩️ Already captured: ${existing.title || "(untitled)"}\n${itemUrl(existing.id)}`,
-      ).catch((err) => {
-        logError({
-          type: "telegram.ack.failed",
-          item_id: existing.id,
-          message: (err as Error).message,
-          ts: Date.now(),
+      if (preDecision.action === "unsupported") {
+        logError("capture.upgrade.rejected");
+      } else {
+        logError("capture.duplicate");
+      }
+      await deps
+        .sendMessage(
+          chatId,
+          `↩️ Already captured: ${existing.title || "(untitled)"}\n${itemUrl(existing.id)}`,
+        )
+        .catch(() => {
+          logError("telegram.ack.failed");
         });
-      });
-      return { status: "duplicate", itemId: existing.id, reason: preDecision.reason };
+      return {
+        status: "duplicate",
+        itemId: existing.id,
+        reason: preDecision.reason,
+      };
     }
-    logCaptureDecision("capture.upgrade.started", {
-      item_id: existing.id,
-      platform: existing.source_platform ?? detection.platform,
-      source_url: url,
-      old_quality: existing.capture_quality ?? null,
-      action: "upgrade",
-      reason: preDecision.reason,
-      text_chars: userTextAnalysis.charCount,
-      text_words: userTextAnalysis.wordCount,
-    });
+    logError("capture.upgrade.started");
   }
 
+  // Do not let an existing-item upgrade reach even an injected extractor on
+  // stale authority. The write repository asserts the same gate again.
+  if (existing) deps.assertItemBodyProcessingAllowed(existing.id);
+
   try {
-    const extracted = await deps.extractUrlCapture({ url: rawUrl, userText: fullText, existingItem: existing });
+    const extracted = await deps.extractUrlCapture({
+      url: rawUrl,
+      userText: fullText,
+      existingItem: existing,
+    });
     const { content } = extracted;
 
     if (existing) {
@@ -306,53 +310,58 @@ async function captureUrl(
         hasUserText,
       });
       if (decision.action !== "upgrade") {
-        logCaptureDecision(
-          decision.action === "unsupported" || decision.action === "rejected_too_short"
-            ? "capture.upgrade.rejected"
-            : "capture.duplicate",
-          {
-            item_id: existing.id,
-            platform: existing.source_platform ?? content.source_platform ?? extracted.detection.platform,
-            source_url: url,
-            old_quality: existing.capture_quality ?? null,
-            new_quality: content.capture_quality ?? null,
-            action: decision.action,
-            reason: decision.reason,
-            text_chars: userTextAnalysis.charCount,
-            text_words: userTextAnalysis.wordCount,
-          },
-        );
-        await deps.sendMessage(
-          chatId,
-          `↩️ Already captured: ${existing.title || "(untitled)"}\n${itemUrl(existing.id)}`,
-        ).catch((err) => {
-          logError({
-            type: "telegram.ack.failed",
-            item_id: existing.id,
-            message: (err as Error).message,
-            ts: Date.now(),
+        if (
+          decision.action === "unsupported" ||
+          decision.action === "rejected_too_short"
+        ) {
+          logError("capture.upgrade.rejected");
+        } else {
+          logError("capture.duplicate");
+        }
+        await deps
+          .sendMessage(
+            chatId,
+            `↩️ Already captured: ${existing.title || "(untitled)"}\n${itemUrl(existing.id)}`,
+          )
+          .catch(() => {
+            logError("telegram.ack.failed");
           });
-        });
-        return { status: "duplicate", itemId: existing.id, reason: decision.reason };
+        return {
+          status: "duplicate",
+          itemId: existing.id,
+          reason: decision.reason,
+        };
       }
-      const item = await deps.upgradeItemCaptureContent({
-        itemId: existing.id,
-        content: {
-          ...content,
-          source_platform: content.source_platform ?? extracted.detection.platform,
-          duration_seconds: extracted.source_type === "youtube" ? content.duration_seconds ?? null : null,
-        },
-        platform: extracted.detection.platform,
-      }) ?? existing;
-      await deps.sendMessage(chatId, upgradeAckMessage(item.id, content.source_platform ?? extracted.detection.platform)).catch((err) => {
-        logError({
-          type: "telegram.ack.failed",
-          item_id: item.id,
-          message: (err as Error).message,
-          ts: Date.now(),
+      const item =
+        (await deps.upgradeItemCaptureContent({
+          itemId: existing.id,
+          content: {
+            ...content,
+            source_platform:
+              content.source_platform ?? extracted.detection.platform,
+            duration_seconds:
+              extracted.source_type === "youtube"
+                ? (content.duration_seconds ?? null)
+                : null,
+          },
+          platform: extracted.detection.platform,
+        })) ?? existing;
+      await deps
+        .sendMessage(
+          chatId,
+          upgradeAckMessage(
+            item.id,
+            content.source_platform ?? extracted.detection.platform,
+          ),
+        )
+        .catch(() => {
+          logError("telegram.ack.failed");
         });
-      });
-      return { status: "captured", itemId: item.id, source: extracted.source_type === "youtube" ? "youtube" : "url" };
+      return {
+        status: "captured",
+        itemId: item.id,
+        source: extracted.source_type === "youtube" ? "youtube" : "url",
+      };
     }
 
     const item = deps.insertCaptured({
@@ -363,7 +372,10 @@ async function captureUrl(
       author: content.author,
       source_url: content.source_url,
       extraction_warning: content.extraction_warning,
-      duration_seconds: extracted.source_type === "youtube" ? content.duration_seconds ?? null : null,
+      duration_seconds:
+        extracted.source_type === "youtube"
+          ? (content.duration_seconds ?? null)
+          : null,
       source_platform: content.source_platform ?? extracted.detection.platform,
       capture_quality: content.capture_quality ?? null,
       extraction_method: content.extraction_method ?? null,
@@ -374,48 +386,37 @@ async function captureUrl(
     });
     try {
       await deps.saveCaptureArtifacts(item.id, content.artifacts);
-    } catch (err) {
-      logError({
-        type: "capture.artifact-save-failed",
-        item_id: item.id,
-        message: (err as Error).message,
-        ts: Date.now(),
-      });
+    } catch {
+      logError("capture.artifact-save-failed");
     }
-    logCaptureDecision("capture.created", {
-      item_id: item.id,
-      platform: content.source_platform ?? extracted.detection.platform,
-      source_url: content.source_url,
-      new_quality: content.capture_quality ?? null,
-      extraction_method: content.extraction_method ?? null,
-      action: "created",
-      text_chars: content.body.length,
+    logError("capture.created");
+
+    const transcriptRecoveryQueued = isYoutubeTranscriptRecoveryCandidate(item)
+      ? Boolean(deps.enqueueTranscriptJobForItem(item, { priority: 20 }))
+      : false;
+
+    const ackMessage = captureAckMessage(
+      item.title,
+      item.id,
+      content.capture_quality,
+      content.source_platform,
+      transcriptRecoveryQueued,
+    );
+
+    await deps.sendMessage(chatId, ackMessage).catch(() => {
+      logError("telegram.ack.failed");
     });
-
-    if (isYoutubeTranscriptRecoveryCandidate(item)) {
-      deps.enqueueTranscriptJobForItem(item, { priority: 20 });
-    }
-
-    const ackMessage = captureAckMessage(item.title, item.id, content.capture_quality, content.source_platform);
-
-    await deps.sendMessage(chatId, ackMessage).catch((err) => {
-      logError({
-        type: "telegram.ack.failed",
-        item_id: item.id,
-        message: (err as Error).message,
-        ts: Date.now(),
-      });
-    });
-    return { status: "captured", itemId: item.id, source: extracted.source_type === "youtube" ? "youtube" : "url" };
+    return {
+      status: "captured",
+      itemId: item.id,
+      source: extracted.source_type === "youtube" ? "youtube" : "url",
+    };
   } catch (err) {
     if (err instanceof UrlCaptureError || err instanceof YoutubeCaptureError) {
-      logError({
-        type: "telegram.capture.url-failed",
-        url,
-        message: err.message,
-        ts: Date.now(),
-      });
-      await deps.sendMessage(chatId, `Couldn't capture: ${err.message}`).catch(() => {});
+      logError("telegram.capture.url-failed");
+      await deps
+        .sendMessage(chatId, `Couldn't capture: ${err.message}`)
+        .catch(() => {});
       return { status: "failed", reason: err.message, retryable: false };
     }
     throw err;
@@ -427,11 +428,14 @@ function captureAckMessage(
   id: string,
   quality: string | null | undefined,
   platform: string | null | undefined,
+  transcriptRecoveryQueued: boolean,
 ): string {
   const link = itemUrl(id);
   if (platform === "youtube" || platform === "youtube_short") {
     if (quality === "metadata_only") {
-      return `Saved the YouTube link, but I could not read the transcript yet. I queued transcript recovery; track it in Review:\n${reviewUrl(id)}\n${link}`;
+      return transcriptRecoveryQueued
+        ? `Saved the YouTube link, but I could not read the transcript yet. I queued transcript recovery; track it in Review:\n${reviewUrl(id)}\n${link}`
+        : `Saved the YouTube link, but I could not read the transcript yet.\n${link}`;
     }
     if (quality === "user_provided_full_text") {
       return `✅ Saved YouTube text: ${title || "(untitled)"}\n${link}`;
@@ -451,7 +455,10 @@ function captureAckMessage(
   return `✅ Captured: ${title || "(untitled)"}\n${link}`;
 }
 
-function upgradeAckMessage(itemId: string, platform: string | null | undefined): string {
+function upgradeAckMessage(
+  itemId: string,
+  platform: string | null | undefined,
+): string {
   const link = itemUrl(itemId);
   if (platform === "youtube" || platform === "youtube_short") {
     return `Updated the existing YouTube item with your pasted text.\n${link}`;
@@ -462,14 +469,6 @@ function upgradeAckMessage(itemId: string, platform: string | null | undefined):
   return `Updated the existing item with your pasted text.\n${link}`;
 }
 
-function logCaptureDecision(type: string, fields: Record<string, unknown>): void {
-  logError({
-    type,
-    ...fields,
-    ts: Date.now(),
-  });
-}
-
 async function captureNote(
   chatId: number,
   text: string,
@@ -477,11 +476,18 @@ async function captureNote(
 ): Promise<TelegramCaptureResult> {
   const trimmed = text.trim();
   const firstLine = trimmed.split(/\r?\n/, 1)[0] ?? trimmed;
-  const title = firstLine.length > 80 ? `${firstLine.slice(0, 77)}...` : firstLine;
+  const title =
+    firstLine.length > 80 ? `${firstLine.slice(0, 77)}...` : firstLine;
   const body = trimmed;
-  const hash = crypto.createHash("sha256").update(`${title}\n${body}`).digest("hex").slice(0, 32);
+  const hash = crypto
+    .createHash("sha256")
+    .update(`${title}\n${body}`)
+    .digest("hex")
+    .slice(0, 32);
   if (deps.isDuplicateShare(shareDedupKey("note", hash))) {
-    await deps.sendMessage(chatId, "Already received that note.").catch(() => {});
+    await deps
+      .sendMessage(chatId, "Already received that note.")
+      .catch(() => {});
     return { status: "duplicate", reason: "note-window" };
   }
 
@@ -496,14 +502,11 @@ async function captureNote(
     extraction_version: "capture-v0.7.5",
   });
 
-  await deps.sendMessage(chatId, `✅ Saved as note\n${itemUrl(item.id)}`).catch((err) => {
-    logError({
-      type: "telegram.ack.failed",
-      item_id: item.id,
-      message: (err as Error).message,
-      ts: Date.now(),
+  await deps
+    .sendMessage(chatId, `✅ Saved as note\n${itemUrl(item.id)}`)
+    .catch(() => {
+      logError("telegram.ack.failed");
     });
-  });
   return { status: "captured", itemId: item.id, source: "note" };
 }
 
@@ -536,11 +539,14 @@ async function captureDocument(
       chatId,
       `↩️ Already captured: ${existing.title || "(untitled)"}\n${itemUrl(existing.id)}`,
     );
-    return { status: "duplicate", itemId: existing.id, reason: "document-exists" };
+    return {
+      status: "duplicate",
+      itemId: existing.id,
+      reason: "document-exists",
+    };
   }
 
   let ackMessageId: number | null = null;
-  let downloadedSha256: string | null = null;
   try {
     const ack = await deps.sendMessage(chatId, "📄 Capturing PDF…");
     ackMessageId = ack.message_id;
@@ -551,7 +557,10 @@ async function captureDocument(
   try {
     const file = await deps.getFile(doc.file_id);
     if (!file.file_path) {
-      throw new PdfCaptureError("extract_failed", "Telegram returned no file_path");
+      throw new PdfCaptureError(
+        "extract_failed",
+        "Telegram returned no file_path",
+      );
     }
     const buf = await deps.downloadFile(file.file_path);
     const bytes = new Uint8Array(buf);
@@ -561,7 +570,6 @@ async function captureDocument(
         `PDF too large (${(bytes.byteLength / 1024 / 1024).toFixed(1)} MB). Max is 20 MB.`,
       );
     }
-    downloadedSha256 = crypto.createHash("sha256").update(bytes).digest("hex");
     const extracted = await deps.extractPdf({
       bytes,
       filename: doc.file_name ?? "telegram.pdf",
@@ -594,16 +602,9 @@ async function captureDocument(
     return { status: "captured", itemId: item.id, source: "pdf" };
   } catch (err) {
     const retryable = err instanceof TelegramTimeoutError;
-    const message = err instanceof PdfCaptureError ? err.message : "PDF extraction failed";
-    logError({
-      type: "telegram.capture.pdf-failed",
-      file_name: doc.file_name,
-      file_size: doc.file_size,
-      sha256: downloadedSha256,
-      message: (err as Error).message,
-      retryable,
-      ts: Date.now(),
-    });
+    const message =
+      err instanceof PdfCaptureError ? err.message : "PDF extraction failed";
+    logError("telegram.capture.pdf-failed");
     const failMsg = `⚠️ Couldn't capture PDF: ${message}`;
     if (ackMessageId !== null) {
       await deps.editMessageText(chatId, ackMessageId, failMsg).catch(() => {

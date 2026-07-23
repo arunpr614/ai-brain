@@ -1,13 +1,14 @@
+import { getDb } from "@/db/client";
 import { getItem } from "@/db/items";
 import { upgradeItemCaptureContent } from "@/db/item-upgrades";
+import { getYouTubeBrowserSchemaCapability } from "@/db/schema-capabilities";
 import {
-  backfillTranscriptJobsForExistingYoutubeItems,
-  claimNextTranscriptJob,
-  markTranscriptJobDone,
-  markTranscriptJobManualNeeded,
-  markTranscriptJobRetryable,
-  recordTranscriptAttempt,
-  sweepStaleTranscriptClaims,
+  backfillTranscriptJobsForExistingYoutubeItemsWithOutcome,
+  claimNextTranscriptJobWithOutcome,
+  finalizeTranscriptJobAttempt,
+  isClaimedTranscriptJobStillAuthoritative,
+  sweepStaleTranscriptClaimsWithOutcome,
+  TranscriptRecoverySourceConflictError,
   type TranscriptJobRow,
 } from "@/db/transcript-jobs";
 import {
@@ -17,12 +18,26 @@ import {
 import {
   getYoutubeTimedTextCooldown,
   isYoutubeTimedTextProviderThrottled,
-  logTranscriptProviderEvent,
+  logTranscriptContainmentDiagnostic,
   recordYoutubeTimedTextProviderOutcome,
+  transcriptElapsedBucket,
+  transcriptPayloadSizeBucket,
   YOUTUBE_TIMEDTEXT_COOLDOWN_MIN_MS,
-  YOUTUBE_TIMEDTEXT_PROVIDER_KEY,
   YOUTUBE_TIMEDTEXT_PROVIDER_NAME,
 } from "@/lib/capture/youtube-transcript/provider-health";
+import {
+  ItemBodyProcessingBlockedError,
+  resolveItemBodyProcessingGate,
+} from "@/lib/processing/hold-gate";
+import { classifyDeployment } from "@/lib/runtime/deployment";
+import {
+  createContainmentDiagnostic,
+  type ContainmentDiagnostic,
+} from "@/lib/runtime/containment-diagnostics";
+import {
+  resolveContentWorkerPlan,
+  type ContentWorkerPlanCode,
+} from "@/lib/startup/content-workers";
 
 const POLL_INTERVAL_MS = 2_000;
 const IDLE_INTERVAL_MS = 15_000;
@@ -31,8 +46,7 @@ const BASE_RETRY_BACKOFF_MS = 30 * 60_000;
 
 declare global {
   var __brainTranscriptRecoveryWorker:
-    | { running: boolean; stopRequested: boolean }
-    | undefined;
+    { running: boolean; stopRequested: boolean } | undefined;
 }
 
 function workerState() {
@@ -45,19 +59,66 @@ function workerState() {
   return globalThis.__brainTranscriptRecoveryWorker;
 }
 
-export function startTranscriptRecoveryWorker(): void {
-  if (!transcriptRecoveryEnabled()) {
-    console.log("[transcript] recovery worker disabled");
-    return;
+export type TranscriptWorkerStartOutcome =
+  "started" | "already_running" | "blocked";
+
+interface TranscriptWorkerLifecycleState {
+  running: boolean;
+  stopRequested: boolean;
+}
+
+interface TranscriptWorkerStartDependencies {
+  readonly backfill: typeof backfillTranscriptJobsForExistingYoutubeItemsWithOutcome;
+  readonly beginLoop: () => void;
+}
+
+const DEFAULT_START_DEPENDENCIES: TranscriptWorkerStartDependencies = {
+  backfill: backfillTranscriptJobsForExistingYoutubeItemsWithOutcome,
+  beginLoop: startLoop,
+};
+
+function startTranscriptRecoveryWorkerWithDependencies(
+  state: TranscriptWorkerLifecycleState,
+  dependencies: TranscriptWorkerStartDependencies,
+): TranscriptWorkerStartOutcome {
+  const authority = resolveTranscriptWorkerAuthority();
+  if (!authority.allowed) {
+    console.log("[transcript] worker not started");
+    return "blocked";
   }
 
-  const state = workerState();
-  if (state.running) return;
-  const backfilled = backfillTranscriptJobsForExistingYoutubeItems();
+  if (state.running) return "already_running";
+  const backfill = dependencies.backfill();
+  if (backfill.kind === "blocked") {
+    console.log("[transcript] worker not started");
+    return "blocked";
+  }
+  if (!resolveTranscriptWorkerAuthority().allowed) {
+    console.log("[transcript] worker not started");
+    return "blocked";
+  }
+
   state.running = true;
   state.stopRequested = false;
-  console.log(`[transcript] worker starting; checked ${backfilled} weak YouTube capture(s)`);
-  startLoop();
+  console.log("[transcript] worker starting");
+  dependencies.beginLoop();
+  return "started";
+}
+
+export function startTranscriptRecoveryWorker(): void {
+  startTranscriptRecoveryWorkerWithDependencies(
+    workerState(),
+    DEFAULT_START_DEPENDENCIES,
+  );
+}
+
+export function startTranscriptRecoveryWorkerForTests(
+  overrides: Partial<TranscriptWorkerStartDependencies> = {},
+): TranscriptWorkerStartOutcome {
+  return startTranscriptRecoveryWorkerWithDependencies(
+    { running: false, stopRequested: false },
+    { ...DEFAULT_START_DEPENDENCIES, ...overrides },
+  );
 }
 
 export function stopTranscriptRecoveryWorker(): void {
@@ -67,10 +128,67 @@ export function stopTranscriptRecoveryWorker(): void {
 export function transcriptRecoveryEnabled(): boolean {
   const recovery = process.env.YOUTUBE_TRANSCRIPT_RECOVERY_ENABLED;
   const worker = process.env.YOUTUBE_TRANSCRIPT_WORKER_ENABLED;
-  return recovery !== "0" && recovery !== "false" && worker !== "0" && worker !== "false";
+  return (
+    recovery !== "0" &&
+    recovery !== "false" &&
+    worker !== "0" &&
+    worker !== "false"
+  );
 }
 
-export function nextTranscriptRetryAt(attempt: number, now = Date.now()): number {
+export interface TranscriptWorkerAuthority {
+  readonly allowed: boolean;
+  readonly code: ContentWorkerPlanCode | "legacy_transcript_disabled";
+  readonly mode:
+    | "disabled"
+    | "standard"
+    | "manual-transcript-lab"
+    | "legacy_default_standard"
+    | "invalid";
+}
+
+export function resolveTranscriptWorkerAuthority(): TranscriptWorkerAuthority {
+  const db = getDb();
+  const plan = resolveContentWorkerPlan({
+    deployment: classifyDeployment(),
+    schemaCapability: getYouTubeBrowserSchemaCapability(db),
+  });
+  const standardMode =
+    plan.starts.transcriptRecovery &&
+    (plan.effectiveMode === "standard" ||
+      plan.effectiveMode === "legacy_default_standard");
+  if (!standardMode) {
+    return {
+      allowed: false,
+      code: plan.code,
+      mode: plan.effectiveMode,
+    };
+  }
+  if (!transcriptRecoveryEnabled()) {
+    return {
+      allowed: false,
+      code: "legacy_transcript_disabled",
+      mode: plan.effectiveMode,
+    };
+  }
+  return {
+    allowed: true,
+    code: plan.code,
+    mode: plan.effectiveMode,
+  };
+}
+
+function transcriptJobAllowed(job: TranscriptJobRow): boolean {
+  if (!resolveTranscriptWorkerAuthority().allowed) return false;
+  if (!resolveItemBodyProcessingGate(job.item_id, getDb()).allowed)
+    return false;
+  return isClaimedTranscriptJobStillAuthoritative(job);
+}
+
+export function nextTranscriptRetryAt(
+  attempt: number,
+  now = Date.now(),
+): number {
   const multiplier = Math.max(1, Math.min(8, 2 ** Math.max(0, attempt - 1)));
   return now + BASE_RETRY_BACKOFF_MS * multiplier;
 }
@@ -90,8 +208,8 @@ export function nextTranscriptRetryAtForResult(
 }
 
 function startLoop(): void {
-  void loop().catch((err) => {
-    console.error(`[transcript] worker crashed: ${safeErrorMessage(err)}`);
+  void loop().catch(() => {
+    console.error("[transcript] worker crashed code=worker_exception");
   });
 }
 
@@ -102,11 +220,23 @@ async function loop(): Promise<void> {
 
   try {
     while (!state.stopRequested) {
+      if (!resolveTranscriptWorkerAuthority().allowed) {
+        await sleep(IDLE_INTERVAL_MS);
+        continue;
+      }
+
       const now = Date.now();
       if (now - lastSweepAt >= STALE_CLAIM_MS) {
-        const swept = sweepStaleTranscriptClaims(now - STALE_CLAIM_MS);
-        if (swept > 0) {
-          console.log(`[transcript] resurrected ${swept} stale claim(s)`);
+        const swept = sweepStaleTranscriptClaimsWithOutcome(
+          now - STALE_CLAIM_MS,
+        );
+        if (swept.kind === "blocked") {
+          lastSweepAt = now;
+          await sleep(IDLE_INTERVAL_MS);
+          continue;
+        }
+        if (swept.kind === "applied" && swept.value > 0) {
+          console.log("[transcript] stale claims requeued");
         }
         lastSweepAt = now;
       }
@@ -117,6 +247,10 @@ async function loop(): Promise<void> {
       });
       if (claim.cooldownActive && shouldLogCooldown) {
         lastCooldownLogAt = now;
+      }
+      if (claim.status === "blocked") {
+        await sleep(IDLE_INTERVAL_MS);
+        continue;
       }
       const job = claim.job;
       if (!job) {
@@ -134,22 +268,23 @@ async function loop(): Promise<void> {
 }
 
 type TranscriptClaimDeps = {
-  claimNextTranscriptJob: typeof claimNextTranscriptJob;
+  claimNextTranscriptJob: typeof claimNextTranscriptJobWithOutcome;
   getYoutubeTimedTextCooldown: typeof getYoutubeTimedTextCooldown;
-  logTranscriptProviderEvent: typeof logTranscriptProviderEvent;
+  logContainmentDiagnostic: typeof logTranscriptContainmentDiagnostic;
   logCooldown?: boolean;
 };
 
 type TranscriptClaimResult = {
+  status: "claimed" | "idle" | "cooldown" | "blocked";
   job: TranscriptJobRow | null;
   cooldownActive: boolean;
   cooldownUntil: number | null;
 };
 
 const defaultClaimDeps: TranscriptClaimDeps = {
-  claimNextTranscriptJob,
+  claimNextTranscriptJob: claimNextTranscriptJobWithOutcome,
   getYoutubeTimedTextCooldown,
-  logTranscriptProviderEvent,
+  logContainmentDiagnostic: logTranscriptContainmentDiagnostic,
   logCooldown: true,
 };
 
@@ -158,77 +293,157 @@ function claimNextTranscriptJobRespectingProviderCooldown(
   overrides: Partial<TranscriptClaimDeps> = {},
 ): TranscriptClaimResult {
   const deps = { ...defaultClaimDeps, ...overrides };
+  if (!resolveTranscriptWorkerAuthority().allowed) {
+    return {
+      status: "blocked",
+      job: null,
+      cooldownActive: false,
+      cooldownUntil: null,
+    };
+  }
+
   const cooldown = deps.getYoutubeTimedTextCooldown(now);
   if (cooldown.active) {
+    if (!resolveTranscriptWorkerAuthority().allowed) {
+      return {
+        status: "blocked",
+        job: null,
+        cooldownActive: false,
+        cooldownUntil: null,
+      };
+    }
     if (deps.logCooldown) {
-      deps.logTranscriptProviderEvent({
-        event: "transcript.provider.cooldown_active",
-        provider_key: cooldown.providerKey,
-        cooldown_until: cooldown.cooldownUntil,
-        remaining_ms: cooldown.remainingMs,
-        failure_count: cooldown.failureCount,
-        last_error_code: cooldown.lastFailureCode,
-        status_code: cooldown.lastStatusCode,
-      });
-      console.log(
-        `[transcript] provider cooldown active for ${Math.ceil(cooldown.remainingMs / 60_000)}m`,
+      deps.logContainmentDiagnostic(
+        createContainmentDiagnostic({
+          event: "claimant_guarded",
+          outcome: "skipped",
+          claimant: "transcript_recovery",
+          phase: "claim",
+          aggregateCount: 0,
+          guardrailTriggered: true,
+          workStarted: false,
+          providerContacted: false,
+          elapsedBucket: "not_measured",
+          payloadSizeBucket: "not_measured",
+          timestamp: new Date(now).toISOString(),
+        }),
       );
+      console.log("[transcript] provider cooldown active");
     }
     return {
+      status: "cooldown",
       job: null,
       cooldownActive: true,
       cooldownUntil: cooldown.cooldownUntil,
     };
   }
 
+  const claim = deps.claimNextTranscriptJob(now);
+  if (claim.kind === "blocked") {
+    return {
+      status: "blocked",
+      job: null,
+      cooldownActive: false,
+      cooldownUntil: null,
+    };
+  }
+  if (claim.kind === "unchanged") {
+    return {
+      status: "idle",
+      job: null,
+      cooldownActive: false,
+      cooldownUntil: null,
+    };
+  }
   return {
-    job: deps.claimNextTranscriptJob(now),
+    status: "claimed",
+    job: claim.value,
     cooldownActive: false,
     cooldownUntil: null,
   };
 }
 
-async function runOne(job: TranscriptJobRow): Promise<void> {
-  console.log(`[transcript] job #${job.id} item=${job.item_id} attempt=${job.attempts}`);
-  const item = getItem(job.item_id);
-  const startedAt = Date.now();
+export type TranscriptJobRunOutcome = "processed" | "blocked";
+
+interface TranscriptJobExecutionDependencies {
+  readonly getItem: typeof getItem;
+  readonly recover: typeof recoverYoutubeTranscriptForItem;
+  readonly upgrade: typeof upgradeItemCaptureContent;
+  readonly recordProviderOutcome: typeof recordYoutubeTimedTextProviderOutcome;
+  readonly finalizeAttempt: typeof finalizeTranscriptJobAttempt;
+  readonly logContainmentDiagnostic: typeof logTranscriptContainmentDiagnostic;
+  readonly now: () => number;
+}
+
+const DEFAULT_EXECUTION_DEPENDENCIES: TranscriptJobExecutionDependencies = {
+  getItem,
+  recover: recoverYoutubeTranscriptForItem,
+  upgrade: upgradeItemCaptureContent,
+  recordProviderOutcome: recordYoutubeTimedTextProviderOutcome,
+  finalizeAttempt: finalizeTranscriptJobAttempt,
+  logContainmentDiagnostic: logTranscriptContainmentDiagnostic,
+  now: Date.now,
+};
+
+async function runOne(
+  job: TranscriptJobRow,
+  dependencies: TranscriptJobExecutionDependencies = DEFAULT_EXECUTION_DEPENDENCIES,
+): Promise<TranscriptJobRunOutcome> {
+  if (!transcriptJobAllowed(job)) return "blocked";
+  const item = dependencies.getItem(job.item_id);
+  if (!transcriptJobAllowed(job)) return "blocked";
+  const startedAt = dependencies.now();
 
   if (!item) {
-    const attemptId = recordTranscriptAttempt({
-      jobId: job.id,
-      itemId: job.item_id,
-      attemptNumber: job.attempts,
-      provider: YOUTUBE_TIMEDTEXT_PROVIDER_NAME,
-      state: "terminal_error",
-      retryable: false,
-      errorCode: "item_missing",
-      errorMessage: "The item for this transcript job no longer exists.",
-      startedAt,
-    });
-    markTranscriptJobManualNeeded(job.id, attemptId, {
-      provider: YOUTUBE_TIMEDTEXT_PROVIDER_NAME,
-      code: "item_missing",
-      message: "The item for this transcript job no longer exists.",
-    });
-    logTranscriptAttemptEvent({
-      job,
-      provider: YOUTUBE_TIMEDTEXT_PROVIDER_NAME,
-      state: "terminal_error",
-      retryable: false,
-      errorCode: "item_missing",
-      errorMessage: "The item for this transcript job no longer exists.",
-      startedAt,
-      finishedAt: Date.now(),
-    });
-    return;
+    const finishedAt = dependencies.now();
+    if (!transcriptJobAllowed(job)) return "blocked";
+    const attemptId = dependencies.finalizeAttempt(
+      {
+        jobId: job.id,
+        itemId: job.item_id,
+        attemptNumber: job.attempts,
+        provider: YOUTUBE_TIMEDTEXT_PROVIDER_NAME,
+        state: "terminal_error",
+        retryable: false,
+        errorCode: "item_missing",
+        startedAt,
+        finishedAt,
+      },
+      {
+        kind: "manual_needed",
+        error: {
+          provider: YOUTUBE_TIMEDTEXT_PROVIDER_NAME,
+          code: "item_missing",
+        },
+      },
+    );
+    if (attemptId === null || !transcriptJobAllowedAfterFinalization(job)) {
+      return "blocked";
+    }
+    logTranscriptAttemptEvent(
+      {
+        state: "terminal_error",
+        providerContacted: false,
+        startedAt,
+        finishedAt,
+      },
+      dependencies.logContainmentDiagnostic,
+    );
+    console.warn("[transcript] terminal outcome code=item_missing");
+    return "processed";
   }
 
-  const result = await recoverYoutubeTranscriptForItem({
+  // This is the last synchronous authority check before provider dispatch.
+  if (!transcriptJobAllowed(job)) return "blocked";
+  const result = await dependencies.recover({
     item,
     videoId: job.video_id,
   });
-  const providerRecordedAt = Date.now();
-  const providerHealth = recordYoutubeTimedTextProviderOutcome({
+  // Provider results are inert until authority is re-established.
+  if (!transcriptJobAllowed(job)) return "blocked";
+
+  const providerRecordedAt = dependencies.now();
+  const providerHealth = dependencies.recordProviderOutcome({
     state: result.state,
     retryable: result.retryable,
     errorCode: result.errorCode ?? null,
@@ -238,79 +453,64 @@ async function runOne(job: TranscriptJobRow): Promise<void> {
 
   if (result.state === "success" && result.content) {
     try {
-      await upgradeItemCaptureContent({
+      // The apply call follows this check synchronously. Its own transaction
+      // must enforce the same source exclusion for a complete apply-time CAS.
+      if (!transcriptJobAllowed(job)) return "blocked";
+      // upgradeItemCaptureContent also enforces the gate inside its write.
+      await dependencies.upgrade({
         itemId: job.item_id,
         content: result.content,
         platform: result.content.source_platform,
+        requireNoActiveTranscriptSource: true,
       });
-      const finishedAt = Date.now();
-      const attemptId = recordTranscriptAttempt({
-        jobId: job.id,
-        itemId: job.item_id,
-        attemptNumber: job.attempts,
-        provider: result.provider,
-        state: "success",
-        retryable: false,
-        startedAt,
-        finishedAt,
-        transcriptLanguage: result.transcriptLanguage,
-        transcriptIsGenerated: result.transcriptIsGenerated,
-        transcriptIsTranslated: result.transcriptIsTranslated,
-        transcriptChars: result.transcriptChars ?? result.content.body.length,
-      });
-      markTranscriptJobDone(job.id, attemptId);
-      logTranscriptAttemptEvent({
-        job,
-        provider: result.provider,
-        state: "success",
-        retryable: false,
-        startedAt,
-        finishedAt,
-        transcriptLanguage: result.transcriptLanguage,
-        transcriptIsGenerated: result.transcriptIsGenerated,
-        transcriptIsTranslated: result.transcriptIsTranslated,
-        transcriptChars: result.transcriptChars ?? result.content.body.length,
-      });
-      console.log(`[transcript] job #${job.id} DONE`);
-      return;
-    } catch (err) {
-      const message = err instanceof Error ? err.message : String(err);
-      const finishedAt = Date.now();
-      const nextRetryAt = nextTranscriptRetryAt(job.attempts, finishedAt);
-      const attemptId = recordTranscriptAttempt({
-        jobId: job.id,
-        itemId: job.item_id,
-        attemptNumber: job.attempts,
-        provider: result.provider,
-        state: "retryable_error",
-        retryable: true,
-        errorCode: "item_upgrade_failed",
-        errorMessage: message,
-        startedAt,
-        finishedAt,
-      });
-      markTranscriptJobRetryable(job.id, attemptId, nextRetryAt, {
-        provider: result.provider,
-        code: "item_upgrade_failed",
-        message,
-      });
-      logTranscriptAttemptEvent({
-        job,
-        provider: result.provider,
-        state: "retryable_error",
-        retryable: true,
-        errorCode: "item_upgrade_failed",
-        errorMessage: message,
-        startedAt,
-        finishedAt,
-        nextRetryAt,
-      });
-      console.warn(`[transcript] job #${job.id} upgrade failed: ${message}`);
-      return;
+      if (!transcriptJobAllowed(job)) return "blocked";
+      const finishedAt = dependencies.now();
+      if (!transcriptJobAllowed(job)) return "blocked";
+      const attemptId = dependencies.finalizeAttempt(
+        {
+          jobId: job.id,
+          itemId: job.item_id,
+          attemptNumber: job.attempts,
+          provider: result.provider,
+          state: "success",
+          retryable: false,
+          startedAt,
+          finishedAt,
+          transcriptLanguage: result.transcriptLanguage,
+          transcriptIsGenerated: result.transcriptIsGenerated,
+          transcriptIsTranslated: result.transcriptIsTranslated,
+          transcriptChars: result.transcriptChars ?? result.content.body.length,
+        },
+        { kind: "done" },
+      );
+      if (attemptId === null || !transcriptJobAllowedAfterFinalization(job)) {
+        return "blocked";
+      }
+      logTranscriptAttemptEvent(
+        {
+          state: "success",
+          providerContacted: true,
+          startedAt,
+          finishedAt,
+          transcriptChars: result.transcriptChars ?? result.content.body.length,
+        },
+        dependencies.logContainmentDiagnostic,
+      );
+      console.log("[transcript] recovery completed");
+      return "processed";
+    } catch (error) {
+      if (
+        error instanceof ItemBodyProcessingBlockedError ||
+        error instanceof TranscriptRecoverySourceConflictError ||
+        !transcriptJobAllowed(job)
+      ) {
+        return "blocked";
+      }
+      return recordUpgradeFailure(job, result, startedAt, dependencies);
     }
   }
 
-  const finishedAt = Date.now();
+  const finishedAt = dependencies.now();
   const nextRetryAt = result.retryable
     ? nextTranscriptRetryAtForResult(
         result,
@@ -320,141 +520,205 @@ async function runOne(job: TranscriptJobRow): Promise<void> {
       )
     : null;
   const providerThrottled = isYoutubeTimedTextProviderThrottled(result);
-  const attemptId = recordTranscriptAttempt({
-    jobId: job.id,
-    itemId: job.item_id,
-    attemptNumber: job.attempts,
-    provider: result.provider,
-    state: result.retryable ? "retryable_error" : "terminal_error",
-    retryable: result.retryable,
-    errorCode: result.errorCode ?? "transcript_unavailable",
-    errorMessage: result.errorMessage ?? "Transcript recovery did not produce a transcript.",
-    statusCode: result.statusCode ?? null,
-    startedAt,
-    finishedAt,
-  });
-
-  if (result.retryable) {
-    markTranscriptJobRetryable(
-      job.id,
-      attemptId,
-      nextRetryAt ?? nextTranscriptRetryAt(job.attempts),
-      {
-        provider: result.provider,
-        code: result.errorCode ?? "transcript_retryable_error",
-        message: result.errorMessage ?? "Transcript recovery hit a retryable error.",
-      },
-      { preserveRetryWindow: providerThrottled },
-    );
-    logTranscriptAttemptEvent({
-      job,
+  if (!transcriptJobAllowed(job)) return "blocked";
+  const attemptId = dependencies.finalizeAttempt(
+    {
+      jobId: job.id,
+      itemId: job.item_id,
+      attemptNumber: job.attempts,
       provider: result.provider,
-      state: "retryable_error",
-      retryable: true,
-      errorCode: result.errorCode ?? "transcript_retryable_error",
-      errorMessage: result.errorMessage ?? "Transcript recovery hit a retryable error.",
+      state: result.retryable ? "retryable_error" : "terminal_error",
+      retryable: result.retryable,
+      errorCode: result.errorCode ?? "transcript_unavailable",
       statusCode: result.statusCode ?? null,
       startedAt,
       finishedAt,
-      nextRetryAt,
-      cooldownUntil: providerHealth.cooldownUntil,
-    });
-    console.warn(
-      `[transcript] job #${job.id} retryable: ${result.errorCode ?? "unknown"}`,
-    );
-    return;
+    },
+    result.retryable
+      ? {
+          kind: "retryable",
+          nextRunAt: nextRetryAt ?? nextTranscriptRetryAt(job.attempts),
+          error: {
+            provider: result.provider,
+            code: result.errorCode ?? "transcript_retryable_error",
+          },
+          preserveRetryWindow: providerThrottled,
+        }
+      : {
+          kind: "manual_needed",
+          error: {
+            provider: result.provider,
+            code: result.errorCode ?? "transcript_manual_needed",
+          },
+        },
+  );
+  if (attemptId === null || !transcriptJobAllowedAfterFinalization(job)) {
+    return "blocked";
   }
 
-  markTranscriptJobManualNeeded(job.id, attemptId, {
-    provider: result.provider,
-    code: result.errorCode ?? "transcript_manual_needed",
-    message: result.errorMessage ?? "Transcript recovery needs manual help.",
-  });
-  logTranscriptAttemptEvent({
-    job,
-    provider: result.provider,
-    state: "terminal_error",
-    retryable: false,
-    errorCode: result.errorCode ?? "transcript_manual_needed",
-    errorMessage: result.errorMessage ?? "Transcript recovery needs manual help.",
-    statusCode: result.statusCode ?? null,
-    startedAt,
-    finishedAt,
-  });
-  console.warn(`[transcript] job #${job.id} needs manual help`);
+  if (result.retryable) {
+    logTranscriptAttemptEvent(
+      {
+        state: "retryable_error",
+        providerContacted: true,
+        startedAt,
+        finishedAt,
+      },
+      dependencies.logContainmentDiagnostic,
+    );
+    console.warn("[transcript] retryable outcome");
+    return "processed";
+  }
+
+  logTranscriptAttemptEvent(
+    {
+      state: "terminal_error",
+      providerContacted: true,
+      startedAt,
+      finishedAt,
+    },
+    dependencies.logContainmentDiagnostic,
+  );
+  console.warn("[transcript] terminal outcome code=manual_needed");
+  return "processed";
+}
+
+function recordUpgradeFailure(
+  job: TranscriptJobRow,
+  result: TranscriptRecoveryResult,
+  startedAt: number,
+  dependencies: TranscriptJobExecutionDependencies,
+): TranscriptJobRunOutcome {
+  if (!transcriptJobAllowed(job)) return "blocked";
+  const finishedAt = dependencies.now();
+  const nextRetryAt = nextTranscriptRetryAt(job.attempts, finishedAt);
+  const attemptId = dependencies.finalizeAttempt(
+    {
+      jobId: job.id,
+      itemId: job.item_id,
+      attemptNumber: job.attempts,
+      provider: result.provider,
+      state: "retryable_error",
+      retryable: true,
+      errorCode: "item_upgrade_failed",
+      startedAt,
+      finishedAt,
+    },
+    {
+      kind: "retryable",
+      nextRunAt: nextRetryAt,
+      error: {
+        provider: result.provider,
+        code: "item_upgrade_failed",
+      },
+    },
+  );
+  if (attemptId === null || !transcriptJobAllowedAfterFinalization(job)) {
+    return "blocked";
+  }
+  logTranscriptAttemptEvent(
+    {
+      state: "retryable_error",
+      providerContacted: true,
+      startedAt,
+      finishedAt,
+    },
+    dependencies.logContainmentDiagnostic,
+  );
+  console.warn("[transcript] retryable outcome");
+  return "processed";
 }
 
 type TranscriptWorkerDeps = {
-  runOne: (job: TranscriptJobRow) => Promise<void>;
-  recordTranscriptAttempt: typeof recordTranscriptAttempt;
-  markTranscriptJobRetryable: typeof markTranscriptJobRetryable;
+  runOne: (job: TranscriptJobRow) => Promise<TranscriptJobRunOutcome>;
+  finalizeAttempt: typeof finalizeTranscriptJobAttempt;
   nextTranscriptRetryAt: typeof nextTranscriptRetryAt;
+  now: () => number;
 };
 
 const defaultWorkerDeps: TranscriptWorkerDeps = {
   runOne,
-  recordTranscriptAttempt,
-  markTranscriptJobRetryable,
+  finalizeAttempt: finalizeTranscriptJobAttempt,
   nextTranscriptRetryAt,
+  now: Date.now,
 };
 
 async function runOneSafely(
   job: TranscriptJobRow,
   overrides: Partial<TranscriptWorkerDeps> = {},
-): Promise<void> {
+): Promise<TranscriptJobRunOutcome> {
   const deps = { ...defaultWorkerDeps, ...overrides };
-  const startedAt = Date.now();
+  if (!transcriptJobAllowed(job)) return "blocked";
+  const startedAt = deps.now();
 
   try {
-    await deps.runOne(job);
+    return await deps.runOne(job);
   } catch (err) {
-    const message = safeErrorMessage(err);
-    let attemptId: number | null = null;
-
-    try {
-      attemptId = deps.recordTranscriptAttempt({
-        jobId: job.id,
-        itemId: job.item_id,
-        attemptNumber: job.attempts,
-        provider: "transcript_worker",
-        state: "retryable_error",
-        retryable: true,
-        errorCode: "worker_exception",
-        errorMessage: message,
-        startedAt,
-      });
-    } catch (attemptErr) {
-      console.warn(
-        `[transcript] job #${job.id} failed to record worker exception attempt: ${safeErrorMessage(attemptErr)}`,
-      );
+    if (
+      err instanceof ItemBodyProcessingBlockedError ||
+      !transcriptJobAllowed(job)
+    ) {
+      return "blocked";
     }
 
     try {
-      deps.markTranscriptJobRetryable(
-        job.id,
-        attemptId,
-        deps.nextTranscriptRetryAt(job.attempts),
+      if (!transcriptJobAllowed(job)) return "blocked";
+      const attemptId = deps.finalizeAttempt(
         {
+          jobId: job.id,
+          itemId: job.item_id,
+          attemptNumber: job.attempts,
           provider: "transcript_worker",
-          code: "worker_exception",
-          message,
+          state: "retryable_error",
+          retryable: true,
+          errorCode: "worker_exception",
+          startedAt,
+        },
+        {
+          kind: "retryable",
+          nextRunAt: deps.nextTranscriptRetryAt(job.attempts),
+          error: {
+            provider: "transcript_worker",
+            code: "worker_exception",
+          },
         },
       );
-    } catch (retryErr) {
-      console.error(
-        `[transcript] job #${job.id} failed to leave running state after worker exception: ${safeErrorMessage(retryErr)}`,
-      );
+      if (attemptId === null) return "blocked";
+    } catch (finalizeError) {
+      if (
+        finalizeError instanceof ItemBodyProcessingBlockedError ||
+        !transcriptJobAllowed(job)
+      ) {
+        return "blocked";
+      }
+      console.error("[transcript] worker exception finalization failed");
     }
 
-    console.warn(`[transcript] job #${job.id} worker exception: ${message}`);
+    console.warn("[transcript] worker exception code=worker_exception");
+    return "processed";
   }
 }
 
 export async function runTranscriptJobSafelyForTests(
   job: TranscriptJobRow,
   overrides: Partial<TranscriptWorkerDeps>,
-): Promise<void> {
-  await runOneSafely(job, overrides);
+): Promise<TranscriptJobRunOutcome> {
+  return runOneSafely(job, overrides);
+}
+
+export async function runClaimedTranscriptJobForTests(
+  job: TranscriptJobRow,
+  overrides: Partial<TranscriptJobExecutionDependencies> = {},
+): Promise<TranscriptJobRunOutcome> {
+  const executionDependencies = {
+    ...DEFAULT_EXECUTION_DEPENDENCIES,
+    ...overrides,
+  };
+  return runOneSafely(job, {
+    runOne: (claimed) => runOne(claimed, executionDependencies),
+    finalizeAttempt: executionDependencies.finalizeAttempt,
+    now: executionDependencies.now,
+  });
 }
 
 export function claimNextTranscriptJobForTests(
@@ -464,51 +728,48 @@ export function claimNextTranscriptJobForTests(
   return claimNextTranscriptJobRespectingProviderCooldown(now, overrides);
 }
 
-function logTranscriptAttemptEvent(input: {
-  job: TranscriptJobRow;
-  provider: string;
-  state: "success" | "retryable_error" | "terminal_error";
-  retryable: boolean;
-  errorCode?: string | null;
-  errorMessage?: string | null;
-  statusCode?: number | null;
-  startedAt: number;
-  finishedAt: number;
-  transcriptLanguage?: string | null;
-  transcriptIsGenerated?: boolean | null;
-  transcriptIsTranslated?: boolean | null;
-  transcriptChars?: number | null;
-  nextRetryAt?: number | null;
-  cooldownUntil?: number | null;
-}): void {
-  logTranscriptProviderEvent({
-    event: "transcript.recovery.attempt",
-    provider: input.provider,
-    provider_key: YOUTUBE_TIMEDTEXT_PROVIDER_KEY,
-    video_id: input.job.video_id,
-    item_id: input.job.item_id,
-    job_id: input.job.id,
-    attempt_number: input.job.attempts,
-    state: input.state,
-    retryable: input.retryable,
-    error_code: input.errorCode ?? null,
-    error_message: input.errorMessage ?? null,
-    status_code: input.statusCode ?? null,
-    started_at: input.startedAt,
-    finished_at: input.finishedAt,
-    duration_ms: Math.max(0, input.finishedAt - input.startedAt),
-    transcript_language: input.transcriptLanguage ?? null,
-    transcript_is_generated: input.transcriptIsGenerated ?? null,
-    transcript_is_translated: input.transcriptIsTranslated ?? null,
-    transcript_chars: input.transcriptChars ?? null,
-    next_retry_at: input.nextRetryAt ?? null,
-    cooldown_until: input.cooldownUntil ?? null,
-  });
+function logTranscriptAttemptEvent(
+  input: {
+    state: "success" | "retryable_error" | "terminal_error";
+    providerContacted: boolean;
+    startedAt: number;
+    finishedAt: number;
+    transcriptChars?: number | null;
+  },
+  logEvent: (entry: ContainmentDiagnostic) => void,
+): void {
+  logEvent(
+    createContainmentDiagnostic({
+      event: "claimant_guarded",
+      outcome: input.state === "success" ? "allowed" : "failed_closed",
+      claimant: "transcript_recovery",
+      phase: input.state === "retryable_error" ? "retry" : "terminal",
+      aggregateCount: 1,
+      guardrailTriggered: input.state !== "success",
+      workStarted: true,
+      providerContacted: input.providerContacted,
+      elapsedBucket: transcriptElapsedBucket(
+        input.finishedAt - input.startedAt,
+      ),
+      payloadSizeBucket: transcriptPayloadSizeBucket(
+        input.state === "success" ? input.transcriptChars : 0,
+      ),
+      timestamp: new Date(input.finishedAt).toISOString(),
+    }),
+  );
 }
 
-function safeErrorMessage(err: unknown): string {
-  if (err instanceof Error && err.message.trim().length > 0) return err.message;
-  return String(err);
+function transcriptJobAllowedAfterFinalization(job: TranscriptJobRow): boolean {
+  if (!resolveTranscriptWorkerAuthority().allowed) return false;
+  const current = getDb()
+    .prepare("SELECT state FROM transcript_jobs WHERE id = ? AND item_id = ?")
+    .get(job.id, job.item_id) as { state: string } | undefined;
+  return Boolean(
+    current &&
+    (current.state === "done" ||
+      current.state === "retryable_error" ||
+      current.state === "manual_needed"),
+  );
 }
 
 function sleep(ms: number): Promise<void> {

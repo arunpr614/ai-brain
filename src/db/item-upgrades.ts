@@ -1,24 +1,37 @@
 import { getDb, type ItemRow } from "./client";
-import { recordManualTranscriptResolutionForItem } from "./transcript-jobs";
+import {
+  assertNoActiveTranscriptSourceForAutomaticRecovery,
+  recordManualTranscriptResolutionForItem,
+} from "./transcript-jobs";
 import { saveCaptureArtifacts } from "@/lib/capture/artifacts";
 import type { CapturedContent } from "@/lib/capture/types";
 import { logError } from "@/lib/errors/sink";
+import { assertItemBodyProcessingAllowed } from "@/lib/processing/hold-gate";
+import { assertNoUnresolvedBatchReservation } from "@/lib/queue/enrichment-batch-binding";
 
 export interface UpgradeItemCaptureContentInput {
   itemId: string;
   content: CapturedContent;
   platform?: string | null;
+  /**
+   * Automatic transcript recovery opts into migration-027 active-source
+   * exclusion. Manual/user-authored replacement paths intentionally retain
+   * their existing replacement semantics by leaving this unset.
+   */
+  requireNoActiveTranscriptSource?: boolean;
 }
 
 export async function upgradeItemCaptureContent(
   input: UpgradeItemCaptureContentInput,
 ): Promise<ItemRow | null> {
   const db = getDb();
-  const existing = db.prepare("SELECT * FROM items WHERE id = ?").get(input.itemId) as
-    | ItemRow
-    | undefined;
+  const existing = db
+    .prepare("SELECT * FROM items WHERE id = ?")
+    .get(input.itemId) as ItemRow | undefined;
   if (!existing) return null;
 
+  assertItemBodyProcessingAllowed(input.itemId, db);
+  assertNoUnresolvedBatchReservation(existing.batch_id);
   const previousArtifact = {
     kind: "pre_upgrade_item_json",
     content_type: "application/json",
@@ -48,11 +61,23 @@ export async function upgradeItemCaptureContent(
     .all(input.itemId) as Array<{ rowid: number | bigint }>;
 
   const tx = db.transaction(() => {
+    assertItemBodyProcessingAllowed(input.itemId, db);
+    const current = db
+      .prepare("SELECT batch_id FROM items WHERE id = ?")
+      .get(input.itemId) as { batch_id: string | null } | undefined;
+    assertNoUnresolvedBatchReservation(current?.batch_id);
+    if (input.requireNoActiveTranscriptSource) {
+      assertNoActiveTranscriptSourceForAutomaticRecovery(input.itemId, db);
+    }
     for (const row of rowids) {
-      db.prepare("DELETE FROM chunks_vec WHERE rowid = ?").run(BigInt(row.rowid));
+      db.prepare("DELETE FROM chunks_vec WHERE rowid = ?").run(
+        BigInt(row.rowid),
+      );
     }
     db.prepare("DELETE FROM chunks WHERE item_id = ?").run(input.itemId);
-    db.prepare("DELETE FROM embedding_jobs WHERE item_id = ?").run(input.itemId);
+    db.prepare("DELETE FROM embedding_jobs WHERE item_id = ?").run(
+      input.itemId,
+    );
     db.prepare(
       `DELETE FROM item_tags
        WHERE item_id = ?
@@ -111,39 +136,27 @@ export async function upgradeItemCaptureContent(
       input.content.body.length,
       input.itemId,
     );
+    if (input.requireNoActiveTranscriptSource) {
+      assertNoActiveTranscriptSourceForAutomaticRecovery(input.itemId, db);
+    }
   });
-  tx();
+  tx.immediate();
 
+  assertItemBodyProcessingAllowed(input.itemId, db);
   try {
     await saveCaptureArtifacts(input.itemId, [
       previousArtifact,
       ...(input.content.artifacts ?? []),
     ]);
-  } catch (err) {
-    logError({
-      type: "capture.artifact-save-failed",
-      item_id: input.itemId,
-      message: (err as Error).message,
-      ts: Date.now(),
-    });
+  } catch {
+    logError("capture.artifact-save-failed");
   }
 
-  const updated = db.prepare("SELECT * FROM items WHERE id = ?").get(input.itemId) as
-    | ItemRow
-    | undefined;
-  logError({
-    type: "capture.upgrade.completed",
-    item_id: input.itemId,
-    platform: input.content.source_platform ?? input.platform ?? null,
-    source_url: input.content.source_url,
-    old_quality: existing.capture_quality ?? null,
-    new_quality: input.content.capture_quality ?? null,
-    extraction_method: input.content.extraction_method ?? null,
-    action: "upgraded",
-    text_chars: input.content.body.length,
-    derived_state_reset: true,
-    ts: Date.now(),
-  });
+  assertItemBodyProcessingAllowed(input.itemId, db);
+  const updated = db
+    .prepare("SELECT * FROM items WHERE id = ?")
+    .get(input.itemId) as ItemRow | undefined;
+  logError("capture.upgrade.completed");
   const isYoutube =
     input.content.source_platform === "youtube" ||
     input.content.source_platform === "youtube_short" ||
@@ -154,6 +167,7 @@ export async function upgradeItemCaptureContent(
     (input.content.extraction_method === "youtube_user_provided_text" ||
       input.content.capture_quality === "user_provided_full_text");
   if (isManualYoutubeUpgrade) {
+    assertItemBodyProcessingAllowed(input.itemId, db);
     recordManualTranscriptResolutionForItem({
       itemId: input.itemId,
       provider: "manual_user_text",

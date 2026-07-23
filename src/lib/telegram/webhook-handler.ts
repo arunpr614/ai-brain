@@ -40,22 +40,13 @@ export async function handleTelegramWebhookPost(
 ): Promise<NextResponse> {
   const expectedSecret = process.env.TELEGRAM_WEBHOOK_SECRET;
   if (!expectedSecret) {
-    logError({
-      type: "telegram.webhook.misconfigured",
-      reason: "TELEGRAM_WEBHOOK_SECRET not set",
-      ts: Date.now(),
-    });
+    logError("telegram.webhook.misconfigured");
     return NextResponse.json({ error: "server_misconfigured" }, { status: 503 });
   }
   if (req.headers.get(SECRET_TOKEN_HEADER) !== expectedSecret) {
     const limitKey = badSecretRateLimitKey(req.headers);
     const limited = badSecretRateLimit(limitKey);
-    logError({
-      type: "telegram.webhook.bad-secret",
-      key: limitKey,
-      limited: limited.limited,
-      ts: Date.now(),
-    });
+    logError("telegram.webhook.bad-secret");
     if (limited.limited) {
       return NextResponse.json(
         { error: "too_many_requests" },
@@ -74,10 +65,7 @@ export async function handleTelegramWebhookPost(
 
   const update = parseTelegramUpdate(raw);
   if (!update) {
-    logError({
-      type: "telegram.webhook.invalid-payload",
-      ts: Date.now(),
-    });
+    logError("telegram.webhook.invalid-payload");
     return NextResponse.json({ ok: true });
   }
 
@@ -88,21 +76,12 @@ export async function handleTelegramWebhookPost(
 
   const ownerId = Number(process.env.TELEGRAM_OWNER_USER_ID ?? "0");
   if (!ownerId || msg.from?.id !== ownerId) {
-    logError({
-      type: "telegram.webhook.non-owner",
-      from_id: msg.from?.id ?? null,
-      ts: Date.now(),
-    });
+    logError("telegram.webhook.non-owner");
     return NextResponse.json({ ok: true });
   }
 
   if (msg.chat.type !== "private") {
-    logError({
-      type: "telegram.webhook.non-private-chat",
-      chat_id: msg.chat.id,
-      chat_type: msg.chat.type,
-      ts: Date.now(),
-    });
+    logError("telegram.webhook.non-private-chat");
     return NextResponse.json({ ok: true });
   }
 
@@ -114,11 +93,7 @@ export async function handleTelegramWebhookPost(
     file_unique_id: msg.document?.file_unique_id ?? null,
   });
   if (claimed === "duplicate") {
-    logError({
-      type: "telegram.webhook.duplicate-update",
-      update_id: update.update_id,
-      ts: Date.now(),
-    });
+    logError("telegram.webhook.duplicate-update");
     return NextResponse.json({ ok: true });
   }
 
@@ -134,13 +109,9 @@ export async function handleTelegramWebhookPost(
     } else {
       deps.markTelegramUpdateIgnored(update.update_id, result.reason);
     }
-  } catch (err) {
+  } catch {
     deps.markTelegramUpdateFailed(update.update_id, "telegram.capture.unhandled");
-    logError({
-      type: "telegram.capture.unhandled",
-      message: (err as Error).message,
-      ts: Date.now(),
-    });
+    logError("telegram.capture.unhandled");
     await deps.sendMessage(
       msg.chat.id,
       "Capture failed. I logged the details in AI Memory.",

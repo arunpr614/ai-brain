@@ -6,10 +6,15 @@ import { getItem } from "@/db/items";
 import { upgradeItemCaptureContent } from "@/db/item-upgrades";
 import { captureLinkedInUserText } from "@/lib/capture/linkedin";
 import { detectCapturePlatform } from "@/lib/capture/platform";
-import { canUpgradeWithPastedText, classifyCaptureUpgrade, isNeedsUpgrade } from "@/lib/capture/upgrade-policy";
+import {
+  canUpgradeWithPastedText,
+  classifyCaptureUpgrade,
+  isNeedsUpgrade,
+} from "@/lib/capture/upgrade-policy";
 import { analyzeUserProvidedText } from "@/lib/capture/user-provided";
 import { buildYoutubeUserTextCapture } from "@/lib/capture/youtube-user-text";
 import { logError } from "@/lib/errors/sink";
+import { assertItemBodyProcessingAllowed } from "@/lib/processing/hold-gate";
 
 export type UpgradeTextState =
   | { status: "idle" }
@@ -28,13 +33,19 @@ export async function upgradeItemTextAction(
 ): Promise<UpgradeTextState> {
   const parsed = UpgradeInput.safeParse(Object.fromEntries(formData));
   if (!parsed.success) {
-    return { status: "error", error: parsed.error.issues[0]?.message ?? "Invalid input" };
+    return {
+      status: "error",
+      error: parsed.error.issues[0]?.message ?? "Invalid input",
+    };
   }
 
   const item = getItem(parsed.data.item_id);
   if (!item) return { status: "error", error: "This item was not found." };
   if (!item.source_url) {
-    return { status: "error", error: "This item cannot be upgraded with pasted text." };
+    return {
+      status: "error",
+      error: "This item cannot be upgraded with pasted text.",
+    };
   }
   if (!canUpgradeWithPastedText(item)) {
     return {
@@ -70,6 +81,10 @@ export async function upgradeItemTextAction(
     return { status: "error", error: "This item already has saved content." };
   }
 
+  // This assertion precedes source-specific content construction; the
+  // repository repeats it transactionally immediately before mutation.
+  assertItemBodyProcessingAllowed(item.id);
+
   const content = await buildUpgradeContent({
     item,
     platform: detection.platform,
@@ -78,21 +93,13 @@ export async function upgradeItemTextAction(
     text: textAnalysis.text,
   });
   if (!content) {
-    return { status: "error", error: "This item cannot be upgraded with pasted text." };
+    return {
+      status: "error",
+      error: "This item cannot be upgraded with pasted text.",
+    };
   }
 
-  logError({
-    type: "capture.upgrade.started",
-    item_id: item.id,
-    platform: detection.platform,
-    source_url: detection.canonicalUrl,
-    old_quality: item.capture_quality ?? null,
-    action: "upgrade",
-    reason: decision.reason,
-    text_chars: textAnalysis.charCount,
-    text_words: textAnalysis.wordCount,
-    ts: Date.now(),
-  });
+  logError("capture.upgrade.started");
 
   await upgradeItemCaptureContent({
     itemId: item.id,
@@ -115,7 +122,10 @@ async function buildUpgradeContent(input: {
   canonicalUrl: string;
   text: string;
 }) {
-  if ((input.platform === "youtube" || input.platform === "youtube_short") && input.videoId) {
+  if (
+    (input.platform === "youtube" || input.platform === "youtube_short") &&
+    input.videoId
+  ) {
     return buildYoutubeUserTextCapture({
       canonicalUrl: input.canonicalUrl,
       platform: input.platform,

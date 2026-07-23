@@ -1,7 +1,14 @@
 import "../../../db/transcript-jobs.test.setup";
 
 import assert from "node:assert/strict";
-import { existsSync, readdirSync, rmSync, utimesSync, writeFileSync } from "node:fs";
+import {
+  existsSync,
+  readFileSync,
+  readdirSync,
+  rmSync,
+  utimesSync,
+  writeFileSync,
+} from "node:fs";
 import { join, resolve } from "node:path";
 import { spawnSync } from "node:child_process";
 import { beforeEach, describe, it } from "node:test";
@@ -10,6 +17,10 @@ import { insertCaptured } from "@/db/items";
 import { TEST_DB_DIR } from "@/db/transcript-jobs.test.setup";
 
 const SCRIPT = resolve(process.cwd(), "scripts/backfill-youtube-transcripts-prod.mjs");
+const SHARED_SCRIPT = resolve(
+  process.cwd(),
+  "scripts/backfill-youtube-transcripts.ts",
+);
 const RUN_DIR = join(TEST_DB_DIR, "operator-runs", "youtube-transcript-backfill");
 const ERRORS_LOG = join(TEST_DB_DIR, "errors.jsonl");
 
@@ -94,7 +105,10 @@ function setCooldown(cooldownUntil = Date.now() + 60_000): void {
     );
 }
 
-function runScript(args: string[] = []) {
+function runScript(
+  args: string[] = [],
+  overrides: Record<string, string | undefined> = {},
+) {
   return spawnSync(process.execPath, [SCRIPT, ...args], {
     cwd: process.cwd(),
     env: {
@@ -102,9 +116,43 @@ function runScript(args: string[] = []) {
       BRAIN_DB_PATH: join(TEST_DB_DIR, "test.sqlite"),
       BRAIN_OPERATOR_RUNS_DIR: RUN_DIR,
       BRAIN_ERRORS_LOG_PATH: ERRORS_LOG,
+      BRAIN_DEPLOYMENT_ENV: "production",
+      BRAIN_PRODUCTION_RUNTIME: "1",
+      BRAIN_BACKGROUND_WORKERS_MODE: "standard",
+      BRAIN_YOUTUBE_BROWSER_TRANSCRIPT_MODE: "disabled",
+      BRAIN_MANUAL_TRANSCRIPT_ENRICHMENT_UI_ENABLED: "0",
+      BRAIN_MANUAL_TRANSCRIPT_ENRICHMENT_WRITE_ENABLED: "0",
+      BRAIN_MANUAL_TRANSCRIPT_ENRICHMENT_EXECUTION_ENABLED: "0",
+      ...overrides,
     },
     encoding: "utf8",
   });
+}
+
+function runSharedScript(
+  args: string[] = [],
+  overrides: Record<string, string | undefined> = {},
+) {
+  return spawnSync(
+    process.execPath,
+    ["--import", "tsx", SHARED_SCRIPT, ...args],
+    {
+      cwd: process.cwd(),
+      env: {
+        ...process.env,
+        BRAIN_DB_PATH: join(TEST_DB_DIR, "test.sqlite"),
+        BRAIN_DEPLOYMENT_ENV: "production",
+        BRAIN_PRODUCTION_RUNTIME: "1",
+        BRAIN_BACKGROUND_WORKERS_MODE: "standard",
+        BRAIN_YOUTUBE_BROWSER_TRANSCRIPT_MODE: "disabled",
+        BRAIN_MANUAL_TRANSCRIPT_ENRICHMENT_UI_ENABLED: "0",
+        BRAIN_MANUAL_TRANSCRIPT_ENRICHMENT_WRITE_ENABLED: "0",
+        BRAIN_MANUAL_TRANSCRIPT_ENRICHMENT_EXECUTION_ENABLED: "0",
+        ...overrides,
+      },
+      encoding: "utf8",
+    },
+  );
 }
 
 function parseFinalJson(stdout: string): Record<string, unknown> {
@@ -141,8 +189,9 @@ describe("production YouTube transcript backfill script", () => {
     assert.equal(body.eligible, 1);
     assert.equal(body.enqueued, 0);
     assert.equal(transcriptJobCount(), 0);
-    assert.equal(typeof body.summaryPath, "string");
-    assert.equal(existsSync(body.summaryPath as string), true);
+    assert.equal(body.summaryWritten, true);
+    assert.equal("summaryFile" in body, false);
+    assert.equal(summaryJsonFiles().length, 1);
   });
 
   it("requires an explicit small limit for real enqueue mode", () => {
@@ -230,8 +279,8 @@ describe("production YouTube transcript backfill script", () => {
     insertWeakYoutube("Summary cleanup", "fffffffffff");
     const first = runScript(["--limit=10"]);
     assert.equal(first.status, 0, first.stderr);
-    const body = parseFinalJson(first.stdout);
-    const summaryPath = body.summaryPath as string;
+    assert.equal(parseFinalJson(first.stdout).summaryWritten, true);
+    const summaryPath = join(RUN_DIR, summaryJsonFiles()[0]!);
     const keepPath = join(RUN_DIR, "do-not-delete.txt");
     writeFileSync(keepPath, "keep", "utf8");
 
@@ -243,6 +292,10 @@ describe("production YouTube transcript backfill script", () => {
     assert.equal(listed.status, 0, listed.stderr);
     const listedBody = parseFinalJson(listed.stdout);
     assert.equal(listedBody.count, 1);
+    const listedRun = (listedBody.runs as Array<Record<string, unknown>>)[0]!;
+    assert.equal("file" in listedRun, false);
+    assert.equal("sizeBytes" in listedRun, false);
+    assert.equal(typeof listedRun.sizeBucket, "string");
 
     const cleared = runScript(["--clear-runs", "--older-than-days=1"]);
     assert.equal(cleared.status, 0, cleared.stderr);
@@ -255,4 +308,86 @@ describe("production YouTube transcript backfill script", () => {
       [],
     );
   });
+
+  it("rejects a future schema before target selection or enqueue with content-free output", () => {
+    const item = insertWeakYoutube(
+      "private-title-sentinel",
+      "ggggggggggg",
+    );
+    const db = getDb();
+    db.prepare("INSERT INTO _migrations(name, sha256) VALUES (?, ?)").run(
+      "027_youtube_browser_transcript.sql",
+      "a".repeat(64),
+    );
+
+    try {
+      const result = runScript([
+        "--run",
+        "--limit=10",
+        "--ignore-cooldown",
+      ]);
+      assert.equal(result.status, 6);
+      assert.match(
+        result.stderr,
+        /blocked code=processing_schema_incompatible/,
+      );
+      const combined = `${result.stdout}\n${result.stderr}`;
+      assert.equal(combined.includes(item.id), false);
+      assert.equal(combined.includes("private-title-sentinel"), false);
+      assert.equal(combined.includes(TEST_DB_DIR), false);
+      assert.equal(transcriptJobCount(), 0);
+      assert.equal(existsSync(ERRORS_LOG), false);
+      assert.equal(existsSync(RUN_DIR), false);
+
+      const shared = runSharedScript(["--run", "--limit=10"]);
+      assert.equal(shared.status, 6);
+      assert.match(
+        shared.stderr,
+        /blocked code=schema_incompatible/,
+      );
+      assert.equal(
+        `${shared.stdout}\n${shared.stderr}`.includes(item.id),
+        false,
+      );
+      assert.equal(transcriptJobCount(), 0);
+    } finally {
+      db.prepare("DELETE FROM _migrations WHERE name = ?").run(
+        "027_youtube_browser_transcript.sql",
+      );
+    }
+  });
+
+  it("run summaries contain aggregate evidence without database paths or host identity", () => {
+    insertWeakYoutube("summary privacy sentinel", "hhhhhhhhhhh");
+    const result = runScript(["--limit=10"]);
+    assert.equal(result.status, 0, result.stderr);
+    const body = parseFinalJson(result.stdout);
+    assert.equal("summaryFile" in body, false);
+    const summary = readFileSync(join(RUN_DIR, summaryJsonFiles()[0]!), "utf8");
+
+    assert.equal(summary.includes(TEST_DB_DIR), false);
+    assert.equal(summary.includes("summary privacy sentinel"), false);
+    assert.equal(/"host"\s*:/.test(summary), false);
+    assert.equal(/"dbPath"\s*:/.test(summary), false);
+    assert.equal(/backfill-youtube-transcripts-prod\.mjs/.test(summary), false);
+  });
+
+  it("both backfill entry points honor the disabled worker kill switch", () => {
+    insertWeakYoutube("disabled worker sentinel", "iiiiiiiiiii");
+    const environment = { BRAIN_BACKGROUND_WORKERS_MODE: "disabled" };
+
+    const direct = runScript(["--run", "--limit=10"], environment);
+    const shared = runSharedScript(["--run", "--limit=10"], environment);
+
+    assert.equal(direct.status, 6);
+    assert.match(direct.stderr, /blocked code=content_workers_disabled/);
+    assert.equal(shared.status, 6);
+    assert.match(shared.stderr, /blocked code=explicit_disabled/);
+    assert.equal(transcriptJobCount(), 0);
+  });
 });
+
+function summaryJsonFiles(): string[] {
+  if (!existsSync(RUN_DIR)) return [];
+  return readdirSync(RUN_DIR).filter((name) => name.endsWith(".json"));
+}

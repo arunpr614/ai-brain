@@ -10,8 +10,11 @@ import {
   writeFileSync,
 } from "node:fs";
 import { dirname, join, resolve } from "node:path";
-import { hostname } from "node:os";
 import Database from "better-sqlite3";
+import {
+  assertStandaloneContentProcessingAllowed,
+  StandaloneContentProcessingBlockedError,
+} from "./lib/content-processing-containment.mjs";
 
 const PROVIDER_HEALTH_KEY = "provider_health.youtube_timedtext";
 const ACTIVE_JOB_STATES = new Set(["pending", "running", "retryable_error"]);
@@ -47,14 +50,14 @@ try {
 
   const dbPath = resolveDbPath();
   if (!existsSync(dbPath)) {
-    throw new UsageError(`Database not found: ${dbPath}`);
+    throw new UsageError("Database not found.");
   }
 
   const db = new Database(dbPath);
   db.pragma("foreign_keys = ON");
+  assertStandaloneContentProcessingAllowed(db);
 
   const result = runBackfill(db, {
-    dbPath,
     dryRun: !args.run,
     ignoreCooldown: args.ignoreCooldown,
     limit: args.limit,
@@ -62,43 +65,29 @@ try {
     now: Date.now(),
   });
 
-  console.log(`[youtube-backfill] database=${result.dbPath}`);
-  console.log(`[youtube-backfill] mode=${result.dryRun ? "dry-run" : "run"} limit=${result.limit}`);
-  console.log(
-    `[youtube-backfill] cooldown_active=${result.cooldownActive} cooldown_until=${result.cooldownUntil ?? "none"}`,
-  );
+  console.log("[youtube-backfill] run completed");
 
-  const summaryPath = writeRunSummary(result);
-  appendTranscriptProviderEvent(dbPath, {
-    type: "transcript.provider",
-    ts: Date.now(),
-    event: "transcript.backfill.summary",
-    provider_key: "youtube_timedtext",
-    dry_run: result.dryRun,
-    limit: result.limit,
-    scanned: result.scanned,
-    eligible: result.eligible,
-    enqueued: result.enqueued,
-    skipped_existing: result.skippedExisting,
-    skipped_terminal: result.skippedTerminal,
-    skipped_cooldown: result.skippedCooldown,
-    skipped_invalid_video_id: result.skippedInvalidVideoId,
-    cooldown_active: result.cooldownActive,
-    cooldown_until: result.cooldownUntil,
-    summary_path: summaryPath,
-  });
+  writeRunSummary(result);
+  appendTranscriptBackfillDiagnostic(dbPath, result);
 
-  printJson({ ...result, summaryPath });
+  printJson({ ...result, summaryWritten: true });
 } catch (err) {
-  const message = err instanceof Error ? err.message : String(err);
-  console.error(`[youtube-backfill] ${message}`);
-  if (err instanceof UsageError) usage();
-  process.exit(err instanceof UsageError ? 2 : 1);
+  if (err instanceof StandaloneContentProcessingBlockedError) {
+    console.error(`[youtube-backfill] blocked code=${err.code}`);
+    process.exit(6);
+  }
+  if (err instanceof UsageError) {
+    console.error(`[youtube-backfill] ${err.message}`);
+    usage();
+    process.exit(2);
+  }
+  console.error("[youtube-backfill] failed code=backfill_failed");
+  process.exit(1);
 }
 
 function runBackfill(
   db,
-  { dbPath, dryRun, ignoreCooldown, limit, limitWasProvided, now },
+  { dryRun, ignoreCooldown, limit, limitWasProvided, now },
 ) {
   if (!dryRun && !limitWasProvided) {
     throw new UsageError("Real backfill requires an explicit --limit.");
@@ -107,6 +96,7 @@ function runBackfill(
     throw new UsageError(`Real backfill limit must be ${MAX_RUN_LIMIT} or less.`);
   }
 
+  assertStandaloneContentProcessingAllowed(db);
   const startedAt = new Date(now).toISOString();
   const cooldown = getCooldown(db, now);
   const cooldownActive = cooldown.active && !ignoreCooldown;
@@ -114,7 +104,6 @@ function runBackfill(
   const result = {
     dryRun,
     limit,
-    dbPath,
     scanned: 0,
     eligible: 0,
     enqueued: 0,
@@ -139,6 +128,7 @@ function runBackfill(
   );
 
   const enqueueTx = db.transaction((row, videoId) => {
+    assertStandaloneContentProcessingAllowed(db);
     const info = insertJob.run(
       row.id,
       row.source_platform ?? row.source_type,
@@ -150,6 +140,7 @@ function runBackfill(
   });
 
   for (const row of rows) {
+    assertStandaloneContentProcessingAllowed(db);
     result.scanned += 1;
     if (!isRecoveryCandidate(row)) continue;
 
@@ -219,7 +210,7 @@ function parseArgs(argv) {
         "--older-than-days",
       );
     } else {
-      throw new UsageError(`Unknown argument: ${arg}`);
+      throw new UsageError("Unknown argument.");
     }
   }
 
@@ -270,7 +261,6 @@ function listWeakYoutubeItems(db, limit) {
       `SELECT i.id,
               i.source_type,
               i.source_url,
-              i.title,
               i.captured_at,
               i.source_platform,
               i.capture_quality,
@@ -395,16 +385,14 @@ function writeRunSummary(result) {
   const summaryPath = join(runDir, `${stamp}-${mode}.json`);
   const summary = {
     ...result,
-    host: hostname(),
-    script: "backfill-youtube-transcripts-prod.mjs",
+    schemaVersion: "youtube-transcript-backfill-summary-v1",
   };
   writeFileSync(summaryPath, `${JSON.stringify(summary, null, 2)}\n`, "utf8");
-  return summaryPath;
 }
 
 function listRunSummaries(runDir) {
   if (!existsSync(runDir)) {
-    return { runDir, count: 0, runs: [] };
+    return { count: 0, runs: [] };
   }
 
   const runs = readdirSync(runDir, { withFileTypes: true })
@@ -414,9 +402,8 @@ function listRunSummaries(runDir) {
       const stats = statSync(path);
       const summary = readRunSummary(path);
       return {
-        file: entry.name,
-        path,
-        sizeBytes: stats.size,
+        sortTime: stats.mtimeMs,
+        sizeBucket: fileSizeBucket(stats.size),
         mtimeMs: stats.mtimeMs,
         dryRun: summary?.dryRun ?? null,
         limit: summary?.limit ?? null,
@@ -429,9 +416,14 @@ function listRunSummaries(runDir) {
         cooldownActive: summary?.cooldownActive ?? null,
       };
     })
-    .sort((a, b) => b.mtimeMs - a.mtimeMs);
+    .sort((a, b) => b.sortTime - a.sortTime)
+    .map((run) => {
+      const publicRun = { ...run };
+      delete publicRun.sortTime;
+      return publicRun;
+    });
 
-  return { runDir, count: runs.length, runs };
+  return { count: runs.length, runs };
 }
 
 function readRunSummary(path) {
@@ -448,7 +440,6 @@ function clearRunSummaries(runDir, olderThanDays) {
   }
   if (!existsSync(runDir)) {
     return {
-      runDir,
       olderThanDays,
       deleted: 0,
       message: "Run summary directory does not exist.",
@@ -467,7 +458,6 @@ function clearRunSummaries(runDir, olderThanDays) {
   }
 
   return {
-    runDir,
     olderThanDays,
     deleted,
     message:
@@ -475,14 +465,37 @@ function clearRunSummaries(runDir, olderThanDays) {
   };
 }
 
-function appendTranscriptProviderEvent(dbPath, entry) {
+function appendTranscriptBackfillDiagnostic(dbPath, result) {
   try {
     const logPath = process.env.BRAIN_ERRORS_LOG_PATH || join(dirname(dbPath), "errors.jsonl");
     mkdirSync(dirname(logPath), { recursive: true });
-    appendFileSync(logPath, `${JSON.stringify(entry)}\n`);
-  } catch (err) {
-    console.warn(`[youtube-backfill] event log write failed: ${err instanceof Error ? err.message : String(err)}`);
+    const diagnostic = {
+      event: "claimant_guarded",
+      outcome: "allowed",
+      claimant: "maintenance_backfill",
+      phase: "candidate",
+      aggregateCount: result.enqueued,
+      guardrailTriggered:
+        result.cooldownActive || result.skippedInvalidVideoId > 0,
+      workStarted: result.scanned > 0,
+      providerContacted: false,
+      elapsedBucket: "not_measured",
+      payloadSizeBucket: "not_measured",
+      timestamp: new Date().toISOString(),
+    };
+    appendFileSync(logPath, `${JSON.stringify(diagnostic)}\n`);
+  } catch {
+    console.warn("[youtube-backfill] event_log_write_failed");
   }
+}
+
+function fileSizeBucket(bytes) {
+  if (!Number.isFinite(bytes) || bytes < 0) return "not_measured";
+  if (bytes === 0) return "zero";
+  if (bytes < 1_024) return "lt_1kib";
+  if (bytes < 16 * 1_024) return "lt_16kib";
+  if (bytes < 256 * 1_024) return "lt_256kib";
+  return "gte_256kib";
 }
 
 function printJson(value) {

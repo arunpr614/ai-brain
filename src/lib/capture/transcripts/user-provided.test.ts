@@ -19,6 +19,7 @@ import {
   normalizePastedTranscriptText,
   UserProvidedTranscriptError,
 } from "./user-provided";
+import { ItemBodyProcessingBlockedError } from "@/lib/processing/hold-gate";
 
 after(() => {
   try {
@@ -56,6 +57,49 @@ function uploadedTxtText(): string {
     "The first paragraph of this uploaded transcript describes user-provided evidence, customer goals, implementation constraints, and validation details.",
     "The second paragraph explains source provenance, replacement cleanup, enrichment queueing, and why timestamps are intentionally absent.",
   ].join("\n\n");
+}
+
+function protectedAttachmentState(itemId: string) {
+  const db = getDb();
+  return {
+    item: db.prepare("SELECT * FROM items WHERE id = ?").get(itemId),
+    sources: db
+      .prepare("SELECT * FROM transcript_sources WHERE item_id = ? ORDER BY id")
+      .all(itemId),
+    segments: db
+      .prepare("SELECT * FROM transcript_segments WHERE item_id = ? ORDER BY id")
+      .all(itemId),
+    chunks: db
+      .prepare("SELECT * FROM chunks WHERE item_id = ? ORDER BY id")
+      .all(itemId),
+    vectorCount: db
+      .prepare(
+        `SELECT COUNT(*) AS n
+           FROM chunks_vec v
+           JOIN chunks_rowid r ON r.rowid = v.rowid
+           JOIN chunks c ON c.id = r.chunk_id
+          WHERE c.item_id = ?`,
+      )
+      .get(itemId),
+    enrichmentJob: db
+      .prepare("SELECT * FROM enrichment_jobs WHERE item_id = ?")
+      .get(itemId),
+    embeddingJob: db
+      .prepare("SELECT * FROM embedding_jobs WHERE item_id = ?")
+      .get(itemId),
+    transcriptJob: db
+      .prepare("SELECT * FROM transcript_jobs WHERE item_id = ?")
+      .get(itemId),
+    transcriptAttempts: db
+      .prepare("SELECT * FROM transcript_attempts WHERE item_id = ? ORDER BY id")
+      .all(itemId),
+    artifacts: db
+      .prepare("SELECT * FROM capture_artifacts WHERE item_id = ? ORDER BY id")
+      .all(itemId),
+    policyDecisions: db
+      .prepare("SELECT * FROM capture_policy_decisions WHERE item_id = ? ORDER BY id")
+      .all(itemId),
+  };
 }
 
 test("attaches a pasted transcript to a YouTube metadata-only item with policy provenance", () => {
@@ -330,5 +374,86 @@ test("normalizes pasted transcript text and enforces size limits", () => {
     (err) =>
       err instanceof UserProvidedTranscriptError &&
       err.code === "text_too_large",
+  );
+});
+
+test("uploaded transcript containment rechecks after parsing and blocks incompatible input before parser access", (t) => {
+  const db = getDb();
+  const raceItem = insertCaptured({
+    source_type: "youtube",
+    source_url: "https://www.youtube.com/watch?v=uploadRace123",
+    title: "Upload race item",
+    body: "Metadata placeholder",
+    source_platform: "youtube",
+    capture_quality: "metadata_only",
+    extraction_warning: "no_transcript",
+  });
+  const beforeRace = protectedAttachmentState(raceItem.id);
+  const originalTransaction = db.transaction.bind(db);
+  let insertedMarker = false;
+
+  t.mock.method(
+    db,
+    "transaction",
+    (...args: Parameters<typeof db.transaction>) => {
+      if (!insertedMarker) {
+        insertedMarker = true;
+        db.exec(`
+          CREATE TABLE content_processing_holds (
+            item_id TEXT NOT NULL,
+            state TEXT NOT NULL
+          )
+        `);
+      }
+      return originalTransaction(...args);
+    },
+  );
+
+  assert.throws(
+    () =>
+      attachUploadedTranscriptFileToYoutubeItem({
+        itemId: raceItem.id,
+        filename: "parsed-before-flip.vtt",
+        contentType: "text/vtt",
+        bytes: bytes(uploadedVttText()),
+      }),
+    (error: unknown) =>
+      error instanceof ItemBodyProcessingBlockedError &&
+      error.code === "processing_schema_incompatible",
+  );
+  assert.equal(insertedMarker, true);
+  assert.deepEqual(protectedAttachmentState(raceItem.id), beforeRace);
+
+  const preblockedItem = insertCaptured({
+    source_type: "youtube",
+    source_url: "https://www.youtube.com/watch?v=uploadBlocked123",
+    title: "Preblocked upload item",
+    body: "Metadata placeholder",
+    source_platform: "youtube",
+    capture_quality: "metadata_only",
+    extraction_warning: "no_transcript",
+  });
+  const beforePreblocked = protectedAttachmentState(preblockedItem.id);
+  const throwingBytes = new Proxy(new Uint8Array([1]), {
+    get() {
+      throw new Error("transcript_parser_must_not_read_bytes");
+    },
+  });
+
+  assert.throws(
+    () =>
+      attachUploadedTranscriptFileToYoutubeItem({
+        itemId: preblockedItem.id,
+        filename: "must-not-parse.vtt",
+        contentType: "text/vtt",
+        bytes: throwingBytes,
+      }),
+    (error: unknown) =>
+      error instanceof ItemBodyProcessingBlockedError &&
+      error.code === "processing_schema_incompatible",
+  );
+  assert.deepEqual(
+    protectedAttachmentState(preblockedItem.id),
+    beforePreblocked,
   );
 });

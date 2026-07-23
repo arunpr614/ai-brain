@@ -13,6 +13,7 @@ import {
   claimNextNoteIndexJob,
   runClaimedNoteIndexJob,
   runOneNoteIndexJob,
+  startNoteIndexWorker,
 } from "./note-index-worker";
 import { TEST_DB_DIR } from "./note-index-worker.test.setup";
 
@@ -52,6 +53,58 @@ function createAiEnabledNote(label: string) {
     includeInAi: true,
   });
   return item;
+}
+
+function claimForItem(itemId: string) {
+  getDb()
+    .prepare(
+      `UPDATE note_index_jobs
+       SET state = 'pending', attempts = 0, claimed_by = NULL,
+           lease_expires_at = NULL, updated_at = 0
+       WHERE item_id = ?`,
+    )
+    .run(itemId);
+  const claimed = claimNextNoteIndexJob(Date.now() + 6_000);
+  assert.ok(claimed);
+  assert.equal(claimed.item_id, itemId);
+  return claimed;
+}
+
+function jobState(itemId: string) {
+  return getDb()
+    .prepare("SELECT * FROM note_index_jobs WHERE item_id = ?")
+    .get(itemId);
+}
+
+const WORKER_AUTHORITY_ENV_KEYS = [
+  "BRAIN_BACKGROUND_WORKERS_MODE",
+  "BRAIN_DEPLOYMENT_ENV",
+  "BRAIN_PRODUCTION_RUNTIME",
+  "BRAIN_YOUTUBE_BROWSER_TRANSCRIPT_MODE",
+  "BRAIN_MANUAL_TRANSCRIPT_ENRICHMENT_UI_ENABLED",
+  "BRAIN_MANUAL_TRANSCRIPT_ENRICHMENT_WRITE_ENABLED",
+  "BRAIN_MANUAL_TRANSCRIPT_ENRICHMENT_EXECUTION_ENABLED",
+] as const;
+
+async function withWorkerAuthorityEnvironment<T>(
+  values: Readonly<Record<string, string | undefined>>,
+  run: () => Promise<T> | T,
+): Promise<T> {
+  const previous = new Map(
+    WORKER_AUTHORITY_ENV_KEYS.map((key) => [key, process.env[key]]),
+  );
+  try {
+    for (const key of WORKER_AUTHORITY_ENV_KEYS) delete process.env[key];
+    for (const [key, value] of Object.entries(values)) {
+      if (value !== undefined) process.env[key] = value;
+    }
+    return await run();
+  } finally {
+    for (const [key, value] of previous) {
+      if (value === undefined) delete process.env[key];
+      else process.env[key] = value;
+    }
+  }
 }
 
 test("worker indexes only the current opted-in note generation", async () => {
@@ -247,4 +300,302 @@ test("remote provider configuration never receives note text before consent", as
     state: "error",
     last_error_code: "NOTE_AI_CONSENT_REQUIRED",
   });
+});
+
+test("the schema-026 missing-mode bridge preserves ordinary note indexing", async () => {
+  const item = createAiEnabledNote("missing-mode");
+  let calls = 0;
+
+  await withWorkerAuthorityEnvironment({}, async () => {
+    const claimed = claimForItem(item.id);
+    await runClaimedNoteIndexJob(claimed, {
+      embedFn: async (inputs) => {
+        calls += 1;
+        return vectorize(inputs);
+      },
+    });
+  });
+
+  assert.equal(calls, 1);
+  assert.equal(
+    (getDb()
+      .prepare(
+        `SELECT COUNT(*) AS n FROM chunks
+         WHERE item_id = ? AND source_kind = 'manual_note'`,
+      )
+      .get(item.id) as { n: number }).n,
+    1,
+  );
+});
+
+test("explicit standard mode preserves ordinary schema-026 note indexing", async () => {
+  const item = createAiEnabledNote("explicit-standard");
+  let calls = 0;
+
+  await withWorkerAuthorityEnvironment(
+    {
+      BRAIN_BACKGROUND_WORKERS_MODE: "standard",
+      BRAIN_DEPLOYMENT_ENV: "production",
+      BRAIN_PRODUCTION_RUNTIME: "1",
+    },
+    async () => {
+      const claimed = claimForItem(item.id);
+      await runClaimedNoteIndexJob(claimed, {
+        embedFn: async (inputs) => {
+          calls += 1;
+          return vectorize(inputs);
+        },
+      });
+    },
+  );
+
+  assert.equal(calls, 1);
+  assert.equal(
+    (getDb()
+      .prepare(
+        `SELECT COUNT(*) AS n FROM chunks
+         WHERE item_id = ? AND source_kind = 'manual_note'`,
+      )
+      .get(item.id) as { n: number }).n,
+    1,
+  );
+});
+
+test("title drift across the provider barrier prevents chunks and job completion", async () => {
+  const item = createAiEnabledNote("title-race");
+  const claimed = claimForItem(item.id);
+  const claimedState = jobState(item.id);
+  let releaseProvider!: () => void;
+  let providerStarted!: () => void;
+  const started = new Promise<void>((resolve) => {
+    providerStarted = resolve;
+  });
+  const released = new Promise<void>((resolve) => {
+    releaseProvider = resolve;
+  });
+  let providerInputs: string[] = [];
+
+  const running = runClaimedNoteIndexJob(claimed, {
+    embedFn: async (inputs) => {
+      providerInputs = inputs;
+      providerStarted();
+      await released;
+      return vectorize(inputs);
+    },
+  });
+  await started;
+  getDb()
+    .prepare("UPDATE items SET title = ? WHERE id = ?")
+    .run("Changed while embedding", item.id);
+  releaseProvider();
+  await running;
+
+  assert.equal(providerInputs.join("\n").includes("Worker title-race"), true);
+  assert.deepEqual(jobState(item.id), claimedState);
+  assert.equal(
+    (getDb()
+      .prepare(
+        `SELECT COUNT(*) AS n FROM chunks
+         WHERE item_id = ? AND source_kind = 'manual_note'`,
+      )
+      .get(item.id) as { n: number }).n,
+    0,
+  );
+});
+
+test("note drift across a failing provider barrier cannot error or retry the replacement job", async () => {
+  const item = createAiEnabledNote("note-race");
+  const claimed = claimForItem(item.id);
+  let releaseProvider!: () => void;
+  let providerStarted!: () => void;
+  const started = new Promise<void>((resolve) => {
+    providerStarted = resolve;
+  });
+  const released = new Promise<void>((resolve) => {
+    releaseProvider = resolve;
+  });
+  let calls = 0;
+
+  const running = runClaimedNoteIndexJob(claimed, {
+    embedFn: async () => {
+      calls += 1;
+      providerStarted();
+      await released;
+      throw new Error("private_provider_failure");
+    },
+  });
+  await started;
+  saveItemNote({
+    itemId: item.id,
+    editorInstanceId: "editor-note-race",
+    mutationId: randomUUID(),
+    epoch: 1,
+    baseGeneration: 2,
+    contentMarkdown: "A replacement note saved while embedding was in flight",
+    saveKind: "auto",
+  });
+  const replacementJob = jobState(item.id);
+  releaseProvider();
+  await running;
+
+  assert.equal(calls, 1);
+  assert.deepEqual(jobState(item.id), replacementJob);
+  assert.equal(
+    (getDb()
+      .prepare(
+        `SELECT COUNT(*) AS n FROM chunks
+         WHERE item_id = ? AND source_kind = 'manual_note'`,
+      )
+      .get(item.id) as { n: number }).n,
+    0,
+  );
+});
+
+test("AI-off note jobs remain purge-only and never disclose note text", async () => {
+  const item = insertCaptured({
+    source_type: "url",
+    title: "Recovery note exclusion",
+    body: "Captured source",
+  });
+  saveItemNote({
+    itemId: item.id,
+    editorInstanceId: "editor-ai-off",
+    mutationId: randomUUID(),
+    epoch: null,
+    baseGeneration: null,
+    contentMarkdown: "Recovery wording that must never reach an embedding provider",
+    saveKind: "manual",
+  });
+  const claimed = claimForItem(item.id);
+  assert.equal(claimed.desired_action, "purge");
+  let calls = 0;
+
+  await runClaimedNoteIndexJob(claimed, {
+    embedFn: async (inputs) => {
+      calls += 1;
+      return vectorize(inputs);
+    },
+  });
+
+  assert.equal(calls, 0);
+  assert.equal(
+    (getDb()
+      .prepare(
+        `SELECT COUNT(*) AS n FROM chunks
+         WHERE item_id = ? AND source_kind = 'manual_note'`,
+      )
+      .get(item.id) as { n: number }).n,
+    0,
+  );
+});
+
+test("denied content-worker plans claim nothing and direct boundaries call no provider", async (t) => {
+  const item = createAiEnabledNote("mode-matrix");
+  const claimed = claimForItem(item.id);
+  const claimedState = jobState(item.id);
+  const logs: string[] = [];
+  t.mock.method(console, "log", (...values: unknown[]) => {
+    logs.push(values.map(String).join(" "));
+  });
+
+  const cases: Array<{
+    label: string;
+    environment: Record<string, string | undefined>;
+  }> = [
+    {
+      label: "disabled",
+      environment: { BRAIN_BACKGROUND_WORKERS_MODE: "disabled" },
+    },
+    {
+      label: "manual-transcript-lab",
+      environment: {
+        BRAIN_BACKGROUND_WORKERS_MODE: "manual-transcript-lab",
+        BRAIN_DEPLOYMENT_ENV: "lab",
+        BRAIN_PRODUCTION_RUNTIME: "0",
+      },
+    },
+    {
+      label: "invalid mode",
+      environment: { BRAIN_BACKGROUND_WORKERS_MODE: "unexpected" },
+    },
+    {
+      label: "invalid deployment",
+      environment: {
+        BRAIN_BACKGROUND_WORKERS_MODE: "standard",
+        BRAIN_DEPLOYMENT_ENV: "invalid",
+        BRAIN_PRODUCTION_RUNTIME: "0",
+      },
+    },
+    {
+      label: "conflicting deployment",
+      environment: {
+        BRAIN_BACKGROUND_WORKERS_MODE: "standard",
+        BRAIN_DEPLOYMENT_ENV: "lab",
+        BRAIN_PRODUCTION_RUNTIME: "1",
+      },
+    },
+    {
+      label: "restricted missing mode",
+      environment: {
+        BRAIN_MANUAL_TRANSCRIPT_ENRICHMENT_UI_ENABLED: "1",
+      },
+    },
+  ];
+
+  for (const entry of cases) {
+    await withWorkerAuthorityEnvironment(entry.environment, async () => {
+      let providerCalls = 0;
+      const deps = {
+        embedFn: async (inputs: string[]) => {
+          providerCalls += 1;
+          return vectorize(inputs);
+        },
+      };
+      globalThis.__brainNoteIndexWorker = undefined;
+      startNoteIndexWorker();
+      assert.equal(globalThis.__brainNoteIndexWorker, undefined, entry.label);
+      assert.equal(claimNextNoteIndexJob(Date.now() + 12_000), null, entry.label);
+      assert.equal(
+        await runOneNoteIndexJob(Date.now() + 12_000, deps),
+        false,
+        entry.label,
+      );
+      await runClaimedNoteIndexJob(claimed, deps);
+      assert.equal(providerCalls, 0, entry.label);
+      assert.deepEqual(jobState(item.id), claimedState, entry.label);
+    });
+  }
+
+  assert.equal(logs.every((line) => !line.includes(item.id)), true);
+  assert.equal(logs.every((line) => !line.includes("manual-notes-v1")), true);
+});
+
+test("an incompatible schema blocks startup, claim, and direct provider execution", async (t) => {
+  const item = createAiEnabledNote("schema-incompatible");
+  const claimed = claimForItem(item.id);
+  const claimedState = jobState(item.id);
+  getDb().exec(`
+    CREATE TABLE content_processing_holds (
+      item_id TEXT NOT NULL,
+      state TEXT NOT NULL
+    )
+  `);
+  t.mock.method(console, "log", () => undefined);
+  let providerCalls = 0;
+  const deps = {
+    embedFn: async (inputs: string[]) => {
+      providerCalls += 1;
+      return vectorize(inputs);
+    },
+  };
+
+  globalThis.__brainNoteIndexWorker = undefined;
+  startNoteIndexWorker();
+  assert.equal(globalThis.__brainNoteIndexWorker, undefined);
+  assert.equal(claimNextNoteIndexJob(Date.now() + 12_000), null);
+  assert.equal(await runOneNoteIndexJob(Date.now() + 12_000, deps), false);
+  await runClaimedNoteIndexJob(claimed, deps);
+
+  assert.equal(providerCalls, 0);
+  assert.deepEqual(jobState(item.id), claimedState);
 });
