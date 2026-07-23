@@ -14,7 +14,6 @@
  */
 import { NextResponse, type NextRequest } from "next/server";
 import { verifySessionCookie } from "@/lib/auth";
-import { tokenFingerprint } from "@/lib/auth/bearer";
 import { logError } from "@/lib/errors/sink";
 import { rotateApiToken } from "@/lib/lan/info";
 
@@ -34,12 +33,8 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const token = rotateApiToken();
-  logError({
-    type: "lan.bearer.token-rotated",
-    fingerprint: tokenFingerprint(token),
-    ts: Date.now(),
-  });
+  rotateApiToken();
+  logError("lan.bearer.token-rotated");
 
   return NextResponse.json({ ok: true }, { status: 200, headers: NO_STORE });
 }

@@ -29,12 +29,7 @@ const CaptureNoteBody = z.object({
 
 export async function POST(req: NextRequest) {
   if (!validateOrigin(req.headers.get("origin"))) {
-    logError({
-      type: "lan.bearer.reject-origin",
-      path: "/api/capture/note",
-      origin: req.headers.get("origin"),
-      ts: Date.now(),
-    });
+    logError("lan.bearer.reject-origin");
     return NextResponse.json({ error: "origin_not_allowed" }, { status: 403 });
   }
 
@@ -60,12 +55,7 @@ export async function POST(req: NextRequest) {
   // Dedup on title+body hash — the note has no URL identifier to key off.
   const hash = crypto.createHash("sha256").update(`${title}\n${body}`).digest("hex").slice(0, 32);
   if (isDuplicateShare(shareDedupKey("note", hash))) {
-    logError({
-      type: "share.intent.duplicate",
-      source: "server",
-      path: "/api/capture/note",
-      ts: Date.now(),
-    });
+    logError("share.intent.duplicate");
     return NextResponse.json(
       {
         duplicate: true,

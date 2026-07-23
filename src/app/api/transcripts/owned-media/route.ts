@@ -3,7 +3,6 @@ import { verifySessionCookie } from "@/lib/auth";
 import { toFailedCaptureResultPayload } from "@/lib/capture/result";
 import { logError } from "@/lib/errors/sink";
 import {
-  logOwnedMediaUploadEvent,
   OwnedMediaUploadError,
   prepareOwnedMediaUpload,
 } from "@/lib/capture/transcripts/owned-media-stt-route-service";
@@ -21,36 +20,21 @@ export async function POST(req: NextRequest) {
   try {
     form = await req.formData();
   } catch {
-    logOwnedMediaUploadEvent("capture.transcript.owned_media.invalid_request", {
-      status: "rejected",
-      reason: "invalid_multipart",
-    });
+    logError("capture.transcript.owned_media.invalid_request");
     return failure("invalid_multipart", "Upload an owned media file.", 400);
   }
 
   const media = form.get("media");
   if (!(media instanceof File)) {
-    logOwnedMediaUploadEvent("capture.transcript.owned_media.invalid_request", {
-      item_id: stringField(form, "item_id") || undefined,
-      status: "rejected",
-      reason: "missing_media_file",
-    });
+    logError("capture.transcript.owned_media.invalid_request");
     return failure("missing_media_file", "Choose an owned media file first.", 400);
   }
   if (media.size === 0) {
-    logOwnedMediaUploadEvent("capture.transcript.owned_media.invalid_request", {
-      item_id: stringField(form, "item_id") || undefined,
-      status: "rejected",
-      reason: "missing_media_file",
-    });
+    logError("capture.transcript.owned_media.invalid_request");
     return failure("missing_media_file", "Choose an owned media file first.", 400);
   }
   if (media.size > DEFAULT_OWNED_MEDIA_STT_MAX_BYTES) {
-    logOwnedMediaUploadEvent("capture.transcript.owned_media.invalid_request", {
-      item_id: stringField(form, "item_id") || undefined,
-      status: "rejected",
-      reason: "invalid_media",
-    });
+    logError("capture.transcript.owned_media.invalid_request");
     return failure("invalid_media", "Owned media file is too large.", 400);
   }
 
@@ -68,11 +52,7 @@ export async function POST(req: NextRequest) {
       expectedSha256: req.headers.get("x-expected-sha256"),
     });
 
-    logOwnedMediaUploadEvent("capture.transcript.owned_media.provider_disabled", {
-      ...prepared.logFields,
-      provider: "disabled",
-      status: "blocked",
-    });
+    logError("capture.transcript.owned_media.provider_disabled");
     return failure(
       "provider_disabled",
       "Owned-media transcription is not enabled yet.",
@@ -84,28 +64,18 @@ export async function POST(req: NextRequest) {
     );
   } catch (err) {
     if (err instanceof OwnedMediaUploadError) {
-      const eventType =
-        err.code === "sha256_mismatch"
-          ? "capture.transcript.owned_media.sha256_mismatch"
-          : "capture.transcript.owned_media.invalid_request";
-      logOwnedMediaUploadEvent(eventType, {
-        item_id: stringField(form, "item_id") || undefined,
-        status: "rejected",
-        reason: err.code,
-      });
+      if (err.code === "sha256_mismatch") {
+        logError("capture.transcript.owned_media.sha256_mismatch");
+      } else {
+        logError("capture.transcript.owned_media.invalid_request");
+      }
       return failure(err.code, err.message, err.details.status, {
         expected: err.details.expected,
         actual: err.details.actual,
       });
     }
 
-    logError({
-      type: "capture.transcript.owned_media.unexpected_failure",
-      item_id: stringField(form, "item_id") || null,
-      reason: "unexpected_failure",
-      error_name: err instanceof Error ? err.name : typeof err,
-      ts: Date.now(),
-    });
+    logError("capture.transcript.owned_media.unexpected_failure");
     return failure("owned_media_upload_failed", "Owned media could not be processed.", 500);
   }
 }

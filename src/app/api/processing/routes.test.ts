@@ -29,9 +29,14 @@ let session = "";
 let itemId = "";
 
 function request(path: string, options: {
-  method?: string; session?: string; bearer?: string; origin?: string; body?: unknown;
+  method?: string;
+  session?: string;
+  bearer?: string;
+  origin?: string;
+  body?: unknown;
+  extraHeaders?: HeadersInit;
 } = {}) {
-  const headers = new Headers();
+  const headers = new Headers(options.extraHeaders);
   if (options.session) headers.set("cookie", `brain-session=${options.session}`);
   if (options.bearer) headers.set("authorization", `Bearer ${options.bearer}`);
   if (options.origin) headers.set("origin", options.origin);
@@ -44,7 +49,8 @@ function request(path: string, options: {
 
 function assertPrivate(response: Response) {
   assert.equal(response.headers.get("cache-control"), "private, no-store, max-age=0");
-  assert.equal(response.headers.get("vary"), "Cookie");
+  assert.equal(response.headers.get("pragma"), "no-cache");
+  assert.equal(response.headers.get("vary"), "Cookie, Origin");
   assert.equal(response.headers.get("x-content-type-options"), "nosniff");
 }
 
@@ -117,6 +123,95 @@ test("workflow writes require exact Origin before durable work", async () => {
     body: { mutationId: crypto.randomUUID(), actorTabId: body.actorTabId, expectedVersion: 2, targetEventUuid: payload.receipt.acceptedEventUuid },
   }), { params: Promise.resolve({ id: itemId }) });
   assert.equal(undone.status, 200); assertPrivate(undone);
+});
+
+test("Processing write origin authority is normalized, attack-resistant, and independent of Host forwarding headers", async () => {
+  const configuredOrigin = process.env.BRAIN_PUBLIC_ORIGIN;
+  __resetProcessingWriteRateLimitForTests();
+  try {
+    for (const invalidConfiguration of [
+      undefined,
+      "https://brain.test/path",
+      "https://user@brain.test",
+      "https://brain.test?private=1",
+      "https://brain.test,https://evil.test",
+    ]) {
+      if (invalidConfiguration === undefined) {
+        delete process.env.BRAIN_PUBLIC_ORIGIN;
+      } else {
+        process.env.BRAIN_PUBLIC_ORIGIN = invalidConfiguration;
+      }
+      const denied = processingWriteGate(request(
+        `/api/items/${itemId}/workflow`,
+        {
+          method: "PATCH",
+          session,
+          origin: "https://brain.test",
+        },
+      ));
+      assert.equal(denied?.status, 503, String(invalidConfiguration));
+      assertPrivate(denied!);
+      assert.deepEqual(
+        await denied?.json(),
+        { error: "processing_misconfigured" },
+      );
+    }
+
+    process.env.BRAIN_PUBLIC_ORIGIN = "HTTPS://BRAIN.TEST:443/";
+    const normalized = processingWriteGate(request(
+      `/api/items/${itemId}/workflow`,
+      {
+        method: "PATCH",
+        session,
+        origin: "https://brain.test",
+        extraHeaders: {
+          Host: "evil.test",
+          "X-Forwarded-Host": "evil.test",
+          "X-Forwarded-Proto": "http",
+        },
+      },
+    ));
+    assert.equal(normalized, null);
+
+    const hostileOrigins = [
+      undefined,
+      "null",
+      "https://brain.test, https://evil.test",
+      "https://user@brain.test",
+      "https://brain.test/path",
+      "http://brain.test",
+      "https://brain.test:444",
+      "https://evil.test",
+    ];
+    for (const origin of hostileOrigins) {
+      const denied = processingWriteGate(request(
+        `/api/items/${itemId}/workflow`,
+        {
+          method: "PATCH",
+          session,
+          origin,
+          extraHeaders: {
+            Host: "brain.test",
+            "X-Forwarded-Host": "brain.test",
+            "X-Forwarded-Proto": "https",
+          },
+        },
+      ));
+      assert.equal(denied?.status, 403, String(origin));
+      assertPrivate(denied!);
+      assert.deepEqual(
+        await denied?.json(),
+        { error: "cross_origin_forbidden" },
+      );
+    }
+  } finally {
+    if (configuredOrigin === undefined) {
+      delete process.env.BRAIN_PUBLIC_ORIGIN;
+    } else {
+      process.env.BRAIN_PUBLIC_ORIGIN = configuredOrigin;
+    }
+    __resetProcessingWriteRateLimitForTests();
+  }
 });
 
 test("malformed requests stay normalized and private", async () => {

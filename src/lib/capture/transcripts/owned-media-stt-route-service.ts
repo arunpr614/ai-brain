@@ -1,6 +1,6 @@
 import crypto from "node:crypto";
 import type { ItemRow } from "@/db/client";
-import { logError } from "@/lib/errors/sink";
+import { logError, type ErrorEventCode } from "@/lib/errors/sink";
 import {
   attachOwnedMediaSttToYoutubeItem,
   DEFAULT_OWNED_MEDIA_STT_MAX_BYTES,
@@ -53,19 +53,9 @@ export interface PreparedOwnedMediaUpload {
   title: string | null;
   languageCode: string | null;
   media: OwnedMediaSttMedia;
-  logFields: OwnedMediaUploadLogFields;
 }
 
-export interface OwnedMediaUploadLogFields {
-  item_id: string;
-  media_extension: string | null;
-  media_sha_prefix: string;
-  media_byte_count: number;
-  media_content_type: string | null;
-  media_duration_ms: number | null;
-}
-
-export type OwnedMediaUploadLogger = (entry: Record<string, unknown>) => void;
+export type OwnedMediaUploadLogger = (code: ErrorEventCode) => void;
 
 export interface TranscribeOwnedMediaUploadInput extends PrepareOwnedMediaUploadInput {
   provider: OwnedMediaSttProvider;
@@ -141,14 +131,6 @@ export function prepareOwnedMediaUpload(
     title: normalizeOptionalString(input.title),
     languageCode: normalizeOptionalString(input.languageCode),
     media,
-    logFields: {
-      item_id: itemId,
-      media_extension: extensionForFilename(input.filename),
-      media_sha_prefix: actual.slice(0, 12),
-      media_byte_count: input.bytes.byteLength,
-      media_content_type: normalizeContentType(input.contentType),
-      media_duration_ms: durationMs,
-    },
   };
 }
 
@@ -157,7 +139,6 @@ export async function transcribeOwnedMediaUploadForYoutubeItem(
 ): Promise<TranscribeOwnedMediaUploadResult> {
   const logger = input.logger ?? logError;
   const prepared = prepareOwnedMediaUpload(input);
-  const startedAt = Date.now();
 
   try {
     const result = await attachOwnedMediaSttToYoutubeItem({
@@ -168,15 +149,7 @@ export async function transcribeOwnedMediaUploadForYoutubeItem(
       provider: input.provider,
       policyDecider: input.policyDecider,
     });
-    logger({
-      type: "capture.transcript.owned_media.saved",
-      ...prepared.logFields,
-      provider: input.provider.providerName,
-      transcript_source_id: result.transcriptSource.id,
-      segment_count: result.transcriptSource.segment_count,
-      elapsed_ms: Date.now() - startedAt,
-      ts: Date.now(),
-    });
+    logger("capture.transcript.owned_media.saved");
     return {
       repairItemId: result.repair.item.id,
       policyDecisionId: result.policyDecisionId,
@@ -187,13 +160,7 @@ export async function transcribeOwnedMediaUploadForYoutubeItem(
     };
   } catch (err) {
     if (err instanceof OwnedMediaSttError && err.code === "provider_failed") {
-      logger({
-        type: "capture.transcript.owned_media.provider_failed",
-        ...prepared.logFields,
-        provider: input.provider.providerName,
-        elapsed_ms: Date.now() - startedAt,
-        ts: Date.now(),
-      });
+      logger("capture.transcript.owned_media.provider_failed");
       throw new OwnedMediaUploadError(
         "provider_failed",
         "Owned-media STT provider failed.",
@@ -202,14 +169,6 @@ export async function transcribeOwnedMediaUploadForYoutubeItem(
     }
     throw err;
   }
-}
-
-export function logOwnedMediaUploadEvent(
-  type: string,
-  fields: Partial<OwnedMediaUploadLogFields> & Record<string, unknown>,
-  logger: OwnedMediaUploadLogger = logError,
-): void {
-  logger({ type, ...fields, ts: Date.now() });
 }
 
 function normalizeDurationMs(value: number | null | undefined): number | null {
@@ -238,18 +197,6 @@ function normalizeExpectedSha(value: string | null | undefined): string | null {
 function normalizeOptionalString(value: string | null | undefined): string | null {
   const cleaned = value?.trim() ?? "";
   return cleaned || null;
-}
-
-function normalizeContentType(value: string | null | undefined): string | null {
-  const cleaned = value?.split(";")[0]?.trim().toLowerCase() ?? "";
-  return cleaned || null;
-}
-
-function extensionForFilename(filename: string): string | null {
-  const basename = filename.trim().split(/[\\/]/).filter(Boolean).pop() ?? "";
-  const dot = basename.lastIndexOf(".");
-  const extension = dot >= 0 ? basename.slice(dot).toLowerCase() : "";
-  return /^[.][a-z0-9]{1,10}$/.test(extension) ? extension : null;
 }
 
 function sha256Bytes(bytes: Uint8Array): string {

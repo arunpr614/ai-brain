@@ -37,12 +37,7 @@ export async function POST(req: NextRequest) {
   }
 
   if (hasBearer && !validateOrigin(req.headers.get("origin"))) {
-    logError({
-      type: "lan.bearer.reject-origin",
-      path: "/api/capture/transcript",
-      origin: req.headers.get("origin"),
-      ts: Date.now(),
-    });
+    logError("lan.bearer.reject-origin");
     return NextResponse.json({ error: "origin_not_allowed" }, { status: 403 });
   }
 
@@ -115,12 +110,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    logError({
-      type: "capture.transcript.unexpected-failure",
-      item_id: parsed?.data.item_id,
-      message: err instanceof Error ? err.message : String(err),
-      ts: Date.now(),
-    });
+    logError("capture.transcript.unexpected-failure");
     return NextResponse.json(
       {
         error: "transcript_upgrade_failed",
@@ -192,12 +182,7 @@ async function handleMultipartTranscript(req: NextRequest) {
       );
     }
 
-    logError({
-      type: "capture.transcript.multipart-unexpected-failure",
-      item_id: itemId,
-      message: err instanceof Error ? err.message : String(err),
-      ts: Date.now(),
-    });
+    logError("capture.transcript.multipart-unexpected-failure");
     return NextResponse.json(
       {
         error: "transcript_upgrade_failed",

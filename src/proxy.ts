@@ -3,6 +3,7 @@ import {
   checkBearerRateLimit,
   isBearerRoute,
   loadApiToken,
+  type BearerRejection,
   verifyBearerToken,
 } from "@/lib/auth/bearer";
 import { verifySessionCookie } from "@/lib/auth";
@@ -94,43 +95,20 @@ export function proxy(req: NextRequest) {
   // 3. Bearer-authenticated programmatic access (APK share-handler,
   //    Chrome extension) on allow-listed routes only.
   if (isBearerRoute(pathname)) {
-    // v0.6.1 T-4: capture client IP from Cloudflare for log forensics.
-    // cf-connecting-ip is set by the Cloudflare edge on every request through
-    // the tunnel; x-forwarded-for is the standard fallback.
-    const cf_ip =
-      req.headers.get("cf-connecting-ip") ?? req.headers.get("x-forwarded-for") ?? null;
     const verdict = verifyBearerToken(req.headers.get("authorization"));
     if (!verdict.ok) {
-      logError({
-        type: `lan.bearer.reject-${verdict.reason}`,
-        path: pathname,
-        method: req.method,
-        cf_ip,
-        ts: Date.now(),
-      });
+      logBearerRejection(verdict.reason);
       return unauth(req, pathname);
     }
     const token = loadApiToken();
     // loadApiToken cannot be null here because verifyBearerToken returned ok.
     // Narrow explicitly for the rate-limit call.
     if (token === null) {
-      logError({
-        type: "lan.bearer.reject-server-token-unconfigured",
-        path: pathname,
-        method: req.method,
-        cf_ip,
-        ts: Date.now(),
-      });
+      logError("lan.bearer.reject-server-token-unconfigured");
       return unauth(req, pathname);
     }
     if (!checkBearerRateLimit(token)) {
-      logError({
-        type: "lan.ratelimit.triggered",
-        path: pathname,
-        method: req.method,
-        cf_ip,
-        ts: Date.now(),
-      });
+      logError("lan.ratelimit.triggered");
       return NextResponse.json(
         { error: "rate_limited" },
         {
@@ -144,6 +122,29 @@ export function proxy(req: NextRequest) {
 
   // 4 / 5. No valid credential — 401 for API, redirect for HTML.
   return unauth(req, pathname);
+}
+
+function logBearerRejection(reason: BearerRejection): void {
+  switch (reason) {
+    case "missing-header":
+      logError("lan.bearer.reject-missing-header");
+      break;
+    case "malformed-header":
+      logError("lan.bearer.reject-malformed-header");
+      break;
+    case "server-token-unconfigured":
+      logError("lan.bearer.reject-server-token-unconfigured");
+      break;
+    case "server-token-too-short":
+      logError("lan.bearer.reject-server-token-too-short");
+      break;
+    case "length-mismatch":
+      logError("lan.bearer.reject-length-mismatch");
+      break;
+    case "token-mismatch":
+      logError("lan.bearer.reject-token-mismatch");
+      break;
+  }
 }
 
 function isNotebookLmConnectorRoute(pathname: string): boolean {

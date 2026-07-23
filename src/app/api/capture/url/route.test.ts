@@ -17,11 +17,23 @@ import { POST } from "./route";
 import { __resetDedupForTests } from "@/lib/capture/dedup";
 import { getDb } from "@/db/client";
 import { getItem, insertCaptured } from "@/db/items";
-import { getTranscriptJobForItem, listTranscriptAttemptsForItem } from "@/db/transcript-jobs";
+import {
+  getTranscriptJobForItem,
+  listTranscriptAttemptsForItem,
+} from "@/db/transcript-jobs";
+import {
+  extractUrlCapture,
+  type ExtractUrlCaptureInput,
+} from "@/lib/capture/capture-url";
+import { ItemBodyProcessingBlockedError } from "@/lib/processing/hold-gate";
 
 function mkReq(
   body: unknown,
-  opts: { origin?: string | null; rawBody?: string; captureSource?: string } = {},
+  opts: {
+    origin?: string | null;
+    rawBody?: string;
+    captureSource?: string;
+  } = {},
 ): NextRequest {
   const headers = new Headers({ "content-type": "application/json" });
   if (opts.origin !== null && opts.origin !== undefined) {
@@ -75,7 +87,12 @@ describe("/api/capture/url", () => {
     // First POST: dedup doesn't fire (fresh) → hits findItemByUrl → no
     // match → would try to extract. To avoid a network call we seed the
     // item first so the historical-duplicate branch triggers.
-    insertCaptured({ source_type: "url", title: "seed", body: "x", source_url: url });
+    insertCaptured({
+      source_type: "url",
+      title: "seed",
+      body: "x",
+      source_url: url,
+    });
 
     const r1 = await POST(mkReq({ url }));
     assert.equal(r1.status, 200);
@@ -110,15 +127,17 @@ describe("/api/capture/url", () => {
       extraction_version: "capture-v0.7.5",
     });
 
-    const res = await POST(mkReq({
-      url,
-      note: `${url}
+    const res = await POST(
+      mkReq({
+        url,
+        note: `${url}
 
 This is the complete post body with enough useful words to save as user provided full text.
 
 - It keeps a bullet.
 - It keeps this secondary link https://example.com/context`,
-    }));
+      }),
+    );
 
     assert.equal(res.status, 200);
     const body = await res.json();
@@ -155,15 +174,17 @@ This is the complete post body with enough useful words to save as user provided
       description: "Saved description",
     });
 
-    const res = await POST(mkReq({
-      url: "https://youtu.be/abc12345678",
-      note: `https://youtu.be/abc12345678
+    const res = await POST(
+      mkReq({
+        url: "https://youtu.be/abc12345678",
+        note: `https://youtu.be/abc12345678
 
 [00:01] This transcript text has enough useful words to upgrade the existing weak capture.
 
 - Keep this bullet
 - Keep this secondary URL https://example.com/context`,
-    }));
+      }),
+    );
 
     assert.equal(res.status, 200);
     const body = await res.json();
@@ -229,27 +250,78 @@ This is the complete post body with enough useful words to save as user provided
     assert.ok((job?.priority ?? 0) >= 20);
   });
 
+  it("does not claim recovery was queued when an incompatible schema blocks duplicate requeue", async () => {
+    const canonical = "https://www.youtube.com/watch?v=blockdupe01";
+    const existing = insertCaptured({
+      source_type: "youtube",
+      title: "Blocked duplicate weak YouTube",
+      body: "metadata only",
+      source_url: canonical,
+      source_platform: "youtube",
+      capture_quality: "metadata_only",
+      extraction_method: "youtube_oembed_metadata",
+      extraction_warning: "youtube_antibot_metadata_only",
+    });
+    const db = getDb();
+    const beforeItem = getItem(existing.id);
+    const beforeJob = getTranscriptJobForItem(existing.id);
+    db.prepare("INSERT INTO _migrations(name, sha256) VALUES (?, ?)").run(
+      "027_youtube_browser_transcript.sql",
+      "a".repeat(64),
+    );
+
+    try {
+      __resetDedupForTests();
+      const response = await POST(mkReq({ url: canonical }));
+
+      assert.equal(response.status, 503);
+      assert.deepEqual(await response.json(), {
+        ok: false,
+        code: "processing_schema_incompatible",
+        effect: "none",
+      });
+      assert.equal(
+        response.headers.get("Cache-Control"),
+        "private, no-store, max-age=0",
+      );
+      assert.deepEqual(getItem(existing.id), beforeItem);
+      assert.deepEqual(getTranscriptJobForItem(existing.id), beforeJob);
+    } finally {
+      db.prepare("DELETE FROM _migrations WHERE name = ?").run(
+        "027_youtube_browser_transcript.sql",
+      );
+    }
+  });
+
   it("creates a new YouTube item from pasted text without requiring transcript extraction", async () => {
     const oldKey = process.env.YOUTUBE_DATA_API_KEY;
     process.env.YOUTUBE_DATA_API_KEY = "";
     try {
-      const res = await POST(mkReq({
-        url: "https://youtu.be/newtext1234",
-        note: `https://youtu.be/newtext1234
+      const res = await POST(
+        mkReq({
+          url: "https://youtu.be/newtext1234",
+          note: `https://youtu.be/newtext1234
 
 These pasted notes have enough words to become the remembered content for this new YouTube capture.`,
-      }));
+        }),
+      );
 
       assert.equal(res.status, 201);
       const body = await res.json();
       assert.equal(body.action, "created");
       const item = getItem(body.id)!;
       assert.equal(item.source_type, "youtube");
-      assert.equal(item.source_url, "https://www.youtube.com/watch?v=newtext1234");
+      assert.equal(
+        item.source_url,
+        "https://www.youtube.com/watch?v=newtext1234",
+      );
       assert.equal(item.capture_quality, "user_provided_full_text");
       assert.equal(item.extraction_method, "youtube_user_provided_text");
       assert.match(item.body, /Provided by: user paste/);
-      assert.match(item.body, /remembered content for this new YouTube capture/);
+      assert.match(
+        item.body,
+        /remembered content for this new YouTube capture/,
+      );
     } finally {
       if (oldKey === undefined) delete process.env.YOUTUBE_DATA_API_KEY;
       else process.env.YOUTUBE_DATA_API_KEY = oldKey;
@@ -365,15 +437,71 @@ These pasted notes have enough words to become the remembered content for this n
       extraction_version: "capture-v0.7.5",
     });
 
-    const res = await POST(mkReq({
-      url,
-      note: `${url}\nThese are extra notes with enough words but should not overwrite a strong capture.`,
-    }));
+    const res = await POST(
+      mkReq({
+        url,
+        note: `${url}\nThese are extra notes with enough words but should not overwrite a strong capture.`,
+      }),
+    );
 
     assert.equal(res.status, 200);
     const body = await res.json();
     assert.equal(body.action, "duplicate");
     assert.equal(body.itemId, existing.id);
     assert.equal(getItem(existing.id)?.body, "existing transcript body");
+  });
+
+  it("blocks existing-item extraction before source input is touched when authority is incompatible", async () => {
+    const url = "https://www.linkedin.com/posts/containment-race";
+    const existing = insertCaptured({
+      source_type: "url",
+      title: "Contained preview",
+      body: "Preview only",
+      source_url: url,
+      source_platform: "linkedin",
+      capture_quality: "metadata_only",
+      extraction_method: "linkedin_opengraph",
+      extraction_version: "capture-v0.7.5",
+    });
+    const db = getDb();
+    db.exec(`
+      CREATE TABLE content_processing_holds (
+        id TEXT PRIMARY KEY,
+        item_id TEXT NOT NULL,
+        state TEXT NOT NULL
+      )
+    `);
+    try {
+      let sourceInputRead = false;
+      const guardedInput = {
+        get url(): string {
+          sourceInputRead = true;
+          throw new Error("source input must remain untouched");
+        },
+        existingItem: existing,
+      } as ExtractUrlCaptureInput;
+      await assert.rejects(
+        extractUrlCapture(guardedInput),
+        (error: unknown) =>
+          error instanceof ItemBodyProcessingBlockedError &&
+          error.code === "processing_schema_incompatible",
+      );
+      assert.equal(sourceInputRead, false);
+
+      await assert.rejects(
+        POST(
+          mkReq({
+            url,
+            note: `${url}\nThis pasted body has enough words to attempt upgrading the existing weak item.`,
+          }),
+        ),
+        (error: unknown) =>
+          error instanceof ItemBodyProcessingBlockedError &&
+          error.code === "processing_schema_incompatible",
+      );
+      assert.equal(getItem(existing.id)?.body, "Preview only");
+    } finally {
+      db.exec("DROP TABLE content_processing_holds");
+    }
   });
 });

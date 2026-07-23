@@ -8,6 +8,10 @@ import {
   type TranscriptRetentionClass,
   type TranscriptRightsBasis,
 } from "@/db/transcripts";
+import {
+  classifyDeployment,
+  type DeploymentClassification,
+} from "@/lib/runtime/deployment";
 
 export type AllowedTranscriptAcquisition = {
   readonly __brand: "AllowedTranscriptAcquisition";
@@ -41,6 +45,7 @@ export interface DecideTranscriptAcquisitionInput {
   itemId?: string | null;
   sourceUrl: string;
   platform: TranscriptPolicyPlatform;
+  /** Deprecated compatibility input; never used as deployment authority. */
   environment?: TranscriptEnvironment;
   rightsBasis: TranscriptRightsBasis;
   method: TranscriptAcquisitionMethod;
@@ -49,8 +54,19 @@ export interface DecideTranscriptAcquisitionInput {
 }
 
 export function currentTranscriptEnvironment(): TranscriptEnvironment {
-  if (process.env.BRAIN_TRANSCRIPT_ENV === "lab") return "lab";
+  const deployment = classifyDeployment();
+  if (deployment.explicitProduction) return "production";
+  if (
+    deployment.configurationState === "valid" &&
+    deployment.effectiveDeployment !== "unknown"
+  ) {
+    return deployment.effectiveDeployment;
+  }
+
+  // Compatibility fallback for ordinary schema-026 transcript methods. A
+  // legacy lab marker never wins over an actual production runtime.
   if (process.env.NODE_ENV === "production") return "production";
+  if (process.env.BRAIN_TRANSCRIPT_ENV === "lab") return "lab";
   if (process.env.NODE_ENV === "test") return "test";
   return "development";
 }
@@ -66,17 +82,19 @@ export function isYoutubeItem(item: ItemRow): boolean {
 export function decideTranscriptAcquisition(
   input: DecideTranscriptAcquisitionInput,
 ): TranscriptPolicyResult {
-  const environment = input.environment ?? currentTranscriptEnvironment();
+  const deployment = classifyDeployment();
+  const environment = input.method === "lab_public_caption"
+    ? restrictedTranscriptEnvironment(deployment)
+    : currentTranscriptEnvironment();
   const blockedReason = blockedReasonFor({
-    environment,
+    deployment,
     method: input.method,
     retentionClass: input.retentionClass,
     legalApprovalId: input.legalApprovalId ?? null,
   });
 
   const productionAllowed =
-    !blockedReason &&
-    (input.method === "lab_public_caption" ? Boolean(input.legalApprovalId) : true);
+    !blockedReason && input.method !== "lab_public_caption";
 
   const decision = insertCapturePolicyDecision({
     item_id: input.itemId ?? null,
@@ -168,17 +186,24 @@ export function allowOwnedMediaSttForItem(item: ItemRow): TranscriptPolicyResult
 }
 
 function blockedReasonFor(input: {
-  environment: TranscriptEnvironment;
+  deployment: DeploymentClassification;
   method: TranscriptAcquisitionMethod;
   retentionClass: TranscriptRetentionClass;
   legalApprovalId: string | null;
 }): string | null {
-  if (
-    input.environment === "production" &&
-    input.method === "lab_public_caption" &&
-    !input.legalApprovalId
-  ) {
-    return "lab_public_caption_requires_legal_approval_in_production";
+  if (input.method === "lab_public_caption") {
+    switch (input.deployment.restrictedCapability) {
+      case "denied_production":
+        return "lab_public_caption_production_blocked";
+      case "denied_missing_authority":
+        return "lab_public_caption_deployment_unclassified";
+      case "denied_invalid_authority":
+        return "lab_public_caption_deployment_invalid";
+      case "denied_conflicting_authority":
+        return "lab_public_caption_deployment_conflict";
+      case "eligible":
+        break;
+    }
   }
 
   if (
@@ -190,4 +215,16 @@ function blockedReasonFor(input: {
   }
 
   return null;
+}
+
+function restrictedTranscriptEnvironment(
+  deployment: DeploymentClassification,
+): TranscriptEnvironment {
+  if (
+    deployment.restrictedCapability === "eligible" &&
+    deployment.effectiveDeployment !== "unknown"
+  ) {
+    return deployment.effectiveDeployment;
+  }
+  return "production";
 }

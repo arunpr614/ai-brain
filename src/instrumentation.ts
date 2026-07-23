@@ -16,31 +16,90 @@ export async function register(): Promise<void> {
     // F-047 (self-critique A-11): make the skip visible in the boot log so
     // an accidental Edge-runtime move on a route doesn't silently mean
     // "worker + backup didn't start."
-    console.log(
-      `[boot] instrumentation skipped — NEXT_RUNTIME=${process.env.NEXT_RUNTIME ?? "(unset)"} (expected "nodejs")`,
-    );
+    console.log("[boot] instrumentation skipped code=runtime_not_nodejs");
     return;
   }
 
+  const { classifyDeployment } = await import("@/lib/runtime/deployment");
+  const { parseConfiguredPublicOrigin } = await import(
+    "@/lib/http/configured-origin"
+  );
+  const { createContainmentDiagnostic } = await import(
+    "@/lib/runtime/containment-diagnostics"
+  );
+  const {
+    resolveContentWorkerPlan,
+    startContentWorkers,
+  } = await import("@/lib/startup/content-workers");
   const { getDb } = await import("@/db/client");
+  const { getYouTubeBrowserSchemaCapability } = await import(
+    "@/db/schema-capabilities"
+  );
   const { resumeProcessingEnrollmentJobs } = await import(
     "@/db/processing-enrollment"
   );
   const { startBackupScheduler } = await import("@/lib/backup");
-  const { startEnrichmentWorker } = await import("@/lib/queue/enrichment-worker");
-  const { startTranscriptRecoveryWorker } = await import("@/lib/queue/transcript-worker");
-  const { startNoteIndexWorker } = await import("@/lib/queue/note-index-worker");
   const { startNotebookLmRetentionWorker } = await import(
     "@/db/notebooklm-export"
-  );
-  const { startEnrichmentBatchCron } = await import(
-    "@/lib/queue/enrichment-batch-cron"
   );
   const { ensureApiToken } = await import("@/lib/auth/bearer");
   const { logError } = await import("@/lib/errors/sink");
 
-  // Touching getDb() warms the connection + runs migrations.
-  getDb();
+  // Resolve every containment authority before importing a content claimant.
+  // Touching getDb() warms the connection + runs migrations first, after
+  // which the feature capability can be attested safely.
+  const deployment = classifyDeployment();
+  const configuredOrigin = parseConfiguredPublicOrigin();
+  const db = getDb();
+  const schemaCapability = getYouTubeBrowserSchemaCapability(db);
+  const contentWorkerPlan = resolveContentWorkerPlan({
+    deployment,
+    schemaCapability,
+  });
+
+  console.log(
+    "[containment]",
+    JSON.stringify(
+      createContainmentDiagnostic({
+        event: "deployment_classified",
+        outcome:
+          deployment.restrictedCapability === "eligible"
+            ? "allowed"
+            : "denied",
+        deployment: deployment.effectiveDeployment,
+        configurationState: deployment.configurationState,
+        contractVersion: "deployment-classifier-v1",
+      }),
+    ),
+  );
+  console.log(
+    "[containment]",
+    JSON.stringify(
+      createContainmentDiagnostic({
+        event: "configured_origin_checked",
+        outcome: configuredOrigin.ok ? "valid" : "invalid",
+        guardrailTriggered: !configuredOrigin.ok,
+        contractVersion: "configured-origin-v1",
+      }),
+    ),
+  );
+  console.log(
+    "[containment]",
+    JSON.stringify(
+      createContainmentDiagnostic({
+        event: "worker_plan_resolved",
+        outcome: Object.values(contentWorkerPlan.starts).some(Boolean)
+          ? "allowed"
+          : "disabled",
+        workerMode: contentWorkerPlan.effectiveMode,
+        schemaState: schemaCapability.kind,
+        guardrailTriggered: !Object.values(contentWorkerPlan.starts).some(
+          Boolean,
+        ),
+        contractVersion: "content-worker-mode-v1",
+      }),
+    ),
+  );
 
   // Retention is the first post-migration worker. Backup preparation has a
   // bounded watchdog, but it must never consume even part of the five-minute
@@ -61,7 +120,7 @@ export async function register(): Promise<void> {
       console.log(
         "[boot] Generated BRAIN_API_TOKEN and wrote to .env — open /settings/device-pairing to pair APK / extension.",
       );
-      logError({ type: "lan.bearer.token-generated", ts: Date.now() });
+      logError("lan.bearer.token-generated");
     },
   });
   if (!generated) {
@@ -69,12 +128,10 @@ export async function register(): Promise<void> {
   }
 
   startBackupScheduler();
-  startEnrichmentWorker();
-  startTranscriptRecoveryWorker();
-  startNoteIndexWorker();
-  // v0.6.0 Phase C-4: daily Anthropic Message Batch scheduler. Provider-
-  // gated — no-op when LLM_ENRICH_PROVIDER lacks submitBatch (Ollama,
-  // OpenRouter). The cron still registers so a runtime env flip + restart
-  // activates the path without a code change.
-  startEnrichmentBatchCron();
+  // Content-worker modules are dynamically imported only after the complete
+  // deployment/schema/mode plan above is resolved. In schema 026 with no
+  // explicit mode or restricted request this preserves the existing ordinary
+  // worker set. Disabled, malformed, incompatible, and Stage-1 manual-lab
+  // plans import none of them.
+  await startContentWorkers(contentWorkerPlan);
 }

@@ -63,12 +63,7 @@ export async function POST(req: NextRequest) {
   }
 
   if (hasBearer && !validateOrigin(req.headers.get("origin"))) {
-    logError({
-      type: "lan.bearer.reject-origin",
-      path: "/api/capture/pdf",
-      origin: req.headers.get("origin"),
-      ts: Date.now(),
-    });
+    logError("lan.bearer.reject-origin");
     return NextResponse.json({ error: "origin_not_allowed" }, { status: 403 });
   }
 
@@ -95,13 +90,7 @@ export async function POST(req: NextRequest) {
   const serverSha = crypto.createHash("sha256").update(bytes).digest("hex");
   const expected = req.headers.get("x-expected-sha256");
   if (expected && expected.toLowerCase() !== serverSha) {
-    logError({
-      type: "share.pdf.sha256-mismatch",
-      expected,
-      actual: serverSha,
-      size: bytes.byteLength,
-      ts: Date.now(),
-    });
+    logError("share.pdf.sha256-mismatch");
     return NextResponse.json(
       {
         error: "sha256_mismatch",
@@ -144,12 +133,7 @@ export async function POST(req: NextRequest) {
     );
   } catch (err) {
     const message = err instanceof Error ? err.message : "Upload failed";
-    logError({
-      type: "share.pdf.upload-failed",
-      message,
-      size: bytes.byteLength,
-      ts: Date.now(),
-    });
+    logError("share.pdf.upload-failed");
     return NextResponse.json(
       {
         error: message,

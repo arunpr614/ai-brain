@@ -281,7 +281,7 @@ test("service validation rejects zero bytes and oversize media before provider i
 
 test("test-injected mock provider upgrades a YouTube item and keeps logs/provenance safe", async () => {
   const item = youtubeItem({ source_url: "https://youtu.be/mockUpload123" });
-  const events: Array<Record<string, unknown>> = [];
+  const events: string[] = [];
   const provider = createMockOwnedMediaSttProvider();
 
   const result = await transcribeOwnedMediaUploadForYoutubeItem({
@@ -318,8 +318,8 @@ test("test-injected mock provider upgrades a YouTube item and keeps logs/provena
   assert.equal(provenanceJson.includes("mockUpload123"), false);
   assert.equal(provenanceJson.includes("raw media"), false);
 
+  assert.deepEqual(events, ["capture.transcript.owned_media.saved"]);
   const logJson = JSON.stringify(events);
-  assert.match(logJson, /capture\.transcript\.owned_media\.saved/);
   assert.equal(logJson.includes("private-client-name-board-meeting"), false);
   assert.equal(logJson.includes("/tmp"), false);
   assert.equal(logJson.includes("youtube.com"), false);
@@ -382,7 +382,7 @@ test("policy block prevents injected provider invocation", async () => {
 
 test("provider failure leaves only the allowed policy audit row and no transcript mutation", async () => {
   const item = youtubeItem({ source_url: "https://youtu.be/providerFailedRoute123" });
-  const events: Array<Record<string, unknown>> = [];
+  const events: string[] = [];
   const provider = createMockOwnedMediaSttProvider({
     error: new Error("Bearer sk-secret failed for /tmp/private-client.mp4"),
   });
@@ -412,8 +412,10 @@ test("provider failure leaves only the allowed policy audit row and no transcrip
   assert.equal(listCapturePolicyDecisionsForItem(item.id).length, 1);
   assert.equal(listTranscriptSourcesForItem(item.id).length, 0);
 
+  assert.deepEqual(events, [
+    "capture.transcript.owned_media.provider_failed",
+  ]);
   const logJson = JSON.stringify(events);
-  assert.match(logJson, /capture\.transcript\.owned_media\.provider_failed/);
   assert.equal(logJson.includes("private-client"), false);
   assert.equal(logJson.includes("sk-secret"), false);
   assert.equal(logJson.includes("/tmp"), false);

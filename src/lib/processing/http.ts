@@ -7,12 +7,11 @@ import { getProcessingReadiness } from "@/db/processing-readiness";
 import { CursorError } from "./cursor";
 import { ProcessingDomainError } from "@/db/item-workflow";
 import type { WorkflowMutationResponseDto } from "./types";
-
-const PRIVATE_HEADERS = {
-  "Cache-Control": "private, no-store, max-age=0",
-  Vary: "Cookie",
-  "X-Content-Type-Options": "nosniff",
-};
+import {
+  evaluateConfiguredRequestOrigin,
+  parseConfiguredPublicOrigin,
+  privateNoStoreHeaders,
+} from "@/lib/http/configured-origin";
 
 const WRITE_RATE_WINDOW_MS = 60_000;
 const DEFAULT_WRITE_RATE_LIMIT = 60;
@@ -42,8 +41,7 @@ function writeRateLimit(req: NextRequest, now = Date.now()): { allowed: boolean;
 }
 
 export function processingJson(body: unknown, init: ResponseInit = {}): Response {
-  const headers = new Headers(init.headers);
-  for (const [key, value] of Object.entries(PRIVATE_HEADERS)) headers.set(key, value);
+  const headers = privateNoStoreHeaders(init.headers);
   headers.set("Content-Type", "application/json; charset=utf-8");
   return new Response(JSON.stringify(body), { ...init, headers });
 }
@@ -60,9 +58,9 @@ export function processingWriteGate(req: NextRequest): Response | null {
   const read = processingReadGate(req);
   if (read) return read;
   if (!processingWriteConfigured()) return processingJson({ error: "processing_write_disabled" }, { status: 503 });
-  const expectedOrigin = process.env.BRAIN_PUBLIC_ORIGIN?.trim();
-  if (!expectedOrigin) return processingJson({ error: "processing_misconfigured" }, { status: 503 });
-  if (!req.headers.get("origin") || req.headers.get("origin") !== expectedOrigin) {
+  const configuredOrigin = parseConfiguredPublicOrigin();
+  if (!configuredOrigin.ok) return processingJson({ error: "processing_misconfigured" }, { status: 503 });
+  if (!evaluateConfiguredRequestOrigin(req.headers, configuredOrigin).ok) {
     return processingJson({ error: "cross_origin_forbidden" }, { status: 403 });
   }
   const limited = writeRateLimit(req);

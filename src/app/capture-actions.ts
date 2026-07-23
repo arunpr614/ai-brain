@@ -77,12 +77,7 @@ export async function captureUrlAction(
     await saveCaptureArtifacts(item.id, extracted.content.artifacts);
   } catch (err) {
     artifactError = (err as Error).message;
-    logError({
-      type: "capture.artifact-save-failed",
-      item_id: item.id,
-      message: artifactError,
-      ts: Date.now(),
-    });
+    logError("capture.artifact-save-failed");
   }
   revalidatePath("/");
   revalidatePath("/library");
