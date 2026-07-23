@@ -669,15 +669,11 @@ function TranscriptRecoveryPanel({
         <ol className="mt-3 flex flex-col gap-2">
           {attempts.map((attempt) => (
             <li key={attempt.id} className="text-[11px] leading-relaxed text-[var(--text-secondary)]">
-              <span className="font-medium text-[var(--text-primary)]">{attempt.provider}</span>
+              <span className="font-medium text-[var(--text-primary)]">
+                {transcriptAttemptProviderLabel(attempt.provider)}
+              </span>
               <span className="mx-1 text-[var(--text-muted)]">·</span>
               {attempt.state.replace(/_/g, " ")}
-              {attempt.error_code && (
-                <>
-                  <span className="mx-1 text-[var(--text-muted)]">·</span>
-                  {attempt.error_code}
-                </>
-              )}
               <span className="mx-1 text-[var(--text-muted)]">·</span>
               {formatAttemptTime(attempt.created_at)}
             </li>
@@ -685,6 +681,19 @@ function TranscriptRecoveryPanel({
         </ol>
       )}
     </div>
+  );
+}
+
+if (process.env.NODE_ENV === "test") {
+  Object.defineProperty(
+    ItemDetailPage,
+    Symbol.for("ai-brain.test.TranscriptRecoveryPanel"),
+    {
+      value: TranscriptRecoveryPanel,
+      configurable: false,
+      enumerable: false,
+      writable: false,
+    },
   );
 }
 
@@ -1671,13 +1680,19 @@ function transcriptJobDetail(job: TranscriptJobRow): string {
       ? `A retry is scheduled for ${new Date(job.next_run_at).toLocaleString()}.`
       : "A retry is scheduled.";
   }
-  return job.last_error_message
-    ? `Automatic recovery needs help. Last result: ${job.last_error_message}`
-    : "Automatic recovery needs help. Paste a transcript or notes below.";
+  return "Automatic recovery needs help. Paste a transcript or notes below.";
 }
 
 function formatAttemptTime(ts: number): string {
   return new Date(ts).toLocaleString();
+}
+
+function transcriptAttemptProviderLabel(provider: string): string {
+  if (provider === "transcript_worker") return "transcript_worker";
+  if (provider === "youtube_innertube_timedtext") return "youtube_innertube_timedtext";
+  if (provider === "manual_text") return "manual_text";
+  if (provider === "manual_user_text") return "manual_user_text";
+  return "transcript_provider";
 }
 
 function IncludedTopicsPanel({ topics }: { topics: ItemTopicRow[] }) {

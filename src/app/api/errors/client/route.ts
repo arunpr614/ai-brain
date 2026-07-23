@@ -2,8 +2,9 @@
  * POST /api/errors/client — client-side error sink (v0.5.0 T-5 / REVIEW P2-3).
  *
  * Accepts namespaced error events from the Android APK WebView and the
- * Chrome MV3 extension. Appends to `data/errors.jsonl` via the existing
- * F-050 logError() helper so server + client errors share one timeline.
+ * Chrome MV3 extension. The server records only a fixed
+ * `client.error.received` operational code; client namespace, message, and
+ * context are validated for request compatibility but never persisted.
  *
  * Auth:
  *   - In BEARER_ROUTES — proxy.ts already verifies the bearer token and
@@ -17,12 +18,12 @@
  *   - namespace: matches `/^(lan|share|ext)\.[a-z0-9.-]+$/` — allow-lists
  *     the three v0.5.0 namespaces (Conventions §6.1) and rejects attempts
  *     to impersonate server-side namespaces (enrich.*, ask.*, etc.).
- *   - message: non-empty string, max 2 KB (room for stack traces).
- *   - context: optional plain object; JSON-serialised and stored as-is.
- *     Max 64 KB total request body to bound disk growth.
+ *   - message: non-empty string, max 2 KB; validated, then discarded.
+ *   - context: optional plain object; validated, then discarded.
+ *   - Max 64 KB total request body to bound request processing.
  *
  * Logged event shape:
- *   {type: <namespace>, message, context, source: "client", ts}
+ *   {event_code: "client.error.received", timestamp: <normalized UTC ISO>}
  */
 import { NextResponse, type NextRequest } from "next/server";
 import { z } from "zod";
@@ -43,12 +44,7 @@ const ClientErrorBody = z.object({
 
 export async function POST(req: NextRequest) {
   if (!validateOrigin(req.headers.get("origin"))) {
-    logError({
-      type: "lan.bearer.reject-origin",
-      path: "/api/errors/client",
-      origin: req.headers.get("origin"),
-      ts: Date.now(),
-    });
+    logError("lan.bearer.reject-origin");
     return NextResponse.json({ error: "origin_not_allowed" }, { status: 403 });
   }
 
@@ -72,14 +68,7 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const { namespace, message, context } = parsed.data;
-  logError({
-    type: namespace,
-    message,
-    context: context ?? null,
-    source: "client",
-    ts: Date.now(),
-  });
+  logError("client.error.received");
 
   return NextResponse.json({ ok: true });
 }

@@ -3,14 +3,27 @@
  *
  * Assertions cover the schema contract: valid namespaces accepted, malformed
  * rejected with 400, origin allow-list enforced with 403, oversize body
- * rejected with 413, invalid JSON with 400. The actual write to
- * `data/errors.jsonl` is exercised by F-050 tests elsewhere; this file
- * only checks the route-level behaviour.
+ * rejected with 413, invalid JSON with 400, and accepted client payloads are
+ * reduced to the fixed content-free operational event shape.
  */
-import { describe, it } from "node:test";
+import "./route.test.setup";
+
+import { after, beforeEach, describe, it } from "node:test";
 import assert from "node:assert/strict";
+import { readFileSync, rmSync } from "node:fs";
 import { NextRequest } from "next/server";
+import { ERRORS_LOG_PATH } from "@/lib/errors/sink";
+import { TEST_CLIENT_ERROR_DIR } from "./route.test.setup";
 import { POST } from "./route";
+
+after(() => {
+  rmSync(TEST_CLIENT_ERROR_DIR, { recursive: true, force: true });
+});
+
+beforeEach(() => {
+  rmSync(ERRORS_LOG_PATH, { force: true });
+  rmSync(`${ERRORS_LOG_PATH}.1`, { force: true });
+});
 
 function mkReq(
   body: unknown,
@@ -39,14 +52,25 @@ describe("/api/errors/client — schema validation", () => {
   });
 
   it("accepts a valid share.* event with context", async () => {
+    const privateMessage = "PRIVATE_CLIENT_MESSAGE";
+    const privateUrl = "https://private.example/items/secret";
     const res = await POST(
       mkReq({
         namespace: "share.intent.duplicate",
-        message: "duplicate share suppressed",
-        context: { url: "https://example.com" },
+        message: privateMessage,
+        context: { url: privateUrl },
       }),
     );
     assert.equal(res.status, 200);
+    const rows = readFileSync(ERRORS_LOG_PATH, "utf8").trim().split("\n");
+    assert.equal(rows.length, 1);
+    const row = JSON.parse(rows[0]) as Record<string, unknown>;
+    assert.deepEqual(Object.keys(row).sort(), ["event_code", "timestamp"]);
+    assert.equal(row.event_code, "client.error.received");
+    assert.equal(new Date(row.timestamp as string).toISOString(), row.timestamp);
+    assert.equal(rows[0].includes(privateMessage), false);
+    assert.equal(rows[0].includes(privateUrl), false);
+    assert.equal(rows[0].includes("share.intent.duplicate"), false);
   });
 
   it("accepts a valid ext.* event", async () => {
@@ -125,14 +149,21 @@ describe("/api/errors/client — origin validation", () => {
   });
 
   it("rejects disallowed origins with 403", async () => {
+    const privateOrigin = "http://evil.example";
     const res = await POST(
       mkReq(
         { namespace: "lan.mdns.test", message: "m" },
-        { origin: "http://evil.example" },
+        { origin: privateOrigin },
       ),
     );
     assert.equal(res.status, 403);
     const body = await res.json();
     assert.equal(body.error, "origin_not_allowed");
+    const operationalLog = readFileSync(ERRORS_LOG_PATH, "utf8").trim();
+    assert.equal(operationalLog.includes(privateOrigin), false);
+    assert.deepEqual(
+      Object.keys(JSON.parse(operationalLog) as Record<string, unknown>).sort(),
+      ["event_code", "timestamp"],
+    );
   });
 });
