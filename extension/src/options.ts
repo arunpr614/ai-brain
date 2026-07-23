@@ -42,12 +42,14 @@ const notebookLmAccessStatusEl = element<HTMLDivElement>("notebooklm-access-stat
 const pairingStatusEl = element<HTMLDivElement>("pairing-status");
 const targetStatusEl = element<HTMLDivElement>("target-status");
 const connectorSummaryEl = element<HTMLDivElement>("connector-summary");
+const extensionVersionEl = element<HTMLSpanElement>("extension-version");
 
 const store = new ConnectorStore(chrome.storage.local);
 const brain = new BrainConnectorClient();
 const provider = new NotebookLmProviderAdapter();
 const pairingAttempt = new PairingAttemptGate();
 
+extensionVersionEl.textContent = `Extension v${chrome.runtime.getManifest().version}`;
 void initialize();
 
 async function initialize(): Promise<void> {

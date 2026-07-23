@@ -16,6 +16,9 @@ const noteEl = $<HTMLTextAreaElement>("note");
 const saveBtn = $<HTMLButtonElement>("save");
 const statusEl = $<HTMLDivElement>("status");
 const openOptionsLink = $<HTMLAnchorElement>("open-options");
+const extensionVersionEl = $<HTMLSpanElement>("extension-version");
+
+extensionVersionEl.textContent = `Extension v${chrome.runtime.getManifest().version}`;
 
 function showStatus(kind: "pending" | "success" | "error", message: string) {
   statusEl.hidden = false;

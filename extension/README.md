@@ -38,6 +38,8 @@ The command emits content-free JSON evidence with the application/builder SHA, e
 
 On the first install, open `chrome://extensions`, enable **Developer mode**, choose **Load unpacked**, and select the stable directory. On later releases, run the same command against the same stable directory and click the **reload** (↻) icon on the Brain card. Chrome derives an unpacked extension's origin from its install identity, including its path when no manifest key pins the ID. Loading a per-SHA directory, moving the stable directory, or loading another copy can therefore change the extension origin. If the displayed extension ID changes, revoke or disconnect the old connector in Brain and pair the newly loaded origin again before sending anything.
 
+The installed manifest version is shown in the Brain toolbar popup and at the top-right of the extension Options page. Use that displayed value when confirming which release Chrome has loaded.
+
 ## Load a local development build (developer-only)
 
 1. Browser → `chrome://extensions` (or `edge://extensions`)

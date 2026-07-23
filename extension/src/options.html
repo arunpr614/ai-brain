@@ -47,6 +47,23 @@
       h2 { font-size: 16px; margin: 0 0 4px; }
       p { margin: 6px 0; }
       p.muted, .muted { color: var(--muted); font-size: 13px; }
+      .page-heading {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 16px;
+      }
+      .version-badge {
+        flex: none;
+        margin-top: 2px;
+        padding: 4px 8px;
+        color: var(--muted);
+        border: 1px solid var(--border);
+        border-radius: 999px;
+        font-family: ui-monospace, "SF Mono", Menlo, monospace;
+        font-size: 11px;
+        white-space: nowrap;
+      }
       section {
         margin-top: 24px;
         padding: 20px;
@@ -109,8 +126,13 @@
     </style>
   </head>
   <body>
-    <h1>Brain — Options</h1>
-    <p class="muted">Configure page capture and the private NotebookLM delivery connector.</p>
+    <div class="page-heading">
+      <div>
+        <h1>Brain — Options</h1>
+        <p class="muted">Configure page capture and the private NotebookLM delivery connector.</p>
+      </div>
+      <span id="extension-version" class="version-badge" aria-label="Installed extension version"></span>
+    </div>
 
     <section aria-labelledby="capture-heading">
       <h2 id="capture-heading">Save pages to Brain</h2>

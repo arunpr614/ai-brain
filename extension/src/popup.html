@@ -41,7 +41,20 @@
       h1 {
         font-size: 14px;
         font-weight: 600;
-        margin: 0 0 12px;
+        margin: 0;
+      }
+      header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        margin-bottom: 12px;
+      }
+      .version-badge {
+        color: var(--muted);
+        font-family: ui-monospace, "SF Mono", Menlo, monospace;
+        font-size: 10px;
+        white-space: nowrap;
       }
       label {
         display: block;
@@ -98,7 +111,10 @@
     </style>
   </head>
   <body>
-    <h1>Save to Brain</h1>
+    <header>
+      <h1>Save to Brain</h1>
+      <span id="extension-version" class="version-badge" aria-label="Installed extension version"></span>
+    </header>
     <div id="app">
       <label for="title">Title</label>
       <input id="title" type="text" />
