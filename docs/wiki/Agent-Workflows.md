@@ -57,7 +57,7 @@ Use static code, redacted local metadata, and existing public-safe reports. Do n
 
 Start from the current rollout tuple, Settings/item safe status, redacted server state, connector load/pair state, and immutable release identity. Keep capture-bearer and scoped-connector auth distinct. The public entry/sign-in URL is `https://notebooklm.google/`; the signed-in app and optional permission use `https://notebooklm.google.com/`. Never expose the notebook URL, account route, target/source IDs, marker, token, session material, private content, or raw provider response/error.
 
-Production is UI-only `1:0:0`; queue/provider writes are off and no extension pairing, target bind, source, or signed-in canary is proven. Do not enable a flag, grant permission, bind/rebind, create/retry/delete a source, clear a duplicate-risk latch, or treat a read-only diagnostic as canary authority. A provider-write canary requires the separately reviewed owner-only private synthetic matrix and an immediate stop on authentication/security friction or protocol/privacy uncertainty.
+Production was verified at `1:1:1` with extension 0.7.4 paired at protocol v2, a healthy fixed private target, and a provider-level public YouTube URL-source canary. That evidence does not authorize a diagnostic task to mutate controls or provider state. Do not enable a flag, grant permission, bind/rebind, create/retry/delete a source, clear a duplicate-risk latch, or treat a read-only diagnostic as write authority. Stop immediately on authentication/security friction, protocol/privacy uncertainty, or inability to verify the exact target.
 
 ## Documentation Update
 

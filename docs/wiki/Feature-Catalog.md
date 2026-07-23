@@ -2,9 +2,9 @@
 
 Purpose: Provide a current, compact status matrix with links to evidence-backed feature documentation.
 Audience: AI agents, engineers, and product/design collaborators.
-Verified against: deployed application `167a15d57b8f70574a017ea4cda507870f3600d4` plus retained feature-specific historical evidence.
-Runtime evidence through: 2026-07-22 for the NotebookLM UI-only production stage; each row retains its own runtime boundary.
-Last reviewed: 2026-07-22 for the NotebookLM one-click export release; other rows retain their prior evidence dates.
+Verified against: deployed application `8314d39fd11cf82e612de44e6ac0fa0cf1633719`, retained Wiki verification baseline `167a15d57b8f70574a017ea4cda507870f3600d4`, and feature-specific historical evidence.
+Runtime evidence through: 2026-07-23 for the NotebookLM URL-source production release; each row retains its own runtime boundary.
+Last reviewed: 2026-07-23 for the NotebookLM URL-source production release; other rows retain their prior evidence dates.
 Owner: AI Brain maintainer.
 
 Implementation status, availability, confidence, and runtime evidence are independent. `Historical dated evidence; not reverified` means an earlier feature-specific record exists, but this review did not reproduce it. The 2026-07-10 label is reserved for boundaries explicitly exercised in that release.
@@ -39,7 +39,7 @@ Implementation status, availability, confidence, and runtime evidence are indepe
 | Browser extension | Implemented | User-installed | High | Historical runtime evidence | [Browser Extension](Browser-Extension) | `23868faf…` | No store/overlay proof |
 | Telegram capture | Implemented | Configured | High | Webhook boundary verified | [Telegram Capture](Telegram-Capture) | `23868faf…` | Private owner chat only |
 | Recall synchronization | Implemented | Default-off flags plus configured daily timer | High code/local proof; host proof pending | Daily timer evidence 2026-07-10; manual control not deployed | [Recall Synchronization](Recall-Synchronization) | `fdd7406…` candidate | Guarded one-way import and manual request UI; not two-way sync |
-| AI Memory → NotebookLM one-click export | Experimental | Owner-operated one-item export | High code/migration confidence; URL-source production canary pending | Paired private target and prior copied-text canary verified; protocol v2, migration 027, and extension 0.7.4 add exact URL/YouTube delivery | [NotebookLM One-Click Export](NotebookLM-One-Click-Export) | Current protected main | One explicit item and one fixed private notebook; safe saved URLs become URL sources, notes without URLs become copied text; undocumented consumer web interface |
+| AI Memory → NotebookLM one-click export | Experimental | Owner-operated one-item export | High code/migration confidence; provider-level URL-source production canary verified | Paired private target, protocol v2, migration 027, extension 0.7.4, and a one-attempt public YouTube URL request reaching provider `ready` | [NotebookLM One-Click Export](NotebookLM-One-Click-Export) | `8314d39…` | One explicit item and one fixed private notebook; safe saved URLs become URL sources, notes without URLs become copied text; undocumented consumer web interface; no retained paired-profile visual-icon screenshot |
 | AI Brain → NotebookLM synchronization | Deferred research | Not available | High research confidence; zero live Google evidence | 46/46 credential-free local checks; no broad-sync runtime claim | [NotebookLM Synchronization Research](NotebookLM-Synchronization-Research) | `ad78d774…` audit baseline | No current broad/daily synchronization integration; Enterprise and Drive hypotheses remain account/live-evidence gated |
 | AI enrichment/taxonomy | Implemented | Background | High | Historical dated evidence; not reverified | [Enrichment](Enrichment-and-AI-Providers) | `23868faf…` | Queue/provider failures remain |
 | Provider abstraction/health | Implemented | Configured | High | Strict providers verified | [Enrichment](Enrichment-and-AI-Providers) | `23868faf…` | Health is point-in-time |

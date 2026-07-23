@@ -11,7 +11,7 @@ Owner: AI Brain maintainer.
 
 Recall is a one-way guarded import, not two-way synchronization. The existing scheduled wrapper acquires a private outer lock, performs dry-run validation, backup, proof-backed apply, final validation, and checkpoint handling. The manual Settings control creates a durable request for that same wrapper; it does not call Recall or run the importer inside the web process.
 
-Recall and NotebookLM are independent integrations. Recall imports external data through a trusted host identity and scheduled/manual wrapper; NotebookLM exports one frozen AI Memory item through a separately scoped local Chrome connector. Neither credential crosses into the other lane, and the NotebookLM UI-only `1:0:0` state does not change Recall availability or authorize a provider write.
+Recall and NotebookLM are independent integrations. Recall imports external data through a trusted host identity and scheduled/manual wrapper; NotebookLM exports one frozen AI Memory item through a separately scoped local Chrome connector. Neither credential crosses into the other lane. NotebookLM's separately verified `1:1:1` runtime state does not change Recall availability or authorize any Recall operation.
 
 ## User journey and truthful states
 

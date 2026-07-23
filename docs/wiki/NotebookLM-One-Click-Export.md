@@ -4,17 +4,17 @@ Purpose: Explain the narrow AI Memory → consumer NotebookLM export, its setup,
 
 Audience: AI Memory users, maintainers, support responders, security reviewers, and AI agents.
 
-Verified against: URL-source export implementation using `027_notebooklm_url_sources.sql`, connector protocol v2, mapper v2, and Chrome extension 0.7.4; retained Wiki verification baseline `167a15d57b8f70574a017ea4cda507870f3600d4`.
+Verified against: deployed application `8314d39fd11cf82e612de44e6ac0fa0cf1633719`, URL-source implementation `4f95a4689adb7b1cbe682faea2c5e25dc737177f`, migration 027, connector protocol v2, mapper v2, and Chrome extension 0.7.4; retained Wiki verification baseline `167a15d57b8f70574a017ea4cda507870f3600d4`.
 
-Runtime evidence through: 2026-07-23 for the existing paired private target, enabled runtime controls, and prior signed-in copied-text canary. The URL-source release still requires its post-deployment YouTube canary before this page may claim live URL delivery.
+Runtime evidence through: 2026-07-23 for the paired private target, enabled `1:1:1` runtime controls, extension protocol-v2 upgrade, and provider-level production YouTube URL-source canary.
 
 Last reviewed: 2026-07-23.
 
 Owner: AI Brain maintainer.
 
-**Status:** Experimental · **Availability:** Owner-operated one-item export · **Confidence:** High for code, migration, and exact-URL regression coverage; live URL-source canary pending
+**Status:** Experimental · **Availability:** Owner-operated one-item export · **Confidence:** High for code, migration, exact-URL regression coverage, and provider-level production URL-source delivery
 
-The [repository evidence record](https://github.com/arunpr614/ai-brain/blob/0b297c214715261194c0c90e11ebc37d2ac5bc5b/docs/feature-council/notebooklm-sync/release/production-release-evidence-2026-07-22.md) records the current verified boundary at an immutable documentation commit.
+The repository's `production-url-source-release-evidence-2026-07-23.md` record documents the content-free release and provider-canary boundary. The earlier [UI-only release record](https://github.com/arunpr614/ai-brain/blob/0b297c214715261194c0c90e11ebc37d2ac5bc5b/docs/feature-council/notebooklm-sync/release/production-release-evidence-2026-07-22.md) remains historical evidence.
 
 ## Summary
 
@@ -55,9 +55,9 @@ This review covers the narrow owner-operated consumer-account workflow. It is no
 
 ## Current availability
 
-The owner has loaded and paired the extension, bound an owner-only private target, enabled the three runtime controls, and completed the earlier copied-text synthetic canary. Extension 0.7.4 and migration 027 add URL-source delivery. Reloading the existing unpacked extension is sufficient; a fresh installation and new pairing are not required because the stored credential upgrades locally from protocol v1 to v2 and the server upgrades the same connector record after authenticated contact.
+The owner has loaded and paired the extension, bound an owner-only private target, and enabled the three runtime controls. Extension 0.7.4 and migration 027 provide URL-source delivery. Reloading the existing unpacked extension was sufficient; a fresh installation and new pairing were not required because the stored credential upgraded locally from protocol v1 to v2 and the server upgraded the same connector record after authenticated contact.
 
-Production URL behavior is considered verified only after an exported YouTube item appears with a YouTube/link source in NotebookLM and the exact URL-backed request reaches `Ready`.
+The 2026-07-23 provider-level production canary exported one owner-selected, previously unexported public YouTube item. Content-free evidence showed payload kind `url`, one dispatch attempt, create accepted, terminal request `succeeded`, provider `ready`, a one-source increase in the bound notebook, and no copied-text fallback. A paired-profile visual source-icon screenshot was not retained, so this page does not claim independent visual-icon evidence.
 
 ## Target user and user journey
 
@@ -302,7 +302,9 @@ Before a signed-in provider canary or real-content enablement, release evidence 
 
 If any live read needed for target, owner, privacy, occupancy, source identity, readiness, or reconciliation cannot be interpreted safely, provider writes remain off and **Export as .md** remains the fallback.
 
-The [production release-evidence record](https://github.com/arunpr614/ai-brain/blob/0b297c214715261194c0c90e11ebc37d2ac5bc5b/docs/feature-council/notebooklm-sync/release/production-release-evidence-2026-07-22.md) covers the protected-main artifact and UI-only deployment at an immutable documentation commit. Repository documentation merged in [PR #46](https://github.com/arunpr614/ai-brain/pull/46), and the no-delete Wiki publication was fresh-clone verified at content commit `b04c5940977a09ecc9e5b34c6c7ad7767092920f`: all 91 published pages were reachable and privacy-clean, including all 88 repository pages plus three preserved live-only research pages. The release remains incomplete for the signed-in canary and owner-only real-content enablement. Tests, controls, documentation publication, and a visible production UI do not by themselves prove the consumer NotebookLM workflow.
+The earlier [production release-evidence record](https://github.com/arunpr614/ai-brain/blob/0b297c214715261194c0c90e11ebc37d2ac5bc5b/docs/feature-council/notebooklm-sync/release/production-release-evidence-2026-07-22.md) covers the protected-main artifact and UI-only deployment at an immutable documentation commit. Repository documentation merged in [PR #46](https://github.com/arunpr614/ai-brain/pull/46), and the previous no-delete Wiki publication was fresh-clone verified at content commit `b04c5940977a09ecc9e5b34c6c7ad7767092920f`: all 91 published pages were reachable and privacy-clean, including all 88 repository pages plus three then-existing live-only research pages.
+
+The URL-source implementation merged in [PR #55](https://github.com/arunpr614/ai-brain/pull/55) and deployed as `8314d39fd11cf82e612de44e6ac0fa0cf1633719`. The repository's 2026-07-23 URL-source evidence record documents the successful provider-level YouTube URL canary. The absence of a retained paired-profile visual-icon screenshot remains explicit; tests, controls, documentation publication, and a visible production UI do not substitute for provider evidence.
 
 The detailed data and canary contract is maintained in `docs/datawiki/NotebookLM-One-Click-Export.md` in the repository.
 

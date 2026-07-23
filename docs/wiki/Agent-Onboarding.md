@@ -3,8 +3,8 @@
 Purpose: Establish a safe, evidence-first workflow for understanding and changing AI Brain.
 Audience: AI agents and engineers entering the repository.
 Verified against: `167a15d57b8f70574a017ea4cda507870f3600d4`.
-Runtime evidence through: 2026-07-22 at deployed protected-main application `167a15d57b8f70574a017ea4cda507870f3600d4`; feature-specific live evidence still varies.
-Last reviewed: 2026-07-22.
+Runtime evidence through: 2026-07-23 at deployed protected-main application `8314d39fd11cf82e612de44e6ac0fa0cf1633719`; feature-specific live evidence still varies.
+Last reviewed: 2026-07-23.
 Owner: AI Brain maintainer.
 
 ## Recommended reading order
@@ -24,7 +24,7 @@ Owner: AI Brain maintainer.
 - Save, enrichment, embedding, transcript, and note-index state can fail independently.
 - Migrations are append-only historical records; order is by full filename, not numeric prefix alone.
 - Production writes require current private context and explicit authority.
-- NotebookLM is one deliberate static export to one fixed owner-only private consumer notebook, not synchronization; its queue, provider write, and signed-in canary are separate gates.
+- NotebookLM is one deliberate static export to one fixed owner-only private consumer notebook, not synchronization; its master, queue, provider-write, and provider-verification gates remain separate.
 - A deployed UI or locally installed extension artifact is not proof of extension load/pairing, target privacy, provider delivery, or owner-only real-content enablement.
 - Historical Feature Council pages are planning evidence, not implementation proof.
 
@@ -42,4 +42,4 @@ Owner: AI Brain maintainer.
 
 Confirm the worktree/branch and baseline, preserve existing changes, locate the feature catalog row, trace UI/client → action/API → domain → database → jobs/integrations, and select the smallest relevant tests. Check [Command Safety](Command-Safety) before any script outside the public local-development list.
 
-The wiki is stale if its current-main SHA differs from the source being changed, cited files no longer exist, or a behavior/configuration/schema change is absent from the catalog and feature page. Update canonical documentation in the same change. For NotebookLM, preserve the evidence boundary explicitly: a paired private target and prior copied-text canary exist; migration 027, protocol v2, and extension 0.7.4 add URL-source delivery, which remains unproven until the signed-in post-deployment YouTube canary passes.
+The wiki is stale if its current-main SHA differs from the source being changed, cited files no longer exist, or a behavior/configuration/schema change is absent from the catalog and feature page. Update canonical documentation in the same change. For NotebookLM, preserve the evidence boundary explicitly: migration 027, connector protocol v2, extension 0.7.4, the paired private target, and a provider-level production YouTube URL-source canary are verified. A paired-profile visual source-icon screenshot was not retained.

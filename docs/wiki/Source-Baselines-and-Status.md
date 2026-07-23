@@ -2,9 +2,9 @@
 
 Purpose: Define authoritative revisions, verification scope, status, availability, and confidence vocabulary.
 Audience: AI agents, reviewers, and documentation/release maintainers.
-Verified against: deployed application `167a15d57b8f70574a017ea4cda507870f3600d4` plus retained historical baselines below.
-Runtime evidence through: 2026-07-22 for the NotebookLM UI-only production stage; older rows retain their dated scope.
-Last reviewed: 2026-07-22 for the NotebookLM one-click export release; other baselines retain their prior evidence dates.
+Verified against: deployed application `8314d39fd11cf82e612de44e6ac0fa0cf1633719`, retained Wiki verification baseline `167a15d57b8f70574a017ea4cda507870f3600d4`, and historical baselines below.
+Runtime evidence through: 2026-07-23 for the NotebookLM URL-source production release; older rows retain their dated scope.
+Last reviewed: 2026-07-23 for the NotebookLM URL-source production release; other baselines retain their prior evidence dates.
 Owner: AI Brain maintainer.
 
 ## Recorded baselines
@@ -14,12 +14,12 @@ Owner: AI Brain maintainer.
 | Card Processing production release | `ea7b159515fc37f76ffdb83dedf2d33d17f9a193` | Protected-main implementation and release-hardening SHA deployed with schema 025 and staged read/write/navigation enablement |
 | Recall manual-sync review candidate | `fdd740617685c1ce730a6150c306152a04070f86` on `feat/recall-manual-sync` | Implemented and locally verified; not merged, deployed, or enabled |
 | Repository main at candidate start | `1cb5d36f37611e60442b4f2c4433b45455273500` | Clean base for the Recall candidate; includes the definitive Wiki closeout |
-| Current merged living-Wiki documentation source | `dd3b88a2bab637ddccf717945f1b6cd39aa3705c` | PR #46 merge containing the NotebookLM UI-only release record and the 88-page repository corpus; published through the no-delete Wiki preservation merge below |
-| Latest verified deployed application code | `167a15d57b8f70574a017ea4cda507870f3600d4` | Protected-main tree deployed with migration 026; NotebookLM schema, health, retention/operations timers, and authenticated UI-only state passed while queue/provider writes remained off |
+| Current merged URL-source implementation and documentation source | `8314d39fd11cf82e612de44e6ac0fa0cf1633719` | PR #55 protected-main merge containing migration 027, connector protocol v2, extension 0.7.4, exact URL/YouTube dispatch, and the 88-page repository Wiki corpus |
+| Latest verified deployed application code | `8314d39fd11cf82e612de44e6ac0fa0cf1633719` | Protected-main tree deployed with migration 027; NotebookLM health, migration hash, retention/operations timers, paired private target, protocol-v2 connector, and provider-level URL-source canary passed at runtime controls `1:1:1` |
 | Existing wiki before this revision | `3d578c3f66e61de3f124a855253e713758f6a49b` | Eight-commit wiki baseline audited before editing |
 | Feature Council artifact source | `9de8de87de915e874e8290aa556e2b6772d6fabf` | Dated planning/research corpus, not product runtime |
-| NotebookLM one-click export release | `167a15d57b8f70574a017ea4cda507870f3600d4` | Experimental, production-deployed UI-only (`1:0:0`); extension artifact attested and installed but not loaded/paired; signed-in private synthetic canary and owner-only real-content enablement remain pending |
-| NotebookLM Wiki content publication | `b04c5940977a09ecc9e5b34c6c7ad7767092920f` | Fresh-clone-verified 91-page preservation union: all 88 current repository pages plus three unchanged live-only research pages; all 91 reachable and privacy-clean |
+| NotebookLM one-click URL-source release | `8314d39fd11cf82e612de44e6ac0fa0cf1633719` | Experimental owner-operated production release at `1:1:1`; extension 0.7.4 loaded and paired at protocol v2; fixed private target healthy; one public YouTube URL request succeeded in one attempt, reached provider `ready`, increased source count, and did not use copied text |
+| Previous NotebookLM Wiki content publication | `b04c5940977a09ecc9e5b34c6c7ad7767092920f` | Fresh-clone-verified 91-page preservation union from 2026-07-22: all 88 repository pages plus three then-existing unchanged live-only research pages; superseded by the 2026-07-23 URL-source publication recorded in live Wiki history |
 | NotebookLM synchronization research audit | `ad78d77495dcaa90f62aab038fe63ae95cf36862` | Current-code audit baseline for the 2026-07-21 deferred research decision; no implementation or runtime claim |
 
 The former default-branch/worktree divergence is resolved in current main. Both historical `017` migrations now coexist with distinct full filenames; the runner tracks/applies full filenames lexicographically. Duplicate numeric prefixes remain technical debt, not an unmerged branch conflict.

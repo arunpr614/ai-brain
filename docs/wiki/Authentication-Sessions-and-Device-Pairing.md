@@ -3,8 +3,8 @@
 Purpose: Document the single-owner trust model and browser/API/device authentication flows.
 Audience: AI agents, security reviewers, and client developers.
 Verified against: `167a15d57b8f70574a017ea4cda507870f3600d4`.
-Runtime evidence through: 2026-07-22 for deployed session/pairing code and NotebookLM UI-only controls. The NotebookLM extension is not loaded or paired.
-Last reviewed: 2026-07-22.
+Runtime evidence through: 2026-07-23 for deployed session/pairing code and the loaded, paired NotebookLM protocol-v2 connector.
+Last reviewed: 2026-07-23.
 Owner: AI Brain maintainer.
 
 **Confidence:** High for current-main code/tests; runtime confidence is limited to dated session/pairing evidence.
@@ -14,7 +14,7 @@ Owner: AI Brain maintainer.
 | PIN setup/unlock/session | Implemented | Single owner; no roles/SSO |
 | Bearer API authentication | Implemented | One shared token across API clients |
 | Short-lived pairing code | Implemented | One-use code exchanges for shared bearer token |
-| NotebookLM connector pairing | Experimental, deployed UI-only | Separate one-use code exchanges for a scoped token bound to the exact extension origin; not currently paired |
+| NotebookLM connector pairing | Experimental, paired in production | Separate one-use code exchanges for a scoped token bound to the exact extension origin; the existing credential upgraded in place to protocol v2 after extension reload |
 | Per-device revocation/audit | Planned/absent | Rotation invalidates every paired client |
 
 The PIN hash uses PBKDF2-HMAC-SHA256. Browser sessions use a signed HttpOnly/SameSite cookie. The bearer credential is the primary API-client control. Client version is validated when the header is present. Origin may be absent for server-to-server callers, and Chrome-extension origins are broadly accepted. Pairing codes are short-lived and stored as HMAC-derived state; the raw code is shown once.
