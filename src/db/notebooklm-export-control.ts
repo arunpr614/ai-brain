@@ -2,6 +2,10 @@ import type Database from "better-sqlite3";
 import { getDb } from "./client";
 import { NOTEBOOKLM_RETENTION_SWEEP_MS } from "@/lib/notebooklm/contracts";
 
+const NOTEBOOKLM_PROVIDER_WRITES_SETTING = "notebooklm.provider_writes_enabled";
+const NOTEBOOKLM_EXPORT_MASTER_SETTING = "notebooklm.export_master_enabled";
+const NOTEBOOKLM_EXPORT_QUEUE_SETTING = "notebooklm.export_queue_enabled";
+
 export const NOTEBOOKLM_RESTORE_RECONCILIATION_BLOCK_REASON =
   "restore_reconciliation_required";
 export const NOTEBOOKLM_IDENTITY_CONFLICT_BLOCK_REASONS = Object.freeze([
@@ -44,12 +48,191 @@ export class NotebookLmRuntimeControlError extends Error {
     public readonly code:
       | "target_not_recently_verified"
       | "acknowledgement_required"
+      | "rollout_unavailable"
+      | "provider_writes_unavailable"
+      | "target_not_safe"
+      | "target_capacity_exhausted"
+      | "connector_offline"
       | "restore_reconciliation_required"
       | "identity_conflict_reconciliation_required",
   ) {
     super(code);
     this.name = "NotebookLmRuntimeControlError";
   }
+}
+
+export function getNotebookLmProviderWritesPreference(
+  db: Database.Database = getDb(),
+): boolean {
+  return getNotebookLmBooleanPreference(NOTEBOOKLM_PROVIDER_WRITES_SETTING, db);
+}
+
+function getNotebookLmBooleanPreference(
+  key: string,
+  db: Database.Database = getDb(),
+): boolean {
+  const row = db
+    .prepare("SELECT value FROM settings WHERE key = ?")
+    .get(key) as { value: string } | undefined;
+  if (!row) return true;
+  try {
+    return JSON.parse(row.value) === true;
+  } catch {
+    return false;
+  }
+}
+
+export function getNotebookLmExportMasterPreference(
+  db: Database.Database = getDb(),
+): boolean {
+  return getNotebookLmBooleanPreference(NOTEBOOKLM_EXPORT_MASTER_SETTING, db);
+}
+
+export function getNotebookLmExportQueuePreference(
+  db: Database.Database = getDb(),
+): boolean {
+  return getNotebookLmBooleanPreference(NOTEBOOKLM_EXPORT_QUEUE_SETTING, db);
+}
+
+export function setNotebookLmExportGatePreference(input: {
+  gate: "master" | "queue";
+  enabled: boolean;
+  acknowledgeExportsMayBeAccepted?: boolean;
+  rolloutAvailable: boolean;
+  now?: number;
+  db?: Database.Database;
+}): { enabled: boolean; changed: boolean } {
+  const db = input.db ?? getDb();
+  const now = input.now ?? Date.now();
+  if (input.enabled && !input.acknowledgeExportsMayBeAccepted) {
+    throw new NotebookLmRuntimeControlError("acknowledgement_required");
+  }
+  if (input.enabled && !input.rolloutAvailable) {
+    throw new NotebookLmRuntimeControlError("rollout_unavailable");
+  }
+  const key =
+    input.gate === "master"
+      ? NOTEBOOKLM_EXPORT_MASTER_SETTING
+      : NOTEBOOKLM_EXPORT_QUEUE_SETTING;
+  const eventPrefix =
+    input.gate === "master"
+      ? "notebooklm.export_master"
+      : "notebooklm.export_queue";
+  return db.transaction(() => {
+    const previous = getNotebookLmBooleanPreference(key, db);
+    db.prepare(
+      `INSERT INTO settings (key, value, updated_at)
+       VALUES (?, ?, ?)
+       ON CONFLICT(key) DO UPDATE SET
+         value = excluded.value, updated_at = excluded.updated_at`,
+    ).run(key, JSON.stringify(input.enabled), now);
+    if (previous !== input.enabled) {
+      db.prepare(
+        `INSERT INTO notebooklm_operational_events
+         (event_type, safe_reason, created_at)
+         VALUES (?, 'settings_control', ?)`,
+      ).run(
+        `${eventPrefix}_${input.enabled ? "enabled" : "disabled"}`,
+        now,
+      );
+    }
+    return { enabled: input.enabled, changed: previous !== input.enabled };
+  }).immediate();
+}
+
+export function setNotebookLmProviderWritesPreference(input: {
+  enabled: boolean;
+  acknowledgeStaticCopiesWillBeCreated?: boolean;
+  rolloutAvailable: boolean;
+  now?: number;
+  db?: Database.Database;
+}): { enabled: boolean; changed: boolean } {
+  const db = input.db ?? getDb();
+  const now = input.now ?? Date.now();
+  if (input.enabled && !input.acknowledgeStaticCopiesWillBeCreated) {
+    throw new NotebookLmRuntimeControlError("acknowledgement_required");
+  }
+  if (input.enabled && !input.rolloutAvailable) {
+    throw new NotebookLmRuntimeControlError("provider_writes_unavailable");
+  }
+
+  return db.transaction(() => {
+    if (input.enabled) {
+      const target = db
+        .prepare(
+          `SELECT target.id target_id, target.connector_id,
+                  target.sharing_posture, target.health_status,
+                  target.source_count, target.source_limit, target.reserve_count,
+                  target.verified_at, connector.last_seen_at
+           FROM notebooklm_targets target
+           JOIN notebooklm_connectors connector ON connector.id = target.connector_id
+           WHERE target.active = 1 AND connector.state = 'bound'
+           LIMIT 1`,
+        )
+        .get() as {
+          target_id: string;
+          connector_id: string;
+          sharing_posture: string;
+          health_status: string;
+          source_count: number | null;
+          source_limit: number;
+          reserve_count: number;
+          verified_at: number | null;
+          last_seen_at: number | null;
+        } | undefined;
+      if (
+        !target ||
+        target.sharing_posture !== "private" ||
+        target.health_status !== "healthy"
+      ) {
+        throw new NotebookLmRuntimeControlError("target_not_safe");
+      }
+      if (
+        target.verified_at === null ||
+        target.verified_at < now - 5 * 60 * 1_000
+      ) {
+        throw new NotebookLmRuntimeControlError("target_not_recently_verified");
+      }
+      if (
+        target.last_seen_at === null ||
+        target.last_seen_at < now - 2 * 60 * 1_000
+      ) {
+        throw new NotebookLmRuntimeControlError("connector_offline");
+      }
+      if (
+        target.source_count === null ||
+        target.source_count + target.reserve_count >= target.source_limit
+      ) {
+        throw new NotebookLmRuntimeControlError("target_capacity_exhausted");
+      }
+    }
+
+    const previous = getNotebookLmProviderWritesPreference(db);
+    db.prepare(
+      `INSERT INTO settings (key, value, updated_at)
+       VALUES (?, ?, ?)
+       ON CONFLICT(key) DO UPDATE SET
+         value = excluded.value, updated_at = excluded.updated_at`,
+    ).run(
+      NOTEBOOKLM_PROVIDER_WRITES_SETTING,
+      JSON.stringify(input.enabled),
+      now,
+    );
+    if (previous !== input.enabled) {
+      db.prepare(
+        `INSERT INTO notebooklm_operational_events
+         (event_type, safe_reason, created_at)
+         VALUES (?, ?, ?)`,
+      ).run(
+        input.enabled
+          ? "notebooklm.provider_writes_enabled"
+          : "notebooklm.provider_writes_disabled",
+        "settings_control",
+        now,
+      );
+    }
+    return { enabled: input.enabled, changed: previous !== input.enabled };
+  }).immediate();
 }
 
 export function getNotebookLmRuntimeControl(

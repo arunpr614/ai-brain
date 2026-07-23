@@ -7,15 +7,24 @@ import {
 } from "@/db/notebooklm-export";
 import {
   clearNotebookLmProtocolWriteBlock,
+  getNotebookLmExportMasterPreference,
+  getNotebookLmExportQueuePreference,
+  getNotebookLmProviderWritesPreference,
   getNotebookLmRetentionOperationalStatus,
   getNotebookLmRuntimeControl,
   NotebookLmRuntimeControlError,
+  setNotebookLmExportGatePreference,
+  setNotebookLmProviderWritesPreference,
 } from "@/db/notebooklm-export-control";
 import { createConnectorPairingCode } from "@/lib/notebooklm/connector-auth";
 import {
   notebookLmExportProviderWriteEnabled,
+  notebookLmExportMasterControlAvailable,
+  notebookLmExportMasterEnabled,
+  notebookLmExportQueueControlAvailable,
   notebookLmExportQueueEnabled,
   notebookLmExportUiEnabled,
+  notebookLmProviderWriteRolloutEnabled,
 } from "@/lib/notebooklm/flags";
 import {
   NotebookLmHttpError,
@@ -27,7 +36,7 @@ import {
 import {
   notebookLmEnrollmentCodeSchema,
   notebookLmDisconnectSchema,
-  notebookLmRuntimeResetSchema,
+  notebookLmSettingsPatchSchema,
 } from "@/lib/notebooklm/schemas";
 
 export const runtime = "nodejs";
@@ -79,7 +88,41 @@ export async function PATCH(req: NextRequest) {
   const auth = notebookLmSessionWriteGate(req);
   if (auth) return auth;
   try {
-    const body = notebookLmRuntimeResetSchema.parse(await readNotebookLmJson(req, 256));
+    const body = notebookLmSettingsPatchSchema.parse(await readNotebookLmJson(req, 256));
+    if (
+      body.action === "set_export_master" ||
+      body.action === "set_export_queue"
+    ) {
+      const master = body.action === "set_export_master";
+      const result = setNotebookLmExportGatePreference({
+        gate: master ? "master" : "queue",
+        enabled: body.enabled,
+        acknowledgeExportsMayBeAccepted:
+          body.enabled ? body.acknowledgeExportsMayBeAccepted : false,
+        rolloutAvailable: master
+          ? notebookLmExportMasterControlAvailable()
+          : notebookLmExportQueueControlAvailable(),
+      });
+      return notebookLmJson({
+        changed: result.changed,
+        status: settingsStatus(),
+      });
+    }
+    if (body.action === "set_provider_writes") {
+      const result = setNotebookLmProviderWritesPreference({
+        enabled: body.enabled,
+        acknowledgeStaticCopiesWillBeCreated:
+          body.enabled ? body.acknowledgeStaticCopiesWillBeCreated : false,
+        rolloutAvailable: notebookLmProviderWriteRolloutEnabled(),
+      });
+      return notebookLmJson({
+        changed: result.changed,
+        status: settingsStatus(),
+      });
+    }
+    if (body.action !== "clear_protocol_block") {
+      return notebookLmJson({ error: "invalid_request" }, { status: 400 });
+    }
     const control = clearNotebookLmProtocolWriteBlock({
       acknowledgeConnectorUpdatedAndTargetRevalidated:
         body.acknowledgeConnectorUpdatedAndTargetRevalidated,
@@ -100,7 +143,14 @@ function settingsStatus() {
   return {
     feature: {
       queueAccepting: notebookLmExportQueueEnabled(),
+      queueRequested: getNotebookLmExportQueuePreference(),
+      queueAvailable: notebookLmExportQueueControlAvailable(),
+      masterEnabled: notebookLmExportMasterEnabled(),
+      masterRequested: getNotebookLmExportMasterPreference(),
+      masterAvailable: notebookLmExportMasterControlAvailable(),
       providerWritesEnabled: notebookLmExportProviderWriteEnabled(),
+      providerWritesRequested: getNotebookLmProviderWritesPreference(),
+      providerWritesAvailable: notebookLmProviderWriteRolloutEnabled(),
       experimental: true,
       runtimeWriteBlocked: runtime.provider_write_blocked === 1,
       runtimeBlockReason: runtime.block_reason,

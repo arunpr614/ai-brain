@@ -5,14 +5,21 @@ import { notFound, redirect } from "next/navigation";
 import { NotebookLmConnectorSetup } from "@/components/notebooklm-connector-setup";
 import { getNotebookLmConnectionSummary } from "@/db/notebooklm-export";
 import {
+  getNotebookLmExportMasterPreference,
+  getNotebookLmExportQueuePreference,
+  getNotebookLmProviderWritesPreference,
   getNotebookLmRetentionOperationalStatus,
   getNotebookLmRuntimeControl,
 } from "@/db/notebooklm-export-control";
 import { verifySessionCookie } from "@/lib/auth";
 import {
   notebookLmExportProviderWriteEnabled,
+  notebookLmExportMasterControlAvailable,
+  notebookLmExportMasterEnabled,
+  notebookLmExportQueueControlAvailable,
   notebookLmExportQueueEnabled,
   notebookLmExportUiEnabled,
+  notebookLmProviderWriteRolloutEnabled,
 } from "@/lib/notebooklm/flags";
 
 export const dynamic = "force-dynamic";
@@ -48,7 +55,14 @@ export default async function NotebookLmExportSettingsPage() {
         initialStatus={{
           feature: {
             queueAccepting: notebookLmExportQueueEnabled(),
+            queueRequested: getNotebookLmExportQueuePreference(),
+            queueAvailable: notebookLmExportQueueControlAvailable(),
+            masterEnabled: notebookLmExportMasterEnabled(),
+            masterRequested: getNotebookLmExportMasterPreference(),
+            masterAvailable: notebookLmExportMasterControlAvailable(),
             providerWritesEnabled: notebookLmExportProviderWriteEnabled(),
+            providerWritesRequested: getNotebookLmProviderWritesPreference(),
+            providerWritesAvailable: notebookLmProviderWriteRolloutEnabled(),
             experimental: true,
             runtimeWriteBlocked: runtimeControl.provider_write_blocked === 1,
             runtimeBlockReason: runtimeControl.block_reason,
