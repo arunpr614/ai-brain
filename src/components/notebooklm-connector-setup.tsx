@@ -290,7 +290,7 @@ export function NotebookLmConnectorSetup({ initialStatus }: { initialStatus: Not
             <div>
               <p className="text-sm font-semibold text-[var(--text-primary)]">Consumer NotebookLM</p>
               <p className="mt-1 text-sm leading-6 text-[var(--text-secondary)]">
-                Experimental one-item copied-text export through your local Chrome session.
+                Experimental one-item URL or text export through your local Chrome session.
               </p>
             </div>
           </div>
@@ -388,7 +388,7 @@ export function NotebookLmConnectorSetup({ initialStatus }: { initialStatus: Not
               New requests and provider writes stay fail-closed until the retention sweep is healthy again.
               {status.feature.overdueSnapshots > 0
                 ? ` ${status.feature.overdueSnapshots} snapshot${status.feature.overdueSnapshots === 1 ? " is" : "s are"} overdue for purge.`
-                : " No overdue copied-text snapshot is currently recorded."}
+                : " No overdue export snapshot is currently recorded."}
             </p>
             <p className="mt-1 text-xs leading-5">
               Last successful sweep: {status.feature.retentionLastSuccessAt
@@ -651,7 +651,7 @@ export function NotebookLmConnectorSetup({ initialStatus }: { initialStatus: Not
               Emergency-revoke this connector?
             </Dialog.Title>
             <Dialog.Description className="mt-2 text-sm leading-6 text-[var(--text-secondary)]">
-              Use this only if the connector or Chrome profile may be compromised. Access is revoked immediately, queued copied-text snapshots are purged, and post-send checks stop. A source may still exist in NotebookLM for work already sent; nothing is remotely deleted.
+              Use this only if the connector or Chrome profile may be compromised. Access is revoked immediately, queued URL or text snapshots are purged, and post-send checks stop. A source may still exist in NotebookLM for work already sent; nothing is remotely deleted.
             </Dialog.Description>
             <Dialog.Close
               className="absolute right-3 top-3 inline-flex h-11 w-11 items-center justify-center rounded-md text-[var(--text-secondary)]"

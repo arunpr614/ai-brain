@@ -55,7 +55,7 @@ test("pairing codes are short-lived, normalized, single-use, and never stored in
   const exchanged = exchangeConnectorPairingCode({
     code: pairing.code.toLowerCase(),
     origin: ORIGIN_A,
-    protocolVersion: 1,
+    protocolVersion: NOTEBOOKLM_CONNECTOR_PROTOCOL_VERSION,
     now: now + 1,
   });
   assert.equal(exchanged.ok, true);
@@ -65,7 +65,7 @@ test("pairing codes are short-lived, normalized, single-use, and never stored in
   const replay = exchangeConnectorPairingCode({
     code: pairing.code,
     origin: ORIGIN_A,
-    protocolVersion: 1,
+    protocolVersion: NOTEBOOKLM_CONNECTOR_PROTOCOL_VERSION,
     now: now + 2,
   });
   assert.deepEqual(replay, { ok: false, reason: "used_code" });
@@ -96,11 +96,11 @@ test("creating a new enrollment code invalidates the previous active code", () =
   const second = createConnectorPairingCode({ now: now + 1 });
   assert.notEqual(first.code, second.code);
   assert.deepEqual(
-    exchangeConnectorPairingCode({ code: first.code, origin: ORIGIN_A, protocolVersion: 1, now: now + 2 }),
+    exchangeConnectorPairingCode({ code: first.code, origin: ORIGIN_A, protocolVersion: NOTEBOOKLM_CONNECTOR_PROTOCOL_VERSION, now: now + 2 }),
     { ok: false, reason: "used_code" },
   );
   assert.equal(
-    exchangeConnectorPairingCode({ code: second.code, origin: ORIGIN_A, protocolVersion: 1, now: now + 2 }).ok,
+    exchangeConnectorPairingCode({ code: second.code, origin: ORIGIN_A, protocolVersion: NOTEBOOKLM_CONNECTOR_PROTOCOL_VERSION, now: now + 2 }).ok,
     true,
   );
 });
@@ -111,7 +111,7 @@ test("a fresh exchange retires an unbound connector whose first response was los
   const first = exchangeConnectorPairingCode({
     code: firstCode.code,
     origin: ORIGIN_A,
-    protocolVersion: 1,
+    protocolVersion: NOTEBOOKLM_CONNECTOR_PROTOCOL_VERSION,
     now: now + 1,
   });
   assert.equal(first.ok, true);
@@ -123,7 +123,7 @@ test("a fresh exchange retires an unbound connector whose first response was los
   const recovery = exchangeConnectorPairingCode({
     code: recoveryCode.code,
     origin: ORIGIN_A,
-    protocolVersion: 1,
+    protocolVersion: NOTEBOOKLM_CONNECTOR_PROTOCOL_VERSION,
     now: now + 3,
   });
   assert.equal(recovery.ok, true);
@@ -145,7 +145,7 @@ test("a fresh exchange retires an unbound connector whose first response was los
     authenticateNotebookLmConnector({
       authorization: `Bearer ${first.connectorToken}`,
       origin: ORIGIN_A,
-      protocolVersion: "1",
+      protocolVersion: String(NOTEBOOKLM_CONNECTOR_PROTOCOL_VERSION),
       now: now + 4,
     }),
     { ok: false, reason: "revoked" },
@@ -159,7 +159,7 @@ test("expired and repeatedly replayed codes fail closed", () => {
     exchangeConnectorPairingCode({
       code: expired.code,
       origin: ORIGIN_A,
-      protocolVersion: 1,
+      protocolVersion: NOTEBOOKLM_CONNECTOR_PROTOCOL_VERSION,
       now: expired.expiresAt,
     }),
     { ok: false, reason: "expired_code" },
@@ -169,7 +169,7 @@ test("expired and repeatedly replayed codes fail closed", () => {
   const first = exchangeConnectorPairingCode({
     code: active.code,
     origin: ORIGIN_A,
-    protocolVersion: 1,
+    protocolVersion: NOTEBOOKLM_CONNECTOR_PROTOCOL_VERSION,
     now: now + 1_000_001,
   });
   assert.equal(first.ok, true);
@@ -178,7 +178,7 @@ test("expired and repeatedly replayed codes fail closed", () => {
       exchangeConnectorPairingCode({
         code: active.code,
         origin: ORIGIN_A,
-        protocolVersion: 1,
+        protocolVersion: NOTEBOOKLM_CONNECTOR_PROTOCOL_VERSION,
         now: now + 1_000_002 + attempt,
       }),
       { ok: false, reason: "used_code" },
@@ -188,7 +188,7 @@ test("expired and repeatedly replayed codes fail closed", () => {
     exchangeConnectorPairingCode({
       code: active.code,
       origin: ORIGIN_A,
-      protocolVersion: 1,
+      protocolVersion: NOTEBOOKLM_CONNECTOR_PROTOCOL_VERSION,
       now: now + 1_000_010,
     }),
     { ok: false, reason: "rate_limited" },
@@ -207,7 +207,7 @@ test("exchange accepts only an exact Chrome extension origin and the current pro
   for (const [index, origin] of invalidOrigins.entries()) {
     const code = createConnectorPairingCode({ now: 1_700_001_000_000 + index });
     assert.deepEqual(
-      exchangeConnectorPairingCode({ code: code.code, origin, protocolVersion: 1, now: 1_700_001_000_100 + index }),
+      exchangeConnectorPairingCode({ code: code.code, origin, protocolVersion: NOTEBOOKLM_CONNECTOR_PROTOCOL_VERSION, now: 1_700_001_000_100 + index }),
       { ok: false, reason: "invalid_origin" },
     );
   }
@@ -217,7 +217,7 @@ test("exchange accepts only an exact Chrome extension origin and the current pro
     exchangeConnectorPairingCode({
       code: protocolCode.code,
       origin: ORIGIN_A,
-      protocolVersion: 2,
+      protocolVersion: NOTEBOOKLM_CONNECTOR_PROTOCOL_VERSION + 1,
       now: 1_700_001_100_001,
     }),
     { ok: false, reason: "invalid_code" },
@@ -230,7 +230,7 @@ test("connector auth requires bearer shape, exact origin, exact protocol, and up
   const valid = authenticateNotebookLmConnector({
     authorization: `Bearer ${exchanged.connectorToken}`,
     origin: ORIGIN_A,
-    protocolVersion: "1",
+    protocolVersion: String(NOTEBOOKLM_CONNECTOR_PROTOCOL_VERSION),
     now: now + 10,
   });
   assert.equal(valid.ok, true);
@@ -239,13 +239,13 @@ test("connector auth requires bearer shape, exact origin, exact protocol, and up
   assert.equal(valid.connector.updated_at, now + 10);
 
   const failures = [
-    [{ authorization: null, origin: ORIGIN_A, protocolVersion: "1" }, "missing_authorization"],
-    [{ authorization: exchanged.connectorToken, origin: ORIGIN_A, protocolVersion: "1" }, "malformed_authorization"],
-    [{ authorization: "Bearer bad", origin: ORIGIN_A, protocolVersion: "1" }, "invalid_token"],
-    [{ authorization: `Bearer ${"f".repeat(64)}`, origin: ORIGIN_A, protocolVersion: "1" }, "invalid_token"],
-    [{ authorization: `Bearer ${exchanged.connectorToken}`, origin: null, protocolVersion: "1" }, "origin_required"],
-    [{ authorization: `Bearer ${exchanged.connectorToken}`, origin: ORIGIN_B, protocolVersion: "1" }, "origin_mismatch"],
-    [{ authorization: `Bearer ${exchanged.connectorToken}`, origin: ORIGIN_A, protocolVersion: "2" }, "protocol_mismatch"],
+    [{ authorization: null, origin: ORIGIN_A, protocolVersion: String(NOTEBOOKLM_CONNECTOR_PROTOCOL_VERSION) }, "missing_authorization"],
+    [{ authorization: exchanged.connectorToken, origin: ORIGIN_A, protocolVersion: String(NOTEBOOKLM_CONNECTOR_PROTOCOL_VERSION) }, "malformed_authorization"],
+    [{ authorization: "Bearer bad", origin: ORIGIN_A, protocolVersion: String(NOTEBOOKLM_CONNECTOR_PROTOCOL_VERSION) }, "invalid_token"],
+    [{ authorization: `Bearer ${"f".repeat(64)}`, origin: ORIGIN_A, protocolVersion: String(NOTEBOOKLM_CONNECTOR_PROTOCOL_VERSION) }, "invalid_token"],
+    [{ authorization: `Bearer ${exchanged.connectorToken}`, origin: null, protocolVersion: String(NOTEBOOKLM_CONNECTOR_PROTOCOL_VERSION) }, "origin_required"],
+    [{ authorization: `Bearer ${exchanged.connectorToken}`, origin: ORIGIN_B, protocolVersion: String(NOTEBOOKLM_CONNECTOR_PROTOCOL_VERSION) }, "origin_mismatch"],
+    [{ authorization: `Bearer ${exchanged.connectorToken}`, origin: ORIGIN_A, protocolVersion: String(NOTEBOOKLM_CONNECTOR_PROTOCOL_VERSION + 1) }, "protocol_mismatch"],
   ] as const;
   for (const [input, reason] of failures) {
     const result = authenticateNotebookLmConnector(input);
@@ -259,9 +259,36 @@ test("connector auth requires bearer shape, exact origin, exact protocol, and up
   const revoked = authenticateNotebookLmConnector({
     authorization: `Bearer ${exchanged.connectorToken}`,
     origin: ORIGIN_A,
-    protocolVersion: "1",
+    protocolVersion: String(NOTEBOOKLM_CONNECTOR_PROTOCOL_VERSION),
   });
   assert.deepEqual(revoked, { ok: false, reason: "revoked" });
+});
+
+test("protocol-2 authentication upgrades an existing protocol-1 connector in place", () => {
+  const now = 1_700_002_500_000;
+  const { exchanged } = pair(now);
+  getDb()
+    .prepare("UPDATE notebooklm_connectors SET protocol_version=1 WHERE id=?")
+    .run(exchanged.connectorId);
+
+  const result = authenticateNotebookLmConnector({
+    authorization: `Bearer ${exchanged.connectorToken}`,
+    origin: ORIGIN_A,
+    protocolVersion: String(NOTEBOOKLM_CONNECTOR_PROTOCOL_VERSION),
+    now: now + 10,
+  });
+
+  assert.equal(result.ok, true);
+  if (!result.ok) return;
+  assert.equal(result.connector.protocol_version, NOTEBOOKLM_CONNECTOR_PROTOCOL_VERSION);
+  assert.equal(
+    (
+      getDb()
+        .prepare("SELECT protocol_version FROM notebooklm_connectors WHERE id=?")
+        .get(exchanged.connectorId) as { protocol_version: number }
+    ).protocol_version,
+    NOTEBOOKLM_CONNECTOR_PROTOCOL_VERSION,
+  );
 });
 
 test("pairing fails closed when the server secret is unavailable", () => {
@@ -269,7 +296,7 @@ test("pairing fails closed when the server secret is unavailable", () => {
   try {
     assert.throws(() => createConnectorPairingCode(), /connector_pairing_unavailable/);
     assert.deepEqual(
-      exchangeConnectorPairingCode({ code: "ABCD-EFGH", origin: ORIGIN_A, protocolVersion: 1 }),
+      exchangeConnectorPairingCode({ code: "ABCD-EFGH", origin: ORIGIN_A, protocolVersion: NOTEBOOKLM_CONNECTOR_PROTOCOL_VERSION }),
       { ok: false, reason: "unavailable" },
     );
   } finally {

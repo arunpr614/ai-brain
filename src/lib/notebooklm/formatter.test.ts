@@ -36,7 +36,7 @@ function item(overrides: Partial<ItemRow> = {}): ItemRow {
 }
 
 describe("NotebookLM copied-text mapper", () => {
-  test("exports only approved fields and omits a URL without anonymous-public proof", () => {
+  test("exports an exact safe source URL instead of copied item text", () => {
     const result = mapItemToNotebookLm(
       item({
         source_type: "url",
@@ -56,15 +56,9 @@ describe("NotebookLM copied-text mapper", () => {
 
     assert.equal(result.ok, true);
     if (!result.ok) return;
+    assert.equal(result.sourceKind, "url");
     assert.equal(result.title, "Public article");
-    assert.equal(
-      result.text,
-      [
-        "# Public article",
-        "Author: Synthetic Author\nPublished: 2025-01-02T03:04:05.000Z",
-        "First line\nSecond line",
-      ].join("\n\n"),
-    );
+    assert.equal(result.text, "https://example.com/articles/synthetic");
     for (const forbidden of [
       "SECRET SUMMARY",
       "SECRET QUOTE",
@@ -75,10 +69,10 @@ describe("NotebookLM copied-text mapper", () => {
     ]) {
       assert.equal(result.text.includes(forbidden), false, `leaked ${forbidden}`);
     }
-    assert.equal(result.safeSourceUrl, null);
-    assert.deepEqual(result.warnings, ["source_url_omitted"]);
-    assert.ok(result.bytes > Buffer.byteLength(result.text, "utf8"));
-    assert.ok(result.words > result.text.trim().split(/\s+/u).length);
+    assert.equal(result.safeSourceUrl, "https://example.com/articles/synthetic");
+    assert.deepEqual(result.warnings, []);
+    assert.equal(result.bytes, Buffer.byteLength(result.text, "utf8"));
+    assert.equal(result.words, 1);
     assert.match(result.contentHash, /^[a-f0-9]{64}$/);
   });
 
@@ -294,7 +288,7 @@ describe("NotebookLM copied-text mapper", () => {
     if (!tooManyWords.ok) assert.equal(tooManyWords.words, NOTEBOOKLM_PAYLOAD_MAX_WORDS + 1);
   });
 
-  test("omits credentialed, query-bearing, fragment-bearing, local, and private URLs", () => {
+  test("blocks credentialed, sensitive, fragment-bearing, local, and private-network URLs instead of falling back to text", () => {
     const unsafe = [
       "https://user:secret@example.com/article",
       "https://example.com/article?token=secret",
@@ -327,12 +321,27 @@ describe("NotebookLM copied-text mapper", () => {
     for (const raw of unsafe) {
       assert.equal(publicQuerylessUrl(raw, true), null, `unsafe URL was exported: ${raw}`);
       const result = mapItemToNotebookLm(item({ source_url: raw }));
-      assert.equal(result.ok, true);
-      if (!result.ok) continue;
-      assert.equal(result.safeSourceUrl, null);
-      assert.deepEqual(result.warnings, ["source_url_omitted"]);
-      assert.equal(result.text.includes(raw), false);
+      assert.deepEqual(result, { ok: false, reason: "unsafe_source_url" });
     }
+  });
+
+  test("preserves a YouTube watch URL including its required query", () => {
+    const sourceUrl = "https://www.youtube.com/watch?v=t0GiTyz4syY";
+    const result = mapItemToNotebookLm(
+      item({
+        source_type: "youtube",
+        source_url: sourceUrl,
+        capture_quality: "metadata_only",
+        extraction_warning: "youtube_antibot_metadata_only",
+        body: "",
+      }),
+    );
+    assert.equal(result.ok, true);
+    if (!result.ok) return;
+    assert.equal(result.sourceKind, "url");
+    assert.equal(result.safeSourceUrl, sourceUrl);
+    assert.equal(result.text, sourceUrl);
+    assert.equal(result.limitedCapture, false);
   });
 
   test("accepts an explicitly verified public HTTP(S) URL and canonicalizes the host", () => {
@@ -350,15 +359,16 @@ describe("NotebookLM copied-text mapper", () => {
     );
   });
 
-  test("omits a private document URL even when it uses a network-public host", () => {
+  test("uses a network-public Drive URL as the explicit source URL", () => {
     const privateDriveUrl = "https://drive.google.com/file/d/private-document/view";
     assert.equal(publicQuerylessUrl(privateDriveUrl, true), privateDriveUrl);
     const result = mapItemToNotebookLm(item({ source_url: privateDriveUrl }));
     assert.equal(result.ok, true);
     if (!result.ok) return;
-    assert.equal(result.safeSourceUrl, null);
-    assert.equal(result.text.includes(privateDriveUrl), false);
-    assert.deepEqual(result.warnings, ["source_url_omitted"]);
+    assert.equal(result.sourceKind, "url");
+    assert.equal(result.safeSourceUrl, privateDriveUrl);
+    assert.equal(result.text, privateDriveUrl);
+    assert.deepEqual(result.warnings, []);
   });
 
   test("keeps the full canonical title while shortening only the provider display title", () => {

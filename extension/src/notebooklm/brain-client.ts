@@ -13,6 +13,7 @@ import {
 const PROTOCOL_HEADER = "x-notebooklm-connector-protocol";
 const REQUEST_ID_PATTERN = /^[a-f0-9]{24}$/;
 const SOURCE_ALIAS_PATTERN = /^[a-f0-9]{64}$/;
+const SHA256_PATTERN = /^[a-f0-9]{64}$/;
 const MAX_PROVIDER_TITLE_CHARS = 180;
 const DEFAULT_TIMEOUT_MS = 15_000;
 
@@ -335,9 +336,12 @@ function parseClaim(body: Record<string, unknown>): NotebookLmClaim {
     target.sharingPolicy !== "private_only" ||
     !Number.isInteger(target.sourceLimit) ||
     !Number.isInteger(target.reserveCount) ||
+    (source.kind !== "url" && source.kind !== "copied_text") ||
     typeof source.marker !== "string" ||
     (source.title !== null && typeof source.title !== "string") ||
     (source.text !== null && typeof source.text !== "string") ||
+    (source.url !== null && typeof source.url !== "string") ||
+    (source.urlHash !== null && typeof source.urlHash !== "string") ||
     (source.sourceAlias !== null && typeof source.sourceAlias !== "string") ||
     typeof body.leaseExpiresAt !== "string" ||
     !Number.isFinite(Date.parse(body.leaseExpiresAt)) ||
@@ -360,18 +364,37 @@ function parseClaim(body: Record<string, unknown>): NotebookLmClaim {
     throw new BrainConnectorError("protocol", "Brain returned invalid target capacity settings.");
   }
   if (body.action === "create") {
-    if (
-      source.title === null ||
-      !source.title.trim() ||
-      source.title.length > MAX_PROVIDER_TITLE_CHARS ||
-      !titleHasMarker(source.title, source.marker) ||
-      source.text === null ||
-      !payloadFitsV1(source.text) ||
-      source.sourceAlias !== null
-    ) {
+    const validCopiedText =
+      source.kind === "copied_text" &&
+      source.title !== null &&
+      Boolean(source.title.trim()) &&
+      source.title.length <= MAX_PROVIDER_TITLE_CHARS &&
+      titleHasMarker(source.title, source.marker) &&
+      source.text !== null &&
+      payloadFitsV1(source.text) &&
+      source.url === null &&
+      source.urlHash === null;
+    const validUrl =
+      source.kind === "url" &&
+      source.title === null &&
+      source.text === null &&
+      source.url !== null &&
+      validClaimUrl(source.url) &&
+      typeof source.urlHash === "string" &&
+      SHA256_PATTERN.test(source.urlHash);
+    if ((!validCopiedText && !validUrl) || source.sourceAlias !== null) {
       throw new BrainConnectorError("protocol", "Brain returned an invalid create claim.");
     }
-  } else if (source.title !== null || source.text !== null) {
+  } else if (
+    source.title !== null ||
+    source.text !== null ||
+    (source.kind === "copied_text" &&
+      (source.url !== null || source.urlHash !== null)) ||
+    (source.kind === "url" &&
+      ((source.url !== null && !validClaimUrl(source.url)) ||
+        typeof source.urlHash !== "string" ||
+        !SHA256_PATTERN.test(source.urlHash)))
+  ) {
     throw new BrainConnectorError("protocol", "Brain exposed source content outside a create claim.");
   }
   if (body.action === "poll") {
@@ -382,6 +405,21 @@ function parseClaim(body: Record<string, unknown>): NotebookLmClaim {
     throw new BrainConnectorError("protocol", "Brain returned a source alias in the wrong phase.");
   }
   return body as unknown as NotebookLmClaim;
+}
+
+function validClaimUrl(value: string): boolean {
+  if (value.length > 4_096) return false;
+  try {
+    const url = new URL(value);
+    return (
+      (url.protocol === "https:" || url.protocol === "http:") &&
+      !url.username &&
+      !url.password &&
+      Boolean(url.hostname)
+    );
+  } catch {
+    return false;
+  }
 }
 
 function validateBindInput(input: BindInput): void {

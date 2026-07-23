@@ -263,7 +263,7 @@ function publishSanitizedBackup(
         .get();
       if (table) {
         const remaining = (verification
-          .prepare("SELECT COUNT(*) value FROM notebooklm_export_requests WHERE payload_title IS NOT NULL OR payload_text IS NOT NULL")
+          .prepare("SELECT COUNT(*) value FROM notebooklm_export_requests WHERE payload_title IS NOT NULL OR payload_text IS NOT NULL OR payload_url IS NOT NULL")
           .get() as { value: number }).value;
         if (remaining !== 0) throw new Error("published backup still contains NotebookLM snapshots");
       }
@@ -347,7 +347,7 @@ export function scrubNotebookLmSnapshotsFromBackup(path: string): void {
              WHEN phase = 'pre_create' AND create_dispatched_at IS NULL THEN 'backup_snapshot_omitted'
              ELSE safe_reason
            END,
-           payload_title = NULL, payload_text = NULL,
+           payload_title = NULL, payload_text = NULL, payload_url = NULL,
            snapshot_purge_at = MIN(snapshot_purge_at, ?),
            snapshot_purged_at = COALESCE(snapshot_purged_at, ?),
            completed_at = CASE
@@ -355,7 +355,7 @@ export function scrubNotebookLmSnapshotsFromBackup(path: string): void {
              ELSE completed_at
            END,
            lease_token_hash = NULL, lease_until = NULL, updated_at = MAX(updated_at, ?)
-         WHERE payload_title IS NOT NULL OR payload_text IS NOT NULL`,
+         WHERE payload_title IS NOT NULL OR payload_text IS NOT NULL OR payload_url IS NOT NULL`,
       ).run(now, now, now, now);
     }).immediate();
     // Rebuild the copy so no former payload bytes remain in its pages/freelist.
@@ -364,7 +364,7 @@ export function scrubNotebookLmSnapshotsFromBackup(path: string): void {
     const remaining = (backup
       .prepare(
         `SELECT COUNT(*) value FROM notebooklm_export_requests
-         WHERE payload_title IS NOT NULL OR payload_text IS NOT NULL`,
+         WHERE payload_title IS NOT NULL OR payload_text IS NOT NULL OR payload_url IS NOT NULL`,
       )
       .get() as { value: number }).value;
     if (remaining !== 0 || backup.pragma("quick_check", { simple: true }) !== "ok") {

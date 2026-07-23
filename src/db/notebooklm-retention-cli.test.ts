@@ -374,7 +374,7 @@ test("fallback refuses an uninstalled schema without applying migrations", () =>
     assert.notEqual(result.status, 0);
     assert.deepEqual(output(result), {
       ok: false,
-      error: "migration_026_not_installed",
+      error: "migration_027_not_installed",
     });
     const verify = new Database(dbPath, { readonly: true, fileMustExist: true });
     assert.equal(

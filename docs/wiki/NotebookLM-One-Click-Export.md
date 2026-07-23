@@ -4,21 +4,21 @@ Purpose: Explain the narrow AI Memory → consumer NotebookLM export, its setup,
 
 Audience: AI Memory users, maintainers, support responders, security reviewers, and AI agents.
 
-Verified against: Protected-main release `167a15d57b8f70574a017ea4cda507870f3600d4`, deployed to production on 2026-07-22 with migration `026_notebooklm_export.sql`, connector protocol v1, mapper v1, and the attested Chrome extension 0.7.0 artifact.
+Verified against: URL-source export implementation using `027_notebooklm_url_sources.sql`, connector protocol v2, mapper v2, and Chrome extension 0.7.4; retained Wiki verification baseline `167a15d57b8f70574a017ea4cda507870f3600d4`.
 
-Runtime evidence through: 2026-07-22 for protected-main deployment, migration/integrity/health checks, retention and operations timers, and authenticated AI Memory Settings/item UI. Production is UI-only (`1:0:0`): queueing and provider writes are off. The extension artifact is installed locally but is not loaded or paired. No target bind, consumer NotebookLM source, signed-in synthetic canary, or real-content enablement is claimed.
+Runtime evidence through: 2026-07-23 for the existing paired private target, enabled runtime controls, and prior signed-in copied-text canary. The URL-source release still requires its post-deployment YouTube canary before this page may claim live URL delivery.
 
-Last reviewed: 2026-07-22.
+Last reviewed: 2026-07-23.
 
 Owner: AI Brain maintainer.
 
-**Status:** Experimental · **Availability:** Deployed UI-only; queue and provider writes off · **Confidence:** High for code and dark/UI-only runtime controls; live-provider confidence pending
+**Status:** Experimental · **Availability:** Owner-operated one-item export · **Confidence:** High for code, migration, and exact-URL regression coverage; live URL-source canary pending
 
 The [repository evidence record](https://github.com/arunpr614/ai-brain/blob/0b297c214715261194c0c90e11ebc37d2ac5bc5b/docs/feature-council/notebooklm-sync/release/production-release-evidence-2026-07-22.md) records the current verified boundary at an immutable documentation commit.
 
 ## Summary
 
-NotebookLM one-click export sends one deliberately selected saved AI Memory item as one static copied-text source to one fixed, preconfigured, owner-only private consumer NotebookLM notebook.
+NotebookLM one-click export sends one deliberately selected saved AI Memory item to one fixed, preconfigured, owner-only private consumer NotebookLM notebook. If the item has a safe public HTTP(S) source URL, that exact canonical URL is added as a web or YouTube source. A true note with no source URL is added as copied text.
 
 Google [renamed NotebookLM to Gemini Notebook](https://blog.google/innovation-and-ai/products/gemini-notebook/notebooklm-gemini-notebook/) on 2026-07-16. This feature retains `NotebookLM` in its internal identifiers and documentation title for code and evidence continuity; [https://notebooklm.google/](https://notebooklm.google/) remains the public product entrance.
 
@@ -47,7 +47,7 @@ The public entrance is intentionally shown to the user. The authenticated `.goog
 This review covers the narrow owner-operated consumer-account workflow. It is not legal advice or a permanent approval; re-review is required if the account type, Google terms, sharing model, machine-readable instructions, or provider behavior changes.
 
 - Google's [privacy and terms help](https://support.google.com/notebooklm/answer/17004255?hl=en) says ordinary consumer use is governed by the Google Terms of Service. It says notebook content is not used to directly train foundational models unless the user submits feedback; feedback can include sources/uploads and may be reviewed. Qualifying work and school accounts have different terms and handling. Confirm the account type, and do not submit feedback containing sensitive exported content.
-- Google's [source help](https://support.google.com/notebooklm/answer/16215270?hl=en) documents copied-and-pasted text, up to 50 sources for free users, and per-source limits above this feature's intentionally stricter limits.
+- Google's [source help](https://support.google.com/notebooklm/answer/16215270?hl=en) documents web URL, public YouTube URL, and copied-text sources. Notebook limits vary by plan/account; the owner-observed notebook supports 300 sources, while Brain independently caps its configurable safe stop point at 259.
 - Google's [public-notebook help](https://support.google.com/notebooklm/answer/16322204?hl=en) confirms that a notebook can be made public and later restricted. AI Memory therefore requires a positive owner-only private check rather than assuming that a notebook is private.
 - The [Google Terms of Service](https://policies.google.com/terms?hl=en-US) prohibit bypassing protective measures and automated access that violates machine-readable instructions. The public entrance's [robots.txt](https://notebooklm.google/robots.txt) currently allows `/`, but that is not an API contract or permission to bypass application controls.
 
@@ -55,15 +55,9 @@ This review covers the narrow owner-operated consumer-account workflow. It is no
 
 ## Current availability
 
-The protected-main server release and migration 026 are deployed. The production tuple is UI-only `1:0:0`, and authenticated AI Memory Settings/item checks showed queueing paused, provider writes off, and item export unavailable. The attested extension 0.7.0 artifact is installed in a stable local directory but is not loaded in Chrome. This page does **not** claim that:
+The owner has loaded and paired the extension, bound an owner-only private target, enabled the three runtime controls, and completed the earlier copied-text synthetic canary. Extension 0.7.4 and migration 027 add URL-source delivery. Reloading the existing unpacked extension is sufficient; a fresh installation and new pairing are not required because the stored credential upgrades locally from protocol v1 to v2 and the server upgrades the same connector record after authenticated contact.
 
-- the extension is loaded or paired in the signed-in Chrome profile;
-- a target has been bound or positively verified owner-only/private;
-- a real NotebookLM source has been created;
-- the signed-in private synthetic canary has passed; or
-- real AI Memory content is enabled for export.
-
-Those statements may be updated only after the redacted signed-in synthetic-canary and owner-only enablement evidence exists. A visible setup surface is not evidence that the provider workflow is available.
+Production URL behavior is considered verified only after an exported YouTube item appears with a YouTube/link source in NotebookLM and the exact URL-backed request reaches `Ready`.
 
 ## Target user and user journey
 
@@ -79,7 +73,8 @@ The initial loading state is **Loading NotebookLM export…** while the item pag
 - Owner-only private targets; shared, public, and unknown posture are blocked.
 - One explicit item action from the item-detail page.
 - Durable queueing when the desktop connector is offline.
-- Copied-text source creation only.
+- Exact web/YouTube URL source creation whenever a safe saved source URL exists.
+- Copied-text fallback only for true notes that have no source URL.
 - Unchanged-content deduplication.
 - Explicit confirmation before exporting an updated version.
 - Explicit confirmation for limited/weak captured text.
@@ -97,7 +92,7 @@ Broad or daily synchronization remains deferred. This feature does not provide:
 - per-click notebook choice or multiple target notebooks;
 - update, delete, or retention propagation to NotebookLM;
 - automatic source cleanup or rotation;
-- native URL, Drive, YouTube, or PDF-file source modes;
+- uploaded Drive/PDF/file source modes;
 - NotebookLM questions, answers, citations, chats, audio, or generated artifacts;
 - NotebookLM-to-AI-Memory import; or
 - a promise that NotebookLM continuously reflects AI Memory.
@@ -126,13 +121,13 @@ Setup fails closed if the account or target changes, sharing is not positively p
 
 The action appears on an item detail page immediately before **Export as .md** when the UI flag is enabled.
 
-For a normal full-text item:
+For an item with a source URL:
 
 1. Review the generic private destination, connector status, and safe source slots.
 2. Select **Export to NotebookLM**.
-3. AI Memory freezes the minimized saved text and queues a durable request.
+3. AI Memory validates and freezes the canonical saved source URL, then queues a durable request.
 4. The local desktop connector revalidates the account, target, private posture, and capacity.
-5. It performs at most one automated copied-text create.
+5. It performs at most one automated URL create, using NotebookLM's YouTube source slot for YouTube links and web source slot for other URLs.
 6. AI Memory reports success only after NotebookLM reports that exact source ready.
 
 The page may be closed after queueing. A mobile-originated click queues work, but the signed-in desktop Chrome connector performs delivery.
@@ -141,14 +136,16 @@ If the same saved version already succeeded, AI Memory returns **Already exporte
 
 ## What is sent
 
-The deterministic copied-text source includes:
+For an item with a safe source URL, the create claim contains the canonical URL and no copied title/body. NotebookLM imports that link as a web or YouTube source and chooses its own displayed title.
+
+For a true note without a source URL, the deterministic copied-text source includes:
 
 1. normalized human title;
 2. exact normalized saved body at click time;
 3. author, when available; and
 4. a valid publication date, when available.
 
-This release omits every source URL because the current item schema does not carry a trustworthy signal that a URL is anonymously public. A future mapper may include a URL only after explicit public-access proof and the existing strict URL-safety checks both pass.
+A saved URL that contains credentials, a sensitive query key, a fragment, or a local/private-network address is blocked. Brain never silently turns such a URL item into a Markdown/copied-text source.
 
 The full normalized title remains the first heading in the copied text and participates in the canonical content hash. A separate provider display title appends the opaque recovery marker; only its human-title portion may be shortened to fit the 180-character provider envelope. It allows the connector to find the exact source after a lost response without creating another copy.
 
@@ -163,7 +160,7 @@ The complete copied-text payload must be no larger than:
 - 200,000 UTF-8 bytes; and
 - 50,000 normalized words.
 
-Both limits apply. V1 does not silently truncate or split the copied-text title or body. Only the separate provider display title may be shortened as described above.
+Both limits apply. This release does not silently truncate or split the copied-text title or body. Only the separate provider display title may be shortened as described above.
 
 The connector defaults to a safe ceiling of 45 and lets the owner configure a versioned Brain safe source limit through the hard maximum of 259:
 
@@ -184,7 +181,7 @@ Both the extension and server independently reject an effective ceiling above 25
 
 ## Architecture and runtime flow
 
-The architecture/runtime flow is authenticated item page → strict item export API → versioned default-deny mapper → SQLite durable request plus temporary frozen snapshot → scoped connector claim → local Chrome account/target/privacy/capacity preflight → one server-authorized copied-text create through the browser-managed NotebookLM session → normalized connector events → exact-source processing poll or read-only marker reconciliation. AI Memory never receives Google session material or raw NotebookLM account/notebook/source identifiers.
+The architecture/runtime flow is authenticated item page → strict item export API → versioned default-deny mapper → SQLite durable request plus temporary frozen URL-or-text snapshot → scoped connector claim → local Chrome account/target/privacy/capacity preflight → one server-authorized URL or copied-text create through the browser-managed NotebookLM session → normalized connector events → exact-source processing poll or read-only reconciliation. AI Memory never receives Google session material or raw NotebookLM account/notebook/source identifiers.
 
 ## User-visible states
 
@@ -198,9 +195,9 @@ The architecture/runtime flow is authenticated item page → strict item export 
 | Ready | The exact accepted/adopted source reports ready. |
 | Already exported | The unchanged target/binding/mapper/content tuple already succeeded; zero new writes. |
 | Reconnect NotebookLM | Sign-in is needed. The next action depends on whether the request is pre-create, reconcile, or poll; post-dispatch work never returns to create. |
-| Checking whether NotebookLM received it | A create response was uncertain; recovery lists titles/statuses and searches for the exact marker without re-sending. |
+| Checking whether NotebookLM received it | A create response was uncertain; recovery lists sources and searches for the exact URL or copied-text marker without re-sending. |
 | Result unresolved | No marker is visible yet, but that is not proof the create failed. AI Memory will not create another source. |
-| Conflict | Multiple marker matches or a reused source identity were found. Automated create/delete is blocked. |
+| Conflict | Multiple exact URL/marker matches or a reused source identity were found. Automated create/delete is blocked. |
 | Target needs review | Account, notebook, privacy posture, availability, or capacity changed. |
 | Nothing was sent | A conclusive pre-send failure may be deliberately retried using the same durable request. |
 | Nothing was sent (`lease_exhausted`) | Three pre-create connector leases expired. The safe reason is retained in the ledger; a deliberate retry resets the pre-create lease sequence and no provider write occurred. |
@@ -213,7 +210,7 @@ The architecture/runtime flow is authenticated item page → strict item export 
 
 Immediately before its one non-idempotent provider request, the extension persists a content-free `possibly delivered` journal entry. After that point, any timeout, network error, rate limit, server error, authentication boundary, or protocol failure is handled by read-only reconciliation.
 
-Reconciliation searches only the exact bound notebook for the opaque title marker:
+Reconciliation searches only the exact bound notebook. URL requests match the exact canonical URL; copied-text requests match the opaque title marker:
 
 - one match is adopted and polled;
 - multiple matches become a conflict;
@@ -248,7 +245,7 @@ Private means single-owner/authenticated/default-unshared; it does not mean end-
 | Local unresolved possible-delivery journal | Retained until explicit positive/terminal reconciliation or emergency local clear. |
 | Remote NotebookLM source | Never automatically deleted by this feature. |
 
-The application sweeps at startup and every minute, with enqueue/claim cleanup as an additional trigger and a five-minute margin on the seven-day, 24-hour, and 30-day maxima. A separate mutating fallback, `brain-notebooklm-retention.timer`, runs every minute outside the app and invokes the exact immutable release bundle only when the app sweep is stale, failed, physically pending, or overdue. The separate `brain-notebooklm-operations.timer` is read-only and never purges. Live SQLite uses `secure_delete=ON`; after a frozen snapshot is removed, a successful WAL truncate checkpoint is required so stale title/body frames are not silently retained. A cleanup or checkpoint failure blocks new request intake and provider writes until retention health recovers while preserving read-only recovery.
+The application sweeps at startup and every minute, with enqueue/claim cleanup as an additional trigger and a five-minute margin on the seven-day, 24-hour, and 30-day maxima. A separate mutating fallback, `brain-notebooklm-retention.timer`, runs every minute outside the app and invokes the exact immutable release bundle only when the app sweep is stale, failed, physically pending, or overdue. The separate `brain-notebooklm-operations.timer` is read-only and never purges. Live SQLite uses `secure_delete=ON`; after a frozen snapshot is removed, a successful WAL truncate checkpoint is required so stale title/body/URL frames are not silently retained. A cleanup or checkpoint failure blocks new request intake and provider writes until retention health recovers while preserving read-only recovery.
 
 Every supported application/off-site, Recall, and root-run deployment/restore path creates raw SQLite bytes only under its identity-specific owner-only `/run` directory after proving canonical `tmpfs` and capacity for four database copies plus 64 MiB. Low volatile capacity fails closed. SQLite copy/scrub/check commands run in independent process groups with both SQLite temp variables pinned to the stage. Scrub forces a copied WAL-mode database to isolated `journal_mode=DELETE`, uses memory temp storage, and rejects surviving SQLite sidecars. Each stage has a non-extendable three-minute deadline plus authenticated owner, command, and process-group identities. The copy is scrubbed and vacuumed, integrity-checked, copied to a hidden sanitized candidate, and its atomic link/rename passes a deadline-and-sanitized publication fence; a suspended or timed-out producer cannot publish later. A copied pre-create row whose payload was omitted is marked terminal `expired` with `backup_snapshot_omitted`; interrupted create/reconcile and poll work is normalized back to claimable recovery while its payload and lease are cleared and its opaque marker/source alias remain. Normal cleanup and three concurrently run one-minute identity janitors kill expired producers/groups and prove no stage file descriptor remains before unlink. Missing/invalid-fence orphans have a conservative 123-second bound and valid active stages a 244-second bound, inside the five-minute early-purge margin; reboot clears `/run`. A subsequent lock-scoped run also removes sanitized hidden publication residue older than ten minutes. The content-free safety ledger remains in the backup.
 
@@ -266,9 +263,9 @@ The feature uses three dependency-ordered rollout stages:
 2. durable queue; and
 3. a tightly controlled provider-write window for synthetic canary content after all pre-canary gates pass.
 
-Production is currently at Stage 1 only: UI/setup surfaces are visible, queueing is paused, provider writes are off, and item export is unavailable. Ongoing or real-content provider writes remain off until the private synthetic canary passes. Enabling writes temporarily for the canary is not real-content enablement.
+The three owner-visible runtime controls operate beneath a deployment-level fail-closed ceiling. A create is possible only when the master switch, queue intake, and provider writes are all enabled. Turning provider writes off preserves status polling and read-only reconciliation; turning queue intake off rejects new requests; turning the master switch off disables the feature surface.
 
-The immutable deployment policy defaults the NotebookLM feature-flag tuple to dark (`0:0:0`). An explicit preserve policy is available only for a dependency-ordered tuple and verifies that deployment did not change it. The currently verified production tuple is UI-only `1:0:0`.
+The immutable deployment policy defaults the NotebookLM feature-flag tuple to dark (`0:0:0`). The URL-source release uses the explicit preserve policy so deployment cannot silently change the owner's current dependency-ordered tuple.
 
 `BRAIN_NOTEBOOKLM_REMEDIATION_POLICY` defaults to `strict`, so a host already stopped by `provider_write_blocked` cannot be mutated by a normal deployment. The only remediation lane is the explicit value `preserve_existing_provider_block`: deployment proves the block remains `1` before and after, leaves it set, records the exception in release evidence, and permits the checker to ignore only that existing block. Failed or stale retention, a pending physical purge, overdue snapshots, and work unresolved beyond 24 hours remain blocking in either mode.
 
@@ -280,7 +277,7 @@ Ordinary **Disconnect** revokes the scoped token and deactivates the target only
 
 Immediate write-stop triggers include a wrong-target write, credential/session leakage, an automatic duplicate, `Ready` before the exact source is ready, a target/privacy/capacity preflight bypass, provider schema drift, or any automatic deletion of an unverified source.
 
-Disconnect/rebind is blocked while unresolved work exists. Server rollback and extension rollback are separate; neither deletes remote sources. Migration 026 is additive and has no destructive down migration. A pre-026 server can be restored only before setup or work exists: either the freshly migrated empty/default state or the equivalent first-dark-boot state containing only zero-count retention-success heartbeats. Any other event, setup, request, counter/failure, or pending physical purge requires a feature-aware server. The mutating fallback timer and any running oneshot are stopped before the final compatibility proof and runtime switch; timer state is restored only after the immutable release identity, and a pre-026 target keeps the retention unit disabled.
+Disconnect/rebind is blocked while unresolved work exists. Server rollback and extension rollback are separate; neither deletes remote sources. Migration 026 introduced the durable export ledger; migration 027 additively adds URL payload fields and rollback-compatible purge triggers. A pre-027 runtime is allowed only before any URL-request history exists. The release gate rejects an older runtime once a URL request has been created, even after its temporary URL snapshot is purged. The mutating fallback timer and any running oneshot are stopped before the final compatibility proof and runtime switch; timer state is restored only after the immutable release identity.
 
 Database restore is stricter because the remote notebook may contain sources created after the restored ledger. The operator must pre-stop both NotebookLM timers plus any running retention oneshot; the hardened restore rejects pre-026 snapshots, proves those units remain inactive before and after acquiring its locks, and latches schema-026 snapshots to `restore_reconciliation_required` before publication. Restarts, deployments, protocol events, and the ordinary settings reset cannot remove that block. Provider writes must remain off while the owner inspects the exact bound owner-only private target for every post-backup marker/source and records redacted backup hash/time, target-binding fingerprint, inspection time, and dispositions. This release intentionally has no approved unblock command; a separately reviewed feature-aware command must verify that evidence atomically. Direct SQL is not an approved recovery procedure. After `brain` restarts, resume both timers, verify each is enabled and active, and execution-prove the retention oneshot with `Result=success`; the provider-write latch remains set throughout.
 
@@ -297,7 +294,7 @@ Before a signed-in provider canary or real-content enablement, release evidence 
 - no open release-blocking adversarial findings;
 - a dedicated owner-only private synthetic notebook selected locally;
 - target/account/privacy/capacity inspection;
-- exactly one synthetic copied-text create and exact-source readiness;
+- exactly one synthetic URL create, verified as a NotebookLM URL/YouTube source, and exact-source readiness;
 - unchanged-content dedupe and updated-version confirmation;
 - a controlled lost-response proof that reconciles without a second create;
 - independent write-stop proof while recovery reads remain safe; and
@@ -312,7 +309,7 @@ The detailed data and canary contract is maintained in `docs/datawiki/NotebookLM
 ## Relevant implementation
 
 - Product boundary: `docs/feature-council/notebooklm-sync/product/ONE_CLICK_EXPORT_DELIVERY_CONTRACT_2026-07-21.md`
-- Data model: `src/db/migrations/026_notebooklm_export.sql`
+- Data model: `src/db/migrations/026_notebooklm_export.sql`, `src/db/migrations/027_notebooklm_url_sources.sql`
 - Server state and controls: `src/db/notebooklm-export.ts`, `src/db/notebooklm-export-control.ts`
 - Mapper/security/API contracts: `src/lib/notebooklm/`
 - Item and setup UI: `src/components/notebooklm-export.tsx`, `src/components/notebooklm-connector-setup.tsx`

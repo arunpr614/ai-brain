@@ -1,4 +1,4 @@
-export const CONNECTOR_PROTOCOL_VERSION = 1 as const;
+export const CONNECTOR_PROTOCOL_VERSION = 2 as const;
 export const BRAIN_PERMISSION = "https://brain.arunp.in/*" as const;
 export const NOTEBOOKLM_PERMISSION = "https://notebooklm.google.com/*" as const;
 export const NOTEBOOKLM_PUBLIC_LOGIN_URL = "https://notebooklm.google/" as const;
@@ -33,7 +33,7 @@ export function isSupportedSourceLimit(value: unknown): value is number {
 export type ConnectorCredential = {
   connectorId: string;
   token: string;
-  protocolVersion: 1;
+  protocolVersion: 2;
   pairedAt: number;
 };
 
@@ -56,6 +56,7 @@ export type SourceStatus = "processing" | "ready" | "failed";
 export type ProviderSource = {
   id: string;
   title: string | null;
+  url: string | null;
   status: SourceStatus;
 };
 
@@ -81,9 +82,12 @@ export type NotebookLmClaim = {
     reserveCount: number;
   };
   source: {
+    kind: "url" | "copied_text";
     marker: string;
     title: string | null;
     text: string | null;
+    url: string | null;
+    urlHash: string | null;
     sourceAlias: string | null;
   };
   leaseExpiresAt: string;

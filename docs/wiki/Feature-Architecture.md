@@ -16,7 +16,7 @@ Owner: AI Brain maintainer.
 | Attached notes | item My notes tab and note/settings APIs | editor, notes policy, note repository | state/current/revisions/receipts/FTS/jobs/consent | [Manual Content Notes](Manual-Content-Notes) |
 | Enrichment | capture completion and workers | prompt/provider/enrich/embed queues | generated item fields, jobs, usage | [Enrichment and AI Providers](Enrichment-and-AI-Providers) |
 | Pairing/clients | settings, setup APK, native share, extension | auth, pairing, reachability, result mapping | settings, codes, client-local token | [Authentication and Pairing](Authentication-Sessions-and-Device-Pairing) |
-| NotebookLM static export | item export control, settings connector setup, extension 0.7.0 | `src/lib/notebooklm/`, scoped connector protocol, local provider adapter | connector/target/runtime control, frozen requests, request/operational events, retention timer | [NotebookLM One-Click Export](NotebookLM-One-Click-Export) |
+| NotebookLM static export | item export control, settings connector setup, extension 0.7.4 | `src/lib/notebooklm/`, scoped protocol v2, local URL/copied-text provider adapter | connector/target/runtime control, frozen URL-or-text requests, request/operational events, retention timer | [NotebookLM One-Click Export](NotebookLM-One-Click-Export) |
 | Recall | external daily timer and packaged runner | client/map/fidelity/import/sync | Recall run/item/state tables | [Recall Synchronization](Recall-Synchronization) |
 | Operations | instrumentation, deploy, backup, health | scripts/services/provider checks | SQLite snapshots, logs, reports | [Deployment and Operations](Deployment-and-Operations) |
 
@@ -25,7 +25,7 @@ Owner: AI Brain maintainer.
 - Original source, generated digest, standalone note item, and attached My notes remain distinct.
 - Capture provenance and quality survive repair and reprocessing.
 - Workflow state and archive never replace Library membership, content identity, notes, retrieval, or quality state.
-- NotebookLM export is one explicit static copy to one pre-bound private consumer notebook, never continuous or bidirectional synchronization.
+- NotebookLM export is one explicit URL or text source to one pre-bound private consumer notebook, never continuous or bidirectional synchronization.
 - Queue acceptance and provider creates require independent fail-closed rollout gates; the current `1:0:0` state exposes UI only, with the extension not loaded/paired and no provider canary or owner enablement.
 - Save, enrichment, embedding, transcript, and note-index states can fail independently.
 - Code presence is not runtime proof.

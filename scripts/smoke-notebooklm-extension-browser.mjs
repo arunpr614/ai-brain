@@ -23,7 +23,7 @@ import { fileURLToPath } from "node:url";
 const OPT_IN_ENV = "BRAIN_NOTEBOOKLM_EXTENSION_BROWSER_SMOKE";
 const CHROME_BIN_ENV = "BRAIN_CHROME_FOR_TESTING_BIN";
 const EXTENSION_DIR_ENV = "BRAIN_NOTEBOOKLM_EXTENSION_DIR";
-const EXPECTED_EXTENSION_VERSION = "0.7.3";
+const EXPECTED_EXTENSION_VERSION = "0.7.4";
 const EXCHANGE_URL = "https://brain.arunp.in/api/notebooklm/connectors/exchange";
 const GENERATOR_IMPOSSIBLE_CODE = "IIII-IIII";
 const GENERIC_NETWORK_ERROR = "Brain could not complete connector setup. Try again shortly.";

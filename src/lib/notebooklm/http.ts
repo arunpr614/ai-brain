@@ -6,6 +6,7 @@ import {
   authenticateNotebookLmConnector,
   type NotebookLmConnectorRow,
 } from "./connector-auth";
+import { NOTEBOOKLM_CONNECTOR_PROTOCOL_VERSION } from "./contracts";
 
 const PRIVATE_HEADERS = {
   "Cache-Control": "private, no-store, max-age=0",
@@ -128,7 +129,9 @@ export function notebookLmConnectorAuthGate(
         req,
         {
           error: auth.reason,
-          ...(auth.reason === "protocol_mismatch" ? { expectedProtocolVersion: 1 } : {}),
+          ...(auth.reason === "protocol_mismatch"
+            ? { expectedProtocolVersion: NOTEBOOKLM_CONNECTOR_PROTOCOL_VERSION }
+            : {}),
         },
         { status },
       ),

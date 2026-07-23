@@ -10,11 +10,13 @@ export type NotebookLmMappingFailure =
   | "empty_body"
   | "limited_confirmation_required"
   | "unsupported_capture"
+  | "unsafe_source_url"
   | "payload_too_large";
 
 export type NotebookLmMappingResult =
   | {
       ok: true;
+      sourceKind: "url" | "copied_text";
       title: string;
       text: string;
       contentHash: string;
@@ -46,6 +48,31 @@ export function mapItemToNotebookLm(
   item: ItemRow,
   options: { confirmLimitedCapture?: boolean } = {},
 ): NotebookLmMappingResult {
+  const title = normalizeTitle(item.title);
+  const safeSourceUrl = exportableSourceUrl(item.source_url);
+  if (item.source_url?.trim() && !safeSourceUrl) {
+    return { ok: false, reason: "unsafe_source_url" };
+  }
+  if (safeSourceUrl) {
+    const bytes = Buffer.byteLength(safeSourceUrl, "utf8");
+    const words = countWords(safeSourceUrl);
+    return {
+      ok: true,
+      sourceKind: "url",
+      title,
+      text: safeSourceUrl,
+      contentHash: crypto
+        .createHash("sha256")
+        .update(`url\u0000${safeSourceUrl}`, "utf8")
+        .digest("hex"),
+      bytes,
+      words,
+      limitedCapture: false,
+      safeSourceUrl,
+      warnings: [],
+    };
+  }
+
   const normalizedBody = normalizeText(item.body);
   const body =
     item.capture_source === "recall"
@@ -69,14 +96,7 @@ export function mapItemToNotebookLm(
     return { ok: false, reason: "unsupported_capture", limitedCapture };
   }
 
-  const title = normalizeTitle(item.title);
-  // The current item schema does not carry trustworthy proof that a URL is
-  // anonymously public. A network-public host alone is insufficient (for
-  // example, private Drive documents use a public hostname), so V1 omits the
-  // URL until an explicit public-access signal exists.
-  const safeSourceUrl = publicQuerylessUrl(item.source_url, false);
   const warnings: string[] = [];
-  if (item.source_url && !safeSourceUrl) warnings.push("source_url_omitted");
   const metadata: string[] = [];
   if (item.author?.trim()) metadata.push(`Author: ${normalizeInline(item.author)}`);
   if (item.published_at) {
@@ -84,8 +104,6 @@ export function mapItemToNotebookLm(
     if (Number.isFinite(published.getTime())) metadata.push(`Published: ${published.toISOString()}`);
     else warnings.push("published_date_omitted");
   }
-  if (safeSourceUrl) metadata.push(`Source: ${safeSourceUrl}`);
-
   const text = [
     `# ${title}`,
     metadata.length ? metadata.join("\n") : null,
@@ -103,6 +121,7 @@ export function mapItemToNotebookLm(
 
   return {
     ok: true,
+    sourceKind: "copied_text",
     title,
     text,
     contentHash: crypto.createHash("sha256").update(`${title}\n\u0000${text}`, "utf8").digest("hex"),
@@ -112,6 +131,51 @@ export function mapItemToNotebookLm(
     safeSourceUrl,
     warnings,
   };
+}
+
+export function exportableSourceUrl(raw: string | null | undefined): string | null {
+  if (!raw) return null;
+  try {
+    const url = new URL(raw);
+    if (url.protocol !== "https:" && url.protocol !== "http:") return null;
+    if (
+      url.username ||
+      url.password ||
+      url.hash ||
+      url.href.length > 4_096 ||
+      [...url.searchParams.keys()].some((key) =>
+        /^(?:access_?token|api_?key|auth|code|credential|key|password|secret|sig|signature|token)$/i.test(
+          key,
+        ),
+      )
+    ) {
+      return null;
+    }
+    const hostname = url.hostname.toLowerCase();
+    if (hostname.endsWith(".")) return null;
+    const unbracketedHostname = hostname.replace(/^\[|\]$/g, "");
+    if (
+      hostname === "localhost" ||
+      hostname.endsWith(".localhost") ||
+      hostname.endsWith(".local") ||
+      hostname.endsWith(".internal") ||
+      hostname.endsWith(".lan") ||
+      hostname.endsWith(".home") ||
+      hostname.endsWith(".corp") ||
+      hostname.endsWith(".test") ||
+      hostname.endsWith(".invalid") ||
+      hostname.endsWith(".example") ||
+      hostname.endsWith(".onion") ||
+      hostname.endsWith(".i2p") ||
+      (!hostname.includes(".") && isIP(unbracketedHostname) === 0) ||
+      isNonPublicIp(hostname)
+    ) {
+      return null;
+    }
+    return url.toString();
+  } catch {
+    return null;
+  }
 }
 
 function stripRecallProvenance(value: string): string {

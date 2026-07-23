@@ -437,7 +437,7 @@ remote_activate() {
     remote_switch "$release_id" "$retry_timer_enabled" "$retry_timer_active" "$allow_audited_additive" 1 1 "$retention_supported" "$retention_supported"
     return
   fi
-  ssh "$SSH_HOST" "sudo env RELEASE_SHA='$sha' RELEASE_INSTANCE_ID='$release_id' TOOL_BUILDER_SHA='$builder_sha' BRAIN_DB_PATH='$TARGET_DB_PATH' BRAIN_DB_PATH_SHA256='$TARGET_DB_PATH_SHA256' BRAIN_DB_DEVICE_INODE='$TARGET_DB_DEVICE_INODE' BRAIN_SKIP_PROCESSING_AUDIT_TIMER='$skip_timer' BRAIN_ALLOW_AUDITED_ADDITIVE_ROLLBACK='$allow_audited_additive' BRAIN_AUDITED_SCHEMA_025_SHA256='$AUDITED_SCHEMA_025_SHA256' BRAIN_AUDITED_SCHEMA_026_SHA256='$AUDITED_SCHEMA_026_SHA256' BRAIN_ACTIVATION_HEALTH_URL='${BASE_URL%/}/api/health' bash -s" <<'REMOTE_ACTIVATE'
+  ssh "$SSH_HOST" "sudo env RELEASE_SHA='$sha' RELEASE_INSTANCE_ID='$release_id' TOOL_BUILDER_SHA='$builder_sha' BRAIN_DB_PATH='$TARGET_DB_PATH' BRAIN_DB_PATH_SHA256='$TARGET_DB_PATH_SHA256' BRAIN_DB_DEVICE_INODE='$TARGET_DB_DEVICE_INODE' BRAIN_SKIP_PROCESSING_AUDIT_TIMER='$skip_timer' BRAIN_ALLOW_AUDITED_ADDITIVE_ROLLBACK='$allow_audited_additive' BRAIN_AUDITED_SCHEMA_025_SHA256='$AUDITED_SCHEMA_025_SHA256' BRAIN_AUDITED_SCHEMA_026_SHA256='$AUDITED_SCHEMA_026_SHA256' BRAIN_AUDITED_SCHEMA_027_SHA256='$AUDITED_SCHEMA_027_SHA256' BRAIN_ACTIVATION_HEALTH_URL='${BASE_URL%/}/api/health' bash -s" <<'REMOTE_ACTIVATE'
 set -euo pipefail
 [[ "$RELEASE_SHA" =~ ^[a-f0-9]{40}$ ]]
 [[ "$RELEASE_INSTANCE_ID" =~ ^[a-f0-9]{40}(-[a-f0-9]{40})?$ ]]
@@ -457,7 +457,7 @@ REMOTE_ACTIVATE
 remote_switch() {
   local release_id="$1" timer_enabled="$2" timer_active="$3" allow_audited_additive="$4" notebooklm_timer_enabled="$5" notebooklm_timer_active="$6" retention_timer_enabled="$7" retention_timer_active="$8"
   [[ "$release_id" =~ ^[a-f0-9]{40}(-[a-f0-9]{40})?$ && "$timer_enabled" =~ ^[01]$ && "$timer_active" =~ ^[01]$ && "$notebooklm_timer_enabled" =~ ^[01]$ && "$notebooklm_timer_active" =~ ^[01]$ && "$retention_timer_enabled" =~ ^[01]$ && "$retention_timer_active" =~ ^[01]$ ]] || return 1
-  ssh "$SSH_HOST" "sudo env RELEASE_INSTANCE_ID='$release_id' TOOL_BUILDER_SHA='$CANDIDATE_BUILDER_SHA' BRAIN_DB_PATH='$TARGET_DB_PATH' BRAIN_DB_PATH_SHA256='$TARGET_DB_PATH_SHA256' BRAIN_DB_DEVICE_INODE='$TARGET_DB_DEVICE_INODE' BRAIN_ALLOW_AUDITED_ADDITIVE_ROLLBACK='$allow_audited_additive' BRAIN_AUDITED_SCHEMA_025_SHA256='$AUDITED_SCHEMA_025_SHA256' BRAIN_AUDITED_SCHEMA_026_SHA256='$AUDITED_SCHEMA_026_SHA256' BRAIN_TARGET_TIMER_ENABLED='$timer_enabled' BRAIN_TARGET_TIMER_ACTIVE='$timer_active' BRAIN_TARGET_NOTEBOOKLM_TIMER_ENABLED='$notebooklm_timer_enabled' BRAIN_TARGET_NOTEBOOKLM_TIMER_ACTIVE='$notebooklm_timer_active' BRAIN_TARGET_NOTEBOOKLM_RETENTION_TIMER_ENABLED='$retention_timer_enabled' BRAIN_TARGET_NOTEBOOKLM_RETENTION_TIMER_ACTIVE='$retention_timer_active' BRAIN_ACTIVATION_HEALTH_URL='${BASE_URL%/}/api/health' bash -s" <<'REMOTE_SWITCH'
+  ssh "$SSH_HOST" "sudo env RELEASE_INSTANCE_ID='$release_id' TOOL_BUILDER_SHA='$CANDIDATE_BUILDER_SHA' BRAIN_DB_PATH='$TARGET_DB_PATH' BRAIN_DB_PATH_SHA256='$TARGET_DB_PATH_SHA256' BRAIN_DB_DEVICE_INODE='$TARGET_DB_DEVICE_INODE' BRAIN_ALLOW_AUDITED_ADDITIVE_ROLLBACK='$allow_audited_additive' BRAIN_AUDITED_SCHEMA_025_SHA256='$AUDITED_SCHEMA_025_SHA256' BRAIN_AUDITED_SCHEMA_026_SHA256='$AUDITED_SCHEMA_026_SHA256' BRAIN_AUDITED_SCHEMA_027_SHA256='$AUDITED_SCHEMA_027_SHA256' BRAIN_TARGET_TIMER_ENABLED='$timer_enabled' BRAIN_TARGET_TIMER_ACTIVE='$timer_active' BRAIN_TARGET_NOTEBOOKLM_TIMER_ENABLED='$notebooklm_timer_enabled' BRAIN_TARGET_NOTEBOOKLM_TIMER_ACTIVE='$notebooklm_timer_active' BRAIN_TARGET_NOTEBOOKLM_RETENTION_TIMER_ENABLED='$retention_timer_enabled' BRAIN_TARGET_NOTEBOOKLM_RETENTION_TIMER_ACTIVE='$retention_timer_active' BRAIN_ACTIVATION_HEALTH_URL='${BASE_URL%/}/api/health' bash -s" <<'REMOTE_SWITCH'
 set -euo pipefail
 [[ "$RELEASE_INSTANCE_ID" =~ ^[a-f0-9]{40}(-[a-f0-9]{40})?$ ]]
 [[ "$TOOL_BUILDER_SHA" =~ ^[a-f0-9]{40}$ ]]
@@ -557,12 +557,16 @@ verify_protected_main "$CANDIDATE_BUILDER_SHA" \
 AUDITED_MIGRATION_HASHES="$(node - "$CANDIDATE_MANIFEST" <<'NODE'
 const manifest = require(process.argv[2]);
 const byName = new Map((manifest.migrations?.files ?? []).map((entry) => [entry.name, entry.sha256]));
-const hashes = [byName.get("025_item_workflow.sql"), byName.get("026_notebooklm_export.sql")];
+const hashes = [
+  byName.get("025_item_workflow.sql"),
+  byName.get("026_notebooklm_export.sql"),
+  byName.get("027_notebooklm_url_sources.sql"),
+];
 if (hashes.some((hash) => !/^[a-f0-9]{64}$/.test(hash ?? ""))) process.exit(1);
 process.stdout.write(hashes.join(" "));
 NODE
-)" || die "candidate lacks exact audited schema-025/schema-026 rollback hashes"
-read -r AUDITED_SCHEMA_025_SHA256 AUDITED_SCHEMA_026_SHA256 <<< "$AUDITED_MIGRATION_HASHES"
+)" || die "candidate lacks exact audited schema-025/schema-026/schema-027 rollback hashes"
+read -r AUDITED_SCHEMA_025_SHA256 AUDITED_SCHEMA_026_SHA256 AUDITED_SCHEMA_027_SHA256 <<< "$AUDITED_MIGRATION_HASHES"
 
 log "Remote preflight, canonical database identity, and feature-flag policies"
 # Keep this here-document outside command substitution. The macOS Bash 3.2

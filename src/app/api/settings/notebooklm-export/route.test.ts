@@ -23,7 +23,10 @@ import {
 import { issueSessionToken, setPin } from "@/lib/auth";
 import { DELETE, GET, PATCH, POST } from "./route";
 import { TEST_DB_DIR } from "./route.test.setup";
-import { NOTEBOOKLM_SAFE_TARGET_LABEL } from "@/lib/notebooklm/contracts";
+import {
+  NOTEBOOKLM_CONNECTOR_PROTOCOL_VERSION,
+  NOTEBOOKLM_SAFE_TARGET_LABEL,
+} from "@/lib/notebooklm/contracts";
 
 const ORIGIN = "http://localhost";
 
@@ -84,7 +87,7 @@ function installBoundTarget(verifiedAt = Date.now()) {
   const exchanged = exchangeConnectorPairingCode({
     code: pairing.code,
     origin: extensionOrigin,
-    protocolVersion: 1,
+    protocolVersion: NOTEBOOKLM_CONNECTOR_PROTOCOL_VERSION,
     now: verifiedAt - 1,
   });
   assert.equal(exchanged.ok, true);
@@ -92,7 +95,7 @@ function installBoundTarget(verifiedAt = Date.now()) {
   const authenticated = authenticateNotebookLmConnector({
     authorization: `Bearer ${exchanged.connectorToken}`,
     origin: extensionOrigin,
-    protocolVersion: "1",
+    protocolVersion: String(NOTEBOOKLM_CONNECTOR_PROTOCOL_VERSION),
     now: verifiedAt,
   });
   assert.equal(authenticated.ok, true);

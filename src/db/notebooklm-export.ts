@@ -98,8 +98,10 @@ export interface NotebookLmExportRequestRow {
   mapper_version: number;
   content_hash: string;
   opaque_marker: string;
+  payload_kind: "url" | "copied_text";
   payload_title: string | null;
   payload_text: string | null;
+  payload_url: string | null;
   payload_bytes: number;
   payload_words: number;
   limited_capture: 0 | 1;
@@ -287,6 +289,8 @@ export function bindNotebookLmTarget(input: {
 export function createNotebookLmExportRequest(input: {
   itemId: string;
   idempotencyKey: string;
+  sourceKind?: "url" | "copied_text";
+  sourceUrl?: string | null;
   mappedTitle: string;
   mappedText: string;
   contentHash: string;
@@ -297,6 +301,14 @@ export function createNotebookLmExportRequest(input: {
   ownerId?: string;
   now?: number;
 }): { request: NotebookLmExportRequestRow; deduplicated: boolean } {
+  const sourceKind = input.sourceKind ?? "copied_text";
+  const sourceUrl = input.sourceUrl ?? null;
+  if (
+    (sourceKind === "url" && !sourceUrl) ||
+    (sourceKind === "copied_text" && sourceUrl !== null)
+  ) {
+    throw new NotebookLmExportError("invalid_binding");
+  }
   const db = getDb();
   const now = input.now ?? Date.now();
   const ownerId = input.ownerId ?? NOTEBOOKLM_PRIMARY_OWNER;
@@ -405,15 +417,17 @@ export function createNotebookLmExportRequest(input: {
         db.prepare(
           `UPDATE notebooklm_export_requests
            SET state = 'queued', phase = 'pre_create', safe_reason = NULL,
-               payload_title = ?, payload_text = ?,
+               payload_kind = ?, payload_title = ?, payload_text = ?, payload_url = ?,
                payload_bytes = ?, payload_words = ?, limited_capture = ?, updated_at = ?,
                expires_at = ?, snapshot_purge_at = ?, snapshot_purged_at = NULL,
                completed_at = NULL, cancelled_at = NULL, lease_epoch = 0,
                lease_token_hash = NULL, lease_until = NULL, next_attempt_at = ?
            WHERE id = ? AND create_dispatched_at IS NULL`,
         ).run(
+          sourceKind,
           prior.payload_title ?? providerTitle(input.mappedTitle, prior.opaque_marker),
           input.mappedText,
+          sourceUrl,
           input.payloadBytes,
           input.payloadWords,
           input.limitedCapture ? 1 : 0,
@@ -487,10 +501,11 @@ export function createNotebookLmExportRequest(input: {
       `INSERT INTO notebooklm_export_requests
        (id, owner_id, idempotency_key, item_id, connector_id, target_id,
         binding_version, mapper_version, content_hash, opaque_marker,
-        payload_title, payload_text, payload_bytes, payload_words, limited_capture,
+        payload_kind, payload_title, payload_text, payload_url,
+        payload_bytes, payload_words, limited_capture,
         state, phase, created_at, updated_at, expires_at, snapshot_purge_at,
         next_attempt_at)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'queued', 'pre_create', ?, ?, ?, ?, ?)`,
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'queued', 'pre_create', ?, ?, ?, ?, ?)`,
     ).run(
       id,
       ownerId,
@@ -502,8 +517,10 @@ export function createNotebookLmExportRequest(input: {
       NOTEBOOKLM_MAPPER_VERSION,
       input.contentHash,
       marker,
+      sourceKind,
       providerTitle(input.mappedTitle, marker),
       input.mappedText,
+      sourceUrl,
       input.payloadBytes,
       input.payloadWords,
       input.limitedCapture ? 1 : 0,
@@ -612,7 +629,12 @@ export function claimNotebookLmExportRequest(input: {
     }
     const action: NotebookLmClaimDto["action"] =
       row.phase === "reconcile" ? "reconcile" : row.phase === "poll" ? "poll" : "create";
-    if (action === "create" && (row.payload_title === null || row.payload_text === null)) {
+    if (
+      action === "create" &&
+      (row.payload_title === null ||
+        row.payload_text === null ||
+        (row.payload_kind === "url" && row.payload_url === null))
+    ) {
       db.prepare(
         `UPDATE notebooklm_export_requests
          SET state = 'expired', phase = 'terminal', safe_reason = 'snapshot_missing',
@@ -651,9 +673,18 @@ export function claimNotebookLmExportRequest(input: {
         reserveCount: target.reserve_count,
       },
       source: {
+        kind: row.payload_kind,
         marker: row.opaque_marker,
-        title: action === "create" ? row.payload_title : null,
-        text: action === "create" ? row.payload_text : null,
+        title:
+          action === "create" && row.payload_kind === "copied_text"
+            ? row.payload_title
+            : null,
+        text:
+          action === "create" && row.payload_kind === "copied_text"
+            ? row.payload_text
+            : null,
+        url: row.payload_kind === "url" ? row.payload_url : null,
+        urlHash: row.payload_kind === "url" ? row.content_hash : null,
         sourceAlias: action === "poll" ? row.source_alias : null,
       },
       leaseExpiresAt: new Date(now + NOTEBOOKLM_LEASE_MS).toISOString(),
@@ -1125,11 +1156,12 @@ export function cancelNotebookLmExportRequest(input: {
     if (row.phase !== "pre_create" || row.create_dispatched_at !== null || row.completed_at !== null) {
       throw new NotebookLmExportError("request_not_cancellable");
     }
-    snapshotPurged = row.payload_title !== null || row.payload_text !== null;
+    snapshotPurged =
+      row.payload_title !== null || row.payload_text !== null || row.payload_url !== null;
     db.prepare(
       `UPDATE notebooklm_export_requests
        SET state = 'cancelled', phase = 'terminal', safe_reason = 'cancelled_by_user',
-           payload_title = NULL, payload_text = NULL, snapshot_purge_at = ?,
+           payload_title = NULL, payload_text = NULL, payload_url = NULL, snapshot_purge_at = ?,
            snapshot_purged_at = ?, cancelled_at = ?, completed_at = ?, updated_at = ?,
            lease_token_hash = NULL, lease_until = NULL
        WHERE id = ? AND phase = 'pre_create' AND create_dispatched_at IS NULL`,
@@ -1168,12 +1200,13 @@ export function stopCheckingNotebookLmExportRequest(input: {
     if (row.create_dispatched_at === null || row.phase === "terminal") {
       throw new NotebookLmExportError("request_not_stoppable");
     }
-    snapshotPurged = row.payload_title !== null || row.payload_text !== null;
+    snapshotPurged =
+      row.payload_title !== null || row.payload_text !== null || row.payload_url !== null;
     db.prepare(
       `UPDATE notebooklm_export_requests
        SET state = 'reconciliation_required', phase = 'terminal',
            safe_reason = 'checking_stopped_source_may_exist', payload_title = NULL,
-           payload_text = NULL, snapshot_purge_at = ?, snapshot_purged_at = ?,
+           payload_text = NULL, payload_url = NULL, snapshot_purge_at = ?, snapshot_purged_at = ?,
            completed_at = ?, updated_at = ?, lease_token_hash = NULL, lease_until = NULL
        WHERE id = ? AND create_dispatched_at IS NOT NULL AND phase != 'terminal'`,
     ).run(now, now, now, now, row.id);
@@ -1387,7 +1420,7 @@ export function revokeActiveNotebookLmConnector(input: {
       const unresolved = db
         .prepare(
           `SELECT id, connector_id, state, lease_epoch, create_dispatched_at,
-                  (payload_title IS NOT NULL OR payload_text IS NOT NULL) had_snapshot
+                  (payload_title IS NOT NULL OR payload_text IS NOT NULL OR payload_url IS NOT NULL) had_snapshot
            FROM notebooklm_export_requests
            WHERE target_id = ? AND phase != 'terminal'`,
         )
@@ -1415,7 +1448,7 @@ export function revokeActiveNotebookLmConnector(input: {
         db.prepare(
           `UPDATE notebooklm_export_requests
            SET state = ?, phase = 'terminal', safe_reason = ?,
-               payload_title = NULL, payload_text = NULL,
+               payload_title = NULL, payload_text = NULL, payload_url = NULL,
                snapshot_purge_at = ?, snapshot_purged_at = ?, completed_at = ?,
                cancelled_at = CASE WHEN ? = 0 THEN ? ELSE cancelled_at END,
                lease_token_hash = NULL, lease_until = NULL, updated_at = ?
@@ -1526,12 +1559,13 @@ export function terminalizeNotebookLmExportsForDeletedItem(
     .prepare(
       `SELECT * FROM notebooklm_export_requests
        WHERE item_id = ?
-         AND (phase != 'terminal' OR payload_title IS NOT NULL OR payload_text IS NOT NULL)`,
+         AND (phase != 'terminal' OR payload_title IS NOT NULL OR payload_text IS NOT NULL OR payload_url IS NOT NULL)`,
     )
     .all(itemId) as NotebookLmExportRequestRow[];
   let snapshotsPurged = 0;
   for (const row of rows) {
-    const hadSnapshot = row.payload_title !== null || row.payload_text !== null;
+    const hadSnapshot =
+      row.payload_title !== null || row.payload_text !== null || row.payload_url !== null;
     const active = row.phase !== "terminal";
     const possiblyDelivered = row.create_dispatched_at !== null;
     const nextState: NotebookLmRequestState = possiblyDelivered
@@ -1545,7 +1579,7 @@ export function terminalizeNotebookLmExportsForDeletedItem(
          state = CASE WHEN phase != 'terminal' THEN ? ELSE state END,
          phase = CASE WHEN phase != 'terminal' THEN 'terminal' ELSE phase END,
          safe_reason = CASE WHEN phase != 'terminal' THEN ? ELSE safe_reason END,
-         payload_title = NULL, payload_text = NULL,
+         payload_title = NULL, payload_text = NULL, payload_url = NULL,
          snapshot_purge_at = MIN(snapshot_purge_at, ?),
          snapshot_purged_at = CASE WHEN ? = 1 THEN ? ELSE snapshot_purged_at END,
          completed_at = CASE WHEN phase != 'terminal' THEN ? ELSE completed_at END,
@@ -1665,7 +1699,7 @@ export function cleanupNotebookLmRetention(
       const expiredRows = db
         .prepare(
           `SELECT id, connector_id, state, lease_epoch,
-                  (payload_title IS NOT NULL OR payload_text IS NOT NULL) had_snapshot
+                  (payload_title IS NOT NULL OR payload_text IS NOT NULL OR payload_url IS NOT NULL) had_snapshot
            FROM notebooklm_export_requests
            WHERE phase = 'pre_create' AND create_dispatched_at IS NULL
              AND completed_at IS NULL AND expires_at <= ?`,
@@ -1680,7 +1714,7 @@ export function cleanupNotebookLmRetention(
       const expired = db.prepare(
         `UPDATE notebooklm_export_requests
          SET state = 'expired', phase = 'terminal', safe_reason = 'expired_before_send',
-             payload_title = NULL, payload_text = NULL, snapshot_purged_at = ?,
+             payload_title = NULL, payload_text = NULL, payload_url = NULL, snapshot_purged_at = ?,
              completed_at = ?, updated_at = ?, lease_token_hash = NULL, lease_until = NULL
          WHERE phase = 'pre_create' AND create_dispatched_at IS NULL
            AND completed_at IS NULL AND expires_at <= ?`,
@@ -1694,7 +1728,7 @@ export function cleanupNotebookLmRetention(
       const purgeRows = db
         .prepare(
           `SELECT id, connector_id, state, lease_epoch,
-                  (payload_title IS NOT NULL OR payload_text IS NOT NULL) had_snapshot
+                  (payload_title IS NOT NULL OR payload_text IS NOT NULL OR payload_url IS NOT NULL) had_snapshot
            FROM notebooklm_export_requests
            WHERE snapshot_purged_at IS NULL AND snapshot_purge_at <= ?`,
         )
@@ -1707,7 +1741,8 @@ export function cleanupNotebookLmRetention(
         }>;
       const snapshotsPurged = db.prepare(
         `UPDATE notebooklm_export_requests
-         SET payload_title = NULL, payload_text = NULL, snapshot_purged_at = ?, updated_at = ?
+         SET payload_title = NULL, payload_text = NULL, payload_url = NULL,
+             snapshot_purged_at = ?, updated_at = ?
          WHERE snapshot_purged_at IS NULL AND snapshot_purge_at <= ?`,
       ).run(now, now, now).changes;
       for (const row of purgeRows) {
@@ -1864,7 +1899,8 @@ function terminalizeNotebookLmExportsForMissingItems(
     .prepare(
       `SELECT DISTINCT request.item_id
        FROM notebooklm_export_requests request
-       WHERE (request.phase != 'terminal' OR request.payload_title IS NOT NULL OR request.payload_text IS NOT NULL)
+       WHERE (request.phase != 'terminal' OR request.payload_title IS NOT NULL
+              OR request.payload_text IS NOT NULL OR request.payload_url IS NOT NULL)
          AND NOT EXISTS (SELECT 1 FROM items WHERE items.id = request.item_id)`,
     )
     .all() as Array<{ item_id: string }>;

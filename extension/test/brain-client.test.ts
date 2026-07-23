@@ -24,7 +24,7 @@ test("pairing invokes receiver-sensitive native fetch without binding the client
       ok: true,
       connectorId: "d".repeat(24),
       connectorToken: "b".repeat(64),
-      protocolVersion: 1,
+      protocolVersion: 2,
     }, { status: 201 });
   } as typeof fetch;
   const client = new BrainConnectorClient(receiverSensitiveFetch);
@@ -32,7 +32,7 @@ test("pairing invokes receiver-sensitive native fetch without binding the client
   const credential = await client.exchangePairingCode("ABCD-EFGH");
   assert.equal(credential.connectorId, "d".repeat(24));
   assert.equal(credential.token, "b".repeat(64));
-  assert.equal(credential.protocolVersion, 1);
+  assert.equal(credential.protocolVersion, 2);
   assert.equal(typeof credential.pairedAt, "number");
   assert.equal(calls, 1);
 });
@@ -179,7 +179,7 @@ test("pairing rejects a malformed success credential and never exposes returned 
       ok: true,
       connectorId: "bad",
       connectorToken: secretSentinel,
-      protocolVersion: 1,
+      protocolVersion: 2,
     }, { status: 201 }),
   );
   await assert.rejects(client.exchangePairingCode("ABCD-EFGH"), (error: unknown) => {
@@ -204,9 +204,12 @@ test("claim parser pins the server protocol DTO", () => {
       reserveCount: 5,
     },
     source: {
+      kind: "copied_text",
       marker: "brain_req_1234567890",
       title: "Title · brain_req_1234567890",
       text: "Content",
+      url: null,
+      urlHash: null,
       sourceAlias: null,
     },
     leaseExpiresAt: "2030-01-01T00:02:00.000Z",
@@ -254,19 +257,61 @@ test("claim parser pins the server protocol DTO", () => {
   );
 });
 
+test("URL claims require a retained hash and reconcile safely after URL snapshot purge", () => {
+  const url = "https://www.youtube.com/watch?v=t0GiTyz4syY";
+  const base = {
+    requestId: "1".repeat(24),
+    leaseToken: "2".repeat(64),
+    leaseEpoch: 1,
+    action: "create",
+    target: {
+      bindingVersion: 1,
+      localBindingFingerprint: FINGERPRINT,
+      sharingPolicy: "private_only",
+      sourceLimit: 50,
+      reserveCount: 5,
+    },
+    source: {
+      kind: "url",
+      marker: "brain_req_1234567890",
+      title: null,
+      text: null,
+      url,
+      urlHash: "30dd20d77fc4605cbbb25255ffaa36b86d1213e0e22b1465aa42a7c2c2b4c362",
+      sourceAlias: null,
+    },
+    leaseExpiresAt: "2030-01-01T00:02:00.000Z",
+    expiresAt: "2030-01-01T00:00:00.000Z",
+  };
+  assert.equal(brainContractTestHooks.parseClaim(base).source.url, url);
+  assert.throws(() =>
+    brainContractTestHooks.parseClaim({
+      ...base,
+      source: { ...base.source, urlHash: null },
+    }),
+  );
+  const purged = brainContractTestHooks.parseClaim({
+    ...base,
+    action: "reconcile",
+    source: { ...base.source, url: null },
+  });
+  assert.equal(purged.source.url, null);
+  assert.equal(purged.source.urlHash, base.source.urlHash);
+});
+
 test("first binding sends observed version 0 and accepts authoritative version 1", async () => {
   let requestBody: unknown;
   const client = new BrainConnectorClient(async (_input, init) => {
     requestBody = JSON.parse(String(init?.body));
     return Response.json(
       { bound: true, target: { bindingVersion: 1 } },
-      { headers: { "x-notebooklm-connector-protocol": "1" } },
+      { headers: { "x-notebooklm-connector-protocol": "2" } },
     );
   });
   const credential = {
     connectorId: "d".repeat(24),
     token: "b".repeat(64),
-    protocolVersion: 1 as const,
+    protocolVersion: 2 as const,
     pairedAt: 1,
   };
   assert.deepEqual(
@@ -292,7 +337,7 @@ test("binding accepts the internal envelope for a 259 safe limit and rejects val
   const credential = {
     connectorId: "d".repeat(24),
     token: "b".repeat(64),
-    protocolVersion: 1 as const,
+    protocolVersion: 2 as const,
     pairedAt: 1,
   };
   const input = {
@@ -318,7 +363,7 @@ test("lost-response bind retry accepts the server's newer authoritative version"
   const credential = {
     connectorId: "d".repeat(24),
     token: "b".repeat(64),
-    protocolVersion: 1 as const,
+    protocolVersion: 2 as const,
     pairedAt: 1,
   };
   assert.deepEqual(
@@ -340,7 +385,7 @@ test("bind conflicts preserve safe, actionable setup outcomes", async () => {
   const credential = {
     connectorId: "d".repeat(24),
     token: "b".repeat(64),
-    protocolVersion: 1 as const,
+    protocolVersion: 2 as const,
     pairedAt: 1,
   };
   const input = {
@@ -378,7 +423,7 @@ test("dispatch requires an explicit durable authorization acknowledgement", asyn
   const credential = {
     connectorId: "d".repeat(24),
     token: "b".repeat(64),
-    protocolVersion: 1 as const,
+    protocolVersion: 2 as const,
     pairedAt: 1,
   };
   let capturedBody: unknown;
@@ -423,9 +468,12 @@ test("claim endpoint unwraps the server claim envelope", async () => {
       reserveCount: 5,
     },
     source: {
+      kind: "copied_text",
       marker: "brain_req_1234567890",
       title: null,
       text: null,
+      url: null,
+      urlHash: null,
       sourceAlias: "e".repeat(64),
     },
     leaseExpiresAt: "2030-01-01T00:02:00.000Z",
@@ -436,7 +484,7 @@ test("claim endpoint unwraps the server claim envelope", async () => {
     await client.claim({
       connectorId: "d".repeat(24),
       token: "b".repeat(64),
-      protocolVersion: 1,
+      protocolVersion: 2,
       pairedAt: 1,
     }),
     claim,
