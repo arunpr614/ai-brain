@@ -41,7 +41,7 @@ import {
 } from "./transcript-jobs";
 import { ItemBodyProcessingBlockedError } from "@/lib/processing/hold-gate";
 
-const FUTURE_MIGRATION_NAME = "027_youtube_browser_transcript.sql";
+const FUTURE_MIGRATION_NAME = "028_youtube_browser_transcript.sql";
 
 function installReadyTranscriptSourceFixture(): void {
   const db = getDb();

@@ -128,7 +128,7 @@ function supportsBatch(p: LLMProvider): p is LLMProvider & {
 /**
  * Batch submit/poll are ordinary background-worker operations only. This
  * consumes the same deployment/schema/mode plan used at startup and retains
- * the narrow schema-026 legacy-standard compatibility bridge.
+ * the narrow pre-feature-schema legacy-standard compatibility bridge.
  */
 export function isEnrichmentBatchStandardMode(
   db: ReturnType<typeof getDb> = getDb(),

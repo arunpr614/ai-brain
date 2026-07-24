@@ -71,7 +71,7 @@ describe("D-014 Stage 1 changed-file scope assertion", () => {
 
   it("rejects migration SQL, extension changes, and mobile changes before allowlisting", async (t) => {
     const cases = [
-      ["src/db/migrations/027_youtube_browser.sql", "migration_sql_prohibited"],
+      ["src/db/migrations/028_youtube_browser.sql", "migration_sql_prohibited"],
       ["extension/src/background.ts", "extension_or_mobile_change_prohibited"],
       [
         "android/app/src/main/example.kt",

@@ -69,7 +69,7 @@ const STANDARD_WORKERS: ContentWorkerStarts = Object.freeze({
 });
 
 /**
- * This is a reviewed code latch, not configuration. Migration 027 cannot be
+ * This is a reviewed code latch, not configuration. Migration 028 cannot be
  * packaged until every existing claimant and direct maintenance script honors
  * the ready-schema hold/revision contract. A later reviewed change may flip it
  * only together with that evidence.
@@ -149,8 +149,8 @@ export function resolveContentWorkerPlan(
     );
   }
 
-  // Narrow schema-026 compatibility bridge: preserve today's ordinary worker
-  // set only while no new restricted capability is requested.
+  // Narrow pre-feature-schema compatibility bridge: preserve today's ordinary
+  // worker set only while no new restricted capability is requested.
   return running("legacy_default_standard", "legacy_default_standard");
 }
 

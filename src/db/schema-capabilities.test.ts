@@ -44,7 +44,7 @@ function expectContractInvalid(
   });
 }
 
-test("the current migration-026 schema has no YouTube browser capability markers", () => {
+test("the current migration-027 schema has no YouTube browser capability markers", () => {
   const db = new Database(":memory:");
   sqliteVec.load(db);
   db.pragma("foreign_keys = ON");
@@ -77,6 +77,61 @@ test("a representative pre-feature fixture is absent", () => {
     expectCapability(db, { kind: "absent" });
     assert.deepEqual(getYouTubeBrowserSchemaCapability(db), {
       kind: "absent",
+    });
+  } finally {
+    db.close();
+  }
+});
+
+test("only the exact audited ordinal-027 migration is ordinary pre-feature schema", () => {
+  const db = new Database(":memory:");
+  try {
+    db.exec(`
+      CREATE TABLE _migrations (
+        id INTEGER PRIMARY KEY,
+        name TEXT NOT NULL UNIQUE,
+        sha256 TEXT
+      );
+      CREATE TABLE items (id TEXT PRIMARY KEY, body TEXT NOT NULL);
+    `);
+    const insert = db.prepare(
+      "INSERT INTO _migrations(name,sha256) VALUES(?,?)",
+    );
+    insert.run(
+      "027_notebooklm_url_sources.sql",
+      "a488c7e15c54d232ad16708541bbc4a6fea6c2645fd79a999f7c416a8e2603b6",
+    );
+    assert.deepEqual(getYouTubeBrowserSchemaCapability(db), { kind: "absent" });
+
+    db.prepare("UPDATE _migrations SET sha256=NULL").run();
+    assert.deepEqual(getYouTubeBrowserSchemaCapability(db), {
+      kind: "incompatible",
+      code: "migration_ledger_incompatible",
+    });
+
+    db.prepare("UPDATE _migrations SET sha256=?").run("b".repeat(64));
+    assert.deepEqual(getYouTubeBrowserSchemaCapability(db), {
+      kind: "incompatible",
+      code: "migration_ledger_incompatible",
+    });
+
+    db.prepare("UPDATE _migrations SET name=?,sha256=?").run(
+      "027_wrong_allocation.sql",
+      "a".repeat(64),
+    );
+    assert.deepEqual(getYouTubeBrowserSchemaCapability(db), {
+      kind: "incompatible",
+      code: "migration_ledger_incompatible",
+    });
+
+    db.prepare("UPDATE _migrations SET name=?,sha256=?").run(
+      "027_notebooklm_url_sources.sql",
+      "a488c7e15c54d232ad16708541bbc4a6fea6c2645fd79a999f7c416a8e2603b6",
+    );
+    insert.run("027_additional_allocation.sql", "a".repeat(64));
+    assert.deepEqual(getYouTubeBrowserSchemaCapability(db), {
+      kind: "incompatible",
+      code: "migration_ledger_incompatible",
     });
   } finally {
     db.close();
@@ -278,7 +333,7 @@ test("missing and wrong migration filenames are incompatible", async (t) => {
 
   await t.test("wrong filename in the feature family", () => {
     const db = createFixture({
-      ledgerName: "028_youtube_browser_transcript.sql",
+      ledgerName: "028_wrong_youtube_browser_transcript.sql",
     });
     try {
       expectCapability(db, {
@@ -479,7 +534,7 @@ test("same-version ledger insertion and removal are observed on every runtime ca
   }
 });
 
-test("a differently named 027 ledger row is never mistaken for schema-026 absence", () => {
+test("a differently named 028 ledger row is never mistaken for pre-feature absence", () => {
   const db = new Database(":memory:");
   try {
     db.exec(`
@@ -490,7 +545,7 @@ test("a differently named 027 ledger row is never mistaken for schema-026 absenc
       );
       CREATE TABLE items (id TEXT PRIMARY KEY, body TEXT NOT NULL);
       INSERT INTO _migrations(name, sha256)
-      VALUES ('027_wrong_allocation.sql', '${"a".repeat(64)}');
+      VALUES ('028_wrong_allocation.sql', '${"a".repeat(64)}');
     `);
 
     assert.deepEqual(getYouTubeBrowserSchemaCapability(db), {
@@ -531,7 +586,7 @@ test("same-version ledger name, hash, and deletion mutations immediately revoke 
     );
     expectCapability(db, { kind: "ready" });
 
-    const wrongName = "028_youtube_browser_transcript.sql";
+    const wrongName = "028_wrong_youtube_browser_transcript.sql";
     db.prepare("UPDATE _migrations SET name=? WHERE name=?").run(
       wrongName,
       FIXTURE_MIGRATION_NAME,

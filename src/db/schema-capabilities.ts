@@ -157,7 +157,7 @@ function incompatible(
 }
 
 /**
- * Migration 027 has not passed its implementation/hash/schema freeze. Keeping
+ * Migration 028 has not passed its implementation/hash/schema freeze. Keeping
  * the runtime contract null is intentional: even an exact-looking local
  * fixture cannot become production-eligible until the reviewed descriptor is
  * packaged here.
@@ -169,7 +169,12 @@ const youtubeBrowserTestContractScope =
   new AsyncLocalStorage<FrozenSchemaCapabilityContract>();
 
 const YOUTUBE_BROWSER_MIGRATION_LEDGER_MARKER = "youtube_browser_transcript";
-const YOUTUBE_BROWSER_MIGRATION_ORDINAL = 27;
+const YOUTUBE_BROWSER_MIGRATION_ORDINAL = 28;
+const AUDITED_PRE_FEATURE_MIGRATION = Object.freeze({
+  ordinal: 27,
+  filename: "027_notebooklm_url_sources.sql",
+  sha256: "a488c7e15c54d232ad16708541bbc4a6fea6c2645fd79a999f7c416a8e2603b6",
+});
 
 const YOUTUBE_BROWSER_UNFROZEN_MARKERS: readonly SchemaFeatureMarker[] = [
   { kind: "column", table: "items", name: "content_revision" },
@@ -864,9 +869,9 @@ export function getYouTubeBrowserSchemaCapability(
     );
   }
 
-  // Migration 027 is frozen as the browser-transcript allocation. While its
-  // packaged contract remains null, even a differently named 027+ ledger row
-  // is a mixed/unknown schema, not legitimate schema-026 absence.
+  // Migration 028 is frozen as the browser-transcript allocation. While its
+  // packaged contract remains null, even a differently named 028+ ledger row
+  // is a mixed/unknown schema, not legitimate pre-feature schema absence.
   if (PACKAGED_YOUTUBE_BROWSER_SCHEMA_CONTRACT === null) {
     try {
       const ledger = readFreshMigrationLedger(db);
@@ -880,6 +885,20 @@ export function getYouTubeBrowserSchemaCapability(
         )
       ) {
         return incompatible("schema_contract_not_frozen");
+      }
+      const auditedOrdinalRows = ledger.rows.filter(
+        (row) =>
+          migrationOrdinal(row.name) === AUDITED_PRE_FEATURE_MIGRATION.ordinal,
+      );
+      if (
+        auditedOrdinalRows.length > 1 ||
+        (auditedOrdinalRows.length === 1 &&
+          (auditedOrdinalRows[0]!.name !==
+            AUDITED_PRE_FEATURE_MIGRATION.filename ||
+            auditedOrdinalRows[0]!.sha256 !==
+              AUDITED_PRE_FEATURE_MIGRATION.sha256))
+      ) {
+        return incompatible("migration_ledger_incompatible");
       }
     } catch {
       return incompatible("schema_discovery_failed");

@@ -14,7 +14,7 @@ export interface UpgradeItemCaptureContentInput {
   content: CapturedContent;
   platform?: string | null;
   /**
-   * Automatic transcript recovery opts into migration-027 active-source
+   * Automatic transcript recovery opts into migration-028 active-source
    * exclusion. Manual/user-authored replacement paths intentionally retain
    * their existing replacement semantics by leaving this unset.
    */

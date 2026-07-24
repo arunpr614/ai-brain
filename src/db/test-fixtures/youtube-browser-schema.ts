@@ -2,7 +2,7 @@ import Database from "better-sqlite3";
 import type { FrozenSchemaCapabilityContract } from "../schema-capabilities";
 
 export const YOUTUBE_BROWSER_FIXTURE_MIGRATION_NAME =
-  "027_youtube_browser_transcript.sql";
+  "028_youtube_browser_transcript.sql";
 export const YOUTUBE_BROWSER_FIXTURE_MIGRATION_SHA = "a".repeat(64);
 
 const TRIGGER_SQL = `CREATE TRIGGER items_advance_content_revision
@@ -20,7 +20,7 @@ const INDEX_SQL = `CREATE UNIQUE INDEX idx_content_processing_holds_active_item
 
 /**
  * Test-only representative contract. This is deliberately not the packaged
- * migration-027 production contract, which remains unfrozen.
+ * migration-028 production contract, which remains unfrozen.
  */
 export const YOUTUBE_BROWSER_FIXTURE_CONTRACT: FrozenSchemaCapabilityContract =
   {

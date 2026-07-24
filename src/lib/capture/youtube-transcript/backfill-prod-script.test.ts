@@ -316,7 +316,7 @@ describe("production YouTube transcript backfill script", () => {
     );
     const db = getDb();
     db.prepare("INSERT INTO _migrations(name, sha256) VALUES (?, ?)").run(
-      "027_youtube_browser_transcript.sql",
+      "028_youtube_browser_transcript.sql",
       "a".repeat(64),
     );
 
@@ -352,7 +352,7 @@ describe("production YouTube transcript backfill script", () => {
       assert.equal(transcriptJobCount(), 0);
     } finally {
       db.prepare("DELETE FROM _migrations WHERE name = ?").run(
-        "027_youtube_browser_transcript.sql",
+        "028_youtube_browser_transcript.sql",
       );
     }
   });

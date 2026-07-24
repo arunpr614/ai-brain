@@ -63,7 +63,7 @@ export function currentTranscriptEnvironment(): TranscriptEnvironment {
     return deployment.effectiveDeployment;
   }
 
-  // Compatibility fallback for ordinary schema-026 transcript methods. A
+  // Compatibility fallback for ordinary pre-feature transcript methods. A
   // legacy lab marker never wins over an actual production runtime.
   if (process.env.NODE_ENV === "production") return "production";
   if (process.env.BRAIN_TRANSCRIPT_ENV === "lab") return "lab";

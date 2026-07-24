@@ -129,9 +129,9 @@ export async function register(): Promise<void> {
 
   startBackupScheduler();
   // Content-worker modules are dynamically imported only after the complete
-  // deployment/schema/mode plan above is resolved. In schema 026 with no
-  // explicit mode or restricted request this preserves the existing ordinary
-  // worker set. Disabled, malformed, incompatible, and Stage-1 manual-lab
-  // plans import none of them.
+  // deployment/schema/mode plan above is resolved. On an audited pre-feature
+  // schema (026 or NotebookLM 027) with no explicit mode or restricted request
+  // this preserves the existing ordinary worker set. Disabled, malformed,
+  // incompatible, and Stage-1 manual-lab plans import none of them.
   await startContentWorkers(contentWorkerPlan);
 }

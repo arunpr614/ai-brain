@@ -338,7 +338,7 @@ test("feature-schema marker returns private 503 with no item or job effect", asy
     "UPDATE enrichment_jobs SET state = 'done', attempts = 7 WHERE item_id = ?",
   ).run(item.id);
   db.prepare("INSERT INTO _migrations(name, sha256) VALUES (?, ?)").run(
-    "027_youtube_browser_transcript.sql",
+    "028_youtube_browser_transcript.sql",
     "a".repeat(64),
   );
 
@@ -369,7 +369,7 @@ test("feature-schema marker returns private 503 with no item or job effect", asy
     assert.deepEqual(jobAfter, { state: "done", attempts: 7 });
   } finally {
     db.prepare("DELETE FROM _migrations WHERE name = ?").run(
-      "027_youtube_browser_transcript.sql",
+      "028_youtube_browser_transcript.sql",
     );
   }
 });

@@ -3,14 +3,20 @@
  *
  * These scripts run outside Next instrumentation and some cannot import the
  * TypeScript runtime safely. This module deliberately recognizes only the
- * frozen schema-026 baseline. Any later migration or known partial feature
- * marker is incompatible until a reviewed generated guard is packaged from
- * the frozen 027 contract.
+ * frozen pre-feature schema-026/schema-027 frontier. Schema 027 is accepted
+ * only at the exact audited NotebookLM name and hash. Any later migration or
+ * known partial feature marker is incompatible until a reviewed generated
+ * guard is packaged from the frozen 028 contract.
  */
 
 export const SCHEMA_026_LAST_MIGRATION = Object.freeze({
   name: "026_notebooklm_export.sql",
   sha256: "1ba76b030c58af334b588923ee2eef34282c360d79b8b162d653ef454c96513f",
+});
+
+export const SCHEMA_027_LAST_MIGRATION = Object.freeze({
+  name: "027_notebooklm_url_sources.sql",
+  sha256: "a488c7e15c54d232ad16708541bbc4a6fea6c2645fd79a999f7c416a8e2603b6",
 });
 
 const DEPLOYMENTS = new Set([
@@ -47,7 +53,7 @@ export function resolveStandaloneContentProcessingAuthority(db, environment = pr
   const runtime = evaluateOrdinaryContentRuntime(environment);
   if (!runtime.allowed) return runtime;
 
-  const schema = inspectFrozenSchema026(db);
+  const schema = inspectFrozenPreFeatureSchema(db);
   if (!schema.allowed) return schema;
 
   return Object.freeze({ allowed: true, code: runtime.code });
@@ -88,7 +94,7 @@ export function evaluateOrdinaryContentRuntime(environment = process.env) {
   });
 }
 
-export function inspectFrozenSchema026(db) {
+export function inspectFrozenPreFeatureSchema(db) {
   try {
     const migrationTable = db
       .prepare(
@@ -108,13 +114,27 @@ export function inspectFrozenSchema026(db) {
     }
 
     const ledger = db.prepare("SELECT name, sha256 FROM _migrations").all();
-    const baseline = ledger.find(
+    const schema026Baseline = ledger.find(
       (row) => row.name === SCHEMA_026_LAST_MIGRATION.name,
     );
-    if (baseline?.sha256 !== SCHEMA_026_LAST_MIGRATION.sha256) {
+    if (schema026Baseline?.sha256 !== SCHEMA_026_LAST_MIGRATION.sha256) {
       return denied("processing_schema_incompatible");
     }
-    if (ledger.some((row) => migrationOrdinal(row.name) >= 27)) {
+    const schema027Rows = ledger.filter(
+      (row) => migrationOrdinal(row.name) === 27,
+    );
+    if (
+      schema027Rows.length > 1 ||
+      (schema027Rows.length === 1 &&
+        (schema027Rows[0].name !== SCHEMA_027_LAST_MIGRATION.name ||
+          schema027Rows[0].sha256 !== SCHEMA_027_LAST_MIGRATION.sha256))
+    ) {
+      return denied("processing_schema_incompatible");
+    }
+    const schema027Baseline = ledger.find(
+      (row) => row.name === SCHEMA_027_LAST_MIGRATION.name,
+    );
+    if (ledger.some((row) => migrationOrdinal(row.name) >= 28)) {
       return denied("processing_schema_incompatible");
     }
 
@@ -132,7 +152,10 @@ export function inspectFrozenSchema026(db) {
       return denied("processing_schema_incompatible");
     }
 
-    return Object.freeze({ allowed: true, code: "schema_026" });
+    return Object.freeze({
+      allowed: true,
+      code: schema027Baseline ? "schema_027" : "schema_026",
+    });
   } catch {
     return denied("processing_schema_incompatible");
   }

@@ -191,7 +191,7 @@ describe("standalone embedding backfill containment", () => {
 
   test("a future migration marker blocks both scripts before provider or mutation", () => {
     db.prepare("INSERT INTO _migrations(name, sha256) VALUES (?, ?)").run(
-      "027_youtube_browser_transcript.sql",
+      "028_youtube_browser_transcript.sql",
       "a".repeat(64),
     );
     const before = embeddingJobSnapshot();
@@ -217,7 +217,7 @@ describe("standalone embedding backfill containment", () => {
       assert.deepEqual(embeddingJobSnapshot(), before);
     } finally {
       db.prepare("DELETE FROM _migrations WHERE name = ?").run(
-        "027_youtube_browser_transcript.sql",
+        "028_youtube_browser_transcript.sql",
       );
     }
   });

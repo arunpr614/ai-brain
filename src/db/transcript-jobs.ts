@@ -193,8 +193,9 @@ export interface ClaimedTranscriptJobIdentity {
 
 /**
  * Re-attest a claimed job before provider-result handling or apply. The
- * migration-027 source exclusion is deliberately conditional on the fixed
- * capability attestor so schema 026 never prepares a query for a future table.
+ * migration-028 source exclusion is deliberately conditional on the fixed
+ * capability attestor so pre-feature schemas never prepare a query for a
+ * future table.
  */
 export function isClaimedTranscriptJobStillAuthoritative(
   claimed: ClaimedTranscriptJobIdentity,

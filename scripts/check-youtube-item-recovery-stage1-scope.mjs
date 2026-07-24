@@ -6,7 +6,7 @@ import { isAbsolute, posix, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { spawnSync } from "node:child_process";
 
-export const FROZEN_STAGE1_BASE = "f905f6a1ef69b5a1b2a986449d61a2e40a7fdee8";
+export const FROZEN_STAGE1_BASE = "6784e0e85c50fd86e3353b54a8b1964f045b65b1";
 
 const MODIFIED = Object.freeze(["M"]);
 const ADDED = Object.freeze(["A"]);

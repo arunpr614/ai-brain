@@ -18,7 +18,7 @@ import {
   createYoutubeTranscriptBackfillDiagnostic,
 } from "./backfill";
 
-const FUTURE_MIGRATION_NAME = "027_youtube_browser_transcript.sql";
+const FUTURE_MIGRATION_NAME = "028_youtube_browser_transcript.sql";
 
 function clearTables(): void {
   const db = getDb();

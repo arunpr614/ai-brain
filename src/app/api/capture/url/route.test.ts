@@ -266,7 +266,7 @@ This is the complete post body with enough useful words to save as user provided
     const beforeItem = getItem(existing.id);
     const beforeJob = getTranscriptJobForItem(existing.id);
     db.prepare("INSERT INTO _migrations(name, sha256) VALUES (?, ?)").run(
-      "027_youtube_browser_transcript.sql",
+      "028_youtube_browser_transcript.sql",
       "a".repeat(64),
     );
 
@@ -288,7 +288,7 @@ This is the complete post body with enough useful words to save as user provided
       assert.deepEqual(getTranscriptJobForItem(existing.id), beforeJob);
     } finally {
       db.prepare("DELETE FROM _migrations WHERE name = ?").run(
-        "027_youtube_browser_transcript.sql",
+        "028_youtube_browser_transcript.sql",
       );
     }
   });

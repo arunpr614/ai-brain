@@ -38,7 +38,7 @@ import {
   setYoutubeTimedTextProviderHealthForTests,
 } from "../capture/youtube-transcript/provider-health";
 
-const FUTURE_MIGRATION_NAME = "027_youtube_browser_transcript.sql";
+const FUTURE_MIGRATION_NAME = "028_youtube_browser_transcript.sql";
 const ENV_KEYS = [
   "BRAIN_BACKGROUND_WORKERS_MODE",
   "BRAIN_DEPLOYMENT_ENV",

@@ -20,7 +20,7 @@ function setNodeEnv(value: string | undefined): void {
   else mutableEnvironment.NODE_ENV = value;
 }
 
-test("current schema 026 preserves ordinary item-body processing", () => {
+test("current schema 027 preserves ordinary item-body processing", () => {
   const db = new Database(":memory:");
   sqliteVec.load(db);
   db.pragma("foreign_keys = ON");
@@ -118,7 +118,7 @@ test("same-version migration-ledger changes are re-attested on every hold decisi
     assert.equal(resolveItemBodyProcessingGate("item", db).allowed, true);
 
     db.prepare("INSERT INTO _migrations(name,sha256) VALUES(?,?)").run(
-      "027_youtube_browser_transcript.sql",
+      "028_youtube_browser_transcript.sql",
       "a".repeat(64),
     );
     assert.deepEqual(resolveItemBodyProcessingGate("item", db), {
