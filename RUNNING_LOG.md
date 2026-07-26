@@ -30894,3 +30894,69 @@ Nothing. This milestone grants Contract GO only; it does not grant Implementatio
 - **Working tree:** feature-scoped Stage 2 evidence is untracked; unrelated `Phase4.1-AIModelConfig/` remains untracked and excluded.
 - **Production/runtime:** unchanged; restricted capture and held manual processing remain unavailable.
 - **Next milestone:** scoped contract/evidence commit, followed by isolated Stage 2 migration/runtime implementation and its separate adversarial gate.
+
+---
+
+## 2026-07-26 08:55 IST - First Stage 2 implementation foundation wave independently gated
+
+**Entry author:** AI agent (Codex) - **Triggered by:** Completion of exact-slice reviews for the migration admission, fingerprint, allocator, evidence-protocol, and disposable native-proof foundations.
+
+### Planned
+
+- Begin only disposable, synthetic, and fail-closed Stage 2 implementation after exact-hash Contract GO.
+- Keep migration 028, production wiring, browser/manual surfaces, live targets, and Implementation GO blocked until their complete prerequisites and evidence exist.
+
+### Done
+
+- Committed exact Stage 2 fingerprint framing in `e731182`, including the frozen length/domain encoding vectors and boundary tests.
+- Committed ordinary-startup migration admission in `c722b3d`. Unknown/backdated and unreviewed future migrations refuse without mutation; gated 028-030 remain unapplied, and historical null-hash backfill remains narrowly supported.
+- Committed the bounded item-instance allocator in `26245cb`. It captures the platform CSPRNG at module initialization, generates exactly 16 internal bytes as 32 lowercase hexadecimal characters, retries only live uniqueness collisions for at most eight candidates, returns the stable content-free exhaustion reason, and keeps no deleted-instance history.
+- Committed evidence-protocol primitives in `3e8e56b`. Exact frozen registry and assertion-manifest bytes govern case selection, child/oracle ownership, assertion counts and ID hashes; framed events, command output, and run-binding hashes fail closed on malformed or mismatched input.
+- Committed the disposable native bridge proof in `5be5985`. It performs two independently equal pinned builds, uses the exact private `better-sqlite3` owner, exposes only fixed local proof scenarios, rejects production execution and external proof inputs, returns frozen evidence without a database handle or artifact path, and retains `readinessClaim=none`, `s28ReadinessProven=false`, and `implementationGoProven=false`.
+
+### Adversarial findings and remediation
+
+- The allocator initially dereferenced a mutable crypto export between attempts. It now captures the entropy authority once, manually encodes lowercase hexadecimal, and passes a post-import mutation regression.
+- The evidence protocol initially trusted caller-projected oracle ownership and then caller-supplied assertion records. It now authenticates exact frozen assertion-manifest bytes at SHA-256 `9879195bd25647c569147c11953df194051d0302469bc5fa870cc36db5231e42` and derives all case partitions internally.
+- The native proof initially permitted an environment override, returned a raw database capable of filesystem routes, and accepted self-consistent but unpinned artifacts. It was narrowed to a zero-input evidence-only harness with exact owner/build provenance and closed native operations.
+- A final independent re-gate found that a compiler failure after `mkdtemp` leaked a disposable build directory. The build process now validates and removes its exact temp child on every post-creation failure, and a real compiler-exit regression proves the prefix snapshot is unchanged.
+
+### Verification
+
+- Full repository suite passed: 1,294 tests across 104 suites, zero failures, skips, cancellations, or todos.
+- Evidence protocol passed 26 focused tests plus syntax and no-ignore ESLint checks.
+- Item-instance allocator passed 6 focused tests plus scoped ESLint and TypeScript checks.
+- Native proof passed 7 focused tests, syntax, scoped ESLint and TypeScript checks, and a successful standalone probe. Two independent Darwin arm64 builds produced module SHA-256 `204e5cb993494f0cda2940c49bb656fe52d421aa980a01ca125f3c40c55a66ef`.
+- Production-mode native proof refused before artifact creation. Successful proof execution and a real post-`mkdtemp` compiler failure both left zero new disposable-prefix entries.
+- The frozen addendum, registry, static index, and verifier retained their accepted hashes and `0444` modes; static-index verification reproduced `e691edfd0edcade37d439906f3b97dee9a3b05d57baae995ae23fb0254bbfd5d`.
+- Independent final gates returned GO for the exact allocator, evidence-protocol, and native-proof bytes. Each GO is limited to its primitive or disposable-feasibility slice.
+
+### Cross-lane impact
+
+- Removed seven explicitly validated, user-owned disposable native-build temp directories left by earlier probes. They contained only generated source, object, addon, and manifest artifacts and are not recoverable; repository files were unaffected.
+- The unrelated untracked `Phase4.1-AIModelConfig/` tree remains untouched and excluded.
+- No migration 028 SQL, schema mutation, dedicated runtime route, extension, browser capture, provider call, live YouTube request, production configuration, user-data mutation, deployment, or release occurred.
+
+### Deployed / Released
+
+Nothing. These commits establish reviewed Stage 2 primitives and one local native feasibility result only.
+
+### Current remaining to-do
+
+1. Complete and independently review the deny-only AC15 scope-policy primitives without claiming the registry acceptance case.
+2. Turn the native feasibility result into the dedicated stopped-writer connection route required by the frozen contract.
+3. Only then implement migration 028, exact S28 attestation, transition/backfill, native role integration, and failure/recovery matrices.
+4. Build the remaining AC01-AC17 platform/evidence packages and obtain a separate zero-P0/P1 Stage 2 Implementation GO before Stage 3.
+
+### Self-critique
+
+- The native proof is verified only on Darwin arm64, Node 22.22.3 ABI 127, and Apple clang 21. Linux execution, abrupt process termination, sqlite-vec integration, and the dedicated production-shaped route remain unproved.
+- The helper and protocol tests are strong primitive evidence but do not substitute for migration, runtime, schema, package, or acceptance-case integration.
+
+### State snapshot
+
+- **Current phase:** Stage 2 implementation foundations in progress; first primitive wave accepted.
+- **Active branch:** `feat/youtube-item-recovery-enrichment`, with foundation commits through `5be5985`.
+- **Accepted contract seal:** addendum `d1eef042...`, registry `7b022d82...`, static index `e691edfd...`, verifier `133d55fa...`; all four remain mode `0444`.
+- **Production/runtime:** unchanged; restricted capture and held manual processing remain unavailable.
+- **Next milestone:** deny-only AC15 policy primitives, followed by the dedicated stopped-writer/native route prerequisite for migration 028.
