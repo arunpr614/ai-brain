@@ -31,7 +31,17 @@ try {
     console.log(JSON.stringify(result, null, 2));
     if (result.status === "blocked") process.exitCode = 6;
   }
-} catch {
-  console.error("[youtube-backfill] failed code=backfill_failed");
-  process.exitCode = 1;
+} catch (error) {
+  if (
+    error &&
+    typeof error === "object" &&
+    "code" in error &&
+    error.code === "processing_schema_incompatible"
+  ) {
+    console.error("[youtube-backfill] blocked code=schema_incompatible");
+    process.exitCode = 6;
+  } else {
+    console.error("[youtube-backfill] failed code=backfill_failed");
+    process.exitCode = 1;
+  }
 }

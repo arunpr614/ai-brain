@@ -17,6 +17,12 @@ import { existsSync, mkdirSync, readFileSync, readdirSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import Database from "better-sqlite3";
 import * as sqliteVec from "sqlite-vec";
+import {
+  assertOrdinaryStartupMigrationInventory,
+  OrdinaryMigrationAdmissionError,
+  type OrdinaryStartupMigrationAdmission,
+} from "./migration-admission";
+import { PACKAGED_YOUTUBE_BROWSER_SCHEMA_CONTRACT } from "./schema-capabilities";
 
 const DB_PATH =
   process.env.BRAIN_DB_PATH || resolve(process.cwd(), "data/brain.sqlite");
@@ -130,6 +136,30 @@ function stableForeignKeyCheck(db: Database.Database): string {
 }
 
 export function runMigrations(db: Database.Database): void {
+  const migrationsDir = resolveMigrationsDir();
+  const files = readdirSync(migrationsDir)
+    .filter((f) => f.endsWith(".sql"))
+    .sort(); // NNN_ prefix ensures lexicographic == numeric order
+  const admissions = assertOrdinaryStartupMigrationInventory(files);
+  const auditedSources = new Map<
+    string,
+    { readonly sql: string; readonly sha256: string }
+  >();
+
+  // Attest every executable S27 source before the runner mutates even the
+  // migration ledger. Gated transition files are deliberately not read.
+  for (const [file, admission] of admissions) {
+    if (admission.kind !== "audited_s27") continue;
+    const sql = readFileSync(join(migrationsDir, file), "utf8");
+    const sha256 = createHash("sha256").update(sql).digest("hex");
+    if (sha256 !== admission.sha256) {
+      throw new OrdinaryMigrationAdmissionError(
+        `[db] packaged S27 migration hash mismatch: ${file}`,
+      );
+    }
+    auditedSources.set(file, { sql, sha256 });
+  }
+
   db.exec(`
     CREATE TABLE IF NOT EXISTS _migrations (
       id         INTEGER PRIMARY KEY,
@@ -145,27 +175,65 @@ export function runMigrations(db: Database.Database): void {
   const migrationColumns = new Set(
     (db.pragma("table_info('_migrations')") as Array<{ name: string }>).map((column) => column.name),
   );
-  if (!migrationColumns.has("sha256")) db.exec("ALTER TABLE _migrations ADD COLUMN sha256 TEXT");
-
-  const migrationsDir = resolveMigrationsDir();
-  const files = readdirSync(migrationsDir)
-    .filter((f) => f.endsWith(".sql"))
-    .sort(); // NNN_ prefix ensures lexicographic == numeric order
+  if (!migrationColumns.has("sha256")) {
+    const legacyNames = db
+      .prepare("SELECT name FROM _migrations")
+      .all() as Array<{ name: string }>;
+    for (const { name } of legacyNames) {
+      const admission = admissions.get(name);
+      if (!admission) {
+        throw new OrdinaryMigrationAdmissionError(
+          `[db] applied migration is not packaged: ${name}`,
+        );
+      }
+      if (admission.kind === "gated_transition") {
+        throw new OrdinaryMigrationAdmissionError(
+          `[db] gated migration hash missing: ${name}`,
+        );
+      }
+    }
+    db.exec("ALTER TABLE _migrations ADD COLUMN sha256 TEXT");
+  }
 
   const applied = new Map(
     (db.prepare("SELECT name,sha256 FROM _migrations").all() as Array<{ name: string; sha256: string | null }>)
       .map((row) => [row.name, row.sha256]),
   );
 
+  for (const name of applied.keys()) {
+    const admission = admissions.get(name);
+    if (!admission) {
+      throw new OrdinaryMigrationAdmissionError(
+        `[db] applied migration is not packaged: ${name}`,
+      );
+    }
+    if (admission.kind === "gated_transition") {
+      assertPackagedGatedMigrationAuthority(name);
+    }
+  }
+
   for (const file of files) {
-    const sql = readFileSync(join(migrationsDir, file), "utf8");
-    const sha256 = createHash("sha256").update(sql).digest("hex");
+    const admission = admissions.get(file) as OrdinaryStartupMigrationAdmission;
+    if (!applied.has(file) && admission.kind === "gated_transition") {
+      continue;
+    }
+    const source =
+      auditedSources.get(file) ??
+      readAndAttestGatedMigrationSource(migrationsDir, file);
+    const { sql, sha256 } = source;
     if (applied.has(file)) {
       const recorded = applied.get(file);
-      if (recorded && recorded !== sha256) {
-        throw new Error(`[db] applied migration hash mismatch: ${file}`);
+      if (recorded !== null && recorded !== sha256) {
+        throw new OrdinaryMigrationAdmissionError(
+          `[db] applied migration hash mismatch: ${file}`,
+        );
       }
-      if (!recorded) {
+      if (recorded === null) {
+        if (admission.kind === "gated_transition") {
+          throw new OrdinaryMigrationAdmissionError(
+            `[db] gated migration hash missing: ${file}`,
+          );
+        }
         db.prepare("UPDATE _migrations SET sha256=? WHERE name=? AND sha256 IS NULL").run(sha256, file);
       }
       continue;
@@ -199,6 +267,30 @@ export function runMigrations(db: Database.Database): void {
       if (needsForeignKeysOff && foreignKeysWereEnabled) db.pragma("foreign_keys = ON");
     }
   }
+}
+
+function assertPackagedGatedMigrationAuthority(filename: string): void {
+  const contract = PACKAGED_YOUTUBE_BROWSER_SCHEMA_CONTRACT;
+  if (!contract || contract.migration.filename !== filename) {
+    throw new OrdinaryMigrationAdmissionError(
+      `[db] applied gated migration unsupported by this binary: ${filename}`,
+    );
+  }
+}
+
+function readAndAttestGatedMigrationSource(
+  migrationsDir: string,
+  filename: string,
+): { readonly sql: string; readonly sha256: string } {
+  assertPackagedGatedMigrationAuthority(filename);
+  const sql = readFileSync(join(migrationsDir, filename), "utf8");
+  const sha256 = createHash("sha256").update(sql).digest("hex");
+  if (sha256 !== PACKAGED_YOUTUBE_BROWSER_SCHEMA_CONTRACT?.migration.sha256) {
+    throw new OrdinaryMigrationAdmissionError(
+      `[db] packaged gated migration hash mismatch: ${filename}`,
+    );
+  }
+  return { sql, sha256 };
 }
 
 function resolveMigrationsDir(): string {

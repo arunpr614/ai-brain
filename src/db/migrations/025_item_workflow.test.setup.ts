@@ -19,3 +19,4 @@ for (const file of readdirSync(ALL_MIGRATIONS_DIR)) {
 process.env.BRAIN_DB_PATH = join(TEST_DB_DIR, "test.sqlite");
 process.env.BRAIN_MIGRATIONS_DIR = PRE_025_DIR;
 process.env.BRAIN_PROCESSING_HMAC_SECRET = "migration-test-secret";
+process.env.NODE_ENV = "test";

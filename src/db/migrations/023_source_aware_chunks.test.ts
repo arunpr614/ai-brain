@@ -6,11 +6,13 @@ import test from "node:test";
 import Database from "better-sqlite3";
 import * as sqliteVec from "sqlite-vec";
 import { runMigrations } from "../client";
+import { withAuditedS27MigrationSubsetForTests } from "../migration-admission";
 
 test("migration 023 preserves legacy chunks/rowids and allocates beyond orphan vec rows", () => {
   const db = new Database(":memory:");
   const migrationsDir = mkdtempSync(join(tmpdir(), "brain-migration-023-runner-"));
   const previousMigrationsDir = process.env.BRAIN_MIGRATIONS_DIR;
+  const previousNodeEnv = process.env.NODE_ENV;
   sqliteVec.load(db);
   try {
     db.pragma("foreign_keys = ON");
@@ -46,7 +48,8 @@ test("migration 023 preserves legacy chunks/rowids and allocates beyond orphan v
       join(migrationsDir, "023_source_aware_chunks.sql"),
     );
     process.env.BRAIN_MIGRATIONS_DIR = migrationsDir;
-    runMigrations(db);
+    process.env.NODE_ENV = "test";
+    withAuditedS27MigrationSubsetForTests(() => runMigrations(db));
 
     const migrated = db
       .prepare(
@@ -89,6 +92,8 @@ test("migration 023 preserves legacy chunks/rowids and allocates beyond orphan v
   } finally {
     if (previousMigrationsDir === undefined) delete process.env.BRAIN_MIGRATIONS_DIR;
     else process.env.BRAIN_MIGRATIONS_DIR = previousMigrationsDir;
+    if (previousNodeEnv === undefined) delete process.env.NODE_ENV;
+    else process.env.NODE_ENV = previousNodeEnv;
     db.close();
     rmSync(migrationsDir, { recursive: true, force: true });
   }

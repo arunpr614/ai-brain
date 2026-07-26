@@ -188,6 +188,13 @@ try {
   if (error instanceof StandaloneContentProcessingBlockedError) {
     console.error(`[backfill] blocked code=${error.code}`);
     process.exitCode = 6;
+  } else if (
+    error &&
+    typeof error === "object" &&
+    error.code === "processing_schema_incompatible"
+  ) {
+    console.error("[backfill] blocked code=processing_schema_incompatible");
+    process.exitCode = 6;
   } else {
     console.error("[backfill] failed code=backfill_failed");
     process.exitCode = 1;

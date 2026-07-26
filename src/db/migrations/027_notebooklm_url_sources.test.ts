@@ -6,6 +6,7 @@ import { readFileSync, rmSync } from "node:fs";
 import { join } from "node:path";
 import { test } from "node:test";
 import { getDb, runMigrations } from "../client";
+import { withAuditedS27MigrationSubsetForTests } from "../migration-admission";
 import {
   ALL_MIGRATIONS_DIR,
   TEST_DB_DIR,
@@ -14,7 +15,7 @@ import {
 test.after(() => rmSync(TEST_DB_DIR, { recursive: true, force: true }));
 
 test("026 to 027 preserves copied-text requests and installs URL payload guards", () => {
-  const db = getDb();
+  const db = withAuditedS27MigrationSubsetForTests(() => getDb());
   const now = 1_700_000_000_000;
   assert.equal(
     (

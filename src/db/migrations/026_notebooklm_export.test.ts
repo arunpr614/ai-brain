@@ -6,6 +6,7 @@ import { readFileSync, rmSync } from "node:fs";
 import { join } from "node:path";
 import { test } from "node:test";
 import { getDb, runMigrations } from "../client";
+import { withAuditedS27MigrationSubsetForTests } from "../migration-admission";
 import { NOTEBOOKLM_SAFE_TARGET_LABEL } from "@/lib/notebooklm/contracts";
 import {
   ALL_MIGRATIONS_DIR,
@@ -15,14 +16,14 @@ import {
 test.after(() => rmSync(TEST_DB_DIR, { recursive: true, force: true }));
 
 function migrate026() {
-  const db = getDb();
+  const db = withAuditedS27MigrationSubsetForTests(() => getDb());
   process.env.BRAIN_MIGRATIONS_DIR = ALL_MIGRATIONS_DIR;
   runMigrations(db);
   return db;
 }
 
 test("025 to 026 preserves existing data and installs an attested, integrity-clean ledger", () => {
-  const db = getDb();
+  const db = withAuditedS27MigrationSubsetForTests(() => getDb());
   const latestBefore = db
     .prepare("SELECT name FROM _migrations ORDER BY name DESC LIMIT 1")
     .get() as { name: string };

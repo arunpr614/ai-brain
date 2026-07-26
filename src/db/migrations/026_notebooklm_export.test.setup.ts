@@ -15,3 +15,4 @@ for (const file of readdirSync(ALL_MIGRATIONS_DIR)) {
 
 process.env.BRAIN_DB_PATH = join(TEST_DB_DIR, "test.sqlite");
 process.env.BRAIN_MIGRATIONS_DIR = PRE_026_DIR;
+process.env.NODE_ENV = "test";

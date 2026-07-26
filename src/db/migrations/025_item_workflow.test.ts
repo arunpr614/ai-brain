@@ -5,6 +5,7 @@ import { readFileSync, rmSync } from "node:fs";
 import { join } from "node:path";
 import { test } from "node:test";
 import { getDb, runMigrations } from "../client";
+import { withAuditedS27MigrationSubsetForTests } from "../migration-admission";
 import {
   ALL_MIGRATIONS_DIR,
   TEST_DB_DIR,
@@ -24,7 +25,7 @@ import {
 test.after(() => rmSync(TEST_DB_DIR, { recursive: true, force: true }));
 
 test("024 to 025 keeps historical rows dormant and exact manifest/integrity clean", () => {
-  const db = getDb();
+  const db = withAuditedS27MigrationSubsetForTests(() => getDb());
   const latestBefore = db.prepare("SELECT name FROM _migrations ORDER BY name DESC LIMIT 1").get() as { name: string };
   assert.equal(latestBefore.name, "024_recall_manual_sync.sql");
   db.prepare("INSERT INTO items(id,source_type,title,body,captured_at) VALUES(?,?,?,?,?)")
@@ -35,7 +36,7 @@ test("024 to 025 keeps historical rows dormant and exact manifest/integrity clea
     .run("legacy-three", "note", "Legacy three", "Body", 3000);
 
   process.env.BRAIN_MIGRATIONS_DIR = THROUGH_025_DIR;
-  runMigrations(db);
+  withAuditedS27MigrationSubsetForTests(() => runMigrations(db));
   const legacy = db.prepare("SELECT * FROM items WHERE id='legacy-one'").get() as Record<string, unknown>;
   assert.equal(legacy.workflow_legacy_baseline, 1);
   assert.equal(legacy.workflow_version, 0);
