@@ -1,0 +1,35 @@
+{
+  "format": "brain-s28-disposable-native-bridge-source-v1",
+  "betterSqlite3Version": "11.10.0",
+  "sqliteVersion": "3.49.2",
+  "sqliteSourceId": "2025-05-07 10:39:52 17144570b0d96ae63cd6f3edca39e27ebd74925252bbaf6723bcb2f6b4861fb1",
+  "nodeMajor": 22,
+  "supportedHosts": [
+    "darwin-arm64",
+    "darwin-x64",
+    "linux-arm64",
+    "linux-x64"
+  ],
+  "readinessClaim": "none",
+  "disposableOnly": true,
+  "upstreamFiles": {
+    "package.json": "58e81504576abccfacbfd08dc9432dc3a00d0fc0454685cb7a76aaf976cf25a9",
+    "src/better_sqlite3.cpp": "551abc7d9feea0ad2acb97f33125c5e8800d6d84a1da4390512d08743f924b1e",
+    "src/better_sqlite3.hpp": "689831cdf547d53b2156fa66088f04b89ed71173f4a832300230ff765879f6bf",
+    "deps/sqlite3/sqlite3.c": "e80215754ac6cfaefe272342efd581b6dbefdbdc21f96bd83fcb698bee9d36a5",
+    "deps/sqlite3/sqlite3.h": "2198c66d4c59ae86421590c27fd53309ec14a595ae31c0c7143247444018a0bd",
+    "deps/sqlite3/sqlite3ext.h": "b184dd1586d935133d37ad76fa353faf0a1021ff2fdedeedcc3498fff74bbb94",
+    "deps/defines.gypi": "1ffa84b8af99780a293dcb7a9031c2dccc8b0d013aef434a35c283cc6c984f2e"
+  },
+  "repositoryFiles": {
+    "package-lock.json": "62ad0b842055f10567f60644b524f22c49f19b17e81fe33c24422f1615cbc650",
+    ".nvmrc": "f14b4987904bcb5814e4459a057ed4d20f58a633152288a761214dcd28780b56",
+    "native/brain-s28-bridge/src/brain_s28_bridge.hpp": "31f50b68119724917aad4134164d23deed028a878782ebf4dea06cf2fb2550c8",
+    "native/brain-s28-bridge/src/brain_s28_bridge.cpp": "4a8ea880ada55fc2b4c6e83cb880e216b623c5b2f9487597c4c3cd2c40d2e35f",
+    "scripts/build-youtube-stage2-native-bridge.mjs": "06db0261d4b18ab65d88cd3c8a7b2390800c196713652c059523a8c0d9c6907c"
+  },
+  "transformation": {
+    "id": "better-sqlite3-11.10.0-disposable-s28-v1",
+    "description": "Deterministic sentinel-checked insertion of the disposable-only constructor guard, constant SQL bridge, closed native probe, permanent default-deny authorizer, and removal of native backup and extension-loading entrypoints."
+  }
+}
