@@ -44,6 +44,7 @@
 - The static authority index is `e691edfd0edcade37d439906f3b97dee9a3b05d57baae995ae23fb0254bbfd5d`; its verifier is `133d55fae063244e7c6d413c64acbe88ebf0d1e83736296d9a00ca00de2e68a6`. All four files are read-only (`0444`).
 - Three independent exact-hash reviews returned Contract GO with zero unresolved P0/P1 findings after the final same-key abort/retry precedence repair. Contract GO permits only disposable implementation and synthetic/private fixture verification.
 - The first disposable foundation wave is committed: exact fingerprint framing, ordinary-startup migration admission, a bounded no-history item-instance allocator, frozen-registry evidence-protocol primitives, and a closed disposable native-bridge feasibility proof. The native proof is evidence-only, was executed only on Darwin arm64 with Node 22 ABI 127, and explicitly proves neither S28 readiness nor Implementation GO.
+- The deny-only synthetic scope-policy primitive is committed in `60de5be`. It fails closed on malformed, proxied, unknown, or forbidden observations and can return only `forbidden` or `requires_authoritative_scan`; it cannot establish S2-AC-15 or replace the required authoritative repository, dependency, binary, and production-package scan.
 - M6 is not complete. Migration 028 SQL, the dedicated stopped-writer/native runtime route, schema/runtime integration, platform packages, actual AC01-AC17 evidence, and the separate Implementation GO do not yet exist.
 
 ## Ordered implementation slices and file ownership

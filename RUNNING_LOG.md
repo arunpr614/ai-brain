@@ -30960,3 +30960,60 @@ Nothing. These commits establish reviewed Stage 2 primitives and one local nativ
 - **Accepted contract seal:** addendum `d1eef042...`, registry `7b022d82...`, static index `e691edfd...`, verifier `133d55fa...`; all four remain mode `0444`.
 - **Production/runtime:** unchanged; restricted capture and held manual processing remain unavailable.
 - **Next milestone:** deny-only AC15 policy primitives, followed by the dedicated stopped-writer/native route prerequisite for migration 028.
+
+---
+
+## 2026-07-26 09:15 IST - Deny-only Stage 2 scope primitive independently gated
+
+**Entry author:** AI agent (Codex) - **Triggered by:** Final exact-byte re-gate of the synthetic Stage 2 scope-policy primitive.
+
+### Planned
+
+- Add a non-authorizing, deny-only classifier for already-classified synthetic scope observations.
+- Preserve S2-AC-15 as unproved until an authoritative repository, dependency, binary, and production-package scan exists.
+
+### Done
+
+- Committed `scripts/stage2/scope-policy.mjs` and its focused tests in `60de5be`.
+- The primitive accepts only exact plain-data observation records, uses a fixed deny-wins precedence, and exposes only `forbidden` or `requires_authoritative_scan`.
+- The final source SHA-256 is `5929872bae29f445d80aa21bafcff0d921ba3636610eac17e312ed2a5ceadec4`; the final test SHA-256 is `b544e23073c400f9f3d520ffacfb61b75bc9d85b6e7e4e0f04f1bcf50000d99e`.
+
+### Adversarial findings and remediation
+
+- Independent review reproduced a mutable-`Set.prototype.has` browser-surface bypass, a mutable Map-iterator SQLite-fork bypass, and Proxy-driven side effects.
+- The corrected implementation captures its required intrinsics during trusted module initialization, removes runtime Map/prototype iteration and String/RegExp dispatch, and rejects Proxy inventories, records, and capability arrays before invoking their traps.
+- Exact counterexample re-runs now return the required browser/SQLite `forbidden` results; the Proxy record returns `stage2_scope_observation_invalid` with zero traps.
+
+### Verification
+
+- Syntax checks passed for both files.
+- All 28 focused tests passed; no-ignore ESLint and whitespace checks passed.
+- An independent exact-hash final gate returned GO and confirmed the frozen addendum remained unchanged at `d1eef042423d7d2d3413637f62bd8ed5842b64846db6f656a0b8e1cb7e5eed48`.
+- The gate explicitly confirmed that the primitive performs no repository, dependency, binary, package, filesystem, process, or network scan and cannot establish S2-AC-15.
+
+### Cross-lane impact
+
+- The unrelated untracked `Phase4.1-AIModelConfig/` tree remains untouched and excluded.
+- No migration 028 SQL, schema mutation, dedicated runtime route, browser/manual surface, live target, production configuration, user-data mutation, deployment, or release occurred.
+
+### Deployed / Released
+
+Nothing. This commit is a reviewed deny-only primitive, not AC15 evidence and not Implementation GO.
+
+### Current remaining to-do
+
+1. Map and implement the smallest private disposable stopped-writer connection route needed before migration 028.
+2. Build the authoritative repository, dependency, binary, and production-package scan before attempting S2-AC-15.
+3. Continue the remaining migration, runtime, platform-package, and AC01-AC17 evidence work before a separate zero-P0/P1 Stage 2 Implementation GO.
+
+### Self-critique
+
+- The hardening assumes trusted module initialization before hostile intrinsic mutation.
+- Synthetic classified observations cannot prove absence across the actual repository or packaged artifact; treating this primitive as AC15 evidence would be an authority error.
+
+### State snapshot
+
+- **Current phase:** Stage 2 implementation foundations in progress; deny-only scope primitive accepted.
+- **Active branch:** `feat/youtube-item-recovery-enrichment` through `60de5be`.
+- **Production/runtime:** unchanged; restricted capture and held manual processing remain unavailable.
+- **Next milestone:** dedicated stopped-writer/native route prerequisite, still before migration 028.
