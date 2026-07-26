@@ -30830,3 +30830,67 @@ Documentation, review evidence, prototype, assets, screenshots, and reports are 
 - **Active branch/base:** `feat/youtube-item-recovery-enrichment` at frozen base `f905f6a1` plus uncommitted Stage 0/1 artifacts.
 - **Production/runtime:** unchanged; restricted capture and held manual processing remain unavailable.
 - **Next milestone:** commit the reviewed Stage 0/1 boundary, re-fetch `origin/main` and pending migration work, then adversarially review the Stage 2 physical-schema addendum before SQL.
+
+---
+
+## 2026-07-26 07:17 IST - Stage 2 physical contract received unanimous exact-hash GO
+
+**Entry author:** AI agent (Codex) - **Triggered by:** Completion of the repaired Stage 2 contract freeze and three independent exact-hash adversarial reviews.
+
+### Planned
+
+- Reconciled the Stage 1 boundary with current `origin/main`, then froze the Stage 2 physical contract before authoring migration SQL or runtime implementation.
+- Required every material contract edit to invalidate prior reviews and repeat the complete positive, negative, privacy, schema-authority, and exact-hash gate.
+
+### Done
+
+- Froze the physical-schema addendum at SHA-256 `d1eef042423d7d2d3413637f62bd8ed5842b64846db6f656a0b8e1cb7e5eed48`, the acceptance registry at `7b022d82e855891eb1a818df9c09ab070586c13beea7acf6a8c003d845be9f45`, the static authority index at `e691edfd0edcade37d439906f3b97dee9a3b05d57baae995ae23fb0254bbfd5d`, and its verifier at `133d55fae063244e7c6d413c64acbe88ebf0d1e83736296d9a00ca00de2e68a6`.
+- Made all four frozen authority files read-only (`0444`) and proved that the verifier reproduces the committed static authority index byte-for-byte.
+- Repaired the final P1 found during adversarial review: a legal same-key retry after an abort had made the collapsed-role H(D) predicate unconstructible. The accepted contract now gives the immediate active generation `g+1` narrowly defined precedence over the last-completed aborted generation `g` only when both use the same idempotency key, with pre-receipt, post-receipt, retry-abort, clear, and stale-refusal vectors.
+- Retained symmetric controller/transition fencing, complete-snapshot state materialization, abort/retry semantics, receipt/intent atomicity, no-stale-generation authority, and deterministic refusal behavior across the physical contract.
+- Obtained independent exact-hash Contract GO from the complete-snapshot/transition reviewer, controller/epoch-race reviewer, and frozen-schema/materialization reviewer. All three reported zero unresolved P0/P1 findings against the same four hashes.
+- Persisted the final contract-gate adversarial report at `docs/feature-council/youtube-item-recovery-implementation/implementation/STAGE_2_PHYSICAL_SCHEMA_ADDENDUM_FINAL_CONTRACT_GATE_ADVERSARIAL_REVIEW_2026-07-26_07-14-26_IST.md`.
+
+### Verification
+
+- The second-freeze checker passed against the accepted addendum, registry, and static index.
+- Schema-manifest authority passed across 29 migrations, 70 tables, 82 indexes, 34 triggers, 43 inputs, 32 Git blobs, six capabilities, and 14 critical relations.
+- Host-oracle and boundary-fixture registries passed.
+- Four positive contract gates passed; all nine deliberately invalid contract variants were refused.
+- High-entropy secret assignment count and provider-secret assignment count were both zero.
+- Exact file modes, SHA-256 seals, static-index reproduction, and `git diff --check` passed.
+
+### Cross-lane impact
+
+- The unrelated untracked `Phase4.1-AIModelConfig/` tree remains untouched and outside this feature boundary.
+- No migration, runtime, extension, provider, browser, live YouTube, isolated-lab, production, or user-data action occurred.
+
+### Learned
+
+- A physical predicate that collapses historical and active generations must specify the only legal newest-generation precedence explicitly; otherwise valid retry state can require mutually exclusive key/receipt observations.
+- Exact-hash review is part of the authority boundary. Any material edit requires a new seal and a full repeat of every independent review.
+
+### Deployed / Released
+
+Nothing. This milestone grants Contract GO only; it does not grant Implementation GO, release authority, live-target authority, or production authority.
+
+### Current remaining to-do
+
+1. Commit only the accepted Stage 2 contract/evidence package and this append-only milestone, excluding the unrelated `Phase4.1-AIModelConfig/` tree.
+2. Implement the migration and runtime contract in a disposable, isolated database path.
+3. Run clean-install, upgrade, partial/failure, retry/crash, mixed-binary, schema-authority, privacy, and deterministic negative gates.
+4. Obtain a separate zero-P0/P1 Stage 2 Implementation GO before moving to Stage 3.
+
+### Self-critique
+
+- The contract is intentionally large because the authority boundary spans multiple generations, roles, receipts, and crash points; its correctness is now strongly reviewed, but no implementation evidence exists yet.
+- The unanimous Contract GO must not be represented as proof that SQL, runtime code, or migration rollback behavior is correct.
+
+### State snapshot
+
+- **Current phase:** Stage 2 Contract GO complete; implementation remains blocked pending the scoped contract commit.
+- **Active branch/frontier:** `feat/youtube-item-recovery-enrichment` at `ff3a425630791d10cd36c9c71db90141b0128743` plus the uncommitted accepted contract/evidence package.
+- **Accepted seal:** addendum `d1eef042...`, registry `7b022d82...`, static index `e691edfd...`, verifier `133d55fa...`; all four mode `0444`.
+- **Working tree:** feature-scoped Stage 2 evidence is untracked; unrelated `Phase4.1-AIModelConfig/` remains untracked and excluded.
+- **Production/runtime:** unchanged; restricted capture and held manual processing remain unavailable.
+- **Next milestone:** scoped contract/evidence commit, followed by isolated Stage 2 migration/runtime implementation and its separate adversarial gate.

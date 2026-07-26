@@ -1,0 +1,419 @@
+{
+  "contract_version": "youtube-item-recovery-stage2-s27-manifest-v1",
+  "source_commit": "ff3a425630791d10cd36c9c71db90141b0128743",
+  "sqlite_version": "3.49.2",
+  "canonicalizer": {
+    "path": "docs/feature-council/youtube-item-recovery-implementation/implementation/fixtures/verify-stage2-s27-schema-manifest.mjs",
+    "sha256": "decf2cc79c14b82b6f85e5f18408a94533891e19a958faefa5ca64469e584210",
+    "command": "node --no-warnings --experimental-strip-types docs/feature-council/youtube-item-recovery-implementation/implementation/fixtures/verify-stage2-s27-schema-manifest.mjs"
+  },
+  "runtime": {
+    "node_major": 22,
+    "generator_node": "22.22.3",
+    "generator_v8": "12.4.254.21-node.56",
+    "generator_icu": "78.3",
+    "generator_platform": "darwin",
+    "generator_arch": "arm64",
+    "generator_node_executable_sha256": "79bc31d84868436058ea7e020626a8046905bd5361e5d30d47917ee6e6d9120f",
+    "generator_exec_argv": [
+      "--no-warnings",
+      "--experimental-strip-types"
+    ],
+    "launch_environment_must_be_unset": [
+      "NODE_OPTIONS",
+      "NODE_PATH",
+      "DYLD_INSERT_LIBRARIES",
+      "DYLD_LIBRARY_PATH",
+      "LD_PRELOAD"
+    ],
+    "better_sqlite3": "11.10.0",
+    "sqlite_vec": "0.1.9",
+    "sqlite_vec_native_package": "0.1.9",
+    "external_shared_object_count": 22,
+    "external_shared_object_descriptor_sha256": "8c12588a5602f80b0df5550fb7d61b6285e1f2228000740c84f2f2af665f2acb",
+    "sqlite_source_id": "2025-05-07 10:39:52 17144570b0d96ae63cd6f3edca39e27ebd74925252bbaf6723bcb2f6b4861fb1",
+    "sqlite_compile_options_sha256": "b86e97160665bb710c2560843c1708da68b650541e7c68df5820471bf23e7a64",
+    "sqlite_vec_runtime_version": "v0.1.9",
+    "sqlite_vec_function_registry_sha256": "b2ec27f13e9565cdc6d6b456b9aa2c6bab2820bd50f7e3198951491bd07b16ee",
+    "sqlite_vec_module_registry_sha256": "e68985f1a16bc2b9d79053c2a006acbbbaf71c16b1747a786889485f4e2e855d",
+    "sqlite_vec_golden_sha256": "ee7357033094234c575cf85c98b25109095cd7320cb826464491d396d6bff5b3",
+    "extension_load_order": "open :memory:, set foreign_keys=ON, load sqlite-vec, then the self-hashed canonicalizer independently applies the exact raw migrations 001..027 with the audited S27 runner semantics"
+  },
+  "verification_inputs": {
+    "root_package_path": "package.json",
+    "root_package_sha256": "a84548e2b42116523fe4469307d78f8135c6d00ecb2aac6da31b472b118dba67",
+    "package_lock_path": "package-lock.json",
+    "package_lock_sha256": "62ad0b842055f10567f60644b524f22c49f19b17e81fe33c24422f1615cbc650",
+    "migration_runner_path": "src/db/client.ts",
+    "migration_runner_sha256": "4d2ffc85ad862c3aaebcd2fef4fb11ba82f5f83462653479d2585d3cef064ecc",
+    "installed_package_trees": [
+      {
+        "path": "node_modules/better-sqlite3",
+        "file_count": 31,
+        "sha256": "fabd5fcb801e4be6350c903cb69d17906ba8b674189bb94c3f2e98b27258ca7c"
+      },
+      {
+        "path": "node_modules/sqlite-vec",
+        "file_count": 5,
+        "sha256": "28875cedec0f2c4079789c92b91e76e61a641c223a51307ec53ce5f0146f4ee7"
+      }
+    ],
+    "package_tree_rule": "realpath each directly resolved or parent-relative dependency package root, recursively reject non-regular entries, hash every regular file, bytewise sort objects {path relative to root,sha256}, then SHA-256(JSON.stringify(objects)); bindings is resolved from the attested better-sqlite3 entry and file-uri-to-path from that exact bindings entry",
+    "executed_artifacts": [
+      {
+        "path": "node_modules/better-sqlite3/lib/index.js",
+        "sha256": "82db11c4ee43a41d859988c5db42c3771dff565371f94bacbd1e4d8d6ceb47cd"
+      },
+      {
+        "path": "node_modules/better-sqlite3/build/Release/better_sqlite3.node",
+        "sha256": "56614c9ed32228ef2c498281bb288e0586ba37c81987cdcbce35d4011bd32fe8"
+      },
+      {
+        "path": "node_modules/sqlite-vec/index.mjs",
+        "sha256": "fd18da1fabb5e25e58c56f6b8a26bbeedd6ff763ad9c5d4d9006e47a183f813e"
+      }
+    ],
+    "resolved_entries": [
+      {
+        "specifier": "better-sqlite3",
+        "path": "node_modules/better-sqlite3/lib/index.js"
+      },
+      {
+        "specifier": "sqlite-vec",
+        "path": "node_modules/sqlite-vec/index.mjs"
+      }
+    ],
+    "resolved_dependency_package_trees": [
+      {
+        "specifier": "bindings",
+        "package_lock_path": "node_modules/bindings",
+        "version": "1.5.0",
+        "entry_sha256": "8e32a0d37f20bd6f7d5bdbf99d041aa27be47cbbe5172ac13ebf7380a10b3bf6",
+        "file_count": 4,
+        "sha256": "c364a62c9615c39b7a58425c32b218833bdfc4ed1e4735d3a14b3aa7c550355b"
+      },
+      {
+        "specifier": "file-uri-to-path",
+        "package_lock_path": "node_modules/file-uri-to-path",
+        "version": "1.0.0",
+        "entry_sha256": "e62293e871bdd5a7449ff3c7956c9536ec1d2ea7369461de77322b5256bb93e7",
+        "file_count": 10,
+        "sha256": "4106ab119de89318051928d9cd46ed09144c3490ac72a96268c636aa0312b009"
+      }
+    ],
+    "resolved_native_package_tree": {
+      "file_count": 3,
+      "sha256": "caa02664c26327a720a1ebd37366c65bc353a26f3d8a32e993639b2b8c8bd535"
+    },
+    "sqlite_vec_loadable_sha256": "193e480c50b59a55977d166f4aaf0e1bc8832d6963516e5950f39e4d2ce0b793",
+    "source_commit_rule": "git must resolve source_commit exactly; package.json, package-lock.json, the audited src/db/client.ts runner, and every listed raw migration blob at that commit must match the separately recorded SHA-256; later production-runner or package metadata edits do not replace those frozen source blobs",
+    "migration_source_rule": "all src/db/migrations names matching ^[0-9]{3}_.+[.]sql$ with ordinal <= 027, bytewise sorted, must exactly equal migrations and each raw file SHA-256"
+  },
+  "canonicalization": {
+    "version": "stage2-s27-schema-canonical-v1",
+    "master_query": "SELECT type,name,tbl_name,sql FROM sqlite_master WHERE name NOT LIKE 'sqlite_%' ORDER BY type,name",
+    "sql_normalization": "convert CRLF/CR to LF, trim only leading and trailing whitespace, preserve all interior bytes, encode null as JSON null",
+    "relation_set": "distinct master rows whose type is table; relation names sorted by raw JavaScript UTF-16 less-than/greater-than byte-stable comparator",
+    "relation_queries": [
+      "PRAGMA table_xinfo(<JSON-quoted relation name>) ordered by cid",
+      "PRAGMA foreign_key_list(<JSON-quoted relation name>) ordered by id then seq",
+      "PRAGMA index_list(<JSON-quoted relation name>) ordered by raw JavaScript UTF-16 less-than/greater-than comparator on index name",
+      "PRAGMA index_xinfo(<JSON-quoted index name>) ordered by seqno",
+      "sqlite_master triggers for the relation ordered by trigger name"
+    ],
+    "row_fields": {
+      "table_xinfo": [
+        "cid",
+        "name",
+        "type",
+        "notnull",
+        "dflt_value",
+        "pk",
+        "hidden"
+      ],
+      "foreign_key_list": [
+        "id",
+        "seq",
+        "table",
+        "from",
+        "to",
+        "on_update",
+        "on_delete",
+        "match"
+      ],
+      "index_list": [
+        "name",
+        "unique",
+        "origin",
+        "partial"
+      ],
+      "index_xinfo": [
+        "seqno",
+        "cid",
+        "name",
+        "desc",
+        "coll",
+        "key"
+      ]
+    },
+    "relation_detail_envelope": {
+      "field_order": [
+        "table_sql",
+        "columns",
+        "foreign_keys",
+        "indexes",
+        "triggers"
+      ],
+      "table_sql": "the normalized sql from the relation's type=table master row, or JSON null",
+      "indexes": "objects in field order name,unique,origin,partial,columns; columns is the ordered index_xinfo projection",
+      "triggers": "objects in field order name,sql selected from the normalized master array for matching tbl_name; master ORDER BY type,name supplies trigger order"
+    },
+    "migration_projection": {
+      "query": "SELECT name,sha256 FROM _migrations ORDER BY id",
+      "field_order": [
+        "name",
+        "sha256"
+      ]
+    },
+    "descriptor_order": [
+      "format",
+      "sqlite_version",
+      "master",
+      "relations_detail",
+      "migrations"
+    ],
+    "serialization": "UTF-8 JSON.stringify with insertion order fixed above and no insignificant whitespace",
+    "digest": "lowercase SHA-256",
+    "digest_formulas": {
+      "canonical_descriptor_sha256": "SHA-256(JSON.stringify(descriptor))",
+      "migration_ledger_sha256": "SHA-256(JSON.stringify(migrations))",
+      "critical_relation_sha256": "SHA-256(JSON.stringify(relations_detail[relation_name]))"
+    }
+  },
+  "canonical_descriptor_sha256": "f75352b79274ebc9a7e4a68204e0a41a043a16d5fb21aae7805787c2638cc83a",
+  "migration_ledger_sha256": "f1c4fe382f9b0bf5e68cba840c6dd31ae57cb08f47f41a10d08834ec515f3180",
+  "object_counts": {
+    "tables": 70,
+    "indexes": 82,
+    "triggers": 34,
+    "views": 0
+  },
+  "critical_relations": {
+    "_migrations": {
+      "sha256": "b2452dfeee13bc3e1b4c2a0cb71096f17d65ed362c936031ede4ee1cbc33a48f",
+      "columns": 4,
+      "foreign_keys": 0,
+      "indexes": 1,
+      "triggers": 0
+    },
+    "capture_artifacts": {
+      "sha256": "99a9bc7d981070c8ead5898d21cc6f7865a42d236c098369c2aa833d6f8f5195",
+      "columns": 12,
+      "foreign_keys": 1,
+      "indexes": 5,
+      "triggers": 0
+    },
+    "capture_policy_decisions": {
+      "sha256": "30bb28de2e5f221ba8e84b2c8de45018c9f961aacd0a792bdda19c1f29da177d",
+      "columns": 12,
+      "foreign_keys": 1,
+      "indexes": 4,
+      "triggers": 0
+    },
+    "chunks": {
+      "sha256": "79bae78dd51760c57865a88d1207039ee555ce8968a52785f58942a471752d98",
+      "columns": 8,
+      "foreign_keys": 1,
+      "indexes": 4,
+      "triggers": 0
+    },
+    "chunks_rowid": {
+      "sha256": "77744b24526d03ae004f7c7021f2c0d9aa6c460c4a7f1b2dc576348d277073ea",
+      "columns": 2,
+      "foreign_keys": 1,
+      "indexes": 3,
+      "triggers": 0
+    },
+    "chunks_vec": {
+      "sha256": "09111799013bb3ab39714efb02edc19897fa53256b53689af923143462af079f",
+      "columns": 4,
+      "foreign_keys": 0,
+      "indexes": 0,
+      "triggers": 0
+    },
+    "embedding_jobs": {
+      "sha256": "675d8c754097a12a682bc283a9d77cc3a0d89140fd133a8aa5470a7310140769",
+      "columns": 8,
+      "foreign_keys": 1,
+      "indexes": 2,
+      "triggers": 0
+    },
+    "enrichment_jobs": {
+      "sha256": "c5981d39b7071b4aa1524eccfade8c889598e1f9ab6e95ac1653e6b8c701b691",
+      "columns": 8,
+      "foreign_keys": 1,
+      "indexes": 2,
+      "triggers": 0
+    },
+    "items": {
+      "sha256": "e0e74eccb0e9089dbe87dba1fe9c0f12fc0cb4460f39f03a4d2985797cb8789e",
+      "columns": 36,
+      "foreign_keys": 1,
+      "indexes": 15,
+      "triggers": 10
+    },
+    "note_index_jobs": {
+      "sha256": "4e42d170f990077085fa0387e4b71724af612bc7eabdfb6283ae0b7f62cbc804",
+      "columns": 12,
+      "foreign_keys": 1,
+      "indexes": 2,
+      "triggers": 0
+    },
+    "transcript_attempts": {
+      "sha256": "12eb7c0af55eef206b74b1dfe89d9fbe6ff5aa402fffcf28d9f0a0488c447576",
+      "columns": 19,
+      "foreign_keys": 2,
+      "indexes": 3,
+      "triggers": 0
+    },
+    "transcript_jobs": {
+      "sha256": "bf06fa1894e6eae216a934784ffcca79e230ba6f29bd9d65f5629b0b4f41caad",
+      "columns": 17,
+      "foreign_keys": 1,
+      "indexes": 3,
+      "triggers": 0
+    },
+    "transcript_segments": {
+      "sha256": "f9c18a1e7aba7c818615a764bc0e363c3f3eefea57c48c30a843ea1dc8711f29",
+      "columns": 12,
+      "foreign_keys": 2,
+      "indexes": 4,
+      "triggers": 0
+    },
+    "transcript_sources": {
+      "sha256": "0967b431ed42482dc03723cea299027607cd21f59c37be8e7aa5522ae2bc6578",
+      "columns": 13,
+      "foreign_keys": 2,
+      "indexes": 4,
+      "triggers": 0
+    }
+  },
+  "migrations": [
+    {
+      "name": "001_initial_schema.sql",
+      "sha256": "1bcd7e62f449f067f5cf3be3021a71179dac810d8b02663006b373fc0888a19e"
+    },
+    {
+      "name": "002_fts5.sql",
+      "sha256": "a182c994f5978d84c277b99158eb20640655fb3a11fbde04b28bfe6411bc0fb8"
+    },
+    {
+      "name": "003_enrichment_queue.sql",
+      "sha256": "aaad83664f03f595991aa0eb08940a448a06987e9f751b1f19036b2212d6f640"
+    },
+    {
+      "name": "004_items_add_quotes.sql",
+      "sha256": "9444fa6d25f5bf5efb62920a6856af765ff31e3cbe5ff350a261f6e4f09e9de6"
+    },
+    {
+      "name": "005_vector_index.sql",
+      "sha256": "8b14cf82441412f1d7d9f80e2b0cfac7a2aff5213221646de18d893d8ab6984a"
+    },
+    {
+      "name": "006_embedding_jobs.sql",
+      "sha256": "4f74f1b9279dd2d087156fe01ea74b4a510cb5763d8ce887bb332134dc3a9088"
+    },
+    {
+      "name": "007_youtube_duration.sql",
+      "sha256": "37969802fcefe5473d5274e3ff8cb539bfc79437a50b178b877957ffd483ea2a"
+    },
+    {
+      "name": "008_batch_id.sql",
+      "sha256": "3f1dae867d694cae2202ed56d1341380e0269e96bfd29eedefbdd4f85c9801ee"
+    },
+    {
+      "name": "009_telegram_source_type.sql",
+      "sha256": "2a81426c3e3598a3ef56b85d7f4ef8f516d7ef8383e09395a1de4610542d7905"
+    },
+    {
+      "name": "010_device_pairing_codes.sql",
+      "sha256": "531f689151ac8260a8d03a8571a76435423a4b29ec1527e5d59809e185e3dd95"
+    },
+    {
+      "name": "011_telegram_updates.sql",
+      "sha256": "059668590795880a846be45bc6ec9f02093a3ffaf8253064c52fd79b045d9640"
+    },
+    {
+      "name": "012_capture_source.sql",
+      "sha256": "d82d062ef8ee862cede5e44e118c6680cc46a1807f68b4e74a33e36014c943af"
+    },
+    {
+      "name": "013_capture_quality.sql",
+      "sha256": "111b80ad0c8f7ab4b10ff677152490d4d1a67a2f773b646eb02562c2bebef29a"
+    },
+    {
+      "name": "014_capture_artifacts.sql",
+      "sha256": "980655a2093af476175f42f083fa90193b5070289afedd1b8604e887cb485b61"
+    },
+    {
+      "name": "015_capture_metadata_cache.sql",
+      "sha256": "08e9126700e42ff73c8437dc79e88d3e61cbdd319e5f82fd8ab5e1e596e6eb74"
+    },
+    {
+      "name": "016_capture_artifacts_hardening.sql",
+      "sha256": "d3581fc47b5aca2b1e2e6fd94d226aa38894b368680302783ed114a0aa7ecf6b"
+    },
+    {
+      "name": "017_topics.sql",
+      "sha256": "af47ed0bc0da8550382f6cde7193ab3959a163378611291dae40fa66bf61b2c6"
+    },
+    {
+      "name": "017_transcript_recovery.sql",
+      "sha256": "cc12728f1ecac7f58ece34ae957813653e63365330919fe3c8b8e0d3a6c1d1f7"
+    },
+    {
+      "name": "018_topics.sql",
+      "sha256": "e6185834406c6da4596d4af514cf9c97737b125ba8554fe0012506e3e1b377cf"
+    },
+    {
+      "name": "018_transcript_policy_sources.sql",
+      "sha256": "96d3fddf114ad0bbe5da61fe81116f6495b398d30ea2e8076d3a5899b188c99b"
+    },
+    {
+      "name": "019_transcript_segments.sql",
+      "sha256": "d35257a78eaf5c0a16cbb0e394ef4966854abc11059a088032a63198d0437aa3"
+    },
+    {
+      "name": "020_recall_sync.sql",
+      "sha256": "353b31cfbac6e2191226ba24ed8dc6ac2d4d01480bea59008563a334e1302dac"
+    },
+    {
+      "name": "021_restore_transcript_recovery_trigger.sql",
+      "sha256": "057af8740a6a5fa6f1aba5b83da33365e9843de8444537ae87bbb7707a9336f7"
+    },
+    {
+      "name": "022_item_notes.sql",
+      "sha256": "9d4487d2ee0289e4aa6ef07bd1fb6cd5febb0c5cd229c327d2814179f9592619"
+    },
+    {
+      "name": "023_source_aware_chunks.sql",
+      "sha256": "306d4d243573b977d3b706d92a78e21c2cd1b06b332e30883946b267323242a3"
+    },
+    {
+      "name": "024_recall_manual_sync.sql",
+      "sha256": "7872a07af79caca6c67b8da7ef49d565e595b2621f8cbcc6cd19ce76674e221a"
+    },
+    {
+      "name": "025_item_workflow.sql",
+      "sha256": "7537dd6d345b1c517802c957fd9dbe24b263818ca44aac5148492198806b42e3"
+    },
+    {
+      "name": "026_notebooklm_export.sql",
+      "sha256": "1ba76b030c58af334b588923ee2eef34282c360d79b8b162d653ef454c96513f"
+    },
+    {
+      "name": "027_notebooklm_url_sources.sql",
+      "sha256": "a488c7e15c54d232ad16708541bbc4a6fea6c2645fd79a999f7c416a8e2603b6"
+    }
+  ]
+}

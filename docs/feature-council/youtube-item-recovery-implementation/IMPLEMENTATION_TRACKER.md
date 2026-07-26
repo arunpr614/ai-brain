@@ -2,6 +2,7 @@
 
 **Branch:** `feat/youtube-item-recovery-enrichment`  
 **Frozen implementation base:** `f905f6a1ef69b5a1b2a986449d61a2e40a7fdee8`  
+**Current reconciled frontier:** `ff3a425630791d10cd36c9c71db90141b0128743` over protected-main `027_notebooklm_url_sources.sql`
 **Started:** 2026-07-23 (Asia/Kolkata)  
 **Coordinator:** primary implementation agent  
 **Scope boundary:** production-safe foundations and true link-only behavior may be released; browser-visible transcript capture and held-transcript processing remain denied in production.
@@ -13,10 +14,10 @@
 | M0 clean worktree and baseline     | Coordinator            | None                     | Phase4 worktree, branch, clean fast-forward to `f905f6a`                                     | Complete                                                                                                             |
 | M1 PR reconciliation               | Technical architecture | M0                       | PRs #41, #42, #48, and #50 merged; protected `main` SHA recorded                             | Complete                                                                                                             |
 | M2 source/hash reconciliation      | Product + architecture | M1                       | inventory, reconciliation, 140-path hash manifest, duplicate report                          | Complete                                                                                                             |
-| M3 migration collision decision    | Data architecture      | M1                       | migration inventory, selected identifiers, compatibility matrix, independent review          | Numbering complete; 027 implementation blocked                                                                       |
+| M3 migration collision decision    | Data architecture      | M1                       | migration inventory, protected-main reconciliation, selected identifiers, independent review | Complete; feature sequence shifted together to 028/029/030                                                           |
 | M4 Stage 0 adversarial review      | Independent reviewer   | M2, M3, frozen contracts | Initial NO-GO remediated; focused recheck found no P0/P1 and approved only D-014 Stage 1     | Complete — conditional GO                                                                                            |
 | M5 backward-compatible containment | Backend/platform       | M4                       | production-denial, old-schema, worker-exclusion, kill-switch, reservation, and privacy tests | Complete — formal Stage 1 focused recheck GO; non-enabling containment only                                           |
-| M6 additive data foundation        | Backend/data           | M5                       | clean/upgrade/mixed-binary migration tests; transactional/fencing tests                      | Pending                                                                                                              |
+| M6 additive data foundation        | Backend/data           | M5                       | exact-hash contract review, then clean/upgrade/mixed-binary and transactional/fencing tests  | Contract GO complete on exact accepted seal; implementation pending                                                  |
 | M7 Chrome companion foundation     | Extension              | M6                       | manifest, pure extractor, fixture and packaged MV3 evidence                                  | Pending                                                                                                              |
 | M8 exact-item recovery             | Backend + extension    | M7                       | intent, two-channel commit, receipt, hold, status, link-only evidence                        | Pending                                                                                                              |
 | M9 held manual enrichment          | Processing + backend   | M8                       | plan, consent, authorization, stage jobs, retry/drift/deletion evidence                      | Pending                                                                                                              |
@@ -34,7 +35,15 @@
 - Consolidated validation passes 1,251 repository tests across 104 suites, lint, typecheck, the 36-case Stage 1 scope suite, the final live check over 121 exact paths, and the 384-check immutable release-artifact smoke. The stable reviewed tree's final production build and source/standalone capability equality check are green.
 - The initial formal Stage 1 gate returned NO-GO on one rollback P1. D-019 now derives reservation awareness from an exact app-owned source/standalone declaration, attests it in both manifests, and checks live state during activation, the stopped-writer recheck, and automatic restoration. A current-tools/historical-app artifact attests unaware and is rejected against a live marker. The separate formal focused final recheck returned GO with zero P0/P1/P3 findings.
 - Marker/state drift hardening is complete across manual realtime/queue, batch, and scheduled paths, including a marker inserted during realtime provider execution. Its independent component recheck passed 68 focused tests with no P0-P3 finding. The transcript apply/finalize crash window remains assigned to Stage 2 as R-032.
-- M5 is complete as a non-enabling containment milestone. Migration 027, feature work, extension work, live canary, production enablement, and production deployment remain blocked; R-032 remains mandatory for Stage 2.
+- M5 is complete as a non-enabling containment milestone. Feature migration 028, feature work, extension work, live canary, production enablement, and production deployment remain blocked; R-032 remains mandatory for Stage 2.
+
+### Current Stage 2 contract evidence
+
+- Protected main now owns ordinary frontier `027_notebooklm_url_sources.sql` at SHA-256 `a488c7e15c54d232ad16708541bbc4a6fea6c2645fd79a999f7c416a8e2603b6`; the coordinated feature sequence is `028_youtube_browser_transcript.sql`, `029_manual_transcript_enrichment_expand.sql`, and `030_manual_transcript_enrichment_contract.sql`.
+- The frozen physical-schema addendum is `d1eef042423d7d2d3413637f62bd8ed5842b64846db6f656a0b8e1cb7e5eed48`; its acceptance registry is `7b022d82e855891eb1a818df9c09ab070586c13beea7acf6a8c003d845be9f45`.
+- The static authority index is `e691edfd0edcade37d439906f3b97dee9a3b05d57baae995ae23fb0254bbfd5d`; its verifier is `133d55fae063244e7c6d413c64acbe88ebf0d1e83736296d9a00ca00de2e68a6`. All four files are read-only (`0444`).
+- Three independent exact-hash reviews returned Contract GO with zero unresolved P0/P1 findings after the final same-key abort/retry precedence repair. Contract GO permits only disposable implementation and synthetic/private fixture verification.
+- M6 is not complete. Migration SQL, runtime sources, platform packages, actual AC01-AC17 evidence, and the separate Implementation GO do not yet exist.
 
 ## Ordered implementation slices and file ownership
 
@@ -56,7 +65,7 @@ Concurrent agents must not edit the same files. Ownership is reassigned only at 
 | Capability                                | Research/synthetic | Packaged local            | Isolated live lab                          | Production deploy                                         | Production enable            |
 | ----------------------------------------- | ------------------ | ------------------------- | ------------------------------------------ | --------------------------------------------------------- | ---------------------------- |
 | Production-safe containment               | Yes                | Yes                       | Yes                                        | Conditional on QA                                         | Yes, denial stays active     |
-| True link-only metadata save              | Yes                | Yes                       | Not required                               | Conditional after frozen/reviewed 027 recovery exclusions | May be authorized separately |
+| True link-only metadata save              | Yes                | Yes                       | Not required                               | Conditional after frozen/reviewed 028 recovery exclusions | May be authorized separately |
 | Browser-visible transcript recovery       | Yes                | Yes, fixtures only        | Blocked pending external packet            | Foundations only                                          | **Denied**                   |
 | Held browser-transcript manual enrichment | Yes                | Yes, synthetic/local only | Blocked pending separate processing packet | Foundations only                                          | **Denied**                   |
 
@@ -76,7 +85,7 @@ Safe synthetic, packaged-local, documentation, PR, and production-negative work 
 
 ## Change-control rules
 
-1. Before 027, only D-014's non-enabling schema-026 containment slice (including D-018's fail-closed enrichment-batch reservation) and D-017's exact non-additive privacy redaction may start after focused review. Feature/schema/extension behavior remains blocked.
+1. Before feature migration 028, only D-014's non-enabling containment slice (including D-018's fail-closed enrichment-batch reservation), D-017's exact non-additive privacy redaction, and the reviewed ordinary-schema-027 frontier integration may exist. Feature/schema/extension behavior remains blocked until the exact Stage 2 contract gate authorizes disposable implementation.
 2. Every P0 requirement remains `Planned`, `Implemented`, `Verified`, `Blocked`, or `Not applicable`; only test evidence permits `Verified`.
 3. Every P0/P1 adversarial finding blocks the dependent milestone until resolved and rechecked.
 4. Lower-severity unresolved findings are carried into `RISK_REGISTER.md` with owner and release effect.
