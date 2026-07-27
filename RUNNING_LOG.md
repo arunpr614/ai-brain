@@ -31122,3 +31122,98 @@ None for the next local disposable slice. External live-lab and production-featu
 - **Working tree:** only unrelated untracked `Phase4.1-AIModelConfig/` remains outside the feature boundary before this log append.
 - **Production/runtime:** unchanged; browser capture and held manual processing remain unavailable.
 - **Next milestone:** independently gated private file-backed stopped-writer connection factory, still before migration 028.
+
+---
+
+## 2026-07-27 12:43 IST - Nominal file-backed factory proof passed exact-head hosted CI
+
+**Entry author:** AI agent (Codex) - **Triggered by:** Completion of the nominal disposable file-factory implementation, draft-PR publication, CI remediation, and exact-head hosted verification.
+
+### Planned since last entry
+
+- Advance from the accepted memory-only route to the smallest private, zero-input, disposable file-backed factory prerequisite.
+- Preserve the frozen memory-only prerequisite files, the unrelated nested worktree, and every production/lab/migration denial.
+- Obtain local native evidence, hosted macOS native evidence, full required CI, and an adversarial verdict before crash/restart work or migration 028.
+
+### Done
+
+- Pushed four focused commits after `d885007`:
+  - `9567d8f` - recorded the native-route gate;
+  - `6e61eee` - added the nominal file-backed factory, pinned native build/worker route, tests, hosted macOS job, and bounded adversarial report;
+  - `39bfad9` - corrected readonly `NODE_ENV` assignments and a widened `ProcessEnv` test literal so the clean-scope repository typecheck passes;
+  - `1fb8226` - classified the feature implementation documentation root and the two new package commands for documentation CI.
+- Created and pushed draft PR `#57`, `YouTube item recovery and held enrichment foundations`, against `main`.
+- Kept the PR explicitly NO-GO for migration 028, lab or production enablement, deployment, merge, and release.
+- Preserved all nine frozen memory-only prerequisite files at their accepted hashes.
+- Kept the existing native addon contract to one frozen zero-argument export with no returned database handle, path, process identifier, cleanup target, migration authority, or production authority.
+
+### Verification
+
+- Local portable suite passed 1,251 tests with zero failures or skips.
+- Local Darwin-arm64 native nominal suite passed 30 tests with zero failures and three explicit skips: the two abrupt-stop/restart P1 gaps and the broader synthetic-fault P2 gap.
+- Clean-scope full TypeScript passed after excluding only the unrelated nested worktree; the temporary verification config was removed.
+- Scoped lint, syntax, JSON, YAML, manifest-hash, actionlint, documentation, privacy, structure, coverage, secret-signature, and disposable-residue checks passed.
+- Exact-head Agent documentation run `30244836529`, job `89909500373`, passed.
+- Exact-head Product CI run `30244836607` passed:
+  - hosted `macos-26` native nominal job `89909500515`;
+  - strict required `verify` job `89910258042`, including static verification, extension verification, product tests, documentation checks, operator-tool build, production build, and release-tool smoke tests.
+- Branch-only release package jobs were skipped as expected.
+- The earlier `6e61eee` static typecheck and documentation-manifest failures, and the intermediate `39bfad9` documentation parity failure, are superseded by the green exact-head runs.
+
+### Adversarial findings and release boundary
+
+- The nominal factory slice received only a conditional implementation/push verdict.
+- Two P1 gaps remain blocking:
+  1. abrupt process exit after durable private database creation lacks a fresh-process recovery and cleanup oracle;
+  2. abrupt process exit while `BEGIN IMMEDIATE` is demonstrably held lacks a fresh-process lock-release, integrity, and cleanup oracle.
+- Broader injected prepare/finalize and filesystem-fault coverage remains P2.
+- Migration 028 and every later Stage 2 readiness claim remain NO-GO until both P1 cases pass locally and on the exact hosted commit and a new adversarial review reports zero P0/P1.
+
+### Cross-lane notes
+
+- The unrelated `Phase4.1-AIModelConfig/` nested checkout remains untracked from this worktree and was not edited, moved, staged, removed, or committed.
+- No migration 028 SQL, schema mutation, extension/browser surface, live YouTube request, transcript data, provider call, lab identity, production configuration, deployment, merge, or release occurred.
+
+### Deployed / Released
+
+Nothing deployed, merged, enabled, or released. Draft PR `#57` contains non-authorizing foundations only.
+
+### Learned
+
+- Hosted native success must be bound to the same exact commit as the required repository check; a native green job does not excuse a later static or documentation failure.
+- Recursive TypeScript and documentation inventory checks surfaced branch-owned drift that narrower native tests could not detect.
+- Nominal cleanup proves only orderly execution. It cannot establish recovery after process death or stale-writer lock release.
+
+### Current remaining to-do
+
+1. Implement the closed compile-time crash/recovery profiles without adding runtime path, handle, PID, SQL, environment, migration, or production authority.
+2. Replace both P1 skips with exact exit-status, fresh-process restart, lock-release, integrity, retained-inode unlink, empty-root, and durable parent-cleanup evidence.
+3. Add hostile symlink, hard-link, unexpected-leaf, quarantine-collision, root-replacement, transport, and concurrent-run refusals where required by the next adversarial gate.
+4. Re-run local portable/native checks, exact-hash adversarial review, and hosted CI on the resulting commit.
+5. Keep migration 028 blocked until the stopped-writer gate is independently GO.
+
+### Open questions / decisions needed
+
+None for the closed disposable crash/restart slice. External live-lab and production-feature authorization remain absent.
+
+### Session self-critique
+
+- The nominal proof is strong for the orderly path but still deliberately reports `abruptExitRestart=false`; treating hosted native success as stopped-writer readiness would be false confidence.
+- The first hosted attempt should have included a clean-scope full typecheck and documentation-corpus parity before push.
+- Draft PR publication does not authorize merge, deployment, migration application, or any browser-visible capability.
+
+### Action items for the next agent
+
+1. Start from exact pushed head `1fb822670d64dfdcc78fbdeadf5387c16f1e59b0` on `feat/youtube-item-recovery-enrichment`.
+2. Preserve and exclude `Phase4.1-AIModelConfig/` and the nine frozen memory-only prerequisite files.
+3. Use the current crash/restart design review to constrain the new compile-time profiles and recovery ownership.
+4. Require exact local and hosted proof plus a zero-P0/P1 adversarial verdict before migration 028.
+
+### State snapshot
+
+- **Current phase:** Stage 2 implementation prerequisites; nominal file-backed factory and exact-head hosted CI accepted, crash/restart P1s pending.
+- **Active branch:** `feat/youtube-item-recovery-enrichment` at pushed head `1fb822670d64dfdcc78fbdeadf5387c16f1e59b0`.
+- **Working tree before this append:** clean except the unrelated untracked nested checkout `Phase4.1-AIModelConfig/`.
+- **PR/CI:** draft PR `#57`; exact-head Product CI and Agent documentation CI green.
+- **Production/runtime:** unchanged; browser capture and held manual processing remain unavailable.
+- **Next milestone:** independently gated abrupt-stop/fresh-process recovery evidence, still before migration 028.
