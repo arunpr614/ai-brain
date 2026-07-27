@@ -31017,3 +31017,108 @@ Nothing. This commit is a reviewed deny-only primitive, not AC15 evidence and no
 - **Active branch:** `feat/youtube-item-recovery-enrichment` through `60de5be`.
 - **Production/runtime:** unchanged; restricted capture and held manual processing remain unavailable.
 - **Next milestone:** dedicated stopped-writer/native route prerequisite, still before migration 028.
+
+---
+
+## 2026-07-27 09:48 IST - Hardened memory-only native route received three-way exact-hash GO
+
+**Entry author:** AI agent (Codex) - **Triggered by:** Stage 2 prerequisite continuation and completion of the interrupted allocator, isolation, and scenario-semantics reviews.
+
+### Planned since last entry
+
+- Harden the disposable native feasibility route without granting file-backed, migration, feature, or release authority.
+- Resolve every P0/P1 finding, freeze exact source hashes, rerun independent reviews, persist the bounded verdict, and commit only the reviewed slice.
+
+### Done
+
+- Committed the exact reviewed slice as `d885007f3fe6e534b38e27903ebcc45d874b7a50` (`fix(youtube): seal Stage 2 native bridge evidence`).
+- Bumped the native probe contract to v4 and its parent proof envelope to v5.
+- Expanded the route from 17 to 24 scenarios:
+  - six independent one-field bind refusals;
+  - distinct replay, reset, and rebind attempts;
+  - explicit statement-arm refusal;
+  - finalized-COMMIT and unfinalized-COMMIT classifier vectors.
+- Required exact constraint and auto-reprepare failure mechanisms (`1555/1555` and `23/23`), direct `sqlite3_changes64()==1` success evidence, real post-classification SQL counting, and zero lifecycle operation counts after one requested refusal.
+- Sealed each worker-local native owner to exact keys/descriptors and made it non-extensible. The parent accepts no input, imports no database/addon, and returns no handle, path, or process identifier.
+- Added PID-scoped disposable prefixes so same-parent and cross-process concurrent proofs do not share snapshots.
+- Added semantic mutations for unfinalized COMMIT acceptance, wrong failure mechanism, and replay/reset conflation.
+- Persisted the final gate report at `docs/feature-council/youtube-item-recovery-implementation/implementation/STAGE_2_DISPOSABLE_NATIVE_ROUTE_FINAL_GATE_ADVERSARIAL_REVIEW_2026-07-27_09-45-26_IST.md`.
+- Updated `IMPLEMENTATION_TRACKER.md` and `RISK_REGISTER.md` with the bounded GO, remaining file-backed prerequisite, native/transport gaps, and non-hermetic broad-tooling risk.
+
+### Adversarial findings and remediation
+
+- The scenario-semantics review initially returned NO-GO because a stepped but unfinalized COMMIT could classify open, SQLite failure oracles were loose, bind-negative coverage was incomplete, and replay/reset/rebind evidence was conflated. All four P1s were repaired and independently rechecked.
+- The allocator/contract review initially returned NO-GO because the test used a strict-TypeScript-incompatible `assert.throws` overload. The overload was corrected and exact targeted TypeScript passed.
+- Three independent final exact-hash reviews returned bounded GO with no remaining P0/P1:
+  - allocator/owner/call-contract review;
+  - sealed-child/process/native-surface isolation review;
+  - scenario/oracle-semantics review.
+- Lower-severity residuals remain open: proof-local modeled faults, non-self-discriminating bind refusal tuples, incomplete transport/hostile-parent fixtures, partial transitive toolchain attestation, and final cleanup same-object revalidation.
+
+### Verification
+
+- Exact reviewed hashes remained stable before and after the final reviews:
+  - manifest `50db75350d3fba0bb5c2661481c216769d6cebcc87ee7e76c4f30705c5486ee0`;
+  - C++ `fde48c0ae02591c7b9f51ea8042ef247a70f20d60cc0ebb9a0452baf9ef4ac43`;
+  - builder `fe999b9e17e449289f5ccc3cdcd367a47934437e096f712d73e0cc32ac16df1b`;
+  - CLI `2d5ef8857505d4cb4d2debcb9bebd564dd3f88c8a3e058090cb5b1bd2e8a785a`;
+  - worker `74f5e4dbb9613c52f2668cbc8e803624fa6e9a3a04f4792baab6a191c836b316`;
+  - TypeScript owner `4f6cd925ee90b9cea61f08c3a29437b36802e8f281a30eefe777bf3a7aa02cdb`;
+  - controller `da5f68468828af15cf0598fa7508108fe8cc91da30e1b74154a65022850ff120`;
+  - test `78ede99752b948fa247f6b6b60ca6bd78948c730d11eec3fbdb51a7fba40a6bc`.
+- Two deterministic builds produced module SHA-256 `3c24e42367ddbe2267c0863af01f85d16f730058336c1d33675dba4983868ad6`.
+- Full repository suite passed 1,297 tests across 104 suites with zero failures, skips, cancellations, or todos.
+- Focused native proof passed 10/10; Stage 2 evidence/scope MJS suites passed 54/54.
+- Standalone proof returned a v5 envelope with 24 scenarios, closed all connections, quarantined all three indeterminate cases, and retained `readinessClaim=none`, `s28ReadinessProven=false`, and `implementationGoProven=false`.
+- Scoped ESLint, repository lint excluding the unrelated nested worktree, targeted strict TypeScript, syntax checks, and whitespace checks passed.
+- Unscoped `npm run lint` and `npm run typecheck` remain non-hermetic because they recurse into the unrelated `Phase4.1-AIModelConfig/` worktree. Full typecheck also reports existing tracked test-only readonly-`process.env` assignments. This blocks broad QA claims but did not invalidate the exact-slice checks.
+- Frozen Stage 2 addendum, registry, static index, and verifier retained their accepted hashes and mode `0444`.
+
+### Cross-lane notes
+
+- The unrelated untracked `Phase4.1-AIModelConfig/` nested worktree was not edited, moved, staged, or committed.
+- The final code/report commit contains exactly eight changed/created implementation files and three feature-council artifacts.
+- No migration 028 SQL, file-backed database, runtime feature wiring, extension/browser behavior, live target, provider, production configuration, deployment, or release action occurred.
+
+### Learned
+
+- Scenario count is not coverage: negative evidence must bind the actual mechanism, exact error tuple, and separate lifecycle operation.
+- A zero-input sealed child is a useful authority boundary, but `:memory:` feasibility cannot substitute for the contract's private file-backed stopped-writer route.
+- Broad repository gates must run from a pristine worktree when an unrelated nested checkout sits under recursive lint/typecheck discovery.
+
+### Deployed / Released
+
+Nothing deployed, pushed, merged, enabled, or released. Commit `d885007` is local and non-authorizing.
+
+### Current remaining to-do
+
+1. Design and implement the smallest private, zero-input, file-backed disposable stopped-writer connection factory without exposing caller paths, handles, or production authority.
+2. Add exact pragma/authorizer lifecycle evidence, scenario-specific discrimination, deterministic SQLite/transport fault injection, abrupt-child cleanup, and pristine-worktree broad lint/typecheck evidence.
+3. Obtain a new exact-hash, zero-P0/P1 file-backed-route review.
+4. Only after that GO, implement migration 028, S28 attestation, transition/backfill, AC01-AC17 evidence, and the separate Stage 2 Implementation GO.
+
+### Open questions / decisions needed
+
+None for the next local disposable slice. External live-lab and production-feature authority remain intentionally absent.
+
+### Session self-critique
+
+- The memory-only proof is large relative to the narrow capability because it models several native lifecycle properties. Its exact review is strong, but several faults remain modeled rather than injected.
+- Broad lint/typecheck are not green as invoked from this dirty parent because of the unrelated nested worktree and existing tracked test-only TypeScript drift. Any later full-project claim must use stronger pristine-worktree evidence.
+- This entry records a prerequisite milestone, not meaningful progress on migration 028 or end-user recovery behavior.
+
+### Action items for the next agent
+
+1. Start from `d885007f3fe6e534b38e27903ebcc45d874b7a50` on `feat/youtube-item-recovery-enrichment`.
+2. Preserve and exclude `Phase4.1-AIModelConfig/`.
+3. Read frozen addendum section 6.1 and the stopped-writer/ordinary-startup matrix before touching the native route.
+4. Keep the next route internally generated, private, disposable, file-backed, and zero-input; refuse arbitrary path or handle authority.
+5. Repeat exact-hash adversarial review after any material byte change and before migration 028.
+
+### State snapshot
+
+- **Current phase:** Stage 2 implementation prerequisites; hardened memory-only native route accepted, file-backed stopped-writer route pending.
+- **Active branch:** `feat/youtube-item-recovery-enrichment` through `d885007`.
+- **Working tree:** only unrelated untracked `Phase4.1-AIModelConfig/` remains outside the feature boundary before this log append.
+- **Production/runtime:** unchanged; browser capture and held manual processing remain unavailable.
+- **Next milestone:** independently gated private file-backed stopped-writer connection factory, still before migration 028.
