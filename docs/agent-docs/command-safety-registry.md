@@ -48,6 +48,7 @@ This registry classifies every package script at the documentation baseline. Com
 | `check:recall-scheduler` | R0 read-only local | No | No | No | No | Static or local-evidence checker; live variants remain prohibited by project gate |
 | `check:recall-scheduler-enable-evidence` | R0 read-only local | No | No | No | No | Static or local-evidence checker; live variants remain prohibited by project gate |
 | `check:recall-second-manual-local-gate-resolution` | R0 read-only local | No | No | No | No | Static or local-evidence checker; live variants remain prohibited by project gate |
+| `check:youtube-item-recovery-stage1-scope` | R0 read-only local | No | No | No | No | Inspects the frozen Stage 1 path inventory and reports content-free scope drift without mutating application state |
 | `dev` | W2 local persistent write | Local listener | Application/local database possible | No | Intentional app start | Running app can mutate local state through use |
 | `deploy:immutable` | W4 production write | Yes | Production release files, database migration, backups, service and timer state | Yes | Exact release approval | Guarded immutable deployment performs preflight, backup, activation, health checks, audit, and automatic rollback on failure |
 | `lint` | R0 read-only local | No | No | No | No | Local source/config inspection |
@@ -159,5 +160,6 @@ This registry classifies every package script at the documentation baseline. Com
 | `test` | W1 local ephemeral write | No | Temporary/fixture state | No | No | Test or rehearsal source inspected; keep isolated |
 | `test:coverage` | W1 local ephemeral write | No | Temporary/fixture state | No | No | Test or rehearsal source inspected; keep isolated |
 | `test:recall-manual-sync-process` | W1 local ephemeral write | No | Temporary fixture databases, files, processes, and bundles | No | No | Isolated multi-process SQLite, real flock, crash, worker/lifecycle, and fake-systemd path/fallback evidence; no real Recall access |
+| `test:stage2-native:nominal` | W1 local ephemeral write | No | Private temporary database, native build, and proof artifacts removed after the run | No | No | Darwin ARM nominal Stage 2 native-route evidence only; does not grant migration, release, lab, or production authority |
 | `typecheck` | W1 local ephemeral write | No | Ignored incremental cache `tsconfig.tsbuildinfo` | No | No | Reads source/config and writes or updates the local TypeScript build-info cache |
 | `verify:release-runtime` | R0 read-only local | No | No | No | No | Verifies an installed release manifest, file inventory, runtime ABI, native dependencies, and migration compatibility |

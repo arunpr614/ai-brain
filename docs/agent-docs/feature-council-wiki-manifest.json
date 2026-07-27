@@ -12,7 +12,8 @@
     "docs/feature-council/notebooklm-sync",
     "docs/feature-council/note-focus-mode",
     "docs/feature-council/project-wiki",
-    "docs/feature-council/recall-manual-sync"
+    "docs/feature-council/recall-manual-sync",
+    "docs/feature-council/youtube-item-recovery-implementation"
   ],
   "destinationRoot": "docs/wiki",
   "landingPage": "Feature-Council-Research.md",
