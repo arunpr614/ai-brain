@@ -16,10 +16,69 @@ permissions:
   contents: read
 
 jobs:
+  stage2_native_nominal:
+    name: Stage 2 native nominal proof
+    runs-on: macos-26
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+      - name: Select and attest exact Apple Command Line Tools
+        run: |
+          sudo xcode-select --switch /Library/Developer/CommandLineTools
+          test "$(xcode-select --print-path)" = /Library/Developer/CommandLineTools
+          test "$(/usr/bin/clang++ --version | sed -n '1p')" = \
+            "Apple clang version 21.0.0 (clang-2100.1.1.101)"
+      - name: Materialize pinned Node runtime
+        run: |
+          set -euo pipefail
+          pinned_root=/opt/homebrew/Cellar/node@22/22.22.3
+          archive="$RUNNER_TEMP/node-v22.22.3-darwin-arm64.tar.gz"
+          expected=0da7ff74ef8611328c8212f17943368713a2ad953fb7d89a8c8a0eae87c23207
+          test "$(uname -s)" = Darwin
+          test "$(uname -m)" = arm64
+          test ! -e "$pinned_root"
+          curl --fail --silent --show-error --location \
+            https://nodejs.org/dist/v22.22.3/node-v22.22.3-darwin-arm64.tar.gz \
+            --output "$archive"
+          actual="$(shasum -a 256 "$archive" | awk '{ print $1 }')"
+          test "$actual" = "$expected"
+          sudo install -d -m 0755 -o "$(id -u)" -g "$(id -g)" "$pinned_root"
+          tar -xzf "$archive" --strip-components=1 -C "$pinned_root"
+          unlink "$archive"
+          test "$(realpath "$pinned_root/bin/node")" = "$pinned_root/bin/node"
+          test "$("$pinned_root/bin/node" -p 'process.versions.node')" = 22.22.3
+          test "$("$pinned_root/bin/node" -p 'process.versions.modules')" = 127
+          test "$(shasum -a 256 "$pinned_root/include/node/node.h" | awk '{ print $1 }')" = \
+            bc47b118a731e9663b145e4823ebc7f31237140d6ea95417519d894d7a0498cb
+          test "$(shasum -a 256 "$pinned_root/include/node/node_version.h" | awk '{ print $1 }')" = \
+            8398c745f56d8f522ee1575321f3cec20e4c065d62dd28c7f586d2ced7d1cf41
+      - name: Locked install with pinned Node
+        run: |
+          pinned_root=/opt/homebrew/Cellar/node@22/22.22.3
+          export PATH="$pinned_root/bin:$PATH"
+          test "$(command -v node)" = "$pinned_root/bin/node"
+          test "$(node -p 'process.versions.node')" = 22.22.3
+          test "$(node -p 'process.versions.modules')" = 127
+          "$pinned_root/bin/node" \
+            "$pinned_root/lib/node_modules/npm/bin/npm-cli.js" ci
+      - name: Disposable Stage 2 nominal native proofs
+        env:
+          NODE_ENV: test
+        run: |
+          pinned_root=/opt/homebrew/Cellar/node@22/22.22.3
+          "$pinned_root/bin/node" \
+            scripts/run-product-test-suite.mjs stage2-native-nominal
+
   verify:
+    if: ${{ always() }}
+    needs: stage2_native_nominal
     runs-on: ubuntu-latest
     timeout-minutes: 45
     steps:
+      - name: Require successful Stage 2 nominal native proof
+        env:
+          STAGE2_NATIVE_NOMINAL_RESULT: ${{ needs.stage2_native_nominal.result }}
+        run: test "$STAGE2_NATIVE_NOMINAL_RESULT" = success
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:

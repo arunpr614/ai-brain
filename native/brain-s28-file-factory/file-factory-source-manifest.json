@@ -1,0 +1,92 @@
+{
+  "format": "brain-s28-disposable-file-factory-source-v1",
+  "readinessClaim": "none",
+  "disposableOnly": true,
+  "fileBackedFactoryOnly": true,
+  "productionAuthority": false,
+  "migration028Authority": false,
+  "localArtifactReleaseProvenance": false,
+  "sqliteVersion": "3.49.2",
+  "sqliteSourceId": "2025-05-07 10:39:52 17144570b0d96ae63cd6f3edca39e27ebd74925252bbaf6723bcb2f6b4861fb1",
+  "nodeVersion": "22.22.3",
+  "nodeAbi": "127",
+  "nodeExecutable": "/opt/homebrew/Cellar/node@22/22.22.3/bin/node",
+  "nodeHeaders": {
+    "directory": "/opt/homebrew/Cellar/node@22/22.22.3/include/node",
+    "nodeHeaderSha256": "bc47b118a731e9663b145e4823ebc7f31237140d6ea95417519d894d7a0498cb",
+    "nodeVersionHeaderSha256": "8398c745f56d8f522ee1575321f3cec20e4c065d62dd28c7f586d2ced7d1cf41"
+  },
+  "toolchain": {
+    "c": "/usr/bin/clang",
+    "cxx": "/usr/bin/clang++",
+    "version": "Apple clang version 21.0.0 (clang-2100.1.1.101)"
+  },
+  "supportedHosts": [
+    "darwin-arm64"
+  ],
+  "upstreamFiles": {
+    "package.json": "58e81504576abccfacbfd08dc9432dc3a00d0fc0454685cb7a76aaf976cf25a9",
+    "deps/sqlite3/sqlite3.c": "e80215754ac6cfaefe272342efd581b6dbefdbdc21f96bd83fcb698bee9d36a5",
+    "deps/sqlite3/sqlite3.h": "2198c66d4c59ae86421590c27fd53309ec14a595ae31c0c7143247444018a0bd",
+    "deps/sqlite3/sqlite3ext.h": "b184dd1586d935133d37ad76fa353faf0a1021ff2fdedeedcc3498fff74bbb94",
+    "deps/defines.gypi": "1ffa84b8af99780a293dcb7a9031c2dccc8b0d013aef434a35c283cc6c984f2e"
+  },
+  "repositoryFiles": {
+    "package-lock.json": "62ad0b842055f10567f60644b524f22c49f19b17e81fe33c24422f1615cbc650",
+    ".nvmrc": "f14b4987904bcb5814e4459a057ed4d20f58a633152288a761214dcd28780b56",
+    "native/brain-s28-file-factory/src/brain_s28_file_factory.cpp": "76f157bf3860db8a088dfbb54bbbc98a0aec1d28377ba94ec8df7f19a9a54798",
+    "scripts/build-youtube-stage2-file-factory.mjs": "e5b3a78270e89e84057c8c43e41d9b514c6d9aa4c91fc6b0fbe8b1f7d7fee1f3"
+  },
+  "immutablePrerequisiteFiles": {
+    "native/brain-s28-bridge/bridge-source-manifest.json": "50db75350d3fba0bb5c2661481c216769d6cebcc87ee7e76c4f30705c5486ee0",
+    "native/brain-s28-bridge/src/brain_s28_bridge.cpp": "fde48c0ae02591c7b9f51ea8042ef247a70f20d60cc0ebb9a0452baf9ef4ac43",
+    "native/brain-s28-bridge/src/brain_s28_bridge.hpp": "31f50b68119724917aad4134164d23deed028a878782ebf4dea06cf2fb2550c8",
+    "scripts/build-youtube-stage2-native-bridge.mjs": "fe999b9e17e449289f5ccc3cdcd367a47934437e096f712d73e0cc32ac16df1b",
+    "scripts/probe-youtube-stage2-native-bridge.mjs": "2d5ef8857505d4cb4d2debcb9bebd564dd3f88c8a3e058090cb5b1bd2e8a785a",
+    "scripts/run-youtube-stage2-native-bridge-proof-worker.mjs": "74f5e4dbb9613c52f2668cbc8e803624fa6e9a3a04f4792baab6a191c836b316",
+    "src/db/stage2/native-bridge.ts": "4f6cd925ee90b9cea61f08c3a29437b36802e8f281a30eefe777bf3a7aa02cdb",
+    "src/db/stage2/native-bridge-proof.ts": "da5f68468828af15cf0598fa7508108fe8cc91da30e1b74154a65022850ff120",
+    "src/db/stage2/native-bridge-proof.test.ts": "78ede99752b948fa247f6b6b60ca6bd78948c730d11eec3fbdb51a7fba40a6bc"
+  },
+  "addonContract": {
+    "moduleFile": "brain_s28_file_factory.node",
+    "exportNames": [
+      "runDisposableFileFactoryMatrix"
+    ],
+    "nativeResultFormat": "brain-s28-disposable-file-factory-native-matrix-v1",
+    "zeroArguments": true,
+    "rawDatabaseReturned": false,
+    "artifactPathsReturned": false,
+    "processIdentifiersReturned": false,
+    "reusableHandleReturned": false
+  },
+  "sqliteProfile": {
+    "journalMode": "wal",
+    "foreignKeys": 1,
+    "recursiveTriggers": 1,
+    "trustedSchema": 0,
+    "secureDelete": 1,
+    "synchronous": 2,
+    "ignoreCheckConstraints": 0,
+    "walAutocheckpoint": 0,
+    "fullfsync": 1,
+    "checkpointFullfsync": 1
+  },
+  "openFlags": [
+    "SQLITE_OPEN_READWRITE",
+    "SQLITE_OPEN_NOMUTEX",
+    "SQLITE_OPEN_PRIVATECACHE",
+    "SQLITE_OPEN_NOFOLLOW",
+    "SQLITE_OPEN_EXRESCODE"
+  ],
+  "explicitNonGoals": [
+    "migration-028",
+    "foreign-keys-off-preactivation",
+    "legacy-alter-table-preactivation",
+    "schema-objects",
+    "production-database-paths",
+    "checkpoint-coordinator",
+    "reusable-database-handles",
+    "release-provenance"
+  ]
+}
