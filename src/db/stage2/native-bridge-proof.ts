@@ -1,17 +1,13 @@
 import { createHash } from "node:crypto";
-import { execFileSync } from "node:child_process";
+import { spawn } from "node:child_process";
 import {
-  appendFileSync,
-  copyFileSync,
   existsSync,
   lstatSync,
   mkdtempSync,
   readFileSync,
   realpathSync,
   rmSync,
-  writeFileSync,
 } from "node:fs";
-import { createRequire } from "node:module";
 import { tmpdir } from "node:os";
 import {
   basename,
@@ -22,9 +18,9 @@ import {
   resolve,
 } from "node:path";
 import { fileURLToPath } from "node:url";
-import Database from "better-sqlite3";
 import {
   DISPOSABLE_BRIDGE_BUILD_SCRIPT_SHA256,
+  DISPOSABLE_BRIDGE_PROOF_WORKER_SHA256,
   DISPOSABLE_BRIDGE_SOURCE_MANIFEST_SHA256,
   DISPOSABLE_NATIVE_PROBE_SCENARIOS,
   type DisposableNativeBridgeProofEvidence,
@@ -34,482 +30,977 @@ import {
 
 const MODULE_DIRECTORY = dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = resolve(MODULE_DIRECTORY, "..", "..", "..");
-const BUILD_SCRIPT_PATH = join(
-  REPO_ROOT,
-  "scripts",
-  "build-youtube-stage2-native-bridge.mjs",
-);
 const SOURCE_MANIFEST_PATH = join(
   REPO_ROOT,
   "native",
   "brain-s28-bridge",
   "bridge-source-manifest.json",
 );
-const BUILD_RESULT_FORMAT =
-  "brain-s28-disposable-native-bridge-build-result-v1";
-const BUILD_MANIFEST_FORMAT =
-  "brain-s28-disposable-native-bridge-build-v1";
-const NATIVE_PROBE_FORMAT =
-  "brain-s28-disposable-native-probe-v1";
-const EXPECTED_SQLITE_VERSION = "3.49.2";
-const EXPECTED_SQLITE_SOURCE_ID =
-  "2025-05-07 10:39:52 " +
-  "17144570b0d96ae63cd6f3edca39e27ebd74925252bbaf6723bcb2f6b4861fb1";
-const CLOSED_NATIVE_METHOD = "_stage2DisposableBridgeProbe";
-const TEMP_BUILD_PREFIX = "brain-s28-disposable-native-bridge-";
-const require = createRequire(import.meta.url);
+const BUILD_SCRIPT_PATH = join(
+  REPO_ROOT,
+  "scripts",
+  "build-youtube-stage2-native-bridge.mjs",
+);
+const PROOF_WORKER_PATH = join(
+  REPO_ROOT,
+  "scripts",
+  "run-youtube-stage2-native-bridge-proof-worker.mjs",
+);
+const EXPECTED_NODE_EXECUTABLE =
+  "/opt/homebrew/Cellar/node@22/22.22.3/bin/node";
+const EXPECTED_NODE_VERSION = "22.22.3";
+const EXPECTED_NODE_ABI = "127";
+const PROOF_FORMAT = "brain-s28-disposable-native-route-proof-v5";
+const TEMP_PROOF_PREFIX =
+  `brain-s28-sealed-proof-${process.pid}-`;
+const MAX_WORKER_OUTPUT_BYTES = 2 * 1024 * 1024;
+const CAPTURED_SPAWN = spawn;
+const CAPTURED_READ_FILE_SYNC = readFileSync;
+const CAPTURED_REALPATH_SYNC = realpathSync;
+const CAPTURED_MKDTEMP_SYNC = mkdtempSync;
+const CAPTURED_RM_SYNC = rmSync;
+const CAPTURED_EXISTS_SYNC = existsSync;
+const CAPTURED_LSTAT_SYNC = lstatSync;
+const CAPTURED_JSON_PARSE = JSON.parse;
+const CAPTURED_JSON_STRINGIFY = JSON.stringify;
+const CAPTURED_OBJECT_FREEZE = Object.freeze;
+const CAPTURED_OBJECT_KEYS = Object.keys;
+const CAPTURED_OBJECT_VALUES = Object.values;
+const CAPTURED_HOST_TEMP_ROOT = CAPTURED_REALPATH_SYNC(tmpdir());
 
-interface BuildResult {
-  format: typeof BUILD_RESULT_FORMAT;
-  readinessClaim: "none";
-  disposableOnly: true;
-  outputDirectory: string;
-  bindingPath: string;
-  buildManifestPath: string;
-  moduleSha256: string;
-  sourceManifestSha256: string;
-}
-
-interface BuildManifest {
-  format: typeof BUILD_MANIFEST_FORMAT;
-  readinessClaim: "none";
-  disposableOnly: true;
-  bridgeFunction: "brain_s28_bridge_present";
-  closedNativeProbeMethod: typeof CLOSED_NATIVE_METHOD;
-  betterSqlite3Version: "11.10.0";
-  sqliteVersion: typeof EXPECTED_SQLITE_VERSION;
-  sqliteSourceId: string;
-  nodeVersion: string;
-  nodeAbi: string;
-  platform: string;
-  arch: string;
-  compiler: {
-    c: string;
-    cxx: string;
-    version: string;
-  };
-  sourceManifestSha256: string;
-  transformedBetterSqlite3Sha256: string;
-  moduleFile: "brain_s28_bridge.node";
-  moduleSha256: string;
-}
-
-interface VerifiedBuild {
-  result: BuildResult;
-  manifest: BuildManifest;
-  bindingPath: string;
-  moduleSha256: string;
-}
-
-type RawProbeOwner = Record<
-  typeof CLOSED_NATIVE_METHOD,
-  (scenario: DisposableNativeProbeScenario) => string
->;
-
-function sha256File(path: string): string {
-  return createHash("sha256").update(readFileSync(path)).digest("hex");
-}
+const TOP_LEVEL_KEYS = [
+  "format",
+  "readinessClaim",
+  "disposableOnly",
+  "provenance",
+  "host",
+  "bridge",
+  "lifecycle",
+  "scenarios",
+  "negativeControls",
+  "rawDatabaseReturned",
+  "artifactPathsReturned",
+  "processIdentifiersReturned",
+  "s28ReadinessProven",
+  "implementationGoProven",
+] as const;
+const NATIVE_PROBE_KEYS = [
+  "format",
+  "scenario",
+  "outcome",
+  "quarantineRequired",
+  "bridgePresent",
+  "authorizerDenied",
+  "authorizerCalls",
+  "authorizerDenials",
+  "roleAuthorizerCalls",
+  "roleAuthorizerDenials",
+  "commitHookCalls",
+  "rollbackHookCalls",
+  "commitPrepareCount",
+  "commitStepCount",
+  "commitFinalizeCount",
+  "postClassificationSqlCount",
+  "autocommit",
+  "transactionState",
+  "commitStepCode",
+  "commitFinalizeCode",
+  "commitAttempted",
+  "prepareCount",
+  "bindValidationCount",
+  "bindValidationDenials",
+  "bindCount",
+  "stepCount",
+  "finalizeCount",
+  "roleStepCode",
+  "roleFinalizeCode",
+  "replayAttemptCount",
+  "replayOperationCount",
+  "resetAttemptCount",
+  "resetOperationCount",
+  "rebindAttemptCount",
+  "rebindOperationCount",
+  "outerChanges",
+  "roleAttested",
+  "roleRefused",
+  "pragmaAttested",
+  "pragmaBeforeAttested",
+  "pragmaAfterAttempted",
+  "pragmaAfterAttested",
+  "observerArmed",
+  "observerRefused",
+  "observerInvalid",
+  "hooksPresentAtClassification",
+  "nonceMatchedAtClassification",
+  "cleanupRollbackAttested",
+  "commitRefusalOpenClassifierAttested",
+  "unfinalizedCommitClassifierRefused",
+  "finalizeErrorClassifierAttested",
+  "sqliteVersion",
+  "sqliteSourceId",
+  "readinessClaim",
+] as const;
+const BOOLEAN_PROBE_KEYS = [
+  "quarantineRequired",
+  "authorizerDenied",
+  "commitAttempted",
+  "roleAttested",
+  "roleRefused",
+  "pragmaAttested",
+  "pragmaBeforeAttested",
+  "pragmaAfterAttempted",
+  "pragmaAfterAttested",
+  "observerArmed",
+  "observerRefused",
+  "observerInvalid",
+  "hooksPresentAtClassification",
+  "nonceMatchedAtClassification",
+  "cleanupRollbackAttested",
+  "commitRefusalOpenClassifierAttested",
+  "unfinalizedCommitClassifierRefused",
+  "finalizeErrorClassifierAttested",
+] as const;
 
 function refuse(message: string): never {
   throw new Error(`Disposable native route proof refused: ${message}`);
 }
 
+function sha256File(path: string): string {
+  return createHash("sha256")
+    .update(CAPTURED_READ_FILE_SYNC(path))
+    .digest("hex");
+}
+
 function assertPinnedControllerSources(): void {
   if (
     sha256File(SOURCE_MANIFEST_PATH) !==
-    DISPOSABLE_BRIDGE_SOURCE_MANIFEST_SHA256
-  ) {
-    refuse("source manifest hash does not match the internal anchor");
-  }
-  if (
+      DISPOSABLE_BRIDGE_SOURCE_MANIFEST_SHA256 ||
     sha256File(BUILD_SCRIPT_PATH) !==
-    DISPOSABLE_BRIDGE_BUILD_SCRIPT_SHA256
+      DISPOSABLE_BRIDGE_BUILD_SCRIPT_SHA256 ||
+    sha256File(PROOF_WORKER_PATH) !==
+      DISPOSABLE_BRIDGE_PROOF_WORKER_SHA256
   ) {
-    refuse("build script hash does not match the internal anchor");
+    refuse("controller, builder, manifest, or worker hash drifted");
   }
-}
-
-function parseObject(raw: string, label: string): Record<string, unknown> {
-  let parsed: unknown;
-  try {
-    parsed = JSON.parse(raw);
-  } catch (error) {
-    throw new Error(`${label} is not valid JSON`, { cause: error });
-  }
-  if (parsed === null || typeof parsed !== "object" || Array.isArray(parsed)) {
-    refuse(`${label} is not an object`);
-  }
-  return parsed as Record<string, unknown>;
-}
-
-function runPinnedBuild(): BuildResult {
-  const raw = execFileSync(process.execPath, [BUILD_SCRIPT_PATH], {
-    cwd: REPO_ROOT,
-    encoding: "utf8",
-    timeout: 120_000,
-    maxBuffer: 1024 * 1024,
-  });
-  const value = parseObject(raw, "build result");
-  if (
-    value.format !== BUILD_RESULT_FORMAT ||
-    value.readinessClaim !== "none" ||
-    value.disposableOnly !== true ||
-    typeof value.outputDirectory !== "string" ||
-    typeof value.bindingPath !== "string" ||
-    typeof value.buildManifestPath !== "string" ||
-    typeof value.moduleSha256 !== "string" ||
-    typeof value.sourceManifestSha256 !== "string"
-  ) {
-    refuse("build result shape is invalid");
-  }
-  return value as unknown as BuildResult;
 }
 
 function isWithin(parent: string, child: string): boolean {
   const relation = relative(parent, child);
-  return relation !== "" && !relation.startsWith("..") &&
+  return relation !== "" &&
+    !relation.startsWith("..") &&
     !isAbsolute(relation);
 }
 
-function verifyTemporaryBuildDirectory(path: string): string {
-  if (!existsSync(path) || !lstatSync(path).isDirectory()) {
-    refuse("build output directory is missing");
-  }
-  const verified = realpathSync(path);
-  const verifiedTempRoot = realpathSync(tmpdir());
+function createSealedTempRoot(): string {
+  const path = CAPTURED_MKDTEMP_SYNC(
+    join(CAPTURED_HOST_TEMP_ROOT, TEMP_PROOF_PREFIX),
+  );
+  const verified = CAPTURED_REALPATH_SYNC(path);
   if (
-    !isWithin(verifiedTempRoot, verified) ||
-    !basename(verified).startsWith(TEMP_BUILD_PREFIX)
+    dirname(verified) !== CAPTURED_HOST_TEMP_ROOT ||
+    !basename(verified).startsWith(TEMP_PROOF_PREFIX) ||
+    !CAPTURED_LSTAT_SYNC(verified).isDirectory()
   ) {
-    refuse("build output directory is outside the disposable temp boundary");
+    refuse("sealed worker temp root is invalid");
   }
   return verified;
 }
 
-function verifyFileWithin(
-  directory: string,
-  path: string,
+function cleanupSealedTempRoot(path: string | undefined): void {
+  if (path === undefined || !CAPTURED_EXISTS_SYNC(path)) return;
+  const verified = CAPTURED_REALPATH_SYNC(path);
+  if (
+    dirname(verified) !== CAPTURED_HOST_TEMP_ROOT ||
+    !basename(verified).startsWith(TEMP_PROOF_PREFIX)
+  ) {
+    refuse("sealed worker cleanup target escaped its boundary");
+  }
+  CAPTURED_RM_SYNC(verified, { recursive: true, force: true });
+}
+
+function parseWorkerEvidence(raw: string): unknown {
+  if (
+    Buffer.byteLength(raw, "utf8") > MAX_WORKER_OUTPUT_BYTES ||
+    !raw.endsWith("\n") ||
+    raw.startsWith("\n")
+  ) {
+    refuse("sealed worker output framing is invalid");
+  }
+  let value: unknown;
+  try {
+    value = CAPTURED_JSON_PARSE(raw);
+  } catch {
+    refuse("sealed worker output is not JSON");
+  }
+  if (`${CAPTURED_JSON_STRINGIFY(value)}\n` !== raw) {
+    refuse("sealed worker output is not one canonical JSON document");
+  }
+  return value;
+}
+
+function killProcessGroup(pid: number | undefined): void {
+  if (pid === undefined || !Number.isSafeInteger(pid) || pid <= 1) {
+    return;
+  }
+  try {
+    process.kill(-pid, "SIGKILL");
+  } catch {
+    // The sealed process group already exited.
+  }
+}
+
+async function runSealedWorker(): Promise<unknown> {
+  const tempRoot = createSealedTempRoot();
+  try {
+    return await new Promise<unknown>((resolvePromise, rejectPromise) => {
+      const child = CAPTURED_SPAWN(
+        EXPECTED_NODE_EXECUTABLE,
+        [PROOF_WORKER_PATH],
+        {
+          cwd: REPO_ROOT,
+          detached: true,
+          env: {
+            LANG: "C",
+            LC_ALL: "C",
+            NODE_ENV: "test",
+            PATH: "/usr/bin:/bin:/usr/sbin:/sbin",
+            TMPDIR: tempRoot,
+          },
+          shell: false,
+          stdio: ["ignore", "pipe", "pipe"],
+        },
+      );
+      let stdout = "";
+      let stderr = "";
+      let outputOverflow = false;
+      let timedOut = false;
+      let settled = false;
+      const timer = setTimeout(() => {
+        timedOut = true;
+        killProcessGroup(child.pid);
+      }, 180_000);
+
+      const appendBounded = (
+        current: string,
+        chunk: Buffer,
+      ): string => {
+        const next = current + chunk.toString("utf8");
+        if (Buffer.byteLength(next, "utf8") > MAX_WORKER_OUTPUT_BYTES) {
+          outputOverflow = true;
+          killProcessGroup(child.pid);
+        }
+        return next;
+      };
+      child.stdout.on("data", (chunk: Buffer) => {
+        stdout = appendBounded(stdout, chunk);
+      });
+      child.stderr.on("data", (chunk: Buffer) => {
+        stderr = appendBounded(stderr, chunk);
+      });
+      child.once("error", () => {
+        if (settled) return;
+        settled = true;
+        clearTimeout(timer);
+        killProcessGroup(child.pid);
+        rejectPromise(
+          new Error("sealed worker process could not start"),
+        );
+      });
+      child.once("close", (status, signal) => {
+        if (settled) return;
+        settled = true;
+        clearTimeout(timer);
+        if (
+          timedOut ||
+          outputOverflow ||
+          status !== 0 ||
+          signal !== null ||
+          stderr !== ""
+        ) {
+          rejectPromise(
+            new Error("sealed worker transport failed"),
+          );
+          return;
+        }
+        try {
+          resolvePromise(parseWorkerEvidence(stdout));
+        } catch (error) {
+          rejectPromise(error);
+        }
+      });
+    }).catch(() => refuse("sealed worker did not exit successfully"));
+  } finally {
+    cleanupSealedTempRoot(tempRoot);
+  }
+}
+
+function assertObject(
+  value: unknown,
   label: string,
-): string {
-  if (!existsSync(path) || !lstatSync(path).isFile()) {
-    refuse(`${label} is missing or is not a regular file`);
+): asserts value is Record<string, unknown> {
+  if (
+    value === null ||
+    typeof value !== "object" ||
+    Array.isArray(value)
+  ) {
+    refuse(`${label} is not an object`);
   }
-  const verified = realpathSync(path);
-  if (!isWithin(directory, verified)) {
-    refuse(`${label} is outside its disposable build directory`);
-  }
-  return verified;
 }
 
-function assertBuildManifest(
+function assertExactKeys(
   value: Record<string, unknown>,
-): asserts value is Record<string, unknown> & BuildManifest {
-  const compiler = value.compiler as Record<string, unknown> | undefined;
-  if (
-    value.format !== BUILD_MANIFEST_FORMAT ||
-    value.readinessClaim !== "none" ||
-    value.disposableOnly !== true ||
-    value.bridgeFunction !== "brain_s28_bridge_present" ||
-    value.closedNativeProbeMethod !== CLOSED_NATIVE_METHOD ||
-    value.betterSqlite3Version !== "11.10.0" ||
-    value.sqliteVersion !== EXPECTED_SQLITE_VERSION ||
-    value.sqliteSourceId !== EXPECTED_SQLITE_SOURCE_ID ||
-    value.nodeAbi !== process.versions.modules ||
-    value.platform !== process.platform ||
-    value.arch !== process.arch ||
-    value.sourceManifestSha256 !==
-      DISPOSABLE_BRIDGE_SOURCE_MANIFEST_SHA256 ||
-    value.moduleFile !== "brain_s28_bridge.node" ||
-    typeof value.moduleSha256 !== "string" ||
-    !/^[a-f0-9]{64}$/.test(value.moduleSha256) ||
-    typeof value.transformedBetterSqlite3Sha256 !== "string" ||
-    !/^[a-f0-9]{64}$/.test(value.transformedBetterSqlite3Sha256) ||
-    compiler === undefined ||
-    typeof compiler.cxx !== "string" ||
-    typeof compiler.version !== "string"
-  ) {
-    refuse("build manifest does not match the internal proof contract");
-  }
-  if ("s28Ready" in value || "implementationGo" in value) {
-    refuse("build manifest contains a forbidden readiness field");
-  }
-}
-
-function verifyBuild(
-  result: BuildResult,
-  independentlyExpectedModuleSha256?: string,
-): VerifiedBuild {
-  if (
-    result.format !== BUILD_RESULT_FORMAT ||
-    result.readinessClaim !== "none" ||
-    result.disposableOnly !== true ||
-    result.sourceManifestSha256 !==
-      DISPOSABLE_BRIDGE_SOURCE_MANIFEST_SHA256
-  ) {
-    refuse("build result does not match the internal proof contract");
-  }
-  const outputDirectory = verifyTemporaryBuildDirectory(
-    result.outputDirectory,
-  );
-  const bindingPath = verifyFileWithin(
-    outputDirectory,
-    result.bindingPath,
-    "native binding",
-  );
-  const manifestPath = verifyFileWithin(
-    outputDirectory,
-    result.buildManifestPath,
-    "build manifest",
-  );
-  const manifestValue = parseObject(
-    readFileSync(manifestPath, "utf8"),
-    "build manifest",
-  );
-  assertBuildManifest(manifestValue);
-  const manifest = manifestValue as unknown as BuildManifest;
-  if (basename(bindingPath) !== manifest.moduleFile) {
-    refuse("native binding filename does not match the build manifest");
-  }
-  const actualModuleSha256 = sha256File(bindingPath);
-  if (
-    actualModuleSha256 !== manifest.moduleSha256 ||
-    actualModuleSha256 !== result.moduleSha256
-  ) {
-    refuse("native binding is not self-consistent with the build result");
-  }
-  if (
-    independentlyExpectedModuleSha256 !== undefined &&
-    actualModuleSha256 !== independentlyExpectedModuleSha256
-  ) {
-    refuse("native binding differs from the independent pinned rebuild");
-  }
-  return {
-    result,
-    manifest,
-    bindingPath,
-    moduleSha256: actualModuleSha256,
-  };
-}
-
-function assertIndependentBuildsMatch(
-  first: VerifiedBuild,
-  second: VerifiedBuild,
+  expected: readonly string[],
+  label: string,
 ): void {
-  if (first.result.outputDirectory === second.result.outputDirectory) {
-    refuse("independent builds reused an output directory");
-  }
+  const keys = CAPTURED_OBJECT_KEYS(value);
   if (
-    first.moduleSha256 !== second.moduleSha256 ||
-    first.manifest.transformedBetterSqlite3Sha256 !==
-      second.manifest.transformedBetterSqlite3Sha256 ||
-    first.manifest.compiler.cxx !== second.manifest.compiler.cxx ||
-    first.manifest.compiler.version !== second.manifest.compiler.version ||
-    first.manifest.nodeVersion !== second.manifest.nodeVersion ||
-    first.manifest.nodeAbi !== second.manifest.nodeAbi
+    keys.length !== expected.length ||
+    keys.some((key, index) => key !== expected[index])
   ) {
-    refuse("independent same-toolchain rebuilds are not identical");
+    refuse(`${label} keys are not exact`);
   }
 }
 
-function exactCppdbSymbol(): symbol {
-  const packageRoot = dirname(
-    require.resolve("better-sqlite3/package.json"),
-  );
-  const util = require(join(packageRoot, "lib", "util.js")) as {
-    cppdb?: unknown;
-  };
-  if (typeof util.cppdb !== "symbol") {
-    refuse("pinned better-sqlite3 cppdb symbol is unavailable");
+function requireFields(
+  value: Record<string, unknown>,
+  scenario: string,
+  fields: Record<string, unknown>,
+): void {
+  for (const [key, expected] of Object.entries(fields)) {
+    if (value[key] !== expected) {
+      refuse(`scenario semantic mismatch for ${scenario}.${key}`);
+    }
   }
-  return util.cppdb;
 }
 
-function parseNativeProbe(
-  raw: string,
+function requireCommitNotAttempted(
+  value: Record<string, unknown>,
+  scenario: string,
+): void {
+  requireFields(value, scenario, {
+    commitAttempted: false,
+    commitPrepareCount: 0,
+    commitStepCount: 0,
+    commitFinalizeCount: 0,
+    commitStepCode: -1,
+    commitFinalizeCode: -1,
+  });
+}
+
+function assertProbeSemantics(
+  value: DisposableNativeProbeResult,
   scenario: DisposableNativeProbeScenario,
-): DisposableNativeProbeResult {
-  const value = parseObject(raw, "native probe result");
+): void {
+  assertExactKeys(
+    value as unknown as Record<string, unknown>,
+    NATIVE_PROBE_KEYS,
+    `scenario ${scenario}`,
+  );
+  for (const key of BOOLEAN_PROBE_KEYS) {
+    if (typeof value[key] !== "boolean") {
+      refuse(`invalid boolean for ${scenario}.${key}`);
+    }
+  }
+  const integers = [
+    "authorizerCalls",
+    "authorizerDenials",
+    "roleAuthorizerCalls",
+    "roleAuthorizerDenials",
+    "commitHookCalls",
+    "rollbackHookCalls",
+    "commitPrepareCount",
+    "commitStepCount",
+    "commitFinalizeCount",
+    "postClassificationSqlCount",
+    "autocommit",
+    "transactionState",
+    "commitStepCode",
+    "commitFinalizeCode",
+    "prepareCount",
+    "bindValidationCount",
+    "bindValidationDenials",
+    "bindCount",
+    "stepCount",
+    "finalizeCount",
+    "roleStepCode",
+    "roleFinalizeCode",
+    "replayAttemptCount",
+    "replayOperationCount",
+    "resetAttemptCount",
+    "resetOperationCount",
+    "rebindAttemptCount",
+    "rebindOperationCount",
+    "outerChanges",
+  ] as const;
+  for (const key of integers) {
+    const number = value[key];
+    if (
+      !Number.isSafeInteger(number) ||
+      (
+        key !== "commitStepCode" &&
+        key !== "commitFinalizeCode" &&
+        key !== "roleStepCode" &&
+        key !== "roleFinalizeCode" &&
+        number < 0
+      )
+    ) {
+      refuse(`invalid integer for ${scenario}.${key}`);
+    }
+  }
   if (
-    value.format !== NATIVE_PROBE_FORMAT ||
+    value.format !== "brain-s28-disposable-native-probe-v4" ||
     value.scenario !== scenario ||
     value.bridgePresent !== true ||
-    value.sqliteVersion !== EXPECTED_SQLITE_VERSION ||
-    value.sqliteSourceId !== EXPECTED_SQLITE_SOURCE_ID ||
-    value.readinessClaim !== "none"
+    value.readinessClaim !== "none" ||
+    value.sqliteVersion !== "3.49.2" ||
+    value.sqliteSourceId !==
+      "2025-05-07 10:39:52 " +
+        "17144570b0d96ae63cd6f3edca39e27ebd74925252bbaf6723bcb2f6b4861fb1" ||
+    ![0, 1].includes(value.autocommit) ||
+    ![0, 1, 2].includes(value.transactionState) ||
+    value.commitStepCode < -1 ||
+    value.commitFinalizeCode < -1 ||
+    value.roleStepCode < -1 ||
+    value.roleFinalizeCode < -1 ||
+    value.quarantineRequired !==
+      (value.outcome === "indeterminate") ||
+    value.pragmaBeforeAttested !== true ||
+    value.pragmaAttested !== true ||
+    value.authorizerDenied !== (scenario === "authorizer-denial")
   ) {
-    refuse(`native probe attestation mismatch for ${scenario}`);
-  }
-  return value as unknown as DisposableNativeProbeResult;
-}
-
-function nativeProbeOwner(
-  db: Database.Database,
-  cppdb: symbol,
-): RawProbeOwner {
-  const owner = (db as unknown as Record<symbol, unknown>)[cppdb];
-  if (owner === null || typeof owner !== "object") {
-    refuse("exact better-sqlite3 cppdb owner is absent");
-  }
-  const method = (owner as Record<string, unknown>)[CLOSED_NATIVE_METHOD];
-  if (typeof method !== "function") {
-    refuse("closed native probe is absent from the exact cppdb owner");
-  }
-  return owner as RawProbeOwner;
-}
-
-function runNativeScenario(
-  owner: RawProbeOwner,
-  scenario: DisposableNativeProbeScenario,
-): DisposableNativeProbeResult {
-  return parseNativeProbe(owner[CLOSED_NATIVE_METHOD](scenario), scenario);
-}
-
-function sqlString(value: string): string {
-  return `'${value.replaceAll("'", "''")}'`;
-}
-
-async function exerciseFileRouteNegatives(
-  db: Database.Database,
-  directory: string,
-): Promise<
-  Pick<
-    DisposableNativeBridgeProofEvidence["negativeControls"],
-    | "genericSqlWriteRefused"
-    | "attachRefusedWithoutFile"
-    | "vacuumIntoRefusedWithoutFile"
-    | "backupRefusedWithoutFile"
-    | "loadExtensionRefused"
-  >
-> {
-  let genericSqlWriteRefused = false;
-  try {
-    db.exec("CREATE TEMP TABLE forbidden_public_write(value INTEGER)");
-  } catch {
-    genericSqlWriteRefused = true;
+    refuse(`universal scenario semantics failed for ${scenario}`);
   }
 
-  const attachPath = join(directory, "forbidden-attach.sqlite");
-  let attachRefused = false;
-  try {
-    db.exec(`ATTACH DATABASE ${sqlString(attachPath)} AS forbidden_attach`);
-  } catch {
-    attachRefused = true;
-  }
+  const terminalPragma = new Set<DisposableNativeProbeScenario>([
+    "prepared-role",
+    "prepared-role-bind-root-key-refused",
+    "prepared-role-bind-value-refused",
+    "prepared-role-bind-key-type-refused",
+    "prepared-role-bind-value-type-refused",
+    "prepared-role-bind-count-missing-refused",
+    "prepared-role-bind-count-extra-refused",
+    "prepared-role-sql-refused",
+    "prepared-role-trace-refused",
+    "prepared-role-step-finalize-refused",
+    "prepared-role-auto-reprepare-refused",
+    "prepared-role-replay-refused",
+    "prepared-role-reset-refused",
+    "prepared-role-rebind-refused",
+    "observer-arm-refused",
+    "observer-statement-arm-refused",
+    "observer-open",
+    "observer-committed",
+    "observer-rolled-back",
+  ]).has(scenario);
+  requireFields(value as unknown as Record<string, unknown>, scenario, {
+    pragmaAfterAttempted: terminalPragma,
+    pragmaAfterAttested: terminalPragma,
+    postClassificationSqlCount:
+      scenario === "observer-open" ? 8 : 0,
+    cleanupRollbackAttested: scenario === "observer-open",
+    commitRefusalOpenClassifierAttested:
+      scenario === "observer-open",
+    unfinalizedCommitClassifierRefused:
+      scenario === "observer-open",
+    finalizeErrorClassifierAttested:
+      scenario === "observer-committed",
+    replayOperationCount: 0,
+    resetOperationCount: 0,
+    rebindOperationCount: 0,
+  });
 
-  const vacuumPath = join(directory, "forbidden-vacuum.sqlite");
-  let vacuumIntoRefused = false;
-  try {
-    db.exec(`VACUUM INTO ${sqlString(vacuumPath)}`);
-  } catch {
-    vacuumIntoRefused = true;
-  }
-
-  const backupPath = join(directory, "forbidden-backup.sqlite");
-  let backupRefused = false;
-  try {
-    await db.backup(backupPath);
-  } catch {
-    backupRefused = true;
-  }
-
-  const sqliteVec = require("sqlite-vec") as {
-    getLoadablePath(): string;
+  const noLifecycleAttempts: Record<string, unknown> = {
+    replayAttemptCount: 0,
+    resetAttemptCount: 0,
+    rebindAttemptCount: 0,
   };
-  let loadExtensionRefused = false;
-  try {
-    db.loadExtension(sqliteVec.getLoadablePath());
-  } catch {
-    loadExtensionRefused = true;
+  const bindRefusalExpectation: Record<string, unknown> = {
+    roleAttested: false,
+    roleRefused: true,
+    roleAuthorizerCalls: 1,
+    roleAuthorizerDenials: 0,
+    prepareCount: 1,
+    bindValidationCount: 1,
+    bindValidationDenials: 1,
+    bindCount: 0,
+    stepCount: 0,
+    finalizeCount: 1,
+    roleStepCode: -1,
+    roleFinalizeCode: 0,
+    ...noLifecycleAttempts,
+    outerChanges: 0,
+  };
+  const consumedRoleExpectation: Record<string, unknown> = {
+    roleAttested: true,
+    roleRefused: true,
+    roleAuthorizerCalls: 1,
+    roleAuthorizerDenials: 0,
+    prepareCount: 1,
+    bindValidationCount: 1,
+    bindValidationDenials: 0,
+    bindCount: 2,
+    stepCount: 1,
+    finalizeCount: 1,
+    roleStepCode: 101,
+    roleFinalizeCode: 0,
+    outerChanges: 1,
+  };
+  const prepared: Partial<
+    Record<
+      DisposableNativeProbeScenario,
+      Record<string, unknown>
+    >
+  > = {
+    "prepared-role": {
+      ...consumedRoleExpectation,
+      roleRefused: false,
+      ...noLifecycleAttempts,
+    },
+    "prepared-role-bind-root-key-refused":
+      bindRefusalExpectation,
+    "prepared-role-bind-value-refused": bindRefusalExpectation,
+    "prepared-role-bind-key-type-refused":
+      bindRefusalExpectation,
+    "prepared-role-bind-value-type-refused":
+      bindRefusalExpectation,
+    "prepared-role-bind-count-missing-refused":
+      bindRefusalExpectation,
+    "prepared-role-bind-count-extra-refused":
+      bindRefusalExpectation,
+    "prepared-role-sql-refused": {
+      roleAttested: false,
+      roleRefused: true,
+      roleAuthorizerCalls: 0,
+      roleAuthorizerDenials: 0,
+      prepareCount: 0,
+      bindValidationCount: 0,
+      bindValidationDenials: 0,
+      bindCount: 0,
+      stepCount: 0,
+      finalizeCount: 0,
+      roleStepCode: -1,
+      roleFinalizeCode: -1,
+      ...noLifecycleAttempts,
+      outerChanges: 0,
+    },
+    "prepared-role-trace-refused": {
+      roleAttested: false,
+      roleRefused: true,
+      roleAuthorizerCalls: 1,
+      roleAuthorizerDenials: 1,
+      prepareCount: 1,
+      bindValidationCount: 0,
+      bindValidationDenials: 0,
+      bindCount: 0,
+      stepCount: 0,
+      finalizeCount: 0,
+      roleStepCode: -1,
+      roleFinalizeCode: -1,
+      ...noLifecycleAttempts,
+      outerChanges: 0,
+    },
+    "prepared-role-step-finalize-refused": {
+      roleAttested: false,
+      roleRefused: true,
+      roleAuthorizerCalls: 1,
+      roleAuthorizerDenials: 0,
+      prepareCount: 1,
+      bindValidationCount: 1,
+      bindValidationDenials: 0,
+      bindCount: 2,
+      stepCount: 1,
+      finalizeCount: 1,
+      roleStepCode: 1555,
+      roleFinalizeCode: 1555,
+      ...noLifecycleAttempts,
+      outerChanges: 0,
+    },
+    "prepared-role-auto-reprepare-refused": {
+      roleAttested: false,
+      roleRefused: true,
+      roleAuthorizerCalls: 2,
+      roleAuthorizerDenials: 1,
+      prepareCount: 1,
+      bindValidationCount: 1,
+      bindValidationDenials: 0,
+      bindCount: 2,
+      stepCount: 1,
+      finalizeCount: 1,
+      roleStepCode: 23,
+      roleFinalizeCode: 23,
+      ...noLifecycleAttempts,
+      outerChanges: 0,
+    },
+    "prepared-role-replay-refused": {
+      ...consumedRoleExpectation,
+      replayAttemptCount: 1,
+      resetAttemptCount: 0,
+      rebindAttemptCount: 0,
+    },
+    "prepared-role-reset-refused": {
+      ...consumedRoleExpectation,
+      replayAttemptCount: 0,
+      resetAttemptCount: 1,
+      rebindAttemptCount: 0,
+    },
+    "prepared-role-rebind-refused": {
+      ...consumedRoleExpectation,
+      replayAttemptCount: 0,
+      resetAttemptCount: 0,
+      rebindAttemptCount: 1,
+    },
+  };
+  const preparedFields = prepared[scenario];
+  if (preparedFields !== undefined) {
+    requireFields(value as unknown as Record<string, unknown>, scenario, {
+      outcome: "rolled_back",
+      autocommit: 1,
+      transactionState: 0,
+      commitHookCalls: 0,
+      rollbackHookCalls: 1,
+      observerArmed: true,
+      observerRefused: false,
+      observerInvalid: false,
+      hooksPresentAtClassification: true,
+      nonceMatchedAtClassification: true,
+      ...preparedFields,
+    });
+    requireCommitNotAttempted(
+      value as unknown as Record<string, unknown>,
+      scenario,
+    );
+    return;
+  }
+
+  requireFields(value as unknown as Record<string, unknown>, scenario, {
+    roleStepCode: -1,
+    roleFinalizeCode: -1,
+    replayAttemptCount: 0,
+    resetAttemptCount: 0,
+    rebindAttemptCount: 0,
+  });
+
+  if (
+    scenario === "bridge-attestation" ||
+    scenario === "authorizer-denial"
+  ) {
+    requireFields(value as unknown as Record<string, unknown>, scenario, {
+      outcome: "not_applicable",
+      autocommit: 1,
+      transactionState: 0,
+      commitHookCalls: 0,
+      rollbackHookCalls: 0,
+      observerArmed: false,
+      observerRefused: false,
+      observerInvalid: false,
+      hooksPresentAtClassification: false,
+      nonceMatchedAtClassification: false,
+      roleAttested: false,
+      roleRefused: false,
+    });
+    requireCommitNotAttempted(
+      value as unknown as Record<string, unknown>,
+      scenario,
+    );
+    return;
   }
 
   if (
-    !genericSqlWriteRefused ||
-    !attachRefused ||
-    existsSync(attachPath) ||
-    !vacuumIntoRefused ||
-    existsSync(vacuumPath) ||
-    !backupRefused ||
-    existsSync(backupPath) ||
-    !loadExtensionRefused
+    scenario === "observer-arm-refused" ||
+    scenario === "observer-statement-arm-refused"
   ) {
-    refuse("a public database or filesystem route escaped the native guards");
+    requireFields(value as unknown as Record<string, unknown>, scenario, {
+      outcome: "not_applicable",
+      autocommit: 1,
+      transactionState: 0,
+      commitHookCalls: 0,
+      rollbackHookCalls: 0,
+      observerArmed: false,
+      observerRefused: true,
+      observerInvalid: false,
+      hooksPresentAtClassification: false,
+      nonceMatchedAtClassification: false,
+    });
+    requireCommitNotAttempted(
+      value as unknown as Record<string, unknown>,
+      scenario,
+    );
+    return;
   }
-  return {
-    genericSqlWriteRefused: true,
-    attachRefusedWithoutFile: true,
-    vacuumIntoRefusedWithoutFile: true,
-    backupRefusedWithoutFile: true,
-    loadExtensionRefused: true,
+
+  if (scenario === "observer-open") {
+    requireFields(value as unknown as Record<string, unknown>, scenario, {
+      outcome: "open",
+      autocommit: 0,
+      transactionState: 2,
+      commitHookCalls: 0,
+      rollbackHookCalls: 0,
+      observerArmed: true,
+      observerRefused: false,
+      observerInvalid: false,
+      hooksPresentAtClassification: true,
+      nonceMatchedAtClassification: true,
+    });
+    requireCommitNotAttempted(
+      value as unknown as Record<string, unknown>,
+      scenario,
+    );
+    return;
+  }
+
+  if (scenario === "observer-committed") {
+    requireFields(value as unknown as Record<string, unknown>, scenario, {
+      outcome: "committed",
+      autocommit: 1,
+      transactionState: 0,
+      commitHookCalls: 1,
+      rollbackHookCalls: 0,
+      commitAttempted: true,
+      commitPrepareCount: 1,
+      commitStepCount: 1,
+      commitFinalizeCount: 1,
+      commitStepCode: 101,
+      commitFinalizeCode: 0,
+      observerArmed: true,
+      observerRefused: false,
+      observerInvalid: false,
+      hooksPresentAtClassification: true,
+      nonceMatchedAtClassification: true,
+    });
+    return;
+  }
+
+  if (scenario === "observer-rolled-back") {
+    requireFields(value as unknown as Record<string, unknown>, scenario, {
+      outcome: "rolled_back",
+      autocommit: 1,
+      transactionState: 0,
+      commitHookCalls: 0,
+      rollbackHookCalls: 1,
+      observerArmed: true,
+      observerRefused: false,
+      observerInvalid: false,
+      hooksPresentAtClassification: true,
+      nonceMatchedAtClassification: true,
+    });
+    requireCommitNotAttempted(
+      value as unknown as Record<string, unknown>,
+      scenario,
+    );
+    return;
+  }
+
+  const indeterminate: Partial<
+    Record<
+      DisposableNativeProbeScenario,
+      Record<string, unknown>
+    >
+  > = {
+    "observer-indeterminate": {
+      commitHookCalls: 0,
+      rollbackHookCalls: 0,
+      observerInvalid: false,
+      hooksPresentAtClassification: false,
+      nonceMatchedAtClassification: true,
+    },
+    "observer-stale-nonce": {
+      commitHookCalls: 0,
+      rollbackHookCalls: 0,
+      observerInvalid: false,
+      hooksPresentAtClassification: true,
+      nonceMatchedAtClassification: false,
+    },
+    "observer-double-event": {
+      commitHookCalls: 2,
+      rollbackHookCalls: 0,
+      observerInvalid: true,
+      hooksPresentAtClassification: true,
+      nonceMatchedAtClassification: true,
+    },
   };
+  const indeterminateFields = indeterminate[scenario];
+  if (indeterminateFields === undefined) {
+    refuse(`scenario lacks a semantic contract: ${scenario}`);
+  }
+  requireFields(value as unknown as Record<string, unknown>, scenario, {
+    outcome: "indeterminate",
+    autocommit: 0,
+    transactionState: 2,
+    observerArmed: true,
+    observerRefused: false,
+    ...indeterminateFields,
+  });
+  requireCommitNotAttempted(
+    value as unknown as Record<string, unknown>,
+    scenario,
+  );
 }
 
-function exerciseSelfConsistentTamperNegative(
-  source: VerifiedBuild,
-  independentModuleSha256: string,
-  directory: string,
-): true {
-  const tamperedBindingPath = join(directory, "brain_s28_bridge.node");
-  const tamperedManifestPath = join(
-    directory,
-    "brain_s28_bridge.build-manifest.json",
-  );
-  copyFileSync(source.bindingPath, tamperedBindingPath);
-  appendFileSync(
-    tamperedBindingPath,
-    Buffer.from("UNPINNED-DISPOSABLE-TRAILER", "utf8"),
-  );
-  const tamperedHash = sha256File(tamperedBindingPath);
-  writeFileSync(
-    tamperedManifestPath,
-    `${JSON.stringify(
-      {
-        ...source.manifest,
-        moduleSha256: tamperedHash,
-      },
-      null,
-      2,
-    )}\n`,
-  );
-  const tamperedResult: BuildResult = {
-    ...source.result,
-    outputDirectory: directory,
-    bindingPath: tamperedBindingPath,
-    buildManifestPath: tamperedManifestPath,
-    moduleSha256: tamperedHash,
-  };
-  try {
-    verifyBuild(tamperedResult, independentModuleSha256);
-  } catch {
-    return true;
-  }
-  refuse("self-consistent tampered artifact passed independent provenance");
-}
-
-function cleanupDisposableDirectory(path: string | undefined): void {
-  if (path === undefined || !existsSync(path)) return;
-  const resolvedPath = realpathSync(path);
-  const resolvedTempRoot = realpathSync(tmpdir());
+export function assertDisposableNativeProofEvidence(
+  evidence: unknown,
+): asserts evidence is DisposableNativeBridgeProofEvidence {
+  assertObject(evidence, "proof evidence");
+  assertExactKeys(evidence, TOP_LEVEL_KEYS, "proof evidence");
   if (
-    !isWithin(resolvedTempRoot, resolvedPath) ||
-    !basename(resolvedPath).startsWith(TEMP_BUILD_PREFIX)
+    evidence.format !== PROOF_FORMAT ||
+    evidence.readinessClaim !== "none" ||
+    evidence.disposableOnly !== true ||
+    evidence.rawDatabaseReturned !== false ||
+    evidence.artifactPathsReturned !== false ||
+    evidence.processIdentifiersReturned !== false ||
+    evidence.s28ReadinessProven !== false ||
+    evidence.implementationGoProven !== false
   ) {
-    refuse("cleanup target escaped the disposable temp boundary");
+    refuse("proof evidence top-level contract is invalid");
   }
-  rmSync(resolvedPath, { recursive: true, force: true });
+  assertObject(evidence.provenance, "proof provenance");
+  assertExactKeys(
+    evidence.provenance,
+    [
+      "sourceManifestSha256",
+      "proofWorkerSha256",
+      "moduleSha256",
+      "independentBuildCount",
+      "independentModuleHashesEqual",
+      "transformedWrapperHashesEqual",
+      "compilerIdentity",
+      "compilerVersion",
+    ],
+    "proof provenance",
+  );
+  if (
+    evidence.provenance.sourceManifestSha256 !==
+      DISPOSABLE_BRIDGE_SOURCE_MANIFEST_SHA256 ||
+    evidence.provenance.proofWorkerSha256 !==
+      DISPOSABLE_BRIDGE_PROOF_WORKER_SHA256 ||
+    typeof evidence.provenance.moduleSha256 !== "string" ||
+    !/^[a-f0-9]{64}$/.test(evidence.provenance.moduleSha256) ||
+    evidence.provenance.independentBuildCount !== 2 ||
+    evidence.provenance.independentModuleHashesEqual !== true ||
+    evidence.provenance.transformedWrapperHashesEqual !== true ||
+    evidence.provenance.compilerIdentity !== "/usr/bin/clang++" ||
+    evidence.provenance.compilerVersion !==
+      "Apple clang version 21.0.0 (clang-2100.1.1.101)"
+  ) {
+    refuse("proof provenance is invalid");
+  }
+  assertObject(evidence.host, "proof host");
+  assertExactKeys(
+    evidence.host,
+    ["platform", "arch", "nodeVersion", "nodeAbi"],
+    "proof host",
+  );
+  if (
+    evidence.host.platform !== "darwin" ||
+    evidence.host.arch !== "arm64" ||
+    evidence.host.nodeVersion !== EXPECTED_NODE_VERSION ||
+    evidence.host.nodeAbi !== EXPECTED_NODE_ABI
+  ) {
+    refuse("proof host is outside the pinned slice");
+  }
+  assertObject(evidence.bridge, "proof bridge");
+  assertExactKeys(
+    evidence.bridge,
+    [
+      "sqlTripwirePresent",
+      "directNativeOwnerUsed",
+      "closedAddonSurfaceAttested",
+      "immutableNativeSurfaceAttested",
+      "sealedChildProcess",
+    ],
+    "proof bridge",
+  );
+  requireFields(evidence.bridge, "bridge", {
+    sqlTripwirePresent: true,
+    directNativeOwnerUsed: true,
+    closedAddonSurfaceAttested: true,
+    immutableNativeSurfaceAttested: true,
+    sealedChildProcess: true,
+  });
+  assertObject(evidence.lifecycle, "proof lifecycle");
+  assertExactKeys(
+    evidence.lifecycle,
+    [
+      "scenarioConnectionCount",
+      "allScenarioConnectionsClosed",
+      "indeterminateConnectionsQuarantinedByClose",
+      "processExitIsFinalQuarantine",
+    ],
+    "proof lifecycle",
+  );
+  requireFields(evidence.lifecycle, "lifecycle", {
+    scenarioConnectionCount: DISPOSABLE_NATIVE_PROBE_SCENARIOS.length,
+    allScenarioConnectionsClosed: true,
+    indeterminateConnectionsQuarantinedByClose: true,
+    processExitIsFinalQuarantine: true,
+  });
+  assertObject(evidence.scenarios, "proof scenarios");
+  assertExactKeys(
+    evidence.scenarios,
+    DISPOSABLE_NATIVE_PROBE_SCENARIOS,
+    "proof scenarios",
+  );
+  for (const scenario of DISPOSABLE_NATIVE_PROBE_SCENARIOS) {
+    const result = evidence.scenarios[scenario];
+    assertObject(result, `scenario ${scenario}`);
+    assertProbeSemantics(
+      result as unknown as DisposableNativeProbeResult,
+      scenario,
+    );
+  }
+  assertObject(evidence.negativeControls, "negative controls");
+  const negativeKeys = [
+    "genericSqlWriteRefused",
+    "attachRefusedWithoutFile",
+    "vacuumIntoRefusedWithoutFile",
+    "backupRefusedWithoutFile",
+    "loadExtensionRefused",
+    "serializeRefused",
+    "functionRegistrationRefused",
+    "unsafeModeRefused",
+    "emptyFilenameRefused",
+    "whitespaceFilenameRefused",
+    "fileBackedConstructorRefused",
+    "uriFilenameRefused",
+    "embeddedNulFilenameRefused",
+    "mismatchedFilenameGivenRefused",
+    "falseInMemoryRefused",
+    "readonlyRefused",
+    "mustExistRefused",
+    "timeoutOverrideRefused",
+    "loggerRefused",
+    "serializedBufferConstructorRefused",
+    "missingArgumentRefused",
+    "extraArgumentRefused",
+    "noConstructorNegativeCreatedAFile",
+    "selfConsistentTamperedArtifactRefused",
+  ] as const;
+  assertExactKeys(
+    evidence.negativeControls,
+    negativeKeys,
+    "negative controls",
+  );
+  for (const key of negativeKeys) {
+    if (evidence.negativeControls[key] !== true) {
+      refuse(`negative control failed: ${key}`);
+    }
+  }
 }
 
 function deepFreeze<T>(value: T): T {
   if (value !== null && typeof value === "object") {
-    for (const child of Object.values(value)) deepFreeze(child);
-    Object.freeze(value);
+    for (const child of CAPTURED_OBJECT_VALUES(value)) {
+      deepFreeze(child);
+    }
+    CAPTURED_OBJECT_FREEZE(value);
   }
   return value;
 }
 
 /**
- * Builds and probes a disposable native route without accepting artifacts,
- * database handles, paths, runtime overrides, SQL, callbacks, or role policy.
- * The returned value is immutable evidence only.
+ * Executes the disposable native proof in a fresh pinned Node process.
+ * The controller accepts no database, path, environment, SQL, callback, or
+ * artifact input and returns immutable content-free evidence only.
  */
 export async function runDisposableStage2NativeRouteProof(
   ...unexpectedInputs: never[]
@@ -522,134 +1013,21 @@ export async function runDisposableStage2NativeRouteProof(
   if (unexpectedInputs.length !== 0) {
     refuse("external artifacts, databases, paths, and overrides are forbidden");
   }
-
-  assertPinnedControllerSources();
-  let firstResult: BuildResult | undefined;
-  let secondResult: BuildResult | undefined;
-  let guardDirectory: string | undefined;
-  let tamperDirectory: string | undefined;
-  let db: Database.Database | undefined;
-  try {
-    firstResult = runPinnedBuild();
-    const first = verifyBuild(firstResult);
-    secondResult = runPinnedBuild();
-    const second = verifyBuild(
-      secondResult,
-      first.moduleSha256,
-    );
-    assertIndependentBuildsMatch(first, second);
-
-    db = new Database(":memory:", {
-      nativeBinding: first.bindingPath,
-    });
-    const cppdb = exactCppdbSymbol();
-    const injectedSymbol = Symbol("untrusted-native-probe-owner");
-    const injectedOwner = {
-      [CLOSED_NATIVE_METHOD]: () =>
-        JSON.stringify({
-          format: NATIVE_PROBE_FORMAT,
-          scenario: "bridge-attestation",
-          bridgePresent: true,
-          sqliteVersion: EXPECTED_SQLITE_VERSION,
-          sqliteSourceId: EXPECTED_SQLITE_SOURCE_ID,
-          readinessClaim: "none",
-        }),
-    };
-    Object.defineProperty(db, injectedSymbol, {
-      value: injectedOwner,
-      enumerable: false,
-    });
-    const owner = nativeProbeOwner(db, cppdb);
-    if (owner === injectedOwner) {
-      refuse("injected Symbol owner displaced the exact cppdb owner");
-    }
-
-    const tripwire = db
-      .prepare(
-        "SELECT brain_s28_bridge_present() AS bridge_present, " +
-          "sqlite_version() AS sqlite_version, " +
-          "sqlite_source_id() AS sqlite_source_id",
-      )
-      .get() as {
-        bridge_present: number;
-        sqlite_version: string;
-        sqlite_source_id: string;
-      };
-    if (
-      tripwire.bridge_present !== 1 ||
-      tripwire.sqlite_version !== EXPECTED_SQLITE_VERSION ||
-      tripwire.sqlite_source_id !== EXPECTED_SQLITE_SOURCE_ID
-    ) {
-      refuse("SQL bridge tripwire does not match the pinned native module");
-    }
-
-    const scenarios = {} as Record<
-      DisposableNativeProbeScenario,
-      DisposableNativeProbeResult
-    >;
-    for (const scenario of DISPOSABLE_NATIVE_PROBE_SCENARIOS) {
-      scenarios[scenario] = runNativeScenario(owner, scenario);
-    }
-
-    guardDirectory = mkdtempSync(
-      join(tmpdir(), `${TEMP_BUILD_PREFIX}guards-`),
-    );
-    const fileRouteNegatives = await exerciseFileRouteNegatives(
-      db,
-      guardDirectory,
-    );
-
-    tamperDirectory = mkdtempSync(
-      join(tmpdir(), `${TEMP_BUILD_PREFIX}tamper-`),
-    );
-    const selfConsistentTamperedArtifactRefused =
-      exerciseSelfConsistentTamperNegative(
-        first,
-        second.moduleSha256,
-        tamperDirectory,
-      );
-
-    const evidence: DisposableNativeBridgeProofEvidence = {
-      format: "brain-s28-disposable-native-route-proof-v2",
-      readinessClaim: "none",
-      disposableOnly: true,
-      provenance: {
-        sourceManifestSha256:
-          DISPOSABLE_BRIDGE_SOURCE_MANIFEST_SHA256,
-        moduleSha256: first.moduleSha256,
-        independentBuildCount: 2,
-        independentModuleHashesEqual: true,
-        transformedWrapperHashesEqual: true,
-        compilerIdentity: first.manifest.compiler.cxx,
-        compilerVersion: first.manifest.compiler.version,
-      },
-      host: {
-        platform: first.manifest.platform,
-        arch: first.manifest.arch,
-        nodeVersion: first.manifest.nodeVersion,
-        nodeAbi: first.manifest.nodeAbi,
-      },
-      bridge: {
-        sqlTripwirePresent: true,
-        exactCppdbOwnerUsed: true,
-        injectedSymbolOwnerIgnored: true,
-      },
-      scenarios,
-      negativeControls: {
-        ...fileRouteNegatives,
-        selfConsistentTamperedArtifactRefused,
-      },
-      rawDatabaseReturned: false,
-      artifactPathsReturned: false,
-      s28ReadinessProven: false,
-      implementationGoProven: false,
-    };
-    return deepFreeze(evidence);
-  } finally {
-    if (db?.open) db.close();
-    cleanupDisposableDirectory(tamperDirectory);
-    cleanupDisposableDirectory(guardDirectory);
-    cleanupDisposableDirectory(secondResult?.outputDirectory);
-    cleanupDisposableDirectory(firstResult?.outputDirectory);
+  if (
+    process.platform !== "darwin" ||
+    process.arch !== "arm64" ||
+    process.versions.node !== EXPECTED_NODE_VERSION ||
+    process.versions.modules !== EXPECTED_NODE_ABI ||
+    CAPTURED_REALPATH_SYNC(process.execPath) !== EXPECTED_NODE_EXECUTABLE
+  ) {
+    refuse("controller is outside the pinned nonproduction host slice");
   }
+  assertPinnedControllerSources();
+  const evidence = await runSealedWorker();
+  assertDisposableNativeProofEvidence(evidence);
+  return deepFreeze(evidence);
 }
+
+export const __private = {
+  isWithin,
+} as const;

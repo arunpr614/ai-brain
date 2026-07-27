@@ -1,14 +1,24 @@
 {
-  "format": "brain-s28-disposable-native-bridge-source-v1",
+  "format": "brain-s28-disposable-native-bridge-source-v4",
   "betterSqlite3Version": "11.10.0",
   "sqliteVersion": "3.49.2",
   "sqliteSourceId": "2025-05-07 10:39:52 17144570b0d96ae63cd6f3edca39e27ebd74925252bbaf6723bcb2f6b4861fb1",
   "nodeMajor": 22,
+  "nodeVersion": "22.22.3",
+  "nodeAbi": "127",
+  "nodeExecutable": "/opt/homebrew/Cellar/node@22/22.22.3/bin/node",
+  "nodeHeaders": {
+    "directory": "/opt/homebrew/Cellar/node@22/22.22.3/include/node",
+    "nodeHeaderSha256": "bc47b118a731e9663b145e4823ebc7f31237140d6ea95417519d894d7a0498cb",
+    "nodeVersionHeaderSha256": "8398c745f56d8f522ee1575321f3cec20e4c065d62dd28c7f586d2ced7d1cf41"
+  },
+  "toolchain": {
+    "c": "/usr/bin/clang",
+    "cxx": "/usr/bin/clang++",
+    "version": "Apple clang version 21.0.0 (clang-2100.1.1.101)"
+  },
   "supportedHosts": [
-    "darwin-arm64",
-    "darwin-x64",
-    "linux-arm64",
-    "linux-x64"
+    "darwin-arm64"
   ],
   "readinessClaim": "none",
   "disposableOnly": true,
@@ -25,11 +35,13 @@
     "package-lock.json": "62ad0b842055f10567f60644b524f22c49f19b17e81fe33c24422f1615cbc650",
     ".nvmrc": "f14b4987904bcb5814e4459a057ed4d20f58a633152288a761214dcd28780b56",
     "native/brain-s28-bridge/src/brain_s28_bridge.hpp": "31f50b68119724917aad4134164d23deed028a878782ebf4dea06cf2fb2550c8",
-    "native/brain-s28-bridge/src/brain_s28_bridge.cpp": "4a8ea880ada55fc2b4c6e83cb880e216b623c5b2f9487597c4c3cd2c40d2e35f",
-    "scripts/build-youtube-stage2-native-bridge.mjs": "06db0261d4b18ab65d88cd3c8a7b2390800c196713652c059523a8c0d9c6907c"
+    "native/brain-s28-bridge/src/brain_s28_bridge.cpp": "fde48c0ae02591c7b9f51ea8042ef247a70f20d60cc0ebb9a0452baf9ef4ac43",
+    "scripts/build-youtube-stage2-native-bridge.mjs": "fe999b9e17e449289f5ccc3cdcd367a47934437e096f712d73e0cc32ac16df1b",
+    "scripts/probe-youtube-stage2-native-bridge.mjs": "2d5ef8857505d4cb4d2debcb9bebd564dd3f88c8a3e058090cb5b1bd2e8a785a",
+    "scripts/run-youtube-stage2-native-bridge-proof-worker.mjs": "74f5e4dbb9613c52f2668cbc8e803624fa6e9a3a04f4792baab6a191c836b316"
   },
   "transformation": {
-    "id": "better-sqlite3-11.10.0-disposable-s28-v1",
-    "description": "Deterministic sentinel-checked insertion of the disposable-only constructor guard, constant SQL bridge, closed native probe, permanent default-deny authorizer, and removal of native backup and extension-loading entrypoints."
+    "id": "better-sqlite3-11.10.0-disposable-s28-v4",
+    "description": "Deterministic sentinel-checked insertion of an exact memory-only non-buffer constructor guard, constant SQL bridge, closed prepared-role and transaction-observer probes with exact bind/lifecycle/error oracles, permanent default-deny authorizer, and a close-plus-probe-only native database surface."
   }
 }
