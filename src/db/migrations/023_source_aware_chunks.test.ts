@@ -48,7 +48,7 @@ test("migration 023 preserves legacy chunks/rowids and allocates beyond orphan v
       join(migrationsDir, "023_source_aware_chunks.sql"),
     );
     process.env.BRAIN_MIGRATIONS_DIR = migrationsDir;
-    process.env.NODE_ENV = "test";
+    Reflect.set(process.env, "NODE_ENV", "test");
     withAuditedS27MigrationSubsetForTests(() => runMigrations(db));
 
     const migrated = db
@@ -92,8 +92,11 @@ test("migration 023 preserves legacy chunks/rowids and allocates beyond orphan v
   } finally {
     if (previousMigrationsDir === undefined) delete process.env.BRAIN_MIGRATIONS_DIR;
     else process.env.BRAIN_MIGRATIONS_DIR = previousMigrationsDir;
-    if (previousNodeEnv === undefined) delete process.env.NODE_ENV;
-    else process.env.NODE_ENV = previousNodeEnv;
+    if (previousNodeEnv === undefined) {
+      Reflect.deleteProperty(process.env, "NODE_ENV");
+    } else {
+      Reflect.set(process.env, "NODE_ENV", previousNodeEnv);
+    }
     db.close();
     rmSync(migrationsDir, { recursive: true, force: true });
   }

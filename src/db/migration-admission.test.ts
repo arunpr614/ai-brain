@@ -75,12 +75,12 @@ test("ordinary inventory requires every frozen S27 migration", () => {
 test("historical subset admission is test-only and callback-scoped", () => {
   const previousNodeEnv = process.env.NODE_ENV;
   try {
-    delete process.env.NODE_ENV;
+    Reflect.deleteProperty(process.env, "NODE_ENV");
     assert.throws(
       () => withAuditedS27MigrationSubsetForTests(() => undefined),
       /test_migration_inventory_override_forbidden/,
     );
-    process.env.NODE_ENV = "test";
+    Reflect.set(process.env, "NODE_ENV", "test");
     assert.doesNotThrow(() =>
       withAuditedS27MigrationSubsetForTests(() =>
         assertOrdinaryStartupMigrationInventory([
@@ -106,8 +106,11 @@ test("historical subset admission is test-only and callback-scoped", () => {
       /gated migration forbidden in audited test subset/,
     );
   } finally {
-    if (previousNodeEnv === undefined) delete process.env.NODE_ENV;
-    else process.env.NODE_ENV = previousNodeEnv;
+    if (previousNodeEnv === undefined) {
+      Reflect.deleteProperty(process.env, "NODE_ENV");
+    } else {
+      Reflect.set(process.env, "NODE_ENV", previousNodeEnv);
+    }
   }
 });
 

@@ -783,7 +783,7 @@ test("public factory proof refuses production and every input before mutation", 
 
 test("builder refuses caller arguments and compiler overrides before mutation", () => {
   const before = buildOutputSnapshot();
-  const cleanEnvironment = {
+  const cleanEnvironment: NodeJS.ProcessEnv = {
     LANG: "C",
     LC_ALL: "C",
     NODE_ENV: "test",
