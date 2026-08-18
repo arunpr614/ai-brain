@@ -368,6 +368,20 @@ export function ManualNoteEditor({
     [persistDraft, scheduleAutosave],
   );
 
+  useEffect(() => {
+    const handleAppend = (event: Event) => {
+      const customEvent = event as CustomEvent<{ itemId: string; text: string }>;
+      if (customEvent.detail?.itemId === itemId && customEvent.detail?.text) {
+        const current = contentRef.current;
+        const separator = current.trim().length > 0 ? "\n\n" : "";
+        const updated = `${current}${separator}${customEvent.detail.text}`;
+        updateContent(updated);
+      }
+    };
+    window.addEventListener("brain:append-note-text", handleAppend);
+    return () => window.removeEventListener("brain:append-note-text", handleAppend);
+  }, [itemId, updateContent]);
+
   const performSave = useCallback(
     async (manual = false, operation: QueuedNoteOperation = "save") => {
       if (byteLength(contentRef.current) > NOTE_MAX_BYTES) {

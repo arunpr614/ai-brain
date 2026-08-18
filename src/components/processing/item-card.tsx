@@ -61,6 +61,16 @@ export function ProcessingItemCard({
                 </span>
                 <span>Captured {captured}</span>
                 {entered && item.workflowStatus === "inbox" && <span>Waiting {entered}</span>}
+                {item.sourceType === "youtube" && (
+                  <span className="px-1.5 py-0.2 rounded text-[10px] font-mono bg-emerald-950/40 text-emerald-300 border border-emerald-800/40">
+                    ⚡ ASR
+                  </span>
+                )}
+                {item.captureChannel === "recall" && (
+                  <span className="px-1.5 py-0.2 rounded text-[10px] font-mono bg-purple-950/40 text-purple-300 border border-purple-800/40">
+                    📥 Recall
+                  </span>
+                )}
               </p>
             </div>
             <span className="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-[var(--border)] px-2 py-1 text-[11px] font-medium text-[var(--text-secondary)]">
@@ -95,6 +105,14 @@ export function ProcessingItemCard({
           )}
 
           <div className="mt-3 flex flex-wrap items-center gap-2 border-t border-[var(--border)] pt-3">
+            <Link
+              href={`/library/${encodeURIComponent(item.id)}/read`}
+              aria-label={`Open ${item.title} in Reading Studio`}
+              className="inline-flex min-h-11 items-center gap-1.5 rounded-md border border-emerald-500/40 bg-emerald-950/20 px-3 text-xs font-medium text-emerald-400 hover:bg-emerald-950/40 md:min-h-9 transition-colors"
+            >
+              Studio
+              <ArrowUpRight className="h-3.5 w-3.5" />
+            </Link>
             <Link
               href={href}
               aria-label={`Open ${item.title}`}
