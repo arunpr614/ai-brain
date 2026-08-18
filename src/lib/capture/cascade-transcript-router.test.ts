@@ -1,12 +1,9 @@
 import assert from "node:assert/strict";
-import { rmSync } from "node:fs";
-import { after, beforeEach, describe, it } from "node:test";
-import { getDb } from "@/db/client";
-import { getItem, insertCaptured } from "@/db/items";
+import { beforeEach, describe, it } from "node:test";
+import { insertCaptured } from "@/db/items";
 import { getTranscriptJobForItem } from "@/db/transcript-jobs";
 import {
   calculateTranscriptPriority,
-  checkTier0Cache,
   globalYouTubeLimiter,
   routeYoutubeTranscriptIntake,
   YouTubeRateLimiterAndCircuitBreaker,
@@ -96,7 +93,7 @@ describe("CascadeTranscriptRouter & Circuit Breaker", () => {
       capture_quality: "metadata_only",
     });
 
-    const mockScraper = async (videoId: string) => ({
+    const mockScraper = async (_videoId: string) => ({
       text: "This is the direct scraped subtitle text from YouTube timedtext.",
     });
 
@@ -119,7 +116,7 @@ describe("CascadeTranscriptRouter & Circuit Breaker", () => {
       extraction_warning: "no_transcript",
     });
 
-    const mockFailingScraper = async (videoId: string) => null;
+    const mockFailingScraper = async (_videoId: string) => null;
 
     const result = await routeYoutubeTranscriptIntake(item, { directScraper: mockFailingScraper });
     assert.equal(result.tier, 2);

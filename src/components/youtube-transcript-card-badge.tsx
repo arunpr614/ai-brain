@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Sparkles, Loader2, Clock, CheckCircle2, AlertCircle, Cloud } from "lucide-react";
+import { Sparkles, Loader2, Clock, CheckCircle2, AlertCircle } from "lucide-react";
 
 export type CardTranscriptState =
   | "attached"

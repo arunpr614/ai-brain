@@ -23,24 +23,34 @@ export function MacWorkerPresenceBadge({
   const [status, setStatus] = useState<WorkerStatusData | null>(null);
   const [loading, setLoading] = useState(true);
 
-  const fetchStatus = async () => {
-    try {
-      const res = await fetch(`/api/worker/transcript-jobs/status?worker_id=${encodeURIComponent(workerId)}`);
-      if (res.ok) {
-        const data = await res.json();
-        setStatus(data);
-      }
-    } catch {
-      // Ignore network errors in background badge
-    } finally {
-      setLoading(false);
-    }
-  };
-
   useEffect(() => {
-    fetchStatus();
-    const interval = setInterval(fetchStatus, pollIntervalMs);
-    return () => clearInterval(interval);
+    let isMounted = true;
+
+    async function loadStatus() {
+      try {
+        const res = await fetch(`/api/worker/transcript-jobs/status?worker_id=${encodeURIComponent(workerId)}`);
+        if (res.ok && isMounted) {
+          const data = await res.json();
+          setStatus(data);
+        }
+      } catch {
+        // Ignore network errors in background badge
+      } finally {
+        if (isMounted) {
+          setLoading(false);
+        }
+      }
+    }
+
+    void loadStatus();
+    const interval = setInterval(() => {
+      void loadStatus();
+    }, pollIntervalMs);
+
+    return () => {
+      isMounted = false;
+      clearInterval(interval);
+    };
   }, [workerId, pollIntervalMs]);
 
   if (loading && !status) {

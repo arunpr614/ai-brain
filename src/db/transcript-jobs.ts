@@ -1,5 +1,5 @@
 import { createHash } from "node:crypto";
-import { getDb, type ItemRow, newId } from "./client";
+import { getDb, type ItemRow } from "./client";
 import { getItem } from "./items";
 import { extractVideoId } from "@/lib/capture/youtube-url";
 import {

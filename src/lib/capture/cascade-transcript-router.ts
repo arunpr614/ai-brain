@@ -8,7 +8,7 @@
  */
 
 import { getDb } from "@/db/client";
-import { enqueueTranscriptJobForItem, getTranscriptJobForItem } from "@/db/transcript-jobs";
+import { enqueueTranscriptJobForItem } from "@/db/transcript-jobs";
 import { extractVideoId } from "./youtube-url";
 import type { ItemRow } from "@/db/client";
 
@@ -192,8 +192,10 @@ export async function routeYoutubeTranscriptIntake(
             circuitOpen: false,
           };
         }
-      } catch (err: any) {
-        if (err?.message?.includes("429") || err?.status === 429) {
+      } catch (err: unknown) {
+        const message = err instanceof Error ? err.message : String(err);
+        const status = typeof err === "object" && err !== null && "status" in err ? (err as { status: unknown }).status : null;
+        if (message.includes("429") || status === 429) {
           globalYouTubeLimiter.record429(now);
         }
       }
