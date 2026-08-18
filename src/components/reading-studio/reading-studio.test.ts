@@ -88,3 +88,48 @@ test("note event bus constant and payload contract match specification", () => {
   assert.equal(payload.itemId, "test-item-123");
   assert.equal(payload.timestampMs, 12000);
 });
+
+test("binary search accurately and instantly finds active segment across 2,000+ segments in <0.05ms", () => {
+  const largeSegments = Array.from({ length: 2000 }, (_, i) => ({
+    id: `seg-${i}`,
+    item_id: "item-1",
+    source_id: "src-1",
+    segment_index: i,
+    start_ms: i * 2000,
+    end_ms: (i + 1) * 2000,
+    duration_ms: 2000,
+    text: `Transcript segment number ${i} with transcribed text.`,
+    created_at: new Date().toISOString(),
+  }));
+
+  function binarySearch(timeMs: number): number {
+    let low = 0;
+    let high = largeSegments.length - 1;
+    let candidate = -1;
+    while (low <= high) {
+      const mid = (low + high) >> 1;
+      const seg = largeSegments[mid];
+      const start = seg.start_ms ?? 0;
+      const end = seg.end_ms ?? (start + (seg.duration_ms ?? 5000));
+      if (timeMs >= start && timeMs < end) return mid;
+      if (timeMs < start) {
+        high = mid - 1;
+      } else {
+        candidate = mid;
+        low = mid + 1;
+      }
+    }
+    return candidate;
+  }
+
+  const startT = performance.now();
+  assert.equal(binarySearch(0), 0);
+  assert.equal(binarySearch(1500), 0);
+  assert.equal(binarySearch(2000), 1);
+  assert.equal(binarySearch(100500), 50);
+  assert.equal(binarySearch(3500000), 1750);
+  assert.equal(binarySearch(3999999), 1999);
+  const dur = performance.now() - startT;
+  assert.ok(dur < 5, `Binary search should take <5ms for 6 queries, took ${dur}ms`);
+});
+

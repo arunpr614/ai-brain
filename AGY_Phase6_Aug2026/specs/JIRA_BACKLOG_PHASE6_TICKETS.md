@@ -16,6 +16,7 @@
 | [#114](https://github.com/arunpr614/ai-brain/issues/114) | `TICKET-ASR-04` | **FEAT: Local MLX Whisper Worker Hardening & Multi-Client Extraction** | 3 SP | `P1 (High)` | `src/mac_worker.py`, `~/Library/LaunchAgents/com.arunprakash.brain.macworker.plist` |
 | [#115](https://github.com/arunpr614/ai-brain/issues/115) | `TICKET-ASR-05` | **FEAT: Global Navigation Integration & Ambient Telemetry Pill** | 2 SP | `P2 (Medium)` | `src/components/sidebar.tsx`, `src/components/sidebar-routing.ts`, `src/app/settings/page.tsx` |
 | [#116](https://github.com/arunpr614/ai-brain/issues/116) | `TICKET-ASR-06` | **FEAT: Phase 6 End-to-End Verification, Telemetry Auditing & Live Production Certification** | 2 SP | `P1 (High)` | `src/db/transcript-jobs.test.ts`, `scripts/deploy-immutable-release.sh` |
+| [#118](https://github.com/arunpr614/ai-brain/issues/118) | `TICKET-ASR-07` | **FEAT: Real-Time Heartbeat 'Last Seen' Telemetry & Board Date Range Presets** | 3 SP | `P1 (High)` | `src/components/asr-deck/asr-deck-client.tsx`, `src/db/transcript-jobs.ts` |
 
 ---
 
