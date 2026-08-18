@@ -146,6 +146,6 @@ export async function POST(
     ok: true,
     mode: "queued",
     item_id: id,
-    next_run: "01:00 IST (or next 5-min poll if a batch is in flight)",
+    next_run: "02:30 IST (or next 15-min micro-batch)",
   });
 }

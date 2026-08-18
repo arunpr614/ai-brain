@@ -35,8 +35,8 @@ test.after(() => {
 });
 
 test("schedule expressions match v0.6.0 design contract", () => {
-  // 01:00 IST == 19:30 UTC (IST = UTC+5:30). Hetzner runs UTC.
-  assert.equal(SUBMIT_CRON, "30 19 * * *");
+  // 02:30 IST == 21:00 UTC (IST = UTC+5:30). Hetzner runs UTC.
+  assert.equal(SUBMIT_CRON, "0 21 * * *");
   // Every 15 minutes micro-batch trigger.
   assert.equal(MICRO_BATCH_CRON, "*/15 * * * *");
   // Every 5 minutes.

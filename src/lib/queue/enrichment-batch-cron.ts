@@ -35,12 +35,12 @@ import cron from "node-cron";
 import { pollAllInFlightBatches, submitDailyBatch, submitMicroBatch } from "./enrichment-batch";
 
 /**
- * 01:00 IST daily. IST is UTC+5:30, so 01:00 IST = 19:30 UTC of the prior
+ * 02:30 IST daily. IST is UTC+5:30, so 02:30 IST = 21:00 UTC of the prior
  * UTC day. node-cron evaluates expressions against the host system clock;
  * Hetzner servers run UTC by default so this expression matches IST timing
  * regardless of where the host is.
  */
-export const SUBMIT_CRON = "30 19 * * *";
+export const SUBMIT_CRON = "0 21 * * *";
 
 /** High-velocity micro-batch check every 15 minutes. */
 export const MICRO_BATCH_CRON = "*/15 * * * *";
@@ -88,7 +88,7 @@ export function startEnrichmentBatchCron(): void {
   state.pollTask = cron.schedule(POLL_CRON, runPollTick);
 
   console.log(
-    `[batch-cron] scheduled submit='${SUBMIT_CRON}' (01:00 IST) micro='${MICRO_BATCH_CRON}' (every 15m) poll='${POLL_CRON}' (every 5m)`,
+    `[batch-cron] scheduled submit='${SUBMIT_CRON}' (02:30 IST) micro='${MICRO_BATCH_CRON}' (every 15m) poll='${POLL_CRON}' (every 5m)`,
   );
 }
 
