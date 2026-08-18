@@ -2,6 +2,7 @@ export type DesktopShellTarget =
   | "library"
   | "processing"
   | "needs-upgrade"
+  | "asr-deck"
   | "ask"
   | "capture"
   | "settings"
@@ -35,6 +36,7 @@ export function getDesktopShellTarget(pathname: string): DesktopShellTarget {
   if (path.startsWith("/topics/")) return "library";
   if (path.startsWith("/collections/")) return "library";
   if (path === "/search") return "library";
+  if (isPathOrChild(path, "/settings/asr-deck")) return "asr-deck";
   if (isPathOrChild(path, "/needs-upgrade")) return "needs-upgrade";
   if (isPathOrChild(path, "/ask")) return "ask";
   if (isPathOrChild(path, "/capture")) return "capture";

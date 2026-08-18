@@ -3,6 +3,7 @@
 import {
   AlertTriangle,
   CirclePlus,
+  Cpu,
   KeyRound,
   Inbox,
   Library,
@@ -40,6 +41,7 @@ const PRIMARY_ITEMS: NavItem[] = [
   { href: "/library", label: "Library", icon: Library, target: "library" },
   { href: "/processing", label: "Processing", icon: Inbox, target: "processing" },
   { href: "/needs-upgrade", label: "Needs Upgrade", icon: AlertTriangle, target: "needs-upgrade" },
+  { href: "/settings/asr-deck", label: "ASR Workstation", icon: Cpu, target: "asr-deck" },
   { href: "/ask", label: "Ask", icon: MessageSquare, target: "ask" },
   { href: "/settings", label: "Settings", icon: Settings, target: "settings" },
 ];
