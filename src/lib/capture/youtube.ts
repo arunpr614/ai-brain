@@ -214,6 +214,8 @@ interface YoutubeOEmbedResponse {
   thumbnail_url?: string;
 }
 
+import { checkTier0Cache, globalYouTubeLimiter } from "./cascade-transcript-router";
+
 /**
  * Main entrypoint. Throws `YoutubeCaptureError` on unrecoverable failures
  * (route handler maps to 422). Returns a populated `YoutubeExtracted` on
@@ -224,8 +226,47 @@ export async function extractYoutubeVideo(
   videoId: string,
   originalUrl: string,
 ): Promise<YoutubeExtracted> {
-  const player = (await fetchInnerTubePlayer(videoId)) as InnerTubePlayer;
   const sourcePlatform = isShortUrl(originalUrl) ? "youtube_short" : "youtube";
+  const canonicalUrl = canonicalYoutubeUrl(videoId);
+
+  // Tier 0: Cache Check (<10ms, $0.00)
+  const cached = checkTier0Cache(videoId);
+  if (cached && cached.fullText) {
+    const dataApi = await fetchYoutubeDataApiMetadata(videoId);
+    return {
+      title: dataApi?.title ?? videoId,
+      author: dataApi?.channelTitle ?? null,
+      duration_seconds: dataApi?.durationSeconds ?? null,
+      source_url: canonicalUrl,
+      body: cached.fullText,
+      source_platform: sourcePlatform,
+      capture_quality: "high",
+      extraction_method: "tier0_cache_hit",
+      extraction_version: CAPTURE_EXTRACTION_VERSION,
+      published_at: dataApi?.publishedAt ? Date.parse(dataApi.publishedAt) : null,
+      thumbnail_url: dataApi?.thumbnailUrl ?? null,
+      description: dataApi?.description ?? null,
+    };
+  }
+
+  // Tier 1: Check if Circuit Breaker is open
+  if (globalYouTubeLimiter.isCircuitOpen()) {
+    const fallback = await fetchYoutubeOEmbed(videoId);
+    if (fallback) {
+      return antiBotMetadataOnlyResult(videoId, fallback, sourcePlatform);
+    }
+  }
+
+  let player: InnerTubePlayer;
+  try {
+    player = (await fetchInnerTubePlayer(videoId)) as InnerTubePlayer;
+    globalYouTubeLimiter.recordSuccess();
+  } catch (err) {
+    if ((err as Error).message?.includes("429")) {
+      globalYouTubeLimiter.record429();
+    }
+    throw err;
+  }
 
   if (!player.videoDetails) {
     if (isYoutubeAntiBotChallenge(player)) {
@@ -262,8 +303,6 @@ export async function extractYoutubeVideo(
   const description = dataApi?.description ?? null;
   const published_at = dataApi?.publishedAt ? Date.parse(dataApi.publishedAt) : null;
   const thumbnail_url = dataApi?.thumbnailUrl ?? null;
-
-  const canonicalUrl = canonicalYoutubeUrl(videoId);
   const dataApiArtifact = dataApi
     ? [{
         kind: "youtube_data_api_json",
