@@ -54,10 +54,23 @@ export const MAX_BATCH_ATTEMPTS = 3;
 /** Items whose body is shorter than this fall through to realtime fast-path. */
 const MIN_BODY_CHARS_FOR_BATCH = 200;
 
+/** Default minimum items to trigger a micro-batch. */
+export const DEFAULT_MICRO_BATCH_MIN_ITEMS = 3;
+
+/** Default maximum age before pending items trigger a micro-batch (15 mins). */
+export const DEFAULT_MICRO_BATCH_MAX_AGE_MS = 15 * 60 * 1000;
+
 /** Submit-side return shape. null when nothing to submit OR provider lacks batch. */
 export type SubmitOutcome =
   | { batch_id: string; count: number }
   | null;
+
+export interface MicroBatchOptions {
+  minItems?: number;
+  maxAgeMs?: number;
+  force?: boolean;
+  provider?: LLMProvider;
+}
 
 interface PendingItemRow {
   id: string;
@@ -163,6 +176,44 @@ export async function submitDailyBatch(
   tx();
 
   return { batch_id, count: candidates.length };
+}
+
+/**
+ * Dynamic high-velocity batch submitter: checks if pending count ≥ minItems
+ * (default 3) OR oldest pending item age ≥ maxAgeMs (default 15m), or force=true.
+ * If triggered, dispatches a batch to Anthropic Message Batches API.
+ */
+export async function submitMicroBatch(
+  opts: MicroBatchOptions = {},
+): Promise<SubmitOutcome> {
+  const p = opts.provider ?? getEnrichProvider();
+  if (!supportsBatch(p)) return null;
+
+  const minItems = opts.minItems ?? DEFAULT_MICRO_BATCH_MIN_ITEMS;
+  const maxAgeMs = opts.maxAgeMs ?? DEFAULT_MICRO_BATCH_MAX_AGE_MS;
+  const force = opts.force ?? false;
+
+  const db = getDb();
+  const stats = db
+    .prepare(
+      `SELECT COUNT(*) as count, MIN(captured_at) as oldest_captured_at
+       FROM items
+       WHERE enrichment_state = 'pending'
+         AND length(body) >= ?`,
+    )
+    .get(MIN_BODY_CHARS_FOR_BATCH) as { count: number; oldest_captured_at: number | null } | undefined;
+
+  if (!stats || stats.count === 0) return null;
+
+  const isOldEnough =
+    stats.oldest_captured_at !== null &&
+    Date.now() - stats.oldest_captured_at >= maxAgeMs;
+
+  if (!force && stats.count < minItems && !isOldEnough) {
+    return null;
+  }
+
+  return submitDailyBatch(p);
 }
 
 /**

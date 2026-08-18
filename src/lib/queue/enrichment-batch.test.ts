@@ -17,6 +17,7 @@ import {
   MAX_BATCH_ATTEMPTS,
   pollAllInFlightBatches,
   submitDailyBatch,
+  submitMicroBatch,
 } from "./enrichment-batch";
 import type {
   AnthropicBatchPoll,
@@ -583,3 +584,59 @@ test("pollAllInFlightBatches returns early when provider lacks batch", async () 
   // Should not throw, should not poll.
   await pollAllInFlightBatches(ollamaShapedProvider());
 });
+
+// ---- submitMicroBatch ----------------------------------------------------
+
+test("submitMicroBatch: returns null when provider lacks batch", async () => {
+  const result = await submitMicroBatch({ provider: ollamaShapedProvider() });
+  assert.equal(result, null);
+});
+
+test("submitMicroBatch: returns null when pending count < minItems and not old enough", async () => {
+  getDb().prepare("UPDATE items SET enrichment_state = 'done'").run();
+  insertCaptured({ source_type: "note", title: "micro 1", body: "x".repeat(300) });
+  insertCaptured({ source_type: "note", title: "micro 2", body: "y".repeat(300) });
+
+  const { provider, submitted } = makeProvider();
+  const result = await submitMicroBatch({ minItems: 3, maxAgeMs: 60_000, provider });
+  assert.equal(result, null);
+  assert.equal(submitted.length, 0);
+});
+
+test("submitMicroBatch: submits when pending count >= minItems", async () => {
+  getDb().prepare("UPDATE items SET enrichment_state = 'done'").run();
+  insertCaptured({ source_type: "note", title: "micro 1", body: "x".repeat(300) });
+  insertCaptured({ source_type: "note", title: "micro 2", body: "y".repeat(300) });
+  insertCaptured({ source_type: "note", title: "micro 3", body: "z".repeat(300) });
+
+  const { provider, submitted } = makeProvider();
+  const result = await submitMicroBatch({ minItems: 3, provider });
+  assert.ok(result);
+  assert.equal(result?.count, 3);
+  assert.equal(submitted.length, 1);
+});
+
+test("submitMicroBatch: submits when oldest pending item exceeds maxAgeMs", async () => {
+  getDb().prepare("UPDATE items SET enrichment_state = 'done'").run();
+  const item = insertCaptured({ source_type: "note", title: "old item", body: "x".repeat(300) });
+  // Backdate captured_at to 30 mins ago
+  getDb().prepare("UPDATE items SET captured_at = ? WHERE id = ?").run(Date.now() - 30 * 60 * 1000, item.id);
+
+  const { provider, submitted } = makeProvider();
+  const result = await submitMicroBatch({ minItems: 10, maxAgeMs: 15 * 60 * 1000, provider });
+  assert.ok(result);
+  assert.equal(result?.count, 1);
+  assert.equal(submitted.length, 1);
+});
+
+test("submitMicroBatch: submits when force=true even with 1 recent item", async () => {
+  getDb().prepare("UPDATE items SET enrichment_state = 'done'").run();
+  insertCaptured({ source_type: "note", title: "force item", body: "x".repeat(300) });
+
+  const { provider, submitted } = makeProvider();
+  const result = await submitMicroBatch({ minItems: 10, force: true, provider });
+  assert.ok(result);
+  assert.equal(result?.count, 1);
+  assert.equal(submitted.length, 1);
+});
+

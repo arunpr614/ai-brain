@@ -6,7 +6,7 @@ import { AnthropicProvider } from "./anthropic";
 import { OllamaProvider } from "./ollama";
 import { OpenRouterProvider } from "./openrouter";
 import { LLMError } from "./errors";
-import { getAskProvider, getEnrichProvider, resetProviderCache } from "./factory";
+import { getAskProvider, getEnrichMode, getEnrichProvider, resetProviderCache } from "./factory";
 
 function withEnv(vars: Record<string, string | undefined>, fn: () => void): void {
   const prev: Record<string, string | undefined> = {};
@@ -96,3 +96,38 @@ test("factory: resetProviderCache lets a new env take effect", () => {
     assert.ok(anth instanceof AnthropicProvider);
   });
 });
+
+test("factory: getEnrichMode defaults based on provider", () => {
+  withEnv({ LLM_ENRICH_MODE: undefined, LLM_ENRICH_PROVIDER: "ollama" }, () => {
+    assert.equal(getEnrichMode(), "realtime");
+  });
+  withEnv({ LLM_ENRICH_MODE: undefined, LLM_ENRICH_PROVIDER: "anthropic" }, () => {
+    assert.equal(getEnrichMode(), "batch");
+  });
+});
+
+test("factory: getEnrichMode honors explicit LLM_ENRICH_MODE", () => {
+  withEnv({ LLM_ENRICH_MODE: "realtime", LLM_ENRICH_PROVIDER: "anthropic" }, () => {
+    assert.equal(getEnrichMode(), "realtime");
+  });
+  withEnv({ LLM_ENRICH_MODE: "hybrid", LLM_ENRICH_PROVIDER: "anthropic" }, () => {
+    assert.equal(getEnrichMode(), "hybrid");
+  });
+  withEnv({ LLM_ENRICH_MODE: "batch", LLM_ENRICH_PROVIDER: "ollama" }, () => {
+    assert.equal(getEnrichMode(), "batch");
+  });
+});
+
+test("factory: getEnrichMode throws on unknown mode", () => {
+  withEnv({ LLM_ENRICH_MODE: "invalid_mode" }, () => {
+    assert.throws(
+      () => getEnrichMode(),
+      (err) => {
+        assert.ok(err instanceof LLMError);
+        assert.match((err as Error).message, /not a known mode/);
+        return true;
+      },
+    );
+  });
+});
+

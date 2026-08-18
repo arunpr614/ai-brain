@@ -11,6 +11,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import cron from "node-cron";
 import {
+  MICRO_BATCH_CRON,
   POLL_CRON,
   SUBMIT_CRON,
   startEnrichmentBatchCron,
@@ -36,17 +37,20 @@ test.after(() => {
 test("schedule expressions match v0.6.0 design contract", () => {
   // 01:00 IST == 19:30 UTC (IST = UTC+5:30). Hetzner runs UTC.
   assert.equal(SUBMIT_CRON, "30 19 * * *");
+  // Every 15 minutes micro-batch trigger.
+  assert.equal(MICRO_BATCH_CRON, "*/15 * * * *");
   // Every 5 minutes.
   assert.equal(POLL_CRON, "*/5 * * * *");
   assert.equal(cron.validate(SUBMIT_CRON), true);
+  assert.equal(cron.validate(MICRO_BATCH_CRON), true);
   assert.equal(cron.validate(POLL_CRON), true);
 });
 
-test("startEnrichmentBatchCron registers exactly two tasks on first call", () => {
+test("startEnrichmentBatchCron registers exactly three tasks on first call", () => {
   const before = cron.getTasks().size;
   startEnrichmentBatchCron();
   const after = cron.getTasks().size;
-  assert.equal(after - before, 2, "expected exactly 2 new tasks (submit + poll)");
+  assert.equal(after - before, 3, "expected exactly 3 new tasks (submit + microBatch + poll)");
 });
 
 test("startEnrichmentBatchCron is idempotent — second call is a no-op", () => {
@@ -59,7 +63,7 @@ test("startEnrichmentBatchCron is idempotent — second call is a no-op", () => 
   assert.equal(
     taskCountAfterRepeats,
     taskCountAfterFirst,
-    "registering N times should still produce 1× submit + 1× poll task",
+    "registering N times should still produce 1× submit + 1× micro + 1× poll task",
   );
 });
 
@@ -69,7 +73,7 @@ test("stopEnrichmentBatchCron + start fresh works (test reset path)", () => {
   stopEnrichmentBatchCron();
   startEnrichmentBatchCron();
   const after2 = cron.getTasks().size;
-  // Same number of tasks (2 submit + poll) after a stop-restart cycle.
+  // Same number of tasks (3 submit + micro + poll) after a stop-restart cycle.
   assert.equal(after2, after1);
 });
 

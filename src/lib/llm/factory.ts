@@ -27,8 +27,10 @@ import { OpenRouterProvider } from "./openrouter";
 import type { LLMProvider } from "./types";
 
 export type ProviderName = "ollama" | "anthropic" | "openrouter";
+export type EnrichMode = "batch" | "realtime" | "hybrid";
 
 const KNOWN_PROVIDERS = new Set<ProviderName>(["ollama", "anthropic", "openrouter"]);
+const KNOWN_ENRICH_MODES = new Set<EnrichMode>(["batch", "realtime", "hybrid"]);
 
 interface CacheSlot {
   provider: LLMProvider | null;
@@ -86,6 +88,26 @@ export function getEnrichProvider(): LLMProvider {
 }
 
 /**
+ * Returns the enrichment mode (batch, realtime, or hybrid).
+ * Defaults to "batch" when LLM_ENRICH_PROVIDER is "anthropic" and
+ * LLM_ENRICH_MODE is unset; otherwise defaults to "realtime".
+ */
+export function getEnrichMode(): EnrichMode {
+  const raw = readEnv("LLM_ENRICH_MODE");
+  if (!raw) {
+    const provider = readEnv("LLM_ENRICH_PROVIDER") ?? "ollama";
+    return provider === "anthropic" ? "batch" : "realtime";
+  }
+  if (!KNOWN_ENRICH_MODES.has(raw as EnrichMode)) {
+    throw new LLMError(
+      "connection",
+      `LLM_ENRICH_MODE=${raw} is not a known mode (expected: ${Array.from(KNOWN_ENRICH_MODES).join(", ")})`,
+    );
+  }
+  return raw as EnrichMode;
+}
+
+/**
  * Returns the provider used by the Ask path. Honors LLM_ASK_PROVIDER +
  * LLM_ASK_MODEL.
  */
@@ -104,3 +126,4 @@ export function resetProviderCache(): void {
   askSlot.provider = null;
   askSlot.key = null;
 }
+
