@@ -8,19 +8,21 @@
 **Date:** August 18, 2026  
 **Status:** Approved & Ready for Sprint Backlog  
 **Target Branch:** `feat/phase3-ui-ux-polish` → `main`  
-**User Evidence:** [`media_1787057311981.png`](file:///Users/arun.prakash/.gemini/antigravity/brain/9bc235e8-cdbc-41e7-9a51-6396613b53bf/.user_uploaded/media_1787057311981.png) & [`media_1787057318143.png`](file:///Users/arun.prakash/.gemini/antigravity/brain/9bc235e8-cdbc-41e7-9a51-6396613b53bf/.user_uploaded/media_1787057318143.png)
+**User Evidence:** [`media_1787057311981.png`](file:///Users/arun.prakash/.gemini/antigravity/brain/9bc235e8-cdbc-41e7-9a51-6396613b53bf/.user_uploaded/media_1787057311981.png), [`media_1787057318143.png`](file:///Users/arun.prakash/.gemini/antigravity/brain/9bc235e8-cdbc-41e7-9a51-6396613b53bf/.user_uploaded/media_1787057318143.png), & [`media_1787057384533.png`](file:///Users/arun.prakash/.gemini/antigravity/brain/9bc235e8-cdbc-41e7-9a51-6396613b53bf/.user_uploaded/media_1787057384533.png)
 
 ---
 
 ## 📋 Executive Summary & Problem Statement
 
-During live production usage of the **Phase 3 Reading Studio & Companion Workbench** on `https://brain.arunp.in`, critical UI/UX design defects and light-theme contrast regressions were identified:
+During live production usage of the **Phase 3 Reading Studio & Companion Workbench** on `https://brain.arunp.in`, critical UI/UX design defects, light-theme contrast regressions, and redundant button placements were identified:
 
 1. **Unreadable Recall Banner in Light Theme (Low Contrast):**  
    In `src/components/reading-studio/multi-layer-companion-tabs.tsx`, the **Imported Recall.it Memory** banner and tag pills utilize hardcoded dark-mode tokens (`bg-purple-950/20 text-purple-300 border-purple-500/30`). In light mode, this produces pale lavender text on a light lilac background with a contrast ratio of < 2.1:1 (violating WCAG AA minimum 4.5:1 requirement).
 2. **Muddy Header Icon Container & Awkward Alignment:**  
    In `src/components/reading-studio/reading-studio-app.tsx`, the `<BookOpen>` header icon container uses `bg-emerald-950/40 text-emerald-400 border-emerald-800/40`, rendering as a dirty dark-green square in light mode, with cramped horizontal spacing and unrefined baseline alignment relative to the item title.
-3. **Missing Semantic Theme Token Hygiene:**  
+3. **Unreadable Focus Mode Buttons & Redundant Toggles:**  
+   In `src/components/reading-studio/reading-studio-app.tsx` and `src/components/reading-studio/split-pane-container.tsx`, active Focus Mode buttons apply `bg-indigo-950/40 text-indigo-300 border-indigo-800/60`. In light mode, `text-indigo-300` renders as a washed-out pastel blue on a grey-purple surface (< 1.9:1 contrast ratio). Furthermore, two separate Focus Mode toggle buttons are rendered simultaneously within 40px of vertical space, creating UX clutter.
+4. **Missing Semantic Theme Token Hygiene:**  
    Hardcoded palette values (`bg-*-950`, `text-*-300`) bypass CSS theme variables (`var(--surface)`, `var(--text-primary)`, `var(--text-secondary)`, `var(--border)`), causing visual friction whenever switching between light and dark themes.
 
 ---
@@ -32,8 +34,9 @@ During live production usage of the **Phase 3 Reading Studio & Companion Workben
 | **`TICKET-UX-01`** | **BUG(ux-contrast): Fix Light Mode Contrast & Theme Variables in Companion Tabs (Recall Banner & Tags)** | Companion Workbench | Bug | 3 SP | **P1 (High)** | `src/components/reading-studio/multi-layer-companion-tabs.tsx` |
 | **`TICKET-UX-02`** | **BUG(ux-theme): Fix Reading Studio Header Icon Badges, Spacing & Title Alignment** | Reading Studio Header | Bug | 2 SP | **P1 (High)** | `src/components/reading-studio/reading-studio-app.tsx`, `src/components/reading-studio/hero-workspace-banner.tsx` |
 | **`TICKET-UX-03`** | **FEAT(ux-theme): Comprehensive Semantic Token & WCAG 2.1 AA Contrast Audit for Phase 3 Suite** | Design System | Task | 3 SP | **P2 (Medium)** | `src/components/reading-studio/*`, `src/components/repair/*`, `src/app/globals.css` |
+| **`TICKET-UX-04`** | **BUG(ux-contrast): Fix Focus Mode Active Contrast & Redundant Toggle Button Styling in Reading Studio** | Reading Studio Layout | Bug | 2 SP | **P1 (High)** | `src/components/reading-studio/split-pane-container.tsx`, `src/components/reading-studio/reading-studio-app.tsx` |
 
-**Total Milestone Effort:** 8 Story Points (~2-3 days).
+**Total Milestone Effort:** 10 Story Points (~3-4 days).
 
 ---
 
@@ -107,6 +110,35 @@ In light mode, `bg-emerald-950/40` renders as a dark murky box with neon green i
 
 ---
 
+## 🎟️ Ticket 4: `TICKET-UX-04` — Fix Focus Mode Active Contrast & Redundant Toggle Button Styling
+
+### 📌 Summary
+Eliminate low-contrast styling on active Focus Mode buttons in light mode and streamline the duplicate Focus Mode toggles rendered across the top header bar and the split-ratio toolbar.
+
+### 🔍 Root Cause Analysis
+```tsx
+// CURRENT DEFECTIVE CODE (src/components/reading-studio/reading-studio-app.tsx:193 & split-pane-container.tsx:92):
+className={`... ${
+  isFocusMode
+    ? "bg-indigo-950/40 text-indigo-300 border-indigo-800/60"
+    : "border-[var(--border)] bg-[var(--surface-raised)] text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
+}`}
+```
+- In light mode, `text-indigo-300` is `#a5b4fc` on a grey-purple background, generating a contrast ratio of < 1.9:1 (completely washed out).
+- Having both `[ Exit Focus ]` in the top header and `[ Focus Mode (⌥F) ]` in the split toolbar rendered simultaneously creates redundant button clutter.
+
+### 🎯 Acceptance Criteria
+1. **Adaptive High-Contrast Active State:**
+   - **Light Mode:** `bg-indigo-50 text-indigo-950 border-indigo-300 font-semibold shadow-xs`
+   - **Dark Mode:** `dark:bg-indigo-950/50 dark:text-indigo-200 dark:border-indigo-700/60`
+2. **Dynamic Labeling & Icons:**
+   - When active (`isFocusMode = true`), both buttons clearly display `<Minimize2 className="h-3.5 w-3.5" />` and `"Exit Focus (⌥F)"`.
+   - When inactive (`isFocusMode = false`), buttons display `<Maximize2 className="h-3.5 w-3.5" />` and `"Focus Mode (⌥F)"`.
+3. **Split Ratio Switcher Cohesion:**
+   - The split presets `[ 50:50 ]`, `[ 60:40 ]`, `[ 40:60 ]` and the Focus button in `SplitPaneContainer` share the same visual language, padding, and border radius.
+
+---
+
 ## 🎟️ Ticket 3: `TICKET-UX-03` — Comprehensive Semantic Token & WCAG 2.1 AA Contrast Audit
 
 ### 📌 Summary
@@ -134,5 +166,6 @@ Phase 3 Milestones:
 └── Milestone 3.1: UI/UX Quality, Contrast & Light-Mode Polish (Target - v0.9.1) 🚀
     ├── TICKET-UX-01: Recall Memory Banner Contrast & Tags (3 SP)
     ├── TICKET-UX-02: Reading Studio Header Badge & Title Polish (2 SP)
+    ├── TICKET-UX-04: Focus Mode Active Contrast & Button Streamlining (2 SP)
     └── TICKET-UX-03: Phase 3 Semantic Theme Variable Audit (3 SP)
 ```
