@@ -441,6 +441,8 @@ export default async function ItemDetailPage({
           <HeroWorkspaceBanner
             item={item}
             segmentCount={activeTranscriptSource?.segment_count ?? 0}
+            diagnosticWarning={item.extraction_warning ? extractionWarningMessage(item.extraction_warning) : undefined}
+            segments={transcriptPreview?.segments ?? []}
           />
 
           {transcriptPreview && <TranscriptPanel preview={transcriptPreview} />}

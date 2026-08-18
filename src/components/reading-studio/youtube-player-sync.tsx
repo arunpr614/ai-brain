@@ -20,6 +20,8 @@ interface YTPlayer {
   pauseVideo(): void;
   mute(): void;
   unMute(): void;
+  setPlaybackRate(rate: number): void;
+  getPlaybackRate(): number;
   destroy(): void;
 }
 
@@ -58,6 +60,7 @@ export function YouTubePlayerSync({
   const [isMuted, setIsMuted] = useState(false);
   const [currentTimeSec, setCurrentTimeSec] = useState(0);
   const [durationSec, setDurationSec] = useState(0);
+  const [playbackRate, setPlaybackRate] = useState<number>(1);
   const playerRef = useRef<YTPlayer | null>(null);
 
   // Initialize YouTube IFrame API
@@ -139,13 +142,12 @@ export function YouTubePlayerSync({
       try {
         const sec = seekTargetMs / 1000;
         playerRef.current.seekTo(sec, true);
-        onTimeUpdate?.(seekTargetMs);
         onSeekHandled?.();
       } catch {
         // ignore
       }
     }
-  }, [seekTargetMs, onSeekHandled, onTimeUpdate]);
+  }, [seekTargetMs, onSeekHandled]);
 
   const togglePlay = useCallback(() => {
     if (!playerRef.current) return;
@@ -181,6 +183,18 @@ export function YouTubePlayerSync({
       const current = playerRef.current.getCurrentTime();
       const target = Math.max(0, current + deltaSec);
       playerRef.current.seekTo(target, true);
+      setCurrentTimeSec(target);
+      onTimeUpdate?.(Math.floor(target * 1000));
+    } catch {
+      // ignore
+    }
+  }, [onTimeUpdate]);
+
+  const handleRateChange = useCallback((rate: number) => {
+    if (!playerRef.current) return;
+    try {
+      playerRef.current.setPlaybackRate(rate);
+      setPlaybackRate(rate);
     } catch {
       // ignore
     }
@@ -213,7 +227,7 @@ export function YouTubePlayerSync({
       </div>
 
       {/* Synchronized Media Control Bar */}
-      <div className="flex items-center justify-between px-4 py-2.5 bg-[var(--surface)] border-t border-[var(--border)] text-xs text-[var(--text-secondary)]">
+      <div className="flex flex-wrap items-center justify-between gap-2 px-4 py-2.5 bg-[var(--surface)] border-t border-[var(--border)] text-xs text-[var(--text-secondary)]">
         <div className="flex items-center gap-2">
           <button
             type="button"
@@ -241,11 +255,29 @@ export function YouTubePlayerSync({
           </button>
           <span className="font-mono text-xs text-[var(--text-primary)] ml-1">
             {formatTime(currentTimeSec)}
-            {durationSec > 0 && <span className="text-[var(--text-tertiary)]"> / {formatTime(durationSec)}</span>}
+            {durationSec > 0 && <span className="text-[var(--text-muted)]"> / {formatTime(durationSec)}</span>}
           </span>
         </div>
 
         <div className="flex items-center gap-2">
+          {/* Playback Rate Selector */}
+          <div className="inline-flex rounded-lg bg-[var(--surface-base)] p-0.5 border border-[var(--border)]">
+            {[1, 1.25, 1.5, 2].map((rate) => (
+              <button
+                key={rate}
+                type="button"
+                onClick={() => handleRateChange(rate)}
+                className={`px-1.5 py-0.5 rounded text-[10px] font-mono font-medium transition-colors ${
+                  playbackRate === rate
+                    ? "bg-[var(--action-primary-bg)] text-[var(--action-primary-fg)] shadow-xs"
+                    : "text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
+                }`}
+              >
+                {rate}x
+              </button>
+            ))}
+          </div>
+
           <button
             type="button"
             onClick={toggleMute}

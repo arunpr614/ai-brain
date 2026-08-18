@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { cookies } from "next/headers";
 import { notFound, redirect } from "next/navigation";
 import { getItem } from "@/db/items";
@@ -18,6 +19,19 @@ function parseQuotes(raw: string | null): string[] {
   } catch {
     return [];
   }
+}
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}): Promise<Metadata> {
+  const { id } = await params;
+  const item = getItem(id);
+  if (!item) return { title: "Reading Studio · AI Brain" };
+  return {
+    title: `${item.title || "Untitled"} · Reading Studio · AI Brain`,
+  };
 }
 
 export default async function ReadingStudioPage({

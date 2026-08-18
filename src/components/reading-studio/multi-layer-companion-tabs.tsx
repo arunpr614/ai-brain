@@ -1,11 +1,13 @@
 "use client";
 
 import { useState, useId, type KeyboardEvent } from "react";
-import { Sparkles, Download, Pencil, Tag, Hash } from "lucide-react";
+import Link from "next/link";
+import { Sparkles, Download, Pencil, Tag, Hash, MessageSquare, ArrowRight } from "lucide-react";
 import { ManualNoteEditor } from "@/components/manual-note-editor";
 import type { ItemRow } from "@/db/client";
 import type { ItemTopicRow } from "@/db/topics";
 import type { TagRow } from "@/db/tags";
+import { useNoteEventListener } from "@/lib/reading-studio/note-event-bus";
 
 export interface MultiLayerCompanionTabsProps {
   item: ItemRow;
@@ -21,21 +23,26 @@ export function MultiLayerCompanionTabs({
   parsedQuotes,
 }: MultiLayerCompanionTabsProps) {
   const isRecallImport = item.capture_source === "recall";
-  const [activeTab, setActiveTab] = useState<"ai" | "recall" | "notes">("notes");
+  const [activeTab, setActiveTab] = useState<"notes" | "ai" | "ask" | "recall">("notes");
   const id = useId();
 
-  const aiTabId = `${id}-ai-tab`;
-  const recallTabId = `${id}-recall-tab`;
-  const notesTabId = `${id}-notes-tab`;
+  // Listen for pinned quote events to auto-switch to Notes tab
+  useNoteEventListener(item.id, () => {
+    setActiveTab("notes");
+  });
 
-  const aiPanelId = `${id}-ai-panel`;
-  const recallPanelId = `${id}-recall-panel`;
+  const notesTabId = `${id}-notes-tab`;
+  const aiTabId = `${id}-ai-tab`;
+  const askTabId = `${id}-ask-tab`;
+  const recallTabId = `${id}-recall-tab`;
+
   const notesPanelId = `${id}-notes-panel`;
+  const aiPanelId = `${id}-ai-panel`;
+  const askPanelId = `${id}-ask-panel`;
+  const recallPanelId = `${id}-recall-panel`;
 
   const onTabKeyDown = (event: KeyboardEvent<HTMLButtonElement>) => {
-    const tabs: Array<"ai" | "recall" | "notes"> = isRecallImport
-      ? ["notes", "ai", "recall"]
-      : ["notes", "ai"];
+    const tabs: Array<"notes" | "ai" | "ask" | "recall"> = ["notes", "ai", "ask", "recall"];
 
     const currentIdx = tabs.indexOf(activeTab);
     if (currentIdx === -1) return;
@@ -59,9 +66,9 @@ export function MultiLayerCompanionTabs({
         <div
           role="tablist"
           aria-label="Reading Studio Companion Layers"
-          className="grid grid-cols-3 gap-1 rounded-lg bg-zinc-950 p-1 border border-zinc-800"
+          className="grid grid-cols-4 gap-1 rounded-lg bg-[var(--surface-base)] p-1 border border-[var(--border)]"
         >
-          {/* Notes Tab */}
+          {/* Tab 1: Notes */}
           <button
             id={notesTabId}
             type="button"
@@ -71,17 +78,17 @@ export function MultiLayerCompanionTabs({
             tabIndex={activeTab === "notes" ? 0 : -1}
             onClick={() => setActiveTab("notes")}
             onKeyDown={onTabKeyDown}
-            className={`inline-flex items-center justify-center gap-1.5 py-1.5 px-3 rounded-md text-xs font-semibold transition-all ${
+            className={`inline-flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-md text-xs font-semibold transition-all ${
               activeTab === "notes"
-                ? "bg-zinc-800 text-white shadow-sm"
-                : "text-zinc-400 hover:text-zinc-200"
+                ? "bg-[var(--surface-raised)] text-[var(--text-primary)] shadow-xs border border-[var(--border)]"
+                : "text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
             }`}
           >
-            <Pencil className="h-3.5 w-3.5 text-emerald-400" />
-            <span>My Notes</span>
+            <Pencil className="h-3.5 w-3.5 text-emerald-500" />
+            <span className="truncate">Notes</span>
           </button>
 
-          {/* AI Brief Tab */}
+          {/* Tab 2: AI Brief */}
           <button
             id={aiTabId}
             type="button"
@@ -91,17 +98,37 @@ export function MultiLayerCompanionTabs({
             tabIndex={activeTab === "ai" ? 0 : -1}
             onClick={() => setActiveTab("ai")}
             onKeyDown={onTabKeyDown}
-            className={`inline-flex items-center justify-center gap-1.5 py-1.5 px-3 rounded-md text-xs font-semibold transition-all ${
+            className={`inline-flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-md text-xs font-semibold transition-all ${
               activeTab === "ai"
-                ? "bg-zinc-800 text-white shadow-sm"
-                : "text-zinc-400 hover:text-zinc-200"
+                ? "bg-[var(--surface-raised)] text-[var(--text-primary)] shadow-xs border border-[var(--border)]"
+                : "text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
             }`}
           >
             <Sparkles className="h-3.5 w-3.5 text-indigo-400" />
-            <span>AI Brief</span>
+            <span className="truncate">Brief</span>
           </button>
 
-          {/* Recall Sync Tab */}
+          {/* Tab 3: Ask AI */}
+          <button
+            id={askTabId}
+            type="button"
+            role="tab"
+            aria-selected={activeTab === "ask"}
+            aria-controls={askPanelId}
+            tabIndex={activeTab === "ask" ? 0 : -1}
+            onClick={() => setActiveTab("ask")}
+            onKeyDown={onTabKeyDown}
+            className={`inline-flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-md text-xs font-semibold transition-all ${
+              activeTab === "ask"
+                ? "bg-[var(--surface-raised)] text-[var(--text-primary)] shadow-xs border border-[var(--border)]"
+                : "text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
+            }`}
+          >
+            <MessageSquare className="h-3.5 w-3.5 text-cyan-400" />
+            <span className="truncate">Ask AI</span>
+          </button>
+
+          {/* Tab 4: Recall */}
           <button
             id={recallTabId}
             type="button"
@@ -111,14 +138,14 @@ export function MultiLayerCompanionTabs({
             tabIndex={activeTab === "recall" ? 0 : -1}
             onClick={() => setActiveTab("recall")}
             onKeyDown={onTabKeyDown}
-            className={`inline-flex items-center justify-center gap-1.5 py-1.5 px-3 rounded-md text-xs font-semibold transition-all ${
+            className={`inline-flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-md text-xs font-semibold transition-all ${
               activeTab === "recall"
-                ? "bg-zinc-800 text-white shadow-sm"
-                : "text-zinc-400 hover:text-zinc-200"
+                ? "bg-[var(--surface-raised)] text-[var(--text-primary)] shadow-xs border border-[var(--border)]"
+                : "text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
             }`}
           >
             <Download className="h-3.5 w-3.5 text-purple-400" />
-            <span>Recall</span>
+            <span className="truncate">Recall</span>
             {isRecallImport && <span className="h-1.5 w-1.5 rounded-full bg-purple-400"></span>}
           </button>
         </div>
@@ -149,11 +176,11 @@ export function MultiLayerCompanionTabs({
                 <Sparkles className="h-4 w-4" />
                 <span>Executive Summary</span>
               </div>
-              <p className="leading-relaxed text-zinc-200 text-sm whitespace-pre-line">{item.summary}</p>
+              <p className="leading-relaxed text-[var(--text-primary)] text-sm whitespace-pre-line">{item.summary}</p>
             </div>
           ) : (
-            <div className="p-6 rounded-xl bg-zinc-900/40 border border-zinc-800 text-center text-xs text-zinc-400">
-              <Sparkles className="h-5 w-5 mx-auto mb-2 text-zinc-600" />
+            <div className="p-6 rounded-xl bg-[var(--surface)] border border-[var(--border)] text-center text-xs text-[var(--text-secondary)]">
+              <Sparkles className="h-5 w-5 mx-auto mb-2 text-[var(--text-muted)]" />
               <span>AI synthesis will generate structured takeaways once indexed.</span>
             </div>
           )}
@@ -161,7 +188,7 @@ export function MultiLayerCompanionTabs({
           {/* AI Concept Topics */}
           {topics.length > 0 && (
             <div className="space-y-2">
-              <span className="text-[11px] font-semibold uppercase tracking-wider text-zinc-400">
+              <span className="text-[11px] font-semibold uppercase tracking-wider text-[var(--text-secondary)]">
                 Key Concepts & Topics
               </span>
               <div className="flex flex-wrap gap-1.5">
@@ -181,14 +208,14 @@ export function MultiLayerCompanionTabs({
           {/* Extracted Quotes */}
           {parsedQuotes.length > 0 && (
             <div className="space-y-2">
-              <span className="text-[11px] font-semibold uppercase tracking-wider text-zinc-400">
+              <span className="text-[11px] font-semibold uppercase tracking-wider text-[var(--text-secondary)]">
                 Key Quotes
               </span>
               <div className="space-y-2">
                 {parsedQuotes.map((q, idx) => (
                   <blockquote
                     key={idx}
-                    className="p-3 rounded-lg bg-zinc-900 border-l-2 border-indigo-400 text-xs text-zinc-300 italic"
+                    className="p-3 rounded-lg bg-[var(--surface)] border-l-2 border-indigo-400 text-xs text-[var(--text-secondary)] italic"
                   >
                     &ldquo;{q}&rdquo;
                   </blockquote>
@@ -198,7 +225,32 @@ export function MultiLayerCompanionTabs({
           )}
         </div>
 
-        {/* Tab 3: Recall Sync Memory */}
+        {/* Tab 3: Ask AI Companion */}
+        <div
+          id={askPanelId}
+          role="tabpanel"
+          aria-labelledby={askTabId}
+          className={activeTab === "ask" ? "space-y-4" : "hidden"}
+        >
+          <div className="p-5 rounded-xl bg-cyan-950/20 border border-cyan-500/30 text-xs space-y-4">
+            <div className="flex items-center gap-2 text-cyan-300 font-semibold uppercase tracking-wider text-[11px]">
+              <MessageSquare className="h-4 w-4" />
+              <span>Contextual Item Q&A</span>
+            </div>
+            <p className="text-[var(--text-secondary)] leading-relaxed">
+              Ask targeted questions about &ldquo;{item.title}&rdquo;. Responses are strictly grounded in this item&apos;s transcript and document chunks.
+            </p>
+            <Link
+              href={`/items/${item.id}/ask`}
+              className="inline-flex items-center justify-center gap-2 w-full rounded-lg bg-[var(--action-primary-bg)] py-2.5 px-4 text-xs font-semibold text-[var(--action-primary-fg)] hover:bg-[var(--action-primary-bg-hover)] transition-colors shadow-xs"
+            >
+              <span>Open Ask AI Companion</span>
+              <ArrowRight className="h-3.5 w-3.5" />
+            </Link>
+          </div>
+        </div>
+
+        {/* Tab 4: Recall Sync Memory */}
         <div
           id={recallPanelId}
           role="tabpanel"
@@ -232,8 +284,8 @@ export function MultiLayerCompanionTabs({
               )}
             </div>
           ) : (
-            <div className="p-6 rounded-xl bg-zinc-900/40 border border-zinc-800 text-center text-xs text-zinc-400">
-              <Download className="h-5 w-5 mx-auto mb-2 text-zinc-600" />
+            <div className="p-6 rounded-xl bg-[var(--surface)] border border-[var(--border)] text-center text-xs text-[var(--text-secondary)]">
+              <Download className="h-5 w-5 mx-auto mb-2 text-[var(--text-muted)]" />
               <span>This bookmark was captured directly without a Recall.it sync packet.</span>
             </div>
           )}

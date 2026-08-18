@@ -1,11 +1,13 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import Link from "next/link";
-import { ArrowLeft, BookOpen, ExternalLink, FileText } from "lucide-react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { ArrowLeft, BookOpen, ExternalLink, FileText, Maximize2, Minimize2 } from "lucide-react";
 import { YouTubePlayerSync } from "./youtube-player-sync";
 import { TranscriptTimeline } from "./transcript-timeline";
 import { MultiLayerCompanionTabs } from "./multi-layer-companion-tabs";
+import { SplitPaneContainer, type SplitRatio } from "./split-pane-container";
 import type { ItemRow } from "@/db/client";
 import type { TranscriptSegmentRow, TranscriptSourceRow } from "@/db/transcripts";
 import type { ItemTopicRow } from "@/db/topics";
@@ -31,7 +33,6 @@ function extractYouTubeVideoId(url: string | null): string | null {
       return parsed.pathname.slice(1).split("?")[0] || null;
     }
   } catch {
-    // fallback regex
     const match = url.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=))([\w-]{11})/);
     return match ? match[1] : null;
   }
@@ -46,9 +47,18 @@ export function ReadingStudioApp({
   tags,
   parsedQuotes,
 }: ReadingStudioAppProps) {
-  const [currentTimeMs, setCurrentTimeMs] = useState(0);
-  const [seekTargetMs, setSeekTargetMs] = useState<number | null>(null);
+  const router = useRouter();
+  const searchParams = useSearchParams();
+
+  // Initial time from query param ?t=180
+  const initialTimeParam = searchParams.get("t");
+  const initialTimeMs = initialTimeParam ? parseInt(initialTimeParam, 10) * (initialTimeParam.length > 5 ? 1 : 1000) : 0;
+
+  const [currentTimeMs, setCurrentTimeMs] = useState(initialTimeMs || 0);
+  const [seekTargetMs, setSeekTargetMs] = useState<number | null>(initialTimeMs || null);
   const [mobileTab, setMobileTab] = useState<"reader" | "notes">("reader");
+  const [splitRatio, setSplitRatio] = useState<SplitRatio>("60:40");
+  const [isFocusMode, setIsFocusMode] = useState(false);
 
   const videoId = extractYouTubeVideoId(item.source_url);
   const isYouTube = Boolean(videoId);
@@ -61,6 +71,77 @@ export function ReadingStudioApp({
   const handleSeekHandled = useCallback(() => {
     setSeekTargetMs(null);
   }, []);
+
+  const toggleFocusMode = useCallback(() => {
+    setIsFocusMode((prev) => !prev);
+  }, []);
+
+  // Global keyboard shortcuts (⌥F for Focus Mode, Esc to return to item details)
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // ⌥F (Option + F / Alt + F) -> Toggle Focus Mode
+      if (e.altKey && (e.key === "f" || e.key === "F" || e.code === "KeyF")) {
+        e.preventDefault();
+        toggleFocusMode();
+      }
+      // Esc -> Back to item detail if not focused in an input
+      if (e.key === "Escape" && !(e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement)) {
+        router.push(`/items/${item.id}`);
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [toggleFocusMode, router, item.id]);
+
+  const leftPaneContent = (
+    <>
+      {/* Video Player or Article Header */}
+      {isYouTube && videoId ? (
+        <YouTubePlayerSync
+          videoId={videoId}
+          sourceUrl={item.source_url || ""}
+          title={item.title || "YouTube Video"}
+          onTimeUpdate={setCurrentTimeMs}
+          seekTargetMs={seekTargetMs}
+          onSeekHandled={handleSeekHandled}
+        />
+      ) : (
+        <div className="p-5 rounded-xl bg-[var(--surface-raised)] border border-[var(--border)] space-y-3">
+          <div className="flex items-center gap-2 text-xs font-semibold text-cyan-500 dark:text-cyan-400 uppercase tracking-wider">
+            <FileText className="h-4 w-4" />
+            <span>Full-Text Article</span>
+          </div>
+          <h2 className="text-base font-bold text-[var(--text-primary)]">{item.title}</h2>
+          {item.body && (
+            <div className="prose dark:prose-invert max-w-none text-xs text-[var(--text-secondary)] leading-relaxed max-h-96 overflow-y-auto pr-2">
+              <p className="whitespace-pre-line">{item.body}</p>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Interactive Transcript Timeline */}
+      <div className="h-[520px]">
+        <TranscriptTimeline
+          itemId={item.id}
+          itemTitle={item.title}
+          source={transcriptSource}
+          segments={segments}
+          currentTimeMs={currentTimeMs}
+          onSeek={handleSeek}
+        />
+      </div>
+    </>
+  );
+
+  const rightPaneContent = (
+    <MultiLayerCompanionTabs
+      item={item}
+      topics={topics}
+      tags={tags}
+      parsedQuotes={parsedQuotes}
+    />
+  );
 
   return (
     <div className="min-h-screen flex flex-col bg-[var(--background)] text-[var(--text-primary)]">
@@ -88,7 +169,7 @@ export function ReadingStudioApp({
 
         {/* Badges & Actions */}
         <div className="flex items-center gap-2 shrink-0">
-          {/* ASR Badge */}
+          {/* ASR Ground Truth Badge */}
           {transcriptSource && (
             <span className="hidden md:inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-mono bg-emerald-950/40 text-emerald-300 border border-emerald-800/60">
               <span className="h-1.5 w-1.5 rounded-full bg-emerald-400"></span>
@@ -101,6 +182,21 @@ export function ReadingStudioApp({
               </span>
             </span>
           )}
+
+          {/* Focus Mode Toggle */}
+          <button
+            type="button"
+            onClick={toggleFocusMode}
+            aria-label="Toggle Focus Mode (Option+F)"
+            className={`hidden sm:inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium border transition-colors ${
+              isFocusMode
+                ? "bg-indigo-950/40 text-indigo-300 border-indigo-800/60"
+                : "border-[var(--border)] bg-[var(--surface-raised)] text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
+            }`}
+          >
+            {isFocusMode ? <Minimize2 className="h-3.5 w-3.5" /> : <Maximize2 className="h-3.5 w-3.5" />}
+            <span className="hidden md:inline">{isFocusMode ? "Exit Focus" : "Focus Mode"}</span>
+          </button>
 
           {/* Source Link */}
           {item.source_url && (
@@ -145,68 +241,16 @@ export function ReadingStudioApp({
         </div>
       </div>
 
-      {/* Main Dual-Pane Studio Grid */}
-      <main className="flex-1 max-w-7xl w-full mx-auto p-3 sm:p-4 lg:p-6 grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-        {/* Left Pane: Media Player & Synchronized Transcript */}
-        <section
-          aria-label="Source Media & Transcript"
-          className={`lg:col-span-7 flex flex-col gap-4 ${
-            mobileTab === "reader" ? "flex" : "hidden lg:flex"
-          }`}
-        >
-          {/* Video Player or Article Header */}
-          {isYouTube && videoId ? (
-            <YouTubePlayerSync
-              videoId={videoId}
-              sourceUrl={item.source_url || ""}
-              title={item.title || "YouTube Video"}
-              onTimeUpdate={setCurrentTimeMs}
-              seekTargetMs={seekTargetMs}
-              onSeekHandled={handleSeekHandled}
-            />
-          ) : (
-            <div className="p-5 rounded-xl bg-[var(--surface-raised)] border border-[var(--border)] space-y-3">
-              <div className="flex items-center gap-2 text-xs font-semibold text-emerald-400 uppercase tracking-wider">
-                <FileText className="h-4 w-4" />
-                <span>Source Content</span>
-              </div>
-              <h2 className="text-base font-bold text-[var(--text-primary)]">{item.title}</h2>
-              {item.body && (
-                <div className="prose dark:prose-invert max-w-none text-xs text-[var(--text-secondary)] leading-relaxed max-h-96 overflow-y-auto pr-2">
-                  <p className="whitespace-pre-line">{item.body}</p>
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* Interactive Transcript Timeline (Height constrained for split layout) */}
-          <div className="h-[480px]">
-            <TranscriptTimeline
-              itemId={item.id}
-              itemTitle={item.title}
-              source={transcriptSource}
-              segments={segments}
-              currentTimeMs={currentTimeMs}
-              onSeek={handleSeek}
-            />
-          </div>
-        </section>
-
-        {/* Right Pane: Multi-Layer Companion Tabs (Notes, AI Brief, Recall) */}
-        <aside
-          aria-label="Multi-Layer Companion Studio"
-          className={`lg:col-span-5 flex flex-col h-[760px] sticky top-16 ${
-            mobileTab === "notes" ? "flex" : "hidden lg:flex"
-          }`}
-        >
-          <MultiLayerCompanionTabs
-            item={item}
-            topics={topics}
-            tags={tags}
-            parsedQuotes={parsedQuotes}
-          />
-        </aside>
-      </main>
+      {/* Split Pane Container */}
+      <SplitPaneContainer
+        leftPane={leftPaneContent}
+        rightPane={rightPaneContent}
+        defaultRatio={splitRatio}
+        onRatioChange={setSplitRatio}
+        isFocusMode={isFocusMode}
+        onToggleFocusMode={toggleFocusMode}
+        mobileTab={mobileTab === "reader" ? "left" : "right"}
+      />
     </div>
   );
 }
