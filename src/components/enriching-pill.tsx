@@ -94,7 +94,7 @@ export function EnrichingPill({
     : status.state === "running"
       ? "enriching…"
       : status.state === "batched"
-        ? "queued for tonight's batch"
+        ? "in batch queue…"
         : "queued";
 
   // v0.6.0 Phase C-9: 'batched' uses a distinct tooltip carrying the

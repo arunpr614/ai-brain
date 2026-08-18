@@ -55,9 +55,19 @@ export async function POST(
     return NextResponse.json({ error: "not_found" }, { status: 404 });
   }
 
-  const force = req.nextUrl.searchParams.get("force");
+  let forceParam = req.nextUrl.searchParams.get("force");
+  if (!forceParam && req.headers.get("content-type")?.includes("application/json")) {
+    try {
+      const body = await req.json();
+      if (body.force === "realtime" || body.force === true || body.forceRealtime === true) {
+        forceParam = "realtime";
+      }
+    } catch {
+      // Ignore JSON parse errors
+    }
+  }
 
-  if (force === "realtime") {
+  if (forceParam === "realtime" || forceParam === "true") {
     // Atomic claim: transition any non-'running' state to 'running' so a
     // concurrent caller (or a poll tick mid-write) sees the row as
     // already in flight and short-circuits. WHERE-predicate gate is the

@@ -26,7 +26,7 @@ import { getDb } from "@/db/client";
 import { enrichItem } from "@/lib/enrich/pipeline";
 import { embedItemWithRetry } from "@/lib/embed/pipeline";
 import { ERRORS_LOG_MAX_BYTES, ERRORS_LOG_PATH } from "@/lib/errors/sink";
-import { getEnrichProvider } from "@/lib/llm/factory";
+import { getEnrichMode, getEnrichProvider } from "@/lib/llm/factory";
 
 const POLL_INTERVAL_MS = 2_000;
 const IDLE_INTERVAL_MS = 10_000; // when no work, back off
@@ -118,7 +118,7 @@ export function shouldSweep(now: number, lastSweepAt: number): boolean {
   return now - lastSweepAt >= STALE_CLAIM_MS;
 }
 
-interface JobRow {
+export interface JobRow {
   id: number;
   item_id: string;
   state: "pending" | "running" | "batched" | "done" | "error";
@@ -141,18 +141,40 @@ function sweepStaleClaims(): void {
   }
 }
 
-function claimNext(): JobRow | null {
+export function claimNext(): JobRow | null {
+  const mode = getEnrichMode();
+  if (mode === "batch") {
+    // In batch mode, pending items accumulate for batch submit / cron.
+    return null;
+  }
+
   const db = getDb();
   const tx = db.transaction((): JobRow | null => {
-    const row = db
-      .prepare(
-        `SELECT id, item_id, state, attempts
-         FROM enrichment_jobs
-         WHERE state = 'pending'
-         ORDER BY created_at ASC
-         LIMIT 1`,
-      )
-      .get() as JobRow | undefined;
+    let row: JobRow | undefined;
+    if (mode === "hybrid") {
+      // In hybrid mode, realtime worker fast-paths short items (< 500 chars).
+      row = db
+        .prepare(
+          `SELECT j.id, j.item_id, j.state, j.attempts
+           FROM enrichment_jobs j
+           JOIN items i ON i.id = j.item_id
+           WHERE j.state = 'pending' AND length(i.body) < 500
+           ORDER BY j.created_at ASC
+           LIMIT 1`,
+        )
+        .get() as JobRow | undefined;
+    } else {
+      row = db
+        .prepare(
+          `SELECT id, item_id, state, attempts
+           FROM enrichment_jobs
+           WHERE state = 'pending'
+           ORDER BY created_at ASC
+           LIMIT 1`,
+        )
+        .get() as JobRow | undefined;
+    }
+
     if (!row) return null;
     db.prepare(
       `UPDATE enrichment_jobs

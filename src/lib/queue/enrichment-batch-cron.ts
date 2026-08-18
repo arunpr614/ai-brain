@@ -32,7 +32,7 @@
  */
 
 import cron from "node-cron";
-import { pollAllInFlightBatches, submitDailyBatch } from "./enrichment-batch";
+import { pollAllInFlightBatches, submitDailyBatch, submitMicroBatch } from "./enrichment-batch";
 
 /**
  * 01:00 IST daily. IST is UTC+5:30, so 01:00 IST = 19:30 UTC of the prior
@@ -42,6 +42,9 @@ import { pollAllInFlightBatches, submitDailyBatch } from "./enrichment-batch";
  */
 export const SUBMIT_CRON = "30 19 * * *";
 
+/** High-velocity micro-batch check every 15 minutes. */
+export const MICRO_BATCH_CRON = "*/15 * * * *";
+
 /** Every 5 minutes. */
 export const POLL_CRON = "*/5 * * * *";
 
@@ -50,6 +53,7 @@ declare global {
     | {
         registered: boolean;
         submitTask: ReturnType<typeof cron.schedule> | null;
+        microBatchTask: ReturnType<typeof cron.schedule> | null;
         pollTask: ReturnType<typeof cron.schedule> | null;
       }
     | undefined;
@@ -60,6 +64,7 @@ function cronState() {
     globalThis.__brainBatchCron = {
       registered: false,
       submitTask: null,
+      microBatchTask: null,
       pollTask: null,
     };
   }
@@ -67,7 +72,7 @@ function cronState() {
 }
 
 /**
- * Idempotent: first call registers the two schedules, subsequent calls
+ * Idempotent: first call registers the three schedules, subsequent calls
  * are no-ops. Safe to call from instrumentation.ts on every Next.js
  * server boot AND across HMR re-evaluations in dev.
  */
@@ -79,10 +84,11 @@ export function startEnrichmentBatchCron(): void {
   state.registered = true;
 
   state.submitTask = cron.schedule(SUBMIT_CRON, runSubmitTick);
+  state.microBatchTask = cron.schedule(MICRO_BATCH_CRON, runMicroBatchTick);
   state.pollTask = cron.schedule(POLL_CRON, runPollTick);
 
   console.log(
-    `[batch-cron] scheduled submit='${SUBMIT_CRON}' (01:00 IST) poll='${POLL_CRON}' (every 5m)`,
+    `[batch-cron] scheduled submit='${SUBMIT_CRON}' (01:00 IST) micro='${MICRO_BATCH_CRON}' (every 15m) poll='${POLL_CRON}' (every 5m)`,
   );
 }
 
@@ -98,6 +104,10 @@ export function stopEnrichmentBatchCron(): void {
     // registry being clean post-teardown.
     state.submitTask.destroy();
     state.submitTask = null;
+  }
+  if (state.microBatchTask) {
+    state.microBatchTask.destroy();
+    state.microBatchTask = null;
   }
   if (state.pollTask) {
     state.pollTask.destroy();
@@ -123,6 +133,22 @@ async function runSubmitTick(): Promise<void> {
   }
 }
 
+async function runMicroBatchTick(): Promise<void> {
+  try {
+    const result = await submitMicroBatch();
+    if (result === null) {
+      return;
+    }
+    console.log(
+      `[batch-cron] micro-batch tick: batch_id=${result.batch_id} count=${result.count}`,
+    );
+  } catch (err) {
+    console.error(
+      `[batch-cron] micro-batch tick FAILED: ${(err as Error).message}`,
+    );
+  }
+}
+
 async function runPollTick(): Promise<void> {
   try {
     await pollAllInFlightBatches();
@@ -132,3 +158,4 @@ async function runPollTick(): Promise<void> {
     );
   }
 }
+
