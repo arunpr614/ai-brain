@@ -6,7 +6,6 @@ import {
   Pause,
   BookOpen,
   Sparkles,
-  Cpu,
   CheckCircle2,
   AlertTriangle,
   Clock,
@@ -18,9 +17,6 @@ import {
   Minimize2,
   ChevronRight,
   SlidersHorizontal,
-  Layers,
-  Search,
-  MessageSquare,
   Tv,
   Sun,
   Moon,
@@ -28,15 +24,12 @@ import {
   Tablet,
   Laptop,
   ShieldCheck,
-  Bookmark,
   Zap,
-  X,
   Plus,
-  Compass,
-  Tag,
   FolderPlus,
   Send,
-  List,
+  ArrowLeft,
+  X,
 } from "lucide-react";
 import { cn } from "@/lib/cn";
 
@@ -245,12 +238,16 @@ const SCENARIOS: Record<UseCaseId, UseCaseData> = {
   },
 };
 
-export function ReadingStudioHeroPrototype() {
+export function ReadingStudioHeroPrototype({
+  initialPageView = "item",
+}: {
+  initialPageView?: "item" | "studio";
+}) {
   // --- States ---
   const [theme, setTheme] = useState<"light" | "dark">("light");
   const [scenarioId, setScenarioId] = useState<UseCaseId>("youtube-gold");
   const [viewportMode, setViewportMode] = useState<ViewportMode>("desktop");
-  const [studioOpen, setStudioOpen] = useState(false);
+  const [pageView, setPageView] = useState<"item" | "studio">(initialPageView);
   const [inspectDrawerOpen, setInspectDrawerOpen] = useState(false);
   const [focusMode, setFocusMode] = useState(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
@@ -266,7 +263,6 @@ export function ReadingStudioHeroPrototype() {
   const [playbackRate, setPlaybackRate] = useState(1);
   const [studioTab, setStudioTab] = useState<"transcript" | "notes" | "ask" | "provenance">("transcript");
   const [studioSplitRatio, setStudioSplitRatio] = useState<"50-50" | "60-40" | "40-60">("50-50");
-  const [segmentFilter, setSegmentFilter] = useState("");
   const [userNotes, setUserNotes] = useState<string>(
     `# Key Insights & Follow-ups\n\n- [ ] Investigate Byte-Pair Encoding edge cases for multilingual tokenization.\n- [x] Review DPO vs PPO memory overhead on 70B models.\n- [ ] Compare local Mac Whisper vs cloud ASR latency.\n\n> "Tokenization is at the root of many mysterious LLM behaviors."`
   );
@@ -289,7 +285,6 @@ export function ReadingStudioHeroPrototype() {
 
   // Design Review Inspector Drawer
   const [reviewPanelOpen, setReviewPanelOpen] = useState(false);
-  const [reviewTab, setReviewTab] = useState<"ergonomics" | "accessibility" | "tokens" | "benchmarks">("ergonomics");
 
   const scenario = SCENARIOS[scenarioId];
 
@@ -310,11 +305,11 @@ export function ReadingStudioHeroPrototype() {
   // Keyboard Shortcuts Listener
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      // Cmd + Enter -> Launch Studio
+      // Cmd + Enter -> Toggle Studio View
       if ((e.metaKey || e.ctrlKey) && e.key === "Enter") {
         e.preventDefault();
-        setStudioOpen((prev) => !prev);
-        showToast(studioOpen ? "Closed Reading Studio" : "Launched Reading Studio (⌘↵)");
+        setPageView((prev) => (prev === "item" ? "studio" : "item"));
+        showToast(pageView === "item" ? "Navigated to Dedicated Reading Studio Page (⌘↵)" : "Returned to Item Page (⌘↵)");
       }
       // Alt + F -> Focus Mode
       if (e.altKey && (e.key === "f" || e.key === "F")) {
@@ -322,16 +317,15 @@ export function ReadingStudioHeroPrototype() {
         setFocusMode((prev) => !prev);
         showToast(focusMode ? "Exited Focus Mode" : "Entered Focus Mode (⌥F)");
       }
-      // Esc -> Close modals
+      // Esc -> Close drawers / return to item if in studio
       if (e.key === "Escape") {
-        if (studioOpen) setStudioOpen(false);
         if (inspectDrawerOpen) setInspectDrawerOpen(false);
         if (reviewPanelOpen) setReviewPanelOpen(false);
       }
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [studioOpen, inspectDrawerOpen, focusMode, reviewPanelOpen]);
+  }, [pageView, inspectDrawerOpen, focusMode, reviewPanelOpen]);
 
   // Trigger ASR Simulation
   const handleStartMacAsr = () => {
@@ -361,68 +355,92 @@ export function ReadingStudioHeroPrototype() {
     }, 4800);
   };
 
-  // Copy Link Handler
+  // Copy Link action
   const handleCopyLink = () => {
-    navigator.clipboard.writeText(scenario.sourceUrl);
+    navigator.clipboard?.writeText?.(window.location.href);
     setCopiedLink(true);
-    showToast("Copied source link to clipboard");
+    showToast("🔗 Link copied to clipboard");
     setTimeout(() => setCopiedLink(false), 2000);
   };
 
-  // Send Ask Message
+  // Append quote to notes
+  const handlePinQuote = (quoteText: string, timestamp: string) => {
+    const formatted = `\n\n> "${quoteText}" — [${timestamp}](${scenario.sourceUrl}&t=${timestamp})`;
+    setUserNotes((prev) => prev + formatted);
+    setStudioTab("notes");
+    showToast(`Pinned quote [${timestamp}] to Smart Notes`);
+  };
+
+  // Send Ask AI query
   const handleSendAsk = (e: React.FormEvent) => {
     e.preventDefault();
     if (!askInput.trim()) return;
-    const userMsg = askInput.trim();
+
+    const userText = askInput.trim();
     setAskInput("");
-    setChatMessages((prev) => [...prev, { role: "user", text: userMsg }]);
+    setChatMessages((prev) => [...prev, { role: "user", text: userText }]);
 
     setTimeout(() => {
       setChatMessages((prev) => [
         ...prev,
         {
           role: "assistant",
-          text: `Based on the source material for "${scenario.title}", the core concept directly addresses this in the pretraining and alignment phases. The system balances accuracy with grounded verifiable citations.`,
-          citations: [{ label: "07:45 Pretraining Dynamics", timeSec: 465 }],
+          text: `Based on the transcript of "${scenario.title}", Andrej Karpathy addresses this at 07:45. He emphasizes that the base transformer is fundamentally a next-token statistical model, requiring conversational supervised fine-tuning (SFT) to adopt persona and instructional constraints.`,
+          citations: [{ label: "07:45 Base Model vs Assistant", timeSec: 465 }],
         },
       ]);
-    }, 800);
+    }, 900);
   };
-
-  // Filtered segments for inspection
-  const filteredSegments = (scenario.segments || []).filter((seg) =>
-    seg.text.toLowerCase().includes(segmentFilter.toLowerCase()) ||
-    seg.speaker.toLowerCase().includes(segmentFilter.toLowerCase()) ||
-    seg.timestamp.includes(segmentFilter)
-  );
 
   return (
     <div
       className={cn(
-        "min-h-screen bg-[var(--bg)] text-[var(--text-primary)] transition-colors duration-200",
-        focusMode && "bg-[var(--surface-base)]"
+        "min-h-screen font-sans antialiased text-[var(--text-primary)] bg-[var(--surface-base)] transition-colors duration-200"
       )}
+      style={{
+        // Design token fallback mappings
+        ["--surface-base" as string]: theme === "dark" ? "#101825" : "#FBFCFE",
+        ["--surface" as string]: theme === "dark" ? "#162235" : "#FFFFFF",
+        ["--surface-raised" as string]: theme === "dark" ? "#1B2A40" : "#FFFFFF",
+        ["--border" as string]: theme === "dark" ? "#2B3B52" : "#D7DFEA",
+        ["--border-strong" as string]: theme === "dark" ? "#41546F" : "#A9B8CD",
+        ["--text-primary" as string]: theme === "dark" ? "#F4F7FB" : "#14213D",
+        ["--text-secondary" as string]: theme === "dark" ? "#9FB0C7" : "#52647C",
+        ["--text-muted" as string]: theme === "dark" ? "#6C7F98" : "#7C8FA6",
+        ["--control-selected-bg" as string]: theme === "dark" ? "#22334E" : "#EEF4FF",
+        ["--control-selected-fg" as string]: theme === "dark" ? "#D8E0EC" : "#14213D",
+        ["--control-selected-border" as string]: theme === "dark" ? "#3A5072" : "#B8D0F6",
+        ["--action-primary-bg" as string]: theme === "dark" ? "#F4F7FB" : "#14213D",
+        ["--action-primary-fg" as string]: theme === "dark" ? "#101825" : "#FFFFFF",
+        ["--action-primary-bg-hover" as string]: theme === "dark" ? "#E2E8F0" : "#243354",
+        ["--action-primary-focus" as string]: theme === "dark" ? "#7CCFFD" : "#A9B8CD",
+        ["--teal" as string]: theme === "dark" ? "#4DD7C8" : "#18A999",
+        ["--coral" as string]: theme === "dark" ? "#FF8A65" : "#EA580C",
+        ["--cyan" as string]: theme === "dark" ? "#67E8F9" : "#0891B2",
+        ["--ruby" as string]: theme === "dark" ? "#FF6D98" : "#E63B6F",
+        ["--azure" as string]: theme === "dark" ? "#60A5FA" : "#2563EB",
+      }}
     >
-      {/* --- PROTOTYPE COMMAND BAR & DEMO CONTROLS --- */}
-      <header className="sticky top-0 z-40 border-b border-[var(--border)] bg-[var(--surface-raised)]/95 backdrop-blur-md px-4 py-2.5 shadow-sm">
-        <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-3">
-          {/* Prototype Badge & Title */}
-          <div className="flex items-center gap-2.5">
-            <div className="flex h-7 w-7 items-center justify-center rounded-md bg-[var(--action-primary-bg)] text-[var(--action-primary-fg)] font-bold text-xs shadow-sm">
-              Ω2
-            </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <span className="text-xs font-semibold uppercase tracking-wider text-[var(--accent-11)]">
-                  Option 2 Interactive Prototype
-                </span>
-                <span className="rounded bg-[var(--accent-3)] px-1.5 py-0.5 text-[10px] font-medium text-[var(--text-secondary)]">
-                  v0.6.2 High-Fidelity
-                </span>
+      {/* --- TOP PROTOTYPE CONTROL BAR --- */}
+      <header className="sticky top-0 z-40 border-b border-[var(--border)] bg-[var(--surface-raised)]/95 backdrop-blur px-4 py-2.5 shadow-xs">
+        <div className="mx-auto flex max-w-[1400px] flex-wrap items-center justify-between gap-3">
+          {/* Logo & Prototype Identity */}
+          <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2">
+              <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-indigo-600 text-white font-bold text-xs shadow-xs">
+                🧠
+              </span>
+              <div>
+                <div className="flex items-center gap-1.5 font-bold text-xs leading-none text-[var(--text-primary)]">
+                  <span>AI Brain</span>
+                  <span className="rounded bg-[var(--control-selected-bg)] px-1.5 py-0.5 text-[10px] font-mono text-[var(--accent-11)]">
+                    Option 2 Hero Prototype
+                  </span>
+                </div>
+                <div className="text-[10px] text-[var(--text-muted)] mt-0.5">
+                  Dedicated Full-Page Studio Architecture
+                </div>
               </div>
-              <h1 className="text-xs font-medium text-[var(--text-secondary)] hidden sm:block">
-                Integrated Hero Workspace Banner
-              </h1>
             </div>
           </div>
 
@@ -481,6 +499,42 @@ export function ReadingStudioHeroPrototype() {
             >
               <FileText className="h-3.5 w-3.5 text-[var(--cyan)]" />
               <span>3. Web Article</span>
+            </button>
+          </div>
+
+          {/* View Mode Switcher: Item Page vs Dedicated Full-Page Studio */}
+          <div className="flex items-center rounded-lg border border-[var(--border)] bg-[var(--surface)] p-1">
+            <button
+              type="button"
+              onClick={() => {
+                setPageView("item");
+                showToast("Viewing Item Detail Page with Hero Workspace Banner");
+              }}
+              className={cn(
+                "flex items-center gap-1.5 rounded-md px-2.5 py-1 text-xs font-medium transition-all",
+                pageView === "item"
+                  ? "bg-[var(--control-selected-bg)] text-[var(--control-selected-fg)] shadow-xs border border-[var(--control-selected-border)] font-semibold"
+                  : "text-[var(--text-secondary)] hover:bg-[var(--surface-raised)]"
+              )}
+            >
+              <FileText className="h-3.5 w-3.5" />
+              <span>Item Page</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setPageView("studio");
+                showToast("Viewing Dedicated Full-Page Reading Studio");
+              }}
+              className={cn(
+                "flex items-center gap-1.5 rounded-md px-2.5 py-1 text-xs font-medium transition-all",
+                pageView === "studio"
+                  ? "bg-[var(--control-selected-bg)] text-[var(--control-selected-fg)] shadow-xs border border-[var(--control-selected-border)] font-semibold"
+                  : "text-[var(--text-secondary)] hover:bg-[var(--surface-raised)]"
+              )}
+            >
+              <BookOpen className="h-3.5 w-3.5 text-indigo-400" />
+              <span>Full-Page Studio</span>
             </button>
           </div>
 
@@ -586,1414 +640,930 @@ export function ReadingStudioHeroPrototype() {
         </div>
       </header>
 
-      {/* --- SIMULATED VIEWPORT CONTAINER --- */}
-      <div
-        className={cn(
-          "mx-auto transition-all duration-300 px-4 py-6 md:py-8",
-          viewportMode === "desktop" && "max-w-[1240px]",
-          viewportMode === "tablet" && "max-w-[768px] border-x border-[var(--border)] shadow-xl",
-          viewportMode === "mobile" && "max-w-[390px] border-x border-[var(--border)] shadow-2xl"
-        )}
-      >
-        {/* Navigation Breadcrumb & Back Link */}
-        <div className="mb-4 flex items-center justify-between">
-          <div className="flex items-center gap-2 text-xs text-[var(--text-secondary)]">
-            <span className="hover:text-[var(--text-primary)] cursor-pointer">Library</span>
-            <span>/</span>
-            <span className="hover:text-[var(--text-primary)] cursor-pointer">
-              {scenario.kind === "youtube" ? "Videos" : "Articles"}
-            </span>
-            <span>/</span>
-            <span className="text-[var(--text-primary)] font-medium truncate max-w-[200px] sm:max-w-none">
-              {scenario.title}
-            </span>
-          </div>
-
-          <div className="flex items-center gap-2">
-            <button
-              type="button"
-              onClick={() => setFocusMode(!focusMode)}
-              className={cn(
-                "inline-flex items-center gap-1 rounded-md px-2 py-1 text-xs font-medium border transition-colors",
-                focusMode
-                  ? "border-[var(--azure)] bg-[var(--control-selected-bg)] text-[var(--azure)]"
-                  : "border-[var(--border)] bg-[var(--surface)] text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
-              )}
-              title="Toggle Focus Mode (⌥F)"
-            >
-              {focusMode ? <Minimize2 className="h-3 w-3" /> : <Maximize2 className="h-3 w-3" />}
-              <span className="hidden sm:inline">{focusMode ? "Exit Focus" : "Focus Mode"}</span>
-              <kbd className="hidden sm:inline text-[9px] opacity-70 bg-[var(--surface-raised)] px-1 rounded border border-[var(--border)]">
-                ⌥F
-              </kbd>
-            </button>
-          </div>
-        </div>
-
-        {/* ========================================================================= */}
-        {/* HERO WORKSPACE BANNER (OPTION 2 CORE COMPONENT)                           */}
-        {/* ========================================================================= */}
-        <section
-          aria-label="Item Workspace Hero"
+      {/* --- MAIN WORKSPACE VIEW (ITEM PAGE OR DEDICATED FULL-PAGE STUDIO) --- */}
+      {pageView === "item" ? (
+        /* ========================================================================= */
+        /* VIEW 1: ITEM DETAIL PAGE WITH HERO WORKSPACE BANNER                      */
+        /* ========================================================================= */
+        <div
           className={cn(
-            "relative mb-8 overflow-hidden rounded-xl border border-[var(--border)] bg-[var(--surface)] p-5 shadow-sm transition-all duration-200 md:p-6",
-            "hover:border-[var(--border-strong)] hover:shadow-md",
-            scenario.qualityLevel === "degraded" && "border-rose-500/30 bg-[var(--surface)]/90"
+            "mx-auto transition-all duration-300 px-4 py-6 md:py-8",
+            viewportMode === "desktop" && "max-w-[1240px]",
+            viewportMode === "tablet" && "max-w-[768px] border-x border-[var(--border)] shadow-xl",
+            viewportMode === "mobile" && "max-w-[390px] border-x border-[var(--border)] shadow-2xl"
           )}
         >
-          {/* Subtle Ambient Background Tint */}
-          <div
-            className={cn(
-              "pointer-events-none absolute -right-24 -top-24 h-72 w-72 rounded-full blur-3xl opacity-15",
-              scenario.qualityLevel === "gold" && "bg-[var(--teal)]",
-              scenario.qualityLevel === "degraded" && "bg-[var(--ruby)]",
-              scenario.qualityLevel === "article" && "bg-[var(--cyan)]"
-            )}
-          />
-
-          <div className="relative z-10 flex flex-col gap-6 lg:flex-row lg:items-start lg:gap-7">
-            {/* 1. MEDIA POSTER / VISUAL IDENTITY BLOCK */}
-            <div className="relative shrink-0 self-center sm:self-start">
-              <div
-                className={cn(
-                  "group relative flex h-44 w-72 max-w-full items-center justify-center overflow-hidden rounded-lg border border-[var(--border)] bg-[var(--surface-raised)] shadow-inner transition-transform duration-200",
-                  "hover:scale-[1.01]"
-                )}
-              >
-                {/* Visual Representation (SVG/Canvas Artwork) */}
-                {scenario.kind === "youtube" ? (
-                  <div className="relative h-full w-full bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-950 flex flex-col items-center justify-center p-4 text-center">
-                    {/* Simulated Waveform & Grid Background */}
-                    <div className="absolute inset-0 opacity-20 bg-[radial-gradient(#42C7E8_1px,transparent_1px)] [background-size:12px_12px]" />
-                    
-                    {scenario.qualityLevel === "degraded" ? (
-                      <div className="relative z-10 flex flex-col items-center gap-1.5">
-                        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-rose-950/80 border border-rose-500/50 text-rose-400 animate-pulse">
-                          <AlertTriangle className="h-5 w-5" />
-                        </div>
-                        <span className="text-[11px] font-semibold text-rose-300">
-                          Transcript Scrape Blocked
-                        </span>
-                        <span className="text-[9px] text-slate-400">
-                          Awaiting Mac ASR Engine
-                        </span>
-                      </div>
-                    ) : (
-                      <div className="relative z-10 flex flex-col items-center gap-2">
-                        {/* Play Orb */}
-                        <div className="flex h-11 w-11 items-center justify-center rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-white shadow-lg group-hover:scale-110 group-hover:bg-white/20 transition-transform">
-                          <Play className="h-5 w-5 fill-white ml-0.5" />
-                        </div>
-                        {/* Waveform Bar Graphic */}
-                        <div className="flex items-center gap-0.5 h-3">
-                          {[30, 60, 45, 90, 75, 40, 85, 100, 65, 40, 80, 50, 70, 95, 30].map((h, i) => (
-                            <div
-                              key={i}
-                              style={{ height: `${h}%` }}
-                              className="w-1 rounded-full bg-[var(--cyan)]/70 group-hover:bg-[var(--cyan)] transition-colors"
-                            />
-                          ))}
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Channel watermark */}
-                    <div className="absolute bottom-2 left-2 flex items-center gap-1 text-[10px] font-medium text-slate-300 bg-black/40 px-2 py-0.5 rounded backdrop-blur-sm">
-                      <Tv className="h-3 w-3 text-red-400" />
-                      <span>{scenario.authorOrChannel}</span>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="relative h-full w-full bg-gradient-to-br from-cyan-950 via-slate-900 to-slate-950 flex flex-col justify-between p-4">
-                    <div className="flex items-center justify-between">
-                      <span className="text-[10px] uppercase font-bold tracking-widest text-[var(--cyan)]">
-                        Editorial Extraction
-                      </span>
-                      <BookOpen className="h-4 w-4 text-[var(--cyan)]" />
-                    </div>
-                    <div>
-                      <div className="text-xs font-semibold text-slate-100 line-clamp-2">
-                        Patterns of Distributed Systems
-                      </div>
-                      <div className="text-[10px] text-slate-400 mt-0.5">
-                        Martin Fowler Research Note
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-2 text-[10px] text-slate-300">
-                      <span className="bg-white/10 px-1.5 py-0.5 rounded">CRDT</span>
-                      <span className="bg-white/10 px-1.5 py-0.5 rounded">SQLite WAL</span>
-                    </div>
-                  </div>
-                )}
-
-                {/* Duration / Read Time Badge in Monospace */}
-                <div className="absolute top-2.5 right-2.5 flex items-center gap-1 rounded bg-black/75 px-2 py-0.5 text-[11px] font-mono font-medium text-white shadow-md backdrop-blur-xs">
-                  <Clock className="h-3 w-3 text-slate-300" />
-                  <span>{scenario.durationOrReadTime}</span>
-                </div>
-              </div>
-
-              {/* Quick Metadata Below Poster */}
-              <div className="mt-2.5 flex items-center justify-between text-[11px] text-[var(--text-muted)]">
-                <span>Captured {scenario.capturedAt}</span>
-                <a
-                  href={scenario.sourceUrl}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="flex items-center gap-1 text-[var(--accent-11)] hover:underline"
-                >
-                  <span>Source</span>
-                  <ExternalLink className="h-3 w-3" />
-                </a>
-              </div>
-            </div>
-
-            {/* 2. CORE INFORMATION & METADATA SECTION */}
-            <div className="flex-1 min-w-0">
-              {/* Badges Row */}
-              <div className="mb-2.5 flex flex-wrap items-center gap-2">
-                {/* Platform Badge */}
-                <span className="inline-flex items-center gap-1 rounded-md bg-[var(--surface-raised)] border border-[var(--border)] px-2 py-0.5 text-xs font-medium text-[var(--text-primary)]">
-                  {scenario.kind === "youtube" ? (
-                    <span className="h-2 w-2 rounded-full bg-red-500" />
-                  ) : (
-                    <span className="h-2 w-2 rounded-full bg-cyan-500" />
-                  )}
-                  {scenario.platformBadge}
-                </span>
-
-                {/* Source Quality Status Badge */}
-                <span
-                  className={cn(
-                    "inline-flex items-center gap-1.5 rounded-md px-2.5 py-0.5 text-xs font-semibold",
-                    scenario.qualityLevel === "gold" &&
-                      "bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30",
-                    scenario.qualityLevel === "degraded" &&
-                      "bg-rose-500/10 text-rose-700 dark:text-rose-300 border border-rose-500/30",
-                    scenario.qualityLevel === "article" &&
-                      "bg-sky-500/10 text-sky-700 dark:text-sky-300 border border-sky-500/30"
-                  )}
-                >
-                  {scenario.qualityLevel === "gold" && <CheckCircle2 className="h-3.5 w-3.5" />}
-                  {scenario.qualityLevel === "degraded" && <AlertTriangle className="h-3.5 w-3.5" />}
-                  {scenario.qualityLevel === "article" && <FileText className="h-3.5 w-3.5" />}
-                  <span>{scenario.qualityLabel}</span>
-                </span>
-
-                {/* Transcript Segment / Word Count Metric */}
-                {scenario.segmentCount ? (
-                  <span className="inline-flex items-center gap-1 rounded-md bg-[var(--surface-raised)] border border-[var(--border)] px-2 py-0.5 text-xs text-[var(--text-secondary)]">
-                    <List className="h-3 w-3 text-[var(--text-muted)]" />
-                    <span>{scenario.segmentCount} timed segments</span>
-                  </span>
-                ) : null}
-
-                {scenario.wordCount ? (
-                  <span className="inline-flex items-center gap-1 rounded-md bg-[var(--surface-raised)] border border-[var(--border)] px-2 py-0.5 text-xs text-[var(--text-secondary)]">
-                    <BookOpen className="h-3 w-3 text-[var(--text-muted)]" />
-                    <span>{scenario.wordCount} words</span>
-                  </span>
-                ) : null}
-              </div>
-
-              {/* Title */}
-              <h2 className="mb-2 text-xl font-bold leading-snug tracking-tight text-[var(--text-primary)] sm:text-2xl">
+          {/* Navigation Breadcrumb & Back Link */}
+          <div className="mb-4 flex items-center justify-between">
+            <div className="flex items-center gap-2 text-xs text-[var(--text-secondary)]">
+              <span className="hover:text-[var(--text-primary)] cursor-pointer">Library</span>
+              <span>/</span>
+              <span className="hover:text-[var(--text-primary)] cursor-pointer">
+                {scenario.kind === "youtube" ? "Videos" : "Articles"}
+              </span>
+              <span>/</span>
+              <span className="text-[var(--text-primary)] font-medium truncate max-w-[200px] sm:max-w-none">
                 {scenario.title}
-              </h2>
-
-              {/* Channel / Author Details */}
-              <div className="mb-3.5 flex flex-wrap items-center gap-3 text-xs text-[var(--text-secondary)]">
-                <span className="font-semibold text-[var(--text-primary)]">
-                  {scenario.authorOrChannel}
-                </span>
-                <span className="text-[var(--border-strong)]">•</span>
-                <span>{scenario.subscribersOrPublication}</span>
-                <span className="text-[var(--border-strong)]">•</span>
-                <span className="inline-flex items-center gap-1 text-[var(--teal)] font-medium">
-                  <ShieldCheck className="h-3.5 w-3.5" />
-                  Grounded in SQLite Memory
-                </span>
-              </div>
-
-              {/* Summary / Contextual Excerpt */}
-              <p className="mb-4 text-xs leading-relaxed text-[var(--text-secondary)] line-clamp-2 sm:line-clamp-3">
-                {scenario.summary}
-              </p>
-
-              {/* Degraded Recovery Callout if needed */}
-              {scenario.qualityLevel === "degraded" && (
-                <div className="mb-4 rounded-lg border border-rose-500/20 bg-rose-500/5 p-3 text-xs text-[var(--text-primary)]">
-                  <div className="flex items-start gap-2">
-                    <AlertTriangle className="h-4 w-4 text-rose-500 shrink-0 mt-0.5" />
-                    <div className="flex-1">
-                      <div className="font-semibold text-rose-600 dark:text-rose-400">
-                        Transcript Unavailable from Direct Stream
-                      </div>
-                      <p className="text-[11px] text-[var(--text-secondary)] mt-0.5">
-                        {scenario.diagnosticWarning}
-                      </p>
-                      {/* ASR Progress bar if active */}
-                      {asrState !== "idle" && (
-                        <div className="mt-3">
-                          <div className="flex items-center justify-between text-[10px] font-mono text-[var(--text-secondary)] mb-1">
-                            <span>
-                              {asrState === "queuing" && "1/4 Queuing Whisper core..."}
-                              {asrState === "transcribing" && "2/4 Transcribing audio with Apple Neural Engine..."}
-                              {asrState === "aligning" && "3/4 Generating word timestamps..."}
-                              {asrState === "completed" && "4/4 ASR Complete!"}
-                            </span>
-                            <span>{asrProgress}%</span>
-                          </div>
-                          <div className="h-1.5 w-full bg-rose-950/20 rounded-full overflow-hidden">
-                            <div
-                              className="h-full bg-emerald-500 transition-all duration-300 rounded-full"
-                              style={{ width: `${asrProgress}%` }}
-                            />
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {/* Tag & Topic Pills */}
-              <div className="flex flex-wrap items-center gap-1.5">
-                {scenario.tags.map((tag) => (
-                  <span
-                    key={tag}
-                    className="inline-flex items-center gap-1 rounded bg-[var(--surface-raised)] border border-[var(--border)] px-2 py-0.5 text-[11px] text-[var(--text-secondary)]"
-                  >
-                    <Tag className="h-2.5 w-2.5 text-[var(--text-muted)]" />
-                    <span>#{tag}</span>
-                  </span>
-                ))}
-                {scenario.collections.map((col) => (
-                  <span
-                    key={col}
-                    className="inline-flex items-center gap-1 rounded bg-[var(--control-selected-bg)] border border-[var(--control-selected-border)] px-2 py-0.5 text-[11px] font-medium text-[var(--control-selected-fg)]"
-                  >
-                    <FolderPlus className="h-2.5 w-2.5 text-[var(--violet)]" />
-                    <span>{col}</span>
-                  </span>
-                ))}
-              </div>
+              </span>
             </div>
 
-            {/* 3. WORKSPACE ACTION HUB (PRIMARY + SECONDARY ACTIONS) */}
-            <div className="flex flex-col gap-2.5 sm:w-full lg:w-64 shrink-0 pt-2 lg:pt-0 lg:border-l lg:border-[var(--border)] lg:pl-6">
-              <div className="text-[11px] font-bold uppercase tracking-wider text-[var(--text-muted)]">
-                Studio Actions
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => setFocusMode(!focusMode)}
+                className={cn(
+                  "inline-flex items-center gap-1 rounded-md px-2 py-1 text-xs font-medium border transition-colors",
+                  focusMode
+                    ? "border-[var(--azure)] bg-[var(--control-selected-bg)] text-[var(--azure)]"
+                    : "border-[var(--border)] bg-[var(--surface)] text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
+                )}
+                title="Toggle Focus Mode (⌥F)"
+              >
+                {focusMode ? <Minimize2 className="h-3 w-3" /> : <Maximize2 className="h-3 w-3" />}
+                <span className="hidden sm:inline">{focusMode ? "Exit Focus" : "Focus Mode"}</span>
+                <kbd className="hidden sm:inline text-[9px] opacity-70 bg-[var(--surface-raised)] px-1 rounded border border-[var(--border)]">
+                  ⌥F
+                </kbd>
+              </button>
+            </div>
+          </div>
+
+          {/* HERO WORKSPACE BANNER (OPTION 2 CORE COMPONENT) */}
+          <section
+            aria-label="Item Workspace Hero"
+            className={cn(
+              "relative mb-8 overflow-hidden rounded-xl border border-[var(--border)] bg-[var(--surface)] p-5 shadow-sm transition-all duration-200 md:p-6",
+              "hover:border-[var(--border-strong)] hover:shadow-md",
+              scenario.qualityLevel === "degraded" && "border-rose-500/30 bg-[var(--surface)]/90"
+            )}
+          >
+            {/* Subtle Ambient Background Tint */}
+            <div
+              className={cn(
+                "pointer-events-none absolute -right-24 -top-24 h-72 w-72 rounded-full blur-3xl opacity-15",
+                scenario.qualityLevel === "gold" && "bg-[var(--teal)]",
+                scenario.qualityLevel === "degraded" && "bg-[var(--ruby)]",
+                scenario.qualityLevel === "article" && "bg-[var(--cyan)]"
+              )}
+            />
+
+            <div className="relative flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
+              {/* Left Column: Visual Media Poster + Meta Group */}
+              <div className="flex flex-col sm:flex-row items-start gap-4 sm:gap-5 flex-1 min-w-0">
+                {/* 16:9 Media Preview / Thumbnail Tile */}
+                <div className="relative aspect-video w-full sm:w-44 md:w-52 shrink-0 overflow-hidden rounded-lg border border-[var(--border)] bg-black/90 shadow-md group cursor-pointer"
+                  onClick={() => setPageView("studio")}
+                >
+                  {scenario.kind === "youtube" ? (
+                    <div className="relative h-full w-full flex flex-col items-center justify-center text-slate-300 p-2 text-center bg-gradient-to-br from-slate-900 via-zinc-950 to-slate-900">
+                      <div className="flex h-10 w-10 items-center justify-center rounded-full bg-white/20 backdrop-blur-xs text-white group-hover:scale-110 transition-transform shadow-md">
+                        <Play className="h-5 w-5 fill-current ml-0.5" />
+                      </div>
+                      <div className="mt-2 text-[10px] font-mono tracking-tight text-slate-400 line-clamp-1">
+                        {scenario.authorOrChannel}
+                      </div>
+
+                      {/* Duration Badge */}
+                      <span className="absolute bottom-2 right-2 rounded bg-black/85 px-1.5 py-0.5 font-mono text-[10px] font-semibold text-white shadow-xs">
+                        {scenario.durationOrReadTime}
+                      </span>
+                    </div>
+                  ) : (
+                    <div className="relative h-full w-full flex flex-col items-center justify-center text-slate-300 p-3 text-center bg-gradient-to-br from-cyan-950/40 via-slate-900 to-slate-950">
+                      <FileText className="h-8 w-8 text-[var(--cyan)] mb-1" />
+                      <span className="text-[10px] font-mono text-cyan-200/70">
+                        {scenario.durationOrReadTime}
+                      </span>
+                      <span className="absolute bottom-2 right-2 rounded bg-black/85 px-1.5 py-0.5 font-mono text-[9px] text-white">
+                        {scenario.wordCount} words
+                      </span>
+                    </div>
+                  )}
+                </div>
+
+                {/* Information Block */}
+                <div className="min-w-0 flex-1 space-y-2">
+                  {/* Badges row */}
+                  <div className="flex flex-wrap items-center gap-2 text-xs">
+                    <span className="inline-flex items-center gap-1 rounded-md border border-[var(--border)] bg-[var(--surface-raised)] px-2 py-0.5 text-[11px] font-medium text-[var(--text-secondary)]">
+                      {scenario.kind === "youtube" ? <Tv className="h-3 w-3 text-red-500" /> : <FileText className="h-3 w-3 text-cyan-500" />}
+                      {scenario.platformBadge}
+                    </span>
+
+                    {/* Quality Chip */}
+                    <span
+                      className={cn(
+                        "inline-flex items-center gap-1 rounded-md px-2 py-0.5 text-[11px] font-medium border",
+                        scenario.qualityLevel === "gold" && "border-teal-500/30 bg-teal-500/10 text-[var(--teal)]",
+                        scenario.qualityLevel === "degraded" && "border-rose-500/40 bg-rose-500/10 text-[var(--ruby)]",
+                        scenario.qualityLevel === "article" && "border-cyan-500/30 bg-cyan-500/10 text-[var(--cyan)]"
+                      )}
+                    >
+                      {scenario.qualityLevel === "gold" && <CheckCircle2 className="h-3 w-3" />}
+                      {scenario.qualityLevel === "degraded" && <AlertTriangle className="h-3 w-3 animate-pulse" />}
+                      {scenario.qualityLevel === "article" && <FileText className="h-3 w-3" />}
+                      <span>{scenario.qualityLabel}</span>
+                    </span>
+
+                    {scenario.segmentCount ? (
+                      <span className="text-[11px] font-mono text-[var(--text-muted)]">
+                        {scenario.segmentCount} timed segments
+                      </span>
+                    ) : null}
+                  </div>
+
+                  {/* Title & Author */}
+                  <div>
+                    <h1 className="text-lg font-bold leading-snug tracking-tight text-[var(--text-primary)] sm:text-xl md:text-2xl line-clamp-2">
+                      {scenario.title}
+                    </h1>
+                    <p className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-[var(--text-secondary)]">
+                      <span className="font-semibold text-[var(--text-primary)]">{scenario.authorOrChannel}</span>
+                      <span>•</span>
+                      <span>{scenario.subscribersOrPublication}</span>
+                      <span>•</span>
+                      <span>Captured {scenario.capturedAt}</span>
+                    </p>
+                  </div>
+                </div>
               </div>
 
-              {/* PRIMARY ACTION BUTTON */}
-              {scenario.qualityLevel === "degraded" ? (
-                <div className="flex flex-col gap-2">
-                  <button
-                    type="button"
-                    onClick={handleStartMacAsr}
-                    disabled={asrState === "queuing" || asrState === "transcribing" || asrState === "aligning"}
-                    className={cn(
-                      "group relative flex w-full items-center justify-center gap-2 rounded-lg px-4 py-3 text-xs font-bold transition-all shadow-md",
-                      asrState === "completed"
-                        ? "bg-emerald-600 text-white hover:bg-emerald-500"
-                        : "bg-[var(--action-primary-bg)] text-[var(--action-primary-fg)] hover:bg-[var(--action-primary-bg-hover)] active:scale-[0.98]"
-                    )}
-                  >
-                    {asrState === "completed" ? (
-                      <>
-                        <CheckCircle2 className="h-4 w-4 text-white" />
-                        <span>ASR Ready • Launch Studio</span>
-                      </>
-                    ) : asrState !== "idle" ? (
-                      <>
-                        <Cpu className="h-4 w-4 animate-spin" />
-                        <span>Transcribing ({asrProgress}%)...</span>
-                      </>
-                    ) : (
-                      <>
-                        <Zap className="h-4 w-4 text-amber-400 animate-pulse" />
-                        <span>⚡ Queue Mac ASR (Whisper)</span>
-                      </>
-                    )}
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setStudioOpen(true);
-                      showToast("Opened Studio in Degraded Mode (Metadata & Notes Only)");
-                    }}
-                    className="flex w-full items-center justify-center gap-1.5 rounded-lg border border-[var(--border)] bg-[var(--surface-raised)] px-3 py-2 text-xs font-semibold text-[var(--text-secondary)] hover:bg-[var(--surface)] hover:text-[var(--text-primary)] transition-colors"
-                  >
-                    <BookOpen className="h-3.5 w-3.5" />
-                    <span>Open Studio (Degraded)</span>
-                  </button>
-                </div>
-              ) : (
+              {/* Right Column: High-Impact CTA & Actions */}
+              <div className="flex flex-col sm:flex-row lg:flex-col items-stretch sm:items-center lg:items-end gap-3 shrink-0 pt-3 lg:pt-0 border-t lg:border-t-0 border-[var(--border)]">
+                {/* Primary CTA: Launch Reading Studio (Dedicated Page) */}
                 <button
                   type="button"
                   onClick={() => {
-                    setStudioOpen(true);
-                    showToast("Launched Interactive Reading Studio (⌘↵)");
+                    setPageView("studio");
+                    showToast("Navigating to Dedicated Full-Page Reading Studio...");
                   }}
-                  className="group relative flex w-full items-center justify-center gap-2 rounded-lg bg-[var(--action-primary-bg)] px-4 py-3 text-xs font-bold text-[var(--action-primary-fg)] shadow-md transition-all hover:bg-[var(--action-primary-bg-hover)] active:scale-[0.98] focus-visible:outline-2 focus-visible:outline-[var(--action-primary-focus)]"
-                >
-                  {scenario.kind === "youtube" ? (
-                    <Play className="h-4 w-4 fill-current" />
-                  ) : (
-                    <BookOpen className="h-4 w-4" />
+                  className={cn(
+                    "inline-flex h-11 items-center justify-center gap-2.5 rounded-lg px-5 text-sm font-semibold shadow-md transition-all active:scale-[0.98]",
+                    "bg-[var(--action-primary-bg)] text-[var(--action-primary-fg)] hover:bg-[var(--action-primary-bg-hover)]",
+                    "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--action-primary-focus)]"
                   )}
+                >
+                  <Play className="h-4 w-4 fill-current" />
                   <span>Launch Reading Studio</span>
-                  <kbd className="ml-auto rounded bg-black/20 px-1.5 py-0.5 text-[10px] font-mono text-white/80 border border-white/20">
-                    ⌘↵
-                  </kbd>
+                  <ChevronRight className="h-4 w-4" />
                 </button>
-              )}
 
-              {/* SECONDARY ACTION BUTTONS */}
-              <div className="grid grid-cols-2 gap-1.5 pt-1">
-                {/* Inspect Segments Trigger */}
-                {scenario.segments && scenario.segments.length > 0 && (
+                {/* Secondary Actions */}
+                <div className="flex items-center justify-end gap-2">
                   <button
                     type="button"
                     onClick={() => setInspectDrawerOpen(true)}
-                    className="flex items-center justify-center gap-1 rounded-md border border-[var(--border)] bg-[var(--surface-raised)] px-2.5 py-2 text-xs font-medium text-[var(--text-secondary)] hover:bg-[var(--surface)] hover:text-[var(--text-primary)] transition-colors"
-                    title="Quick peek at transcript segments"
+                    className="inline-flex h-9 items-center gap-1.5 rounded-md border border-[var(--border)] bg-[var(--surface-raised)] px-3 text-xs font-medium text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:border-[var(--border-strong)] transition-colors"
                   >
-                    <List className="h-3.5 w-3.5 text-[var(--text-muted)]" />
-                    <span>Segments</span>
-                    <span className="rounded-full bg-[var(--accent-3)] px-1.5 text-[10px] font-bold text-[var(--accent-11)]">
-                      {scenario.segments.length}
-                    </span>
+                    <SlidersHorizontal className="h-3.5 w-3.5" />
+                    <span>Inspect Segments</span>
                   </button>
+
+                  <button
+                    type="button"
+                    onClick={handleCopyLink}
+                    className="inline-flex h-9 items-center justify-center rounded-md border border-[var(--border)] bg-[var(--surface-raised)] px-2.5 text-xs text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
+                    title="Copy Source Link"
+                  >
+                    {copiedLink ? <Check className="h-3.5 w-3.5 text-emerald-500" /> : <Copy className="h-3.5 w-3.5" />}
+                  </button>
+
+                  <a
+                    href={scenario.sourceUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="inline-flex h-9 items-center justify-center rounded-md border border-[var(--border)] bg-[var(--surface-raised)] px-2.5 text-xs text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
+                    title="Open External Source"
+                  >
+                    <ExternalLink className="h-3.5 w-3.5" />
+                  </a>
+                </div>
+              </div>
+            </div>
+
+            {/* Degraded State Callout & In-Hero ASR Action */}
+            {scenario.qualityLevel === "degraded" && (
+              <div className="mt-5 rounded-lg border border-rose-500/40 bg-rose-500/10 p-3.5 text-xs">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  <div className="flex items-start gap-2.5">
+                    <AlertTriangle className="h-4 w-4 text-[var(--ruby)] shrink-0 mt-0.5" />
+                    <div>
+                      <span className="font-bold text-[var(--ruby)]">Missing Video Transcript</span>
+                      <p className="text-[var(--text-secondary)] mt-0.5">
+                        {scenario.diagnosticWarning}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-2 shrink-0">
+                    <button
+                      type="button"
+                      disabled={asrState === "queuing" || asrState === "transcribing" || asrState === "aligning"}
+                      onClick={handleStartMacAsr}
+                      className={cn(
+                        "inline-flex h-8 items-center gap-1.5 rounded-md px-3 text-xs font-semibold shadow-xs transition-all",
+                        asrState === "completed"
+                          ? "bg-emerald-600 text-white"
+                          : "bg-[var(--action-primary-bg)] text-[var(--action-primary-fg)] hover:bg-[var(--action-primary-bg-hover)]"
+                      )}
+                    >
+                      <Zap className="h-3.5 w-3.5 text-amber-400" />
+                      <span>
+                        {asrState === "idle" && "Queue Mac ASR"}
+                        {asrState === "queuing" && "Queuing..."}
+                        {asrState === "transcribing" && "Transcribing..."}
+                        {asrState === "aligning" && "Aligning Timestamps..."}
+                        {asrState === "completed" && "ASR Completed ✨"}
+                      </span>
+                    </button>
+                  </div>
+                </div>
+
+                {/* Progress bar during active ASR */}
+                {asrState !== "idle" && asrState !== "completed" && (
+                  <div className="mt-3">
+                    <div className="flex items-center justify-between text-[10px] text-[var(--text-secondary)] mb-1">
+                      <span>Apple Neural Engine • Whisper Large v3 Turbo</span>
+                      <span>{asrProgress}%</span>
+                    </div>
+                    <div className="h-1.5 w-full overflow-hidden rounded-full bg-rose-950/30">
+                      <div
+                        className="h-full bg-gradient-to-r from-amber-400 to-emerald-400 transition-all duration-300"
+                        style={{ width: `${asrProgress}%` }}
+                      />
+                    </div>
+                  </div>
                 )}
+              </div>
+            )}
+          </section>
 
-                {/* Focus Reader Mode */}
-                <button
-                  type="button"
-                  onClick={() => setFocusMode(!focusMode)}
-                  className="flex items-center justify-center gap-1 rounded-md border border-[var(--border)] bg-[var(--surface-raised)] px-2.5 py-2 text-xs font-medium text-[var(--text-secondary)] hover:bg-[var(--surface)] hover:text-[var(--text-primary)] transition-colors"
-                  title="Distraction-free reading view"
-                >
-                  <Maximize2 className="h-3.5 w-3.5 text-[var(--text-muted)]" />
-                  <span>{focusMode ? "Unfocus" : "Focus"}</span>
-                </button>
-
-                {/* Copy Link */}
-                <button
-                  type="button"
-                  onClick={handleCopyLink}
-                  className="flex items-center justify-center gap-1 rounded-md border border-[var(--border)] bg-[var(--surface-raised)] px-2.5 py-2 text-xs font-medium text-[var(--text-secondary)] hover:bg-[var(--surface)] hover:text-[var(--text-primary)] transition-colors"
-                  title="Copy permanent URL"
-                >
-                  {copiedLink ? (
-                    <>
-                      <Check className="h-3.5 w-3.5 text-emerald-500" />
-                      <span className="text-emerald-600 font-semibold">Copied</span>
-                    </>
-                  ) : (
-                    <>
-                      <Copy className="h-3.5 w-3.5 text-[var(--text-muted)]" />
-                      <span>Copy link</span>
-                    </>
-                  )}
-                </button>
-
-                {/* Ask AI Companion Shortcut */}
-                <button
-                  type="button"
-                  onClick={() => {
-                    setStudioOpen(true);
-                    setStudioTab("ask");
-                    showToast("Opened Studio Ask Tab");
-                  }}
-                  className="flex items-center justify-center gap-1 rounded-md border border-[var(--border)] bg-[var(--surface-raised)] px-2.5 py-2 text-xs font-medium text-[var(--text-secondary)] hover:bg-[var(--surface)] hover:text-[var(--text-primary)] transition-colors"
-                  title="Ask grounded AI question"
-                >
-                  <Sparkles className="h-3.5 w-3.5 text-[var(--violet)]" />
-                  <span>Ask AI</span>
-                </button>
+          {/* ITEM BODY & METADATA GRID */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            {/* Left 2 Cols: Content Body & Quotes */}
+            <div className="lg:col-span-2 space-y-6">
+              {/* Executive Summary */}
+              <div className="rounded-xl border border-[var(--border)] bg-[var(--surface)] p-6 shadow-xs">
+                <h2 className="text-sm font-bold uppercase tracking-wider text-[var(--text-secondary)] mb-3 flex items-center gap-2">
+                  <Sparkles className="h-4 w-4 text-indigo-400" />
+                  <span>Executive AI Summary</span>
+                </h2>
+                <p className="text-sm leading-relaxed text-[var(--text-primary)]">
+                  {scenario.summary}
+                </p>
               </div>
 
-              {/* Sync Health & Storage Footprint */}
-              <div className="mt-1 flex items-center justify-between border-t border-[var(--border)] pt-2 text-[10px] text-[var(--text-muted)]">
-                <span>Vector Index: 12 chunks</span>
-                <span>SQLite: 42 KB</span>
+              {/* Extracted Key Quotes */}
+              <div className="rounded-xl border border-[var(--border)] bg-[var(--surface)] p-6 shadow-xs space-y-3">
+                <h2 className="text-sm font-bold uppercase tracking-wider text-[var(--text-secondary)]">
+                  Key Quotes & Statements
+                </h2>
+                <div className="space-y-2.5">
+                  {scenario.keyQuotes.map((q, idx) => (
+                    <blockquote
+                      key={idx}
+                      className="rounded-lg border-l-2 border-indigo-500 bg-[var(--surface-raised)] p-3.5 text-xs italic text-[var(--text-primary)]"
+                    >
+                      &ldquo;{q}&rdquo;
+                    </blockquote>
+                  ))}
+                </div>
+              </div>
+
+              {/* Article Content / Transcript Preview */}
+              {scenario.articleHtml && (
+                <div className="rounded-xl border border-[var(--border)] bg-[var(--surface)] p-6 shadow-xs space-y-4">
+                  <h2 className="text-sm font-bold uppercase tracking-wider text-[var(--text-secondary)]">
+                    Article Full-Text Preview
+                  </h2>
+                  <div className="space-y-3 text-sm leading-relaxed text-[var(--text-primary)]">
+                    {scenario.articleHtml.map((p, idx) => (
+                      <p key={idx}>{p}</p>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Right 1 Col: Metadata Rail */}
+            <div className="space-y-6">
+              {/* Tags & Topics */}
+              <div className="rounded-xl border border-[var(--border)] bg-[var(--surface)] p-5 shadow-xs space-y-4">
+                <div>
+                  <span className="text-[11px] font-bold uppercase tracking-wider text-[var(--text-secondary)]">
+                    Tags
+                  </span>
+                  <div className="flex flex-wrap gap-1.5 mt-2">
+                    {scenario.tags.map((t) => (
+                      <span
+                        key={t}
+                        className="rounded-md border border-[var(--border)] bg-[var(--surface-raised)] px-2 py-0.5 text-xs text-[var(--text-secondary)]"
+                      >
+                        #{t}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="border-t border-[var(--border)] pt-3">
+                  <span className="text-[11px] font-bold uppercase tracking-wider text-[var(--text-secondary)]">
+                    Detected AI Topics
+                  </span>
+                  <div className="flex flex-wrap gap-1.5 mt-2">
+                    {scenario.topics.map((top) => (
+                      <span
+                        key={top}
+                        className="rounded-md border border-indigo-500/20 bg-indigo-500/10 px-2 py-0.5 text-xs font-medium text-indigo-400"
+                      >
+                        {top}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              {/* Collections */}
+              <div className="rounded-xl border border-[var(--border)] bg-[var(--surface)] p-5 shadow-xs">
+                <span className="text-[11px] font-bold uppercase tracking-wider text-[var(--text-secondary)]">
+                  Collections
+                </span>
+                <div className="space-y-2 mt-2">
+                  {scenario.collections.map((col) => (
+                    <div
+                      key={col}
+                      className="flex items-center gap-2 text-xs text-[var(--text-primary)]"
+                    >
+                      <FolderPlus className="h-3.5 w-3.5 text-[var(--text-secondary)]" />
+                      <span>{col}</span>
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
           </div>
-        </section>
+        </div>
+      ) : (
+        /* ========================================================================= */
+        /* VIEW 2: DEDICATED FULL-PAGE READING STUDIO (STANDALONE EXPERIENCE)        */
+        /* ========================================================================= */
+        <div
+          className={cn(
+            "mx-auto transition-all duration-300 px-4 py-4 md:py-6",
+            viewportMode === "desktop" && "max-w-[1440px]",
+            viewportMode === "tablet" && "max-w-[768px] border-x border-[var(--border)] shadow-xl",
+            viewportMode === "mobile" && "max-w-[390px] border-x border-[var(--border)] shadow-2xl"
+          )}
+        >
+          {/* Studio Full-Page Header Breadcrumb */}
+          <div className="mb-4 flex flex-wrap items-center justify-between gap-3 border-b border-[var(--border)] pb-3">
+            <div className="flex items-center gap-3">
+              <button
+                type="button"
+                onClick={() => {
+                  setPageView("item");
+                  showToast("Returned to Item Detail Page");
+                }}
+                className="inline-flex items-center gap-1.5 rounded-lg border border-[var(--border)] bg-[var(--surface-raised)] px-3 py-1.5 text-xs font-semibold text-[var(--text-primary)] hover:border-[var(--border-strong)] transition-all shadow-xs"
+              >
+                <ArrowLeft className="h-3.5 w-3.5" />
+                <span>Back to Item</span>
+              </button>
 
-        {/* ========================================================================= */}
-        {/* ITEM PAGE CONTENT SECTION (SIMULATED ARTICLE / DIGEST VIEW)               */}
-        {/* ========================================================================= */}
-        <div className="grid grid-cols-1 gap-8 lg:grid-cols-[minmax(0,1fr)_320px]">
-          {/* Main Reading Canvas */}
-          <article className="prose prose-slate max-w-none dark:prose-invert">
-            <div className="mb-6 rounded-lg border border-[var(--border)] bg-[var(--surface)] p-5">
-              <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-[var(--accent-11)] mb-2">
-                <Sparkles className="h-4 w-4" />
-                <span>AI Grounded Executive Digest</span>
+              <div className="h-4 w-px bg-[var(--border)]" />
+
+              <div className="flex items-center gap-2 text-xs text-[var(--text-secondary)]">
+                <span className="font-semibold text-[var(--text-primary)] truncate max-w-xs sm:max-w-md">
+                  {scenario.title}
+                </span>
+                <span className="rounded bg-[var(--control-selected-bg)] px-2 py-0.5 text-[10px] font-mono text-[var(--text-primary)]">
+                  {scenario.durationOrReadTime}
+                </span>
               </div>
-              <p className="text-sm leading-relaxed text-[var(--text-primary)]">
-                {scenario.summary}
-              </p>
             </div>
 
-            {/* Key Quotes Section */}
-            <div className="mb-8">
-              <h3 className="text-base font-semibold text-[var(--text-primary)] mb-3 flex items-center gap-2">
-                <Bookmark className="h-4 w-4 text-[var(--accent-11)]" />
-                <span>Extracted Key Claims & Evidence</span>
-              </h3>
-              <div className="space-y-3">
-                {scenario.keyQuotes.map((quote, idx) => (
-                  <blockquote
-                    key={idx}
-                    className="relative rounded-lg border-l-4 border-[var(--azure)] bg-[var(--surface)] p-4 text-xs italic text-[var(--text-secondary)] shadow-xs"
-                  >
-                    <p>&ldquo;{quote}&rdquo;</p>
-                    <div className="mt-2 flex items-center justify-between not-italic text-[10px] text-[var(--text-muted)] font-mono">
-                      <span>Ref: [{scenario.authorOrChannel}]</span>
+            {/* Split Ratio Selector */}
+            <div className="flex items-center gap-2">
+              <div className="hidden sm:flex items-center rounded-md border border-[var(--border)] bg-[var(--surface)] p-0.5 text-xs font-mono">
+                <button
+                  type="button"
+                  onClick={() => setStudioSplitRatio("50-50")}
+                  className={cn(
+                    "px-2 py-0.5 rounded transition-colors",
+                    studioSplitRatio === "50-50" ? "bg-[var(--control-selected-bg)] text-[var(--control-selected-fg)] font-bold" : "text-[var(--text-muted)]"
+                  )}
+                >
+                  50:50
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setStudioSplitRatio("60-40")}
+                  className={cn(
+                    "px-2 py-0.5 rounded transition-colors",
+                    studioSplitRatio === "60-40" ? "bg-[var(--control-selected-bg)] text-[var(--control-selected-fg)] font-bold" : "text-[var(--text-muted)]"
+                  )}
+                >
+                  60:40
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setStudioSplitRatio("40-60")}
+                  className={cn(
+                    "px-2 py-0.5 rounded transition-colors",
+                    studioSplitRatio === "40-60" ? "bg-[var(--control-selected-bg)] text-[var(--control-selected-fg)] font-bold" : "text-[var(--text-muted)]"
+                  )}
+                >
+                  40:60
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* Full-Page Dual-Pane Container */}
+          <div className="flex flex-col lg:flex-row overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--surface)] shadow-lg min-h-[750px]">
+            {/* --- LEFT PANE: MEDIA PLAYER & SYNCHRONIZED SOURCE --- */}
+            <div
+              className={cn(
+                "flex flex-col border-b lg:border-b-0 lg:border-r border-[var(--border)] bg-[var(--surface-base)] overflow-hidden",
+                studioSplitRatio === "50-50" && "lg:w-1/2",
+                studioSplitRatio === "60-40" && "lg:w-3/5",
+                studioSplitRatio === "40-60" && "lg:w-2/5"
+              )}
+            >
+              {scenario.kind === "youtube" ? (
+                <div className="bg-black text-white p-4 shrink-0 flex flex-col gap-3">
+                  {/* Simulated Video Player Screen */}
+                  <div className="relative aspect-video w-full rounded-xl bg-slate-950 overflow-hidden flex items-center justify-center border border-slate-800">
+                    <div className="absolute inset-0 flex flex-col items-center justify-center p-6 text-center bg-gradient-to-t from-black via-slate-900/60 to-black/80">
+                      <div className="text-xs font-mono text-[var(--cyan)] mb-1">
+                        Playing at {Math.floor(currentPlaySec / 60).toString().padStart(2, "0")}:{(currentPlaySec % 60).toString().padStart(2, "0")} / {scenario.durationOrReadTime}
+                      </div>
+                      <div className="text-sm font-semibold text-slate-200 line-clamp-1">
+                        {scenario.segments?.find((s) => currentPlaySec >= s.startSec && currentPlaySec < s.endSec)?.text || "Section: LLM Pretraining & Attention Mechanism"}
+                      </div>
+                      <div className="mt-4 flex items-center gap-3">
+                        <button
+                          type="button"
+                          onClick={() => setIsPlaying(!isPlaying)}
+                          className="flex h-11 w-11 items-center justify-center rounded-full bg-white text-black hover:scale-105 transition-transform shadow-lg"
+                        >
+                          {isPlaying ? <Pause className="h-5 w-5 fill-current" /> : <Play className="h-5 w-5 fill-current ml-0.5" />}
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Scrubbing timeline */}
+                    <div className="absolute bottom-2.5 inset-x-4 flex items-center gap-2 text-[10px] font-mono text-slate-300">
+                      <span>{Math.floor(currentPlaySec / 60)}:{(currentPlaySec % 60).toString().padStart(2, "0")}</span>
+                      <input
+                        type="range"
+                        min="0"
+                        max={scenario.durationSeconds || 1122}
+                        value={currentPlaySec}
+                        onChange={(e) => setCurrentPlaySec(Number(e.target.value))}
+                        className="flex-1 accent-[var(--cyan)] h-1.5 rounded bg-slate-700 cursor-pointer"
+                      />
+                      <span>{scenario.durationOrReadTime}</span>
+                    </div>
+                  </div>
+
+                  {/* Media Speed & Jump Controls */}
+                  <div className="flex items-center justify-between text-xs px-1">
+                    <div className="flex items-center gap-2">
+                      <span className="text-[11px] text-slate-400">Speed:</span>
+                      {[1, 1.25, 1.5, 2].map((spd) => (
+                        <button
+                          key={spd}
+                          type="button"
+                          onClick={() => setPlaybackRate(spd)}
+                          className={cn(
+                            "px-2 py-0.5 rounded text-[11px] font-mono",
+                            playbackRate === spd ? "bg-white/20 text-white font-bold" : "text-slate-400 hover:text-white"
+                          )}
+                        >
+                          {spd}x
+                        </button>
+                      ))}
+                    </div>
+
+                    <div className="flex items-center gap-2">
                       <button
                         type="button"
-                        onClick={() => {
-                          setStudioOpen(true);
-                          setCurrentPlaySec(180);
-                        }}
-                        className="text-[var(--azure)] hover:underline flex items-center gap-1 font-sans"
+                        onClick={() => setCurrentPlaySec((s) => Math.max(0, s - 10))}
+                        className="rounded bg-white/10 px-2 py-0.5 text-[11px] text-slate-300 hover:text-white"
                       >
-                        <Play className="h-2.5 w-2.5 fill-current" />
-                        Jump to passage
+                        -10s
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setCurrentPlaySec((s) => Math.min(scenario.durationSeconds || 1122, s + 10))}
+                        className="rounded bg-white/10 px-2 py-0.5 text-[11px] text-slate-300 hover:text-white"
+                      >
+                        +10s
                       </button>
                     </div>
-                  </blockquote>
-                ))}
-              </div>
-            </div>
-
-            {/* Body Content / Article Paragraphs */}
-            {scenario.articleHtml && (
-              <div className="space-y-4 text-sm leading-relaxed text-[var(--text-secondary)]">
-                <h3 className="text-base font-semibold text-[var(--text-primary)]">
-                  Extracted Article Text
-                </h3>
-                {scenario.articleHtml.map((p, i) => (
-                  <p key={i}>{p}</p>
-                ))}
-              </div>
-            )}
-          </article>
-
-          {/* Right Rail: Context & Related Items */}
-          <aside className="space-y-5">
-            {/* Quick Actions Card */}
-            <div className="rounded-lg border border-[var(--border)] bg-[var(--surface)] p-4">
-              <h4 className="text-xs font-bold uppercase tracking-wider text-[var(--text-muted)] mb-3">
-                Workspace Companion
-              </h4>
-              <div className="space-y-2">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setStudioOpen(true);
-                    setStudioTab("notes");
-                  }}
-                  className="flex w-full items-center justify-between rounded-md border border-[var(--border)] bg-[var(--surface-raised)] p-2.5 text-xs text-[var(--text-primary)] hover:bg-[var(--surface)] transition-colors"
-                >
-                  <span className="flex items-center gap-2">
-                    <FileText className="h-4 w-4 text-[var(--cyan)]" />
-                    <span>Your Manual Notes</span>
-                  </span>
-                  <ChevronRight className="h-3.5 w-3.5 text-[var(--text-muted)]" />
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => {
-                    setStudioOpen(true);
-                    setStudioTab("ask");
-                  }}
-                  className="flex w-full items-center justify-between rounded-md border border-[var(--border)] bg-[var(--surface-raised)] p-2.5 text-xs text-[var(--text-primary)] hover:bg-[var(--surface)] transition-colors"
-                >
-                  <span className="flex items-center gap-2">
-                    <MessageSquare className="h-4 w-4 text-[var(--violet)]" />
-                    <span>Ask AI Questions (3 messages)</span>
-                  </span>
-                  <ChevronRight className="h-3.5 w-3.5 text-[var(--text-muted)]" />
-                </button>
-              </div>
-            </div>
-
-            {/* Topics Included */}
-            <div className="rounded-lg border border-[var(--border)] bg-[var(--surface)] p-4">
-              <h4 className="text-xs font-bold uppercase tracking-wider text-[var(--text-muted)] mb-2.5">
-                AI Detected Topics
-              </h4>
-              <div className="flex flex-wrap gap-1.5">
-                {scenario.topics.map((topic) => (
-                  <span
-                    key={topic}
-                    className="rounded bg-[var(--accent-3)] px-2 py-0.5 text-[11px] font-medium text-[var(--accent-11)]"
-                  >
-                    {topic}
-                  </span>
-                ))}
-              </div>
-            </div>
-
-            {/* Related Research Items */}
-            <div className="rounded-lg border border-[var(--border)] bg-[var(--surface)] p-4">
-              <h4 className="text-xs font-bold uppercase tracking-wider text-[var(--text-muted)] mb-2.5">
-                Related in Memory
-              </h4>
-              <div className="space-y-2 text-xs">
-                <div className="p-2 rounded bg-[var(--surface-raised)] border border-[var(--border)] hover:border-[var(--azure)] cursor-pointer transition-colors">
-                  <div className="font-semibold text-[var(--text-primary)] line-clamp-1">
-                    Attention Is All You Need (Vaswani et al.)
-                  </div>
-                  <div className="text-[10px] text-[var(--text-muted)] mt-0.5">
-                    94% vector similarity • PDF Paper
                   </div>
                 </div>
-                <div className="p-2 rounded bg-[var(--surface-raised)] border border-[var(--border)] hover:border-[var(--azure)] cursor-pointer transition-colors">
-                  <div className="font-semibold text-[var(--text-primary)] line-clamp-1">
-                    Direct Preference Optimization Explained
-                  </div>
-                  <div className="text-[10px] text-[var(--text-muted)] mt-0.5">
-                    89% vector similarity • Web Article
-                  </div>
-                </div>
-              </div>
-            </div>
-          </aside>
-        </div>
-      </div>
-
-      {/* ========================================================================= */}
-      {/* DUAL-PANE INTERACTIVE READING STUDIO (MODAL / WORKBENCH)                  */}
-      {/* ========================================================================= */}
-      {studioOpen && (
-        <div
-          role="dialog"
-          aria-modal="true"
-          aria-label="Interactive Reading Studio"
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-md p-2 sm:p-4 animate-in fade-in duration-200"
-        >
-          <div className="flex h-[92vh] w-[96vw] max-w-7xl flex-col overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--surface)] shadow-2xl">
-            {/* Studio Header Bar */}
-            <header className="flex shrink-0 items-center justify-between border-b border-[var(--border)] bg-[var(--surface-raised)] px-5 py-3">
-              <div className="flex items-center gap-3 min-w-0">
-                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[var(--action-primary-bg)] text-[var(--action-primary-fg)] font-bold text-sm shadow-sm">
-                  {scenario.kind === "youtube" ? <Play className="h-4 w-4 fill-current" /> : <BookOpen className="h-4 w-4" />}
-                </div>
-                <div className="min-w-0">
-                  <div className="flex items-center gap-2">
-                    <span className="text-[11px] font-bold uppercase tracking-wider text-[var(--accent-11)]">
-                      AI Reading Studio
+              ) : (
+                <div className="border-b border-[var(--border)] bg-[var(--surface-raised)] p-4 shrink-0">
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="font-semibold text-[var(--text-primary)]">
+                      Full Extracted Article Text
                     </span>
-                    <span className="rounded bg-[var(--accent-3)] px-1.5 py-0.5 text-[10px] font-mono text-[var(--text-secondary)]">
-                      Dual-Pane Active
+                    <span className="text-[10px] text-[var(--text-muted)]">
+                      {scenario.wordCount} words • 100% Readability Score
                     </span>
                   </div>
-                  <h3 className="text-sm font-semibold text-[var(--text-primary)] truncate max-w-md sm:max-w-xl">
-                    {scenario.title}
-                  </h3>
                 </div>
-              </div>
+              )}
 
-              {/* Studio Controls: Layout split, Esc hint, Close */}
-              <div className="flex items-center gap-2.5">
-                {/* Split Ratio Selector */}
-                <div className="hidden sm:flex items-center rounded-md border border-[var(--border)] bg-[var(--surface)] p-0.5 text-xs font-mono">
-                  <button
-                    type="button"
-                    onClick={() => setStudioSplitRatio("50-50")}
-                    className={cn(
-                      "px-2 py-0.5 rounded transition-colors",
-                      studioSplitRatio === "50-50" ? "bg-[var(--control-selected-bg)] text-[var(--control-selected-fg)] font-bold" : "text-[var(--text-muted)]"
-                    )}
-                  >
-                    50:50
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setStudioSplitRatio("60-40")}
-                    className={cn(
-                      "px-2 py-0.5 rounded transition-colors",
-                      studioSplitRatio === "60-40" ? "bg-[var(--control-selected-bg)] text-[var(--control-selected-fg)] font-bold" : "text-[var(--text-muted)]"
-                    )}
-                  >
-                    60:40
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setStudioSplitRatio("40-60")}
-                    className={cn(
-                      "px-2 py-0.5 rounded transition-colors",
-                      studioSplitRatio === "40-60" ? "bg-[var(--control-selected-bg)] text-[var(--control-selected-fg)] font-bold" : "text-[var(--text-muted)]"
-                    )}
-                  >
-                    40:60
-                  </button>
-                </div>
-
-                <button
-                  type="button"
-                  onClick={() => setStudioOpen(false)}
-                  className="flex h-8 w-8 items-center justify-center rounded-lg border border-[var(--border)] bg-[var(--surface)] text-[var(--text-secondary)] hover:bg-rose-500 hover:text-white transition-colors"
-                  title="Close Studio (Esc)"
-                >
-                  <X className="h-4 w-4" />
-                </button>
-              </div>
-            </header>
-
-            {/* Studio Body: Dual-Pane Layout */}
-            <div className="flex flex-1 overflow-hidden flex-col md:flex-row">
-              {/* --- LEFT PANE: MEDIA PLAYER & SYNCHRONIZED SOURCE --- */}
-              <div
-                className={cn(
-                  "flex flex-col border-b md:border-b-0 md:border-r border-[var(--border)] bg-[var(--surface-base)] overflow-hidden",
-                  studioSplitRatio === "50-50" && "md:w-1/2",
-                  studioSplitRatio === "60-40" && "md:w-3/5",
-                  studioSplitRatio === "40-60" && "md:w-2/5"
-                )}
-              >
-                {/* Video Player Header / Article Top */}
-                {scenario.kind === "youtube" ? (
-                  <div className="bg-black text-white p-3 shrink-0 flex flex-col gap-2">
-                    {/* Simulated Video Screen */}
-                    <div className="relative aspect-video w-full rounded-lg bg-slate-950 overflow-hidden flex items-center justify-center border border-slate-800">
-                      {/* Active Frame Graphic */}
-                      <div className="absolute inset-0 flex flex-col items-center justify-center p-6 text-center bg-gradient-to-t from-black via-slate-900/60 to-black/80">
-                        <div className="text-xs font-mono text-[var(--cyan)] mb-1">
-                          Playing at {Math.floor(currentPlaySec / 60).toString().padStart(2, "0")}:{(currentPlaySec % 60).toString().padStart(2, "0")} / {scenario.durationOrReadTime}
-                        </div>
-                        <div className="text-sm font-semibold text-slate-200 line-clamp-1">
-                          {scenario.segments?.find((s) => currentPlaySec >= s.startSec && currentPlaySec < s.endSec)?.text || "Section: LLM Pretraining & Attention Mechanism"}
-                        </div>
-                        <div className="mt-3 flex items-center gap-3">
+              {/* Transcript Timeline / Article Text Stream */}
+              <div className="flex-1 overflow-y-auto p-4 space-y-3">
+                {scenario.segments && scenario.segments.length > 0 ? (
+                  scenario.segments.map((seg) => {
+                    const isActive = currentPlaySec >= seg.startSec && currentPlaySec < seg.endSec;
+                    return (
+                      <div
+                        key={seg.id}
+                        onClick={() => setCurrentPlaySec(seg.startSec)}
+                        className={cn(
+                          "group relative rounded-xl border p-3.5 transition-all cursor-pointer",
+                          isActive
+                            ? "border-indigo-500/60 bg-indigo-500/10 shadow-xs"
+                            : "border-[var(--border)] bg-[var(--surface)] hover:border-[var(--border-strong)]"
+                        )}
+                      >
+                        <div className="flex items-center justify-between text-xs mb-1.5">
+                          <span className="font-mono font-semibold text-indigo-400 flex items-center gap-1">
+                            <Clock className="h-3 w-3" />
+                            {seg.timestamp}
+                          </span>
                           <button
                             type="button"
-                            onClick={() => setIsPlaying(!isPlaying)}
-                            className="flex h-10 w-10 items-center justify-center rounded-full bg-white text-black hover:scale-105 transition-transform"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handlePinQuote(seg.text, seg.timestamp);
+                            }}
+                            className="opacity-0 group-hover:opacity-100 inline-flex items-center gap-1 rounded bg-[var(--surface-raised)] border border-[var(--border)] px-2 py-0.5 text-[10px] font-medium text-[var(--text-primary)] hover:border-indigo-500 transition-all"
                           >
-                            {isPlaying ? <Pause className="h-5 w-5 fill-current" /> : <Play className="h-5 w-5 fill-current ml-0.5" />}
+                            <Plus className="h-2.5 w-2.5" />
+                            <span>Add to Notes</span>
                           </button>
                         </div>
+                        <p className="text-xs leading-relaxed text-[var(--text-primary)]">
+                          {seg.text}
+                        </p>
                       </div>
+                    );
+                  })
+                ) : (
+                  <div className="p-8 text-center text-xs text-[var(--text-secondary)]">
+                    No transcript segments available for this scenario.
+                  </div>
+                )}
+              </div>
+            </div>
 
-                      {/* Scrubbing timeline */}
-                      <div className="absolute bottom-2 inset-x-3 flex items-center gap-2 text-[10px] font-mono text-slate-300">
-                        <span>{Math.floor(currentPlaySec / 60)}:{(currentPlaySec % 60).toString().padStart(2, "0")}</span>
-                        <input
-                          type="range"
-                          min="0"
-                          max={scenario.durationSeconds || 1122}
-                          value={currentPlaySec}
-                          onChange={(e) => setCurrentPlaySec(Number(e.target.value))}
-                          className="flex-1 accent-[var(--cyan)] h-1 rounded bg-slate-700 cursor-pointer"
-                        />
-                        <span>{scenario.durationOrReadTime}</span>
-                      </div>
+            {/* --- RIGHT PANE: COMPANION WORKBENCH (TABS) --- */}
+            <div
+              className={cn(
+                "flex flex-col overflow-hidden bg-[var(--surface)]",
+                studioSplitRatio === "50-50" && "lg:w-1/2",
+                studioSplitRatio === "60-40" && "lg:w-2/5",
+                studioSplitRatio === "40-60" && "lg:w-3/5"
+              )}
+            >
+              {/* Tabs Bar */}
+              <div className="flex border-b border-[var(--border)] bg-[var(--surface-raised)] px-4 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setStudioTab("transcript")}
+                  className={cn(
+                    "px-4 py-2 text-xs font-semibold border-b-2 transition-colors",
+                    studioTab === "transcript"
+                      ? "border-indigo-500 text-indigo-400"
+                      : "border-transparent text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
+                  )}
+                >
+                  Overview & Summary
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setStudioTab("notes")}
+                  className={cn(
+                    "px-4 py-2 text-xs font-semibold border-b-2 transition-colors",
+                    studioTab === "notes"
+                      ? "border-indigo-500 text-indigo-400"
+                      : "border-transparent text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
+                  )}
+                >
+                  ✍️ Smart Notes
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setStudioTab("ask")}
+                  className={cn(
+                    "px-4 py-2 text-xs font-semibold border-b-2 transition-colors",
+                    studioTab === "ask"
+                      ? "border-indigo-500 text-indigo-400"
+                      : "border-transparent text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
+                  )}
+                >
+                  🤖 Ask AI Companion
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setStudioTab("provenance")}
+                  className={cn(
+                    "px-4 py-2 text-xs font-semibold border-b-2 transition-colors",
+                    studioTab === "provenance"
+                      ? "border-indigo-500 text-indigo-400"
+                      : "border-transparent text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
+                  )}
+                >
+                  🗄️ SQLite Provenance
+                </button>
+              </div>
+
+              {/* Tab Content Areas */}
+              <div className="flex-1 overflow-y-auto p-5">
+                {studioTab === "transcript" && (
+                  <div className="space-y-4">
+                    <div>
+                      <h4 className="text-xs font-bold uppercase tracking-wider text-[var(--text-secondary)]">
+                        Executive Summary
+                      </h4>
+                      <p className="mt-1.5 text-xs leading-relaxed text-[var(--text-primary)]">
+                        {scenario.summary}
+                      </p>
                     </div>
 
-                    {/* Media Speed & Jump Controls */}
-                    <div className="flex items-center justify-between text-xs px-1">
-                      <div className="flex items-center gap-1.5">
-                        <span className="text-[10px] text-slate-400">Speed:</span>
-                        {[1, 1.25, 1.5, 2].map((spd) => (
-                          <button
-                            key={spd}
-                            type="button"
-                            onClick={() => setPlaybackRate(spd)}
-                            className={cn(
-                              "px-1.5 py-0.5 rounded text-[10px] font-mono",
-                              playbackRate === spd ? "bg-white/20 text-white font-bold" : "text-slate-400 hover:text-white"
-                            )}
+                    <div className="border-t border-[var(--border)] pt-3">
+                      <h4 className="text-xs font-bold uppercase tracking-wider text-[var(--text-secondary)]">
+                        Key Extracted Quotes
+                      </h4>
+                      <div className="mt-2 space-y-2">
+                        {scenario.keyQuotes.map((q, idx) => (
+                          <blockquote
+                            key={idx}
+                            className="rounded-lg border-l-2 border-indigo-400 bg-[var(--surface-raised)] p-2.5 text-xs italic text-[var(--text-primary)]"
                           >
-                            {spd}x
-                          </button>
+                            &ldquo;{q}&rdquo;
+                          </blockquote>
                         ))}
                       </div>
-
-                      <div className="flex items-center gap-2">
-                        <button
-                          type="button"
-                          onClick={() => setCurrentPlaySec((s) => Math.max(0, s - 10))}
-                          className="text-[10px] text-slate-400 hover:text-white"
-                        >
-                          -10s
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => setCurrentPlaySec((s) => Math.min(scenario.durationSeconds || 1122, s + 10))}
-                          className="text-[10px] text-slate-400 hover:text-white"
-                        >
-                          +10s
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="border-b border-[var(--border)] bg-[var(--surface-raised)] p-3 shrink-0">
-                    <div className="flex items-center justify-between text-xs">
-                      <span className="font-semibold text-[var(--text-primary)]">
-                        Full Extracted Article Text
-                      </span>
-                      <span className="text-[10px] text-[var(--text-muted)]">
-                        {scenario.wordCount} words • 100% Readability Score
-                      </span>
                     </div>
                   </div>
                 )}
 
-                {/* Synchronized Transcript or Article Reader */}
-                <div className="flex-1 overflow-y-auto p-4 space-y-3">
-                  <div className="flex items-center justify-between pb-2 border-b border-[var(--border)]">
-                    <div className="flex items-center gap-2">
-                      <List className="h-4 w-4 text-[var(--accent-11)]" />
-                      <span className="text-xs font-bold uppercase tracking-wider text-[var(--text-primary)]">
-                        {scenario.kind === "youtube" ? "Timed Transcript Segments" : "Source Sections"}
+                {studioTab === "notes" && (
+                  <div className="flex flex-col h-full space-y-3">
+                    <div className="flex items-center justify-between text-xs">
+                      <span className="font-semibold text-[var(--text-primary)]">
+                        Markdown Note Editor
+                      </span>
+                      <span className="text-[10px] text-emerald-400">
+                        Autosaved to IndexedDB & SQLite
                       </span>
                     </div>
-                    <div className="relative">
-                      <Search className="absolute left-2 top-2 h-3 w-3 text-[var(--text-muted)]" />
-                      <input
-                        type="text"
-                        placeholder="Search transcript..."
-                        value={segmentFilter}
-                        onChange={(e) => setSegmentFilter(e.target.value)}
-                        className="rounded-md border border-[var(--border)] bg-[var(--surface)] pl-7 pr-2 py-1 text-xs text-[var(--text-primary)] focus:outline-hidden focus:border-[var(--azure)]"
-                      />
-                    </div>
+                    <textarea
+                      value={userNotes}
+                      onChange={(e) => setUserNotes(e.target.value)}
+                      rows={18}
+                      className="w-full flex-1 rounded-xl border border-[var(--border)] bg-[var(--surface-raised)] p-4 font-mono text-xs text-[var(--text-primary)] focus:border-indigo-500 focus:outline-none"
+                      placeholder="Type your personal observations, action items, or pinned citations here..."
+                    />
                   </div>
+                )}
 
-                  {/* Transcript Items */}
-                  {scenario.segments && scenario.segments.length > 0 ? (
-                    <div className="space-y-2">
-                      {filteredSegments.map((seg) => {
-                        const isCurrent = currentPlaySec >= seg.startSec && currentPlaySec < seg.endSec;
-                        return (
-                          <div
-                            key={seg.id}
-                            onClick={() => {
-                              setCurrentPlaySec(seg.startSec);
-                              showToast(`Seeked to ${seg.timestamp}`);
-                            }}
-                            className={cn(
-                              "group rounded-lg p-3 text-xs transition-all cursor-pointer border",
-                              isCurrent
-                                ? "border-[var(--azure)] bg-[var(--control-selected-bg)] shadow-xs"
-                                : "border-transparent bg-[var(--surface)] hover:border-[var(--border)] hover:bg-[var(--surface-raised)]"
-                            )}
-                          >
-                            <div className="flex items-center justify-between mb-1">
-                              <span className="flex items-center gap-1.5 font-mono font-bold text-[var(--azure)]">
-                                <Play className="h-2.5 w-2.5 fill-current" />
-                                {seg.timestamp}
-                              </span>
-                              <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                {studioTab === "ask" && (
+                  <div className="flex flex-col h-full space-y-3">
+                    <div className="flex-1 overflow-y-auto space-y-3">
+                      {chatMessages.map((msg, idx) => (
+                        <div
+                          key={idx}
+                          className={cn(
+                            "rounded-xl p-3.5 text-xs",
+                            msg.role === "user"
+                              ? "bg-indigo-600 text-white ml-6"
+                              : "bg-[var(--surface-raised)] border border-[var(--border)] text-[var(--text-primary)] mr-6"
+                          )}
+                        >
+                          <p className="leading-relaxed">{msg.text}</p>
+                          {msg.citations && (
+                            <div className="mt-2 flex flex-wrap gap-1.5">
+                              {msg.citations.map((c, cIdx) => (
                                 <button
+                                  key={cIdx}
                                   type="button"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    setUserNotes((prev) => `${prev}\n\n> "${seg.text}" [${seg.timestamp}]`);
-                                    showToast("Quoted segment into your notes!");
-                                  }}
-                                  className="text-[10px] font-medium text-[var(--accent-11)] hover:underline flex items-center gap-0.5"
+                                  onClick={() => setCurrentPlaySec(c.timeSec)}
+                                  className="rounded bg-black/20 px-2 py-0.5 font-mono text-[10px] hover:underline"
                                 >
-                                  <Plus className="h-3 w-3" />
-                                  <span>Add to Notes</span>
+                                  📍 {c.label}
                                 </button>
-                              </div>
+                              ))}
                             </div>
-                            <p className="text-[var(--text-primary)] leading-relaxed">{seg.text}</p>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  ) : scenario.articleHtml ? (
-                    <div className="space-y-4 text-xs leading-relaxed text-[var(--text-primary)]">
-                      {scenario.articleHtml.map((p, idx) => (
-                        <div key={idx} className="group p-2 rounded hover:bg-[var(--surface)] transition-colors">
-                          <p>{p}</p>
+                          )}
                         </div>
                       ))}
                     </div>
-                  ) : (
-                    <div className="p-8 text-center text-xs text-[var(--text-muted)]">
-                      <AlertTriangle className="h-8 w-8 text-[var(--ruby)] mx-auto mb-2" />
-                      <p>Transcript segments not yet extracted.</p>
-                      <button
-                        type="button"
-                        onClick={handleStartMacAsr}
-                        className="mt-3 inline-flex items-center gap-1 rounded bg-[var(--action-primary-bg)] px-3 py-1.5 text-xs text-[var(--action-primary-fg)]"
-                      >
-                        <Zap className="h-3.5 w-3.5 text-amber-400" />
-                        <span>Run Mac ASR Now</span>
-                      </button>
-                    </div>
-                  )}
-                </div>
-              </div>
 
-              {/* --- RIGHT PANE: KNOWLEDGE WORKBENCH (TABS: NOTES, ASK, CITATIONS) --- */}
-              <div className="flex flex-1 flex-col bg-[var(--surface)] overflow-hidden">
-                {/* Workbench Tab Navigation */}
-                <div className="flex items-center justify-between border-b border-[var(--border)] bg-[var(--surface-raised)] px-4">
-                  <div className="flex items-center gap-1">
-                    <button
-                      type="button"
-                      onClick={() => setStudioTab("transcript")}
-                      className={cn(
-                        "flex items-center gap-1.5 border-b-2 px-3 py-3 text-xs font-semibold transition-colors",
-                        studioTab === "transcript"
-                          ? "border-[var(--azure)] text-[var(--azure)]"
-                          : "border-transparent text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
-                      )}
-                    >
-                      <FileText className="h-3.5 w-3.5" />
-                      <span>Overview</span>
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setStudioTab("notes")}
-                      className={cn(
-                        "flex items-center gap-1.5 border-b-2 px-3 py-3 text-xs font-semibold transition-colors",
-                        studioTab === "notes"
-                          ? "border-[var(--azure)] text-[var(--azure)]"
-                          : "border-transparent text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
-                      )}
-                    >
-                      <Bookmark className="h-3.5 w-3.5" />
-                      <span>Smart Notes</span>
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setStudioTab("ask")}
-                      className={cn(
-                        "flex items-center gap-1.5 border-b-2 px-3 py-3 text-xs font-semibold transition-colors",
-                        studioTab === "ask"
-                          ? "border-[var(--azure)] text-[var(--azure)]"
-                          : "border-transparent text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
-                      )}
-                    >
-                      <Sparkles className="h-3.5 w-3.5 text-[var(--violet)]" />
-                      <span>Ask AI</span>
-                      <span className="rounded-full bg-[var(--violet)]/10 text-[var(--violet)] px-1.5 text-[10px] font-bold">
-                        3
-                      </span>
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setStudioTab("provenance")}
-                      className={cn(
-                        "flex items-center gap-1.5 border-b-2 px-3 py-3 text-xs font-semibold transition-colors",
-                        studioTab === "provenance"
-                          ? "border-[var(--azure)] text-[var(--azure)]"
-                          : "border-transparent text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
-                      )}
-                    >
-                      <ShieldCheck className="h-3.5 w-3.5 text-[var(--teal)]" />
-                      <span>Evidence</span>
-                    </button>
-                  </div>
-                </div>
-
-                {/* Workbench Tab Content */}
-                <div className="flex-1 overflow-y-auto p-4">
-                  {/* TAB 1: OVERVIEW & EXTRACTED TAKEAWAYS */}
-                  {studioTab === "transcript" && (
-                    <div className="space-y-4">
-                      <div className="rounded-lg border border-[var(--border)] bg-[var(--surface-raised)] p-4">
-                        <h4 className="text-xs font-bold uppercase tracking-wider text-[var(--text-muted)] mb-2">
-                          Executive Digest
-                        </h4>
-                        <p className="text-xs leading-relaxed text-[var(--text-primary)]">
-                          {scenario.summary}
-                        </p>
-                      </div>
-
-                      <div>
-                        <h4 className="text-xs font-bold uppercase tracking-wider text-[var(--text-muted)] mb-2">
-                          Verifiable Anchor Claims
-                        </h4>
-                        <div className="space-y-2">
-                          {scenario.keyQuotes.map((q, i) => (
-                            <div key={i} className="p-3 rounded-lg bg-[var(--surface-base)] border border-[var(--border)] text-xs">
-                              <p className="italic text-[var(--text-primary)]">&ldquo;{q}&rdquo;</p>
-                              <div className="mt-2 flex items-center justify-between text-[10px] text-[var(--text-muted)] font-mono">
-                                <span>Confidence: 99.4%</span>
-                                <button
-                                  type="button"
-                                  onClick={() => {
-                                    setUserNotes((prev) => `${prev}\n\n- Evidence: "${q}"`);
-                                    showToast("Appended claim to notes");
-                                  }}
-                                  className="text-[var(--accent-11)] hover:underline"
-                                >
-                                  + Quote to Notes
-                                </button>
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* TAB 2: SMART NOTES EDITOR */}
-                  {studioTab === "notes" && (
-                    <div className="flex flex-col h-full space-y-3">
-                      <div className="flex items-center justify-between text-xs text-[var(--text-secondary)]">
-                        <span className="font-semibold">Markdown Notes (Auto-saved)</span>
-                        <div className="flex items-center gap-1">
-                          <button
-                            type="button"
-                            onClick={() => setUserNotes((n) => `${n}\n- [ ] `)}
-                            className="px-2 py-0.5 rounded border border-[var(--border)] bg-[var(--surface-raised)] hover:bg-[var(--surface)] text-[11px]"
-                          >
-                            + Checkbox
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => setUserNotes((n) => `${n}\n\n## `)}
-                            className="px-2 py-0.5 rounded border border-[var(--border)] bg-[var(--surface-raised)] hover:bg-[var(--surface)] text-[11px]"
-                          >
-                            + Heading
-                          </button>
-                        </div>
-                      </div>
-                      <textarea
-                        value={userNotes}
-                        onChange={(e) => setUserNotes(e.target.value)}
-                        className="flex-1 w-full rounded-lg border border-[var(--border)] bg-[var(--surface-base)] p-3 font-mono text-xs text-[var(--text-primary)] leading-relaxed focus:outline-hidden focus:border-[var(--azure)] resize-none"
-                        rows={14}
+                    <form onSubmit={handleSendAsk} className="flex gap-2 pt-2 border-t border-[var(--border)]">
+                      <input
+                        type="text"
+                        value={askInput}
+                        onChange={(e) => setAskInput(e.target.value)}
+                        placeholder="Ask anything about this item..."
+                        className="flex-1 rounded-lg border border-[var(--border)] bg-[var(--surface-raised)] px-3 py-2 text-xs text-[var(--text-primary)] focus:border-indigo-500 focus:outline-none"
                       />
-                      <div className="flex items-center justify-between text-[10px] text-[var(--text-muted)] font-mono">
-                        <span>Words: {userNotes.split(/\s+/).filter(Boolean).length}</span>
-                        <span>Saved to local SQLite database</span>
-                      </div>
+                      <button
+                        type="submit"
+                        className="rounded-lg bg-[var(--action-primary-bg)] px-3.5 py-2 text-xs font-semibold text-[var(--action-primary-fg)]"
+                      >
+                        <Send className="h-3.5 w-3.5" />
+                      </button>
+                    </form>
+                  </div>
+                )}
+
+                {studioTab === "provenance" && (
+                  <div className="space-y-3 text-xs font-mono">
+                    <div className="rounded-lg border border-[var(--border)] bg-[var(--surface-raised)] p-3 space-y-1.5">
+                      <div className="text-[var(--text-secondary)]">Table: items</div>
+                      <div>id: {scenario.id}</div>
+                      <div>source_type: {scenario.kind}</div>
+                      <div>quality: {scenario.qualityLevel}</div>
+                      <div>duration_sec: {scenario.durationSeconds}</div>
                     </div>
-                  )}
-
-                  {/* TAB 3: ASK AI COMPANION */}
-                  {studioTab === "ask" && (
-                    <div className="flex flex-col h-full space-y-3">
-                      <div className="flex-1 overflow-y-auto space-y-3 pr-1">
-                        {chatMessages.map((msg, i) => (
-                          <div
-                            key={i}
-                            className={cn(
-                              "p-3 rounded-lg text-xs leading-relaxed",
-                              msg.role === "user"
-                                ? "bg-[var(--control-selected-bg)] text-[var(--control-selected-fg)] ml-6 border border-[var(--control-selected-border)]"
-                                : "bg-[var(--surface-raised)] text-[var(--text-primary)] mr-6 border border-[var(--border)]"
-                            )}
-                          >
-                            <div className="font-bold text-[10px] uppercase tracking-wider text-[var(--text-muted)] mb-1">
-                              {msg.role === "user" ? "You" : "AI Memory Companion"}
-                            </div>
-                            <p>{msg.text}</p>
-                            {msg.citations && (
-                              <div className="mt-2 flex flex-wrap gap-1.5 pt-2 border-t border-[var(--border)]">
-                                {msg.citations.map((cite, cIdx) => (
-                                  <button
-                                    key={cIdx}
-                                    type="button"
-                                    onClick={() => {
-                                      setCurrentPlaySec(cite.timeSec);
-                                      showToast(`Jumped to citation timestamp: ${cite.label}`);
-                                    }}
-                                    className="inline-flex items-center gap-1 rounded bg-[var(--accent-3)] px-2 py-0.5 text-[10px] font-mono font-medium text-[var(--accent-11)] hover:bg-[var(--azure)] hover:text-white transition-colors"
-                                  >
-                                    <Play className="h-2 w-2 fill-current" />
-                                    <span>{cite.label}</span>
-                                  </button>
-                                ))}
-                              </div>
-                            )}
-                          </div>
-                        ))}
-                      </div>
-
-                      {/* Chat Input */}
-                      <form onSubmit={handleSendAsk} className="flex items-center gap-2 pt-2 border-t border-[var(--border)]">
-                        <input
-                          type="text"
-                          placeholder="Ask anything grounded in this item..."
-                          value={askInput}
-                          onChange={(e) => setAskInput(e.target.value)}
-                          className="flex-1 rounded-md border border-[var(--border)] bg-[var(--surface-base)] px-3 py-2 text-xs text-[var(--text-primary)] focus:outline-hidden focus:border-[var(--azure)]"
-                        />
-                        <button
-                          type="submit"
-                          className="flex h-8 w-8 items-center justify-center rounded-md bg-[var(--action-primary-bg)] text-[var(--action-primary-fg)] hover:bg-[var(--action-primary-bg-hover)] transition-colors"
-                        >
-                          <Send className="h-3.5 w-3.5" />
-                        </button>
-                      </form>
-                    </div>
-                  )}
-
-                  {/* TAB 4: EVIDENCE & PROVENANCE */}
-                  {studioTab === "provenance" && (
-                    <div className="space-y-3 text-xs">
-                      <div className="rounded-lg border border-[var(--border)] bg-[var(--surface-raised)] p-3 space-y-2">
-                        <div className="font-bold text-[var(--text-primary)] flex items-center gap-1.5">
-                          <ShieldCheck className="h-4 w-4 text-[var(--teal)]" />
-                          <span>Local Cryptographic Integrity & Provenance</span>
-                        </div>
-                        <p className="text-[11px] text-[var(--text-secondary)]">
-                          All embeddings and chunks are stored exclusively in local SQLite on your device. No private audio or text is sent to third-party tracking APIs.
-                        </p>
-                      </div>
-
-                      <div className="space-y-1.5 font-mono text-[11px]">
-                        <div className="flex justify-between p-2 rounded bg-[var(--surface-base)] border border-[var(--border)]">
-                          <span className="text-[var(--text-muted)]">Source URL:</span>
-                          <span className="text-[var(--text-primary)] truncate max-w-xs">{scenario.sourceUrl}</span>
-                        </div>
-                        <div className="flex justify-between p-2 rounded bg-[var(--surface-base)] border border-[var(--border)]">
-                          <span className="text-[var(--text-muted)]">Embedding Model:</span>
-                          <span className="text-[var(--text-primary)]">nomic-embed-text-v1.5 (768d)</span>
-                        </div>
-                        <div className="flex justify-between p-2 rounded bg-[var(--surface-base)] border border-[var(--border)]">
-                          <span className="text-[var(--text-muted)]">Chunk Count:</span>
-                          <span className="text-[var(--text-primary)]">12 vector chunks</span>
-                        </div>
-                        <div className="flex justify-between p-2 rounded bg-[var(--surface-base)] border border-[var(--border)]">
-                          <span className="text-[var(--text-muted)]">Extraction Confidence:</span>
-                          <span className="text-[var(--teal)] font-bold">99.4% (Tier 1 Gold)</span>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-                </div>
+                  </div>
+                )}
               </div>
             </div>
           </div>
         </div>
       )}
 
-      {/* ========================================================================= */}
-      {/* QUICK SEGMENT INSPECTOR SLIDE-OVER DRAWER                                 */}
-      {/* ========================================================================= */}
+      {/* --- SEGMENT INSPECTOR SLIDE-OVER DRAWER --- */}
       {inspectDrawerOpen && (
         <div
           role="dialog"
           aria-modal="true"
           aria-label="Transcript Segment Inspector"
-          className="fixed inset-0 z-50 flex justify-end bg-black/50 backdrop-blur-xs animate-in fade-in duration-150"
+          className="fixed inset-0 z-50 flex justify-end bg-black/60 backdrop-blur-xs animate-in fade-in"
         >
-          <div className="flex h-full w-full max-w-md flex-col border-l border-[var(--border)] bg-[var(--surface-raised)] shadow-2xl p-5 overflow-hidden">
-            <div className="flex items-center justify-between pb-4 border-b border-[var(--border)]">
-              <div>
-                <span className="text-[10px] font-bold uppercase tracking-wider text-[var(--accent-11)]">
-                  Quick Drawer Inspector
-                </span>
+          <div className="flex h-full w-full max-w-md flex-col border-l border-[var(--border)] bg-[var(--surface)] p-5 shadow-2xl">
+            <div className="flex items-center justify-between border-b border-[var(--border)] pb-3">
+              <div className="flex items-center gap-2">
+                <SlidersHorizontal className="h-4 w-4 text-[var(--teal)]" />
                 <h3 className="text-sm font-semibold text-[var(--text-primary)]">
-                  Transcript Segments ({scenario.segments?.length || 0})
+                  Transcript Segment Inspector
                 </h3>
               </div>
               <button
                 type="button"
                 onClick={() => setInspectDrawerOpen(false)}
-                className="rounded-md p-1 text-[var(--text-secondary)] hover:bg-[var(--surface)]"
+                className="rounded-lg p-1 text-[var(--text-secondary)] hover:bg-[var(--surface-raised)]"
               >
                 <X className="h-4 w-4" />
               </button>
             </div>
 
-            <div className="my-3">
-              <input
-                type="text"
-                placeholder="Filter by keyword or timestamp..."
-                value={segmentFilter}
-                onChange={(e) => setSegmentFilter(e.target.value)}
-                className="w-full rounded-md border border-[var(--border)] bg-[var(--surface)] px-3 py-1.5 text-xs text-[var(--text-primary)] focus:outline-hidden focus:border-[var(--azure)]"
-              />
-            </div>
-
-            <div className="flex-1 overflow-y-auto space-y-2 pr-1">
-              {filteredSegments.map((seg) => (
-                <div
-                  key={seg.id}
-                  onClick={() => {
-                    setStudioOpen(true);
-                    setCurrentPlaySec(seg.startSec);
-                    setInspectDrawerOpen(false);
-                    showToast(`Launched Studio at ${seg.timestamp}`);
-                  }}
-                  className="rounded-lg border border-[var(--border)] bg-[var(--surface)] p-3 text-xs hover:border-[var(--azure)] hover:bg-[var(--control-selected-bg)] cursor-pointer transition-colors"
-                >
-                  <div className="flex items-center justify-between mb-1 font-mono text-[10px] font-bold text-[var(--azure)]">
-                    <span>{seg.timestamp}</span>
-                    <span className="text-[var(--text-muted)]">{seg.speaker}</span>
+            <div className="flex-1 overflow-y-auto py-4 space-y-2.5">
+              {scenario.segments && scenario.segments.length > 0 ? (
+                scenario.segments.map((seg) => (
+                  <div
+                    key={seg.id}
+                    onClick={() => {
+                      setCurrentPlaySec(seg.startSec);
+                      setPageView("studio");
+                      setInspectDrawerOpen(false);
+                      showToast(`Navigated to Studio at ${seg.timestamp}`);
+                    }}
+                    className="group rounded-lg border border-[var(--border)] bg-[var(--surface-raised)] p-3 text-xs cursor-pointer hover:border-indigo-500 transition-colors"
+                  >
+                    <div className="flex items-center justify-between font-mono text-[11px] text-indigo-400 mb-1">
+                      <span>{seg.timestamp}</span>
+                      <span className="opacity-75">{(seg.confidence * 100).toFixed(0)}% conf</span>
+                    </div>
+                    <p className="text-[var(--text-primary)] leading-relaxed">{seg.text}</p>
                   </div>
-                  <p className="text-[var(--text-primary)] leading-relaxed">{seg.text}</p>
+                ))
+              ) : (
+                <div className="py-12 text-center text-xs text-[var(--text-secondary)]">
+                  No segments found for this scenario.
                 </div>
-              ))}
+              )}
             </div>
 
-            <div className="pt-3 border-t border-[var(--border)]">
+            <div className="border-t border-[var(--border)] pt-3">
               <button
                 type="button"
                 onClick={() => {
+                  setPageView("studio");
                   setInspectDrawerOpen(false);
-                  setStudioOpen(true);
                 }}
-                className="w-full rounded-lg bg-[var(--action-primary-bg)] py-2 text-xs font-bold text-[var(--action-primary-fg)] shadow-sm hover:bg-[var(--action-primary-bg-hover)]"
+                className="w-full rounded-lg bg-[var(--action-primary-bg)] py-2 text-xs font-semibold text-[var(--action-primary-fg)]"
               >
-                Open in Full Dual-Pane Studio
+                Open in Full Dedicated Studio
               </button>
             </div>
           </div>
         </div>
       )}
 
-      {/* ========================================================================= */}
-      {/* UI/UX DESIGN REVIEW & ACCESSIBILITY AUDIT PANEL                            */}
-      {/* ========================================================================= */}
+      {/* --- UX REVIEW & AUDIT MODAL DRAWER --- */}
       {reviewPanelOpen && (
         <div
           role="dialog"
           aria-modal="true"
-          aria-label="UI UX Design Review Panel"
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-md p-4 animate-in fade-in duration-200"
+          aria-label="UX Review & Audit Matrix"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4 animate-in fade-in"
         >
-          <div className="flex h-[88vh] w-full max-w-4xl flex-col overflow-hidden rounded-xl border border-[var(--border)] bg-[var(--surface)] shadow-2xl">
-            {/* Panel Header */}
-            <div className="flex shrink-0 items-center justify-between border-b border-[var(--border)] bg-[var(--surface-raised)] px-6 py-4">
-              <div className="flex items-center gap-3">
-                <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-[var(--control-selected-bg)] border border-[var(--control-selected-border)] text-[var(--azure)]">
-                  <ShieldCheck className="h-5 w-5" />
-                </div>
+          <div className="flex max-h-[85vh] w-full max-w-3xl flex-col overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--surface)] shadow-2xl">
+            <header className="flex items-center justify-between border-b border-[var(--border)] bg-[var(--surface-raised)] px-6 py-4">
+              <div className="flex items-center gap-2.5">
+                <ShieldCheck className="h-5 w-5 text-indigo-400" />
                 <div>
-                  <h3 className="text-base font-bold text-[var(--text-primary)]">
-                    UI/UX Architecture & Ergonomics Review
+                  <h3 className="text-sm font-bold text-[var(--text-primary)]">
+                    UI/UX Design Architecture & Ergonomics Review
                   </h3>
-                  <p className="text-xs text-[var(--text-secondary)]">
-                    Authoritative design evaluation for Option 2: Integrated Hero Workspace Banner
+                  <p className="text-[11px] text-[var(--text-secondary)]">
+                    Option 2: Integrated Hero Workspace Banner • WCAG AA/AAA Verified
                   </p>
                 </div>
               </div>
-
               <button
                 type="button"
                 onClick={() => setReviewPanelOpen(false)}
-                className="rounded-lg p-1.5 text-[var(--text-secondary)] hover:bg-[var(--surface)] hover:text-[var(--text-primary)]"
+                className="rounded-lg p-1.5 text-[var(--text-secondary)] hover:bg-rose-500 hover:text-white transition-colors"
               >
-                <X className="h-5 w-5" />
+                <X className="h-4 w-4" />
               </button>
+            </header>
+
+            <div className="flex-1 overflow-y-auto p-6 space-y-6 text-xs text-[var(--text-secondary)]">
+              <div>
+                <h4 className="text-xs font-bold uppercase tracking-wider text-[var(--text-primary)] mb-2">
+                  1. Dedicated Full-Page Route vs Popup Modal
+                </h4>
+                <p className="leading-relaxed">
+                  Navigating to a dedicated page (`/library/[id]/read`) provides an immersive, distraction-free environment for video learning and deep note-taking. It preserves URL deep-linking (`?t=180`), prevents accidental popup dismissals, and enables multi-window side-by-side workflows.
+                </p>
+              </div>
+
+              <div>
+                <h4 className="text-xs font-bold uppercase tracking-wider text-[var(--text-primary)] mb-2">
+                  2. WCAG 2.1 Contrast Audit
+                </h4>
+                <table className="w-full text-left font-mono text-[11px] border border-[var(--border)] rounded-lg overflow-hidden">
+                  <thead className="bg-[var(--surface-raised)] text-[var(--text-primary)]">
+                    <tr>
+                      <th className="p-2">Criterion</th>
+                      <th className="p-2">Light Theme</th>
+                      <th className="p-2">Dark Theme</th>
+                      <th className="p-2">Status</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-[var(--border)]">
+                    <tr>
+                      <td className="p-2">Text Contrast</td>
+                      <td className="p-2 text-emerald-400">14.2:1 (AAA)</td>
+                      <td className="p-2 text-emerald-400">13.8:1 (AAA)</td>
+                      <td className="p-2 font-bold text-emerald-400">PASS</td>
+                    </tr>
+                    <tr>
+                      <td className="p-2">Interactive Borders</td>
+                      <td className="p-2 text-emerald-400">4.6:1 (AA)</td>
+                      <td className="p-2 text-emerald-400">5.2:1 (AA)</td>
+                      <td className="p-2 font-bold text-emerald-400">PASS</td>
+                    </tr>
+                    <tr>
+                      <td className="p-2">Touch Target</td>
+                      <td className="p-2">48px Primary</td>
+                      <td className="p-2">48px Primary</td>
+                      <td className="p-2 font-bold text-emerald-400">PASS (AAA)</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
             </div>
 
-            {/* Navigation Tabs */}
-            <div className="flex border-b border-[var(--border)] bg-[var(--surface-raised)] px-6">
-              {[
-                { id: "ergonomics", label: "1. Visual Ergonomics & Rationale", icon: Compass },
-                { id: "accessibility", label: "2. WCAG Accessibility Audit", icon: ShieldCheck },
-                { id: "tokens", label: "3. Design Token Mapping", icon: Layers },
-                { id: "benchmarks", label: "4. Micro-Interactions & State Matrix", icon: SlidersHorizontal },
-              ].map((tab) => {
-                const Icon = tab.icon;
-                return (
-                  <button
-                    key={tab.id}
-                    type="button"
-                    onClick={() => setReviewTab(tab.id as "ergonomics" | "accessibility" | "tokens" | "benchmarks")}
-                    className={cn(
-                      "flex items-center gap-2 border-b-2 px-4 py-3 text-xs font-semibold transition-colors",
-                      reviewTab === tab.id
-                        ? "border-[var(--azure)] text-[var(--azure)]"
-                        : "border-transparent text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
-                    )}
-                  >
-                    <Icon className="h-4 w-4" />
-                    <span>{tab.label}</span>
-                  </button>
-                );
-              })}
-            </div>
-
-            {/* Panel Body */}
-            <div className="flex-1 overflow-y-auto p-6 text-xs text-[var(--text-primary)] leading-relaxed space-y-6">
-              {/* TAB 1: ERGONOMICS & RATIONALE */}
-              {reviewTab === "ergonomics" && (
-                <div className="space-y-5">
-                  <div className="rounded-lg border border-[var(--border)] bg-[var(--surface-raised)] p-4">
-                    <h4 className="text-sm font-bold text-[var(--text-primary)] mb-2 flex items-center gap-1.5">
-                      <Compass className="h-4 w-4 text-[var(--azure)]" />
-                      Why Option 2 (Integrated Hero Banner) Outperforms Disconnected Layouts
-                    </h4>
-                    <p className="text-xs text-[var(--text-secondary)] mb-3">
-                      Traditional reading apps often hide media controls in detached sidebars or separate floating toolbars. Option 2 treats rich media (videos, podcasts, deep articles) as first-class knowledge sources with an anchored, unified workspace banner.
-                    </p>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-3 pt-2">
-                      <div className="p-3 rounded bg-[var(--surface-base)] border border-[var(--border)]">
-                        <div className="font-bold text-[var(--teal)] mb-1">Fitts&apos;s Law Advantage</div>
-                        <p className="text-[11px] text-[var(--text-secondary)]">
-                          The primary CTA &ldquo;Launch Reading Studio&rdquo; is placed in the primary eye-tracking fix-point with a generous target area (+42% faster acquisition than tiny header icons).
-                        </p>
-                      </div>
-                      <div className="p-3 rounded bg-[var(--surface-base)] border border-[var(--border)]">
-                        <div className="font-bold text-[var(--azure)] mb-1">Single Source Context</div>
-                        <p className="text-[11px] text-[var(--text-secondary)]">
-                          Poster thumbnail, duration badge, transcript segment counts, and source quality level are digested in a single glance without scrolling.
-                        </p>
-                      </div>
-                      <div className="p-3 rounded bg-[var(--surface-base)] border border-[var(--border)]">
-                        <div className="font-bold text-[var(--ruby)] mb-1">Graceful Degradation</div>
-                        <p className="text-[11px] text-[var(--text-secondary)]">
-                          Degraded captures (antibot blocks) immediately offer a 1-click &ldquo;Queue Mac ASR&rdquo; recovery without stranding the user on a blank screen.
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="rounded-lg border border-[var(--border)] bg-[var(--surface-raised)] p-4">
-                    <h4 className="text-sm font-bold text-[var(--text-primary)] mb-2">
-                      Information Architecture & Scan Path
-                    </h4>
-                    <ul className="list-disc pl-5 space-y-1.5 text-xs text-[var(--text-secondary)]">
-                      <li><strong>Primary Anchor:</strong> Visual media preview on left with duration pill in monospace for rapid media identification.</li>
-                      <li><strong>Hierarchy Tier 1:</strong> Platform badge + Source quality status (Teal/Ruby/Cyan) + Segment count.</li>
-                      <li><strong>Hierarchy Tier 2:</strong> Large readable headline (20-24px) with channel/author and SQLite grounding badge.</li>
-                      <li><strong>Hierarchy Tier 3:</strong> Action hub with primary glowing CTA, keyboard hint (⌘↵), and secondary tools (Focus mode, Segments peek, Copy link).</li>
-                    </ul>
-                  </div>
-                </div>
-              )}
-
-              {/* TAB 2: WCAG ACCESSIBILITY AUDIT */}
-              {reviewTab === "accessibility" && (
-                <div className="space-y-4">
-                  <div className="rounded-lg border border-[var(--border)] bg-[var(--surface-raised)] p-4">
-                    <h4 className="text-sm font-bold text-[var(--text-primary)] mb-3 flex items-center gap-2">
-                      <ShieldCheck className="h-4 w-4 text-[var(--teal)]" />
-                      WCAG 2.1 AA / AAA Compliance Matrix
-                    </h4>
-                    <table className="w-full text-left text-xs border-collapse">
-                      <thead>
-                        <tr className="border-b border-[var(--border)] text-[var(--text-muted)]">
-                          <th className="py-2">Requirement</th>
-                          <th className="py-2">Standard</th>
-                          <th className="py-2">Observed In Option 2</th>
-                          <th className="py-2">Verdict</th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-[var(--border)]">
-                        <tr>
-                          <td className="py-2.5 font-medium">Text Contrast (Light Mode)</td>
-                          <td className="py-2.5">≥ 4.5:1 (Normal), ≥ 3:1 (Large)</td>
-                          <td className="py-2.5 text-emerald-600 font-mono">14.2:1 (#14213D on #FBFCFE)</td>
-                          <td className="py-2.5 text-emerald-600 font-bold">✓ PASS (AAA)</td>
-                        </tr>
-                        <tr>
-                          <td className="py-2.5 font-medium">Text Contrast (Dark Mode)</td>
-                          <td className="py-2.5">≥ 4.5:1 (Normal), ≥ 3:1 (Large)</td>
-                          <td className="py-2.5 text-emerald-600 font-mono">13.8:1 (#F4F7FB on #101825)</td>
-                          <td className="py-2.5 text-emerald-600 font-bold">✓ PASS (AAA)</td>
-                        </tr>
-                        <tr>
-                          <td className="py-2.5 font-medium">Touch Target Size</td>
-                          <td className="py-2.5">≥ 44×44px on mobile</td>
-                          <td className="py-2.5 font-mono">48px Primary CTA, 44px min button height</td>
-                          <td className="py-2.5 text-emerald-600 font-bold">✓ PASS (AA)</td>
-                        </tr>
-                        <tr>
-                          <td className="py-2.5 font-medium">Keyboard Navigation</td>
-                          <td className="py-2.5">Full Tab & Key navigation</td>
-                          <td className="py-2.5">⌘↵ (Studio), ⌥F (Focus), Esc (Close), Tab Rings</td>
-                          <td className="py-2.5 text-emerald-600 font-bold">✓ PASS (AAA)</td>
-                        </tr>
-                        <tr>
-                          <td className="py-2.5 font-medium">Focus Indicators</td>
-                          <td className="py-2.5">2px outline-offset ring</td>
-                          <td className="py-2.5 font-mono">:focus-visible with var(--action-primary-focus)</td>
-                          <td className="py-2.5 text-emerald-600 font-bold">✓ PASS (AAA)</td>
-                        </tr>
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-              )}
-
-              {/* TAB 3: DESIGN TOKEN MAPPING */}
-              {reviewTab === "tokens" && (
-                <div className="space-y-4">
-                  <div className="rounded-lg border border-[var(--border)] bg-[var(--surface-raised)] p-4">
-                    <h4 className="text-sm font-bold text-[var(--text-primary)] mb-3 flex items-center gap-2">
-                      <Layers className="h-4 w-4 text-[var(--azure)]" />
-                      CSS Custom Properties & Design Tokens
-                    </h4>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3 font-mono text-[11px]">
-                      <div className="p-3 rounded bg-[var(--surface-base)] border border-[var(--border)]">
-                        <div className="font-bold text-[var(--text-primary)] mb-1">Surface & Background Tokens</div>
-                        <ul className="space-y-1 text-[var(--text-secondary)]">
-                          <li><code>--bg:</code> var(--surface-base)</li>
-                          <li><code>--surface:</code> var(--panel)</li>
-                          <li><code>--surface-raised:</code> #FFFFFF / #1B2A40</li>
-                          <li><code>--border:</code> var(--line)</li>
-                          <li><code>--border-strong:</code> #A9B8CD / #52647C</li>
-                        </ul>
-                      </div>
-                      <div className="p-3 rounded bg-[var(--surface-base)] border border-[var(--border)]">
-                        <div className="font-bold text-[var(--text-primary)] mb-1">Action & Focus Tokens</div>
-                        <ul className="space-y-1 text-[var(--text-secondary)]">
-                          <li><code>--action-primary-bg:</code> var(--ink-950)</li>
-                          <li><code>--action-primary-fg:</code> #FFFFFF / #101825</li>
-                          <li><code>--action-primary-focus:</code> var(--accent-7)</li>
-                          <li><code>--control-selected-bg:</code> #EEF4FF / #22334E</li>
-                          <li><code>--control-selected-border:</code> #A9B8CD / #52647C</li>
-                        </ul>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {/* TAB 4: MICRO-INTERACTIONS & BENCHMARKS */}
-              {reviewTab === "benchmarks" && (
-                <div className="space-y-4">
-                  <div className="rounded-lg border border-[var(--border)] bg-[var(--surface-raised)] p-4">
-                    <h4 className="text-sm font-bold text-[var(--text-primary)] mb-2 flex items-center gap-2">
-                      <SlidersHorizontal className="h-4 w-4 text-[var(--violet)]" />
-                      Micro-Interactions & Motion Choreography
-                    </h4>
-                    <p className="text-xs text-[var(--text-secondary)] mb-3">
-                      All transitions adhere to AI Brain&apos;s structured calm motion budget (≤150ms for micro-feedback, ≤300ms for modal overlay easing).
-                    </p>
-                    <div className="space-y-2">
-                      <div className="flex items-center justify-between p-2.5 rounded bg-[var(--surface-base)] border border-[var(--border)]">
-                        <span className="font-semibold">Primary Button Active State:</span>
-                        <code className="text-[var(--azure)]">scale(0.98) with cubic-bezier(0, 0, 0.2, 1)</code>
-                      </div>
-                      <div className="flex items-center justify-between p-2.5 rounded bg-[var(--surface-base)] border border-[var(--border)]">
-                        <span className="font-semibold">Mac ASR Progress Pulse:</span>
-                        <code className="text-[var(--teal)]">linear 300ms smooth width interpolation</code>
-                      </div>
-                      <div className="flex items-center justify-between p-2.5 rounded bg-[var(--surface-base)] border border-[var(--border)]">
-                        <span className="font-semibold">Reduced Motion Support:</span>
-                        <code className="text-[var(--text-muted)]">@media (prefers-reduced-motion: reduce) sets 0ms</code>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div>
+            <footer className="border-t border-[var(--border)] bg-[var(--surface-raised)] px-6 py-3 text-right">
+              <button
+                type="button"
+                onClick={() => setReviewPanelOpen(false)}
+                className="rounded-lg bg-[var(--action-primary-bg)] px-4 py-1.5 text-xs font-semibold text-[var(--action-primary-fg)]"
+              >
+                Close Audit Inspector
+              </button>
+            </footer>
           </div>
         </div>
       )}
 
-      {/* --- LIVE TOAST NOTIFICATIONS --- */}
+      {/* --- TOAST NOTIFICATIONS --- */}
       {toastMessage && (
-        <div className="fixed bottom-6 right-6 z-50 flex items-center gap-2 rounded-lg border border-[var(--border)] bg-[var(--surface-raised)] px-4 py-2.5 text-xs font-medium text-[var(--text-primary)] shadow-lg animate-in slide-in-from-bottom-3 duration-200">
-          <CheckCircle2 className="h-4 w-4 text-[var(--teal)] shrink-0" />
-          <span>{toastMessage}</span>
+        <div className="fixed bottom-6 right-6 z-50 rounded-xl border border-[var(--border)] bg-[var(--surface-raised)] px-4 py-2.5 text-xs font-semibold text-[var(--text-primary)] shadow-2xl animate-in fade-in slide-in-from-bottom-2">
+          {toastMessage}
         </div>
       )}
     </div>
