@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.arunprakash.brain.macworker</string>
+
+    <key>ProgramArguments</key>
+    <array>
+        <string>__VENV_PYTHON__</string>
+        <string>__WORKER_SCRIPT__</string>
+    </array>
+
+    <key>EnvironmentVariables</key>
+    <dict>
+        <key>BRAIN_SERVER_URL</key>
+        <string>__BRAIN_SERVER_URL__</string>
+        <key>BRAIN_WORKER_TOKEN</key>
+        <string>__BRAIN_WORKER_TOKEN__</string>
+        <key>WORKER_ID</key>
+        <string>__WORKER_ID__</string>
+        <key>WHISPER_MODEL</key>
+        <string>__WHISPER_MODEL__</string>
+        <key>POLL_INTERVAL_SECONDS</key>
+        <string>__POLL_INTERVAL_SECONDS__</string>
+        <key>PATH</key>
+        <string>/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin</string>
+    </dict>
+
+    <key>RunAtLoad</key>
+    <true/>
+
+    <key>KeepAlive</key>
+    <true/>
+
+    <key>ProcessType</key>
+    <string>Background</string>
+
+    <key>StandardOutPath</key>
+    <string>__LOG_DIR__/mac_worker.out.log</string>
+
+    <key>StandardErrorPath</key>
+    <string>__LOG_DIR__/mac_worker.err.log</string>
+</dict>
+</plist>

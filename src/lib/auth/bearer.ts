@@ -72,6 +72,7 @@ export const BEARER_ROUTES: ReadonlyArray<string> = [
   "/api/items",
   "/api/health",
   "/api/errors/client",
+  "/api/worker/transcript-jobs",
 ];
 
 /** True if the request path is in the BEARER_ROUTES allow-list. */
@@ -84,6 +85,15 @@ export function isBearerRoute(pathname: string): boolean {
  */
 export function loadApiToken(): string | null {
   const raw = process.env.BRAIN_API_TOKEN ?? "";
+  if (raw.length < MIN_TOKEN_LENGTH) return null;
+  return raw;
+}
+
+/**
+ * Load the dedicated worker bearer token from env. Uses BRAIN_WORKER_TOKEN.
+ */
+export function loadWorkerToken(): string | null {
+  const raw = process.env.BRAIN_WORKER_TOKEN ?? "";
   if (raw.length < MIN_TOKEN_LENGTH) return null;
   return raw;
 }
@@ -152,27 +162,42 @@ export function verifyBearerToken(authHeader: string | null | undefined): Bearer
   const provided = authHeader.slice("Bearer ".length);
   if (provided.length === 0) return { ok: false, reason: "malformed-header" };
 
-  const expected = loadApiToken();
-  if (expected === null) {
-    // We can't distinguish "unset" from "too short" without re-reading env
-    // here, but the rejection reason is most useful for ops; re-read.
-    const raw = process.env.BRAIN_API_TOKEN ?? "";
+  const expectedApi = loadApiToken();
+  const expectedWorker = loadWorkerToken();
+
+  if (expectedApi === null && expectedWorker === null) {
+    const rawApi = process.env.BRAIN_API_TOKEN ?? "";
+    const rawWorker = process.env.BRAIN_WORKER_TOKEN ?? "";
     return {
       ok: false,
-      reason: raw.length === 0 ? "server-token-unconfigured" : "server-token-too-short",
+      reason: rawApi.length === 0 && rawWorker.length === 0 ? "server-token-unconfigured" : "server-token-too-short",
     };
   }
 
-  if (provided.length !== expected.length) {
+  // Match API token
+  if (expectedApi !== null && provided.length === expectedApi.length) {
+    const a = Buffer.from(provided, "utf8");
+    const b = Buffer.from(expectedApi, "utf8");
+    if (crypto.timingSafeEqual(a, b)) {
+      return { ok: true };
+    }
+  }
+
+  // Match Worker token
+  if (expectedWorker !== null && provided.length === expectedWorker.length) {
+    const a = Buffer.from(provided, "utf8");
+    const b = Buffer.from(expectedWorker, "utf8");
+    if (crypto.timingSafeEqual(a, b)) {
+      return { ok: true };
+    }
+  }
+
+  if (expectedApi !== null && provided.length !== expectedApi.length &&
+     (expectedWorker === null || provided.length !== expectedWorker.length)) {
     return { ok: false, reason: "length-mismatch" };
   }
 
-  const a = Buffer.from(provided, "utf8");
-  const b = Buffer.from(expected, "utf8");
-  if (!crypto.timingSafeEqual(a, b)) {
-    return { ok: false, reason: "token-mismatch" };
-  }
-  return { ok: true };
+  return { ok: false, reason: "token-mismatch" };
 }
 
 /**

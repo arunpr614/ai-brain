@@ -7,6 +7,7 @@ This registry classifies every package script at the documentation baseline. Com
 | `audit:vectors` | W2 local persistent write | No | Optional owner-only audit report | Possible | Explicit database review | Content-free vector and queue integrity audit; target database determines scope |
 | `backfill:embeddings` | W2 local persistent write | Provider dependent | Local database | No | Explicit local data approval | Writes embedding/chunk state |
 | `backfill:embeddings:prod` | W4 production write | Yes | Production database | Yes | Explicit private approval | Production embedding backfill |
+| `backfill:youtube` | W2 local persistent write | Local | Local database and queue | No | Explicit local data approval | Enqueues missing YouTube items for local Mac ASR processing |
 | `backfill:youtube-transcripts` | W2 local persistent write | Provider dependent | Local database and artifacts | No | Explicit local data approval | Transcript recovery can call configured providers and persist results |
 | `backfill:youtube-transcripts:prod` | W4 production write | Yes | Production database and artifacts | Yes | Exact private approval | Guarded production transcript recovery |
 | `bench:ask` | W2 local persistent write | Provider dependent | Benchmark output/local reads | No | Explicit local data approval | Uses library/provider data and writes results |
@@ -161,3 +162,4 @@ This registry classifies every package script at the documentation baseline. Com
 | `test:recall-manual-sync-process` | W1 local ephemeral write | No | Temporary fixture databases, files, processes, and bundles | No | No | Isolated multi-process SQLite, real flock, crash, worker/lifecycle, and fake-systemd path/fallback evidence; no real Recall access |
 | `typecheck` | W1 local ephemeral write | No | Ignored incremental cache `tsconfig.tsbuildinfo` | No | No | Reads source/config and writes or updates the local TypeScript build-info cache |
 | `verify:release-runtime` | R0 read-only local | No | No | No | No | Verifies an installed release manifest, file inventory, runtime ABI, native dependencies, and migration compatibility |
+| `worker:mac` | W2 local persistent write | Local/Network | Local worker daemon execution | No | Intentional worker start | Runs Apple Silicon MLX local ASR pull worker |
