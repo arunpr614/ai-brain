@@ -267,6 +267,9 @@ try {
   copyRequired(resolve(options.root, ".next/standalone"), staging);
   copyRequired(resolve(options.root, ".next/static"), resolve(staging, ".next/static"));
   copyRequired(resolve(options.root, "public"), resolve(staging, "public"));
+  if (!existsSync(resolve(staging, "src/db/migrations"))) {
+    copyRequired(resolve(options.root, "src/db/migrations"), resolve(staging, "src/db/migrations"));
+  }
   for (const path of SCRIPT_ALLOWLIST) {
     const preferred = TOOL_OVERLAYS.has(path) ? options.toolsRoot : options.root;
     const fallback = preferred === options.root ? options.toolsRoot : options.root;
