@@ -24,6 +24,7 @@ import {
   fetchGroups,
   fetchItems,
   fetchSummary,
+  mutateWorkflow,
   undoWorkflow,
 } from "./api";
 import { ProcessingFilterBar } from "./filters";
@@ -318,24 +319,34 @@ export function ProcessingApp({ writeEnabled }: { writeEnabled: boolean }) {
     setQuery({ ...query, view: "inbox" }, "Opening the oldest matching Inbox source.");
   };
 
-  const handleMutation = async (result: WorkflowMutationResult, message: string) => {
-    setAlertMessage("");
-    if (result.changed && result.undoSlot) {
-      setUndoSlot(result.undoSlot);
-      setUndoItem(result.item);
-      setUndoExpired(false);
-    }
-    if (query.view === "inbox" && result.changed) processNextAfterLoad.current = true;
-    await loadResults();
-    setStatusMessage(message);
-  };
+  const handleMutation = useCallback(
+    async (result: WorkflowMutationResult, message: string) => {
+      setAlertMessage("");
+      if (result.changed && result.undoSlot) {
+        setUndoSlot(result.undoSlot);
+        setUndoItem(result.item);
+        setUndoExpired(false);
+      }
+      if (query.view === "inbox" && result.changed) processNextAfterLoad.current = true;
+      await loadResults();
+      setStatusMessage(message);
+    },
+    [loadResults, query.view],
+  );
 
-  const handleMutationError = (message: string, kind: "error" | "conflict" | "unknown") => {
-    setAlertMessage(message);
-    setStatusMessage(kind === "unknown" ? "The saved outcome is being checked before another change is allowed." : "Sources remain at their last confirmed state.");
-  };
+  const handleMutationError = useCallback(
+    (message: string, kind: "error" | "conflict" | "unknown") => {
+      setAlertMessage(message);
+      setStatusMessage(
+        kind === "unknown"
+          ? "The saved outcome is being checked before another change is allowed."
+          : "Sources remain at their last confirmed state.",
+      );
+    },
+    [],
+  );
 
-  const handleUndo = async () => {
+  const handleUndo = useCallback(async () => {
     if (!undoSlot || !undoItem || undoing) return;
     setUndoing(true);
     try {
@@ -360,7 +371,59 @@ export function ProcessingApp({ writeEnabled }: { writeEnabled: boolean }) {
     } finally {
       setUndoing(false);
     }
-  };
+  }, [undoSlot, undoItem, undoing, loadResults]);
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      const activeEl = document.activeElement;
+      const isInput =
+        activeEl?.tagName === "INPUT" ||
+        activeEl?.tagName === "TEXTAREA" ||
+        activeEl?.getAttribute("contenteditable") === "true";
+      if (isInput) return;
+
+      if (e.key === "j" || e.key === "ArrowDown") {
+        e.preventDefault();
+        const currentIndex = visibleItems.findIndex((it) => it.id === selectedId);
+        const nextIndex = currentIndex < visibleItems.length - 1 ? currentIndex + 1 : 0;
+        if (visibleItems[nextIndex]) {
+          setSelectedId(visibleItems[nextIndex].id);
+          const el = document.getElementById(`processing-item-${visibleItems[nextIndex].id}`);
+          el?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+        }
+      } else if (e.key === "k" || e.key === "ArrowUp") {
+        e.preventDefault();
+        const currentIndex = visibleItems.findIndex((it) => it.id === selectedId);
+        const prevIndex = currentIndex > 0 ? currentIndex - 1 : visibleItems.length - 1;
+        if (visibleItems[prevIndex]) {
+          setSelectedId(visibleItems[prevIndex].id);
+          const el = document.getElementById(`processing-item-${visibleItems[prevIndex].id}`);
+          el?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+        }
+      } else if (e.key === "e" && selected && writeEnabled) {
+        e.preventDefault();
+        mutateWorkflow(selected, { type: "archive" })
+          .then((res) => handleMutation(res, `Archived ${selected.title}.`))
+          .catch((err) => handleMutationError(err.message, "error"));
+      } else if (e.key === "a" && selected && writeEnabled) {
+        e.preventDefault();
+        mutateWorkflow(selected, { type: "move", status: "done" })
+          .then((res) => handleMutation(res, `Marked ${selected.title} as Synthesized (Done).`))
+          .catch((err) => handleMutationError(err.message, "error"));
+      } else if (e.key === "s" && selected) {
+        e.preventDefault();
+        router.push(`/library/${encodeURIComponent(selected.id)}/read`);
+      } else if ((e.key === "z" && (e.metaKey || e.ctrlKey)) || e.key === "u") {
+        if (undoSlot) {
+          e.preventDefault();
+          void handleUndo();
+        }
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [visibleItems, selectedId, selected, writeEnabled, undoSlot, router, handleMutation, handleMutationError, handleUndo]);
 
   const loadMore = async () => {
     if (!page?.nextCursor || pageLoading) return;

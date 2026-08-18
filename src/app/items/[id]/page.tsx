@@ -27,6 +27,7 @@ import { ItemCompanionTabs } from "@/components/item-companion-tabs";
 import { ManualNoteEditor } from "@/components/manual-note-editor";
 import { NotebookLmExport } from "@/components/notebooklm-export";
 import { ItemWorkflowSection } from "@/components/processing/workflow-controls";
+import { HeroWorkspaceBanner } from "@/components/reading-studio/hero-workspace-banner";
 import { RelatedItems } from "@/components/related-items";
 import { ScrollToHash } from "@/components/scroll-to-hash";
 import { TagEditor } from "@/components/tag-editor";
@@ -437,11 +438,25 @@ export default async function ItemDetailPage({
             )}
           </header>
 
+          <HeroWorkspaceBanner
+            item={item}
+            segmentCount={activeTranscriptSource?.segment_count ?? 0}
+            diagnosticWarning={item.extraction_warning ? extractionWarningMessage(item.extraction_warning) : undefined}
+            segments={transcriptPreview?.segments ?? []}
+          />
+
           {transcriptPreview && <TranscriptPanel preview={transcriptPreview} />}
 
           <div className="whitespace-pre-wrap">{item.body}</div>
 
           <footer className="mt-12 flex flex-wrap items-center gap-3 border-t border-[var(--border)] pt-6">
+            <Link
+              href={`/library/${item.id}/read`}
+              className="inline-flex h-8 items-center gap-2 rounded-md border border-[var(--border)] bg-transparent px-3 font-sans text-sm font-medium text-[var(--text-secondary)] transition-colors hover:border-[var(--border-strong)] hover:text-[var(--text-primary)]"
+            >
+              <BookOpen className="h-3.5 w-3.5" strokeWidth={2} />
+              Reading Studio
+            </Link>
             <Link
               href={`/items/${item.id}?mode=focus`}
               className="inline-flex h-8 items-center gap-2 rounded-md border border-[var(--border)] bg-transparent px-3 font-sans text-sm font-medium text-[var(--text-secondary)] transition-colors hover:border-[var(--border-strong)] hover:text-[var(--text-primary)]"
@@ -1346,9 +1361,18 @@ function TranscriptPanel({ preview }: { preview: TranscriptPreview }) {
           {source.segment_count.toLocaleString()} segments. Full text is in the item body.
         </p>
       )}
-      <p className="mt-3 text-xs text-[var(--text-muted)]">
-        Imported {new Date(source.created_at).toLocaleString()}.
-      </p>
+      <div className="mt-4 flex items-center justify-between">
+        <Link
+          href={`/library/${source.item_id}/read`}
+          className="inline-flex items-center gap-1.5 rounded-md border border-emerald-500/40 bg-emerald-950/20 px-3 py-1.5 text-xs font-medium text-emerald-400 hover:bg-emerald-950/40 transition-colors"
+        >
+          <BookOpen className="h-3.5 w-3.5" />
+          <span>Open Interactive Reading Studio</span>
+        </Link>
+        <p className="text-xs text-[var(--text-muted)]">
+          Imported {new Date(source.created_at).toLocaleString()}.
+        </p>
+      </div>
     </section>
   );
 }

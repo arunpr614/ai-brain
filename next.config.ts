@@ -1,8 +1,9 @@
 import { fileURLToPath } from "node:url";
-import { dirname } from "node:path";
+import { resolve, dirname } from "node:path";
 import type { NextConfig } from "next";
 
 const projectRoot = dirname(fileURLToPath(import.meta.url));
+const turbopackRoot = resolve(projectRoot, "../../../..");
 
 const nextConfig: NextConfig = {
   // Self-contained production bundle for Hetzner deploy (no node_modules needed).
@@ -16,7 +17,7 @@ const nextConfig: NextConfig = {
   },
   // Pin workspace root so Turbopack stops guessing against ancestor lockfiles.
   turbopack: {
-    root: projectRoot,
+    root: turbopackRoot,
   },
   // Hide the Next.js dev-mode "N" indicator. The APK WebView loads the
   // dev server via the Cloudflare tunnel, so the indicator overlaps the
