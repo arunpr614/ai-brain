@@ -63,7 +63,7 @@ describe("CascadeTranscriptRouter & Circuit Breaker", () => {
       title: "Already Transcribed Video",
       body: "This is a full existing transcript that was already transcribed in the library.",
       source_platform: "youtube",
-      capture_quality: "high",
+      capture_quality: "transcript",
     });
 
     // 2. Intaking new item with same video_id

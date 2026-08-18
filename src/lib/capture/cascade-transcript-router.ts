@@ -121,7 +121,7 @@ export function checkTier0Cache(videoId: string): { itemId: string; fullText: st
       `SELECT id, body FROM items
        WHERE (source_platform IN ('youtube', 'youtube_short') OR source_type = 'youtube')
          AND (source_url LIKE ? OR source_url LIKE ? OR source_url LIKE ?)
-         AND capture_quality = 'high'
+         AND capture_quality IN ('transcript', 'metadata_plus_transcript', 'full_text')
          AND body IS NOT NULL
          AND length(body) > 50
        ORDER BY captured_at DESC
