@@ -7,11 +7,14 @@ import { getDb } from "@/db/client";
 export async function enqueueItemForAsrAction(itemId: string): Promise<{ ok: boolean; error?: string }> {
   try {
     const job = enqueueTranscriptJobForExistingYoutubeItem(itemId, "needs_upgrade_triage");
+    if (!job) {
+      return { ok: false, error: "This item is not a recognized YouTube video or cannot be enqueued for ASR." };
+    }
     revalidatePath("/needs-upgrade");
     revalidatePath(`/items/${itemId}`);
     revalidatePath("/library");
     revalidatePath("/processing");
-    return { ok: Boolean(job) };
+    return { ok: true };
   } catch (err) {
     return { ok: false, error: err instanceof Error ? err.message : "Failed to enqueue ASR job." };
   }

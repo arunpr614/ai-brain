@@ -136,6 +136,12 @@ const RECOVERABLE_YOUTUBE_WARNINGS = new Set<string>([
   "no_transcript",
   "youtube_transcript_fetch_metadata_only",
   "youtube_antibot_metadata_only",
+  "recall_api_chunks_unverified",
+  "recall_chunks_unverified",
+  "recall_unverified",
+  "timedtext_unavailable",
+  "transcript_unavailable",
+  "degraded",
 ]);
 
 export function isYoutubeTranscriptRecoveryCandidate(
@@ -148,6 +154,7 @@ export function isYoutubeTranscriptRecoveryCandidate(
   if (!isYoutube) return false;
   return (
     item.capture_quality === "metadata_only" ||
+    item.capture_quality === "paywall_preview" ||
     (item.extraction_warning !== null &&
       RECOVERABLE_YOUTUBE_WARNINGS.has(item.extraction_warning))
   );
@@ -167,9 +174,18 @@ export function enqueueTranscriptJobForItem(
     reset?: boolean;
     nextRunAt?: number;
     preferredModel?: string;
+    force?: boolean;
   } = {},
 ): TranscriptJobRow | null {
-  if (!isYoutubeTranscriptRecoveryCandidate(item)) return null;
+  const isYoutube =
+    item.source_platform === "youtube" ||
+    item.source_platform === "youtube_short" ||
+    item.source_type === "youtube" ||
+    Boolean(item.source_url && extractVideoId(item.source_url));
+
+  if (!isYoutube) return null;
+
+  if (!options.force && !isYoutubeTranscriptRecoveryCandidate(item)) return null;
 
   const now = Date.now();
   const priority = options.priority ?? 10;
@@ -228,13 +244,14 @@ export function enqueueTranscriptJobForItem(
 export function enqueueTranscriptJobForExistingYoutubeItem(
   itemId: string,
   _reason: string,
-  options: { priority?: number; preferredModel?: string } = {},
+  options: { priority?: number; preferredModel?: string; force?: boolean } = {},
 ): TranscriptJobRow | null {
   void _reason;
   const item = getItem(itemId);
   if (!item) return null;
   return enqueueTranscriptJobForItem(item, {
     reset: true,
+    force: options.force ?? true,
     priority: options.priority ?? 20,
     preferredModel: options.preferredModel,
   });

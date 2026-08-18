@@ -10,6 +10,7 @@ import {
   backfillTranscriptJobsForExistingYoutubeItems,
   claimNextTranscriptJob,
   completeTranscriptJobWithWorker,
+  enqueueTranscriptJobForExistingYoutubeItem,
   enqueueTranscriptJobForItem,
   failTranscriptJobWithWorker,
   getTranscriptJobForItem,
@@ -406,5 +407,23 @@ describe("transcript recovery jobs & worker queue", () => {
 
     const statusOffline = getWorkerPresenceStatus("mac-m5-pro", now + 150_000); // 2.5 mins later (cutoff is 2 mins)
     assert.equal(statusOffline.is_online, false);
+  });
+
+  it("enqueues Recall unverified chunks YouTube items on demand", () => {
+    const item = insertCaptured({
+      source_type: "youtube",
+      capture_source: "recall",
+      source_url: "https://www.youtube.com/watch?v=hermesdeep4",
+      title: "job hunting with Hermes and DeepSeep v4 Pro",
+      body: "recall unverified chunks text...",
+      source_platform: "youtube",
+      capture_quality: "full_text",
+      extraction_warning: "recall_api_chunks_unverified",
+    });
+
+    const job = enqueueTranscriptJobForExistingYoutubeItem(item.id, "needs_upgrade_triage");
+    assert.ok(job, "Job must be successfully enqueued");
+    assert.equal(job?.item_id, item.id);
+    assert.equal(job?.state, "pending");
   });
 });
