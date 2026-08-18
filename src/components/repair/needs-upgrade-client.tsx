@@ -12,6 +12,7 @@ import {
   Wrench,
   Zap,
 } from "lucide-react";
+import { YouTubeIcon } from "@/components/youtube-icon";
 import type { ItemRow } from "@/db/client";
 import {
   captureSourceLabel,
@@ -65,7 +66,7 @@ function formatRelative(ts: number): string {
 
 function SourceIcon({ item }: { item: ItemRow }) {
   if (item.source_type === "youtube" || item.source_platform?.includes("youtube")) {
-    return <Video className="h-4 w-4 text-red-500" strokeWidth={2} />;
+    return <YouTubeIcon className="h-4 w-4 shrink-0" />;
   }
   if (item.source_type === "pdf" || item.source_platform === "pdf") {
     return <FileText className="h-4 w-4 text-amber-500" strokeWidth={2} />;

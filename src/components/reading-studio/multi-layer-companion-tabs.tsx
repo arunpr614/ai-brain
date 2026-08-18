@@ -232,9 +232,9 @@ export function MultiLayerCompanionTabs({
           aria-labelledby={askTabId}
           className={activeTab === "ask" ? "space-y-4" : "hidden"}
         >
-          <div className="p-5 rounded-xl bg-cyan-950/20 border border-cyan-500/30 text-xs space-y-4">
-            <div className="flex items-center gap-2 text-cyan-300 font-semibold uppercase tracking-wider text-[11px]">
-              <MessageSquare className="h-4 w-4" />
+          <div className="p-5 rounded-xl bg-cyan-50 border border-cyan-200 text-xs space-y-4 dark:bg-cyan-950/20 dark:border-cyan-500/30">
+            <div className="flex items-center gap-2 text-cyan-950 dark:text-cyan-300 font-bold uppercase tracking-wider text-[11px]">
+              <MessageSquare className="h-4 w-4 text-cyan-600 dark:text-cyan-400" />
               <span>Contextual Item Q&A</span>
             </div>
             <p className="text-[var(--text-secondary)] leading-relaxed">
@@ -258,22 +258,22 @@ export function MultiLayerCompanionTabs({
           className={activeTab === "recall" ? "space-y-4" : "hidden"}
         >
           {isRecallImport ? (
-            <div className="p-4 rounded-xl bg-purple-950/20 border border-purple-500/30 text-xs space-y-3">
+            <div className="p-4 rounded-xl bg-purple-50 border border-purple-200 text-xs space-y-3 dark:bg-purple-950/20 dark:border-purple-500/30">
               <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2 text-purple-300 font-semibold uppercase tracking-wider text-[11px]">
-                  <Download className="h-4 w-4" />
+                <div className="flex items-center gap-2 text-purple-950 dark:text-purple-300 font-bold uppercase tracking-wider text-[11px]">
+                  <Download className="h-4 w-4 text-purple-600 dark:text-purple-400" />
                   <span>Imported Recall.it Memory</span>
                 </div>
               </div>
 
               {tags.length > 0 && (
-                <div className="space-y-1.5 pt-2 border-t border-purple-900/40">
-                  <span className="text-[11px] font-semibold text-purple-300">Tags</span>
+                <div className="space-y-1.5 pt-2 border-t border-purple-200 dark:border-purple-900/40">
+                  <span className="text-[11px] font-bold text-purple-950 dark:text-purple-300">Tags</span>
                   <div className="flex flex-wrap gap-1.5">
                     {tags.map((t) => (
                       <span
                         key={t.id}
-                        className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-purple-900/40 text-purple-300 border border-purple-800 text-[11px]"
+                        className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-purple-100 text-purple-900 border border-purple-200 dark:bg-purple-900/40 dark:text-purple-300 dark:border-purple-800 text-[11px] font-medium"
                       >
                         <Tag className="h-2.5 w-2.5" />
                         {t.name}

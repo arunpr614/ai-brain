@@ -278,9 +278,13 @@ class MacAsrWorker:
             raw_segments = raw_result.get("segments", [])
             segments: List[Dict[str, Any]] = []
             for seg in raw_segments:
+                start = seg.get("start")
+                end = seg.get("end")
+                if start is not None and end is not None and end < start:
+                    end = start
                 segments.append({
-                    "start": seg.get("start"),
-                    "end": seg.get("end"),
+                    "start": start,
+                    "end": end,
                     "text": seg.get("text", "").strip(),
                     "confidence": None,
                 })

@@ -87,14 +87,16 @@ export function SplitPaneContainer({
           <button
             type="button"
             onClick={onToggleFocusMode}
-            className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-lg border text-xs font-medium transition-colors ${
+            aria-pressed={isFocusMode}
+            aria-label={isFocusMode ? "Exit Focus Mode (Option+F)" : "Enter Focus Mode (Option+F)"}
+            className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg border text-xs transition-colors ${
               isFocusMode
-                ? "bg-indigo-950/40 text-indigo-300 border-indigo-800/60"
-                : "border-[var(--border)] bg-[var(--surface)] text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
+                ? "bg-indigo-50 text-indigo-950 border-indigo-300 font-semibold dark:bg-indigo-950/40 dark:text-indigo-300 dark:border-indigo-800/60 shadow-xs"
+                : "border-[var(--border)] bg-[var(--surface)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:border-[var(--border-strong)] font-medium"
             }`}
           >
-            {isFocusMode ? <Minimize2 className="h-3.5 w-3.5" /> : <Maximize2 className="h-3.5 w-3.5" />}
-            <span>Focus Mode (⌥F)</span>
+            {isFocusMode ? <Minimize2 className="h-3.5 w-3.5 text-indigo-600 dark:text-indigo-400" /> : <Maximize2 className="h-3.5 w-3.5" />}
+            <span>{isFocusMode ? "Exit Focus (⌥F)" : "Focus Mode (⌥F)"}</span>
           </button>
         )}
       </div>
