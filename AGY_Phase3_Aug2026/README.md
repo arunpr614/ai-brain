@@ -33,7 +33,8 @@
 │   ├── UX_SPEC_READING_STUDIO_HERO_AND_PAGE.md               # Reading Studio Layout & Design Tokens Spec
 │   ├── UX_SPEC_BATCH_TRIAGE_AND_RANGE_SELECTION.md           # Bulk Action Dock, Selection & Hotkeys UX Spec
 │   ├── JIRA_BACKLOG_READING_STUDIO_EXECUTION_TICKETS.md      # Tickets #88, #89, #90, #91, #92, #93 Backlog
-│   └── JIRA_BACKLOG_BATCH_TRIAGE_TICKETS.md                  # Tickets #94, #95, #96, #97 Backlog
+│   ├── JIRA_BACKLOG_BATCH_TRIAGE_TICKETS.md                  # Tickets #94, #95, #96, #97 Backlog
+│   └── JIRA_BACKLOG_UI_UX_POLISH_TICKETS.md                  # Milestone 3.1: UX/UI Polish & Contrast Tickets (TICKET-UX-01 to 03)
 └── assets/                                                   # Visual design mockups & prototype screenshots
     ├── studio_hero_banner_1787034665859.jpg                  # Option 2 Hero Workspace Banner design
     ├── studio_header_action_1787034614056.jpg                # Reading Studio top chrome breadcrumb bar
