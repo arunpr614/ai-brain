@@ -535,7 +535,10 @@ export function completeTranscriptJobWithWorker(
     if (input.segments.length > 0) {
       const segmentInputs: InsertTranscriptSegmentInput[] = input.segments.map((seg, idx) => {
         const startMs = seg.start != null ? Math.round(seg.start * 1000) : null;
-        const endMs = seg.end != null ? Math.round(seg.end * 1000) : null;
+        let endMs = seg.end != null ? Math.round(seg.end * 1000) : null;
+        if (startMs != null && endMs != null && endMs < startMs) {
+          endMs = startMs;
+        }
         const durationMs =
           seg.duration != null
             ? Math.round(seg.duration * 1000)

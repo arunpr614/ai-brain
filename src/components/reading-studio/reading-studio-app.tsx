@@ -157,8 +157,8 @@ export function ReadingStudioApp({
             <span className="hidden sm:inline">Back to Item</span>
           </Link>
 
-          <div className="flex items-center gap-2 min-w-0">
-            <span className="p-1 rounded bg-emerald-950/40 text-emerald-400 border border-emerald-800/40 shrink-0">
+          <div className="flex items-center gap-2.5 min-w-0">
+            <span className="p-1.5 rounded-md bg-emerald-50 text-emerald-700 border border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-400 dark:border-emerald-800/40 shrink-0">
               <BookOpen className="h-3.5 w-3.5" />
             </span>
             <h1 className="font-semibold text-sm truncate max-w-[280px] sm:max-w-md md:max-w-lg">
@@ -171,8 +171,8 @@ export function ReadingStudioApp({
         <div className="flex items-center gap-2 shrink-0">
           {/* ASR Ground Truth Badge */}
           {transcriptSource && (
-            <span className="hidden md:inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-mono bg-emerald-950/40 text-emerald-300 border border-emerald-800/60">
-              <span className="h-1.5 w-1.5 rounded-full bg-emerald-400"></span>
+            <span className="hidden md:inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-mono font-semibold bg-emerald-50 text-emerald-950 border border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800/60 shadow-2xs">
+              <span className="h-1.5 w-1.5 rounded-full bg-emerald-500"></span>
               <span>
                 {transcriptSource.source_kind === "owned_media_stt"
                   ? "Apple MLX Whisper"
@@ -187,15 +187,16 @@ export function ReadingStudioApp({
           <button
             type="button"
             onClick={toggleFocusMode}
-            aria-label="Toggle Focus Mode (Option+F)"
-            className={`hidden sm:inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium border transition-colors ${
+            aria-pressed={isFocusMode}
+            aria-label={isFocusMode ? "Exit Focus Mode (Option+F)" : "Enter Focus Mode (Option+F)"}
+            className={`hidden sm:inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs transition-colors ${
               isFocusMode
-                ? "bg-indigo-950/40 text-indigo-300 border-indigo-800/60"
-                : "border-[var(--border)] bg-[var(--surface-raised)] text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
+                ? "bg-indigo-50 text-indigo-950 border-indigo-300 font-semibold dark:bg-indigo-950/40 dark:text-indigo-300 dark:border-indigo-800/60 shadow-xs"
+                : "border-[var(--border)] bg-[var(--surface-raised)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:border-[var(--border-strong)] font-medium"
             }`}
           >
-            {isFocusMode ? <Minimize2 className="h-3.5 w-3.5" /> : <Maximize2 className="h-3.5 w-3.5" />}
-            <span className="hidden md:inline">{isFocusMode ? "Exit Focus" : "Focus Mode"}</span>
+            {isFocusMode ? <Minimize2 className="h-3.5 w-3.5 text-indigo-600 dark:text-indigo-400" /> : <Maximize2 className="h-3.5 w-3.5" />}
+            <span className="hidden md:inline">{isFocusMode ? "Exit Focus (⌥F)" : "Focus Mode (⌥F)"}</span>
           </button>
 
           {/* Source Link */}

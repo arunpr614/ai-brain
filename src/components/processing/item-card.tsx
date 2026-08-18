@@ -1,6 +1,7 @@
 "use client";
 
 import { ArrowUpRight, Check, Circle, FileText, MousePointer2 } from "lucide-react";
+import { YouTubeIcon } from "@/components/youtube-icon";
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
 import { STATUS_LABELS, type ProcessingItem, type WorkflowMutationResult } from "./types";
@@ -27,6 +28,8 @@ export function ProcessingItemCard({
   const entered = item.inboxEnteredAt ? relativeTime(item.inboxEnteredAt) : null;
   const returnContext = `${pathname}${searchParams.size ? `?${searchParams}` : ""}`;
   const href = `/items/${encodeURIComponent(item.id)}?return=${encodeURIComponent(returnContext)}&anchor=${encodeURIComponent(item.id)}`;
+
+  const isYoutube = item.sourceType === "youtube";
 
   return (
     <li
@@ -55,19 +58,19 @@ export function ProcessingItemCard({
                 {item.title}
               </h3>
               <p className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-[11px] text-[var(--text-muted)]">
-                <span className="inline-flex items-center gap-1">
-                  <FileText className="h-3 w-3" />
+                <span className="inline-flex items-center gap-1.5 font-medium text-[var(--text-secondary)]">
+                  {isYoutube ? <YouTubeIcon className="h-3 w-3" /> : <FileText className="h-3 w-3" />}
                   {sourceLabel(item.sourceType)}
                 </span>
                 <span>Captured {captured}</span>
                 {entered && item.workflowStatus === "inbox" && <span>Waiting {entered}</span>}
-                {item.sourceType === "youtube" && (
-                  <span className="px-1.5 py-0.2 rounded text-[10px] font-mono bg-emerald-950/40 text-emerald-300 border border-emerald-800/40">
+                {isYoutube && (
+                  <span className="px-1.5 py-0.5 rounded text-[10px] font-mono font-semibold bg-emerald-50 text-emerald-900 border border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800/40">
                     ⚡ ASR
                   </span>
                 )}
                 {item.captureChannel === "recall" && (
-                  <span className="px-1.5 py-0.2 rounded text-[10px] font-mono bg-purple-950/40 text-purple-300 border border-purple-800/40">
+                  <span className="px-1.5 py-0.5 rounded text-[10px] font-mono font-semibold bg-purple-50 text-purple-900 border border-purple-200 dark:bg-purple-950/40 dark:text-purple-300 dark:border-purple-800/40">
                     📥 Recall
                   </span>
                 )}
@@ -108,7 +111,7 @@ export function ProcessingItemCard({
             <Link
               href={`/library/${encodeURIComponent(item.id)}/read`}
               aria-label={`Open ${item.title} in Reading Studio`}
-              className="inline-flex min-h-11 items-center gap-1.5 rounded-md border border-emerald-500/40 bg-emerald-950/20 px-3 text-xs font-medium text-emerald-400 hover:bg-emerald-950/40 md:min-h-9 transition-colors"
+              className="inline-flex h-8 items-center gap-1.5 rounded-md border border-emerald-300 bg-emerald-50 px-3 text-xs font-semibold text-emerald-950 hover:bg-emerald-100 dark:border-emerald-700/50 dark:bg-emerald-950/40 dark:text-emerald-300 dark:hover:bg-emerald-900/40 transition-colors shadow-2xs"
             >
               Studio
               <ArrowUpRight className="h-3.5 w-3.5" />
@@ -116,7 +119,7 @@ export function ProcessingItemCard({
             <Link
               href={href}
               aria-label={`Open ${item.title}`}
-              className="inline-flex min-h-11 items-center gap-1.5 rounded-md border border-[var(--border-strong)] px-3 text-xs font-medium text-[var(--text-primary)] hover:bg-[var(--surface-raised)] md:min-h-9"
+              className="inline-flex h-8 items-center gap-1.5 rounded-md border border-[var(--border-strong)] bg-[var(--surface)] px-3 text-xs font-medium text-[var(--text-primary)] hover:bg-[var(--surface-raised)] transition-colors"
             >
               Open
               <ArrowUpRight className="h-3.5 w-3.5" />

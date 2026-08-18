@@ -9,6 +9,7 @@ import {
   Video,
   X,
 } from "lucide-react";
+import { YouTubeIcon } from "@/components/youtube-icon";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState, useTransition } from "react";
@@ -90,7 +91,7 @@ function shouldShowMobileWarning(
 function SourceIcon({ type }: { type: string }) {
   if (type === "pdf") return <FileText className="h-4 w-4" strokeWidth={2} />;
   if (type === "url") return <Globe className="h-4 w-4" strokeWidth={2} />;
-  if (type === "youtube") return <Video className="h-4 w-4" strokeWidth={2} />;
+  if (type === "youtube") return <YouTubeIcon className="h-4 w-4" />;
   return <StickyNote className="h-4 w-4" strokeWidth={2} />;
 }
 
