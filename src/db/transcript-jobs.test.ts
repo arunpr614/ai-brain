@@ -13,6 +13,7 @@ import {
   enqueueTranscriptJobForExistingYoutubeItem,
   enqueueTranscriptJobForItem,
   failTranscriptJobWithWorker,
+  getAsrPipelineDashboardData,
   getTranscriptJobForItem,
   getWorkerPresenceStatus,
   ignoreTranscriptJob,
@@ -23,6 +24,7 @@ import {
   recordTranscriptAttempt,
   recordWorkerHeartbeat,
   retryTranscriptJobNow,
+  setTranscriptJobPriority,
 } from "./transcript-jobs";
 import { listTranscriptSegmentsForSource, getActiveTranscriptSourceForItem } from "./transcripts";
 
@@ -425,5 +427,17 @@ describe("transcript recovery jobs & worker queue", () => {
     assert.ok(job, "Job must be successfully enqueued");
     assert.equal(job?.item_id, item.id);
     assert.equal(job?.state, "pending");
+
+    // Test priority update
+    setTranscriptJobPriority(item.id, 99);
+    const updated = getTranscriptJobForItem(item.id);
+    assert.equal(updated?.priority, 99);
+
+    // Test dashboard data aggregation
+    const data = getAsrPipelineDashboardData("mac-m5-pro");
+    assert.ok(data);
+    assert.ok(Array.isArray(data.backlog));
+    assert.ok(data.backlog.some((b) => b.item_id === item.id));
+    assert.ok(data.stats.total_queued > 0);
   });
 });

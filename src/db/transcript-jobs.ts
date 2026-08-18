@@ -990,3 +990,188 @@ export function ignoreTranscriptJob(itemId: string): TranscriptJobRow | null {
     .run(now, now, itemId);
   return getTranscriptJobForItem(itemId);
 }
+
+export function setTranscriptJobPriority(itemId: string, priority: number): TranscriptJobRow | null {
+  const now = Date.now();
+  getDb().prepare(`
+    UPDATE transcript_jobs
+       SET priority = ?,
+           updated_at = ?
+     WHERE item_id = ?
+  `).run(priority, now, itemId);
+  return getTranscriptJobForItem(itemId);
+}
+
+export interface AsrPipelineDashboardData {
+  worker: WorkerPresenceStatus & {
+    active_model: string;
+    throughput_label: string;
+  };
+  in_progress: {
+    job_id: number;
+    item_id: string;
+    title: string;
+    source_url: string | null;
+    video_id: string | null;
+    priority: number;
+    preferred_model: string;
+    claimed_at: number;
+    elapsed_seconds: number;
+    attempts: number;
+  } | null;
+  backlog: Array<{
+    job_id: number;
+    item_id: string;
+    title: string;
+    source_url: string | null;
+    video_id: string | null;
+    priority: number;
+    state: "pending" | "retryable_error" | "manual_needed";
+    created_at: number;
+    next_run_at: number | null;
+    attempts: number;
+    max_attempts: number;
+    last_error_code: string | null;
+    last_error_message: string | null;
+  }>;
+  completed_history: Array<{
+    job_id: number;
+    item_id: string;
+    title: string;
+    source_url: string | null;
+    video_id: string | null;
+    completed_at: number;
+    last_provider: string | null;
+    worker_name: string | null;
+    preferred_model: string | null;
+    segment_count: number;
+    word_count: number;
+    duration_seconds: number;
+  }>;
+  stats: {
+    total_queued: number;
+    total_completed_today: number;
+    total_completed_all_time: number;
+  };
+}
+
+export function getAsrPipelineDashboardData(
+  workerId = "mac-m5-pro",
+  now = Date.now(),
+): AsrPipelineDashboardData {
+  const db = getDb();
+  const workerStatus = getWorkerPresenceStatus(workerId, now);
+
+  // 1. In progress job
+  const inProgressRow = db.prepare(`
+    SELECT tj.id AS job_id,
+           tj.item_id,
+           i.title,
+           i.source_url,
+           tj.video_id,
+           tj.priority,
+           tj.preferred_model,
+           tj.claimed_at,
+           tj.attempts
+      FROM transcript_jobs tj
+      JOIN items i ON i.id = tj.item_id
+     WHERE tj.state = 'running'
+     ORDER BY tj.claimed_at DESC
+     LIMIT 1
+  `).get() as {
+    job_id: number;
+    item_id: string;
+    title: string;
+    source_url: string | null;
+    video_id: string | null;
+    priority: number;
+    preferred_model: string;
+    claimed_at: number | null;
+    attempts: number;
+  } | undefined;
+
+  const in_progress = inProgressRow && inProgressRow.claimed_at ? {
+    job_id: inProgressRow.job_id,
+    item_id: inProgressRow.item_id,
+    title: inProgressRow.title,
+    source_url: inProgressRow.source_url,
+    video_id: inProgressRow.video_id,
+    priority: inProgressRow.priority,
+    preferred_model: inProgressRow.preferred_model,
+    claimed_at: inProgressRow.claimed_at,
+    elapsed_seconds: Math.max(0, Math.floor((now - inProgressRow.claimed_at) / 1000)),
+    attempts: inProgressRow.attempts,
+  } : null;
+
+  // 2. Backlog
+  const backlog = db.prepare(`
+    SELECT tj.id AS job_id,
+           tj.item_id,
+           i.title,
+           i.source_url,
+           tj.video_id,
+           tj.priority,
+           tj.state,
+           tj.created_at,
+           tj.next_run_at,
+           tj.attempts,
+           tj.max_attempts,
+           tj.last_error_code,
+           tj.last_error_message
+      FROM transcript_jobs tj
+      JOIN items i ON i.id = tj.item_id
+     WHERE tj.state IN ('pending', 'retryable_error', 'manual_needed')
+     ORDER BY tj.priority DESC, COALESCE(tj.next_run_at, tj.created_at) ASC, tj.created_at ASC
+     LIMIT 100
+  `).all() as AsrPipelineDashboardData["backlog"];
+
+  // 3. Completed history
+  const completedRows = db.prepare(`
+    SELECT tj.id AS job_id,
+           tj.item_id,
+           i.title,
+           i.source_url,
+           tj.video_id,
+           COALESCE(tj.completed_at, tj.updated_at) AS completed_at,
+           tj.last_provider,
+           tj.worker_name,
+           tj.preferred_model,
+           COALESCE(i.duration_seconds, 0) AS duration_seconds,
+           (SELECT COUNT(*) FROM transcript_segments ts WHERE ts.item_id = tj.item_id) AS segment_count,
+           COALESCE((SELECT SUM(LENGTH(ts.text) - LENGTH(REPLACE(ts.text, ' ', '')) + 1) FROM transcript_segments ts WHERE ts.item_id = tj.item_id), 0) AS word_count
+      FROM transcript_jobs tj
+      JOIN items i ON i.id = tj.item_id
+     WHERE tj.state = 'done'
+     ORDER BY COALESCE(tj.completed_at, tj.updated_at) DESC
+     LIMIT 50
+  `).all() as AsrPipelineDashboardData["completed_history"];
+
+  // 4. Summary stats
+  const statsRow = db.prepare(`
+    SELECT 
+      (SELECT COUNT(*) FROM transcript_jobs WHERE state IN ('pending', 'retryable_error', 'manual_needed')) AS total_queued,
+      (SELECT COUNT(*) FROM transcript_jobs WHERE state = 'done' AND completed_at >= unixepoch('start of day') * 1000) AS total_completed_today,
+      (SELECT COUNT(*) FROM transcript_jobs WHERE state = 'done') AS total_completed_all_time
+  `).get() as {
+    total_queued: number;
+    total_completed_today: number;
+    total_completed_all_time: number;
+  };
+
+  return {
+    worker: {
+      ...workerStatus,
+      active_model: "mlx-community/whisper-large-v3-turbo",
+      throughput_label: "16.8x Real-Time (M5 Pro ANE)",
+    },
+    in_progress,
+    backlog,
+    completed_history: completedRows,
+    stats: {
+      total_queued: statsRow?.total_queued ?? 0,
+      total_completed_today: statsRow?.total_completed_today ?? 0,
+      total_completed_all_time: statsRow?.total_completed_all_time ?? 0,
+    },
+  };
+}
+

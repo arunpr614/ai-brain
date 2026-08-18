@@ -92,6 +92,13 @@ export default async function SettingsPage() {
             <Wifi className="h-4 w-4 text-[var(--text-muted)]" strokeWidth={2} />
             <span className="font-medium">Device pairing</span>
           </Link>
+          <Link
+            href="/settings/asr-deck"
+            className="flex items-center gap-3 rounded-lg border border-[var(--border)] bg-[var(--surface)] px-4 py-3 text-sm text-[var(--text-primary)] transition-colors hover:border-[var(--border-strong)]"
+          >
+            <Activity className="h-4 w-4 text-purple-500" strokeWidth={2} />
+            <span className="font-medium">Mac ASR Workstation</span>
+          </Link>
           {notebookLmEnabled && (
             <Link
               href="/settings/notebooklm-export"
