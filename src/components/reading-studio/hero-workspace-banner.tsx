@@ -96,6 +96,8 @@ export function HeroWorkspaceBanner({
 
   return (
     <div
+      role="region"
+      aria-label="Reading Studio Hero Workspace"
       className={`my-6 overflow-hidden rounded-2xl border transition-all shadow-sm ${
         qualityLevel === "degraded"
           ? "border-rose-500/40 bg-[var(--surface-raised)]"
