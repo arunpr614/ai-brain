@@ -3,11 +3,11 @@ import { resolve, dirname } from "node:path";
 import type { NextConfig } from "next";
 
 const projectRoot = dirname(fileURLToPath(import.meta.url));
-const turbopackRoot = resolve(projectRoot, "../../../..");
 
 const nextConfig: NextConfig = {
   // Self-contained production bundle for Hetzner deploy (no node_modules needed).
   output: "standalone",
+  outputFileTracingRoot: projectRoot,
   // Runtime state must never be copied into the standalone deploy artifact.
   // Next's file tracer can be over-broad when server code references
   // process.cwd()/data paths; keep databases, backups, APK artifacts, and
@@ -20,7 +20,7 @@ const nextConfig: NextConfig = {
   },
   // Pin workspace root so Turbopack stops guessing against ancestor lockfiles.
   turbopack: {
-    root: turbopackRoot,
+    root: projectRoot,
   },
   // Hide the Next.js dev-mode "N" indicator. The APK WebView loads the
   // dev server via the Cloudflare tunnel, so the indicator overlaps the

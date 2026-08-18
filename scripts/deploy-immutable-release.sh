@@ -2,7 +2,9 @@
 set -euo pipefail
 
 ARTIFACT_DIR="${1:-}"
+[[ -n "$ARTIFACT_DIR" && -d "$ARTIFACT_DIR" ]] && ARTIFACT_DIR="$(cd -- "$ARTIFACT_DIR" && pwd -P)"
 KNOWN_GOOD_DIR="${2:-}"
+[[ -n "$KNOWN_GOOD_DIR" && -d "$KNOWN_GOOD_DIR" ]] && KNOWN_GOOD_DIR="$(cd -- "$KNOWN_GOOD_DIR" && pwd -P)"
 SSH_HOST="${BRAIN_SSH_HOST:-brain}"
 BASE_URL="${BRAIN_BASE_URL:-https://brain.arunp.in}"
 PROCESSING_FLAG_POLICY="${BRAIN_PROCESSING_FLAG_POLICY:-preserve}"
