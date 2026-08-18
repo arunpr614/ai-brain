@@ -40,6 +40,8 @@ import {
   Eye,
   Square,
   CheckSquare,
+  Video,
+  Volume2,
 } from "lucide-react";
 import { cn } from "@/lib/cn";
 
@@ -1675,9 +1677,40 @@ export function Phase3SuitePrototype({ initialView = "repair-center" }: { initia
                                 </span>
                               )}
 
-                              <span className="text-[11px] font-medium text-[var(--text-muted)]">
-                                {item.channelOrAuthor} • {item.durationOrReadTime} • Captured {item.capturedAt}
-                              </span>
+                              <div className="flex flex-wrap items-center gap-2">
+                                <span className="text-[11px] font-medium text-[var(--text-muted)]">
+                                  {item.channelOrAuthor} • {item.durationOrReadTime} • Captured {item.capturedAt}
+                                </span>
+
+                                {/* Variation A: Subtle Trailing Media Origin Icon */}
+                                {item.kind === "youtube" && (
+                                  <span
+                                    className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-semibold bg-red-500/10 text-red-500 border border-red-500/20"
+                                    title="YouTube Video Capture"
+                                  >
+                                    <Video className="w-2.5 h-2.5 fill-red-500 text-red-500" />
+                                    <span>YouTube</span>
+                                  </span>
+                                )}
+                                {item.kind === "article" && (
+                                  <span
+                                    className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-semibold bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 border border-cyan-500/20"
+                                    title="Web Article Capture"
+                                  >
+                                    <FileText className="w-2.5 h-2.5" />
+                                    <span>Article</span>
+                                  </span>
+                                )}
+                                {item.kind === "podcast" && (
+                                  <span
+                                    className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-semibold bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20"
+                                    title="Podcast Audio Capture"
+                                  >
+                                    <Volume2 className="w-2.5 h-2.5" />
+                                    <span>Podcast</span>
+                                  </span>
+                                )}
+                              </div>
                             </div>
 
                             {/* Title */}
@@ -1774,6 +1807,60 @@ export function Phase3SuitePrototype({ initialView = "repair-center" }: { initia
                   );
                 })}
             </div>
+
+            {/* Sticky Floating Bulk Action Dock (P0 Requirement) */}
+            {repairItems.filter((i) => i.selectedForBatch).length > 0 && (
+              <div className="sticky bottom-6 z-40 flex justify-center px-4 animate-in slide-in-from-bottom-4">
+                <div className="flex flex-wrap items-center gap-3 rounded-2xl border border-[var(--border-strong)] bg-[var(--surface-raised)]/95 backdrop-blur-md px-5 py-3 shadow-2xl">
+                  {/* Selection Counter */}
+                  <span className="rounded-md bg-[var(--accent-9)]/15 border border-[var(--accent-9)]/30 px-2.5 py-1 text-xs font-mono font-semibold text-[var(--accent-11)]">
+                    {repairItems.filter((i) => i.selectedForBatch).length} selected
+                  </span>
+
+                  <div className="h-5 w-px bg-[var(--border)]" />
+
+                  {/* Dynamic Action: Batch Queue Mac ASR */}
+                  <button
+                    type="button"
+                    onClick={handleStartBatchAsr}
+                    disabled={batchAsrActive}
+                    className="inline-flex items-center gap-1.5 rounded-lg bg-[var(--action-primary-bg)] px-3.5 py-1.5 text-xs font-semibold text-[var(--action-primary-fg)] hover:opacity-90 active:scale-98 transition-all shadow-xs"
+                  >
+                    <Zap className={cn("h-3.5 w-3.5 text-[var(--teal)]", batchAsrActive && "animate-spin")} />
+                    <span>
+                      {batchAsrActive
+                        ? `Processing ASR (${batchProgress}%)...`
+                        : `Queue Mac ASR (${repairItems.filter((i) => i.selectedForBatch && i.kind === "youtube" && i.qualityTier !== "repaired").length} Videos)`}
+                    </span>
+                  </button>
+
+                  {/* Dynamic Action: Auto-Heal Articles */}
+                  <button
+                    type="button"
+                    onClick={handleAutoHealAll}
+                    className="inline-flex items-center gap-1.5 rounded-lg border border-[var(--border)] bg-[var(--surface)] px-3 py-1.5 text-xs font-semibold text-[var(--text-primary)] hover:bg-[var(--surface-base)] transition-all shadow-2xs"
+                  >
+                    <Wrench className="h-3.5 w-3.5 text-[var(--azure)]" />
+                    <span>
+                      Auto-Heal ({repairItems.filter((i) => i.selectedForBatch && i.kind === "article" && i.qualityTier !== "repaired").length} Articles)
+                    </span>
+                  </button>
+
+                  {/* Deselect All */}
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setRepairItems((prev) =>
+                        prev.map((item) => ({ ...item, selectedForBatch: false }))
+                      )
+                    }
+                    className="text-xs text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-colors ml-2"
+                  >
+                    Deselect All
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         )}
 

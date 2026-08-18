@@ -804,6 +804,48 @@ EOF
 
 ---
 
+## 🎟️ Ticket 6: Subtle Media Origin Icons & Sticky Floating Batch Selection Dock on Quality Triage Cards
+
+### 1. Issue Title & Summary
+- **Issue Title:** `FEAT(repair): Subtle Media Origin Icons & Sticky Floating Batch Selection Dock on Quality Triage Cards`
+- **Summary:** Enhance the Capture Quality Repair Center triage cards with subtle media origin pill icons (Variation A: elegant red YouTube badge `[▶ YouTube]` trailing the metadata line) and implement a persistent Sticky Floating Bulk Action Dock that animates into view whenever 1 or more card checkboxes are selected.
+
+### 2. Jira / GitHub Metadata
+- **Issue Type:** Feature Component / UX Polish
+- **Epic Link:** `EPIC-STUDIO-01: Option 2 Reading Studio & Triage Architecture`
+- **Milestone:** `v0.9.x - Kanban Card Processing & Reading Studio`
+- **Component:** `UI / Quality Repair Center / Batch Triage`
+- **Priority:** `P2 - Medium`
+- **Story Points:** 3
+- **GitHub Issue Link:** [GitHub Issue #93](https://github.com/arunpr614/ai-brain/issues/93)
+- **Labels:** `area/repair`, `layer/ui`, `phase/3`, `milestone/0.9.x`
+
+### 3. User Story
+```markdown
+As an AI Brain user triaging degraded library bookmarks,
+I want subtle media origin icons (YouTube, Article, Podcast) on every card's metadata row and a sticky floating bulk action bar when selecting checkboxes,
+So that I can immediately identify video items at a glance and trigger batch Mac Whisper ASR or Auto-Heal without repetitive manual clicks.
+```
+
+### 4. Acceptance Criteria (Gherkin)
+```gherkin
+Feature: Subtle Origin Icons & Floating Batch Selection Dock
+
+  Scenario: Displaying subtle trailing media origin icons (Variation A)
+    Given a YouTube item in the Repair Center
+    When rendered on /needs-upgrade or /prototype/repair-center
+    Then a subtle red YouTube pill badge "[▶ YouTube]" is displayed trailing the metadata row
+
+  Scenario: Sticky floating bulk action dock appearance
+    Given the user selects 3 cards via their checkboxes
+    When selectedItemCount >= 1
+    Then a floating glassmorphism dock slides up at the bottom center of the viewport
+    And displays "3 selected" with contextual buttons: "[⚡ Queue Mac ASR (2 Videos)]" and "[🛠️ Auto-Heal (1 Article)]"
+    And clicking "Deselect All" clears the selection and hides the dock
+```
+
+---
+
 ## 🏗️ Appendix: Dependency Graph & Execution Sequence
 
 ```mermaid
@@ -813,6 +855,7 @@ flowchart TD
     T3["Ticket 3: YouTube Player Sync & Timeline (src/components/reading-studio/youtube-player-sync.tsx)"]
     T4["Ticket 4: Companion Workbench & Pin-to-Notes (src/components/reading-studio/multi-layer-companion-tabs.tsx)"]
     T5["Ticket 5: In-Hero Mac ASR Recovery (src/app/needs-upgrade/actions.ts)"]
+    T6["Ticket 6: Subtle Media Origin Icons & Floating Batch Dock (src/app/needs-upgrade/page.tsx)"]
 
     T1 -->|Launches Route| T2
     T2 -->|Hosts Left Pane| T3
@@ -820,11 +863,12 @@ flowchart TD
     T3 -.->|Event Bus: Pin Quote| T4
     T5 -->|Recovers Degraded State into Gold| T1
     T5 -->|Unblocks Transcript for| T3
+    T6 -->|Bulk Remediation for| T5
 ```
 
 ### Sprint Rollout Strategy
 1. **Wave 1 (Day 1-2):** Implement `Ticket 1` (Hero Banner) + `Ticket 2` (Full-Page Route Scaffold).
-2. **Wave 2 (Day 3-4):** Implement `Ticket 3` (YouTube Player Sync & Timeline) + `Ticket 5` (Mac ASR Recovery Action).
+2. **Wave 2 (Day 3-4):** Implement `Ticket 3` (YouTube Player Sync & Timeline) + `Ticket 5` (Mac ASR Recovery Action) + `Ticket 6` (Subtle Origin Icons & Batch Dock).
 3. **Wave 3 (Day 5-6):** Implement `Ticket 4` (Companion Workbench, Note Event Bus, RAG Ask Companion).
 4. **Wave 4 (Day 7):** End-to-end integration smoke testing, WCAG 2.1 AAA audit, and release tagging under `v0.9.0`.
 
