@@ -15,6 +15,9 @@ const nextConfig: NextConfig = {
   outputFileTracingExcludes: {
     "/*": ["./data", "./data/**/*"],
   },
+  outputFileTracingIncludes: {
+    "/*": ["./src/db/migrations/**/*"],
+  },
   // Pin workspace root so Turbopack stops guessing against ancestor lockfiles.
   turbopack: {
     root: turbopackRoot,
