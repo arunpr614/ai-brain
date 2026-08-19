@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import Link from "next/link";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
@@ -52,7 +53,9 @@ export default async function AsrDeckPage() {
       </div>
 
       {/* Main interactive Neural Deck */}
-      <AsrDeckClient initialData={initialData} />
+      <Suspense fallback={<div className="h-96 flex items-center justify-center text-xs text-zinc-400">Loading workstation deck...</div>}>
+        <AsrDeckClient initialData={initialData} />
+      </Suspense>
     </div>
   );
 }

@@ -1,8 +1,15 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { type AsrPipelineDashboardData } from "@/db/transcript-jobs";
+import {
+  type DateRangePreset,
+  filterCompletedJobs,
+  calculatePresetCounts,
+  formatLiveHeartbeat,
+} from "@/lib/asr-deck/date-filters";
 
 interface AsrDeckClientProps {
   initialData: AsrPipelineDashboardData;
@@ -65,6 +72,21 @@ export function AsrDeckClient({ initialData }: AsrDeckClientProps) {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [actionLoadingId, setActionLoadingId] = useState<string | null>(null);
   const [filterQuery, setFilterQuery] = useState("");
+  const [nowMs, setNowMs] = useState<number>(Date.now());
+
+  const searchParams = useSearchParams();
+  const rawRange = searchParams.get("range") as DateRangePreset | null;
+  const [dateRange, setDateRange] = useState<DateRangePreset>(
+    rawRange && ["today", "week", "month", "all"].includes(rawRange) ? rawRange : "today"
+  );
+
+  // 1-second live heartbeat and relative time ticker
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setNowMs(Date.now());
+    }, 1000);
+    return () => clearInterval(timer);
+  }, []);
 
   const refreshData = useCallback(async () => {
     try {
@@ -107,15 +129,39 @@ export function AsrDeckClient({ initialData }: AsrDeckClientProps) {
     }
   };
 
+  const handleRangeChange = (preset: DateRangePreset) => {
+    setDateRange(preset);
+    if (typeof window !== "undefined") {
+      const url = new URL(window.location.href);
+      if (preset === "today") {
+        url.searchParams.delete("range");
+      } else {
+        url.searchParams.set("range", preset);
+      }
+      window.history.replaceState({}, "", url.toString());
+    }
+  };
+
   const filteredBacklog = data.backlog.filter((job) =>
     job.title.toLowerCase().includes(filterQuery.toLowerCase()),
   );
 
+  const presetCounts = useMemo(
+    () => calculatePresetCounts(data.completed_history, nowMs),
+    [data.completed_history, nowMs],
+  );
+
+  const filteredCompleted = useMemo(
+    () => filterCompletedJobs(data.completed_history, dateRange, nowMs),
+    [data.completed_history, dateRange, nowMs],
+  );
+
+  const heartbeatInfo = formatLiveHeartbeat(data.worker.last_heartbeat_at, nowMs);
+
   const formatTimestamp = (timestampMs: number | null | undefined) => {
     if (!timestampMs) return "—";
     const date = new Date(timestampMs);
-    const now = new Date();
-    const diffSec = Math.floor((now.getTime() - date.getTime()) / 1000);
+    const diffSec = Math.floor((nowMs - date.getTime()) / 1000);
 
     if (diffSec < 60) return `${diffSec}s ago`;
     if (diffSec < 3600) return `${Math.floor(diffSec / 60)}m ago`;
@@ -136,30 +182,29 @@ export function AsrDeckClient({ initialData }: AsrDeckClientProps) {
       <div className="rounded-2xl border border-zinc-200 bg-white/80 p-5 shadow-sm backdrop-blur-md dark:border-zinc-800 dark:bg-zinc-900/80">
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div className="flex flex-wrap items-center gap-3">
-            {/* Worker Presence Badge */}
+            {/* Worker Presence Badge with Live Ticker */}
             <div
-              className={`flex items-center gap-2.5 rounded-xl border px-3.5 py-2 ${
-                data.worker.is_online
-                  ? "border-emerald-500/30 bg-emerald-50 text-emerald-900 dark:bg-emerald-950/40 dark:text-emerald-300"
-                  : "border-zinc-300 bg-zinc-100 text-zinc-700 dark:border-zinc-800 dark:bg-zinc-800/50 dark:text-zinc-400"
-              }`}
+              className={`flex items-center gap-2.5 rounded-xl border px-3.5 py-2 transition-all ${heartbeatInfo.badgeClass}`}
+              title={
+                data.worker.last_heartbeat_at
+                  ? `Last Heartbeat: ${new Date(data.worker.last_heartbeat_at).toISOString()} (${new Date(data.worker.last_heartbeat_at).toLocaleString()})`
+                  : "No worker heartbeat recorded"
+              }
             >
               <span className="relative flex h-3 w-3">
-                {data.worker.is_online && (
+                {heartbeatInfo.isOnline && (
                   <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75"></span>
                 )}
                 <span
-                  className={`relative inline-flex h-3 w-3 rounded-full ${
-                    data.worker.is_online ? "bg-emerald-500" : "bg-zinc-400"
-                  }`}
+                  className={`relative inline-flex h-3 w-3 rounded-full ${heartbeatInfo.dotColorClass}`}
                 ></span>
               </span>
               <div>
-                <div className="text-xs font-semibold tracking-wide uppercase">
-                  {data.worker.is_online ? "Mac M5 Pro (ANE) Online" : "Worker Offline"}
+                <div className="text-xs font-semibold tracking-wide uppercase flex items-center gap-1.5">
+                  <span>{heartbeatInfo.label}</span>
                 </div>
-                <div className="text-[11px] opacity-75">
-                  {data.worker.is_online ? "Apple Silicon CoreML / MLX" : `Last seen ${formatTimestamp(data.worker.last_heartbeat_at)}`}
+                <div className="text-[11px] opacity-85 font-mono">
+                  {heartbeatInfo.sublabel}
                 </div>
               </div>
             </div>
@@ -197,12 +242,110 @@ export function AsrDeckClient({ initialData }: AsrDeckClientProps) {
             <button
               onClick={refreshData}
               disabled={isRefreshing}
-              className="flex h-9 w-9 items-center justify-center rounded-lg border border-zinc-200 bg-zinc-50 text-zinc-700 transition hover:bg-zinc-100 active:scale-95 disabled:opacity-50 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-200 dark:hover:bg-zinc-700"
+              className="flex h-9 w-9 items-center justify-center rounded-lg border border-zinc-200 bg-zinc-50 text-zinc-700 transition hover:bg-zinc-100 active:scale-95 disabled:opacity-50 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-200 dark:hover:bg-zinc-700 cursor-pointer"
               title="Refresh Pipeline Status"
             >
               <span className={isRefreshing ? "animate-spin" : ""}>🔄</span>
             </button>
           </div>
+        </div>
+      </div>
+
+      {/* 📅 DATE RANGE FILTER PRESETS BAR */}
+      <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-zinc-200 bg-white/70 p-2.5 backdrop-blur-md dark:border-zinc-800 dark:bg-zinc-900/70">
+        <div className="flex items-center gap-2 text-xs font-semibold text-zinc-700 dark:text-zinc-300 pl-1">
+          <span className="text-sm">📅</span>
+          <span>Completed Stream Range:</span>
+        </div>
+
+        <div
+          role="group"
+          aria-label="Completed stream date range presets"
+          className="flex flex-wrap items-center gap-1.5"
+        >
+          <button
+            type="button"
+            onClick={() => handleRangeChange("today")}
+            className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold transition-all cursor-pointer ${
+              dateRange === "today"
+                ? "bg-purple-100 text-purple-900 border border-purple-300 shadow-xs dark:bg-purple-950/80 dark:text-purple-200 dark:border-purple-800"
+                : "text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-zinc-200"
+            }`}
+          >
+            <span>Today</span>
+            <span
+              className={`rounded-full px-1.5 py-0.2 text-[10px] ${
+                dateRange === "today"
+                  ? "bg-purple-200 text-purple-900 dark:bg-purple-900 dark:text-purple-200"
+                  : "bg-zinc-200/80 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-400"
+              }`}
+            >
+              {presetCounts.today}
+            </span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => handleRangeChange("week")}
+            className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold transition-all cursor-pointer ${
+              dateRange === "week"
+                ? "bg-purple-100 text-purple-900 border border-purple-300 shadow-xs dark:bg-purple-950/80 dark:text-purple-200 dark:border-purple-800"
+                : "text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-zinc-200"
+            }`}
+          >
+            <span>This Week</span>
+            <span
+              className={`rounded-full px-1.5 py-0.2 text-[10px] ${
+                dateRange === "week"
+                  ? "bg-purple-200 text-purple-900 dark:bg-purple-900 dark:text-purple-200"
+                  : "bg-zinc-200/80 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-400"
+              }`}
+            >
+              {presetCounts.week}
+            </span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => handleRangeChange("month")}
+            className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold transition-all cursor-pointer ${
+              dateRange === "month"
+                ? "bg-purple-100 text-purple-900 border border-purple-300 shadow-xs dark:bg-purple-950/80 dark:text-purple-200 dark:border-purple-800"
+                : "text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-zinc-200"
+            }`}
+          >
+            <span>This Month</span>
+            <span
+              className={`rounded-full px-1.5 py-0.2 text-[10px] ${
+                dateRange === "month"
+                  ? "bg-purple-200 text-purple-900 dark:bg-purple-900 dark:text-purple-200"
+                  : "bg-zinc-200/80 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-400"
+              }`}
+            >
+              {presetCounts.month}
+            </span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => handleRangeChange("all")}
+            className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold transition-all cursor-pointer ${
+              dateRange === "all"
+                ? "bg-purple-100 text-purple-900 border border-purple-300 shadow-xs dark:bg-purple-950/80 dark:text-purple-200 dark:border-purple-800"
+                : "text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-zinc-200"
+            }`}
+          >
+            <span>All Time</span>
+            <span
+              className={`rounded-full px-1.5 py-0.2 text-[10px] ${
+                dateRange === "all"
+                  ? "bg-purple-200 text-purple-900 dark:bg-purple-900 dark:text-purple-200"
+                  : "bg-zinc-200/80 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-400"
+              }`}
+            >
+              {presetCounts.all}
+            </span>
+          </button>
         </div>
       </div>
 
@@ -285,7 +428,7 @@ export function AsrDeckClient({ initialData }: AsrDeckClientProps) {
                         onClick={() => handleAction("prioritize", job.item_id)}
                         disabled={actionLoadingId === job.item_id}
                         title="Bump to Top Priority"
-                        className="rounded p-1 text-xs hover:bg-zinc-100 dark:hover:bg-zinc-700"
+                        className="rounded p-1 text-xs hover:bg-zinc-100 dark:hover:bg-zinc-700 cursor-pointer"
                       >
                         ⚡
                       </button>
@@ -293,7 +436,7 @@ export function AsrDeckClient({ initialData }: AsrDeckClientProps) {
                         onClick={() => handleAction("ignore", job.item_id)}
                         disabled={actionLoadingId === job.item_id}
                         title="Skip / Cancel"
-                        className="rounded p-1 text-xs text-zinc-400 hover:bg-zinc-100 hover:text-zinc-700 dark:hover:bg-zinc-700"
+                        className="rounded p-1 text-xs text-zinc-400 hover:bg-zinc-100 hover:text-zinc-700 dark:hover:bg-zinc-700 cursor-pointer"
                       >
                         ✕
                       </button>
@@ -392,7 +535,7 @@ export function AsrDeckClient({ initialData }: AsrDeckClientProps) {
           </div>
         </div>
 
-        {/* COLUMN 3: COMPLETED STREAM */}
+        {/* COLUMN 3: COMPLETED STREAM (FILTERED BY PRESET) */}
         <div className="flex flex-col rounded-2xl border border-zinc-200 bg-white/70 p-4 shadow-sm backdrop-blur dark:border-zinc-800 dark:bg-zinc-900/60">
           <div className="mb-3 flex items-center justify-between">
             <div className="flex items-center gap-2">
@@ -400,22 +543,30 @@ export function AsrDeckClient({ initialData }: AsrDeckClientProps) {
                 Completed History
               </h2>
               <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-semibold text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300">
-                {data.completed_history.length}
+                {filteredCompleted.length}
               </span>
             </div>
-            <span className="text-xs text-zinc-400">Live Timeline</span>
+            <span className="text-xs text-zinc-500 dark:text-zinc-400">
+              {dateRange === "today"
+                ? "Today's stream"
+                : dateRange === "week"
+                ? "Past 7 days"
+                : dateRange === "month"
+                ? "Past 30 days"
+                : "All-time history"}
+            </span>
           </div>
 
           <div className="flex-1 space-y-3 overflow-y-auto max-h-[620px] pr-1">
-            {data.completed_history.length === 0 ? (
+            {filteredCompleted.length === 0 ? (
               <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-zinc-200 p-8 text-center dark:border-zinc-800">
                 <span className="text-2xl mb-1">⏳</span>
                 <p className="text-xs font-medium text-zinc-500 dark:text-zinc-400">
-                  No completed jobs recorded yet
+                  No completed jobs in this date range
                 </p>
               </div>
             ) : (
-              data.completed_history.map((job) => (
+              filteredCompleted.map((job) => (
                 <div
                   key={job.job_id}
                   className="rounded-xl border border-zinc-200 bg-white p-3.5 shadow-xs transition hover:border-emerald-400/60 dark:border-zinc-800 dark:bg-zinc-800/80"
