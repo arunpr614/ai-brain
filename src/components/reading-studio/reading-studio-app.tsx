@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useMemo } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { ArrowLeft, BookOpen, ExternalLink, FileText, Maximize2, Minimize2 } from "lucide-react";
@@ -12,6 +12,7 @@ import type { ItemRow } from "@/db/client";
 import type { TranscriptSegmentRow, TranscriptSourceRow } from "@/db/transcripts";
 import type { ItemTopicRow } from "@/db/topics";
 import type { TagRow } from "@/db/tags";
+import { parseRecallMemory } from "@/lib/reading-studio/recall-parser";
 
 export interface ReadingStudioAppProps {
   item: ItemRow;
@@ -62,6 +63,53 @@ export function ReadingStudioApp({
 
   const videoId = extractYouTubeVideoId(item.source_url);
   const isYouTube = Boolean(videoId);
+
+  // Virtual segment fallback for Recall items with 0 ASR segments
+  const { activeSegments, activeSource } = useMemo(() => {
+    if (segments && segments.length > 0) {
+      return { activeSegments: segments, activeSource: transcriptSource };
+    }
+
+    if (item.capture_source === "recall" || item.body?.includes("Imported from Recall")) {
+      const parsed = parseRecallMemory(item.body, item.summary);
+      if (parsed.virtualSegments.length > 0) {
+        const virtualRows: TranscriptSegmentRow[] = parsed.virtualSegments.map((v, idx) => ({
+          id: `recall-vseg-${idx + 1}`,
+          transcript_source_id: `recall-src-${item.id}`,
+          item_id: item.id,
+          idx: idx + 1,
+          start_ms: v.start_ms,
+          end_ms: v.end_ms,
+          duration_ms: Math.max(0, v.end_ms - v.start_ms),
+          text: v.text,
+          text_sha256: "",
+          token_count: null,
+          confidence: null,
+          created_at: Date.now(),
+        }));
+
+        const virtualSource: TranscriptSourceRow = {
+          id: `recall-src-${item.id}`,
+          item_id: item.id,
+          policy_decision_id: "recall_policy",
+          source_kind: "user_paste",
+          language_code: "en",
+          caption_source_class: "user_provided",
+          timestamp_mode: "timestamped",
+          provenance_json: JSON.stringify({ source: "recall_dialogue_chunks", cardId: parsed.cardId }),
+          retention_class: "full_text_allowed",
+          text_sha256: "",
+          segment_count: virtualRows.length,
+          status: "active",
+          created_at: Date.now(),
+        };
+
+        return { activeSegments: virtualRows, activeSource: virtualSource };
+      }
+    }
+
+    return { activeSegments: segments, activeSource: transcriptSource };
+  }, [segments, transcriptSource, item]);
 
   const handleSeek = useCallback((timestampMs: number) => {
     setCurrentTimeMs(timestampMs);
@@ -125,8 +173,8 @@ export function ReadingStudioApp({
         <TranscriptTimeline
           itemId={item.id}
           itemTitle={item.title}
-          source={transcriptSource}
-          segments={segments}
+          source={activeSource}
+          segments={activeSegments}
           currentTimeMs={currentTimeMs}
           onSeek={handleSeek}
         />
@@ -140,6 +188,7 @@ export function ReadingStudioApp({
       topics={topics}
       tags={tags}
       parsedQuotes={parsedQuotes}
+      onSeek={handleSeek}
     />
   );
 

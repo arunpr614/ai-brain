@@ -290,6 +290,8 @@ export function TranscriptTimeline({
     }
   };
 
+  const isRecallVirtual = Boolean(source?.provenance_json?.includes("recall_dialogue_chunks"));
+
   return (
     <div className="flex flex-col h-full bg-[var(--surface-raised)] border border-[var(--border)] rounded-xl overflow-hidden shadow-sm">
       {/* Transcript Header & Search Toolbar */}
@@ -300,8 +302,12 @@ export function TranscriptTimeline({
             <h3 className="font-semibold text-xs text-[var(--text-primary)] uppercase tracking-wider">
               Interactive Transcript
             </h3>
-            <span className="px-1.5 py-0.5 rounded text-[10px] font-mono font-semibold bg-emerald-50 text-emerald-950 border border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800/40">
-              {segments.length} segments
+            <span className={`px-1.5 py-0.5 rounded text-[10px] font-mono font-semibold ${
+              isRecallVirtual
+                ? "bg-purple-50 text-purple-950 border border-purple-200 dark:bg-purple-950/40 dark:text-purple-300 dark:border-purple-800/40"
+                : "bg-emerald-50 text-emerald-950 border border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800/40"
+            }`}>
+              {segments.length} {isRecallVirtual ? "Recall chunks" : "segments"}
             </span>
           </div>
 
@@ -329,21 +335,29 @@ export function TranscriptTimeline({
                 title="Jump to current playing segment"
                 className="p-1 rounded text-[var(--text-secondary)] hover:text-emerald-400 hover:bg-[var(--surface-raised)] border border-[var(--border)] transition-colors"
               >
-                <ArrowDownCircle className="h-3.5 w-3.5" />
+                <ArrowDownCircle className="h-4 w-4" />
               </button>
             )}
 
             {source && (
               <span className="hidden sm:inline text-[11px] text-[var(--text-secondary)] font-mono">
-                {source.source_kind === "owned_media_stt"
-                  ? "Apple MLX Whisper"
-                  : source.source_kind === "youtube_official_caption"
-                    ? "YouTube Captions"
-                    : "Verbatim ASR"}
+                {isRecallVirtual
+                  ? "Recall Memory"
+                  : source.source_kind === "owned_media_stt"
+                    ? "Apple MLX Whisper"
+                    : source.source_kind === "youtube_official_caption"
+                      ? "YouTube Captions"
+                      : "Verbatim ASR"}
               </span>
             )}
           </div>
         </div>
+
+        {isRecallVirtual && (
+          <div className="px-2.5 py-1.5 rounded-lg bg-purple-50/60 border border-purple-200/80 dark:bg-purple-950/20 dark:border-purple-800/40 text-[11px] text-purple-900 dark:text-purple-300 flex items-center justify-between">
+            <span>⚡ Interactive transcript from imported Recall.it memory dialogue.</span>
+          </div>
+        )}
 
         {/* Search Bar */}
         <div className="relative">

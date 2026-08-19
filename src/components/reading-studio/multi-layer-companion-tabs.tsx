@@ -1,19 +1,42 @@
 "use client";
 
-import { useState, useId, type KeyboardEvent } from "react";
+import { useState, useId, useMemo, type KeyboardEvent } from "react";
 import Link from "next/link";
-import { Sparkles, Download, Pencil, Tag, Hash, MessageSquare, ArrowRight } from "lucide-react";
+import {
+  Sparkles,
+  Download,
+  Pencil,
+  Tag,
+  Hash,
+  MessageSquare,
+  ArrowRight,
+  Clock,
+  Pin,
+  Check,
+  ChevronDown,
+  ChevronRight,
+  ExternalLink,
+  BookOpen,
+} from "lucide-react";
 import { ManualNoteEditor } from "@/components/manual-note-editor";
 import type { ItemRow } from "@/db/client";
 import type { ItemTopicRow } from "@/db/topics";
 import type { TagRow } from "@/db/tags";
-import { useNoteEventListener } from "@/lib/reading-studio/note-event-bus";
+import {
+  useNoteEventListener,
+  dispatchAppendNoteText,
+} from "@/lib/reading-studio/note-event-bus";
+import {
+  parseRecallMemory,
+  type RecallParsedTakeaway,
+} from "@/lib/reading-studio/recall-parser";
 
 export interface MultiLayerCompanionTabsProps {
   item: ItemRow;
   topics: ItemTopicRow[];
   tags: TagRow[];
   parsedQuotes: string[];
+  onSeek?: (timestampMs: number) => void;
 }
 
 export function MultiLayerCompanionTabs({
@@ -21,15 +44,38 @@ export function MultiLayerCompanionTabs({
   topics,
   tags,
   parsedQuotes,
+  onSeek,
 }: MultiLayerCompanionTabsProps) {
   const isRecallImport = item.capture_source === "recall";
   const [activeTab, setActiveTab] = useState<"notes" | "ai" | "ask" | "recall">("notes");
+  const [pinnedTakeawayIds, setPinnedTakeawayIds] = useState<Set<string>>(new Set());
+  const [showRawRecall, setShowRawRecall] = useState(false);
   const id = useId();
+
+  // Parse Recall memory from body and summary
+  const recallMemory = useMemo(() => {
+    return parseRecallMemory(item.body, item.summary);
+  }, [item.body, item.summary]);
 
   // Listen for pinned quote events to auto-switch to Notes tab
   useNoteEventListener(item.id, () => {
     setActiveTab("notes");
   });
+
+  const handlePinTakeaway = (takeaway: RecallParsedTakeaway) => {
+    const formattedQuote = takeaway.timestampLabel && takeaway.timestampSeconds !== null
+      ? `> "${takeaway.text}" [${takeaway.timestampLabel}](?t=${takeaway.timestampSeconds})\n\n`
+      : `> "${takeaway.text}"\n\n`;
+
+    dispatchAppendNoteText({
+      itemId: item.id,
+      text: formattedQuote,
+      timestampMs: takeaway.timestampMs || undefined,
+    });
+
+    setPinnedTakeawayIds((prev) => new Set(prev).add(takeaway.id));
+    setActiveTab("notes");
+  };
 
   const notesTabId = `${id}-notes-tab`;
   const aiTabId = `${id}-ai-tab`;
@@ -146,7 +192,9 @@ export function MultiLayerCompanionTabs({
           >
             <Download className="h-3.5 w-3.5 text-purple-400" />
             <span className="truncate">Recall</span>
-            {isRecallImport && <span className="h-1.5 w-1.5 rounded-full bg-purple-400"></span>}
+            {(isRecallImport || recallMemory.isRecall) && (
+              <span className="h-1.5 w-1.5 rounded-full bg-purple-400"></span>
+            )}
           </button>
         </div>
       </div>
@@ -250,38 +298,168 @@ export function MultiLayerCompanionTabs({
           </div>
         </div>
 
-        {/* Tab 4: Recall Sync Memory */}
+        {/* Tab 4: Rich Recall Memory Intelligence Companion */}
         <div
           id={recallPanelId}
           role="tabpanel"
           aria-labelledby={recallTabId}
           className={activeTab === "recall" ? "space-y-4" : "hidden"}
         >
-          {isRecallImport ? (
-            <div className="p-4 rounded-xl bg-purple-50 border border-purple-200 text-xs space-y-3 dark:bg-purple-950/20 dark:border-purple-500/30">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2 text-purple-950 dark:text-purple-300 font-bold uppercase tracking-wider text-[11px]">
-                  <Download className="h-4 w-4 text-purple-600 dark:text-purple-400" />
-                  <span>Imported Recall.it Memory</span>
+          {isRecallImport || recallMemory.isRecall ? (
+            <div className="space-y-4 text-xs">
+              {/* Provenance Header Card */}
+              <div className="p-4 rounded-xl bg-purple-50 border border-purple-200 dark:bg-purple-950/20 dark:border-purple-800/40 space-y-3">
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <div className="flex items-center gap-2 text-purple-950 dark:text-purple-300 font-bold uppercase tracking-wider text-[11px]">
+                    <Download className="h-4 w-4 text-purple-600 dark:text-purple-400" />
+                    <span>Imported Recall.it Memory</span>
+                  </div>
+                  {recallMemory.cardId && (
+                    <span
+                      title={`Full Recall Card ID: ${recallMemory.cardId}`}
+                      className="font-mono text-[10px] px-2 py-0.5 rounded-full bg-purple-100 text-purple-800 border border-purple-300 dark:bg-purple-900/50 dark:text-purple-300 dark:border-purple-700"
+                    >
+                      Card #{recallMemory.cardId.slice(0, 8)}
+                    </span>
+                  )}
                 </div>
+
+                {/* Tags */}
+                {tags.length > 0 && (
+                  <div className="pt-2 border-t border-purple-200/60 dark:border-purple-900/40 space-y-1.5">
+                    <span className="text-[11px] font-bold text-purple-950 dark:text-purple-300">Tags</span>
+                    <div className="flex flex-wrap gap-1.5">
+                      {tags.map((t) => (
+                        <span
+                          key={t.id}
+                          className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-purple-100 text-purple-900 border border-purple-200 dark:bg-purple-900/40 dark:text-purple-300 dark:border-purple-800 text-[11px] font-medium"
+                        >
+                          <Tag className="h-2.5 w-2.5" />
+                          {t.name}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
 
-              {tags.length > 0 && (
-                <div className="space-y-1.5 pt-2 border-t border-purple-200 dark:border-purple-900/40">
-                  <span className="text-[11px] font-bold text-purple-950 dark:text-purple-300">Tags</span>
-                  <div className="flex flex-wrap gap-1.5">
-                    {tags.map((t) => (
-                      <span
-                        key={t.id}
-                        className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-purple-100 text-purple-900 border border-purple-200 dark:bg-purple-900/40 dark:text-purple-300 dark:border-purple-800 text-[11px] font-medium"
+              {/* Key Takeaways & Highlights List */}
+              {recallMemory.takeaways.length > 0 && (
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[11px] font-bold uppercase tracking-wider text-zinc-700 dark:text-zinc-300 flex items-center gap-1.5">
+                      <Sparkles className="h-3.5 w-3.5 text-purple-500" />
+                      <span>Key Takeaways & Highlights ({recallMemory.takeaways.length})</span>
+                    </span>
+                  </div>
+
+                  <div className="space-y-2">
+                    {recallMemory.takeaways.map((takeaway) => {
+                      const isPinned = pinnedTakeawayIds.has(takeaway.id);
+                      return (
+                        <div
+                          key={takeaway.id}
+                          className="group relative p-3 rounded-xl border border-zinc-200 bg-white/80 dark:border-zinc-800 dark:bg-zinc-900/80 shadow-2xs hover:border-purple-300 dark:hover:border-purple-700/60 transition-all"
+                        >
+                          <p className="text-zinc-800 dark:text-zinc-200 text-xs leading-relaxed pr-6">
+                            {takeaway.text}
+                          </p>
+
+                          <div className="mt-2 flex items-center justify-between gap-2 pt-1.5 border-t border-zinc-100 dark:border-zinc-800/60 text-[11px]">
+                            {takeaway.timestampLabel && takeaway.timestampMs !== null ? (
+                              <button
+                                type="button"
+                                onClick={() => onSeek?.(takeaway.timestampMs!)}
+                                className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full font-mono text-[10px] font-semibold bg-purple-100 text-purple-800 hover:bg-purple-200 dark:bg-purple-950/60 dark:text-purple-300 dark:border dark:border-purple-800/60 transition cursor-pointer"
+                                title={`Seek video to ${takeaway.timestampLabel}`}
+                              >
+                                <Clock className="h-2.5 w-2.5 text-purple-600 dark:text-purple-400" />
+                                <span>{takeaway.timestampLabel}</span>
+                              </button>
+                            ) : (
+                              <span className="text-zinc-400 text-[10px]">Recall Takeaway</span>
+                            )}
+
+                            <button
+                              type="button"
+                              onClick={() => handlePinTakeaway(takeaway)}
+                              className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-medium transition ${
+                                isPinned
+                                  ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-950/50 dark:text-emerald-300"
+                                  : "text-zinc-500 hover:text-purple-700 hover:bg-purple-50 dark:text-zinc-400 dark:hover:text-purple-300 dark:hover:bg-purple-950/40"
+                              }`}
+                              title="Pin this takeaway quote into your manual notes"
+                            >
+                              {isPinned ? (
+                                <>
+                                  <Check className="h-2.5 w-2.5 text-emerald-600" />
+                                  <span>Pinned</span>
+                                </>
+                              ) : (
+                                <>
+                                  <Pin className="h-2.5 w-2.5" />
+                                  <span>Pin to Notes</span>
+                                </>
+                              )}
+                            </button>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
+              {/* Chapter Navigator / Sections Table of Contents */}
+              {recallMemory.sections.length > 1 && (
+                <div className="space-y-2 pt-2">
+                  <span className="text-[11px] font-bold uppercase tracking-wider text-zinc-700 dark:text-zinc-300 flex items-center gap-1.5">
+                    <BookOpen className="h-3.5 w-3.5 text-purple-500" />
+                    <span>Video Chapters & Topics</span>
+                  </span>
+
+                  <div className="space-y-1.5">
+                    {recallMemory.sections.map((sec) => (
+                      <div
+                        key={sec.id}
+                        className="flex items-center justify-between p-2.5 rounded-lg border border-zinc-200 bg-white/60 dark:border-zinc-800 dark:bg-zinc-900/40 hover:bg-purple-50/50 dark:hover:bg-purple-950/30 transition"
                       >
-                        <Tag className="h-2.5 w-2.5" />
-                        {t.name}
-                      </span>
+                        <span className="text-xs font-semibold text-zinc-800 dark:text-zinc-200 truncate mr-2">
+                          {sec.title}
+                        </span>
+
+                        {sec.timestampLabel && sec.timestampMs !== null && (
+                          <button
+                            type="button"
+                            onClick={() => onSeek?.(sec.timestampMs!)}
+                            className="shrink-0 inline-flex items-center gap-1 px-2 py-0.5 rounded-full font-mono text-[10px] font-medium bg-purple-100 text-purple-800 hover:bg-purple-200 dark:bg-purple-950 dark:text-purple-300 transition cursor-pointer"
+                          >
+                            <span>⏱️ {sec.timestampLabel}</span>
+                          </button>
+                        )}
+                      </div>
                     ))}
                   </div>
                 </div>
               )}
+
+              {/* Collapsible Verbatim Card View */}
+              <div className="pt-2">
+                <button
+                  type="button"
+                  onClick={() => setShowRawRecall((prev) => !prev)}
+                  className="flex items-center gap-1 text-[11px] font-semibold text-zinc-500 hover:text-purple-600 dark:text-zinc-400 dark:hover:text-purple-300 transition"
+                >
+                  {showRawRecall ? <ChevronDown className="h-3.5 w-3.5" /> : <ChevronRight className="h-3.5 w-3.5" />}
+                  <span>{showRawRecall ? "Hide Raw Recall Content" : "View Full Raw Recall Body"}</span>
+                </button>
+
+                {showRawRecall && (
+                  <div className="mt-2 p-3 rounded-xl border border-zinc-200 bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-950 font-mono text-[11px] leading-relaxed text-zinc-700 dark:text-zinc-300 max-h-60 overflow-y-auto whitespace-pre-wrap">
+                    {item.body}
+                  </div>
+                )}
+              </div>
             </div>
           ) : (
             <div className="p-6 rounded-xl bg-[var(--surface)] border border-[var(--border)] text-center text-xs text-[var(--text-secondary)]">
