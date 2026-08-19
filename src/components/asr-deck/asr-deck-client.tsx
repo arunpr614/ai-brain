@@ -8,6 +8,58 @@ interface AsrDeckClientProps {
   initialData: AsrPipelineDashboardData;
 }
 
+function SweepBadge({
+  origin,
+  sweepBatchId,
+  sweepTimestamp,
+}: {
+  origin?: string;
+  sweepBatchId?: string | null;
+  sweepTimestamp?: number | null;
+}) {
+  if (origin !== "autonomous_sweep") return null;
+
+  const date = sweepTimestamp ? new Date(sweepTimestamp) : null;
+  const timeLabel = date
+    ? date.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", hour12: true })
+    : "Daily Sweep";
+
+  const fullDateLabel = date
+    ? date.toLocaleString("en-US", {
+        month: "short",
+        day: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+        hour12: true,
+      })
+    : "Scheduled Time";
+
+  return (
+    <span
+      className="group/sweep relative inline-flex items-center gap-1 rounded-full border border-purple-200 bg-purple-50 px-2 py-0.5 font-mono text-[10px] font-medium text-purple-700 dark:border-purple-800/60 dark:bg-purple-950/40 dark:text-purple-300 cursor-help"
+      title={`Autonomous Daily Sweep (${timeLabel}) • Batch: ${sweepBatchId || "auto"}`}
+    >
+      <span className="text-[10px]">⚡</span>
+      <span>{timeLabel} Sweep</span>
+
+      {/* Floating Popover Tooltip */}
+      <span className="pointer-events-none absolute bottom-full left-1/2 z-50 mb-2 hidden -translate-x-1/2 w-64 rounded-xl border border-zinc-700 bg-zinc-900/95 p-3 text-left font-sans text-xs text-zinc-200 shadow-2xl backdrop-blur-md group-hover/sweep:block dark:border-zinc-700 dark:bg-zinc-900/95">
+        <div className="flex items-center gap-1.5 font-bold text-purple-300">
+          <span>⚡</span>
+          <span>Autonomous Daily Sweep</span>
+        </div>
+        <div className="mt-1.5 space-y-1 text-[11px] text-zinc-400">
+          <div>• Batch: <span className="font-mono text-zinc-200">{sweepBatchId || "sweep_batch"}</span></div>
+          <div>• Scheduled Run: <span className="text-zinc-200">{timeLabel}</span></div>
+          <div>• Enqueued At: <span className="text-zinc-200">{fullDateLabel}</span></div>
+          <div>• Priority: <span className="text-emerald-400">P3 Background (15)</span></div>
+        </div>
+      </span>
+    </span>
+  );
+}
+
 export function AsrDeckClient({ initialData }: AsrDeckClientProps) {
   const [data, setData] = useState<AsrPipelineDashboardData>(initialData);
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -32,9 +84,10 @@ export function AsrDeckClient({ initialData }: AsrDeckClientProps) {
   }, []);
 
   useEffect(() => {
-    const interval = setInterval(refreshData, 4000);
+    const pollInterval = data.in_progress ? 2000 : 4000;
+    const interval = setInterval(refreshData, pollInterval);
     return () => clearInterval(interval);
-  }, [refreshData]);
+  }, [refreshData, data.in_progress]);
 
   const handleAction = async (action: "retry" | "ignore" | "prioritize" | "enqueue", itemId: string) => {
     try {
@@ -209,6 +262,11 @@ export function AsrDeckClient({ initialData }: AsrDeckClientProps) {
                       </Link>
                       <div className="mt-1 flex flex-wrap items-center gap-2 text-[11px] text-zinc-500 dark:text-zinc-400">
                         <span>Queued {formatTimestamp(job.created_at)}</span>
+                        <SweepBadge
+                          origin={job.origin}
+                          sweepBatchId={job.sweep_batch_id}
+                          sweepTimestamp={job.sweep_timestamp}
+                        />
                         {job.priority > 20 && (
                           <span className="rounded bg-rose-100 px-1.5 py-0.2 text-[10px] font-bold text-rose-800 dark:bg-rose-950/60 dark:text-rose-300">
                             P1 Priority
@@ -287,8 +345,15 @@ export function AsrDeckClient({ initialData }: AsrDeckClientProps) {
                 </div>
 
                 <div>
-                  <div className="text-[11px] font-semibold tracking-wider text-purple-600 uppercase dark:text-purple-400">
-                    Active MLX Worker Stream
+                  <div className="flex items-center justify-between">
+                    <span className="text-[11px] font-semibold tracking-wider text-purple-600 uppercase dark:text-purple-400">
+                      Active MLX Worker Stream
+                    </span>
+                    <SweepBadge
+                      origin={data.in_progress.origin}
+                      sweepBatchId={data.in_progress.sweep_batch_id}
+                      sweepTimestamp={data.in_progress.sweep_timestamp}
+                    />
                   </div>
                   <h3 className="mt-1 text-sm font-bold text-zinc-900 dark:text-zinc-100">
                     {data.in_progress.title}
@@ -371,6 +436,11 @@ export function AsrDeckClient({ initialData }: AsrDeckClientProps) {
                         <span>{job.word_count.toLocaleString()} words</span>
                         <span>•</span>
                         <span>{formatDuration(job.duration_seconds)} audio</span>
+                        <SweepBadge
+                          origin={job.origin}
+                          sweepBatchId={job.sweep_batch_id}
+                          sweepTimestamp={job.sweep_timestamp}
+                        />
                       </div>
                     </div>
 

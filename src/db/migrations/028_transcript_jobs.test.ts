@@ -29,13 +29,8 @@ test("027 to 028 alters transcript_jobs and creates worker_presence table", () =
   process.env.BRAIN_MIGRATIONS_DIR = ALL_MIGRATIONS_DIR;
   runMigrations(db);
 
-  assert.equal(
-    (
-      db.prepare("SELECT name FROM _migrations ORDER BY name DESC LIMIT 1").get() as {
-        name: string;
-      }
-    ).name,
-    "028_transcript_jobs.sql",
+  assert.ok(
+    db.prepare("SELECT name FROM _migrations WHERE name = '028_transcript_jobs.sql'").get(),
   );
 
   // Insert a test item first to satisfy foreign key

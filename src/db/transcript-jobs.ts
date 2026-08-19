@@ -43,6 +43,9 @@ export interface TranscriptJobRow {
   preferred_model?: string;
   worker_metadata?: string | null;
   worker_name?: string | null;
+  origin?: string;
+  sweep_batch_id?: string | null;
+  sweep_timestamp?: number | null;
   created_at: number;
   updated_at: number;
 }
@@ -1021,6 +1024,9 @@ export interface AsrPipelineDashboardData {
     claimed_at: number;
     elapsed_seconds: number;
     attempts: number;
+    origin?: string;
+    sweep_batch_id?: string | null;
+    sweep_timestamp?: number | null;
   } | null;
   backlog: Array<{
     job_id: number;
@@ -1036,6 +1042,9 @@ export interface AsrPipelineDashboardData {
     max_attempts: number;
     last_error_code: string | null;
     last_error_message: string | null;
+    origin?: string;
+    sweep_batch_id?: string | null;
+    sweep_timestamp?: number | null;
   }>;
   completed_history: Array<{
     job_id: number;
@@ -1050,6 +1059,9 @@ export interface AsrPipelineDashboardData {
     segment_count: number;
     word_count: number;
     duration_seconds: number;
+    origin?: string;
+    sweep_batch_id?: string | null;
+    sweep_timestamp?: number | null;
   }>;
   stats: {
     total_queued: number;
@@ -1075,7 +1087,10 @@ export function getAsrPipelineDashboardData(
            tj.priority,
            tj.preferred_model,
            tj.claimed_at,
-           tj.attempts
+           tj.attempts,
+           COALESCE(tj.origin, 'user_capture') AS origin,
+           tj.sweep_batch_id,
+           tj.sweep_timestamp
       FROM transcript_jobs tj
       JOIN items i ON i.id = tj.item_id
      WHERE tj.state = 'running'
@@ -1091,6 +1106,9 @@ export function getAsrPipelineDashboardData(
     preferred_model: string;
     claimed_at: number | null;
     attempts: number;
+    origin: string;
+    sweep_batch_id: string | null;
+    sweep_timestamp: number | null;
   } | undefined;
 
   const in_progress = inProgressRow && inProgressRow.claimed_at ? {
@@ -1104,6 +1122,9 @@ export function getAsrPipelineDashboardData(
     claimed_at: inProgressRow.claimed_at,
     elapsed_seconds: Math.max(0, Math.floor((now - inProgressRow.claimed_at) / 1000)),
     attempts: inProgressRow.attempts,
+    origin: inProgressRow.origin,
+    sweep_batch_id: inProgressRow.sweep_batch_id,
+    sweep_timestamp: inProgressRow.sweep_timestamp,
   } : null;
 
   // 2. Backlog
@@ -1120,7 +1141,10 @@ export function getAsrPipelineDashboardData(
            tj.attempts,
            tj.max_attempts,
            tj.last_error_code,
-           tj.last_error_message
+           tj.last_error_message,
+           COALESCE(tj.origin, 'user_capture') AS origin,
+           tj.sweep_batch_id,
+           tj.sweep_timestamp
       FROM transcript_jobs tj
       JOIN items i ON i.id = tj.item_id
      WHERE tj.state IN ('pending', 'retryable_error', 'manual_needed')
@@ -1139,6 +1163,9 @@ export function getAsrPipelineDashboardData(
            tj.last_provider,
            tj.worker_name,
            tj.preferred_model,
+           COALESCE(tj.origin, 'user_capture') AS origin,
+           tj.sweep_batch_id,
+           tj.sweep_timestamp,
            COALESCE(i.duration_seconds, 0) AS duration_seconds,
            (SELECT COUNT(*) FROM transcript_segments ts WHERE ts.item_id = tj.item_id) AS segment_count,
            COALESCE((SELECT SUM(LENGTH(ts.text) - LENGTH(REPLACE(ts.text, ' ', '')) + 1) FROM transcript_segments ts WHERE ts.item_id = tj.item_id), 0) AS word_count
@@ -1176,5 +1203,102 @@ export function getAsrPipelineDashboardData(
       total_completed_all_time: statsRow?.total_completed_all_time ?? 0,
     },
   };
+}
+
+/**
+ * Enqueues a capped batch of un-transcribed historical YouTube items for autonomous daily ASR sweeps.
+ */
+export function enqueueAsrRefinementSweep(options?: {
+  limit?: number;
+  batchId?: string;
+  now?: number;
+  itemIds?: string[];
+}): { enqueuedCount: number; batchId: string; itemIds: string[] } {
+  const db = getDb();
+  const now = options?.now ?? Date.now();
+  const limit = options?.limit ?? 15;
+  const dateStr = new Date(now).toISOString().replace(/[-:T]/g, "").slice(0, 12);
+  const batchId = options?.batchId ?? `sweep_${dateStr}`;
+
+  let candidates: Array<{ id: string; source_platform: string; source_url: string | null }>;
+  if (options?.itemIds && options.itemIds.length > 0) {
+    const placeholders = options.itemIds.map(() => "?").join(",");
+    candidates = db.prepare(`
+      SELECT i.id,
+             COALESCE(i.source_platform, i.source_type) AS source_platform,
+             i.source_url
+        FROM items i
+       WHERE i.id IN (${placeholders})
+       ORDER BY i.captured_at ASC
+       LIMIT ?
+    `).all(...options.itemIds, limit) as Array<{ id: string; source_platform: string; source_url: string | null }>;
+  } else {
+    candidates = db.prepare(`
+      SELECT i.id,
+             COALESCE(i.source_platform, i.source_type) AS source_platform,
+             i.source_url
+        FROM items i
+        LEFT JOIN transcript_jobs tj ON tj.item_id = i.id
+       WHERE (i.source_platform IN ('youtube', 'youtube_short') OR i.source_type = 'youtube')
+         AND (i.capture_quality = 'metadata_only' OR i.extraction_warning IS NOT NULL)
+         AND (
+           tj.id IS NULL
+           OR (tj.state IN ('pending', 'retryable_error') AND tj.attempts < tj.max_attempts)
+         )
+         AND NOT EXISTS (
+           SELECT 1 FROM transcript_sources ts WHERE ts.item_id = i.id AND ts.source_kind = 'owned_media_stt'
+         )
+       ORDER BY i.captured_at ASC
+       LIMIT ?
+    `).all(limit) as Array<{ id: string; source_platform: string; source_url: string | null }>;
+  }
+
+  if (candidates.length === 0) {
+    return { enqueuedCount: 0, batchId, itemIds: [] };
+  }
+
+  const enqueuedIds: string[] = [];
+  const tx = db.transaction(() => {
+    for (const c of candidates) {
+      const videoId = c.source_url ? extractVideoId(c.source_url) : null;
+      db.prepare(`
+        INSERT INTO transcript_jobs (
+          item_id,
+          source_platform,
+          video_id,
+          state,
+          priority,
+          origin,
+          sweep_batch_id,
+          sweep_timestamp,
+          next_run_at,
+          created_at,
+          updated_at
+        ) VALUES (?, ?, ?, 'pending', 15, 'autonomous_sweep', ?, ?, ?, ?, ?)
+        ON CONFLICT(item_id) DO UPDATE SET
+          state = 'pending',
+          priority = MAX(transcript_jobs.priority, 15),
+          origin = 'autonomous_sweep',
+          sweep_batch_id = excluded.sweep_batch_id,
+          sweep_timestamp = excluded.sweep_timestamp,
+          next_run_at = excluded.next_run_at,
+          updated_at = excluded.updated_at
+        WHERE transcript_jobs.state != 'done'
+      `).run(
+        c.id,
+        c.source_platform || "youtube",
+        videoId,
+        batchId,
+        now,
+        now,
+        now,
+        now,
+      );
+      enqueuedIds.push(c.id);
+    }
+  });
+
+  tx();
+  return { enqueuedCount: enqueuedIds.length, batchId, itemIds: enqueuedIds };
 }
 
