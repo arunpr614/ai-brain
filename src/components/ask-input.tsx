@@ -8,11 +8,12 @@ interface AskInputProps {
   onStop: () => void;
   busy: boolean;
   autoFocus?: boolean;
+  initialValue?: string;
 }
 
-export function AskInput({ onSubmit, onStop, busy, autoFocus }: AskInputProps) {
+export function AskInput({ onSubmit, onStop, busy, autoFocus, initialValue = "" }: AskInputProps) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
-  const [value, setValue] = useState("");
+  const [value, setValue] = useState(initialValue);
 
   // Android WebView + IME keyboards (GBoard predictive / gesture typing) can
   // swallow React's synthetic onChange events. Read the live DOM value on

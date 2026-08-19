@@ -604,16 +604,27 @@ export function completeTranscriptJobWithWorker(
       );
     }
 
-    // 6. Dual-representation: Update item body & high quality flag
+    // 6. Dual-representation: Update item body, high quality flag & auto-enqueue enrichment (Phase 8 / #120)
     db.prepare(
       `UPDATE items
           SET body = ?,
               capture_quality = 'high',
               extraction_warning = NULL,
-              enriched_at = ?,
-              enrichment_state = 'done'
+              enrichment_state = 'pending'
         WHERE id = ?`,
-    ).run(input.fullText, now, input.itemId);
+    ).run(input.fullText, input.itemId);
+
+    // 7. Auto-enqueue into enrichment_jobs for cognitive synthesis
+    db.prepare(
+      `INSERT INTO enrichment_jobs (item_id, state, attempts, created_at)
+       VALUES (?, 'pending', 0, ?)
+       ON CONFLICT(item_id) DO UPDATE SET
+         state = 'pending',
+         claimed_at = NULL,
+         completed_at = NULL,
+         last_error = NULL,
+         attempts = 0`,
+    ).run(input.itemId, now);
 
     return { ok: true, transcriptSourceId: source.id };
   });

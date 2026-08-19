@@ -43,6 +43,20 @@ test("factory: honors LLM_ENRICH_PROVIDER=anthropic", () => {
   });
 });
 
+test("factory: honors LLM_ENRICH_PROVIDER=gemini", () => {
+  withEnv({ LLM_ENRICH_PROVIDER: "gemini", GEMINI_API_KEY: "gm-test" }, () => {
+    const p = getEnrichProvider();
+    assert.equal(p.constructor.name, "GeminiProvider");
+  });
+});
+
+test("factory: honors LLM_ENRICH_PROVIDER=fallback", () => {
+  withEnv({ LLM_ENRICH_PROVIDER: "fallback" }, () => {
+    const p = getEnrichProvider();
+    assert.equal(p.constructor.name, "FallbackLLMProvider");
+  });
+});
+
 test("factory: honors LLM_ASK_PROVIDER=openrouter", () => {
   withEnv({ LLM_ASK_PROVIDER: "openrouter", OPENROUTER_API_KEY: "or-test" }, () => {
     assert.ok(getAskProvider() instanceof OpenRouterProvider);

@@ -1043,21 +1043,30 @@ function MobileDigestTab({
 }) {
   if (!hasDigest) return <DigestPlaceholder state={item.enrichment_state} />;
   return (
-    <section className="flex flex-col gap-6 rounded-lg border border-[var(--border)] bg-[var(--surface)] p-5 font-sans text-sm">
-      {item.category && (
-        <div>
-          <p className="mb-1 text-[11px] font-medium uppercase tracking-wider text-[var(--text-muted)]">
-            Category
-          </p>
-          <span className="inline-flex rounded-full bg-[var(--control-selected-bg)] px-2.5 py-0.5 text-xs font-medium text-[var(--control-selected-fg)]">
-            {item.category}
+    <section className="flex flex-col gap-6 rounded-xl border border-[var(--border)] bg-[var(--surface)] p-5 font-sans text-sm shadow-xs">
+      <div className="flex items-center justify-between border-b border-[var(--border)] pb-3">
+        <div className="flex items-center gap-2">
+          <span className="text-xs font-bold text-indigo-600 dark:text-indigo-400 uppercase tracking-wider">
+            ✨ AI Digest
           </span>
+          {item.category && (
+            <span className="inline-flex rounded-full bg-indigo-100 dark:bg-indigo-950/60 border border-indigo-200 dark:border-indigo-800/60 px-2 py-0.5 text-xs font-semibold text-indigo-900 dark:text-indigo-300">
+              {item.category}
+            </span>
+          )}
         </div>
-      )}
+
+        <Link
+          href={`/library/${item.id}/read`}
+          className="text-xs font-semibold text-indigo-600 dark:text-indigo-400 hover:underline"
+        >
+          Studio ↗
+        </Link>
+      </div>
 
       {item.summary && (
-        <div>
-          <p className="mb-1.5 text-[11px] font-medium uppercase tracking-wider text-[var(--text-muted)]">
+        <div className="space-y-1.5">
+          <p className="text-[11px] font-bold uppercase tracking-wider text-[var(--text-muted)]">
             Summary
           </p>
           <div className="whitespace-pre-wrap leading-relaxed text-[var(--text-primary)]">
@@ -1067,25 +1076,25 @@ function MobileDigestTab({
       )}
 
       {quotes.length > 0 && (
-        <div>
-          <p className="mb-1.5 text-[11px] font-medium uppercase tracking-wider text-[var(--text-muted)]">
+        <div className="space-y-2">
+          <p className="text-[11px] font-bold uppercase tracking-wider text-[var(--text-muted)]">
             Key quotes
           </p>
-          <ul className="flex flex-col gap-2">
+          <div className="flex flex-col gap-2.5">
             {quotes.map((q, i) => (
-              <li
+              <blockquote
                 key={i}
-                className="border-l-2 border-[var(--action-primary-focus)] pl-3 italic text-[var(--text-secondary)]"
+                className="rounded-lg border-l-2 border-indigo-400 bg-[var(--surface-raised)] p-3 italic text-xs leading-relaxed text-[var(--text-secondary)]"
               >
                 &ldquo;{q}&rdquo;
-              </li>
+              </blockquote>
             ))}
-          </ul>
+          </div>
         </div>
       )}
 
       <p className="text-[11px] text-[var(--text-muted)]">
-        AI-generated summary.
+        AI-generated summary and semantic extraction.
       </p>
     </section>
   );
@@ -1890,45 +1899,75 @@ function DesktopDigestPanel({
 }) {
   if (!hasDigest) return <DigestPlaceholder state={item.enrichment_state} />;
   return (
-    <div className="flex flex-col gap-6 rounded-lg border border-[var(--border)] bg-[var(--surface)] p-5">
-      {item.category && (
-        <div>
-          <p className="mb-1 text-[11px] font-medium uppercase tracking-wider text-[var(--text-muted)]">
-            Category
-          </p>
-          <span className="inline-flex rounded-full bg-[var(--control-selected-bg)] px-2.5 py-0.5 text-xs font-medium text-[var(--control-selected-fg)]">
-            {item.category}
+    <div className="flex flex-col gap-6 rounded-xl border border-[var(--border)] bg-[var(--surface)] p-6 shadow-xs">
+      <div className="flex items-center justify-between border-b border-[var(--border)] pb-3">
+        <div className="flex items-center gap-2">
+          <span className="text-xs font-bold text-indigo-600 dark:text-indigo-400 uppercase tracking-wider">
+            ✨ Cognitive AI Digest
           </span>
+          {item.category && (
+            <span className="inline-flex rounded-full bg-indigo-100 dark:bg-indigo-950/60 border border-indigo-200 dark:border-indigo-800/60 px-2.5 py-0.5 text-xs font-semibold text-indigo-900 dark:text-indigo-300">
+              {item.category}
+            </span>
+          )}
         </div>
-      )}
+
+        <Link
+          href={`/library/${item.id}/read`}
+          className="inline-flex items-center gap-1.5 rounded-lg border border-[var(--border)] bg-[var(--surface-raised)] px-2.5 py-1 text-xs font-semibold text-[var(--text-primary)] hover:bg-[var(--surface-hover)] transition"
+        >
+          <span>Open in Reading Studio</span>
+          <span>↗</span>
+        </Link>
+      </div>
+
       {item.summary && (
-        <div>
-          <p className="mb-1.5 text-[11px] font-medium uppercase tracking-wider text-[var(--text-muted)]">
-            Summary
-          </p>
-          <div className="whitespace-pre-wrap leading-relaxed text-[var(--text-primary)]">
+        <div className="space-y-2">
+          <div className="flex items-center justify-between">
+            <p className="text-[11px] font-bold uppercase tracking-wider text-[var(--text-muted)]">
+              Executive Summary
+            </p>
+            <Link
+              href={`/items/${item.id}/ask?q=${encodeURIComponent(`Elaborate on the key takeaways from this summary: "${item.summary.slice(0, 150)}..."`)}`}
+              className="text-[11px] font-semibold text-indigo-600 dark:text-indigo-400 hover:underline"
+            >
+              Ask AI to Elaborate →
+            </Link>
+          </div>
+          <div className="whitespace-pre-wrap leading-relaxed text-[var(--text-primary)] text-sm">
             {item.summary}
           </div>
         </div>
       )}
+
       {quotes.length > 0 && (
-        <div>
-          <p className="mb-1.5 text-[11px] font-medium uppercase tracking-wider text-[var(--text-muted)]">
-            Key quotes
+        <div className="space-y-3">
+          <p className="text-[11px] font-bold uppercase tracking-wider text-[var(--text-muted)]">
+            Key Quotes & Citations
           </p>
-          <ul className="flex flex-col gap-2">
+          <div className="flex flex-col gap-3">
             {quotes.map((quote, index) => (
-              <li
+              <div
                 key={index}
-                className="border-l-2 border-[var(--action-primary-focus)] pl-3 italic text-[var(--text-secondary)]"
+                className="group rounded-xl border border-[var(--border)] bg-[var(--surface-raised)] p-3.5 transition hover:border-indigo-400/40"
               >
-                &ldquo;{quote}&rdquo;
-              </li>
+                <blockquote className="border-l-2 border-indigo-400 pl-3 italic text-xs leading-relaxed text-[var(--text-secondary)]">
+                  &ldquo;{quote}&rdquo;
+                </blockquote>
+                <div className="mt-2 flex items-center justify-end gap-2 border-t border-[var(--border)] pt-1.5">
+                  <Link
+                    href={`/items/${item.id}/ask?q=${encodeURIComponent(`Explain this quote in the context of this document: "${quote}"`)}`}
+                    className="text-[10px] font-semibold text-indigo-600 dark:text-indigo-400 hover:underline"
+                  >
+                    Elaborate with Ask AI →
+                  </Link>
+                </div>
+              </div>
             ))}
-          </ul>
+          </div>
         </div>
       )}
-      <p className="text-[11px] text-[var(--text-muted)]">AI-generated summary.</p>
+      <p className="text-[11px] text-[var(--text-muted)]">AI-generated summary and semantic extraction.</p>
     </div>
   );
 }

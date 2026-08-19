@@ -53,6 +53,7 @@ export interface AskClientProps {
   threadId?: string;
   initialMessages?: AskInitialMessage[];
   historyThreads?: AskHistoryThread[];
+  initialQuestion?: string;
 }
 
 export function AskClient(props: AskClientProps = {}) {
@@ -77,6 +78,7 @@ function AskClientInner({
   threadId,
   initialMessages = EMPTY_INITIAL_MESSAGES,
   historyThreads = [],
+  initialQuestion,
 }: AskClientProps = {}) {
   const stream = useAskStream();
   const [turns, setTurns] = useState<Turn[]>(() => messagesToTurns(initialMessages));
@@ -207,6 +209,7 @@ function AskClientInner({
           onStop={stream.stop}
           busy={busy}
           autoFocus
+          initialValue={initialQuestion}
         />
       </section>
     </div>

@@ -188,6 +188,7 @@ export function ReadingStudioApp({
       topics={topics}
       tags={tags}
       parsedQuotes={parsedQuotes}
+      segments={activeSegments}
       onSeek={handleSeek}
     />
   );

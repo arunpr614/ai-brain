@@ -332,12 +332,15 @@ describe("transcript recovery jobs & worker queue", () => {
 
     assert.equal(result.ok, true);
 
-    // 1. Verify item updated
+    // 1. Verify item updated and auto-enqueued for AI enrichment (Phase 8 / #120)
     const updatedItem = getItem(item.id);
     assert.equal(updatedItem?.body, fullTranscript);
     assert.equal(updatedItem?.capture_quality, "high");
     assert.equal(updatedItem?.extraction_warning, null);
-    assert.equal(updatedItem?.enrichment_state, "done");
+    assert.equal(updatedItem?.enrichment_state, "pending");
+
+    const enrichmentJob = getDb().prepare("SELECT * FROM enrichment_jobs WHERE item_id = ?").get(item.id) as { state: string } | undefined;
+    assert.equal(enrichmentJob?.state, "pending");
 
     // 2. Verify transcript_sources updated
     const activeSource = getActiveTranscriptSourceForItem(item.id);

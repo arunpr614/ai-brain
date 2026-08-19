@@ -21,13 +21,16 @@ export default async function ItemAskPage({
   searchParams,
 }: {
   params: Promise<{ id: string }>;
-  searchParams: Promise<{ thread?: string }>;
+  searchParams: Promise<{ thread?: string; q?: string }>;
 }) {
   const { id } = await params;
-  const { thread } = await searchParams;
+  const { thread, q } = await searchParams;
   const c = await cookies();
   if (!verifySessionCookie(c)) {
-    const query = thread ? `?thread=${encodeURIComponent(thread)}` : "";
+    const paramsList: string[] = [];
+    if (thread) paramsList.push(`thread=${encodeURIComponent(thread)}`);
+    if (q) paramsList.push(`q=${encodeURIComponent(q)}`);
+    const query = paramsList.length > 0 ? `?${paramsList.join("&")}` : "";
     redirect(`/unlock?next=${encodeURIComponent(`/items/${id}/ask${query}`)}`);
   }
 
@@ -61,6 +64,7 @@ export default async function ItemAskPage({
         threadId={restoredThread?.thread.id}
         initialMessages={restoredThread?.messages}
         historyThreads={listItemAskHistory(item.id, restoredThread?.thread.id)}
+        initialQuestion={q}
       />
     </div>
   );

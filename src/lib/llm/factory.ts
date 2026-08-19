@@ -1,38 +1,26 @@
-// src/lib/llm/factory.ts — env-driven provider selection (v0.6.0 B-7).
-//
-// Two call paths through the codebase: enrichment (one-shot JSON, optional
-// batch) and Ask (streaming SSE). Each picks its provider independently so
-// you can run, e.g., Anthropic-batch enrichment + OpenRouter Ask without
-// code change.
-//
-// Env contract (locked v0.6.0):
-//   LLM_ENRICH_PROVIDER   ollama | anthropic | openrouter   (default: ollama)
-//   LLM_ENRICH_MODEL      override default per provider
-//   LLM_ASK_PROVIDER      ollama | anthropic | openrouter   (default: ollama)
-//   LLM_ASK_MODEL         override default per provider
-//
-// Defaults are `ollama` to preserve current behavior; v0.6.0 cutover flips
-// to `anthropic` via .env.local on Hetzner. Unknown provider names throw on
-// first resolution so a typo in production fails loudly at boot, not on
-// the first request.
-//
-// Memoization: providers are cached per-process. Tests that mutate
-// LLM_*_PROVIDER between cases must call resetProviderCache() — never
-// mutate the env mid-conversation in production code.
+// src/lib/llm/factory.ts — env-driven provider selection (v0.6.0 B-7, Phase 8 / Issue #121).
 
 import { AnthropicProvider } from "./anthropic";
 import { LLMError } from "./errors";
+import { FallbackLLMProvider } from "./fallback";
+import { GeminiProvider } from "./gemini";
 import { OllamaProvider } from "./ollama";
 import { OpenRouterProvider } from "./openrouter";
 import type { LLMProvider } from "./types";
 
-export type ProviderName = "ollama" | "anthropic" | "openrouter";
+export type ProviderName = "ollama" | "anthropic" | "openrouter" | "gemini" | "auto" | "fallback";
 
-const KNOWN_PROVIDERS = new Set<ProviderName>(["ollama", "anthropic", "openrouter"]);
+const KNOWN_PROVIDERS = new Set<ProviderName>([
+  "ollama",
+  "anthropic",
+  "openrouter",
+  "gemini",
+  "auto",
+  "fallback",
+]);
 
 interface CacheSlot {
   provider: LLMProvider | null;
-  /** The (provider, model) pair the cached instance was built with. */
   key: string | null;
 }
 
@@ -61,8 +49,27 @@ function buildProvider(name: ProviderName, model: string | undefined): LLMProvid
       return new OllamaProvider({ model });
     case "anthropic":
       return new AnthropicProvider({ model });
+    case "gemini":
+      return new GeminiProvider({ model });
     case "openrouter":
       return new OpenRouterProvider({ model });
+    case "auto":
+    case "fallback": {
+      const providers: Array<{ name: string; provider: LLMProvider }> = [];
+      if (process.env.ANTHROPIC_API_KEY) {
+        providers.push({ name: "anthropic", provider: new AnthropicProvider({ model }) });
+      }
+      if (process.env.GEMINI_API_KEY) {
+        providers.push({ name: "gemini", provider: new GeminiProvider({ model }) });
+      }
+      if (process.env.OPENROUTER_API_KEY) {
+        providers.push({ name: "openrouter", provider: new OpenRouterProvider({ model }) });
+      }
+      // Always include local Ollama as final fallback
+      providers.push({ name: "ollama", provider: new OllamaProvider({ model }) });
+
+      return new FallbackLLMProvider({ providers });
+    }
   }
 }
 
@@ -76,28 +83,14 @@ function resolveSlot(slot: CacheSlot, providerEnv: string, modelEnv: string): LL
   return slot.provider;
 }
 
-/**
- * Returns the provider used by the enrichment path. Honors
- * LLM_ENRICH_PROVIDER + LLM_ENRICH_MODEL. Memoized per (provider, model)
- * tuple so repeated calls in the same process don't re-instantiate.
- */
 export function getEnrichProvider(): LLMProvider {
   return resolveSlot(enrichSlot, "LLM_ENRICH_PROVIDER", "LLM_ENRICH_MODEL");
 }
 
-/**
- * Returns the provider used by the Ask path. Honors LLM_ASK_PROVIDER +
- * LLM_ASK_MODEL.
- */
 export function getAskProvider(): LLMProvider {
   return resolveSlot(askSlot, "LLM_ASK_PROVIDER", "LLM_ASK_MODEL");
 }
 
-/**
- * Test-only: clear the memoized providers so a subsequent get*() call
- * picks up updated env vars. Production code never calls this — provider
- * choice is process-lifetime and only changes via restart.
- */
 export function resetProviderCache(): void {
   enrichSlot.provider = null;
   enrichSlot.key = null;

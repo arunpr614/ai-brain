@@ -17,6 +17,7 @@ import {
   ChevronRight,
   ExternalLink,
   BookOpen,
+  Quote,
 } from "lucide-react";
 import { ManualNoteEditor } from "@/components/manual-note-editor";
 import type { ItemRow } from "@/db/client";
@@ -30,12 +31,17 @@ import {
   parseRecallMemory,
   type RecallParsedTakeaway,
 } from "@/lib/reading-studio/recall-parser";
+import {
+  matchQuoteToTranscript,
+  type TimestampedSegment,
+} from "@/lib/reading-studio/quote-matcher";
 
 export interface MultiLayerCompanionTabsProps {
   item: ItemRow;
   topics: ItemTopicRow[];
   tags: TagRow[];
   parsedQuotes: string[];
+  segments?: TimestampedSegment[];
   onSeek?: (timestampMs: number) => void;
 }
 
@@ -44,18 +50,27 @@ export function MultiLayerCompanionTabs({
   topics,
   tags,
   parsedQuotes,
+  segments = [],
   onSeek,
 }: MultiLayerCompanionTabsProps) {
   const isRecallImport = item.capture_source === "recall";
   const [activeTab, setActiveTab] = useState<"notes" | "ai" | "ask" | "recall">("notes");
   const [pinnedTakeawayIds, setPinnedTakeawayIds] = useState<Set<string>>(new Set());
+  const [pinnedQuoteIndices, setPinnedQuoteIndices] = useState<Set<number>>(new Set());
+  const [pinnedSummary, setPinnedSummary] = useState(false);
   const [showRawRecall, setShowRawRecall] = useState(false);
+  const [contextualAskQuery, setContextualAskQuery] = useState("");
   const id = useId();
 
   // Parse Recall memory from body and summary
   const recallMemory = useMemo(() => {
     return parseRecallMemory(item.body, item.summary);
   }, [item.body, item.summary]);
+
+  // Pre-calculate timestamp matches for all quotes
+  const quoteMatches = useMemo(() => {
+    return parsedQuotes.map((q) => matchQuoteToTranscript(q, segments));
+  }, [parsedQuotes, segments]);
 
   const handleAppendEvent = useCallback(() => {
     setActiveTab("notes");
@@ -78,6 +93,38 @@ export function MultiLayerCompanionTabs({
     setPinnedTakeawayIds((prev) => new Set(prev).add(takeaway.id));
     setActiveTab("notes");
   }, [item.id]);
+
+  const handlePinQuote = useCallback((quote: string, index: number, timestampLabel?: string | null, timestampMs?: number | null) => {
+    const citation = timestampLabel
+      ? `> "${quote.trim()}"\n> — *[${item.title || "Source"} (${timestampLabel})](?t=${Math.floor((timestampMs || 0) / 1000)})*\n\n`
+      : `> "${quote.trim()}"\n> — *${item.title || "Source"}*\n\n`;
+
+    dispatchAppendNoteText({
+      itemId: item.id,
+      text: citation,
+      timestampMs: timestampMs || undefined,
+    });
+
+    setPinnedQuoteIndices((prev) => new Set(prev).add(index));
+    setActiveTab("notes");
+  }, [item.id, item.title]);
+
+  const handlePinSummary = useCallback(() => {
+    if (!item.summary) return;
+    const formatted = `### Summary Takeaway\n\n${item.summary.trim()}\n\n> — *${item.title || "Source"}*\n\n`;
+    dispatchAppendNoteText({
+      itemId: item.id,
+      text: formatted,
+    });
+    setPinnedSummary(true);
+    setActiveTab("notes");
+  }, [item.id, item.summary, item.title]);
+
+  const handleElaborate = useCallback((queryContext: string) => {
+    const prefill = `Explain in detail and provide key context from this item on: "${queryContext}"`;
+    setContextualAskQuery(prefill);
+    setActiveTab("ask");
+  }, []);
 
   const notesTabId = `${id}-notes-tab`;
   const aiTabId = `${id}-ai-tab`;
@@ -222,9 +269,32 @@ export function MultiLayerCompanionTabs({
         >
           {item.summary ? (
             <div className="p-4 rounded-xl bg-indigo-950/20 border border-indigo-500/30 text-xs space-y-3">
-              <div className="flex items-center gap-2 text-indigo-300 font-semibold uppercase tracking-wider text-[11px]">
-                <Sparkles className="h-4 w-4" />
-                <span>Executive Summary</span>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2 text-indigo-300 font-semibold uppercase tracking-wider text-[11px]">
+                  <Sparkles className="h-4 w-4" />
+                  <span>Executive Summary</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <button
+                    type="button"
+                    onClick={handlePinSummary}
+                    disabled={pinnedSummary}
+                    title="Pin Summary to Notes"
+                    className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-semibold bg-indigo-950/40 border border-indigo-700/60 text-indigo-200 hover:bg-indigo-900/60 transition cursor-pointer"
+                  >
+                    {pinnedSummary ? <Check className="h-3 w-3 text-emerald-400" /> : <Pin className="h-3 w-3" />}
+                    <span>{pinnedSummary ? "Pinned" : "Pin to Notes"}</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleElaborate(item.summary || "")}
+                    title="Ask AI to elaborate on summary"
+                    className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-semibold bg-indigo-950/40 border border-indigo-700/60 text-indigo-200 hover:bg-indigo-900/60 transition cursor-pointer"
+                  >
+                    <MessageSquare className="h-3 w-3" />
+                    <span>Elaborate</span>
+                  </button>
+                </div>
               </div>
               <p className="leading-relaxed text-[var(--text-primary)] text-sm whitespace-pre-line">{item.summary}</p>
             </div>
@@ -243,33 +313,88 @@ export function MultiLayerCompanionTabs({
               </span>
               <div className="flex flex-wrap gap-1.5">
                 {topics.map((t) => (
-                  <span
+                  <button
                     key={t.id}
-                    className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-indigo-950/40 border border-indigo-800/60 text-indigo-300 text-xs font-mono"
+                    type="button"
+                    onClick={() => handleElaborate(t.name)}
+                    title={`Ask AI to explain concept: ${t.name}`}
+                    className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-indigo-950/40 border border-indigo-800/60 text-indigo-300 text-xs font-mono hover:bg-indigo-900/60 hover:text-indigo-200 transition cursor-pointer"
                   >
                     <Hash className="h-3 w-3" />
-                    {t.name}
-                  </span>
+                    <span>{t.name}</span>
+                    <span className="text-[10px] opacity-60">↗</span>
+                  </button>
                 ))}
               </div>
             </div>
           )}
 
-          {/* Extracted Quotes */}
+          {/* Extracted Quotes with Time Navigation & Actions */}
           {parsedQuotes.length > 0 && (
             <div className="space-y-2">
               <span className="text-[11px] font-semibold uppercase tracking-wider text-[var(--text-secondary)]">
-                Key Quotes
+                Key Quotes & Citations
               </span>
-              <div className="space-y-2">
-                {parsedQuotes.map((q, idx) => (
-                  <blockquote
-                    key={idx}
-                    className="p-3 rounded-lg bg-[var(--surface)] border-l-2 border-indigo-400 text-xs text-[var(--text-secondary)] italic"
-                  >
-                    &ldquo;{q}&rdquo;
-                  </blockquote>
-                ))}
+              <div className="space-y-3">
+                {parsedQuotes.map((quote, idx) => {
+                  const match = quoteMatches[idx];
+                  const isPinned = pinnedQuoteIndices.has(idx);
+
+                  return (
+                    <div
+                      key={idx}
+                      className="group/quote rounded-xl border border-indigo-500/20 bg-[var(--surface)] p-3.5 shadow-xs transition hover:border-indigo-400/50"
+                    >
+                      <blockquote className="border-l-2 border-indigo-400 pl-3 text-xs italic leading-relaxed text-[var(--text-primary)]">
+                        &ldquo;{quote}&rdquo;
+                      </blockquote>
+
+                      <div className="mt-2.5 flex flex-wrap items-center justify-between gap-2 border-t border-[var(--border)] pt-2 text-[11px]">
+                        {/* Time Jump Pill */}
+                        {match && (
+                          <button
+                            type="button"
+                            onClick={() => onSeek?.(match.startMs)}
+                            title={`Jump video player to ${match.timestampLabel}`}
+                            className="inline-flex items-center gap-1 rounded-full bg-indigo-100 px-2 py-0.5 font-mono text-[10px] font-semibold text-indigo-800 hover:bg-indigo-200 dark:bg-indigo-950 dark:text-indigo-300 transition cursor-pointer"
+                          >
+                            <Clock className="h-2.5 w-2.5" />
+                            <span>⏱️ {match.timestampLabel}</span>
+                          </button>
+                        )}
+
+                        <div className="flex items-center gap-1.5 ml-auto">
+                          {/* Pin to Notes Button */}
+                          <button
+                            type="button"
+                            onClick={() => handlePinQuote(quote, idx, match?.timestampLabel, match?.startMs)}
+                            disabled={isPinned}
+                            title="Pin this quote to active notes"
+                            className={`inline-flex items-center gap-1 rounded-md px-2 py-0.5 text-[10px] font-semibold transition cursor-pointer ${
+                              isPinned
+                                ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300"
+                                : "bg-[var(--surface-raised)] border border-[var(--border)] text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
+                            }`}
+                          >
+                            {isPinned ? <Check className="h-3 w-3 text-emerald-500" /> : <Pin className="h-3 w-3" />}
+                            <span>{isPinned ? "Pinned" : "Pin"}</span>
+                          </button>
+
+                          {/* Ask AI to Elaborate */}
+                          <button
+                            type="button"
+                            onClick={() => handleElaborate(quote)}
+                            title="Ask AI to elaborate on this quote"
+                            className="inline-flex items-center gap-1 rounded-md px-2 py-0.5 text-[10px] font-semibold bg-[var(--surface-raised)] border border-[var(--border)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:border-indigo-500/50 transition cursor-pointer"
+                          >
+                            <Sparkles className="h-3 w-3 text-indigo-400" />
+                            <span>Elaborate</span>
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
             </div>
           )}
@@ -288,13 +413,23 @@ export function MultiLayerCompanionTabs({
               <span>Contextual Item Q&A</span>
             </div>
             <p className="text-[var(--text-secondary)] leading-relaxed">
-              Ask targeted questions about &ldquo;{item.title}&rdquo;. Responses are strictly grounded in this item&apos;s transcript and document chunks.
+              Ask targeted questions about &ldquo;{item.title}&rdquo;. Responses are grounded strictly in this item&apos;s transcript and document chunks.
             </p>
+
+            {contextualAskQuery && (
+              <div className="p-3 rounded-lg bg-[var(--surface-base)] border border-cyan-500/40 text-xs space-y-1">
+                <span className="font-semibold text-cyan-600 dark:text-cyan-400 text-[10px] uppercase">
+                  Contextual Query Target
+                </span>
+                <p className="italic text-[var(--text-primary)] font-mono text-[11px]">&ldquo;{contextualAskQuery}&rdquo;</p>
+              </div>
+            )}
+
             <Link
-              href={`/items/${item.id}/ask`}
+              href={contextualAskQuery ? `/items/${item.id}/ask?q=${encodeURIComponent(contextualAskQuery)}` : `/items/${item.id}/ask`}
               className="inline-flex items-center justify-center gap-2 w-full rounded-lg bg-[var(--action-primary-bg)] py-2.5 px-4 text-xs font-semibold text-[var(--action-primary-fg)] hover:bg-[var(--action-primary-bg-hover)] transition-colors shadow-xs"
             >
-              <span>Open Ask AI Companion</span>
+              <span>{contextualAskQuery ? "Launch Grounded Q&A" : "Open Ask AI Companion"}</span>
               <ArrowRight className="h-3.5 w-3.5" />
             </Link>
           </div>
@@ -348,63 +483,55 @@ export function MultiLayerCompanionTabs({
               {/* Key Takeaways & Highlights List */}
               {recallMemory.takeaways.length > 0 && (
                 <div className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <span className="text-[11px] font-bold uppercase tracking-wider text-zinc-700 dark:text-zinc-300 flex items-center gap-1.5">
-                      <Sparkles className="h-3.5 w-3.5 text-purple-500" />
-                      <span>Key Takeaways & Highlights ({recallMemory.takeaways.length})</span>
-                    </span>
-                  </div>
+                  <span className="text-[11px] font-bold text-zinc-900 dark:text-zinc-100 uppercase tracking-wider">
+                    Key Highlights ({recallMemory.takeaways.length})
+                  </span>
 
                   <div className="space-y-2">
                     {recallMemory.takeaways.map((takeaway) => {
                       const isPinned = pinnedTakeawayIds.has(takeaway.id);
+
                       return (
                         <div
                           key={takeaway.id}
-                          className="group relative p-3 rounded-xl border border-zinc-200 bg-white/80 dark:border-zinc-800 dark:bg-zinc-900/80 shadow-2xs hover:border-purple-300 dark:hover:border-purple-700/60 transition-all"
+                          className="group/takeaway flex items-start justify-between gap-3 p-3 rounded-xl border border-zinc-200 bg-white/70 dark:border-zinc-800 dark:bg-zinc-900/60 hover:border-purple-300 dark:hover:border-purple-800 transition"
                         >
-                          <p className="text-zinc-800 dark:text-zinc-200 text-xs leading-relaxed pr-6">
-                            {takeaway.text}
-                          </p>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-xs leading-relaxed text-zinc-800 dark:text-zinc-200">
+                              {takeaway.text}
+                            </p>
 
-                          <div className="mt-2 flex items-center justify-between gap-2 pt-1.5 border-t border-zinc-100 dark:border-zinc-800/60 text-[11px]">
-                            {takeaway.timestampLabel && takeaway.timestampMs !== null ? (
-                              <button
-                                type="button"
-                                onClick={() => onSeek?.(takeaway.timestampMs!)}
-                                className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full font-mono text-[10px] font-semibold bg-purple-100 text-purple-800 hover:bg-purple-200 dark:bg-purple-950/60 dark:text-purple-300 dark:border dark:border-purple-800/60 transition cursor-pointer"
-                                title={`Seek video to ${takeaway.timestampLabel}`}
-                              >
-                                <Clock className="h-2.5 w-2.5 text-purple-600 dark:text-purple-400" />
-                                <span>{takeaway.timestampLabel}</span>
-                              </button>
-                            ) : (
-                              <span className="text-zinc-400 text-[10px]">Recall Takeaway</span>
+                            {takeaway.timestampLabel && (
+                              <div className="mt-1.5 flex items-center gap-2">
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    if (takeaway.timestampMs !== null) {
+                                      onSeek?.(takeaway.timestampMs);
+                                    }
+                                  }}
+                                  className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full font-mono text-[10px] font-semibold bg-purple-100 text-purple-900 dark:bg-purple-950 dark:text-purple-300 hover:bg-purple-200 dark:hover:bg-purple-900 transition cursor-pointer"
+                                >
+                                  <Clock className="h-2.5 w-2.5" />
+                                  <span>⏱️ {takeaway.timestampLabel}</span>
+                                </button>
+                              </div>
                             )}
-
-                            <button
-                              type="button"
-                              onClick={() => handlePinTakeaway(takeaway)}
-                              className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-medium transition ${
-                                isPinned
-                                  ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-950/50 dark:text-emerald-300"
-                                  : "text-zinc-500 hover:text-purple-700 hover:bg-purple-50 dark:text-zinc-400 dark:hover:text-purple-300 dark:hover:bg-purple-950/40"
-                              }`}
-                              title="Pin this takeaway quote into your manual notes"
-                            >
-                              {isPinned ? (
-                                <>
-                                  <Check className="h-2.5 w-2.5 text-emerald-600" />
-                                  <span>Pinned</span>
-                                </>
-                              ) : (
-                                <>
-                                  <Pin className="h-2.5 w-2.5" />
-                                  <span>Pin to Notes</span>
-                                </>
-                              )}
-                            </button>
                           </div>
+
+                          <button
+                            type="button"
+                            onClick={() => handlePinTakeaway(takeaway)}
+                            disabled={isPinned}
+                            title={isPinned ? "Pinned to Notes" : "Pin quote to Notes"}
+                            className={`p-1.5 rounded-lg text-xs transition cursor-pointer ${
+                              isPinned
+                                ? "bg-emerald-50 text-emerald-600 dark:bg-emerald-950/40 dark:text-emerald-400"
+                                : "text-zinc-400 hover:bg-purple-50 hover:text-purple-600 dark:hover:bg-purple-950/40 dark:hover:text-purple-300"
+                            }`}
+                          >
+                            {isPinned ? <Check className="h-3.5 w-3.5" /> : <Pin className="h-3.5 w-3.5" />}
+                          </button>
                         </div>
                       );
                     })}
@@ -412,10 +539,10 @@ export function MultiLayerCompanionTabs({
                 </div>
               )}
 
-              {/* Chapter Navigator / Sections Table of Contents */}
-              {recallMemory.sections.length > 1 && (
-                <div className="space-y-2 pt-2">
-                  <span className="text-[11px] font-bold uppercase tracking-wider text-zinc-700 dark:text-zinc-300 flex items-center gap-1.5">
+              {/* Sections & Chapters */}
+              {recallMemory.sections.length > 0 && (
+                <div className="space-y-2">
+                  <span className="flex items-center gap-1.5 text-[11px] font-bold text-zinc-900 dark:text-zinc-100 uppercase tracking-wider">
                     <BookOpen className="h-3.5 w-3.5 text-purple-500" />
                     <span>Video Chapters & Topics</span>
                   </span>
@@ -450,7 +577,7 @@ export function MultiLayerCompanionTabs({
                 <button
                   type="button"
                   onClick={() => setShowRawRecall((prev) => !prev)}
-                  className="flex items-center gap-1 text-[11px] font-semibold text-zinc-500 hover:text-purple-600 dark:text-zinc-400 dark:hover:text-purple-300 transition"
+                  className="flex items-center gap-1 text-[11px] font-semibold text-zinc-500 hover:text-purple-600 dark:text-zinc-400 dark:hover:text-purple-300 transition cursor-pointer"
                 >
                   {showRawRecall ? <ChevronDown className="h-3.5 w-3.5" /> : <ChevronRight className="h-3.5 w-3.5" />}
                   <span>{showRawRecall ? "Hide Raw Recall Content" : "View Full Raw Recall Body"}</span>
