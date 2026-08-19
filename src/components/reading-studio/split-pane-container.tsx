@@ -115,7 +115,7 @@ export function SplitPaneContainer({
         {/* Right Pane (Companion Workbench) */}
         {!isFocusMode && (
           <div
-            className={`${getRightSpan()} flex flex-col h-[760px] sticky top-16 ${
+            className={`${getRightSpan()} flex flex-col h-[760px] sticky top-16 relative z-10 ${
               mobileTab === "right" ? "flex" : "hidden lg:flex"
             }`}
           >

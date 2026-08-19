@@ -60,3 +60,9 @@ test("discard removes only the chosen editor instance", async () => {
   assert.equal(rows[0]?.editorInstanceId, "tab-b");
 });
 
+test("listRecoverableJournals returns empty array safely without throwing", async () => {
+  const rows = await listRecoverableJournals("item-nonexistent");
+  assert.deepEqual(rows, []);
+});
+
+

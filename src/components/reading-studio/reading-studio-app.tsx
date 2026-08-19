@@ -85,7 +85,7 @@ export function ReadingStudioApp({
           text_sha256: "",
           token_count: null,
           confidence: null,
-          created_at: Date.now(),
+          created_at: item.captured_at || 0,
         }));
 
         const virtualSource: TranscriptSourceRow = {
@@ -101,7 +101,7 @@ export function ReadingStudioApp({
           text_sha256: "",
           segment_count: virtualRows.length,
           status: "active",
-          created_at: Date.now(),
+          created_at: item.captured_at || 0,
         };
 
         return { activeSegments: virtualRows, activeSource: virtualSource };

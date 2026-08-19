@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useId, useMemo, type KeyboardEvent } from "react";
+import { useState, useId, useMemo, useCallback, type KeyboardEvent } from "react";
 import Link from "next/link";
 import {
   Sparkles,
@@ -57,12 +57,14 @@ export function MultiLayerCompanionTabs({
     return parseRecallMemory(item.body, item.summary);
   }, [item.body, item.summary]);
 
-  // Listen for pinned quote events to auto-switch to Notes tab
-  useNoteEventListener(item.id, () => {
+  const handleAppendEvent = useCallback(() => {
     setActiveTab("notes");
-  });
+  }, []);
 
-  const handlePinTakeaway = (takeaway: RecallParsedTakeaway) => {
+  // Listen for pinned quote events to auto-switch to Notes tab
+  useNoteEventListener(item.id, handleAppendEvent);
+
+  const handlePinTakeaway = useCallback((takeaway: RecallParsedTakeaway) => {
     const formattedQuote = takeaway.timestampLabel && takeaway.timestampSeconds !== null
       ? `> "${takeaway.text}" [${takeaway.timestampLabel}](?t=${takeaway.timestampSeconds})\n\n`
       : `> "${takeaway.text}"\n\n`;
@@ -75,7 +77,7 @@ export function MultiLayerCompanionTabs({
 
     setPinnedTakeawayIds((prev) => new Set(prev).add(takeaway.id));
     setActiveTab("notes");
-  };
+  }, [item.id]);
 
   const notesTabId = `${id}-notes-tab`;
   const aiTabId = `${id}-ai-tab`;
@@ -106,7 +108,7 @@ export function MultiLayerCompanionTabs({
   };
 
   return (
-    <div className="flex flex-col h-full bg-[var(--surface-raised)] border border-[var(--border)] rounded-xl overflow-hidden shadow-sm">
+    <div className="relative z-10 flex flex-col h-full bg-[var(--surface-raised)] border border-[var(--border)] rounded-xl overflow-hidden shadow-sm">
       {/* Companion Tabs Header */}
       <div className="p-2 bg-[var(--surface)] border-b border-[var(--border)]">
         <div
@@ -124,7 +126,7 @@ export function MultiLayerCompanionTabs({
             tabIndex={activeTab === "notes" ? 0 : -1}
             onClick={() => setActiveTab("notes")}
             onKeyDown={onTabKeyDown}
-            className={`inline-flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-md text-xs font-semibold transition-all ${
+            className={`inline-flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-md text-xs font-semibold transition-all cursor-pointer ${
               activeTab === "notes"
                 ? "bg-[var(--surface-raised)] text-[var(--text-primary)] shadow-xs border border-[var(--border)]"
                 : "text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
@@ -144,7 +146,7 @@ export function MultiLayerCompanionTabs({
             tabIndex={activeTab === "ai" ? 0 : -1}
             onClick={() => setActiveTab("ai")}
             onKeyDown={onTabKeyDown}
-            className={`inline-flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-md text-xs font-semibold transition-all ${
+            className={`inline-flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-md text-xs font-semibold transition-all cursor-pointer ${
               activeTab === "ai"
                 ? "bg-[var(--surface-raised)] text-[var(--text-primary)] shadow-xs border border-[var(--border)]"
                 : "text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
@@ -164,7 +166,7 @@ export function MultiLayerCompanionTabs({
             tabIndex={activeTab === "ask" ? 0 : -1}
             onClick={() => setActiveTab("ask")}
             onKeyDown={onTabKeyDown}
-            className={`inline-flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-md text-xs font-semibold transition-all ${
+            className={`inline-flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-md text-xs font-semibold transition-all cursor-pointer ${
               activeTab === "ask"
                 ? "bg-[var(--surface-raised)] text-[var(--text-primary)] shadow-xs border border-[var(--border)]"
                 : "text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
@@ -184,7 +186,7 @@ export function MultiLayerCompanionTabs({
             tabIndex={activeTab === "recall" ? 0 : -1}
             onClick={() => setActiveTab("recall")}
             onKeyDown={onTabKeyDown}
-            className={`inline-flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-md text-xs font-semibold transition-all ${
+            className={`inline-flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-md text-xs font-semibold transition-all cursor-pointer ${
               activeTab === "recall"
                 ? "bg-[var(--surface-raised)] text-[var(--text-primary)] shadow-xs border border-[var(--border)]"
                 : "text-[var(--text-secondary)] hover:text-[var(--text-primary)]"

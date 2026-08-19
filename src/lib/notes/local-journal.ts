@@ -47,20 +47,45 @@ function transactionDone(transaction: IDBTransaction): Promise<void> {
 
 export function openNoteJournalDb(): Promise<IDBDatabase> {
   return new Promise((resolve, reject) => {
-    const request = indexedDb().open(NOTE_JOURNAL_DB, NOTE_JOURNAL_VERSION);
-    request.onupgradeneeded = () => {
-      const db = request.result;
-      if (!db.objectStoreNames.contains(NOTE_JOURNAL_STORE)) {
-        const store = db.createObjectStore(NOTE_JOURNAL_STORE, {
-          keyPath: ["itemId", "editorInstanceId"],
-        });
-        store.createIndex("itemId", "itemId", { unique: false });
-        store.createIndex("state", "state", { unique: false });
-      }
+    let timer: ReturnType<typeof setTimeout> | null = null;
+    let settled = false;
+
+    const safeReject = (err: Error) => {
+      if (settled) return;
+      settled = true;
+      if (timer) clearTimeout(timer);
+      reject(err);
     };
-    request.onsuccess = () => resolve(request.result);
-    request.onerror = () => reject(request.error ?? new Error("Unable to open note recovery storage"));
-    request.onblocked = () => reject(new Error("Note recovery storage upgrade is blocked"));
+
+    const safeResolve = (db: IDBDatabase) => {
+      if (settled) return;
+      settled = true;
+      if (timer) clearTimeout(timer);
+      resolve(db);
+    };
+
+    timer = setTimeout(() => {
+      safeReject(new Error("Note recovery storage timeout"));
+    }, 1500);
+
+    try {
+      const request = indexedDb().open(NOTE_JOURNAL_DB, NOTE_JOURNAL_VERSION);
+      request.onupgradeneeded = () => {
+        const db = request.result;
+        if (!db.objectStoreNames.contains(NOTE_JOURNAL_STORE)) {
+          const store = db.createObjectStore(NOTE_JOURNAL_STORE, {
+            keyPath: ["itemId", "editorInstanceId"],
+          });
+          store.createIndex("itemId", "itemId", { unique: false });
+          store.createIndex("state", "state", { unique: false });
+        }
+      };
+      request.onsuccess = () => safeResolve(request.result);
+      request.onerror = () => safeReject(request.error ?? new Error("Unable to open note recovery storage"));
+      request.onblocked = () => safeReject(new Error("Note recovery storage upgrade is blocked"));
+    } catch (err) {
+      safeReject(err instanceof Error ? err : new Error(String(err)));
+    }
   });
 }
 
@@ -87,18 +112,22 @@ export async function putLatestJournal(
 }
 
 export async function listRecoverableJournals(itemId: string): Promise<LocalEditorJournal[]> {
-  const db = await openNoteJournalDb();
   try {
-    const tx = db.transaction(NOTE_JOURNAL_STORE, "readonly");
-    const rows = (await requestResult(
-      tx.objectStore(NOTE_JOURNAL_STORE).index("itemId").getAll(itemId),
-    )) as LocalEditorJournal[];
-    await transactionDone(tx);
-    return rows
-      .filter((row) => row.state !== "acknowledged")
-      .sort((a, b) => b.updatedAt - a.updatedAt);
-  } finally {
-    db.close();
+    const db = await openNoteJournalDb();
+    try {
+      const tx = db.transaction(NOTE_JOURNAL_STORE, "readonly");
+      const rows = (await requestResult(
+        tx.objectStore(NOTE_JOURNAL_STORE).index("itemId").getAll(itemId),
+      )) as LocalEditorJournal[];
+      await transactionDone(tx);
+      return rows
+        .filter((row) => row.state !== "acknowledged")
+        .sort((a, b) => b.updatedAt - a.updatedAt);
+    } finally {
+      db.close();
+    }
+  } catch {
+    return [];
   }
 }
 
