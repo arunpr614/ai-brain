@@ -59,6 +59,9 @@ const SCRIPT_ALLOWLIST = [
   "scripts/deploy/brain-notebooklm-retention.timer",
   "scripts/deploy/brain-processing-audit.service",
   "scripts/deploy/brain-processing-audit.timer",
+  "scripts/deploy/brain-asr-refinement-sweep.service",
+  "scripts/deploy/brain-asr-refinement-sweep.timer",
+  "scripts/run-asr-refinement-sweep.mjs",
   "scripts/dist/audit-vector-index-prod.mjs",
   "scripts/dist/repair-vector-index-prod.mjs",
   "scripts/dist/processing-readiness-prod.mjs",
@@ -92,6 +95,9 @@ const TOOL_OVERLAYS = new Set([
   "scripts/deploy/brain-notebooklm-retention.timer",
   "scripts/deploy/brain-processing-audit.service",
   "scripts/deploy/brain-processing-audit.timer",
+  "scripts/deploy/brain-asr-refinement-sweep.service",
+  "scripts/deploy/brain-asr-refinement-sweep.timer",
+  "scripts/run-asr-refinement-sweep.mjs",
   "scripts/dist/processing-readiness-prod.mjs",
   "scripts/dist/notebooklm-retention-prod.mjs",
 ]);
@@ -144,14 +150,14 @@ function sha256File(path) {
 function copyRequired(source, destination) {
   if (!existsSync(source)) fail(`required release input missing: ${source}`);
   mkdirSync(dirname(destination), { recursive: true });
-  cpSync(source, destination, { recursive: true, dereference: false, preserveTimestamps: false });
+  cpSync(source, destination, { recursive: true, dereference: true, preserveTimestamps: false });
 }
 
 function walk(root, directory = root) {
   const entries = [];
   for (const name of readdirSync(directory).sort()) {
     const absolute = join(directory, name);
-    const info = lstatSync(absolute);
+    const info = statSync(absolute);
     if (info.isDirectory()) entries.push(...walk(root, absolute));
     else if (info.isFile()) entries.push(relative(root, absolute).split("\\").join("/"));
     else fail(`release payload contains a non-regular file: ${relative(root, absolute)}`);
@@ -162,7 +168,7 @@ function walk(root, directory = root) {
 function fileManifest(root, paths) {
   return paths.map((path) => {
     const absolute = resolve(root, path);
-    const info = lstatSync(absolute);
+    const info = statSync(absolute);
     if (!info.isFile()) fail(`release manifest entry is not a regular file: ${path}`);
     return { path, kind: "file", size: info.size, sha256: sha256File(absolute) };
   });

@@ -31,7 +31,9 @@
  * the operator's monitoring channel.
  */
 
-import cron from "node-cron";
+import { createRequire } from "node:module";
+const require = createRequire(import.meta.url);
+const cron = require("node-cron");
 import { pollAllInFlightBatches, submitDailyBatch } from "./enrichment-batch";
 
 /**
