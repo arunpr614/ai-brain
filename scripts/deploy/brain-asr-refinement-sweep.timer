@@ -1,0 +1,14 @@
+[Unit]
+Description=AI Brain Autonomous Dual-Daily ASR Refinement Sweep Timer
+PartOf=brain.service
+
+[Timer]
+# Sweep 1: 03:00 AM IST (21:30:00 UTC)
+OnCalendar=*-*-* 21:30:00 UTC
+# Sweep 2: 12:00 PM IST (06:30:00 UTC)
+OnCalendar=*-*-* 06:30:00 UTC
+Persistent=true
+Unit=brain-asr-refinement-sweep.service
+
+[Install]
+WantedBy=timers.target

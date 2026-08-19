@@ -1,0 +1,12 @@
+[Unit]
+Description=AI Brain Autonomous Dual-Daily ASR Refinement Sweep Service
+After=network.target brain.service
+
+[Service]
+Type=oneshot
+User=brain
+WorkingDirectory=/opt/brain/current
+EnvironmentFile=/etc/brain/.env
+ExecStart=/usr/bin/node /opt/brain/current/scripts/run-asr-refinement-sweep.mjs --limit 15
+StandardOutput=journal
+StandardError=journal
