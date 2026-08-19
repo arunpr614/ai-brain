@@ -13,6 +13,10 @@
 
 ```mermaid
 flowchart TD
+    subgraph SetupFoundation ["🛠️ Prerequisite: Scratch Provisioning & Security"]
+        Doc["DOCS-P13-00 (#165): Scratch OS Flash, Ed25519 SSH Keys & Hardening"]
+    end
+
     subgraph ProductionEnv ["🛡️ Production: brain.arunp.in (100% Untouched)"]
         ProdCloud["Hetzner VM: brain.arunp.in"]
         ProdDB[("Production brain.sqlite")]
@@ -30,6 +34,8 @@ flowchart TD
         PiCloudflare --> PiNode <--> PiDB
         PiNode <--> PiONNX & PiWhisper
     end
+
+    SetupFoundation --> CanaryPiEnv
 ```
 
 ---
@@ -38,6 +44,7 @@ flowchart TD
 
 | Key | Issue | Title | SP | Priority | Status |
 | :--- | :--- | :--- | :--- | :--- | :--- |
+| `DOCS-P13-00` | [#165](https://github.com/arunpr614/ai-brain/issues/165) | `DOCS(canary-setup): Step-by-Step Raspberry Pi 4B Scratch Provisioning, SSH Key Hardening & Runtime Environment Guide` | 3 SP | P1 (Prerequisite) | `Todo` |
 | `FEAT-P13-01` | [#159](https://github.com/arunpr614/ai-brain/issues/159) | `FEAT(canary-infra): Independent Canary Raspberry Pi 4B Deployment & Cloudflare Tunnel (brainpi.arunp.in)` | 5 SP | P1 (Blocker) | `Todo` |
 | `FEAT-P13-02` | [#160](https://github.com/arunpr614/ai-brain/issues/160) | `FEAT(canary-sandbox): Automated Seeded Sandbox Exporter & Sanitized Dataset Ingestion Tool` | 3 SP | P1 (High) | `Todo` |
 | `FEAT-P13-03` | [#161](https://github.com/arunpr614/ai-brain/issues/161) | `FEAT(canary-compare): Side-by-Side Dual-Engine Benchmark & Evaluation Harness (/debug/compare)` | 5 SP | P1 (High) | `Todo` |
@@ -48,6 +55,10 @@ flowchart TD
 ---
 
 ## 📋 Detailed Issue Guides for Incoming AI Agents
+
+### 0. `DOCS-P13-00` ([#165](https://github.com/arunpr614/ai-brain/issues/165)): Scratch Setup & SSH Hardening Guide
+- **Target File:** `docs/runbooks/RASPBERRY_PI_4B_SCRATCH_SETUP_AND_SSH_GUIDE.md`
+- **Scope:** Complete guide covering Raspberry Pi Imager OS flash (64-bit Lite), Mac Ed25519 keypair generation, `ssh-copy-id`, `~/.ssh/config` alias (`ssh brainpi`), SSH daemon password disabling, `ufw` firewall, Node.js 22 LTS, and `cloudflared` binary install.
 
 ### 1. `FEAT-P13-01` ([#159](https://github.com/arunpr614/ai-brain/issues/159)): Canary Deployment & Cloudflare Tunnel
 - **Modules:** `scripts/deploy-canary-pi.sh`, `scripts/deploy/cloudflared-canary.yml`, `scripts/deploy/brain-canary.service`
