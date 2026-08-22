@@ -22,6 +22,7 @@ dist/
 # Production
 *.tsbuildinfo
 next-env.d.ts
+release-artifacts/
 
 # Environment
 .env
