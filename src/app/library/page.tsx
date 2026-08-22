@@ -96,8 +96,36 @@ export default async function LibraryPage({
   const processingSelectionWrite = processingNavigation && processingWriteEnabled();
 
   return (
-    <div className="mx-auto max-w-[960px] px-5 py-8 md:px-8 md:py-10">
-      <header className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+    <div className="mx-auto max-w-[960px] px-4 py-4 md:px-8 md:py-10">
+      {/* Mobile PWA Top App Header */}
+      <div className="mb-3 flex items-center justify-between gap-3 md:hidden">
+        <div className="flex items-center gap-2.5">
+          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[var(--action-primary-bg)] text-white shadow-xs font-bold text-xs tracking-wider">
+            AI
+          </div>
+          <div>
+            <h1 className="text-base font-bold leading-tight text-[var(--text-primary)]">
+              AI Memory
+            </h1>
+            <p className="text-[11px] text-[var(--text-secondary)]">
+              {hasFilters
+                ? `${filteredCount} of ${totalCount} sources`
+                : `${totalCount} ${totalCount === 1 ? "source" : "sources"} captured`}
+            </p>
+          </div>
+        </div>
+        {needsUpgradeCount > 0 && (
+          <Link
+            href="/needs-upgrade"
+            className="inline-flex h-7 items-center gap-1 rounded-full border border-[var(--quality-needs-upgrade)] bg-[var(--surface-raised)] px-2.5 text-[11px] font-medium text-[var(--quality-needs-upgrade)]"
+          >
+            <span>{needsUpgradeCount} upgrade</span>
+          </Link>
+        )}
+      </div>
+
+      {/* Desktop Header */}
+      <header className="mb-6 hidden flex-col gap-4 sm:flex-row sm:items-center sm:justify-between md:flex">
         <div>
           <h1 className="text-[30px] font-semibold leading-[1.2] tracking-[-0.01em] text-[var(--text-primary)]">
             Library
@@ -129,7 +157,7 @@ export default async function LibraryPage({
 
       {processingNavigation && <ProcessingEntrySummary variant="library" />}
 
-      <form action="/search" method="get" className="mb-6">
+      <form action="/search" method="get" className="mb-6 hidden md:block">
         <div className="relative">
           <Search
             className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--text-muted)]"
