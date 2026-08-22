@@ -4,10 +4,12 @@ import { useState, useCallback, useEffect } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { ArrowLeft, BookOpen, ExternalLink, FileText, Maximize2, Minimize2 } from "lucide-react";
+import { ItemOfflineToggle } from "@/components/item-offline-toggle";
 import { YouTubePlayerSync } from "./youtube-player-sync";
 import { TranscriptTimeline } from "./transcript-timeline";
 import { MultiLayerCompanionTabs } from "./multi-layer-companion-tabs";
 import { SplitPaneContainer, type SplitRatio } from "./split-pane-container";
+
 import type { ItemRow } from "@/db/client";
 import type { TranscriptSegmentRow, TranscriptSourceRow } from "@/db/transcripts";
 import type { ItemTopicRow } from "@/db/topics";
@@ -199,6 +201,9 @@ export function ReadingStudioApp({
             <span className="hidden md:inline">{isFocusMode ? "Exit Focus (⌥F)" : "Focus Mode (⌥F)"}</span>
           </button>
 
+          {/* Offline Availability Toggle */}
+          <ItemOfflineToggle itemId={item.id} variant="header" />
+
           {/* Source Link */}
           {item.source_url && (
             <a
@@ -214,16 +219,17 @@ export function ReadingStudioApp({
         </div>
       </header>
 
+
       {/* Mobile Segmented Switcher */}
       <div className="lg:hidden p-2 bg-[var(--surface)] border-b border-[var(--border)]">
-        <div className="grid grid-cols-2 gap-1 rounded-lg bg-zinc-950 p-1 border border-zinc-800">
+        <div className="grid grid-cols-2 gap-1 rounded-lg bg-[var(--surface-base)] p-1 border border-[var(--border)]">
           <button
             type="button"
             onClick={() => setMobileTab("reader")}
             className={`py-1.5 text-xs font-semibold rounded-md transition-all ${
               mobileTab === "reader"
-                ? "bg-zinc-800 text-white shadow-sm"
-                : "text-zinc-400 hover:text-zinc-200"
+                ? "bg-[var(--surface-raised)] text-[var(--text-primary)] shadow-xs border border-[var(--border)]"
+                : "text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
             }`}
           >
             Media & Transcript
@@ -233,14 +239,15 @@ export function ReadingStudioApp({
             onClick={() => setMobileTab("notes")}
             className={`py-1.5 text-xs font-semibold rounded-md transition-all ${
               mobileTab === "notes"
-                ? "bg-zinc-800 text-white shadow-sm"
-                : "text-zinc-400 hover:text-zinc-200"
+                ? "bg-[var(--surface-raised)] text-[var(--text-primary)] shadow-xs border border-[var(--border)]"
+                : "text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
             }`}
           >
-            Companion Notes
+            Companion Notes & AI
           </button>
         </div>
       </div>
+
 
       {/* Split Pane Container */}
       <SplitPaneContainer

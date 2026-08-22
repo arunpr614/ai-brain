@@ -1,0 +1,2059 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>AI Brain — Phase 14 Mobile PWA & Android Companion (Pixel 7 Pro Prototype)</title>
+  <style>
+    /* Design Tokens: Prism Memory & Structured Calm Palette */
+    :root {
+      --bg-base: #f4f6fa;
+      --phone-frame-bg: #0d1117;
+      --surface: #ffffff;
+      --surface-raised: #f8faff;
+      --surface-container: #edf2f9;
+      --surface-container-high: #e2eaf5;
+      --line: #d8e2ee;
+      --line-strong: #b9c8da;
+      --ink: #0b1c30;
+      --ink-secondary: #2f4058;
+      --ink-muted: #64748b;
+      --accent: #036425;
+      --accent-hover: #024e1d;
+      --accent-light: #e6f7ec;
+      --accent-border: #a3e6b5;
+      --accent-fg: #ffffff;
+      --youtube: #ff0000;
+      --youtube-bg: #fff1f1;
+      --quality-full: #0f766e;
+      --quality-transcript: #0891b2;
+      --quality-upgrade: #e11d48;
+      --quality-upgrade-bg: #fff1f2;
+      --quality-metadata: #d97706;
+      --shadow-sm: 0 2px 6px rgba(11, 28, 48, 0.04);
+      --shadow-md: 0 8px 24px rgba(11, 28, 48, 0.08);
+      --shadow-lg: 0 16px 40px rgba(11, 28, 48, 0.14);
+      --shadow-sheet: 0 -10px 40px rgba(0, 0, 0, 0.25);
+      --radius-sm: 8px;
+      --radius-md: 12px;
+      --radius-lg: 18px;
+      --radius-full: 9999px;
+      --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      --font-serif: Newsreader, Charter, Georgia, serif;
+      --font-mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+      --safe-bottom: env(safe-area-inset-bottom, 16px);
+      --safe-top: env(safe-area-inset-top, 24px);
+    }
+
+    [data-theme="dark"] {
+      --bg-base: #06090e;
+      --phone-frame-bg: #000000;
+      --surface: #0e1520;
+      --surface-raised: #141e2e;
+      --surface-container: #1b273b;
+      --surface-container-high: #24344d;
+      --line: #223249;
+      --line-strong: #324765;
+      --ink: #f0f4fc;
+      --ink-secondary: #c2d1e5;
+      --ink-muted: #8295b0;
+      --accent: #22c55e;
+      --accent-hover: #16a34a;
+      --accent-light: rgba(34, 197, 94, 0.15);
+      --accent-border: rgba(34, 197, 94, 0.35);
+      --accent-fg: #052e16;
+      --youtube-bg: rgba(239, 68, 68, 0.15);
+      --quality-upgrade-bg: rgba(225, 29, 72, 0.15);
+      --shadow-sm: 0 2px 6px rgba(0, 0, 0, 0.3);
+      --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.45);
+      --shadow-lg: 0 16px 40px rgba(0, 0, 0, 0.6);
+    }
+
+    [data-theme="oled"] {
+      --bg-base: #000000;
+      --phone-frame-bg: #000000;
+      --surface: #000000;
+      --surface-raised: #080808;
+      --surface-container: #121212;
+      --surface-container-high: #1a1a1a;
+      --line: #222222;
+      --line-strong: #333333;
+      --ink: #ffffff;
+      --ink-secondary: #cccccc;
+      --ink-muted: #888888;
+      --accent: #00e676;
+      --accent-hover: #00c853;
+      --accent-light: rgba(0, 230, 118, 0.15);
+      --accent-border: rgba(0, 230, 118, 0.4);
+      --accent-fg: #000000;
+      --shadow-sm: none;
+      --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.8);
+      --shadow-lg: 0 16px 40px rgba(0, 0, 0, 0.9);
+    }
+
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+    body {
+      margin: 0;
+      padding: 0;
+      background: var(--bg-base);
+      color: var(--ink);
+      font-family: var(--font-sans);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* Top Studio Bar */
+    .studio-bar {
+      width: 100%;
+      background: var(--surface);
+      border-bottom: 1px solid var(--line);
+      padding: 12px 24px;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .studio-brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .studio-badge {
+      background: var(--accent);
+      color: var(--accent-fg);
+      font-weight: 700;
+      font-size: 11px;
+      padding: 4px 10px;
+      border-radius: var(--radius-full);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .studio-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--ink);
+      margin: 0;
+    }
+
+    .studio-controls {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .btn-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 14px;
+      background: var(--surface-raised);
+      border: 1px solid var(--line);
+      border-radius: var(--radius-full);
+      color: var(--ink);
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .btn-pill:hover {
+      background: var(--surface-container);
+      border-color: var(--line-strong);
+    }
+
+    .btn-pill.active {
+      background: var(--ink);
+      color: var(--surface);
+      border-color: var(--ink);
+    }
+
+    /* Device Canvas Container */
+    .canvas-wrapper {
+      padding: 32px 16px 64px;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      width: 100%;
+      max-width: 1400px;
+    }
+
+    /* Pixel 7 Pro Device Mockup */
+    .pixel-device {
+      width: 412px;
+      height: 890px;
+      background: var(--surface);
+      border-radius: 48px;
+      border: 12px solid var(--phone-frame-bg);
+      box-shadow: 0 25px 70px rgba(0,0,0,0.35), 0 0 0 1px rgba(255,255,255,0.1);
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      overflow: hidden;
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .pixel-device.fullscreen-mode {
+      width: 100%;
+      max-width: 480px;
+      height: 94vh;
+      border-radius: 0;
+      border: none;
+      box-shadow: var(--shadow-lg);
+    }
+
+    /* Pixel 7 Pro Top Camera Punchhole */
+    .pixel-camera {
+      position: absolute;
+      top: 14px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 14px;
+      height: 14px;
+      background: #000000;
+      border-radius: 50%;
+      z-index: 80;
+      pointer-events: none;
+    }
+
+    /* Android Status Bar */
+    .status-bar {
+      height: 38px;
+      padding: 6px 22px 0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--ink);
+      background: var(--surface);
+      z-index: 70;
+      flex-shrink: 0;
+      letter-spacing: 0.02em;
+    }
+
+    .status-icons {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 11px;
+    }
+
+    /* Main Mobile App Container */
+    .app-screen {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      position: relative;
+      background: var(--surface);
+    }
+
+    .view-container {
+      flex: 1;
+      overflow-y: auto;
+      overflow-x: hidden;
+      padding-bottom: 74px;
+      scroll-behavior: smooth;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    /* Offline Alert Banner */
+    .offline-banner {
+      display: none;
+      background: #fef3c7;
+      color: #92400e;
+      border-bottom: 1px solid #fde68a;
+      padding: 6px 16px;
+      font-size: 11px;
+      font-weight: 600;
+      text-align: center;
+      z-index: 60;
+    }
+
+    [data-offline="true"] .offline-banner {
+      display: block;
+    }
+
+    /* View Transition Animations */
+    .view-content {
+      display: none;
+      opacity: 0;
+      transform: translateY(6px);
+      transition: opacity 0.2s ease, transform 0.2s ease;
+    }
+
+    .view-content.active {
+      display: block;
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* 1. Mobile Library View */
+    .lib-header {
+      padding: 14px 16px 8px;
+      background: var(--surface);
+      border-bottom: 1px solid var(--line);
+      position: sticky;
+      top: 0;
+      z-index: 30;
+    }
+
+    .lib-title-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 12px;
+    }
+
+    .lib-heading {
+      font-size: 22px;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      margin: 0;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .count-pill {
+      font-size: 11px;
+      font-weight: 700;
+      background: var(--surface-container);
+      color: var(--ink-secondary);
+      padding: 3px 8px;
+      border-radius: var(--radius-full);
+      border: 1px solid var(--line);
+    }
+
+    .search-box {
+      position: relative;
+      width: 100%;
+      margin-bottom: 10px;
+    }
+
+    .search-input {
+      width: 100%;
+      height: 42px;
+      border-radius: 24px;
+      background: var(--surface-container);
+      border: 1px solid var(--line);
+      padding: 0 16px 0 38px;
+      font-size: 14px;
+      color: var(--ink);
+      outline: none;
+      transition: border 0.15s ease, background 0.15s ease;
+    }
+
+    .search-input:focus {
+      border-color: var(--accent);
+      background: var(--surface);
+      box-shadow: 0 0 0 3px var(--accent-light);
+    }
+
+    .search-icon {
+      position: absolute;
+      left: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--ink-muted);
+      font-size: 14px;
+      pointer-events: none;
+    }
+
+    /* Swipeable Filter Chips */
+    .chip-scroll-row {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      overflow-x: auto;
+      padding-bottom: 4px;
+      margin: 0 -16px;
+      padding: 0 16px 4px;
+      scrollbar-width: none;
+    }
+
+    .chip-scroll-row::-webkit-scrollbar { display: none; }
+
+    .filter-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 6px 12px;
+      border-radius: var(--radius-full);
+      background: var(--surface-raised);
+      border: 1px solid var(--line);
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--ink-secondary);
+      white-space: nowrap;
+      cursor: pointer;
+      flex-shrink: 0;
+      transition: all 0.15s ease;
+    }
+
+    .filter-chip.active {
+      background: var(--accent);
+      color: var(--accent-fg);
+      border-color: var(--accent);
+      box-shadow: 0 2px 8px rgba(3, 100, 37, 0.25);
+    }
+
+    /* Library Cards List */
+    .card-list {
+      padding: 12px 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .lib-card {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: var(--radius-md);
+      padding: 14px;
+      cursor: pointer;
+      transition: all 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+      box-shadow: var(--shadow-sm);
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .lib-card:active {
+      transform: scale(0.985);
+      background: var(--surface-raised);
+    }
+
+    .card-header {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+    }
+
+    .card-icon {
+      width: 28px;
+      height: 28px;
+      border-radius: var(--radius-sm);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 13px;
+      flex-shrink: 0;
+      background: var(--surface-container);
+      color: var(--ink-secondary);
+      border: 1px solid var(--line);
+    }
+
+    .card-icon.yt {
+      background: var(--youtube-bg);
+      color: var(--youtube);
+      border-color: rgba(255, 0, 0, 0.2);
+    }
+
+    .card-title-wrap {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .card-title {
+      font-size: 15px;
+      font-weight: 700;
+      line-height: 1.35;
+      color: var(--ink);
+      margin: 0 0 4px;
+    }
+
+    .card-meta {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 6px;
+      font-size: 11px;
+      color: var(--ink-muted);
+    }
+
+    .badge-pill {
+      font-size: 10px;
+      font-weight: 700;
+      padding: 2px 7px;
+      border-radius: var(--radius-full);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
+    }
+
+    .badge-pill.full { background: #ccfbf1; color: #0f766e; }
+    .badge-pill.transcript { background: #e0f2fe; color: #0369a1; }
+    .badge-pill.upgrade { background: var(--quality-upgrade-bg); color: var(--quality-upgrade); }
+    .badge-pill.offline { background: var(--accent-light); color: var(--accent); border: 1px solid var(--accent-border); }
+    .badge-pill.cloud { background: var(--surface-container); color: var(--ink-muted); border: 1px solid var(--line); }
+
+    /* 2. Reading Studio View */
+    .reader-top-nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 14px;
+      background: var(--surface);
+      border-bottom: 1px solid var(--line);
+      position: sticky;
+      top: 0;
+      z-index: 40;
+    }
+
+    .btn-icon-back {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      background: none;
+      border: none;
+      color: var(--ink);
+      font-weight: 700;
+      font-size: 14px;
+      cursor: pointer;
+      padding: 6px;
+      border-radius: var(--radius-sm);
+    }
+
+    .reader-actions {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    /* Video Player Mockup */
+    .video-player-container {
+      width: 100%;
+      background: #000000;
+      position: relative;
+      padding-top: 56.25%; /* 16:9 */
+      overflow: hidden;
+    }
+
+    .video-screen {
+      position: absolute;
+      top: 0; left: 0; width: 100%; height: 100%;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 12px;
+      background: linear-gradient(180deg, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0) 40%, rgba(0,0,0,0.8) 100%);
+      color: #ffffff;
+    }
+
+    .video-controls {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      width: 100%;
+      font-size: 12px;
+      font-family: var(--font-mono);
+    }
+
+    .video-play-btn {
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.25);
+      backdrop-filter: blur(8px);
+      border: 1px solid rgba(255,255,255,0.4);
+      color: #ffffff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      cursor: pointer;
+    }
+
+    .video-progress-bar {
+      height: 4px;
+      background: rgba(255,255,255,0.3);
+      border-radius: 2px;
+      flex: 1;
+      margin: 0 10px;
+      position: relative;
+      cursor: pointer;
+    }
+
+    .video-progress-fill {
+      width: 24%;
+      height: 100%;
+      background: var(--youtube);
+      border-radius: 2px;
+    }
+
+    /* Segmented Tab Controller */
+    .reader-tabs-header {
+      padding: 8px 12px;
+      background: var(--surface);
+      border-bottom: 1px solid var(--line);
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 4px;
+    }
+
+    .reader-tab-btn {
+      padding: 8px 4px;
+      border-radius: var(--radius-sm);
+      border: 1px solid transparent;
+      background: transparent;
+      color: var(--ink-muted);
+      font-size: 11px;
+      font-weight: 700;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .reader-tab-btn.active {
+      background: var(--surface-container-high);
+      color: var(--ink);
+      border-color: var(--line);
+    }
+
+    /* Transcript Scrubber Timeline */
+    .transcript-timeline {
+      padding: 12px 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .transcript-row {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      padding: 8px 10px;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      border: 1px solid transparent;
+      transition: background 0.15s ease;
+    }
+
+    .transcript-row:hover {
+      background: var(--surface-container);
+    }
+
+    .transcript-row.active {
+      background: var(--accent-light);
+      border-color: var(--accent-border);
+    }
+
+    .transcript-time {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--accent);
+      background: var(--surface);
+      padding: 2px 6px;
+      border-radius: 4px;
+      border: 1px solid var(--line);
+      flex-shrink: 0;
+    }
+
+    .transcript-text {
+      font-size: 13.5px;
+      line-height: 1.5;
+      color: var(--ink);
+      margin: 0;
+      flex: 1;
+    }
+
+    /* Note Editor Sub-view */
+    .note-editor-panel {
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      height: 100%;
+    }
+
+    .note-status-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 11px;
+      color: var(--ink-muted);
+      background: var(--surface-container);
+      padding: 6px 12px;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--line);
+    }
+
+    .note-accessory-bar {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      overflow-x: auto;
+      padding: 6px;
+      background: var(--surface-raised);
+      border: 1px solid var(--line);
+      border-radius: var(--radius-sm);
+    }
+
+    .accessory-btn {
+      width: 32px;
+      height: 32px;
+      border-radius: 4px;
+      border: 1px solid transparent;
+      background: transparent;
+      color: var(--ink);
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .accessory-btn:hover {
+      background: var(--surface-container);
+      border-color: var(--line);
+    }
+
+    .note-textarea {
+      width: 100%;
+      height: 280px;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--line);
+      background: var(--surface);
+      color: var(--ink);
+      padding: 12px;
+      font-family: var(--font-mono);
+      font-size: 13px;
+      line-height: 1.6;
+      resize: none;
+      outline: none;
+    }
+
+    .note-textarea:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px var(--accent-light);
+    }
+
+    /* AI Chat / Ask Panel */
+    .ask-chat-panel {
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .chat-bubble {
+      padding: 12px 14px;
+      border-radius: 16px;
+      font-size: 13.5px;
+      line-height: 1.5;
+      max-width: 88%;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .chat-bubble.user {
+      align-self: flex-end;
+      background: var(--ink);
+      color: var(--surface);
+      border-bottom-right-radius: 4px;
+    }
+
+    .chat-bubble.ai {
+      align-self: flex-start;
+      background: var(--surface-raised);
+      border: 1px solid var(--line);
+      color: var(--ink);
+      border-bottom-left-radius: 4px;
+    }
+
+    .cite-chip {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 10px;
+      font-weight: 800;
+      background: var(--accent-light);
+      color: var(--accent);
+      border: 1px solid var(--accent-border);
+      padding: 1px 6px;
+      border-radius: var(--radius-full);
+      cursor: pointer;
+      margin: 0 2px;
+      vertical-align: baseline;
+    }
+
+    .suggest-prompts {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 8px;
+    }
+
+    .prompt-chip {
+      font-size: 11px;
+      padding: 6px 10px;
+      background: var(--surface-container);
+      border: 1px solid var(--line);
+      border-radius: var(--radius-full);
+      color: var(--ink-secondary);
+      cursor: pointer;
+      transition: background 0.15s ease;
+    }
+
+    .prompt-chip:hover {
+      background: var(--surface-container-high);
+      color: var(--ink);
+    }
+
+    /* 3. Bottom Navigation Bar */
+    .bottom-nav {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 66px;
+      background: var(--surface);
+      border-top: 1px solid var(--line);
+      display: flex;
+      align-items: center;
+      justify-content: space-around;
+      padding: 0 8px calc(env(safe-area-inset-bottom, 8px) + 2px);
+      z-index: 65;
+      box-shadow: 0 -4px 16px rgba(0,0,0,0.04);
+    }
+
+    .nav-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 3px;
+      color: var(--ink-muted);
+      font-size: 10.5px;
+      font-weight: 700;
+      text-decoration: none;
+      cursor: pointer;
+      padding: 6px 12px;
+      border-radius: var(--radius-sm);
+      transition: color 0.15s ease;
+      background: none;
+      border: none;
+    }
+
+    .nav-item.active {
+      color: var(--accent);
+    }
+
+    .nav-icon {
+      font-size: 18px;
+    }
+
+    /* Floating Center Capture FAB */
+    .fab-capture {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      background: var(--accent);
+      color: var(--accent-fg);
+      border: 3px solid var(--surface);
+      box-shadow: 0 4px 14px rgba(3, 100, 37, 0.35);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+      font-weight: bold;
+      cursor: pointer;
+      margin-top: -20px;
+      transition: transform 0.15s ease;
+    }
+
+    .fab-capture:active {
+      transform: scale(0.92);
+    }
+
+    /* 4. Bottom Sheet Modal (Quick Capture & Citations) */
+    .sheet-overlay {
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0, 0, 0, 0.45);
+      backdrop-filter: blur(3px);
+      z-index: 85;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.25s ease;
+    }
+
+    .sheet-overlay.open {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .bottom-sheet {
+      position: absolute;
+      left: 0; right: 0; bottom: 0;
+      background: var(--surface);
+      border-radius: 24px 24px 0 0;
+      padding: 12px 18px 28px;
+      box-shadow: var(--shadow-sheet);
+      z-index: 90;
+      transform: translateY(100%);
+      transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+      max-height: 82%;
+      overflow-y: auto;
+    }
+
+    .bottom-sheet.open {
+      transform: translateY(0);
+    }
+
+    .sheet-handle {
+      width: 36px;
+      height: 4px;
+      background: var(--line-strong);
+      border-radius: 2px;
+      margin: 0 auto 14px;
+    }
+
+    .sheet-title {
+      font-size: 17px;
+      font-weight: 800;
+      margin: 0 0 14px;
+      color: var(--ink);
+    }
+
+    .input-field {
+      width: 100%;
+      height: 44px;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--line);
+      background: var(--surface-raised);
+      padding: 0 12px;
+      font-size: 14px;
+      color: var(--ink);
+      margin-bottom: 12px;
+      outline: none;
+    }
+
+    .btn-submit {
+      width: 100%;
+      height: 44px;
+      background: var(--accent);
+      color: var(--accent-fg);
+      font-weight: 700;
+      font-size: 14px;
+      border: none;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      box-shadow: var(--shadow-sm);
+      transition: background 0.15s ease;
+    }
+
+    .btn-submit:hover {
+      background: var(--accent-hover);
+    }
+
+    .btn-danger {
+      background: #e11d48;
+      color: #ffffff;
+    }
+
+    .btn-danger:hover {
+      background: #be123c;
+    }
+
+    /* Toast Notification */
+    .toast-msg {
+      position: absolute;
+      top: 50px;
+      left: 50%;
+      transform: translateX(-50%) translateY(-20px);
+      background: var(--ink);
+      color: var(--surface);
+      font-size: 12px;
+      font-weight: 700;
+      padding: 10px 18px;
+      border-radius: var(--radius-full);
+      z-index: 120;
+      box-shadow: var(--shadow-md);
+      opacity: 0;
+      pointer-events: none;
+      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      white-space: nowrap;
+    }
+
+    .toast-msg.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+
+    /* Storage Meter Component */
+    .storage-meter-box {
+      background: var(--surface-raised);
+      border: 1px solid var(--line);
+      border-radius: var(--radius-md);
+      padding: 14px;
+      margin-bottom: 14px;
+    }
+
+    .storage-bar-track {
+      height: 8px;
+      background: var(--surface-container);
+      border-radius: 4px;
+      overflow: hidden;
+      display: flex;
+      margin: 8px 0;
+    }
+
+    .storage-seg-yt { background: #ff4d4f; height: 100%; }
+    .storage-seg-art { background: #0891b2; height: 100%; }
+    .storage-seg-note { background: #10b981; height: 100%; }
+    .storage-seg-shell { background: #8b5cf6; height: 100%; }
+
+    .storage-legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      font-size: 11px;
+      color: var(--ink-secondary);
+      margin-top: 6px;
+    }
+
+    .storage-dot {
+      display: inline-block;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      margin-right: 4px;
+    }
+
+    /* Cached Items Table / List in Settings */
+    .cached-items-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-top: 10px;
+    }
+
+    .cached-item-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: var(--radius-sm);
+      padding: 8px 10px;
+      font-size: 12px;
+    }
+
+    .btn-trash {
+      background: none;
+      border: none;
+      color: #e11d48;
+      cursor: pointer;
+      font-size: 14px;
+      padding: 4px 8px;
+      border-radius: 4px;
+    }
+
+    .btn-trash:hover {
+      background: var(--quality-upgrade-bg);
+    }
+
+    /* Theme Switcher Grid in Settings */
+    .theme-switcher-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 6px;
+      margin-bottom: 12px;
+      width: 100%;
+    }
+
+    .theme-btn {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 8px 4px;
+      border-radius: var(--radius-sm);
+      background: var(--surface-raised);
+      border: 1px solid var(--line);
+      color: var(--ink-secondary);
+      cursor: pointer;
+      text-align: center;
+      transition: all 0.15s ease;
+      min-height: 48px;
+    }
+
+    .theme-btn:hover {
+      background: var(--surface-container);
+      border-color: var(--line-strong);
+    }
+
+    .theme-btn.active {
+      background: var(--accent);
+      color: var(--accent-fg);
+      border-color: var(--accent);
+      box-shadow: 0 2px 8px rgba(3, 100, 37, 0.25);
+    }
+
+    .theme-btn .theme-title {
+      font-size: 11px;
+      font-weight: 700;
+      line-height: 1.2;
+    }
+
+    .theme-btn .theme-sub {
+      font-size: 9px;
+      opacity: 0.82;
+      font-weight: 600;
+      margin-top: 2px;
+    }
+
+    /* Interactive Tour Side Panel */
+    .tour-panel {
+
+      max-width: 380px;
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: var(--radius-lg);
+      padding: 24px;
+      box-shadow: var(--shadow-md);
+      margin-left: 24px;
+    }
+
+    @media (max-width: 960px) {
+      .canvas-wrapper { flex-direction: column; align-items: center; }
+      .tour-panel { margin-left: 0; margin-top: 32px; width: 100%; max-width: 480px; }
+    }
+  </style>
+</head>
+<body data-theme="light">
+
+  <!-- Studio Top Bar -->
+  <header class="studio-bar">
+    <div class="studio-brand">
+      <span class="studio-badge">Phase 14 Prototype</span>
+      <h1 class="studio-title">AI Brain · Pixel 7 Pro PWA Companion</h1>
+    </div>
+    <div class="studio-controls">
+      <button class="btn-pill" id="toggle-frame-btn" onclick="toggleDeviceFrame()">
+        <span>📱 Frame: Pixel 7 Pro</span>
+      </button>
+      <button class="btn-pill" id="toggle-theme-btn" onclick="cycleTheme()">
+        <span>☀️ Theme: Light</span>
+      </button>
+      <button class="btn-pill" id="toggle-network-btn" onclick="toggleNetwork()">
+        <span>🟢 Online</span>
+      </button>
+      <button class="btn-pill" onclick="simulateAndroidShare()">
+        <span>📤 Simulate Share Intent</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- Main Canvas Wrapper -->
+  <main class="canvas-wrapper">
+
+    <!-- Pixel 7 Pro Device Frame -->
+    <div class="pixel-device" id="pixel-device-frame">
+      <div class="pixel-camera"></div>
+
+      <!-- Android Status Bar -->
+      <div class="status-bar">
+        <span id="live-time">14:30</span>
+        <div class="status-icons">
+          <span>5G</span>
+          <span>98%</span>
+        </div>
+      </div>
+
+      <!-- Offline Notification Banner -->
+      <div class="offline-banner">
+        ⚠️ Offline Mode — Serving cached articles & IndexedDB drafts
+      </div>
+
+      <!-- App Screen -->
+      <div class="app-screen">
+
+        <!-- Toast Feedback -->
+        <div class="toast-msg" id="app-toast">
+          <span>✓</span> <span id="toast-text">Saved to Library!</span>
+        </div>
+
+        <!-- Scrollable View Container -->
+        <div class="view-container">
+
+          <!-- VIEW 1: LIBRARY -->
+          <div class="view-content active" id="view-library">
+            <div class="lib-header">
+              <div class="lib-title-row">
+                <h2 class="lib-heading">
+                  Library
+                  <span class="count-pill" id="lib-count-pill">12 items</span>
+                </h2>
+                <button class="filter-chip" onclick="openCaptureSheet()">+ Quick Save</button>
+              </div>
+
+              <!-- Search Bar -->
+              <div class="search-box">
+                <span class="search-icon">🔍</span>
+                <input type="search" class="search-input" id="lib-search" placeholder="Search library & transcripts..." oninput="handleSearch(this.value)" />
+              </div>
+
+              <!-- Swipeable Filter Chips Carousel -->
+              <div class="chip-scroll-row">
+                <button class="filter-chip active" onclick="setFilter(this, 'all')">All (12)</button>
+                <button class="filter-chip" onclick="setFilter(this, 'youtube')">YouTube (4)</button>
+                <button class="filter-chip" onclick="setFilter(this, 'article')">Articles (4)</button>
+                <button class="filter-chip" onclick="setFilter(this, 'pdf')">PDFs (2)</button>
+                <button class="filter-chip" onclick="setFilter(this, 'note')">Notes (2)</button>
+                <button class="filter-chip" onclick="setFilter(this, 'upgrade')">Needs Upgrade (2)</button>
+                <button class="filter-chip" onclick="setFilter(this, 'offline')">Offline Ready (<span id="filter-offline-count">3</span>)</button>
+              </div>
+            </div>
+
+            <!-- Library Cards List -->
+            <div class="card-list" id="card-list-items">
+
+              <!-- Item 1: YouTube Video -->
+              <div class="lib-card" id="card-karpathy" data-type="youtube" data-offline="true">
+                <div class="card-header" onclick="openReaderView('karpathy')">
+                  <div class="card-icon yt">▶</div>
+                  <div class="card-title-wrap">
+                    <h3 class="card-title">Andrej Karpathy — Deep Dive into LLM Architecture & Tokenization</h3>
+                    <div class="card-meta">
+                      <span>YouTube</span>
+                      <span>·</span>
+                      <span>1h 42m</span>
+                      <span>·</span>
+                      <span class="badge-pill full">Full Transcript</span>
+                    </div>
+                  </div>
+                </div>
+                <div style="display: flex; justify-content: space-between; align-items: center; padding-top: 6px; border-top: 1px solid var(--line); font-size: 11px;">
+                  <span id="badge-karpathy" class="badge-pill offline">✓ Offline Ready (11.2 MB)</span>
+                  <button class="btn-pill" style="padding: 3px 8px; font-size: 11px;" onclick="toggleItemOffline('karpathy', 'Andrej Karpathy LLM', 11.2)">
+                    <span id="btn-label-karpathy">Remove Offline</span>
+                  </button>
+                </div>
+              </div>
+
+              <!-- Item 2: Article -->
+              <div class="lib-card" id="card-rag" data-type="article" data-offline="true">
+                <div class="card-header" onclick="openReaderView('rag')">
+                  <div class="card-icon">📄</div>
+                  <div class="card-title-wrap">
+                    <h3 class="card-title">The Architecture of Modern RAG Systems: Vector & Hybrid Retrieval</h3>
+                    <div class="card-meta">
+                      <span>Substack</span>
+                      <span>·</span>
+                      <span>12k chars</span>
+                      <span>·</span>
+                      <span class="badge-pill full">Full Text</span>
+                    </div>
+                  </div>
+                </div>
+                <div style="display: flex; justify-content: space-between; align-items: center; padding-top: 6px; border-top: 1px solid var(--line); font-size: 11px;">
+                  <span id="badge-rag" class="badge-pill offline">✓ Offline Ready (4.6 MB)</span>
+                  <button class="btn-pill" style="padding: 3px 8px; font-size: 11px;" onclick="toggleItemOffline('rag', 'Modern RAG Systems', 4.6)">
+                    <span id="btn-label-rag">Remove Offline</span>
+                  </button>
+                </div>
+              </div>
+
+              <!-- Item 3: Engineering Note -->
+              <div class="lib-card" id="card-sqlite" data-type="note" data-offline="true">
+                <div class="card-header" onclick="openReaderView('sqlite')">
+                  <div class="card-icon">📝</div>
+                  <div class="card-title-wrap">
+                    <h3 class="card-title">Distributed SQLite on Edge: WAL Mode, Pragma Tuning & Replication</h3>
+                    <div class="card-meta">
+                      <span>My Note</span>
+                      <span>·</span>
+                      <span>4k chars</span>
+                      <span>·</span>
+                      <span class="badge-pill full">Durable Draft</span>
+                    </div>
+                  </div>
+                </div>
+                <div style="display: flex; justify-content: space-between; align-items: center; padding-top: 6px; border-top: 1px solid var(--line); font-size: 11px;">
+                  <span id="badge-sqlite" class="badge-pill offline">✓ Offline Ready (1.8 MB)</span>
+                  <button class="btn-pill" style="padding: 3px 8px; font-size: 11px;" onclick="toggleItemOffline('sqlite', 'Distributed SQLite Edge', 1.8)">
+                    <span id="btn-label-sqlite">Remove Offline</span>
+                  </button>
+                </div>
+              </div>
+
+              <!-- Item 4: PDF Document -->
+              <div class="lib-card" id="card-tensor" data-type="pdf" data-offline="false">
+                <div class="card-header" onclick="openReaderView('tensor')">
+                  <div class="card-icon">📑</div>
+                  <div class="card-title-wrap">
+                    <h3 class="card-title">Google Pixel 7 Pro Tensor G2 On-Device TPU & Neural Processing</h3>
+                    <div class="card-meta">
+                      <span>Whitepaper PDF</span>
+                      <span>·</span>
+                      <span>28k chars</span>
+                      <span>·</span>
+                      <span class="badge-pill full">Full Text</span>
+                    </div>
+                  </div>
+                </div>
+                <div style="display: flex; justify-content: space-between; align-items: center; padding-top: 6px; border-top: 1px solid var(--line); font-size: 11px;">
+                  <span id="badge-tensor" class="badge-pill cloud">☁️ Stream Only</span>
+                  <button class="btn-pill" style="padding: 3px 8px; font-size: 11px;" onclick="toggleItemOffline('tensor', 'Pixel 7 Pro Tensor G2', 2.8)">
+                    <span id="btn-label-tensor">Make Offline</span>
+                  </button>
+                </div>
+              </div>
+
+              <!-- Item 5: Needs Upgrade YouTube -->
+              <div class="lib-card" id="card-upgrade-item" data-type="upgrade" data-offline="false">
+                <div class="card-header" onclick="openReaderView('upgrade-item')">
+                  <div class="card-icon yt">▶</div>
+                  <div class="card-title-wrap">
+                    <h3 class="card-title">AI Memory Systems: From Capture to Actionable Retrieval</h3>
+                    <div class="card-meta">
+                      <span>YouTube Shorts</span>
+                      <span>·</span>
+                      <span class="badge-pill upgrade">Needs Upgrade</span>
+                      <span>·</span>
+                      <span>Metadata Only</span>
+                    </div>
+                  </div>
+                </div>
+                <div style="display: flex; justify-content: space-between; align-items: center; padding-top: 6px; border-top: 1px solid var(--line); font-size: 11px;">
+                  <span id="badge-upgrade-item" class="badge-pill cloud">☁️ Stream Only</span>
+                  <button class="btn-pill" style="padding: 3px 8px; font-size: 11px;" onclick="toggleItemOffline('upgrade-item', 'AI Memory Systems Shorts', 0.9)">
+                    <span id="btn-label-upgrade-item">Make Offline</span>
+                  </button>
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+          <!-- VIEW 2: READING STUDIO & YOUTUBE SCRUBBER -->
+          <div class="view-content" id="view-reader">
+            <!-- Reader Top Nav -->
+            <div class="reader-top-nav">
+              <button class="btn-icon-back" onclick="switchView('view-library')">
+                ← Library
+              </button>
+              <div class="reader-actions">
+                <button class="filter-chip" id="reader-offline-btn" onclick="toggleItemOffline('karpathy', 'Andrej Karpathy LLM', 11.2)">
+                  <span id="reader-offline-label">✓ Offline (11.2 MB)</span>
+                </button>
+                <button class="filter-chip" onclick="showToast('Font size toggled')">A+</button>
+              </div>
+            </div>
+
+            <!-- YouTube Player Component -->
+            <div class="video-player-container">
+              <div class="video-screen">
+                <div style="font-size: 11px; font-weight: 700; opacity: 0.85;">Andrej Karpathy — LLM Deep Dive</div>
+                <div style="display: flex; justify-content: center;">
+                  <button class="video-play-btn" id="play-btn" onclick="togglePlay()">▶</button>
+                </div>
+                <div class="video-controls">
+                  <span id="player-timecode">04:15</span>
+                  <div class="video-progress-bar" onclick="seekProgress(event)">
+                    <div class="video-progress-fill" id="player-progress"></div>
+                  </div>
+                  <span>18:42</span>
+                  <span style="margin-left: 6px; cursor: pointer;" onclick="showToast('Speed: 1.5x')">1.5x</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Reader Layer Tabs Header -->
+            <div class="reader-tabs-header">
+              <button class="reader-tab-btn active" id="rtab-transcript" onclick="switchReaderTab('transcript')">Transcript</button>
+              <button class="reader-tab-btn" id="rtab-ai" onclick="switchReaderTab('ai')">AI Brief</button>
+              <button class="reader-tab-btn" id="rtab-notes" onclick="switchReaderTab('notes')">My Notes</button>
+              <button class="reader-tab-btn" id="rtab-ask" onclick="switchReaderTab('ask')">Ask AI</button>
+            </div>
+
+            <!-- Sub-tab 1: Transcript Timeline -->
+            <div id="reader-sub-transcript" class="transcript-timeline">
+              <div class="transcript-row" onclick="seekTranscript('00:15', 2)">
+                <span class="transcript-time">00:15</span>
+                <p class="transcript-text">Welcome everyone. Today we are diving into tokenization, byte pair encoding, and how transformers consume text.</p>
+              </div>
+              <div class="transcript-row active" onclick="seekTranscript('04:15', 24)">
+                <span class="transcript-time">04:15</span>
+                <p class="transcript-text">When tokenization fails, the neural network cannot resolve semantic boundaries cleanly across languages.</p>
+              </div>
+              <div class="transcript-row" onclick="seekTranscript('08:30', 45)">
+                <span class="transcript-time">08:30</span>
+                <p class="transcript-text">Notice how the vocabulary size directly trades off with the embedding matrix parameter memory.</p>
+              </div>
+              <div class="transcript-row" onclick="seekTranscript('12:10', 65)">
+                <span class="transcript-time">12:10</span>
+                <p class="transcript-text">Let's inspect the attention mask and how positional encodings inform self-attention weights.</p>
+              </div>
+            </div>
+
+            <!-- Sub-tab 2: AI Cognitive Brief -->
+            <div id="reader-sub-ai" style="display: none; padding: 14px;">
+              <div style="background: var(--surface-raised); border: 1px solid var(--line); border-radius: var(--radius-md); padding: 14px; margin-bottom: 12px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                  <span style="font-size: 11px; font-weight: 800; text-transform: uppercase; color: var(--accent);">✨ Executive Summary</span>
+                  <button class="filter-chip" onclick="appendSummaryToNotes()">+ Add to Notes</button>
+                </div>
+                <p style="font-size: 13.5px; line-height: 1.5; margin: 0; color: var(--ink);">
+                  This lecture examines the critical mechanics of tokenization in autoregressive language models. Karpathy illustrates why token byte-pair fragmentation accounts for arithmetic errors and why vocabulary size dictates memory bounds.
+                </p>
+              </div>
+
+              <div style="font-size: 12px; font-weight: 700; margin-bottom: 6px; text-transform: uppercase; color: var(--ink-secondary);">Key Takeaways</div>
+              <ul style="padding-left: 20px; font-size: 13px; line-height: 1.6; color: var(--ink); margin: 0 0 14px;">
+                <li>Byte-pair encoding controls subword chunk frequency.</li>
+                <li>Vocabulary dimension scales embedding matrix memory linearly.</li>
+                <li>Self-attention compute is quadratic with sequence length.</li>
+              </ul>
+            </div>
+
+            <!-- Sub-tab 3: Touch Note Editor -->
+            <div id="reader-sub-notes" style="display: none;" class="note-editor-panel">
+              <div class="note-status-bar">
+                <span>● Saved · IndexedDB Local Journal</span>
+                <span>412 chars</span>
+              </div>
+
+              <div class="note-accessory-bar">
+                <button class="accessory-btn" onclick="insertMarkdown('## ')">H2</button>
+                <button class="accessory-btn" onclick="insertMarkdown('**bold**')">B</button>
+                <button class="accessory-btn" onclick="insertMarkdown('*italic*')">I</button>
+                <button class="accessory-btn" onclick="insertMarkdown('- ')">•</button>
+                <button class="accessory-btn" onclick="insertMarkdown('- [ ] ')">☑</button>
+                <button class="accessory-btn" onclick="insertMarkdown('> ')">“</button>
+                <button class="accessory-btn" onclick="appendSummaryToNotes()">+ AI Brief</button>
+              </div>
+
+              <textarea class="note-textarea" id="note-editor-text" placeholder="Write personal insights or append AI takeaways...">## Karpathy LLM Notes
+- Tokenizer splits strings into token IDs.
+- Subword fragmentation explains weird spelling bugs.
+- Need to test BPE tokenizers with multilingual corpora.</textarea>
+            </div>
+
+            <!-- Sub-tab 4: In-Item Ask Companion -->
+            <div id="reader-sub-ask" style="display: none;" class="ask-chat-panel">
+              <div class="chat-bubble user">
+                What does Karpathy say about token vocabulary trade-offs?
+              </div>
+
+              <div class="chat-bubble ai">
+                Karpathy explains that increasing vocabulary size shortens sequence lengths but significantly enlarges the embedding matrix parameter table <span class="cite-chip" onclick="openCitationSheet('08:30', 'Notice how the vocabulary size directly trades off with the embedding matrix parameter memory.')">[08:30]</span>. Conversely, smaller vocabularies increase sequence lengths, raising self-attention compute quadratically <span class="cite-chip" onclick="openCitationSheet('12:10', 'Self-attention compute scales quadratically with token count.')">[12:10]</span>.
+              </div>
+
+              <div class="suggest-prompts">
+                <button class="prompt-chip" onclick="sendPrompt(this.innerText)">✨ Summarize key arguments</button>
+                <button class="prompt-chip" onclick="sendPrompt(this.innerText)">🔍 How does BPE work?</button>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- VIEW 3: STANDALONE ASK -->
+          <div class="view-content" id="view-ask">
+            <div class="lib-header">
+              <h2 class="lib-heading">Ask AI Companion</h2>
+              <p style="font-size: 12px; color: var(--ink-muted); margin: 4px 0 0;">
+                Evidence-grounded conversational search across all high-quality saved sources.
+              </p>
+            </div>
+
+            <div class="ask-chat-panel">
+              <div class="chat-bubble user">
+                Compare SQLite WAL mode with standard rollback journaling.
+              </div>
+
+              <div class="chat-bubble ai">
+                In SQLite, **Write-Ahead Logging (WAL)** provides concurrent readers while a writer writes <span class="cite-chip" onclick="openCitationSheet('Note: SQLite', 'WAL mode decouples read transactions from write locks.')">[1]</span>. Readers do not block writers, and writes append sequentially to the `-wal` file instead of locking the main database file.
+              </div>
+
+              <div class="suggest-prompts">
+                <button class="prompt-chip" onclick="sendPrompt('Explain vector retrieval latency in SQLite')">⚡ Vector retrieval latency</button>
+                <button class="prompt-chip" onclick="sendPrompt('What are the best pragma settings for edge SQLite?')">⚙️ Pragma edge settings</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- VIEW 4: MORE & SETTINGS (EXPANDED FOR PHASE 14) -->
+          <div class="view-content" id="view-more">
+            <div class="lib-header">
+              <h2 class="lib-heading">More & Settings</h2>
+              <p style="font-size: 12px; color: var(--ink-muted); margin: 4px 0 0;">
+                Offline memory manager, reading preferences, PWA diagnostics and cloud sync.
+              </p>
+            </div>
+
+            <div style="padding: 14px; display: flex; flex-direction: column; gap: 14px;">
+
+              <!-- 1. Offline Storage & Memory Management Card -->
+              <div class="storage-meter-box">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                  <span style="font-weight: 800; font-size: 14px; color: var(--ink);">📦 Offline Memory & Cache</span>
+                  <span style="font-size: 12px; font-weight: 700; color: var(--accent);" id="storage-total-label">18.4 MB / 50 MB</span>
+                </div>
+
+                <div class="storage-bar-track">
+                  <div class="storage-seg-yt" id="seg-yt" style="width: 60%;" title="YouTube Transcripts: 11.2 MB"></div>
+                  <div class="storage-seg-art" id="seg-art" style="width: 25%;" title="Articles: 4.6 MB"></div>
+                  <div class="storage-seg-note" id="seg-note" style="width: 10%;" title="IndexedDB Notes: 1.8 MB"></div>
+                  <div class="storage-seg-shell" id="seg-shell" style="width: 5%;" title="PWA App Shell: 0.8 MB"></div>
+                </div>
+
+                <div class="storage-legend">
+                  <span><span class="storage-dot" style="background: #ff4d4f;"></span>Transcripts (<span id="legend-yt">11.2 MB</span>)</span>
+                  <span><span class="storage-dot" style="background: #0891b2;"></span>Articles (<span id="legend-art">4.6 MB</span>)</span>
+                  <span><span class="storage-dot" style="background: #10b981;"></span>Notes (<span id="legend-note">1.8 MB</span>)</span>
+                </div>
+
+                <!-- Cached Items List with Delete Action -->
+                <div style="margin-top: 14px; font-size: 12px; font-weight: 700; color: var(--ink-secondary);">
+                  Cached Offline Items (<span id="cached-count">3</span>):
+                </div>
+
+                <div class="cached-items-list" id="cached-items-container">
+                  <div class="cached-item-row" id="row-karpathy">
+                    <span style="truncate max-width: 220px;">▶ Andrej Karpathy LLM</span>
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                      <span style="color: var(--ink-muted); font-size: 11px;">11.2 MB</span>
+                      <button class="btn-trash" onclick="toggleItemOffline('karpathy', 'Andrej Karpathy LLM', 11.2)" title="Free up memory">🗑️</button>
+                    </div>
+                  </div>
+                  <div class="cached-item-row" id="row-rag">
+                    <span style="truncate max-width: 220px;">📄 Modern RAG Systems</span>
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                      <span style="color: var(--ink-muted); font-size: 11px;">4.6 MB</span>
+                      <button class="btn-trash" onclick="toggleItemOffline('rag', 'Modern RAG Systems', 4.6)" title="Free up memory">🗑️</button>
+                    </div>
+                  </div>
+                  <div class="cached-item-row" id="row-sqlite">
+                    <span style="truncate max-width: 220px;">📝 Distributed SQLite Edge</span>
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                      <span style="color: var(--ink-muted); font-size: 11px;">1.8 MB</span>
+                      <button class="btn-trash" onclick="toggleItemOffline('sqlite', 'Distributed SQLite Edge', 1.8)" title="Free up memory">🗑️</button>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Global Free Up Memory Button -->
+                <div style="margin-top: 14px; display: flex; gap: 8px;">
+                  <button class="btn-submit btn-danger" style="height: 36px; font-size: 12px;" onclick="freeUpAllStorage()">
+                    🧹 Free Up All Offline Storage
+                  </button>
+                </div>
+              </div>
+
+              <!-- 2. Appearance & Pixel 7 Pro Display Tuning -->
+              <div class="lib-card">
+                <div style="font-weight: 800; font-size: 14px; margin-bottom: 8px;">🎨 Appearance & Display</div>
+                <div class="theme-switcher-grid">
+                  <button class="theme-btn active" id="theme-chip-light" onclick="setThemeDirect('light')">
+                    <span class="theme-title">Calm Light</span>
+                    <span class="theme-sub">Default</span>
+                  </button>
+                  <button class="theme-btn" id="theme-chip-dark" onclick="setThemeDirect('dark')">
+                    <span class="theme-title">Slate Dark</span>
+                    <span class="theme-sub">Low Glare</span>
+                  </button>
+                  <button class="theme-btn" id="theme-chip-oled" onclick="setThemeDirect('oled')">
+                    <span class="theme-title">OLED Black</span>
+                    <span class="theme-sub">0% Battery</span>
+                  </button>
+                </div>
+                <div style="display: flex; justify-content: space-between; align-items: center; font-size: 12px; color: var(--ink-secondary);">
+
+                  <span>120Hz LTPO Smooth Scroll</span>
+                  <span style="font-weight: 700; color: var(--accent);">Enabled</span>
+                </div>
+              </div>
+
+              <!-- 3. Android PWA & System Share Diagnostics -->
+              <div class="lib-card">
+                <div style="font-weight: 800; font-size: 14px; margin-bottom: 8px;">📱 Android PWA & System Share</div>
+                <div style="display: flex; flex-direction: column; gap: 6px; font-size: 12px;">
+                  <div style="display: flex; justify-content: space-between;">
+                    <span>PWA Standalone Status</span>
+                    <span style="color: var(--accent); font-weight: 700;">✓ Installed (Pixel 7 Pro)</span>
+                  </div>
+                  <div style="display: flex; justify-content: space-between;">
+                    <span>System Share Target API</span>
+                    <span style="color: var(--accent); font-weight: 700;">✓ Active (/capture)</span>
+                  </div>
+                  <div style="display: flex; justify-content: space-between;">
+                    <span>Service Worker Engine</span>
+                    <span style="color: var(--ink-muted); font-family: var(--font-mono);">ai-memory-shell-v6</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- 4. Device Pairing & Cloud Sync -->
+              <div class="lib-card">
+                <div style="font-weight: 800; font-size: 14px; margin-bottom: 8px;">🔗 Cloud & Hardware Sync</div>
+                <div style="display: flex; flex-direction: column; gap: 6px; font-size: 12px;">
+                  <div style="display: flex; justify-content: space-between;">
+                    <span>Hetzner Edge Node</span>
+                    <span style="color: var(--accent); font-weight: 700;">Connected (38ms)</span>
+                  </div>
+                  <div style="display: flex; justify-content: space-between;">
+                    <span>Mac M5 Pro Local ASR</span>
+                    <span style="color: var(--accent); font-weight: 700;">Online (MLX Whisper)</span>
+                  </div>
+                  <div style="display: flex; justify-content: space-between;">
+                    <span>Telegram Webhook</span>
+                    <span style="color: var(--accent); font-weight: 700;">Active (@AIBrainBot)</span>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Bottom Navigation Bar -->
+        <nav class="bottom-nav">
+          <button class="nav-item active" id="nav-lib" onclick="switchView('view-library')">
+            <span class="nav-icon">📚</span>
+            <span>Library</span>
+          </button>
+
+          <!-- Central Capture FAB -->
+          <button class="fab-capture" onclick="openCaptureSheet()" title="Quick Capture">
+            +
+          </button>
+
+          <button class="nav-item" id="nav-ask" onclick="switchView('view-ask')">
+            <span class="nav-icon">💬</span>
+            <span>Ask AI</span>
+          </button>
+
+          <button class="nav-item" id="nav-more" onclick="switchView('view-more')">
+            <span class="nav-icon">⚙️</span>
+            <span>More</span>
+          </button>
+        </nav>
+
+        <!-- Bottom Sheet: Quick Capture -->
+        <div class="sheet-overlay" id="capture-sheet-overlay" onclick="closeCaptureSheet()"></div>
+        <div class="bottom-sheet" id="capture-bottom-sheet">
+          <div class="sheet-handle"></div>
+          <h3 class="sheet-title">1-Tap Quick Capture</h3>
+          <div style="display: flex; gap: 6px; margin-bottom: 14px;">
+            <button class="filter-chip active" id="cs-url-tab" onclick="setCaptureTab('url')">URL Link</button>
+            <button class="filter-chip" id="cs-note-tab" onclick="setCaptureTab('note')">Quick Thought</button>
+          </div>
+
+          <div id="capture-url-form">
+            <input type="url" id="capture-url-input" class="input-field" placeholder="https://youtube.com/watch?v=... or article URL" value="https://youtube.com/watch?v=dQw4w9WgXcQ" />
+            <button type="button" class="btn-submit" onclick="submitQuickCapture()">Save to AI Memory</button>
+          </div>
+
+          <div id="capture-note-form" style="display: none;">
+            <input type="text" id="capture-note-title" class="input-field" placeholder="Note Title" />
+            <textarea class="note-textarea" id="capture-note-body" placeholder="Write quick note..." style="height: 110px; margin-bottom: 12px;"></textarea>
+            <button type="button" class="btn-submit" onclick="submitQuickCaptureNote()">Save Note</button>
+          </div>
+        </div>
+
+        <!-- Bottom Sheet: Citation Preview -->
+        <div class="sheet-overlay" id="citation-sheet-overlay" onclick="closeCitationSheet()"></div>
+        <div class="bottom-sheet" id="citation-bottom-sheet">
+          <div class="sheet-handle"></div>
+          <h3 class="sheet-title" id="cite-sheet-title">Retrieved Passage Citation</h3>
+          <p id="cite-sheet-text" style="font-size: 13.5px; line-height: 1.6; color: var(--ink); background: var(--surface-raised); border: 1px solid var(--line); border-radius: var(--radius-sm); padding: 12px; margin: 0 0 16px;"></p>
+          <button type="button" class="btn-submit" onclick="closeCitationSheet(); openReaderView('karpathy')">Jump to Passage in Reader</button>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Interactive Tour & Review Guide -->
+    <aside class="tour-panel">
+      <h2 style="font-size: 18px; font-weight: 800; margin-top: 0; margin-bottom: 8px;">Phase 14 Review Guide</h2>
+      <p style="font-size: 13px; color: var(--ink-secondary); line-height: 1.5; margin-bottom: 18px;">
+        Test the newly added <strong>More & Settings</strong> and <strong>Per-Item Offline Memory Management</strong> flows below:
+      </p>
+
+      <div style="display: flex; flex-direction: column; gap: 10px;">
+        <button class="btn-pill" onclick="switchView('view-more')">
+          <span>⚙️ 1. Test More & Settings Hub</span>
+        </button>
+        <button class="btn-pill" onclick="switchView('view-library')">
+          <span>📦 2. Test Per-Item 'Make Offline' Badges</span>
+        </button>
+        <button class="btn-pill" onclick="freeUpAllStorage()">
+          <span>🧹 3. Test 'Free Up Storage' Action</span>
+        </button>
+        <button class="btn-pill" onclick="setThemeDirect('oled')">
+          <span>🌙 4. Test Pixel 7 Pro OLED Black Mode</span>
+        </button>
+        <button class="btn-pill" onclick="simulateAndroidShare()">
+          <span>📤 5. Test Android Web Share Target</span>
+        </button>
+      </div>
+
+      <div style="margin-top: 24px; padding-top: 16px; border-top: 1px solid var(--line); font-size: 12px; color: var(--ink-muted);">
+        <strong>GitHub Milestones & Issues:</strong><br />
+        • <strong>#176</strong>: Per-Item Offline Storage & Badges<br />
+        • <strong>#177</strong>: More & Settings Mobile Hub<br />
+        • <strong>Milestone 20</strong>: v0.18.x Phase 14
+      </div>
+    </aside>
+
+  </main>
+
+  <script>
+    // Offline Storage State Tracker
+    const offlineItems = {
+      'karpathy': { title: '▶ Andrej Karpathy LLM', size: 11.2, type: 'youtube', cached: true },
+      'rag': { title: '📄 Modern RAG Systems', size: 4.6, type: 'article', cached: true },
+      'sqlite': { title: '📝 Distributed SQLite Edge', size: 1.8, type: 'note', cached: true },
+      'tensor': { title: '📑 Pixel 7 Pro Tensor G2', size: 2.8, type: 'pdf', cached: false },
+      'upgrade-item': { title: '▶ AI Memory Systems Shorts', size: 0.9, type: 'youtube', cached: false },
+    };
+
+    function recalculateStorage() {
+      let total = 0.8; // baseline app shell
+      let ytTotal = 0;
+      let artTotal = 0;
+      let noteTotal = 0;
+      let count = 0;
+
+      for (const [id, item] of Object.entries(offlineItems)) {
+        if (item.cached) {
+          count++;
+          total += item.size;
+          if (item.type === 'youtube') ytTotal += item.size;
+          else if (item.type === 'article' || item.type === 'pdf') artTotal += item.size;
+          else if (item.type === 'note') noteTotal += item.size;
+        }
+      }
+
+      document.getElementById('storage-total-label').innerText = `${total.toFixed(1)} MB / 50 MB`;
+      document.getElementById('filter-offline-count').innerText = count;
+      document.getElementById('cached-count').innerText = count;
+
+      const ytPercent = (ytTotal / 50) * 100;
+      const artPercent = (artTotal / 50) * 100;
+      const notePercent = (noteTotal / 50) * 100;
+
+      document.getElementById('seg-yt').style.width = ytPercent + '%';
+      document.getElementById('seg-art').style.width = artPercent + '%';
+      document.getElementById('seg-note').style.width = notePercent + '%';
+
+      document.getElementById('legend-yt').innerText = `${ytTotal.toFixed(1)} MB`;
+      document.getElementById('legend-art').innerText = `${artTotal.toFixed(1)} MB`;
+      document.getElementById('legend-note').innerText = `${noteTotal.toFixed(1)} MB`;
+    }
+
+    function toggleItemOffline(itemId, title, size) {
+      const item = offlineItems[itemId];
+      if (!item) return;
+
+      item.cached = !item.cached;
+      const isNowCached = item.cached;
+
+      // Update Card Badge & Button
+      const badge = document.getElementById('badge-' + itemId);
+      const btnLabel = document.getElementById('btn-label-' + itemId);
+      const card = document.getElementById('card-' + itemId);
+
+      if (badge && btnLabel) {
+        if (isNowCached) {
+          badge.className = 'badge-pill offline';
+          badge.innerText = `✓ Offline Ready (${size} MB)`;
+          btnLabel.innerText = 'Remove Offline';
+          if (card) card.setAttribute('data-offline', 'true');
+        } else {
+          badge.className = 'badge-pill cloud';
+          badge.innerText = '☁️ Stream Only';
+          btnLabel.innerText = 'Make Offline';
+          if (card) card.setAttribute('data-offline', 'false');
+        }
+      }
+
+      // Update Reader Header Badge if active
+      if (itemId === 'karpathy') {
+        const rLabel = document.getElementById('reader-offline-label');
+        if (rLabel) {
+          rLabel.innerText = isNowCached ? '✓ Offline (11.2 MB)' : '☁️ Save Offline';
+        }
+      }
+
+      // Update Row in Settings
+      const row = document.getElementById('row-' + itemId);
+      if (row) {
+        row.style.display = isNowCached ? 'flex' : 'none';
+      }
+
+      recalculateStorage();
+      showToast(isNowCached ? `Downloaded "${title}" for offline use (${size} MB)` : `Removed "${title}" from offline cache · Memory freed!`);
+    }
+
+    function freeUpAllStorage() {
+      for (const [id, item] of Object.entries(offlineItems)) {
+        if (item.cached) {
+          item.cached = false;
+          const badge = document.getElementById('badge-' + id);
+          const btnLabel = document.getElementById('btn-label-' + id);
+          const card = document.getElementById('card-' + id);
+          const row = document.getElementById('row-' + id);
+
+          if (badge) {
+            badge.className = 'badge-pill cloud';
+            badge.innerText = '☁️ Stream Only';
+          }
+          if (btnLabel) btnLabel.innerText = 'Make Offline';
+          if (card) card.setAttribute('data-offline', 'false');
+          if (row) row.style.display = 'none';
+        }
+      }
+
+      const rLabel = document.getElementById('reader-offline-label');
+      if (rLabel) rLabel.innerText = '☁️ Save Offline';
+
+      recalculateStorage();
+      showToast('All offline cache cleared! ~18 MB memory freed. Notes preserved.');
+    }
+
+    // Clock update
+    function updateClock() {
+      const now = new Date();
+      const timeStr = now.getHours().toString().padStart(2, '0') + ':' + now.getMinutes().toString().padStart(2, '0');
+      const el = document.getElementById('live-time');
+      if (el) el.innerText = timeStr;
+    }
+    setInterval(updateClock, 1000);
+    updateClock();
+
+    // View Switching
+    function switchView(viewId) {
+      document.querySelectorAll('.view-content').forEach(el => el.classList.remove('active'));
+      const target = document.getElementById(viewId);
+      if (target) target.classList.add('active');
+
+      document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+      if (viewId === 'view-library') document.getElementById('nav-lib')?.classList.add('active');
+      if (viewId === 'view-ask') document.getElementById('nav-ask')?.classList.add('active');
+      if (viewId === 'view-more') document.getElementById('nav-more')?.classList.add('active');
+    }
+
+    // Reader View Switch
+    function openReaderView(itemId) {
+      switchView('view-reader');
+      document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+    }
+
+    // Reader Tab Switching
+    function switchReaderTab(tabName) {
+      document.querySelectorAll('.reader-tab-btn').forEach(btn => btn.classList.remove('active'));
+      const btn = document.getElementById('rtab-' + tabName);
+      if (btn) btn.classList.add('active');
+
+      document.getElementById('reader-sub-transcript').style.display = tabName === 'transcript' ? 'flex' : 'none';
+      document.getElementById('reader-sub-ai').style.display = tabName === 'ai' ? 'block' : 'none';
+      document.getElementById('reader-sub-notes').style.display = tabName === 'notes' ? 'flex' : 'none';
+      document.getElementById('reader-sub-ask').style.display = tabName === 'ask' ? 'flex' : 'none';
+    }
+
+    // Video Player Simulation
+    let isPlaying = false;
+    let playInterval = null;
+    let currentTimeSec = 255; // 04:15
+
+    function togglePlay() {
+      isPlaying = !isPlaying;
+      const btn = document.getElementById('play-btn');
+      if (isPlaying) {
+        btn.innerText = '⏸';
+        playInterval = setInterval(() => {
+          currentTimeSec += 1;
+          const mins = Math.floor(currentTimeSec / 60).toString().padStart(2, '0');
+          const secs = (currentTimeSec % 60).toString().padStart(2, '0');
+          document.getElementById('player-timecode').innerText = `${mins}:${secs}`;
+          const progressPercent = Math.min(100, (currentTimeSec / 1122) * 100);
+          document.getElementById('player-progress').style.width = progressPercent + '%';
+        }, 1000);
+        showToast('Video Playing');
+      } else {
+        btn.innerText = '▶';
+        clearInterval(playInterval);
+        showToast('Video Paused');
+      }
+    }
+
+    function seekTranscript(timecode, progressPercent) {
+      document.getElementById('player-timecode').innerText = timecode;
+      document.getElementById('player-progress').style.width = progressPercent + '%';
+      document.querySelectorAll('.transcript-row').forEach(r => r.classList.remove('active'));
+      event.currentTarget.classList.add('active');
+      showToast('Seeked to ' + timecode);
+    }
+
+    function seekProgress(e) {
+      const rect = e.currentTarget.getBoundingClientRect();
+      const clickX = e.clientX - rect.left;
+      const percent = (clickX / rect.width) * 100;
+      document.getElementById('player-progress').style.width = percent + '%';
+      showToast('Seeked progress');
+    }
+
+    // Append AI Summary to Notes
+    function appendSummaryToNotes() {
+      const editor = document.getElementById('note-editor-text');
+      if (editor) {
+        editor.value += '\n\n### AI Summary\nThis lecture examines the critical mechanics of tokenization in autoregressive language models.';
+      }
+      switchReaderTab('notes');
+      showToast('Appended AI Brief to My Notes!');
+    }
+
+    function insertMarkdown(syntax) {
+      const editor = document.getElementById('note-editor-text');
+      if (editor) {
+        editor.value += '\n' + syntax;
+        editor.focus();
+      }
+      showToast('Inserted ' + syntax);
+    }
+
+    // Toast Message
+    function showToast(text) {
+      const toast = document.getElementById('app-toast');
+      const textEl = document.getElementById('toast-text');
+      if (toast && textEl) {
+        textEl.innerText = text;
+        toast.classList.add('show');
+        setTimeout(() => toast.classList.remove('show'), 2200);
+      }
+    }
+
+    // Quick Capture Bottom Sheet
+    function openCaptureSheet() {
+      document.getElementById('capture-sheet-overlay').classList.add('open');
+      document.getElementById('capture-bottom-sheet').classList.add('open');
+    }
+
+    function closeCaptureSheet() {
+      document.getElementById('capture-sheet-overlay').classList.remove('open');
+      document.getElementById('capture-bottom-sheet').classList.remove('open');
+    }
+
+    function setCaptureTab(tab) {
+      document.getElementById('cs-url-tab').classList.toggle('active', tab === 'url');
+      document.getElementById('cs-note-tab').classList.toggle('active', tab === 'note');
+      document.getElementById('capture-url-form').style.display = tab === 'url' ? 'block' : 'none';
+      document.getElementById('capture-note-form').style.display = tab === 'note' ? 'block' : 'none';
+    }
+
+    function submitQuickCapture() {
+      closeCaptureSheet();
+      showToast('Saved URL! Extracting transcript in background...');
+    }
+
+    function submitQuickCaptureNote() {
+      closeCaptureSheet();
+      showToast('Saved Note to Library!');
+    }
+
+    // Citation Bottom Sheet
+    function openCitationSheet(title, text) {
+      document.getElementById('cite-sheet-title').innerText = 'Retrieved Passage: ' + title;
+      document.getElementById('cite-sheet-text').innerText = text;
+      document.getElementById('citation-sheet-overlay').classList.add('open');
+      document.getElementById('citation-bottom-sheet').classList.add('open');
+    }
+
+    function closeCitationSheet() {
+      document.getElementById('citation-sheet-overlay').classList.remove('open');
+      document.getElementById('citation-bottom-sheet').classList.remove('open');
+    }
+
+    // Search and Filter
+    function setFilter(btn, type) {
+      document.querySelectorAll('.filter-chip').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      const cards = document.querySelectorAll('.lib-card');
+      cards.forEach(card => {
+        if (type === 'all') card.style.display = 'flex';
+        else if (type === 'offline') card.style.display = card.getAttribute('data-offline') === 'true' ? 'flex' : 'none';
+        else card.style.display = card.getAttribute('data-type') === type ? 'flex' : 'none';
+      });
+    }
+
+    function handleSearch(val) {
+      const q = val.toLowerCase().trim();
+      const cards = document.querySelectorAll('.lib-card');
+      cards.forEach(card => {
+        const text = card.innerText.toLowerCase();
+        card.style.display = text.includes(q) ? 'flex' : 'none';
+      });
+    }
+
+    function sendPrompt(text) {
+      showToast('Asking: "' + text + '"');
+    }
+
+    // Studio Controls
+    function toggleDeviceFrame() {
+      const frame = document.getElementById('pixel-device-frame');
+      const btn = document.getElementById('toggle-frame-btn');
+      frame.classList.toggle('fullscreen-mode');
+      const isFull = frame.classList.contains('fullscreen-mode');
+      btn.innerHTML = isFull ? '<span>📱 Mode: Responsive PWA</span>' : '<span>📱 Frame: Pixel 7 Pro</span>';
+    }
+
+    function setThemeDirect(theme) {
+      document.body.setAttribute('data-theme', theme);
+      document.getElementById('theme-chip-light')?.classList.toggle('active', theme === 'light');
+      document.getElementById('theme-chip-dark')?.classList.toggle('active', theme === 'dark');
+      document.getElementById('theme-chip-oled')?.classList.toggle('active', theme === 'oled');
+      showToast('Applied Theme: ' + theme);
+    }
+
+    function cycleTheme() {
+      const current = document.body.getAttribute('data-theme') || 'light';
+      const next = current === 'light' ? 'dark' : current === 'dark' ? 'oled' : 'light';
+      setThemeDirect(next);
+      document.getElementById('toggle-theme-btn').innerHTML = next === 'dark' ? '<span>🌙 Theme: Dark</span>' : next === 'oled' ? '<span>⬛ Theme: OLED</span>' : '<span>☀️ Theme: Light</span>';
+    }
+
+    let isOffline = false;
+    function toggleNetwork() {
+      isOffline = !isOffline;
+      const body = document.body;
+      body.setAttribute('data-offline', isOffline ? 'true' : 'false');
+      document.getElementById('toggle-network-btn').innerHTML = isOffline ? '<span>🟠 Offline (Cache Storage)</span>' : '<span>🟢 Online</span>';
+      showToast(isOffline ? 'Offline mode enabled' : 'Online mode restored');
+    }
+
+    function simulateAndroidShare() {
+      openCaptureSheet();
+      document.getElementById('capture-url-input').value = 'https://www.youtube.com/watch?v=dQw4w9WgXcQ';
+      showToast('Android Share Intent received from YouTube app!');
+    }
+
+    // Initial storage calculation
+    recalculateStorage();
+  </script>
+</body>
+</html>

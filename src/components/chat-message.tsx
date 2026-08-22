@@ -21,9 +21,10 @@ export interface ChatMessageProps {
   role: "user" | "assistant";
   content: string;
   chunks?: AskRetrievedChunk[];
+  onSelectCitation?: (chunk: AskRetrievedChunk) => void;
 }
 
-export function ChatMessage({ role, content, chunks }: ChatMessageProps) {
+export function ChatMessage({ role, content, chunks, onSelectCitation }: ChatMessageProps) {
   const isUser = role === "user";
   return (
     <div
@@ -49,6 +50,7 @@ export function ChatMessage({ role, content, chunks }: ChatMessageProps) {
                   key={i}
                   chunk_id={seg.chunk_id}
                   chunks={chunks ?? []}
+                  onSelectCitation={onSelectCitation}
                 />
               ),
             )
@@ -66,7 +68,12 @@ export function ChatMessage({ role, content, chunks }: ChatMessageProps) {
           </div>
           <ul className="flex flex-wrap gap-1.5">
             {chunks.slice(0, 6).map((c, i) => (
-              <RetrievedSourceChip key={c.chunk_id} chunk={c} index={i} />
+              <RetrievedSourceChip
+                key={c.chunk_id}
+                chunk={c}
+                index={i}
+                onSelect={onSelectCitation}
+              />
             ))}
           </ul>
         </div>
@@ -78,9 +85,11 @@ export function ChatMessage({ role, content, chunks }: ChatMessageProps) {
 function RetrievedSourceChip({
   chunk,
   index,
+  onSelect,
 }: {
   chunk: AskRetrievedChunk;
   index: number;
+  onSelect?: (chunk: AskRetrievedChunk) => void;
 }) {
   const platform = platformLabel(chunk.item_source_platform, chunk.item_source_type);
   const quality = qualityLabel(chunk.item_capture_quality);
@@ -97,21 +106,43 @@ function RetrievedSourceChip({
         : chunk.source_kind === "original_content"
           ? "Original source"
           : "Saved item context";
-  return (
-    <li
-      className={`max-w-full rounded-full border bg-[var(--surface-raised)] px-2 py-0.5 text-[11px] ${
-        reason
-          ? "border-[var(--quality-needs-upgrade)] text-[var(--quality-needs-upgrade)]"
-          : "border-[var(--border)] text-[var(--text-secondary)]"
-      }`}
-      title={`${sourceLabel} · ${platform} · ${quality} · similarity ${chunk.similarity.toFixed(3)}`}
-    >
+
+  const content = (
+    <>
       <span className="mr-1 font-mono text-[var(--text-muted)]">{index + 1}.</span>
       <span>{chunk.item_title}</span>
       <span className="mx-1 text-[var(--text-muted)]">·</span>
       <span>{sourceLabel}</span>
       <span className="mx-1 text-[var(--text-muted)]">·</span>
       <span>{platform}</span>
+    </>
+  );
+
+  const className = `max-w-full rounded-full border bg-[var(--surface-raised)] px-2 py-0.5 text-[11px] transition-colors ${
+    reason
+      ? "border-[var(--quality-needs-upgrade)] text-[var(--quality-needs-upgrade)]"
+      : "border-[var(--border)] text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
+  }`;
+  const title = `${sourceLabel} · ${platform} · ${quality} · similarity ${chunk.similarity.toFixed(3)}`;
+
+  if (onSelect) {
+    return (
+      <li>
+        <button
+          type="button"
+          onClick={() => onSelect(chunk)}
+          className={`${className} cursor-pointer text-left active:scale-95`}
+          title={title}
+        >
+          {content}
+        </button>
+      </li>
+    );
+  }
+
+  return (
+    <li className={className} title={title}>
+      {content}
     </li>
   );
 }

@@ -1,5 +1,5 @@
 import { fileURLToPath } from "node:url";
-import { resolve, dirname } from "node:path";
+import { dirname } from "node:path";
 import type { NextConfig } from "next";
 
 const projectRoot = dirname(fileURLToPath(import.meta.url));

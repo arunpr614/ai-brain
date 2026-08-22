@@ -23,10 +23,14 @@ const TABS: { id: Tab; label: string; icon: typeof Globe }[] = [
 export function CaptureTabs({
   active,
   prefilledUrl,
+  prefilledTitle = "",
+  prefilledBody = "",
   initialDuplicate,
 }: {
   active: Tab;
   prefilledUrl: string;
+  prefilledTitle?: string;
+  prefilledBody?: string;
   initialDuplicate: { itemId: string; url: string } | null;
 }) {
   const router = useRouter();
@@ -69,7 +73,12 @@ export function CaptureTabs({
         <UrlPanel prefilled={prefilledUrl} initialDuplicate={initialDuplicate} />
       )}
       {active === "pdf" && <PdfDropzone />}
-      {active === "note" && <NotePanel />}
+      {active === "note" && (
+        <NotePanel
+          prefilledTitle={prefilledTitle}
+          prefilledBody={prefilledBody}
+        />
+      )}
     </div>
   );
 }
@@ -163,7 +172,13 @@ function UrlPanel({
   );
 }
 
-function NotePanel() {
+function NotePanel({
+  prefilledTitle = "",
+  prefilledBody = "",
+}: {
+  prefilledTitle?: string;
+  prefilledBody?: string;
+}) {
   const [state, action, pending] = useActionState<FormState, FormData>(
     createNoteAction,
     null,
@@ -183,6 +198,8 @@ function NotePanel() {
           type="text"
           required
           maxLength={200}
+          defaultValue={prefilledTitle}
+          placeholder="Note title"
           className="h-11 w-full rounded-md border border-[var(--border)] bg-[var(--surface-raised)] px-3 text-base text-[var(--text-primary)] md:h-9 md:text-sm"
         />
       </div>
@@ -198,6 +215,8 @@ function NotePanel() {
           name="body"
           required
           rows={12}
+          defaultValue={prefilledBody}
+          placeholder="Write your markdown note or thoughts here..."
           className="min-h-[220px] w-full rounded-md border border-[var(--border)] bg-[var(--surface-raised)] p-3 font-mono text-[13px] leading-[1.55] text-[var(--text-primary)] md:min-h-[320px]"
         />
       </div>
@@ -222,3 +241,4 @@ function NotePanel() {
     </form>
   );
 }
+

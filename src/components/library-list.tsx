@@ -4,13 +4,17 @@ import {
   FileText,
   Globe,
   Inbox,
+  Loader2,
   MessageCircle,
+  RefreshCw,
+  Search,
   StickyNote,
-  Video,
   X,
 } from "lucide-react";
 import { YouTubeIcon } from "@/components/youtube-icon";
+import { ItemOfflineToggle } from "@/components/item-offline-toggle";
 import Link from "next/link";
+
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState, useTransition } from "react";
 import {
@@ -252,11 +256,123 @@ export function LibraryList({
     return () => clearTimeout(t);
   }, [flash]);
 
+  const [searchQuery, setSearchQuery] = useState("");
+  const [debouncedQuery, setDebouncedQuery] = useState("");
+  const [pullDistance, setPullDistance] = useState(0);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const touchStartYRef = useRef(0);
+
+  useEffect(() => {
+    const t = setTimeout(() => {
+      setDebouncedQuery(searchQuery.trim().toLowerCase());
+    }, 150);
+    return () => clearTimeout(t);
+  }, [searchQuery]);
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    if (typeof window !== "undefined" && window.scrollY <= 5) {
+      touchStartYRef.current = e.touches[0].clientY;
+    } else {
+      touchStartYRef.current = 0;
+    }
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    if (touchStartYRef.current > 0 && typeof window !== "undefined" && window.scrollY <= 5) {
+      const diff = e.touches[0].clientY - touchStartYRef.current;
+      if (diff > 0) {
+        setPullDistance(Math.min(diff * 0.45, 80));
+      }
+    }
+  };
+
+  const handleTouchEnd = () => {
+    if (pullDistance > 50 && !isRefreshing) {
+      setIsRefreshing(true);
+      setPullDistance(0);
+      router.refresh();
+      setTimeout(() => setIsRefreshing(false), 900);
+    } else {
+      setPullDistance(0);
+    }
+    touchStartYRef.current = 0;
+  };
+
   const anySelected = selectedIds.size > 0;
-  const filteredItems = items.filter((item) => matchesFilter(item, filter));
+  const filteredItems = items
+    .filter((item) => matchesFilter(item, filter))
+    .filter((item) => {
+      if (!debouncedQuery) return true;
+      const title = (item.title || "").toLowerCase();
+      const body = (item.body || "").toLowerCase();
+      const summary = (item.summary || "").toLowerCase();
+      const url = (item.source_url || "").toLowerCase();
+      return (
+        title.includes(debouncedQuery) ||
+        body.includes(debouncedQuery) ||
+        summary.includes(debouncedQuery) ||
+        url.includes(debouncedQuery)
+      );
+    });
 
   return (
-    <>
+    <div
+      onTouchStart={handleTouchStart}
+      onTouchMove={handleTouchMove}
+      onTouchEnd={handleTouchEnd}
+      className="relative"
+    >
+      {/* Pull-to-refresh visual indicator */}
+      {(pullDistance > 0 || isRefreshing) && (
+        <div
+          className="flex items-center justify-center transition-all duration-150 overflow-hidden md:hidden"
+          style={{ height: isRefreshing ? "48px" : `${pullDistance}px` }}
+        >
+          <div className="flex items-center gap-2 rounded-full border border-[var(--border)] bg-[var(--surface-raised)] px-3 py-1 text-xs font-medium text-[var(--text-secondary)] shadow-sm">
+            {isRefreshing ? (
+              <>
+                <Loader2 className="h-3.5 w-3.5 animate-spin text-[var(--accent-11)]" />
+                <span>Refreshing library...</span>
+              </>
+            ) : pullDistance > 50 ? (
+              <>
+                <RefreshCw className="h-3.5 w-3.5 text-[var(--accent-11)]" />
+                <span>Release to refresh</span>
+              </>
+            ) : (
+              <>
+                <RefreshCw className="h-3.5 w-3.5 opacity-60" />
+                <span>Pull to refresh</span>
+              </>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Instant Search Bar (Mobile & Desktop) */}
+      <div className="mb-4 relative">
+        <Search
+          className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--text-muted)]"
+          strokeWidth={2}
+        />
+        <input
+          type="search"
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          placeholder="Instant filter titles, summaries & notes..."
+          className="h-11 w-full rounded-xl border border-[var(--border)] bg-[var(--surface-raised)] py-2 pl-10 pr-9 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:border-[var(--action-primary-focus)] focus:outline-hidden md:h-9 md:rounded-md"
+        />
+        {searchQuery && (
+          <button
+            type="button"
+            onClick={() => setSearchQuery("")}
+            aria-label="Clear search"
+            className="absolute right-2.5 top-1/2 -translate-y-1/2 inline-flex h-6 w-6 items-center justify-center rounded-full text-[var(--text-muted)] hover:bg-[var(--surface)] hover:text-[var(--text-primary)]"
+          >
+            <X className="h-3.5 w-3.5" />
+          </button>
+        )}
+      </div>
       <LibraryFilterBar
         active={filter}
         counts={{
@@ -381,7 +497,10 @@ export function LibraryList({
                       <span className="text-[var(--text-muted)]">·</span>
                       <QualityBadge quality={it.capture_quality} />
                       <span className="text-[var(--text-muted)]">·</span>
+                      <ItemOfflineToggle itemId={it.id} />
+                      <span className="text-[var(--text-muted)]">·</span>
                       <span>{formatRelative(it.captured_at)}</span>
+
                       {it.total_chars !== null && (
                         <>
                           <span className="text-[var(--text-muted)]">·</span>
@@ -435,7 +554,7 @@ export function LibraryList({
           {flash}
         </div>
       )}
-    </>
+    </div>
   );
 }
 

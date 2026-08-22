@@ -44,32 +44,51 @@ export function MobileLibraryFilters({
   }, [open]);
 
   return (
-    <div className="mb-5 md:hidden">
+    <div className="mb-5 md:hidden space-y-2.5">
+      {/* Horizontal Swipeable Quick Filter Chips */}
+      <div className="flex items-center gap-1.5 overflow-x-auto pb-1 no-scrollbar -mx-1 px-1">
+        {sourceOptions.map((opt) => (
+          <Link
+            key={opt.value}
+            href={opt.href}
+            aria-current={opt.active ? "page" : undefined}
+            className={`inline-flex h-9 shrink-0 items-center justify-center rounded-full px-3.5 text-xs font-medium transition-colors ${
+              opt.active
+                ? "bg-[var(--control-selected-bg)] text-[var(--control-selected-fg)] border border-[var(--control-selected-border)] font-semibold shadow-xs"
+                : "border border-[var(--border)] bg-[var(--surface-raised)] text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
+            }`}
+          >
+            {opt.label}
+          </Link>
+        ))}
+      </div>
+
       <button
         type="button"
         aria-haspopup="dialog"
         aria-expanded={open}
         aria-controls="mobile-library-filter-sheet"
         onClick={() => setOpen(true)}
-        className="flex w-full items-center justify-between gap-3 rounded-lg border border-[var(--border)] bg-[var(--surface)] px-3 py-3 text-left"
+        className="flex w-full items-center justify-between gap-3 rounded-lg border border-[var(--border)] bg-[var(--surface)] px-3 py-2.5 text-left active:bg-[var(--surface-raised)]"
       >
         <div className="flex min-w-0 items-center gap-2">
           <Filter className="h-4 w-4 shrink-0 text-[var(--text-muted)]" strokeWidth={2} />
           <div className="min-w-0">
-            <span className="block text-sm font-medium text-[var(--text-primary)]">
-              Filters
+            <span className="block text-xs font-medium text-[var(--text-primary)]">
+              All Filters & Quality
             </span>
-            <span className="block truncate text-xs text-[var(--text-secondary)]">
+            <span className="block truncate text-[11px] text-[var(--text-secondary)]">
               {activeFilterLabels.length > 0
                 ? activeFilterLabels.join(", ")
                 : "All sources"}
             </span>
           </div>
         </div>
-        <span className="shrink-0 rounded-full border border-[var(--border)] px-2 py-0.5 text-xs text-[var(--text-secondary)]">
+        <span className="shrink-0 rounded-full border border-[var(--border)] bg-[var(--surface-raised)] px-2 py-0.5 text-xs text-[var(--text-secondary)]">
           {filteredCount}
         </span>
       </button>
+
 
       {open && (
         <>

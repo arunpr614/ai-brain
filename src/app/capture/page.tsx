@@ -8,21 +8,39 @@ import { CaptureTabs } from "./tabs";
 
 type Tab = "url" | "pdf" | "note";
 
+function extractUrlFromText(text: string | undefined): string | null {
+  if (!text) return null;
+  const match = text.match(/https?:\/\/[^\s]+/i);
+  return match ? match[0] : null;
+}
+
 export default async function CapturePage({
   searchParams,
 }: {
-  searchParams: Promise<{ tab?: string; url?: string }>;
+  searchParams: Promise<{ tab?: string; url?: string; text?: string; title?: string }>;
 }) {
-  const { tab, url } = await searchParams;
+  const { tab, url: rawUrl, text, title } = await searchParams;
   const c = await cookies();
   if (!verifySessionCookie(c)) {
-    redirect(`/unlock?next=${encodeURIComponent(captureNextPath({ tab, url }))}`);
+    redirect(`/unlock?next=${encodeURIComponent(captureNextPath({ tab, url: rawUrl, text, title }))}`);
   }
 
-  const active: Tab =
-    tab === "pdf" ? "pdf" : tab === "note" ? "note" : "url";
+  const extractedUrl = rawUrl?.trim() || extractUrlFromText(text) || "";
+  const hasExtractedUrl = Boolean(extractedUrl);
+
+  let active: Tab;
+  if (tab === "pdf" || tab === "note") {
+    active = tab;
+  } else if (hasExtractedUrl) {
+    active = "url";
+  } else if (text || title) {
+    active = "note";
+  } else {
+    active = "url";
+  }
+
   const initialDuplicate =
-    active === "url" && url ? findItemByUrl(url) : null;
+    active === "url" && extractedUrl ? findItemByUrl(extractedUrl) : null;
 
   return (
     <div className="mx-auto max-w-[680px] px-5 pb-28 pt-8 md:px-8 md:pb-10 md:pt-10">
@@ -45,12 +63,14 @@ export default async function CapturePage({
 
       <CaptureTabs
         active={active}
-        prefilledUrl={url ?? ""}
+        prefilledUrl={extractedUrl}
+        prefilledTitle={title ?? ""}
+        prefilledBody={!hasExtractedUrl && text ? text : ""}
         initialDuplicate={
           initialDuplicate
             ? {
                 itemId: initialDuplicate.id,
-                url: initialDuplicate.source_url ?? url ?? "",
+                url: initialDuplicate.source_url ?? extractedUrl,
               }
             : null
         }
@@ -59,10 +79,13 @@ export default async function CapturePage({
   );
 }
 
-function captureNextPath(params: { tab?: string; url?: string }): string {
+function captureNextPath(params: { tab?: string; url?: string; text?: string; title?: string }): string {
   const qs = new URLSearchParams();
   if (params.tab) qs.set("tab", params.tab);
   if (params.url) qs.set("url", params.url);
+  if (params.text) qs.set("text", params.text);
+  if (params.title) qs.set("title", params.title);
   const query = qs.toString();
   return query ? `/capture?${query}` : "/capture";
 }
+

@@ -24,6 +24,7 @@ import {
   Quote,
   RotateCcw,
   Save,
+  Sparkles,
   Strikethrough,
   Trash2,
   WifiOff,
@@ -181,10 +182,12 @@ export function ManualNoteEditor({
   itemId,
   itemTitle,
   focusEnabled = false,
+  aiSummary,
 }: {
   itemId: string;
   itemTitle: string;
   focusEnabled?: boolean;
+  aiSummary?: string | null;
 }) {
   const generatedEditorId = useId();
   const [editorInstanceId] = useState(generatedEditorId);
@@ -1096,7 +1099,7 @@ export function ManualNoteEditor({
         <>
           {mode === "write" && (
             <>
-              <div role="toolbar" aria-label="Markdown formatting" className="mt-4 flex flex-wrap gap-1 rounded-md border border-[var(--border)] bg-[var(--surface-raised)] p-1.5">
+              <div role="toolbar" aria-label="Markdown formatting" className="mt-4 flex items-center gap-1 overflow-x-auto no-scrollbar flex-nowrap md:flex-wrap rounded-md border border-[var(--border)] bg-[var(--surface-raised)] p-1.5">
                 {TOOLBAR.map(({ format, label, icon: Icon }) => (
                   <button
                     key={format}
@@ -1106,11 +1109,29 @@ export function ManualNoteEditor({
                     disabled={disabled}
                     onMouseDown={(event) => event.preventDefault()}
                     onClick={() => formatSelection(format)}
-                    className="inline-flex h-11 w-11 items-center justify-center rounded-sm text-[var(--text-secondary)] hover:bg-[var(--control-selected-bg)] hover:text-[var(--text-primary)] disabled:opacity-50 md:h-10 md:w-10"
+                    className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-sm text-[var(--text-secondary)] hover:bg-[var(--control-selected-bg)] hover:text-[var(--text-primary)] disabled:opacity-50 md:h-10 md:w-10"
                   >
                     <Icon className="h-4 w-4" strokeWidth={2} />
                   </button>
                 ))}
+                {aiSummary && (
+                  <button
+                    type="button"
+                    title="Append AI Executive Summary to Note"
+                    aria-label="Append AI Executive Summary to Note"
+                    disabled={disabled}
+                    onMouseDown={(event) => event.preventDefault()}
+                    onClick={() => {
+                      const current = contentRef.current;
+                      const separator = current.trim().length > 0 ? "\n\n" : "";
+                      updateContent(`${current}${separator}### AI Summary\n\n${aiSummary}`);
+                    }}
+                    className="inline-flex h-11 min-w-[90px] shrink-0 items-center justify-center gap-1 rounded-sm px-2 text-xs font-semibold bg-indigo-500/10 text-indigo-400 border border-indigo-500/25 hover:bg-indigo-500/20 disabled:opacity-50 md:h-10 transition-colors"
+                  >
+                    <Sparkles className="h-3.5 w-3.5" />
+                    <span>+ AI Brief</span>
+                  </button>
+                )}
               </div>
               <label className="sr-only" htmlFor={`manual-note-${itemId}`}>My notes Markdown</label>
               <textarea

@@ -2,12 +2,12 @@
 
 import { useState, useId, type KeyboardEvent } from "react";
 import Link from "next/link";
-import { Sparkles, Download, Pencil, Tag, Hash, MessageSquare, ArrowRight } from "lucide-react";
+import { Sparkles, Download, Pencil, Tag, Hash, MessageSquare, ArrowRight, PlusCircle, Check } from "lucide-react";
 import { ManualNoteEditor } from "@/components/manual-note-editor";
 import type { ItemRow } from "@/db/client";
 import type { ItemTopicRow } from "@/db/topics";
 import type { TagRow } from "@/db/tags";
-import { useNoteEventListener } from "@/lib/reading-studio/note-event-bus";
+import { dispatchAppendNoteText, useNoteEventListener } from "@/lib/reading-studio/note-event-bus";
 
 export interface MultiLayerCompanionTabsProps {
   item: ItemRow;
@@ -24,12 +24,36 @@ export function MultiLayerCompanionTabs({
 }: MultiLayerCompanionTabsProps) {
   const isRecallImport = item.capture_source === "recall";
   const [activeTab, setActiveTab] = useState<"notes" | "ai" | "ask" | "recall">("notes");
+  const [copiedSummary, setCopiedSummary] = useState(false);
+  const [copiedQuoteIdx, setCopiedQuoteIdx] = useState<number | null>(null);
   const id = useId();
 
   // Listen for pinned quote events to auto-switch to Notes tab
   useNoteEventListener(item.id, () => {
     setActiveTab("notes");
   });
+
+  const handleAppendSummary = () => {
+    if (!item.summary) return;
+    dispatchAppendNoteText({
+      itemId: item.id,
+      text: `### AI Summary\n\n${item.summary}`,
+    });
+    setCopiedSummary(true);
+    setTimeout(() => setCopiedSummary(false), 2000);
+    setActiveTab("notes");
+  };
+
+  const handleAppendQuote = (quote: string, idx: number) => {
+    dispatchAppendNoteText({
+      itemId: item.id,
+      text: `> "${quote}"`,
+    });
+    setCopiedQuoteIdx(idx);
+    setTimeout(() => setCopiedQuoteIdx(null), 2000);
+    setActiveTab("notes");
+  };
+
 
   const notesTabId = `${id}-notes-tab`;
   const aiTabId = `${id}-ai-tab`;
@@ -160,7 +184,12 @@ export function MultiLayerCompanionTabs({
           aria-labelledby={notesTabId}
           className={activeTab === "notes" ? "h-full" : "hidden"}
         >
-          <ManualNoteEditor itemId={item.id} itemTitle={item.title} focusEnabled={true} />
+          <ManualNoteEditor
+            itemId={item.id}
+            itemTitle={item.title}
+            focusEnabled={true}
+            aiSummary={item.summary}
+          />
         </div>
 
         {/* Tab 2: AI Cognitive Brief */}
@@ -172,9 +201,19 @@ export function MultiLayerCompanionTabs({
         >
           {item.summary ? (
             <div className="p-4 rounded-xl bg-indigo-950/20 border border-indigo-500/30 text-xs space-y-3">
-              <div className="flex items-center gap-2 text-indigo-300 font-semibold uppercase tracking-wider text-[11px]">
-                <Sparkles className="h-4 w-4" />
-                <span>Executive Summary</span>
+              <div className="flex items-center justify-between gap-2">
+                <div className="flex items-center gap-2 text-indigo-300 font-semibold uppercase tracking-wider text-[11px]">
+                  <Sparkles className="h-4 w-4" />
+                  <span>Executive Summary</span>
+                </div>
+                <button
+                  type="button"
+                  onClick={handleAppendSummary}
+                  className="inline-flex items-center gap-1 px-2 py-1 rounded-md text-[11px] font-medium bg-indigo-900/40 text-indigo-200 hover:bg-indigo-900/70 border border-indigo-700/50 transition-colors"
+                >
+                  {copiedSummary ? <Check className="h-3 w-3 text-emerald-400" /> : <PlusCircle className="h-3 w-3" />}
+                  <span>{copiedSummary ? "Added to Notes!" : "Add to Notes"}</span>
+                </button>
               </div>
               <p className="leading-relaxed text-[var(--text-primary)] text-sm whitespace-pre-line">{item.summary}</p>
             </div>
@@ -213,17 +252,26 @@ export function MultiLayerCompanionTabs({
               </span>
               <div className="space-y-2">
                 {parsedQuotes.map((q, idx) => (
-                  <blockquote
+                  <div
                     key={idx}
-                    className="p-3 rounded-lg bg-[var(--surface)] border-l-2 border-indigo-400 text-xs text-[var(--text-secondary)] italic"
+                    className="group relative p-3 rounded-lg bg-[var(--surface)] border-l-2 border-indigo-400 text-xs text-[var(--text-secondary)]"
                   >
-                    &ldquo;{q}&rdquo;
-                  </blockquote>
+                    <blockquote className="italic mb-2">&ldquo;{q}&rdquo;</blockquote>
+                    <button
+                      type="button"
+                      onClick={() => handleAppendQuote(q, idx)}
+                      className="inline-flex items-center gap-1 text-[11px] font-medium text-indigo-400 hover:text-indigo-300 transition-colors"
+                    >
+                      {copiedQuoteIdx === idx ? <Check className="h-3 w-3 text-emerald-400" /> : <PlusCircle className="h-3 w-3" />}
+                      <span>{copiedQuoteIdx === idx ? "Added to Notes!" : "Add quote to notes"}</span>
+                    </button>
+                  </div>
                 ))}
               </div>
             </div>
           )}
         </div>
+
 
         {/* Tab 3: Ask AI Companion */}
         <div
