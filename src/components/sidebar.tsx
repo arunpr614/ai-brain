@@ -25,6 +25,8 @@ import {
   type DesktopShellTarget,
 } from "./sidebar-routing";
 import { MobileBottomNav } from "./mobile-bottom-nav";
+import { useViewMode } from "./view-mode-provider";
+import { ViewModeSwitcher } from "./view-mode-switcher";
 import pkg from "../../package.json";
 
 interface NavItem {
@@ -65,6 +67,7 @@ function subscribeCollapsed(callback: () => void): () => void {
 export function Sidebar({ needsUpgradeCount = 0, processingEnabled = false }: { needsUpgradeCount?: number; processingEnabled?: boolean }) {
   const pathname = usePathname();
   const { open } = useCommandPalette();
+  const { effectiveViewMode } = useViewMode();
   const [processingInboxCount, setProcessingInboxCount] = useState(0);
   const desktopTarget = getDesktopShellTarget(pathname);
   const collapsed =
@@ -103,13 +106,16 @@ export function Sidebar({ needsUpgradeCount = 0, processingEnabled = false }: { 
   const captureActive = desktopTarget === "capture";
   const pairDeviceActive = desktopTarget === "pair-device";
 
-  // Desktop (`md:` and up): left rail aside with labels + search.
-  // Mobile (below `md:`): Android-style bottom nav with route-aware Capture.
+  // Desktop: left rail aside with labels + search.
+  // Mobile: Android-style bottom nav with route-aware Capture.
+  const isDesktop = effectiveViewMode === "desktop";
+
   return (
     <>
       <aside
         className={cn(
-          "sticky top-0 hidden h-screen flex-col border-r border-[var(--border)] bg-[var(--surface)] p-3 md:flex",
+          "sticky top-0 h-screen flex-col border-r border-[var(--border)] bg-[var(--surface)] p-3",
+          isDesktop ? "flex" : "hidden",
           "transition-[width] duration-[var(--duration-med)] ease-[var(--ease-in-out)]",
           collapsed ? "w-[72px]" : "w-60",
         )}
@@ -263,6 +269,10 @@ export function Sidebar({ needsUpgradeCount = 0, processingEnabled = false }: { 
               soon
             </span>
           )}
+        </div>
+
+        <div className={cn("pt-2", collapsed ? "hidden" : "block")}>
+          <ViewModeSwitcher variant="sidebar" />
         </div>
       </nav>
       </aside>
