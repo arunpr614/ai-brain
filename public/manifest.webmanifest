@@ -2,10 +2,12 @@
   "name": "AI Memory",
   "short_name": "AI Memory",
   "description": "Private source-grounded memory for saved knowledge.",
-  "start_url": "/",
+  "start_url": "/library",
   "display": "standalone",
+  "orientation": "portrait-primary",
   "background_color": "#FBFCFE",
   "theme_color": "#FBFCFE",
+  "categories": ["productivity", "education", "utilities"],
   "icons": [
     {
       "src": "/web-app-icon-192.png",
@@ -19,5 +21,46 @@
       "type": "image/png",
       "purpose": "any maskable"
     }
+  ],
+  "share_target": {
+    "action": "/capture",
+    "method": "GET",
+    "enctype": "application/x-www-form-urlencoded",
+    "params": {
+      "title": "title",
+      "text": "text",
+      "url": "url"
+    }
+  },
+  "shortcuts": [
+    {
+      "name": "Quick Capture",
+      "short_name": "Capture",
+      "description": "Save a URL, article, or PDF to AI Memory",
+      "url": "/capture?tab=url",
+      "icons": [{ "src": "/web-app-icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "New Note",
+      "short_name": "Note",
+      "description": "Create a new private note",
+      "url": "/capture?tab=note",
+      "icons": [{ "src": "/web-app-icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Library",
+      "short_name": "Library",
+      "description": "Browse saved library and reading studio",
+      "url": "/library",
+      "icons": [{ "src": "/web-app-icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Ask AI",
+      "short_name": "Ask",
+      "description": "Ask questions across saved sources",
+      "url": "/ask",
+      "icons": [{ "src": "/web-app-icon-192.png", "sizes": "192x192" }]
+    }
   ]
 }
+

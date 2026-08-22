@@ -32,9 +32,9 @@
 // (c) skip caching of RSC requests entirely (they're prefetch streams,
 //     not consumable as standalone HTML)
 // activate handler purges all v1+v2 entries automatically.
-const SHELL_CACHE = "ai-memory-shell-v5";
-const STATIC_CACHE = "ai-memory-static-v5";
-const PAGES_CACHE = "ai-memory-pages-v5";
+const SHELL_CACHE = "ai-memory-shell-v6";
+const STATIC_CACHE = "ai-memory-static-v6";
+const PAGES_CACHE = "ai-memory-pages-v6";
 const KNOWN_CACHES = [SHELL_CACHE, STATIC_CACHE, PAGES_CACHE];
 const LOCAL_DEV_HOSTS = new Set(["localhost", "127.0.0.1", "::1"]);
 const IS_LOCAL_DEV = LOCAL_DEV_HOSTS.has(self.location.hostname);
@@ -44,11 +44,6 @@ const IS_LOCAL_DEV = LOCAL_DEV_HOSTS.has(self.location.hostname);
 // /unlock when the SW fetches them without the user's session cookie,
 // which makes cache.add reject. Those routes are populated lazily into
 // PAGES_CACHE on first authenticated visit (stale-while-revalidate).
-//
-// Empirical evidence (2026-05-14): cache.addAll on the original 6-URL
-// list rejected with "Failed to execute 'addAll' on 'Cache': Request
-// failed", which prevented SW activation. See
-// docs/research/inspect-webview-output-2026-05-14.md.
 const PRECACHE_URLS = ["/offline.html", "/favicon-32x32.png"];
 
 const NETWORK_ONLY_PATHS = [
@@ -59,13 +54,15 @@ const NETWORK_ONLY_PATHS = [
   "/auth/",
 ];
 
-const PAGES_PATTERN = /^\/items\/[^/]+(?:\/|$)/;
+// Matches item details and reading studio pages (/items/:id, /library/:id/read)
+const PAGES_PATTERN = /^\/(?:items|library)\/[^/]+(?:\/|$)/;
 
 // Routes whose HTML we still serve stale-while-revalidate from
 // SHELL_CACHE (populated lazily on first visit). cache hits here let
-// offline cold-launch render the library / share-target
+// offline cold-launch render the library / reading studio / ask
 // chrome even though we don't precache them at install time.
-const SHELL_RUNTIME_PATHS = ["/", "/share-target", "/capture"];
+const SHELL_RUNTIME_PATHS = ["/", "/library", "/ask", "/more", "/share-target", "/capture"];
+
 
 function isShellUrl(pathname) {
   if (PRECACHE_URLS.includes(pathname)) return true;
