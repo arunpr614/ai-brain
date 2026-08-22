@@ -4,10 +4,12 @@ import { useState, useCallback, useEffect } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { ArrowLeft, BookOpen, ExternalLink, FileText, Maximize2, Minimize2 } from "lucide-react";
+import { ItemOfflineToggle } from "@/components/item-offline-toggle";
 import { YouTubePlayerSync } from "./youtube-player-sync";
 import { TranscriptTimeline } from "./transcript-timeline";
 import { MultiLayerCompanionTabs } from "./multi-layer-companion-tabs";
 import { SplitPaneContainer, type SplitRatio } from "./split-pane-container";
+
 import type { ItemRow } from "@/db/client";
 import type { TranscriptSegmentRow, TranscriptSourceRow } from "@/db/transcripts";
 import type { ItemTopicRow } from "@/db/topics";
@@ -199,6 +201,9 @@ export function ReadingStudioApp({
             <span className="hidden md:inline">{isFocusMode ? "Exit Focus (⌥F)" : "Focus Mode (⌥F)"}</span>
           </button>
 
+          {/* Offline Availability Toggle */}
+          <ItemOfflineToggle itemId={item.id} variant="header" />
+
           {/* Source Link */}
           {item.source_url && (
             <a
@@ -213,6 +218,7 @@ export function ReadingStudioApp({
           )}
         </div>
       </header>
+
 
       {/* Mobile Segmented Switcher */}
       <div className="lg:hidden p-2 bg-[var(--surface)] border-b border-[var(--border)]">

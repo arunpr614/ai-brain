@@ -26,6 +26,7 @@ import {
   PRIVACY_TRUST_COPY,
   PROVIDER_TRUST_COPY,
 } from "@/lib/settings/trust-copy";
+import { OfflineStorageCard } from "@/components/offline-storage-card";
 import pkg from "../../../package.json";
 import { processingNavigationEnabled } from "@/lib/processing/flags";
 
@@ -43,14 +44,25 @@ export default async function MorePage() {
     <div className="mx-auto max-w-[720px] px-5 py-8 md:px-8 md:py-10">
       <header className="mb-6">
         <h1 className="text-[30px] font-semibold leading-[1.2] tracking-[-0.01em] text-[var(--text-primary)]">
-          More
+          More & Settings
         </h1>
         <p className="mt-1 text-sm text-[var(--text-secondary)]">
-          Settings, devices, data, and app health.
+          Settings, offline memory storage, devices, and app health.
         </p>
       </header>
 
+      {/* Offline Storage & Memory Management Section */}
+      <section className="mb-6">
+        <h2 className="mb-2 px-1 text-xs font-semibold uppercase tracking-[0.08em] text-[var(--text-muted)]">
+          Offline Memory & Storage
+        </h2>
+        <div className="overflow-hidden rounded-lg border border-[var(--border)] bg-[var(--surface)]">
+          <OfflineStorageCard />
+        </div>
+      </section>
+
       <section className="mb-5 flex items-center gap-4 rounded-lg border border-[var(--border)] bg-[var(--surface)] p-4">
+
         <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-[var(--surface-raised)] text-[var(--text-muted)]">
           <User className="h-6 w-6" strokeWidth={2} />
         </div>

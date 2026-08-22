@@ -10,7 +10,9 @@ import {
   X,
 } from "lucide-react";
 import { YouTubeIcon } from "@/components/youtube-icon";
+import { ItemOfflineToggle } from "@/components/item-offline-toggle";
 import Link from "next/link";
+
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState, useTransition } from "react";
 import {
@@ -381,7 +383,10 @@ export function LibraryList({
                       <span className="text-[var(--text-muted)]">·</span>
                       <QualityBadge quality={it.capture_quality} />
                       <span className="text-[var(--text-muted)]">·</span>
+                      <ItemOfflineToggle itemId={it.id} />
+                      <span className="text-[var(--text-muted)]">·</span>
                       <span>{formatRelative(it.captured_at)}</span>
+
                       {it.total_chars !== null && (
                         <>
                           <span className="text-[var(--text-muted)]">·</span>

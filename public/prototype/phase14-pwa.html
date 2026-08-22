@@ -69,6 +69,28 @@
       --shadow-lg: 0 16px 40px rgba(0, 0, 0, 0.6);
     }
 
+    [data-theme="oled"] {
+      --bg-base: #000000;
+      --phone-frame-bg: #000000;
+      --surface: #000000;
+      --surface-raised: #080808;
+      --surface-container: #121212;
+      --surface-container-high: #1a1a1a;
+      --line: #222222;
+      --line-strong: #333333;
+      --ink: #ffffff;
+      --ink-secondary: #cccccc;
+      --ink-muted: #888888;
+      --accent: #00e676;
+      --accent-hover: #00c853;
+      --accent-light: rgba(0, 230, 118, 0.15);
+      --accent-border: rgba(0, 230, 118, 0.4);
+      --accent-fg: #000000;
+      --shadow-sm: none;
+      --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.8);
+      --shadow-lg: 0 16px 40px rgba(0, 0, 0, 0.9);
+    }
+
     * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
     body {
@@ -470,12 +492,16 @@
       border-radius: var(--radius-full);
       text-transform: uppercase;
       letter-spacing: 0.04em;
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
     }
 
     .badge-pill.full { background: #ccfbf1; color: #0f766e; }
     .badge-pill.transcript { background: #e0f2fe; color: #0369a1; }
     .badge-pill.upgrade { background: var(--quality-upgrade-bg); color: var(--quality-upgrade); }
     .badge-pill.offline { background: var(--accent-light); color: var(--accent); border: 1px solid var(--accent-border); }
+    .badge-pill.cloud { background: var(--surface-container); color: var(--ink-muted); border: 1px solid var(--line); }
 
     /* 2. Reading Studio View */
     .reader-top-nav {
@@ -930,6 +956,20 @@
       border-radius: var(--radius-sm);
       cursor: pointer;
       box-shadow: var(--shadow-sm);
+      transition: background 0.15s ease;
+    }
+
+    .btn-submit:hover {
+      background: var(--accent-hover);
+    }
+
+    .btn-danger {
+      background: #e11d48;
+      color: #ffffff;
+    }
+
+    .btn-danger:hover {
+      background: #be123c;
     }
 
     /* Toast Notification */
@@ -952,11 +992,85 @@
       display: flex;
       align-items: center;
       gap: 8px;
+      white-space: nowrap;
     }
 
     .toast-msg.show {
       opacity: 1;
       transform: translateX(-50%) translateY(0);
+    }
+
+    /* Storage Meter Component */
+    .storage-meter-box {
+      background: var(--surface-raised);
+      border: 1px solid var(--line);
+      border-radius: var(--radius-md);
+      padding: 14px;
+      margin-bottom: 14px;
+    }
+
+    .storage-bar-track {
+      height: 8px;
+      background: var(--surface-container);
+      border-radius: 4px;
+      overflow: hidden;
+      display: flex;
+      margin: 8px 0;
+    }
+
+    .storage-seg-yt { background: #ff4d4f; height: 100%; }
+    .storage-seg-art { background: #0891b2; height: 100%; }
+    .storage-seg-note { background: #10b981; height: 100%; }
+    .storage-seg-shell { background: #8b5cf6; height: 100%; }
+
+    .storage-legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      font-size: 11px;
+      color: var(--ink-secondary);
+      margin-top: 6px;
+    }
+
+    .storage-dot {
+      display: inline-block;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      margin-right: 4px;
+    }
+
+    /* Cached Items Table / List in Settings */
+    .cached-items-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-top: 10px;
+    }
+
+    .cached-item-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: var(--radius-sm);
+      padding: 8px 10px;
+      font-size: 12px;
+    }
+
+    .btn-trash {
+      background: none;
+      border: none;
+      color: #e11d48;
+      cursor: pointer;
+      font-size: 14px;
+      padding: 4px 8px;
+      border-radius: 4px;
+    }
+
+    .btn-trash:hover {
+      background: var(--quality-upgrade-bg);
     }
 
     /* Interactive Tour Side Panel */
@@ -988,7 +1102,7 @@
       <button class="btn-pill" id="toggle-frame-btn" onclick="toggleDeviceFrame()">
         <span>📱 Frame: Pixel 7 Pro</span>
       </button>
-      <button class="btn-pill" id="toggle-theme-btn" onclick="toggleTheme()">
+      <button class="btn-pill" id="toggle-theme-btn" onclick="cycleTheme()">
         <span>☀️ Theme: Light</span>
       </button>
       <button class="btn-pill" id="toggle-network-btn" onclick="toggleNetwork()">
@@ -1038,7 +1152,7 @@
               <div class="lib-title-row">
                 <h2 class="lib-heading">
                   Library
-                  <span class="count-pill">12 items</span>
+                  <span class="count-pill" id="lib-count-pill">12 items</span>
                 </h2>
                 <button class="filter-chip" onclick="openCaptureSheet()">+ Quick Save</button>
               </div>
@@ -1057,7 +1171,7 @@
                 <button class="filter-chip" onclick="setFilter(this, 'pdf')">PDFs (2)</button>
                 <button class="filter-chip" onclick="setFilter(this, 'note')">Notes (2)</button>
                 <button class="filter-chip" onclick="setFilter(this, 'upgrade')">Needs Upgrade (2)</button>
-                <button class="filter-chip" onclick="setFilter(this, 'offline')">Offline Ready (5)</button>
+                <button class="filter-chip" onclick="setFilter(this, 'offline')">Offline Ready (<span id="filter-offline-count">3</span>)</button>
               </div>
             </div>
 
@@ -1065,8 +1179,8 @@
             <div class="card-list" id="card-list-items">
 
               <!-- Item 1: YouTube Video -->
-              <div class="lib-card" data-type="youtube" data-offline="true" onclick="openReaderView('karpathy')">
-                <div class="card-header">
+              <div class="lib-card" id="card-karpathy" data-type="youtube" data-offline="true">
+                <div class="card-header" onclick="openReaderView('karpathy')">
                   <div class="card-icon yt">▶</div>
                   <div class="card-title-wrap">
                     <h3 class="card-title">Andrej Karpathy — Deep Dive into LLM Architecture & Tokenization</h3>
@@ -1076,15 +1190,20 @@
                       <span>1h 42m</span>
                       <span>·</span>
                       <span class="badge-pill full">Full Transcript</span>
-                      <span class="badge-pill offline">Offline Ready</span>
                     </div>
                   </div>
+                </div>
+                <div style="display: flex; justify-content: space-between; align-items: center; padding-top: 6px; border-top: 1px solid var(--line); font-size: 11px;">
+                  <span id="badge-karpathy" class="badge-pill offline">✓ Offline Ready (11.2 MB)</span>
+                  <button class="btn-pill" style="padding: 3px 8px; font-size: 11px;" onclick="toggleItemOffline('karpathy', 'Andrej Karpathy LLM', 11.2)">
+                    <span id="btn-label-karpathy">Remove Offline</span>
+                  </button>
                 </div>
               </div>
 
               <!-- Item 2: Article -->
-              <div class="lib-card" data-type="article" data-offline="true" onclick="openReaderView('rag')">
-                <div class="card-header">
+              <div class="lib-card" id="card-rag" data-type="article" data-offline="true">
+                <div class="card-header" onclick="openReaderView('rag')">
                   <div class="card-icon">📄</div>
                   <div class="card-title-wrap">
                     <h3 class="card-title">The Architecture of Modern RAG Systems: Vector & Hybrid Retrieval</h3>
@@ -1094,15 +1213,20 @@
                       <span>12k chars</span>
                       <span>·</span>
                       <span class="badge-pill full">Full Text</span>
-                      <span class="badge-pill offline">Offline Ready</span>
                     </div>
                   </div>
+                </div>
+                <div style="display: flex; justify-content: space-between; align-items: center; padding-top: 6px; border-top: 1px solid var(--line); font-size: 11px;">
+                  <span id="badge-rag" class="badge-pill offline">✓ Offline Ready (4.6 MB)</span>
+                  <button class="btn-pill" style="padding: 3px 8px; font-size: 11px;" onclick="toggleItemOffline('rag', 'Modern RAG Systems', 4.6)">
+                    <span id="btn-label-rag">Remove Offline</span>
+                  </button>
                 </div>
               </div>
 
               <!-- Item 3: Engineering Note -->
-              <div class="lib-card" data-type="note" data-offline="true" onclick="openReaderView('sqlite')">
-                <div class="card-header">
+              <div class="lib-card" id="card-sqlite" data-type="note" data-offline="true">
+                <div class="card-header" onclick="openReaderView('sqlite')">
                   <div class="card-icon">📝</div>
                   <div class="card-title-wrap">
                     <h3 class="card-title">Distributed SQLite on Edge: WAL Mode, Pragma Tuning & Replication</h3>
@@ -1112,15 +1236,20 @@
                       <span>4k chars</span>
                       <span>·</span>
                       <span class="badge-pill full">Durable Draft</span>
-                      <span class="badge-pill offline">Offline Ready</span>
                     </div>
                   </div>
+                </div>
+                <div style="display: flex; justify-content: space-between; align-items: center; padding-top: 6px; border-top: 1px solid var(--line); font-size: 11px;">
+                  <span id="badge-sqlite" class="badge-pill offline">✓ Offline Ready (1.8 MB)</span>
+                  <button class="btn-pill" style="padding: 3px 8px; font-size: 11px;" onclick="toggleItemOffline('sqlite', 'Distributed SQLite Edge', 1.8)">
+                    <span id="btn-label-sqlite">Remove Offline</span>
+                  </button>
                 </div>
               </div>
 
               <!-- Item 4: PDF Document -->
-              <div class="lib-card" data-type="pdf" data-offline="false" onclick="openReaderView('tensor')">
-                <div class="card-header">
+              <div class="lib-card" id="card-tensor" data-type="pdf" data-offline="false">
+                <div class="card-header" onclick="openReaderView('tensor')">
                   <div class="card-icon">📑</div>
                   <div class="card-title-wrap">
                     <h3 class="card-title">Google Pixel 7 Pro Tensor G2 On-Device TPU & Neural Processing</h3>
@@ -1133,11 +1262,17 @@
                     </div>
                   </div>
                 </div>
+                <div style="display: flex; justify-content: space-between; align-items: center; padding-top: 6px; border-top: 1px solid var(--line); font-size: 11px;">
+                  <span id="badge-tensor" class="badge-pill cloud">☁️ Stream Only</span>
+                  <button class="btn-pill" style="padding: 3px 8px; font-size: 11px;" onclick="toggleItemOffline('tensor', 'Pixel 7 Pro Tensor G2', 2.8)">
+                    <span id="btn-label-tensor">Make Offline</span>
+                  </button>
+                </div>
               </div>
 
               <!-- Item 5: Needs Upgrade YouTube -->
-              <div class="lib-card" data-type="upgrade" data-offline="false" onclick="openReaderView('upgrade-item')">
-                <div class="card-header">
+              <div class="lib-card" id="card-upgrade-item" data-type="upgrade" data-offline="false">
+                <div class="card-header" onclick="openReaderView('upgrade-item')">
                   <div class="card-icon yt">▶</div>
                   <div class="card-title-wrap">
                     <h3 class="card-title">AI Memory Systems: From Capture to Actionable Retrieval</h3>
@@ -1149,6 +1284,12 @@
                       <span>Metadata Only</span>
                     </div>
                   </div>
+                </div>
+                <div style="display: flex; justify-content: space-between; align-items: center; padding-top: 6px; border-top: 1px solid var(--line); font-size: 11px;">
+                  <span id="badge-upgrade-item" class="badge-pill cloud">☁️ Stream Only</span>
+                  <button class="btn-pill" style="padding: 3px 8px; font-size: 11px;" onclick="toggleItemOffline('upgrade-item', 'AI Memory Systems Shorts', 0.9)">
+                    <span id="btn-label-upgrade-item">Make Offline</span>
+                  </button>
                 </div>
               </div>
 
@@ -1163,7 +1304,9 @@
                 ← Library
               </button>
               <div class="reader-actions">
-                <span class="badge-pill full">MLX Whisper STT</span>
+                <button class="filter-chip" id="reader-offline-btn" onclick="toggleItemOffline('karpathy', 'Andrej Karpathy LLM', 11.2)">
+                  <span id="reader-offline-label">✓ Offline (11.2 MB)</span>
+                </button>
                 <button class="filter-chip" onclick="showToast('Font size toggled')">A+</button>
               </div>
             </div>
@@ -1300,24 +1443,126 @@
             </div>
           </div>
 
-          <!-- VIEW 4: MORE / SETTINGS -->
+          <!-- VIEW 4: MORE & SETTINGS (EXPANDED FOR PHASE 14) -->
           <div class="view-content" id="view-more">
             <div class="lib-header">
               <h2 class="lib-heading">More & Settings</h2>
+              <p style="font-size: 12px; color: var(--ink-muted); margin: 4px 0 0;">
+                Offline memory manager, reading preferences, PWA diagnostics and cloud sync.
+              </p>
             </div>
-            <div style="padding: 16px; display: flex; flex-direction: column; gap: 12px;">
-              <div class="lib-card" onclick="showToast('Theme set to Adaptive')">
-                <div style="font-weight: 700; font-size: 14px;">🎨 Appearance & Themes</div>
-                <div style="font-size: 12px; color: var(--ink-muted);">Structured Calm Green · Prism Memory</div>
+
+            <div style="padding: 14px; display: flex; flex-direction: column; gap: 14px;">
+
+              <!-- 1. Offline Storage & Memory Management Card -->
+              <div class="storage-meter-box">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                  <span style="font-weight: 800; font-size: 14px; color: var(--ink);">📦 Offline Memory & Cache</span>
+                  <span style="font-size: 12px; font-weight: 700; color: var(--accent);" id="storage-total-label">18.4 MB / 50 MB</span>
+                </div>
+
+                <div class="storage-bar-track">
+                  <div class="storage-seg-yt" id="seg-yt" style="width: 60%;" title="YouTube Transcripts: 11.2 MB"></div>
+                  <div class="storage-seg-art" id="seg-art" style="width: 25%;" title="Articles: 4.6 MB"></div>
+                  <div class="storage-seg-note" id="seg-note" style="width: 10%;" title="IndexedDB Notes: 1.8 MB"></div>
+                  <div class="storage-seg-shell" id="seg-shell" style="width: 5%;" title="PWA App Shell: 0.8 MB"></div>
+                </div>
+
+                <div class="storage-legend">
+                  <span><span class="storage-dot" style="background: #ff4d4f;"></span>Transcripts (<span id="legend-yt">11.2 MB</span>)</span>
+                  <span><span class="storage-dot" style="background: #0891b2;"></span>Articles (<span id="legend-art">4.6 MB</span>)</span>
+                  <span><span class="storage-dot" style="background: #10b981;"></span>Notes (<span id="legend-note">1.8 MB</span>)</span>
+                </div>
+
+                <!-- Cached Items List with Delete Action -->
+                <div style="margin-top: 14px; font-size: 12px; font-weight: 700; color: var(--ink-secondary);">
+                  Cached Offline Items (<span id="cached-count">3</span>):
+                </div>
+
+                <div class="cached-items-list" id="cached-items-container">
+                  <div class="cached-item-row" id="row-karpathy">
+                    <span style="truncate max-width: 220px;">▶ Andrej Karpathy LLM</span>
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                      <span style="color: var(--ink-muted); font-size: 11px;">11.2 MB</span>
+                      <button class="btn-trash" onclick="toggleItemOffline('karpathy', 'Andrej Karpathy LLM', 11.2)" title="Free up memory">🗑️</button>
+                    </div>
+                  </div>
+                  <div class="cached-item-row" id="row-rag">
+                    <span style="truncate max-width: 220px;">📄 Modern RAG Systems</span>
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                      <span style="color: var(--ink-muted); font-size: 11px;">4.6 MB</span>
+                      <button class="btn-trash" onclick="toggleItemOffline('rag', 'Modern RAG Systems', 4.6)" title="Free up memory">🗑️</button>
+                    </div>
+                  </div>
+                  <div class="cached-item-row" id="row-sqlite">
+                    <span style="truncate max-width: 220px;">📝 Distributed SQLite Edge</span>
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                      <span style="color: var(--ink-muted); font-size: 11px;">1.8 MB</span>
+                      <button class="btn-trash" onclick="toggleItemOffline('sqlite', 'Distributed SQLite Edge', 1.8)" title="Free up memory">🗑️</button>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Global Free Up Memory Button -->
+                <div style="margin-top: 14px; display: flex; gap: 8px;">
+                  <button class="btn-submit btn-danger" style="height: 36px; font-size: 12px;" onclick="freeUpAllStorage()">
+                    🧹 Free Up All Offline Storage
+                  </button>
+                </div>
               </div>
-              <div class="lib-card" onclick="showToast('5 items cached offline')">
-                <div style="font-weight: 700; font-size: 14px;">📦 Offline Reading Cache</div>
-                <div style="font-size: 12px; color: var(--ink-muted);">5 items pre-cached · 14.2 MB storage</div>
+
+              <!-- 2. Appearance & Pixel 7 Pro Display Tuning -->
+              <div class="lib-card">
+                <div style="font-weight: 800; font-size: 14px; margin-bottom: 8px;">🎨 Appearance & Display</div>
+                <div style="display: flex; gap: 6px; margin-bottom: 10px;">
+                  <button class="filter-chip active" id="theme-chip-light" onclick="setThemeDirect('light')">Structured Calm</button>
+                  <button class="filter-chip" id="theme-chip-dark" onclick="setThemeDirect('dark')">Slate Dark</button>
+                  <button class="filter-chip" id="theme-chip-oled" onclick="setThemeDirect('oled')">OLED Black (0% Battery)</button>
+                </div>
+                <div style="display: flex; justify-content: space-between; align-items: center; font-size: 12px; color: var(--ink-secondary);">
+                  <span>120Hz LTPO Smooth Scroll</span>
+                  <span style="font-weight: 700; color: var(--accent);">Enabled</span>
+                </div>
               </div>
-              <div class="lib-card" onclick="showToast('PWA Standalone Verified')">
-                <div style="font-weight: 700; font-size: 14px;">📱 Android Web Share Target</div>
-                <div style="font-size: 12px; color: var(--ink-muted);">Active · Manifest registered in Chrome</div>
+
+              <!-- 3. Android PWA & System Share Diagnostics -->
+              <div class="lib-card">
+                <div style="font-weight: 800; font-size: 14px; margin-bottom: 8px;">📱 Android PWA & System Share</div>
+                <div style="display: flex; flex-direction: column; gap: 6px; font-size: 12px;">
+                  <div style="display: flex; justify-content: space-between;">
+                    <span>PWA Standalone Status</span>
+                    <span style="color: var(--accent); font-weight: 700;">✓ Installed (Pixel 7 Pro)</span>
+                  </div>
+                  <div style="display: flex; justify-content: space-between;">
+                    <span>System Share Target API</span>
+                    <span style="color: var(--accent); font-weight: 700;">✓ Active (/capture)</span>
+                  </div>
+                  <div style="display: flex; justify-content: space-between;">
+                    <span>Service Worker Engine</span>
+                    <span style="color: var(--ink-muted); font-family: var(--font-mono);">ai-memory-shell-v6</span>
+                  </div>
+                </div>
               </div>
+
+              <!-- 4. Device Pairing & Cloud Sync -->
+              <div class="lib-card">
+                <div style="font-weight: 800; font-size: 14px; margin-bottom: 8px;">🔗 Cloud & Hardware Sync</div>
+                <div style="display: flex; flex-direction: column; gap: 6px; font-size: 12px;">
+                  <div style="display: flex; justify-content: space-between;">
+                    <span>Hetzner Edge Node</span>
+                    <span style="color: var(--accent); font-weight: 700;">Connected (38ms)</span>
+                  </div>
+                  <div style="display: flex; justify-content: space-between;">
+                    <span>Mac M5 Pro Local ASR</span>
+                    <span style="color: var(--accent); font-weight: 700;">Online (MLX Whisper)</span>
+                  </div>
+                  <div style="display: flex; justify-content: space-between;">
+                    <span>Telegram Webhook</span>
+                    <span style="color: var(--accent); font-weight: 700;">Active (@AIBrainBot)</span>
+                  </div>
+                </div>
+              </div>
+
             </div>
           </div>
 
@@ -1382,46 +1627,153 @@
 
     <!-- Interactive Tour & Review Guide -->
     <aside class="tour-panel">
-      <h2 style="font-size: 18px; font-weight: 800; margin-top: 0; margin-bottom: 8px;">Prototype Review Checklist</h2>
+      <h2 style="font-size: 18px; font-weight: 800; margin-top: 0; margin-bottom: 8px;">Phase 14 Review Guide</h2>
       <p style="font-size: 13px; color: var(--ink-secondary); line-height: 1.5; margin-bottom: 18px;">
-        This prototype simulates the complete **Pixel 7 Pro PWA experience** built in Phase 14. Tap through the live flows below:
+        Test the newly added <strong>More & Settings</strong> and <strong>Per-Item Offline Memory Management</strong> flows below:
       </p>
 
       <div style="display: flex; flex-direction: column; gap: 10px;">
+        <button class="btn-pill" onclick="switchView('view-more')">
+          <span>⚙️ 1. Test More & Settings Hub</span>
+        </button>
         <button class="btn-pill" onclick="switchView('view-library')">
-          <span>1. Test Library Filters & Search</span>
+          <span>📦 2. Test Per-Item 'Make Offline' Badges</span>
         </button>
-        <button class="btn-pill" onclick="openReaderView('karpathy')">
-          <span>2. Test Reading Studio & YouTube Sync</span>
+        <button class="btn-pill" onclick="freeUpAllStorage()">
+          <span>🧹 3. Test 'Free Up Storage' Action</span>
         </button>
-        <button class="btn-pill" onclick="openReaderView('karpathy'); switchReaderTab('notes')">
-          <span>3. Test Touch Markdown Editor</span>
-        </button>
-        <button class="btn-pill" onclick="openReaderView('karpathy'); switchReaderTab('ask')">
-          <span>4. Test In-Item Ask & Citation Sheets</span>
-        </button>
-        <button class="btn-pill" onclick="openCaptureSheet()">
-          <span>5. Test 1-Tap Quick Capture Sheet</span>
+        <button class="btn-pill" onclick="setThemeDirect('oled')">
+          <span>🌙 4. Test Pixel 7 Pro OLED Black Mode</span>
         </button>
         <button class="btn-pill" onclick="simulateAndroidShare()">
-          <span>6. Test Android Web Share Target</span>
-        </button>
-        <button class="btn-pill" onclick="toggleNetwork()">
-          <span>7. Test Offline Reading Fallback</span>
+          <span>📤 5. Test Android Web Share Target</span>
         </button>
       </div>
 
       <div style="margin-top: 24px; padding-top: 16px; border-top: 1px solid var(--line); font-size: 12px; color: var(--ink-muted);">
-        <strong>Pixel 7 Pro Specifications:</strong><br />
-        • 1440x3120 LTPO 120Hz smooth scrolling<br />
-        • Chrome Standalone PWA & Web Share Target<br />
-        • IndexedDB Local Journal + CacheStorage SW
+        <strong>GitHub Milestones & Issues:</strong><br />
+        • <strong>#176</strong>: Per-Item Offline Storage & Badges<br />
+        • <strong>#177</strong>: More & Settings Mobile Hub<br />
+        • <strong>Milestone 20</strong>: v0.18.x Phase 14
       </div>
     </aside>
 
   </main>
 
   <script>
+    // Offline Storage State Tracker
+    const offlineItems = {
+      'karpathy': { title: '▶ Andrej Karpathy LLM', size: 11.2, type: 'youtube', cached: true },
+      'rag': { title: '📄 Modern RAG Systems', size: 4.6, type: 'article', cached: true },
+      'sqlite': { title: '📝 Distributed SQLite Edge', size: 1.8, type: 'note', cached: true },
+      'tensor': { title: '📑 Pixel 7 Pro Tensor G2', size: 2.8, type: 'pdf', cached: false },
+      'upgrade-item': { title: '▶ AI Memory Systems Shorts', size: 0.9, type: 'youtube', cached: false },
+    };
+
+    function recalculateStorage() {
+      let total = 0.8; // baseline app shell
+      let ytTotal = 0;
+      let artTotal = 0;
+      let noteTotal = 0;
+      let count = 0;
+
+      for (const [id, item] of Object.entries(offlineItems)) {
+        if (item.cached) {
+          count++;
+          total += item.size;
+          if (item.type === 'youtube') ytTotal += item.size;
+          else if (item.type === 'article' || item.type === 'pdf') artTotal += item.size;
+          else if (item.type === 'note') noteTotal += item.size;
+        }
+      }
+
+      document.getElementById('storage-total-label').innerText = `${total.toFixed(1)} MB / 50 MB`;
+      document.getElementById('filter-offline-count').innerText = count;
+      document.getElementById('cached-count').innerText = count;
+
+      const ytPercent = (ytTotal / 50) * 100;
+      const artPercent = (artTotal / 50) * 100;
+      const notePercent = (noteTotal / 50) * 100;
+
+      document.getElementById('seg-yt').style.width = ytPercent + '%';
+      document.getElementById('seg-art').style.width = artPercent + '%';
+      document.getElementById('seg-note').style.width = notePercent + '%';
+
+      document.getElementById('legend-yt').innerText = `${ytTotal.toFixed(1)} MB`;
+      document.getElementById('legend-art').innerText = `${artTotal.toFixed(1)} MB`;
+      document.getElementById('legend-note').innerText = `${noteTotal.toFixed(1)} MB`;
+    }
+
+    function toggleItemOffline(itemId, title, size) {
+      const item = offlineItems[itemId];
+      if (!item) return;
+
+      item.cached = !item.cached;
+      const isNowCached = item.cached;
+
+      // Update Card Badge & Button
+      const badge = document.getElementById('badge-' + itemId);
+      const btnLabel = document.getElementById('btn-label-' + itemId);
+      const card = document.getElementById('card-' + itemId);
+
+      if (badge && btnLabel) {
+        if (isNowCached) {
+          badge.className = 'badge-pill offline';
+          badge.innerText = `✓ Offline Ready (${size} MB)`;
+          btnLabel.innerText = 'Remove Offline';
+          if (card) card.setAttribute('data-offline', 'true');
+        } else {
+          badge.className = 'badge-pill cloud';
+          badge.innerText = '☁️ Stream Only';
+          btnLabel.innerText = 'Make Offline';
+          if (card) card.setAttribute('data-offline', 'false');
+        }
+      }
+
+      // Update Reader Header Badge if active
+      if (itemId === 'karpathy') {
+        const rLabel = document.getElementById('reader-offline-label');
+        if (rLabel) {
+          rLabel.innerText = isNowCached ? '✓ Offline (11.2 MB)' : '☁️ Save Offline';
+        }
+      }
+
+      // Update Row in Settings
+      const row = document.getElementById('row-' + itemId);
+      if (row) {
+        row.style.display = isNowCached ? 'flex' : 'none';
+      }
+
+      recalculateStorage();
+      showToast(isNowCached ? `Downloaded "${title}" for offline use (${size} MB)` : `Removed "${title}" from offline cache · Memory freed!`);
+    }
+
+    function freeUpAllStorage() {
+      for (const [id, item] of Object.entries(offlineItems)) {
+        if (item.cached) {
+          item.cached = false;
+          const badge = document.getElementById('badge-' + id);
+          const btnLabel = document.getElementById('btn-label-' + id);
+          const card = document.getElementById('card-' + id);
+          const row = document.getElementById('row-' + id);
+
+          if (badge) {
+            badge.className = 'badge-pill cloud';
+            badge.innerText = '☁️ Stream Only';
+          }
+          if (btnLabel) btnLabel.innerText = 'Make Offline';
+          if (card) card.setAttribute('data-offline', 'false');
+          if (row) row.style.display = 'none';
+        }
+      }
+
+      const rLabel = document.getElementById('reader-offline-label');
+      if (rLabel) rLabel.innerText = '☁️ Save Offline';
+
+      recalculateStorage();
+      showToast('All offline cache cleared! ~18 MB memory freed. Notes preserved.');
+    }
+
     // Clock update
     function updateClock() {
       const now = new Date();
@@ -1609,12 +1961,19 @@
       btn.innerHTML = isFull ? '<span>📱 Mode: Responsive PWA</span>' : '<span>📱 Frame: Pixel 7 Pro</span>';
     }
 
-    function toggleTheme() {
-      const body = document.body;
-      const isDark = body.getAttribute('data-theme') === 'dark';
-      const next = isDark ? 'light' : 'dark';
-      body.setAttribute('data-theme', next);
-      document.getElementById('toggle-theme-btn').innerHTML = next === 'dark' ? '<span>🌙 Theme: Dark</span>' : '<span>☀️ Theme: Light</span>';
+    function setThemeDirect(theme) {
+      document.body.setAttribute('data-theme', theme);
+      document.getElementById('theme-chip-light')?.classList.toggle('active', theme === 'light');
+      document.getElementById('theme-chip-dark')?.classList.toggle('active', theme === 'dark');
+      document.getElementById('theme-chip-oled')?.classList.toggle('active', theme === 'oled');
+      showToast('Applied Theme: ' + theme);
+    }
+
+    function cycleTheme() {
+      const current = document.body.getAttribute('data-theme') || 'light';
+      const next = current === 'light' ? 'dark' : current === 'dark' ? 'oled' : 'light';
+      setThemeDirect(next);
+      document.getElementById('toggle-theme-btn').innerHTML = next === 'dark' ? '<span>🌙 Theme: Dark</span>' : next === 'oled' ? '<span>⬛ Theme: OLED</span>' : '<span>☀️ Theme: Light</span>';
     }
 
     let isOffline = false;
@@ -1631,6 +1990,9 @@
       document.getElementById('capture-url-input').value = 'https://www.youtube.com/watch?v=dQw4w9WgXcQ';
       showToast('Android Share Intent received from YouTube app!');
     }
+
+    // Initial storage calculation
+    recalculateStorage();
   </script>
 </body>
 </html>
