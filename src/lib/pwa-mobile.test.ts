@@ -2,6 +2,8 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
+import { getMobileShellTarget, usesStandardMobileCapture } from "@/components/sidebar-routing";
+import { formatBytes } from "./offline/offline-storage-manager";
 
 test("manifest.webmanifest is valid JSON and contains all required PWA fields", () => {
   const manifestPath = path.join(process.cwd(), "public", "manifest.webmanifest");
@@ -65,6 +67,50 @@ test("Web Share Target URL extraction correctly identifies embedded URLs in text
   );
 });
 
+test("Mobile Bottom Navigation shell target routing correctly identifies active tabs", () => {
+  assert.equal(getMobileShellTarget("/library"), "library");
+  assert.equal(getMobileShellTarget("/library/abc-123/read"), "library");
+  assert.equal(getMobileShellTarget("/items/abc-123"), "library");
+  assert.equal(getMobileShellTarget("/ask"), "ask");
+  assert.equal(getMobileShellTarget("/more"), "more");
+  assert.equal(getMobileShellTarget("/settings"), "more");
+  assert.equal(getMobileShellTarget("/capture"), "capture");
+
+  assert.equal(usesStandardMobileCapture("/capture"), true);
+  assert.equal(usesStandardMobileCapture("/library"), false);
+  assert.equal(usesStandardMobileCapture("/ask"), true);
+});
+
+test("Citation Preview deep link generation routes correctly to Reading Studio timestamps", () => {
+  function generateCitationJumpHref(citation: {
+    itemId: string;
+    chunkId: string;
+    sourceKind?: string;
+    timestampMs?: number;
+  }): string {
+    if (citation.sourceKind === "manual_note") {
+      return `/items/${citation.itemId}?tab=notes`;
+    }
+    if (citation.timestampMs && citation.timestampMs > 0) {
+      return `/items/${citation.itemId}/read?t=${Math.floor(citation.timestampMs / 1000)}`;
+    }
+    return `/items/${citation.itemId}/read?highlight=${encodeURIComponent(citation.chunkId)}#chunk-${encodeURIComponent(citation.chunkId)}`;
+  }
+
+  assert.equal(
+    generateCitationJumpHref({ itemId: "item-1", chunkId: "chunk-1", timestampMs: 184000 }),
+    "/items/item-1/read?t=184"
+  );
+  assert.equal(
+    generateCitationJumpHref({ itemId: "item-2", chunkId: "chunk-abc" }),
+    "/items/item-2/read?highlight=chunk-abc#chunk-chunk-abc"
+  );
+  assert.equal(
+    generateCitationJumpHref({ itemId: "item-3", chunkId: "chunk-xyz", sourceKind: "manual_note" }),
+    "/items/item-3?tab=notes"
+  );
+});
+
 test("AI Summary and Quote markdown formatting for note appending", () => {
   function formatSummaryForNote(summary: string): string {
     return `### AI Summary\n\n${summary}`;
@@ -79,4 +125,74 @@ test("AI Summary and Quote markdown formatting for note appending", () => {
 
   const quoteText = "Code is meant to be read by humans first.";
   assert.equal(formatQuoteForNote(quoteText), `> "Code is meant to be read by humans first."`);
+});
+
+test("Touch Markdown accessory toolbar syntax insertion helpers", () => {
+  function applyTouchMarkdown(syntax: string, selection = ""): string {
+    switch (syntax) {
+      case "h2":
+        return `## ${selection || "Heading"}`;
+      case "bold":
+        return `**${selection || "bold text"}**`;
+      case "italic":
+        return `*${selection || "italic text"}*`;
+      case "bullet":
+        return `- ${selection || "List item"}`;
+      case "task":
+        return `- [ ] ${selection || "Task item"}`;
+      case "quote":
+        return `> ${selection || "Quote"}`;
+      default:
+        return selection;
+    }
+  }
+
+  assert.equal(applyTouchMarkdown("h2", "Architecture Overview"), "## Architecture Overview");
+  assert.equal(applyTouchMarkdown("bold", "critical"), "**critical**");
+  assert.equal(applyTouchMarkdown("italic", "emphasis"), "*emphasis*");
+  assert.equal(applyTouchMarkdown("bullet", "first point"), "- first point");
+  assert.equal(applyTouchMarkdown("task", "Deploy Phase 14"), "- [ ] Deploy Phase 14");
+  assert.equal(applyTouchMarkdown("quote", "Keep it simple"), "> Keep it simple");
+});
+
+test("Client-side library search filtering matches across title, summary, body and URL", () => {
+  const sampleItems = [
+    { id: "1", title: "Building Autonomous Agents with AGY", summary: "Multi-agent architecture guide", body: "Detailed breakdown of agentic workflows.", source_url: "https://example.com/agy" },
+    { id: "2", title: "SQLite WAL Pragma Optimizations", summary: "High throughput database tuning", body: "Configuring journal_mode=WAL and synchronous=NORMAL.", source_url: "https://sqlite.org/wal" },
+    { id: "3", title: "Pixel 7 Pro PWA Touch Ergonomics", summary: "Mobile viewport and 120Hz LTPO display", body: "Optimizing 48px touch targets for mobile.", source_url: "https://android.dev/pwa" },
+  ];
+
+  function searchFilter(items: typeof sampleItems, query: string) {
+    const q = query.trim().toLowerCase();
+    if (!q) return items;
+    return items.filter(
+      (item) =>
+        item.title.toLowerCase().includes(q) ||
+        item.summary.toLowerCase().includes(q) ||
+        item.body.toLowerCase().includes(q) ||
+        item.source_url.toLowerCase().includes(q)
+    );
+  }
+
+  assert.equal(searchFilter(sampleItems, "autonomous").length, 1);
+  assert.equal(searchFilter(sampleItems, "autonomous")[0].id, "1");
+
+  assert.equal(searchFilter(sampleItems, "wal").length, 1);
+  assert.equal(searchFilter(sampleItems, "wal")[0].id, "2");
+
+  assert.equal(searchFilter(sampleItems, "120Hz").length, 1);
+  assert.equal(searchFilter(sampleItems, "120Hz")[0].id, "3");
+
+  assert.equal(searchFilter(sampleItems, "nonexistent").length, 0);
+  assert.equal(searchFilter(sampleItems, "").length, 3);
+});
+
+test("Offline storage byte formatting matches human units", () => {
+  assert.equal(formatBytes(0), "0 B");
+  assert.equal(formatBytes(512), "512 B");
+  assert.equal(formatBytes(1024), "1.0 KB");
+  assert.equal(formatBytes(1536), "1.5 KB");
+  assert.equal(formatBytes(1048576), "1.0 MB");
+  assert.equal(formatBytes(5242880), "5.0 MB");
+  assert.equal(formatBytes(1073741824), "1024.0 MB");
 });

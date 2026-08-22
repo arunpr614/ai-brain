@@ -184,7 +184,12 @@ export function MultiLayerCompanionTabs({
           aria-labelledby={notesTabId}
           className={activeTab === "notes" ? "h-full" : "hidden"}
         >
-          <ManualNoteEditor itemId={item.id} itemTitle={item.title} focusEnabled={true} />
+          <ManualNoteEditor
+            itemId={item.id}
+            itemTitle={item.title}
+            focusEnabled={true}
+            aiSummary={item.summary}
+          />
         </div>
 
         {/* Tab 2: AI Cognitive Brief */}

@@ -8,7 +8,6 @@ import {
   Inbox,
   Library,
   MessageSquare,
-  MoreHorizontal,
   PanelLeftClose,
   PanelLeftOpen,
   Search,
@@ -23,10 +22,9 @@ import { cn } from "@/lib/cn";
 import { useCommandPalette } from "./command-palette";
 import {
   getDesktopShellTarget,
-  getMobileShellTarget,
-  usesStandardMobileCapture,
   type DesktopShellTarget,
 } from "./sidebar-routing";
+import { MobileBottomNav } from "./mobile-bottom-nav";
 import pkg from "../../package.json";
 
 interface NavItem {
@@ -69,7 +67,6 @@ export function Sidebar({ needsUpgradeCount = 0, processingEnabled = false }: { 
   const { open } = useCommandPalette();
   const [processingInboxCount, setProcessingInboxCount] = useState(0);
   const desktopTarget = getDesktopShellTarget(pathname);
-  const mobileTarget = getMobileShellTarget(pathname);
   const collapsed =
     useSyncExternalStore(
       subscribeCollapsed,
@@ -103,7 +100,6 @@ export function Sidebar({ needsUpgradeCount = 0, processingEnabled = false }: { 
     return item;
   });
 
-  const standardMobileCapture = usesStandardMobileCapture(pathname);
   const captureActive = desktopTarget === "capture";
   const pairDeviceActive = desktopTarget === "pair-device";
 
@@ -271,95 +267,10 @@ export function Sidebar({ needsUpgradeCount = 0, processingEnabled = false }: { 
       </nav>
       </aside>
 
-      <nav
-        aria-label="Primary mobile"
-        className={cn(
-          "fixed inset-x-0 bottom-0 z-40 flex h-16 items-center justify-around md:hidden",
-          "border-t border-[var(--border)] bg-[var(--surface)]/95 px-2 backdrop-blur",
-          "pb-[max(env(safe-area-inset-bottom),0.25rem)]",
-        )}
-      >
-        <MobileNavLink
-          href="/library"
-          label="Library"
-          icon={Library}
-          active={mobileTarget === "library"}
-        />
-
-        {standardMobileCapture ? (
-          <MobileNavLink
-            href="/capture"
-            label="Capture"
-            icon={CirclePlus}
-            active={mobileTarget === "capture"}
-          />
-        ) : (
-          <div className="relative flex h-full flex-1 flex-col items-center justify-end pb-1">
-            <Link
-              href="/capture"
-              aria-label="Open Capture"
-              className="absolute -top-5 flex h-14 w-14 items-center justify-center rounded-full bg-[var(--text-primary)] text-[var(--surface)] shadow-lg transition-transform duration-[var(--duration-fast)] active:scale-95"
-            >
-              <CirclePlus className="h-7 w-7" strokeWidth={2} />
-            </Link>
-            <span className="text-[10px] font-medium text-[var(--text-secondary)]">
-              Capture
-            </span>
-          </div>
-        )}
-
-        <MobileNavLink
-          href="/ask"
-          label="Ask"
-          icon={MessageSquare}
-          active={mobileTarget === "ask"}
-        />
-        <MobileNavLink
-          href="/more"
-          label="More"
-          icon={MoreHorizontal}
-          active={mobileTarget === "more"}
-        />
-      </nav>
+      <MobileBottomNav
+        needsUpgradeCount={needsUpgradeCount}
+        processingInboxCount={processingInboxCount}
+      />
     </>
-  );
-}
-
-function MobileNavLink({
-  href,
-  label,
-  icon: Icon,
-  active,
-  badge,
-}: {
-  href: string;
-  label: string;
-  icon: typeof Library;
-  active: boolean;
-  badge?: number;
-}) {
-  return (
-    <Link
-      href={href}
-      className={cn(
-        "flex flex-1 flex-col items-center justify-center gap-0.5 px-2 py-1 text-[11px] font-medium",
-        "transition-colors duration-[var(--duration-fast)]",
-        active
-          ? "text-[var(--accent-11)]"
-          : "text-[var(--text-secondary)] hover:text-[var(--text-primary)]",
-      )}
-      aria-current={active ? "page" : undefined}
-      aria-label={`Open ${label}`}
-    >
-      <span className="relative">
-        <Icon className="h-5 w-5" strokeWidth={2} />
-        {Boolean(badge) && (
-          <span className="absolute -right-2 -top-1 rounded-full bg-[var(--quality-needs-upgrade)] px-1 text-[9px] font-semibold leading-3 text-white">
-            {badge}
-          </span>
-        )}
-      </span>
-      <span>{label}</span>
-    </Link>
   );
 }

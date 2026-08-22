@@ -7,6 +7,7 @@ import { buildAskRequestBody } from "./ask-request";
 import { buildAskClientStateKey } from "./ask-state";
 import { AskInput } from "@/components/ask-input";
 import { ChatMessage } from "@/components/chat-message";
+import { CitationPreviewDrawer, type CitationPreviewData } from "@/components/reading-studio/citation-preview-drawer";
 import type { AskScopeInfo, AskScopeKind } from "@/lib/ask/scope";
 import { useAskStream, type AskRetrievedChunk } from "@/lib/client/use-ask-stream";
 
@@ -162,6 +163,22 @@ function AskClientInner({
     }
   }
 
+  const [selectedCitation, setSelectedCitation] = useState<CitationPreviewData | null>(null);
+
+  const handleSelectCitation = (chunk: AskRetrievedChunk) => {
+    setSelectedCitation({
+      chunkId: chunk.chunk_id,
+      itemId: chunk.item_id,
+      itemTitle: chunk.item_title,
+      excerpt: chunk.item_title,
+      sourcePlatform: chunk.item_source_platform,
+      sourceType: chunk.item_source_type,
+      captureQuality: chunk.item_capture_quality,
+      sourceKind: chunk.source_kind,
+      similarity: chunk.similarity,
+    });
+  };
+
   return (
     <div className="flex min-h-0 flex-1 flex-col gap-4 md:flex-row">
       <AskHistoryPanel threads={historyThreads} />
@@ -195,7 +212,12 @@ function AskClientInner({
                     <p>{askErrorMessage(errCode, errMsg)}</p>
                   </div>
                 ) : (
-                  <ChatMessage role="assistant" content={answer} chunks={chunks} />
+                  <ChatMessage
+                    role="assistant"
+                    content={answer}
+                    chunks={chunks}
+                    onSelectCitation={handleSelectCitation}
+                  />
                 )}
               </div>
             );
@@ -209,6 +231,13 @@ function AskClientInner({
           autoFocus
         />
       </section>
+
+      {/* Citation Preview Bottom Sheet Drawer */}
+      <CitationPreviewDrawer
+        isOpen={Boolean(selectedCitation)}
+        citation={selectedCitation}
+        onClose={() => setSelectedCitation(null)}
+      />
     </div>
   );
 }

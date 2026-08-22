@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useSyncExternalStore } from "react";
 import { HardDrive, Trash2, CheckCircle2, RefreshCw, Smartphone, ShieldCheck } from "lucide-react";
 import {
   getOfflineStorageStats,
@@ -8,10 +8,25 @@ import {
   type OfflineStorageStats,
 } from "@/lib/offline/offline-storage-manager";
 
+function getPwaSnapshot(): boolean {
+  if (typeof window === "undefined") return false;
+  return (
+    window.matchMedia("(display-mode: standalone)").matches ||
+    (window.navigator as unknown as { standalone?: boolean }).standalone === true
+  );
+}
+
+function subscribePwa(callback: () => void): () => void {
+  if (typeof window === "undefined") return () => {};
+  const mql = window.matchMedia("(display-mode: standalone)");
+  mql.addEventListener("change", callback);
+  return () => mql.removeEventListener("change", callback);
+}
+
 export function OfflineStorageCard() {
   const [stats, setStats] = useState<OfflineStorageStats | null>(null);
   const [isClearing, setIsClearing] = useState(false);
-  const [isPWA, setIsPWA] = useState(false);
+  const isPWA = useSyncExternalStore(subscribePwa, getPwaSnapshot, () => false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
   const refreshStats = async () => {
@@ -20,23 +35,21 @@ export function OfflineStorageCard() {
   };
 
   useEffect(() => {
-    void refreshStats();
-
-    // Check PWA display mode
-    if (typeof window !== "undefined") {
-      const isStandalone =
-        window.matchMedia("(display-mode: standalone)").matches ||
-        (window.navigator as unknown as { standalone?: boolean }).standalone === true;
-      setIsPWA(isStandalone);
-    }
+    let mounted = true;
+    void getOfflineStorageStats().then((s) => {
+      if (mounted) setStats(s);
+    });
 
     const handler = () => {
-      void refreshStats();
+      void getOfflineStorageStats().then((s) => {
+        if (mounted) setStats(s);
+      });
     };
 
     window.addEventListener("brain:offline-cache-updated", handler);
     window.addEventListener("brain:offline-cache-cleared", handler);
     return () => {
+      mounted = false;
       window.removeEventListener("brain:offline-cache-updated", handler);
       window.removeEventListener("brain:offline-cache-cleared", handler);
     };
