@@ -417,7 +417,7 @@ export function LibraryList({
                       className="h-[18px] w-[18px] cursor-pointer accent-[var(--accent-9)] disabled:cursor-not-allowed disabled:opacity-50"
                     />
                   </label>
-                  <Link href={`/items/${it.id}`} className="min-w-0 flex-1">
+                  <Link href={`/library/${it.id}/read`} className="min-w-0 flex-1">
                     <h2 className="line-clamp-2 overflow-hidden text-[15px] font-semibold leading-snug text-[var(--text-primary)]">
                       {it.title}
                     </h2>

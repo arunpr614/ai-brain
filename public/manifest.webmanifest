@@ -1,9 +1,12 @@
 {
+  "id": "/",
+  "scope": "/",
   "name": "AI Memory",
   "short_name": "AI Memory",
   "description": "Private source-grounded memory for saved knowledge.",
   "start_url": "/library",
   "display": "standalone",
+  "display_override": ["standalone", "minimal-ui"],
   "orientation": "portrait-primary",
   "background_color": "#FBFCFE",
   "theme_color": "#FBFCFE",
