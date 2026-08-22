@@ -7,6 +7,7 @@ import { CirclePlus, Library, MessageSquare, MoreHorizontal, Plus } from "lucide
 import { cn } from "@/lib/cn";
 import { getMobileShellTarget, usesStandardMobileCapture } from "./sidebar-routing";
 import { QuickCaptureSheet } from "./quick-capture-sheet";
+import { useViewMode } from "./view-mode-provider";
 
 export interface MobileBottomNavProps {
   needsUpgradeCount?: number;
@@ -18,16 +19,21 @@ export function MobileBottomNav({
   processingInboxCount = 0,
 }: MobileBottomNavProps) {
   const pathname = usePathname();
+  const { effectiveViewMode } = useViewMode();
   const mobileTarget = getMobileShellTarget(pathname);
   const standardMobileCapture = usesStandardMobileCapture(pathname);
   const [quickCaptureOpen, setQuickCaptureOpen] = useState(false);
+
+  const isMobile = effectiveViewMode === "mobile";
+
+  if (!isMobile) return null;
 
   return (
     <>
       <nav
         aria-label="Primary mobile"
         className={cn(
-          "fixed inset-x-0 bottom-0 z-40 flex h-16 items-center justify-around md:hidden",
+          "fixed inset-x-0 bottom-0 z-40 flex h-16 items-center justify-around",
           "border-t border-[var(--border)] bg-[var(--surface)]/95 px-2 backdrop-blur-md",
           "pb-[max(env(safe-area-inset-bottom),0.35rem)]",
         )}

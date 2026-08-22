@@ -11,6 +11,9 @@ import { countNeedsUpgradeItems } from "@/db/items";
 import { SESSION_COOKIE, verifySessionToken } from "@/lib/auth";
 import { resolvePrivateShellCounts } from "@/lib/shell/private-counts";
 import { resolveThemePreference, THEME_COOKIE } from "@/lib/theme";
+import { resolveViewModePreference, VIEW_MODE_COOKIE } from "@/lib/view-mode";
+import { ViewModeProvider } from "@/components/view-mode-provider";
+import { ViewModeOverridePill } from "@/components/view-mode-override-pill";
 import { processingNavigationEnabled } from "@/lib/processing/flags";
 
 const inter = Inter({
@@ -69,6 +72,7 @@ export default async function RootLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   const c = await cookies();
   const { resolved } = resolveThemeFromCookieStore(c);
+  const resolvedViewMode = resolveViewModePreference(c.get(VIEW_MODE_COOKIE)?.value);
   const { needsUpgradeCount } = resolvePrivateShellCounts({
     sessionToken: c.get(SESSION_COOKIE)?.value,
     verifySession: verifySessionToken,
@@ -79,32 +83,36 @@ export default async function RootLayout({
   return (
     <html
       lang="en"
-	      data-theme={resolved}
-	      className={`${inter.variable} ${jetbrainsMono.variable}`}
-	      // ThemeBootstrap only migrates legacy/invalid cookies; it never follows OS dark mode.
-	      suppressHydrationWarning
+      data-theme={resolved}
+      data-view-mode={resolvedViewMode}
+      className={`${inter.variable} ${jetbrainsMono.variable}`}
+      // ThemeBootstrap only migrates legacy/invalid cookies; it never follows OS dark mode.
+      suppressHydrationWarning
     >
       <head />
       <body>
-        <CommandPaletteProvider processingEnabled={processingNavigation}>
-          <ThemeBootstrap />
-          <SWBootstrap />
-          <ShareHandler />
-          <div className="flex min-h-full">
-            <Sidebar needsUpgradeCount={needsUpgradeCount} processingEnabled={processingNavigation} />
-            {/*
-              v0.5.0 T-15 / F-019 — bottom padding on mobile keeps the
-              content clear of the fixed bottom-nav (see sidebar.tsx).
-              ~3.5rem nav height + safe-area inset; cleared at `md:`.
-            */}
-	            <main
-	              className="flex-1 overflow-x-hidden pb-[calc(3.5rem+env(safe-area-inset-bottom))] md:pb-0"
-	              data-theme-pref={resolved}
-	            >
-              {children}
-            </main>
-          </div>
-        </CommandPaletteProvider>
+        <ViewModeProvider initialMode={resolvedViewMode}>
+          <CommandPaletteProvider processingEnabled={processingNavigation}>
+            <ThemeBootstrap />
+            <SWBootstrap />
+            <ShareHandler />
+            <ViewModeOverridePill />
+            <div className="flex min-h-full">
+              <Sidebar needsUpgradeCount={needsUpgradeCount} processingEnabled={processingNavigation} />
+              {/*
+                v0.5.0 T-15 / F-019 — bottom padding on mobile keeps the
+                content clear of the fixed bottom-nav (see sidebar.tsx).
+                ~3.5rem nav height + safe-area inset; cleared at `md:`.
+              */}
+              <main
+                className="flex-1 overflow-x-hidden pb-[calc(3.5rem+env(safe-area-inset-bottom))] md:pb-0"
+                data-theme-pref={resolved}
+              >
+                {children}
+              </main>
+            </div>
+          </CommandPaletteProvider>
+        </ViewModeProvider>
       </body>
     </html>
   );

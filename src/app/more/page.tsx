@@ -27,6 +27,7 @@ import {
   PROVIDER_TRUST_COPY,
 } from "@/lib/settings/trust-copy";
 import { OfflineStorageCard } from "@/components/offline-storage-card";
+import { ViewModeSwitcher } from "@/components/view-mode-switcher";
 import pkg from "../../../package.json";
 import { processingNavigationEnabled } from "@/lib/processing/flags";
 
@@ -47,9 +48,14 @@ export default async function MorePage() {
           More & Settings
         </h1>
         <p className="mt-1 text-sm text-[var(--text-secondary)]">
-          Settings, offline memory storage, devices, and app health.
+          Settings, experience posture, offline memory storage, and devices.
         </p>
       </header>
+
+      {/* Experience Mode Posture Switcher */}
+      <section className="mb-6 rounded-xl border border-[var(--border)] bg-[var(--surface)] p-4 shadow-xs">
+        <ViewModeSwitcher variant="expanded" />
+      </section>
 
       {/* Offline Storage & Memory Management Section */}
       <section className="mb-6">

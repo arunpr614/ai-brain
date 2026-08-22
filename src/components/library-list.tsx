@@ -17,6 +17,7 @@ import Link from "next/link";
 
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState, useTransition } from "react";
+import { useViewMode } from "@/components/view-mode-provider";
 import {
   bulkAttachCollectionAction,
   bulkTagItemsAction,
@@ -256,6 +257,8 @@ export function LibraryList({
     return () => clearTimeout(t);
   }, [flash]);
 
+  const { effectiveViewMode } = useViewMode();
+  const isMobileView = effectiveViewMode === "mobile";
   const [searchQuery, setSearchQuery] = useState("");
   const [debouncedQuery, setDebouncedQuery] = useState("");
   const [pullDistance, setPullDistance] = useState(0);
@@ -401,7 +404,7 @@ export function LibraryList({
           return (
             <li key={it.id} className="group/row">
               <div
-                className={`rounded-lg border bg-[var(--surface)] p-3.5 transition-colors duration-[var(--duration-fast)] md:hidden ${cardStateClass}`}
+                className={`rounded-lg border bg-[var(--surface)] p-3.5 transition-colors duration-[var(--duration-fast)] ${isMobileView ? "block" : "hidden"} ${cardStateClass}`}
               >
                 <div className="flex items-start gap-2.5">
                   <label
@@ -452,7 +455,7 @@ export function LibraryList({
                 </div>
               </div>
               <div
-                className={`hidden items-start gap-3 rounded-lg border bg-[var(--surface)] p-4 transition-colors duration-[var(--duration-fast)] md:flex ${cardStateClass}`}
+                className={`items-start gap-3 rounded-lg border bg-[var(--surface)] p-4 transition-colors duration-[var(--duration-fast)] ${isMobileView ? "hidden" : "flex"} ${cardStateClass}`}
               >
                 <label
                   className={`inline-flex h-11 w-11 shrink-0 cursor-pointer items-start justify-center pt-1 ${
